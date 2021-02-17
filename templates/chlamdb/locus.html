@@ -52,11 +52,13 @@ function clearBox(elementID)
 
             <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
 
-                <li class="active" id="main_overview"><a href="#tab1" data-toggle="tab">Overview</a></li>
-                <li><a href="#tab3" data-toggle="tab">Sequences</a></li>
-                {% if optional2status|keyvalue:"interpro_data"%}
-                    <li><a href="#tab2" data-toggle="tab">InterproScan</a></li>
-                {% endif %}
+                <li class="active" id="main_overview">
+					<a href="#main_tab" data-toggle="tab">Overview</a>
+				</li>
+
+                <li>
+					<a href="#tab3" data-toggle="tab">Sequences</a>
+				</li>
 
                 <li>
 					<a href="#homologs_tab" data-toggle="tab">
@@ -65,7 +67,7 @@ function clearBox(elementID)
 				</li>
 
                 <li>
-					<a href="#1" data-toggle="tab">Phylogenetic distribution</a>
+					<a href="#phylogenetic_distrib" data-toggle="tab">Phylogenetic distribution</a>
 				</li>
 
 
@@ -91,8 +93,10 @@ function clearBox(elementID)
 					<li><a href="#13" data-toggle="tab" onclick="window.open('{% url 'pmid' seqfeature_id %}', 'frame13'); return false">Pubmed <span class="badge">{{pubmed_count}}</span></a></li>
 				{% endif %}
 
-                {% if homologues > 2 and optional2status|keyvalue:"gene_phylogenies" %}
-                <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'phylogeny' og %}', 'frame9'); return false">Orthogroup phylogeny</a></li>
+                {% if n_homologues > 2 %}
+                <li>
+					<a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a>
+				</li>
                 {% endif %}
 
 				{% if homologues > 2 and optional2status|keyvalue:"BBH_phylogenies" %}
@@ -105,8 +109,37 @@ function clearBox(elementID)
 					  {% include "chlamdb/homologs.html" %}
 				  </div>
 
+				  <div class="tab-pane" id="phylogenetic_distrib">
+						<h3>Distribution of {{orthogroup}} homologs</h3>
 
-                <div class="tab-pane active" id="tab1" style="padding-left: 15px;padding-top:20px">
+
+						<div class="tab-pane active" id="tab1">
+						  <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
+							  <div class="panel-heading" style="width:100%">
+								  <h3 class="panel-title">Help</h3>
+							  </div>
+							  <p style="margin: 10px 10px 10px 10px; line-height: 180%">
+							  Number of homologs (first column and blue bar chart) in each genome.
+							  </p>
+						  </div>
+
+						  <object type="image/svg+xml" data="{% static asset_path %}"></object>
+
+						  <a download="profile.svg" class="btn" href="{% static asset_path %}">
+							  <i class="fa fa-download"></i> Download SVG</a>
+						</div>
+				  </div>
+
+				  <div class="tab-pane" id="og_phylogeny">
+						<h3>Phylogeny of {{orthogroup}} </h3>
+						<div class="tab-pane active" id="tab1">
+						  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
+						  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
+
+						</div>
+				  </div>
+
+                <div class="tab-pane active" id="main_tab" style="padding-left: 15px;padding-top:20px">
                         <div class="col-md-12 col-lg-4">
                           <div class="container-fluid">
                             <div class="row">
@@ -128,6 +161,13 @@ function clearBox(elementID)
                                       <th>Gene</th>
                                           <td>{{gene}}</td>
                                       </tr>
+
+									  <tr>
+
+									  <th>Product</th>
+										  <td>{{prot}}</td>
+									  </tr>
+
                                       <tr>
                                           <th>Location</th>
                                           <td>{{start}} - {{end}} (strand: {{strand}})</td>
@@ -182,6 +222,7 @@ function clearBox(elementID)
                                        <td>{{n_genomes}}</td>
                                        <td></td>
                                    </tr>
+
                                    {%if cog_data %}
                                        <tr>
                                           <th>COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
@@ -387,32 +428,6 @@ function clearBox(elementID)
 
 
                             {% endif %}
-                            <div class="row">
-
-
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">Orthogroup {{ data.0 }} Annotation</h3>
-                                </div>
-                                <div style="width: 100%;padding-left:20px">
-                                    <table>
-                                        <tr>
-                                        <td >Comment orthogroup   <a href="{% url 'add_comment' data.1 %}">  edit</a></td>
-                                        <td>
-                                            {% for values in cmt_format%}
-                                                {{values.0}}: {{values.1|safe}} </br>
-                                            {% endfor %}
-                                         </td>
-                                        </tr>
-
-                                    </table>
-                                </div>
-                              </div>
-
-
-                            </div>
-
-
 
 
                             {%if dbxref_uniprot_data %}
@@ -495,31 +510,6 @@ function clearBox(elementID)
                                 <object width="105%" height="230px"  type="image/svg+xml" style="margin-left: 3px; margin-top: 10px; padding-bottom: -100px;" data="{% static name %}" id="genomic_region"></object>
                             </div>
 
-                            <div class="row">
-                              <div style="padding-top:40px;">
-                                  <div class="panel panel-default">
-                                    <div class="panel-heading">
-                                      <h3 class="panel-title">Product</h3>
-                                    </div>
-                                    <table class="table table-striped" style="width: 100%">
-                                        <tr>
-                                            <td >Product</td>
-                                            <td>{{ data.11 }}</td>
-
-                                            {%if uniprot_id %}
-                                            <tr>
-                                              <td>Annotation evidence</td>
-                                              <td><a href="http://www.uniprot.org/uniprot/{{uniprot_id}}" target="_top">BLast VS Uniprot: {{uniprot_id}}</a></td>
-                                            </tr>
-                                            {% endif %}
-
-
-                                        </tr>
-                                    </table>
-                                  </div>
-                              </div>
-                            </div>
-
                             {% if uniprot_annotation%}
                               <div class="row">
                                 <div class="panel panel-default">
@@ -527,8 +517,6 @@ function clearBox(elementID)
                                     <h3 class="panel-title">Uniprot Annotation</h3>
                                   </div>
                                   <table id="panel_table" class="table table-striped" style="width: 100%">
-
-
                                           <tr>
                                               <th >Accession</th>
                                               <td><a href="https://www.uniprot.org/uniprot/{{ uniprot_annotation.10 }}">{{ uniprot_annotation.10 }} <i class="fa fa-external-link"></i></a></td>
@@ -688,6 +676,68 @@ function clearBox(elementID)
 
                             {% endif %}
 
+					 {% if cog_entries|length > 0 %}
+						<div class="row">
+						  <div class="panel panel-default">
+							<div class="panel-heading">
+							  <h3 class="panel-title">COG annotation(s)</h3>
+							</div>
+								<table class="table table-striped" style="width: 100%">
+									<thead>
+
+										  <tr>
+											  {% for h in cog_header %}
+												  <th> {{h|safe}} </th>
+											  {% endfor %}
+										  </tr>
+									</thead>
+
+									<tbody>
+										{% for row in cog_entries %}
+										<tr>
+											{% for entry in row %}
+											<td> {{ entry|safe }}</td>
+											{% endfor %}
+										</tr>
+										{% endfor %}
+									</tbody>
+
+								</table>
+						  </div>
+						</div>
+					  {% endif %}
+
+					 {% if ko_entries|length > 0 %}
+						<div class="row">
+						  <div class="panel panel-default">
+							<div class="panel-heading">
+							  <h3 class="panel-title">Kegg Ortholog annotation(s)</h3>
+							</div>
+							<table class="table table-striped" style="width: 100%">
+								<thead>
+								  <tr>
+									  {% for entry in ko_header %}
+									  	<th> {{entry|safe}} </th>
+									  {% endfor %}
+								  </tr>
+								</thead>
+								<tbody>
+									{% for row in ko_entries %}
+										<tr>
+											{% for e in row %}
+												<td> {{e|safe}}</td>
+											{% endfor %}
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						  </div>
+						</div>
+					  {% endif %}
+
+
+
+
                             {%if operon %}
                               <div class="row">
                                 <div class="panel panel-default">
@@ -842,7 +892,7 @@ function clearBox(elementID)
                             <h3 class="panel-title">Protein Sequence</h3>
                           </div>
                           <div class="panel-body">
-                            <p style="word-wrap: break-word;" class="text-justify">{{ data.13 }}</p>
+                            <p style="word-wrap: break-word;" class="text-justify">{{translation}}</p>
                           </div>
                         </div>
 

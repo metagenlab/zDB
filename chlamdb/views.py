@@ -102,6 +102,12 @@ from chlamdb.tasks import basic_tree_task
 from chlamdb.celeryapp import app as celery_app
 
 from metagenlab_libs import db_utils
+from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
+from metagenlab_libs.ete_phylo import Column
+
+from reportlab.lib import colors
+
+from ete3 import TextFace
 
 import pandas as pd
 
@@ -2262,7 +2268,40 @@ def tab_lengths(n_homologues, annotations):
             "html_plot_prot_length": html_plot_prot_length }
 
 
-def tab_og_conservation_tree(db, group):
+class SimpleTextColumn(Column):
+    def __init__(self, header=None):
+        self.header=header
+
+    def get_face(self, index):
+        return TextFace(index, fsize=7)
+
+
+def tab_og_phylogeny(db, og_id, annot):
+    from metagenlab_libs.ete_phylo import EteTree
+    from ete3 import Tree
+
+    og_phylogeny = db.get_og_phylogeny(og_id)
+
+    tree = Tree(og_phylogeny)
+
+    locuses = [branch.name for branch in tree.iter_leaves()]
+    locus_to_genome = db.get_locus_to_genomes(locuses)
+    R = tree.get_midpoint_outgroup()
+    tree.set_outgroup(R)
+    tree.ladderize()
+    e_tree = EteTree(tree)
+
+    e_tree.add_column(SimpleTextColumn("Locus tag"))
+    e_tree.rename_leaves(locus_to_genome)
+
+    dpi = 1200
+    asset_path = f"/temp/og_phylogeny{og_id}.svg"
+    path = settings.BASE_DIR + '/assets/' + asset_path
+    e_tree.render(path, dpi=dpi)
+    return {"og_phylogeny": asset_path}
+
+
+def tab_og_conservation_tree(db, group, compare_to=None):
     from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
     from ete3 import Tree
     
@@ -2280,10 +2319,24 @@ def tab_og_conservation_tree(db, group):
     e_tree = EteTree(tree)
 
     e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group], header=format_orthogroup(group)))
+    if not compare_to is None:
+        identity_matrix = db.get_og_identity(group, compare_to)
+        seqids = identity_matrix.index.tolist()
+
+        # to get the taxid of the reference seqid, so as to exclude it from 
+        # the phylogenetic tree
+        seqids.append(compare_to)
+        seqid_to_taxon  = db.get_taxid_from_seqid(seqids)
+        identity_matrix["taxid"] = identity_matrix.index.map(seqid_to_taxon)
+        max_identity = identity_matrix.groupby("taxid").max()
+        col = LocusHeatmapColumn.fromSeries(max_identity["identity"],
+                header="Identity", cls=LocusHeatmapColumn)
+        col.ref_taxon = seqid_to_taxon[compare_to]
+        e_tree.add_column(col)
+
     e_tree.rename_leaves(leaf_to_name)
 
     dpi = 1200
-    input_type = "orthogroup"
     asset_path = f"/temp/og_conservation{group}.svg"
     path = settings.BASE_DIR + '/assets/' + asset_path
     e_tree.render(path, dpi=dpi)
@@ -2415,10 +2468,16 @@ def orthogroup(request, og):
     }
     return render(request, "chlamdb/og.html", context)
 
+
 def tab_general(seqid, hsh_organism, gene_loc, annot):
     organism = hsh_organism[seqid]
     strand, beg, end = gene_loc[seqid]
-    _, gene, locus_tag, product, length = annot.loc[seqid]
+    gene = annot.loc[seqid].gene
+    if pd.isna(gene):
+        gene = "-"
+    length = annot.loc[seqid].length
+    product = annot.loc[seqid]["product"]
+    locus_tag = annot.loc[seqid].locus_tag
     return {
         "locus_tag": locus_tag,
         "organism": organism,
@@ -2427,8 +2486,43 @@ def tab_general(seqid, hsh_organism, gene_loc, annot):
         "start": beg,
         "end": end,
         "nucl_length": end-beg,
-        "length": length
+        "length": length,
+        "prot": product
     }
+
+
+# to be moved somewhere else at some point
+def to_color_code(c):
+    red = int(256*c.red)
+    green = int(256*c.green)
+    blue = int(256*c.blue)
+    return f"#{red:x}{green:x}{blue:x}"
+
+
+class LocusHeatmapColumn(SimpleColorColumn):
+    def __init__(self, values, ref_taxon=None, header=None):
+        super().__init__(values, header)
+        self.ref_taxon = ref_taxon
+        self.min_val = min(v for k, v in values.items())
+        self.max_val = max(v for k, v in values.items())
+
+
+    def get_face(self, index):
+        index = int(index)
+        if index==self.ref_taxon:
+            text_face = TextFace(" - ")
+            text_face.inner_background.color = EteTree.GREEN
+            return text_face
+
+        val = self.values.get(index, None)
+        if val is None:
+            return TextFace(" - ")
+
+        color = colors.linearlyInterpolatedColor(colors.gray,
+                colors.firebrick, self.min_val, self.max_val, val)
+        text_face = TextFace(int(val))
+        text_face.inner_background.color = to_color_code(color)
+        return text_face
 
 
 def locusx(request, locus=None, menu=True):
@@ -2444,8 +2538,9 @@ def locusx(request, locus=None, menu=True):
     except:
         valid = False
         return render(request, 'chlamdb/locus.html', my_locals(locals()))
+    else:
+        valid_id = True
 
-    valid_id = True
     optional2status = db.get_config_table()
     gene_loc = db.get_gene_loc([seqid])
     og_inf   = db.get_og_count([seqid], search_on="seqid", indexing="seqid")
@@ -2454,14 +2549,20 @@ def locusx(request, locus=None, menu=True):
             terms=["locus_tag", "gene", "product", "length"])
     all_og_c = db.get_og_count([og_id], search_on="orthogroup")
     all_org  = db.get_organism(og_annot.index.tolist(), as_hash=True)
+    n_homologues = all_og_c.loc[og_id].sum()
+    translation = db.get_translation(seqid)
 
     homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
     general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
-    n_homologues = all_og_c.loc[og_id].sum()
+    og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
+    og_phylogeny_ctx= tab_og_phylogeny(db, og_id, og_annot)
 
-    kegg_ctx = {}
+    kegg_ctx, cog_ctx = {}, {}
     if optional2status.get("KEGG", False):
         kegg_ctx = og_tab_get_kegg_annot(db, [seqid])
+
+    if optional2status.get("COG", False):
+        cog_ctx = og_tab_get_cog_annot(db, [seqid])
 
     context = {
         "valid_id": valid_id,
@@ -2470,9 +2571,13 @@ def locusx(request, locus=None, menu=True):
         "data": ["foo", "bar"],
         "n_homologues": n_homologues,
         "og_id": format_orthogroup(og_id, to_url=True),
+        "translation": translation,
+        **cog_ctx,
         **kegg_ctx,
         **homolog_tab_ctx,
-        **general_tab
+        **general_tab,
+        **og_conserv_ctx,
+        **og_phylogeny_ctx
     }
     return render(request, 'chlamdb/locus.html', context)
 
