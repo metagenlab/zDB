@@ -94,14 +94,17 @@ def load_orthofinder_results(orthofinder_output, args, db_file):
 
 
 # Note: as this is an alignment, the lengths are the same
+# to be replaced by zip and to be tested
 def get_identity(seq1, seq2):
+    if len(seq1)!=len(seq2):
+        raise RuntimeException("The lengths of two aligned sequences should be identical")
+
     identity = 0
     aligned = 0
     identical = 0
     gaps_1 = 0
     gaps_2 = 0
 
-    assert(len(seq1) == len(seq2))
     for i in range(len(seq1)):
         if seq1[i]=="-":
             gaps_1 += 1
@@ -301,6 +304,7 @@ def load_seq_hashes(args, nr_mapping, db_file):
 
     db.create_seq_hash_to_seqid(to_load)
     db.commit()
+
 
 def load_alignments_results(args, alignment_files, db_file):
     db = db_utils.DB.load_db(db_file, args)

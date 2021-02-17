@@ -375,6 +375,7 @@ merged_faa_chunks.splitFasta( by: 300, file: "chunk_" )
         to_PRIAM
         to_psortb }
 
+
 process prepare_orthofinder {
 
   container "$params.orthofinder_container"
@@ -533,6 +534,8 @@ process orthogroups_phylogeny_with_fasttree3 {
     done
   """
 }
+
+gene_phylogeny.collect().set { all_og_phylogeny }
 
 
 if(params.orthogroups_phylogenies_iqtree) {
@@ -1626,7 +1629,7 @@ process load_taxo_stats_into_db {
         file db from to_load_taxonomy
         file BBH_phylogeny_trees from BBH_phylogenies_to_db
         file core_phylogeny from core_genome_phylogeny
-        file gene_phylogeny
+        file og_phylogenies_list from all_og_phylogeny
 
     output:
         file db into to_load_COG
@@ -1640,7 +1643,7 @@ process load_taxo_stats_into_db {
     kwargs = ${gen_python_args()}
 
     BBH_list = "$BBH_phylogeny_trees".split(" ")
-    gene_list = "$gene_phylogeny".split(" ")
+    gene_list = "$og_phylogenies_list".split(" ")
 
     setup_chlamdb.load_reference_phylogeny(kwargs, "$core_phylogeny", "$db")
     setup_chlamdb.load_gene_phylogenies(kwargs, gene_list, "$db")
