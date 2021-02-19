@@ -69,7 +69,7 @@ def load_gbk(gbks, args, db_file):
         for record in records:
             db.load_gbk_wrapper([record])
             bioentry_id = db.server.adaptor.last_id("bioentry")
-            bioentry_plasmids.append((bioentry_id, is_plasmid(record)))
+            bioentry_plasmids.append( (bioentry_id, is_plasmid(record)))
             bioentry_to_taxid.append( (bioentry_id, taxon_id+1) )
 
         # hack to link the bioentry to the filename, useful later for parsing and

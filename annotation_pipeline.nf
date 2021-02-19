@@ -5,6 +5,10 @@
  *
  */
 
+
+
+
+
 /*
 * Helper function for gen_python_args
 */
@@ -63,76 +67,26 @@ def gen_python_args() {
 str_pythonized_params = gen_python_args()
 
 
-if (params.local_assemblies) {
-    Channel.fromPath(params.local_assemblies)
-        .splitCsv(header: true, strip: true)
-        .map { row -> tuple(row.name, file(row.draft_genome)) }
-        .into { to_prokka_local_assemblies_1; gbk_from_local_assembly_f; error_search }
 
-    to_prokka_local_assemblies_1.filter { it[1].extension == "fasta" }
-        .set { to_prokka_local_assemblies }
+// Input processing
+Channel.fromPath(params.local_assemblies)
+    .splitCsv(header: true, strip: true)
+    .map { row -> tuple(row.name, file(row.draft_genome)) }
+    .into { gbk_from_local_assembly_f; error_search }
 
-    gbk_from_local_assembly_f.filter { it[1].extension == "gbk" }
-        .map { it[1] }
-        .set { gbk_from_local_assembly_2 }
+gbk_from_local_assembly_f.filter { it[1].extension == "gbk" }
+    .map { it[1] }
+    .into { gbk_from_local_assembly; foo }
 
-    error_search.filter { it[1].extension!="gbk" && it[1].extension != fasta}
-        .subscribe { error "Unsupported file extension" }
-}
+foo.collect().subscribe { println it}
 
-// Each Sample
-if (params.ncbi_sample_sheet){
-  Channel.fromPath( file(params.ncbi_sample_sheet) )
-                      .splitCsv(header: true, sep: '\t')
-                      .map{ row -> "$row.Genbank" } 
-                      .into{ assembly_accession_list }
+error_search.filter { it[1].extension!="gbk" }
+    .subscribe { error "Unsupported file extension" }
 
-  Channel.fromPath( file(params.ncbi_sample_sheet) )
-                      .splitCsv(header: true, sep: '\t')
-                      .map{ row -> "$row.RefSeq" }
-                      .set{ assembly_accession_list_refseq }
-
-}
-
-if(params.local_sample_sheet){
-	local_genomes = Channel.fromPath(params.local_sample_sheet)
-				  .splitCsv(header: true, sep: '\t')
-				  .map{row -> "$row.gbk_path" }
-				  .map { file(it) }
-} else {
-	local_genomes = Channel.empty()
-}
-
-// TODO: add the possibility to specify genus informations
-// in the config file
-process prokka {
-	container "$params.prokka_container"
-
-	// NOTE : according to Prokka documentation, a linear acceleration
-	// is obtained up to 8 processes and after that, the overhead becomes
-	// more important. 
-    cpus 4
-
-	input:
-	    tuple (val(name), file(genome_fasta)) from to_prokka_local_assemblies
-
-	output:
-	    file "$output_dir/${output_file_prefix}.gbk" into gbk_from_local_assembly_1
-
-	script:
-    output_dir = "prokka_results"
-    output_file_prefix = "${genome_fasta.baseName}"
-	"""
-	prokka $genome_fasta --outdir $output_dir --prefix ${output_file_prefix} \\
-		 --centre X --compliant --cpus ${task.cpus} --strain ${name} --genus Rhabdochlamydia --species \" \"
-	"""
-}
-
-gbk_from_local_assembly_1.mix(gbk_from_local_assembly_2).set { gbk_from_local_assembly }
 
 // leave all the contigs with no coding region
 // NOTE: should be merged with one of the downstream functions (e.g. check_gbk)
-process prokka_filter_CDS {
+process check_gbk {
 	publishDir 'data/prokka_output_filtered', overwrite: true
 	container "$params.annotation_container"
 
@@ -140,46 +94,31 @@ process prokka_filter_CDS {
 	    file prokka_file from gbk_from_local_assembly.collect()
 
 	output:
-	    file "*_filtered.gbk" into gbk_prokka_filtered
+	    file "*_filtered.gbk" into checked_gbks
 
 	script:
 	"""
-	#!/usr/bin/env python
-	
-	import annotations
+#!/usr/bin/env python
+import annotations
 
-	gbk_files = "${prokka_file}".split()
-	for i in gbk_files:
-		annotations.filter_out_unannotated(i)
+gbk_files = "${prokka_file}".split() 
+annotations.check_organism_uniqueness(gbk_files)
+for i in gbk_files:
+    annotations.filter_out_unannotated(i)
+    annotations.check_annotations(i.replace(".gbk", "_filtered.gbk"))
 	"""
 }
 
 
-process copy_local_assemblies {
-    publishDir 'data/gbk_local', mode: 'copy', overwrite: true
-
-    when:
-    params.local_sample_sheet
-
-    input:
-        file local_gbk from local_genomes
-
-    output:
-        file "${local_gbk}.gz" into raw_local_gbffs
-
-    script:
-    """
-    gzip -f ${local_gbk}
-    """
-}
-
-if(!params.local_assemblies && !params.local_sample_sheet) {
-	raw_local_gbffs = Channel.empty()	
-}
 
 if(params.ncbi_sample_sheet == false) {
 	raw_ncbi_gbffs = Channel.empty()
 }else {
+
+    // this part of the code is deprecated and should be ultimately removed
+
+    Channel.empty().set {assembly_accession_list}
+    Channel.empty().set {assembly_accession_list_refseq}
   
   // TODO : create a single query to the database
   process download_assembly {
@@ -271,15 +210,14 @@ if(params.ncbi_sample_sheet == false) {
   }
 }
 
-all_raw_gbff = raw_ncbi_gbffs.mix(raw_local_gbffs).mix(gbk_prokka_filtered)
-
+/*
 process gbk_check {
   publishDir 'data/gbk_edited', mode: 'copy', overwrite: true
 
   container "$params.annotation_container"
 
   input:
-  file all_gbff from all_raw_gbff.collect()
+  file all_gbff from gbk_prokka_filtered.collect()
 
   output:
   file "*merged.gbk" into edited_gbks
@@ -291,9 +229,9 @@ process gbk_check {
   import annotations
   annotations.check_gbk("$all_gbff".split())
   """
-}
+} */
 
-edited_gbks.into { to_load_gbk_into_db; to_convert_gbk_to_faa }
+checked_gbks.into { to_load_gbk_into_db; to_convert_gbk_to_faa }
 
 process convert_gbk_to_faa {
 

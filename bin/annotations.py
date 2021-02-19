@@ -444,60 +444,6 @@ def refseq_locus_mapping(accessions_list):
                         old_locus_tag = feature.qualifiers["old_locus_tag"][0]
                         o.write(f"{old_locus_tag}\t{refseq_locus_tag}\t{protein_id}\n")
 
-def download_assembly_refseq(accession):
-    from ftplib import FTP
-
-    Entrez.email = "trestan.pillonel@chuv.ch"
-    Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
-    if accession=="":
-        return
-
-    handle1 = Entrez.esearch(db="assembly", term=accession)
-    record1 = Entrez.read(handle1)
-    ncbi_id = record1['IdList'][-1]
-    handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
-    assembly_record = Entrez.read(handle_assembly, validate=False)
-
-    # only consider annotated genbank => get corresponding refseq assembly
-    if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
-        ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-        ftp=FTP('ftp.ncbi.nih.gov')
-        ftp.login("anonymous","trestan.pillonel@unil.ch")
-        ftp.cwd(ftp_path)
-        filelist=ftp.nlst()
-        filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
-        for file in filelist:
-            ftp.retrbinary("RETR "+file, open(file, "wb").write)
-    else:
-        print("no genbank annotation for ${accession}")
-
-def download_assembly(accession):
-    from ftplib import FTP
-
-    Entrez.email = "trestan.pillonel@chuv.ch"
-    Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
-
-    handle1 = Entrez.esearch(db="assembly", term=accession)
-    record1 = Entrez.read(handle1)
-
-    ncbi_id = record1['IdList'][-1]
-    handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
-    assembly_record = Entrez.read(handle_assembly, validate=False)
-
-    if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
-        ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-    elif 'refseq_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
-      ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-    else:
-        raise("${accession} assembly not annotated! --- exit ---")
-    ftp=FTP('ftp.ncbi.nlm.nih.gov')
-    ftp.login("anonymous","trestan.pillonel@unil.ch")
-    ftp.cwd(ftp_path)
-    filelist=ftp.nlst()
-    filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
-    for file in filelist:
-        ftp.retrbinary("RETR " + file, open(file, "wb").write)
-
 
 def merge_plasmids(plasmids_records):
     """
@@ -622,10 +568,11 @@ def count_missing_locus_tags(gbk_record):
                 count_no_locus += 1
     return count_no_locus, count_CDS
 
-# See documentation of GenBank record format for more informations
+
 def is_annotated(gbk_record):
     return not (len(gbk_record.features) == 1
             and gbk_record.features[0].type == 'source')
+
 
 def update_record_taxon_id(record, n):
     if record.features[0].type == 'source':
@@ -705,7 +652,13 @@ def orthogroups_to_fasta(genomes_list):
                 SeqIO.write(new_fasta, out_handle, "fasta")
 
 
-def check_gbk(gbff_files, minimal_contig_length=1000):
+def check_annotations(gbk_file):
+    for record in SeqIO.parse(gbk_file, "genbank"):
+        if not is_annotated(record):
+            raise Exception(f"Unannotated record: {record.description}")
+
+
+def check_gbk(gbff_files):
     reannotation_list = []
 
     # count the number of identical source names
@@ -713,24 +666,16 @@ def check_gbk(gbff_files, minimal_contig_length=1000):
     accession2count = {}
     for genome_number, gbff_file in enumerate(gbff_files):
 
-        records = None
-        if gbff_file[-len(".gbk"):] == ".gbk":
-            records = list(SeqIO.parse(gbff_file, "genbank"))
-        else:
-            records = list(SeqIO.parse(gzip.open(gbff_file, "rt"), "genbank"))
-
+        records = list(SeqIO.parse(gbff_file, "genbank"))
         for record in records:
             n_missing, total = count_missing_locus_tags(record)
             if n_missing > 0:
-                print ('Warrning: %s/%s missing locus tag for record %s' % (n_missing, total, record.name))
-
+                print ('Warning: %s/%s missing locus tag for record %s' % (n_missing, total, record.name))
         chromosome, plasmids = filter_plasmid(records)
-
         cleaned_records = []
         plasmid_reannot = False
         chromosome_reannot = False
 
-        plasmids = merge_plasmids(plasmids)
         for n_plasmid, plasmid in enumerate(plasmids):
             annot_check = is_annotated(plasmid)
             if annot_check:
@@ -760,26 +705,18 @@ def check_gbk(gbff_files, minimal_contig_length=1000):
                 print("Warrning: unannotated genome: %s" % plasmid)
 
         if len(chromosome) > 0:
-
             '''
             Assume single chromosome bacteria.
             If multiple record founds, consider those as contigs.
-            Contigs contatenation with 200 N between each (labelled as assembly_gap feature)
             '''
 
-            ########## chromosome ###########
-            if chromosome[0].seq == 'N'*len(chromosome[0].seq):
-                print('Warning: No sequences for %s, skipping' % gbff_file)
-                continue
             annot_check = is_annotated(chromosome[0])
             if annot_check:
                 if len(chromosome) > 1:
                     merged_record = merge_gbk(chromosome)
                 else:
                     merged_record = chromosome[0]
-                print(merged_record.description )
                 merged_record.description = clean_description(merged_record.description)
-                print(merged_record.description)
                 # rename source with strain name
                 merged_record = update_record_taxon_id(merged_record, 1000 + genome_number)
                 strain, new_source = rename_source(merged_record)
@@ -818,11 +755,46 @@ def check_gbk(gbff_files, minimal_contig_length=1000):
             with open(out_name, 'w') as f:
                 SeqIO.write(cleaned_records, f, 'genbank')
 
+
+def check_organism_uniqueness(gbk_lst):
+    """
+    As BioSQL uses the organism entry of the records to assign
+    a taxid when it is not allowed to access the ncbi online,
+    we need to ensure that the same organism name is not used
+    twice in the genomes to prevent bioentries from different genbank
+    files to be entered under the same taxon_id (as chlamdb uses the taxon_id to 
+    differentiate between genomes).
+
+    Display an error message and stop the pipeline if this arises
+    """
+    organisms = dict()
+
+    for gbk_file in gbk_lst:
+        curr_organism = None
+        for record in SeqIO.parse(gbk_file, "genbank"):
+            if not "organism" in record.annotations:
+                raise Exception(f"No organism for file {gbk_file}")
+            
+            organism = record.annotations["organism"]
+            if curr_organism is None:
+                curr_organism = organism
+            elif curr_organism != organism:
+                raise Exception(f"Two different organism in {gbk_file}: {curr_organism}/{organism}")
+
+        gbk_lst = organisms.setdefault(organism, [])
+        gbk_lst.append(gbk_file)
+    for organism, file_lst in organisms.items():
+        if len(file_lst) > 1:
+            genbanks = ",".join(file_lst)
+            raise Exception(f"Genbank files {genbanks} have the same organism: {organism}")
+
+
 def filter_out_unannotated(gbk_file):
     # assumes ".gbk" file ending
     result_file = gbk_file[:-len(".gbk")] + "_filtered.gbk"
     to_keep = [rec for rec in SeqIO.parse(gbk_file, "genbank") if is_annotated(rec)]
     SeqIO.write(to_keep, result_file, "genbank")
+
 
 def string_id2pubmed_id_list(accession):
     link = 'http://string-db.org/api/tsv/abstractsList?identifiers=%s' % accession
