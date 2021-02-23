@@ -1459,7 +1459,7 @@ process load_base_db {
     setup_chlamdb.load_alignments_results(kwargs, alignments_lst, "$db_base")
 
     print("Loading checkm results", flush=True)
-    setup_chlamdb.load_genomes_info(kwargs, "$checkm_results", "$db_base")
+    setup_chlamdb.load_genomes_info(kwargs, gbk_list, "$checkm_results", "$db_base")
     """
 }
 

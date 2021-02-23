@@ -413,9 +413,30 @@ def load_reference_phylogeny(kwargs, tree, db_file):
     db.commit()
 
 
-def load_genomes_info(kwargs, checkm_results, db_file):
+def get_gen_stats(gbk_list):
+    hsh_gen_stats = {}
+
+    for gbk_file in gbk_list:
+        ttl_length = 0
+        gc_cum = 0
+        cds_length = 0
+        for record in SeqIO.parse(gbk_file, "genbank"):
+            ttl_length += len(record)
+            gc_cum += SeqUtils.GC(record.seq)*len(record)
+            for fet in record.features:
+                if fet.type=="CDS":
+                    location = fet.location
+                    cds_length += location.end-location.start
+        gbk_shortened = gbk_file.replace(".gbk", "")
+        hsh_gen_stats[gbk_shortened] = (float(gc_cum)/ttl_length, float(cds_length)/ttl_length, ttl_length)
+    return hsh_gen_stats
+
+
+def load_genomes_info(kwargs, gbk_list, checkm_results, db_file):
     db = db_utils.DB.load_db(db_file, kwargs)
     tab = pd.read_table(checkm_results)
+
+    hsh_taxid_to_gen_stats = get_gen_stats(gbk_list)
 
     hsh_filename_to_taxid = db.get_filenames_to_taxon_id()
     data = []
@@ -423,9 +444,7 @@ def load_genomes_info(kwargs, checkm_results, db_file):
         taxon_id = hsh_filename_to_taxid[row["Bin Id"]]
         completeness = row.Completeness
         contamination = row.Contamination
-        gc = row.GC
-        coding_density = row["Coding density"]
-        length = row["Genome size (bp)"]
+        gc, coding_density, length = hsh_taxid_to_gen_stats[row["Bin Id"]]
         values = [taxon_id, completeness, contamination, gc, length, coding_density]
         data.append(values)
         
