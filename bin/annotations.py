@@ -14,6 +14,7 @@ import setup_chlamdb
 
 
 import pandas as pd
+import itertools
 import sys
 import sqlite3
 import urllib
@@ -652,12 +653,6 @@ def orthogroups_to_fasta(genomes_list):
                 SeqIO.write(new_fasta, out_handle, "fasta")
 
 
-def check_annotations(gbk_file):
-    for record in SeqIO.parse(gbk_file, "genbank"):
-        if not is_annotated(record):
-            raise Exception(f"Unannotated record: {record.description}")
-
-
 def check_gbk(gbff_files):
     reannotation_list = []
 
@@ -783,17 +778,43 @@ def check_organism_uniqueness(gbk_lst):
 
         gbk_lst = organisms.setdefault(organism, [])
         gbk_lst.append(gbk_file)
+
     for organism, file_lst in organisms.items():
         if len(file_lst) > 1:
             genbanks = ",".join(file_lst)
             raise Exception(f"Genbank files {genbanks} have the same organism: {organism}")
 
 
-def filter_out_unannotated(gbk_file):
-    # assumes ".gbk" file ending
-    result_file = gbk_file[:-len(".gbk")] + "_filtered.gbk"
-    to_keep = [rec for rec in SeqIO.parse(gbk_file, "genbank") if is_annotated(rec)]
-    SeqIO.write(to_keep, result_file, "genbank")
+def check_names(record, common_names):
+    common_name = record.annotations.get("source", None)
+    if (common_name is None) or (common_name in common_names):
+        # such a common name has already been 
+        # encountered: change it to the unique scientific
+        # name
+        # NOTE: We know that record.annotations contains "organism"
+        record.annotations["source"] = record.annotations["organism"]
+    return record
+
+
+def filter_out_unannotated(gbk_files):
+    """
+    NOTE: assumes that the check_organism_uniqueness has been called before (i.e.
+    unique scientific organism name and only one organism per file).
+
+    This function does two things:
+    ** filter out unannotated contigs (TODO: check if this is really necessary)
+    ** for genbank files that have the same organism common name, change it to their
+       scientific name (BioSQL would ortherwise assign them the same taxon_id,
+       I know, this is stupid)
+    """
+    common_names = set()
+    for gbk_file in gbk_files:
+        records = SeqIO.parse(gbk_file, "genbank")
+        result_file = gbk_file.replace(".gbk", "_filtered.gbk")
+        to_keep = (check_names(rec, common_names) for rec in records if is_annotated(rec))
+        first_rec = next(to_keep)
+        common_names.add(first_rec.annotations["source"])
+        SeqIO.write(itertools.chain([first_rec], to_keep), result_file, "genbank")
 
 
 def string_id2pubmed_id_list(accession):

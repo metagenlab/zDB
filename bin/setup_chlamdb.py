@@ -77,6 +77,7 @@ def load_gbk(gbks, args, db_file):
         data.append( (taxon_id+1, gbk.replace(".gbk", "")) )
 
     db.load_filenames(data)
+    db.commit()
     db.update_taxon_ids(bioentry_to_taxid)
     db.update_plasmid_status(bioentry_plasmids)
     db.set_status_in_config_table("gbk_files", 1)
@@ -412,42 +413,26 @@ def load_reference_phylogeny(kwargs, tree, db_file):
     db.commit()
 
 
-# Several values will be inserted in the bioentry_qualifier_value table, under different
-# term_id
-# - the GC of the genomes, under the gc term_id
-# - the length, under length term_id
-# - the number of contigs, under the n_contigs term_id
-# - the number of contigs without BBH hits to Chlamydiae
-# - the coding density
-def load_genomes_summary(kwargs, db_file):
+def load_genomes_info(kwargs, checkm_results, db_file):
     db = db_utils.DB.load_db(db_file, kwargs)
-    hsh_seq = db.get_genomes_sequences()
-    hsh_seq_to_length_coding = db.get_coding_region_total_length()
+    tab = pd.read_table(checkm_results)
 
-    gcs = []
-    lengths = []
-    no_contigs = []
-    coding_densities = []
-    for entry_id, sequence in hsh_seq.items():
-        sequence_without_N = sequence.replace("N", "")
-
-        # During the annotation procedure, contigs are merged, with the insertion
-        # of 200 "N"s between them.
-        no_contig = sequence.count("N" * 200) + 1
-        length = len(sequence_without_N)
-        gc = SeqUtils.GC(sequence_without_N)
-        coding_density = round(100*hsh_seq_to_length_coding[entry_id]/length, 2)
-
-        gcs.append( (entry_id, gc) )
-        lengths.append( (entry_id, length) )
-        no_contigs.append( (entry_id, no_contig))
-        coding_densities.append( (entry_id, coding_density) )
-    db.load_genomes_gc(gcs)
-    db.load_genomes_lengths(lengths)
-    db.load_genomes_n_contigs(no_contigs)
-    db.load_genomes_coding_density(coding_densities)
+    hsh_filename_to_taxid = db.get_filenames_to_taxon_id()
+    data = []
+    for index, row in tab.iterrows():
+        taxon_id = hsh_filename_to_taxid[row["Bin Id"]]
+        completeness = row.Completeness
+        contamination = row.Contamination
+        gc = row.GC
+        coding_density = row["Coding density"]
+        length = row["Genome size (bp)"]
+        values = [taxon_id, completeness, contamination, gc, length, coding_density]
+        data.append(values)
+        
+    db.load_genomes_info(data)
     db.set_status_in_config_table("genome_statistics", 1)
     db.commit()
+
 
 def simplify_ko(raw_ko):
     return int(raw_ko[len("ko:K"):])
@@ -482,19 +467,5 @@ def load_KO(params, ko_files, db_name):
             data.append(entry)
     db.load_ko_hits(data)
     db.set_status_in_config_table("KEGG", 1)
-    db.commit()
-
-
-def load_checkm_results(params, checkm_results, db_file):
-    db = db_utils.DB.load_db(db_file, params)
-    tab = pd.read_table(checkm_results)
-
-    hsh_filename_to_taxid = db.get_filenames_to_taxon_id()
-    data = []
-    for index, row in tab.iterrows():
-        values = (hsh_filename_to_taxid[row["Bin Id"]], row["Completeness"], row["Contamination"])
-        data.append(values)
-
-    db.load_checkm_results(data)
     db.commit()
 

@@ -76,16 +76,12 @@ Channel.fromPath(params.local_assemblies)
 
 gbk_from_local_assembly_f.filter { it[1].extension == "gbk" }
     .map { it[1] }
-    .into { gbk_from_local_assembly; foo }
-
-foo.collect().subscribe { println it}
+    .set { gbk_from_local_assembly }
 
 error_search.filter { it[1].extension!="gbk" }
     .subscribe { error "Unsupported file extension" }
 
 
-// leave all the contigs with no coding region
-// NOTE: should be merged with one of the downstream functions (e.g. check_gbk)
 process check_gbk {
 	publishDir 'data/prokka_output_filtered', overwrite: true
 	container "$params.annotation_container"
@@ -103,9 +99,7 @@ import annotations
 
 gbk_files = "${prokka_file}".split() 
 annotations.check_organism_uniqueness(gbk_files)
-for i in gbk_files:
-    annotations.filter_out_unannotated(i)
-    annotations.check_annotations(i.replace(".gbk", "_filtered.gbk"))
+annotations.filter_out_unannotated(gbk_files)
 	"""
 }
 
@@ -1465,12 +1459,12 @@ process load_base_db {
     setup_chlamdb.load_alignments_results(kwargs, alignments_lst, "$db_base")
 
     print("Loading checkm results", flush=True)
-    setup_chlamdb.load_checkm_results(kwargs, "$checkm_results", "$db_base")
+    setup_chlamdb.load_genomes_info(kwargs, "$checkm_results", "$db_base")
     """
 }
 
 if(!params.diamond_refseq) {
-    db_gen.set { to_load_genomes_summary }
+    db_gen.set { to_load_taxonomy }
     Channel.empty().set { diamond_best_hits }
 } else {
 
@@ -1481,7 +1475,7 @@ if(!params.diamond_refseq) {
 
         output:
             file "*_nr_hits.faa" into diamond_best_hits
-            file curr_db into to_load_genomes_summary
+            file curr_db into to_load_taxonomy
 
         script:
         if(params.diamond_refseq)
@@ -1494,23 +1488,6 @@ if(!params.diamond_refseq) {
             setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files, "$curr_db")
             """
     }
-}
-
-process load_genomes_summary {
-    input:
-        file curr_db from to_load_genomes_summary
-
-    output:
-        file curr_db into to_load_taxonomy
-
-    script:
-    """
-    #!/usr/bin/env python
-
-    import setup_chlamdb
-    kwargs = ${gen_python_args()}
-    setup_chlamdb.load_genomes_summary(kwargs, "$curr_db")
-    """
 }
 
 process align_refseq_BBH_with_mafft {
