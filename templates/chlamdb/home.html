@@ -196,61 +196,19 @@
 
 
                                     <tr>
-                                        <th>Accession</th>
-                                        <th>GC</th>
-                                        <th>N proteins</th>
-                                        <th>N contigs</th>
-                                        <th>Size</th>
-                                        <th>Percent non coding</th>
-                                        <th>Organism</th>
-                                        <th>Browse Online</th>
-                                        <th>gbk</th>
-                                        <th>faa</th>
-                                        <th>fna</th>
-                                        <th>ffn</th>
-                                        <th>tab</th>
+									{% for header in data_table_header %}
+										<th>{{header}}</th>
+									{% endfor %}
 
                                     </tr>
                                  </thead>
                                  <tbody>
-                                 {% for values in genomes_data %}
-
+                                 {% for entry in data_table %}
                                     <tr>
-                                        <td><a href="https://www.ncbi.nlm.nih.gov/nuccore/{{values.0}}">{{values.0}}</a></td>
-                                        <td>{{values.1}}</td>
-                                        <td>{{values.2}}</td>
-                                        <td>{{values.3}}</td>
-                                        <td>{{values.4}}</td>
-                                        <td>{{values.5}}</td>
-                                        <td>{{values.6}}</td>
-                                        <td><a href="{% url 'genome_annotation' values.0 %}">{{values.0}}</a></td>
-
-                                        <td style="vertical-align:top" nowrap>
-                                            <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'gbk' %}">
-                                            <span style="background-color:#DCFFF0;color:black;padding:1px;">GBK</span></a>
-                                        </td>
-
-                                        <td nowrap>
-                                            <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'faa' %}"">
-                                            <span style="background-color:#DCFFF0;color:black;padding:1px;">FAA</span></a>
-                                        </td>
-
-                                        <td nowrap>
-                                            <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'fna' %}"">
-                                            <span style="background-color:#DCFFF0;color:black;padding:1px;">FNA</span></a>
-                                        </td>
-
-                                        <td nowrap>
-                                            <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'ffn' %}">
-                                            <span style="background-color:#DCFFF0;color:black;padding:1px;">FFN</span></a>
-                                        </td>
-
-                                        <td nowrap>
-                                            <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'gbk' %}">
-                                            <span style="background-color:#DCFFF0;color:black;padding:1px;">TAB</span></a>
-
+										{% for val in entry %}
+                                        <td>{{val}}</td>
+										{% endfor %}
                                     </tr>
-
                                  {% endfor %}
 
                                 </tbody>

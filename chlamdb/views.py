@@ -104,10 +104,11 @@ from chlamdb.celeryapp import app as celery_app
 from metagenlab_libs import db_utils
 from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
 from metagenlab_libs.ete_phylo import Column
+from ete3 import Tree
 
 from reportlab.lib import colors
 
-from ete3 import TextFace
+from ete3 import TextFace, StackedBarFace
 
 import pandas as pd
 
@@ -259,34 +260,75 @@ def logout_view(request):
     return render(request, 'chlamdb/logout.html', my_locals(locals()))
 
 
-def home(request):
-    from ete3 import TreeStyle
-    from chlamdb.phylo_tree_display import phylo_tree_bar
-    from ete3 import Tree
+class StackedBarColumn(Column):
+    def __init__(self, values, header, colours=None, relative=False,
+            face_params=None, header_params=None):
+        super().__init__(header, face_params, header_params)
+        self.values=values
+        self.colours = colours
+        self.relative = relative
+        if relative:
+            self.max = max(values.values())
+            self.min = min(values.values())
 
+    def get_face(self, index):
+        val = self.values[int(index)]
+
+        if self.relative:
+            val = 100*float(val-self.min)/(self.max-self.min)
+        face =  StackedBarFace([val, 100-val], width=50, height=9, colors=self.colours)
+        self.set_default_params(face)
+        face.inner_border.color = "black"
+        face.inner_border.width = 0
+        return face
+
+
+def home(request):
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
 
-    genomes_data = db.get_genomes_infos(filter_out_plasmids=False)
-    tree = db.get_reference_phylogeny()
+    genomes_data = db.get_genomes_infos()
+    genomes_descr = db.get_genomes_description(indexing="taxon_id", indexing_type="int")
 
     asset_path = "/temp/species_tree.svg"
     path = settings.BASE_DIR + '/assets/temp/species_tree.svg'
 
+    data_table_header = ["Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding"]
+    genomes_data["taxon_id"] = genomes_data.index
+    genomes_data["strain"] = genomes_data.taxon_id.map(genomes_descr)
+    genomes_data.gc = genomes_data.gc.apply(round)
+    genomes_data.coding_density = genomes_data.coding_density.apply(lambda x: round(100*x))
+    genomes_data.length = genomes_data.length.apply(lambda x: round(x/pow(10,6), 2))
+    data_table = genomes_data[["strain", "gc", "n_prot", "n_contigs", "length", "coding_density"]].values.tolist()
+
     # plot phylo only of not already in assets
-    if not os.path.exists(path):
-        t1 = Tree(tree)
-        R = t1.get_midpoint_outgroup()
-        t1.set_outgroup(R)
+    tree = db.get_reference_phylogeny()
+    t1 = Tree(tree)
+    R = t1.get_midpoint_outgroup()
+    t1.set_outgroup(R)
+    t1.ladderize()
+
+    e_tree = EteTree(t1)
+    header_params = {"rotation": -30}
+    stacked_face_params = {"margin_right": 8, "margin_left": 5}
+
+    tree_params = [
+            ["length", "Size (Mbp)", "#91bfdb", True],
+            ["gc", "GC %", "#fc8d59", False],
+            ["coding_density", "Coding density %", "#99d594", False],
+            ["completeness", "Completeness", "#d7191c", False],
+            ["contamination", "Contamination", "black", False]]
         
-        t, tss = phylo_tree_bar.plot_heat_tree(t1, db, prev_data=genomes_data)
+    for serie_name, header, col, is_relative in tree_params:
+        data = genomes_data[serie_name]
+        e_tree.add_column(SimpleColorColumn.fromSeries(data, header=None, use_col=False))
+        stack = StackedBarColumn(data.to_dict(), colours = [col, "white"],
+                relative=is_relative, header=header,
+                header_params=header_params, face_params=stacked_face_params)
+        e_tree.add_column(stack)
+    e_tree.rename_leaves(genomes_descr)
 
-        tss.show_branch_support = False
-        #t.render("test2.svg", tree_style=ts)
-
-        t.render(path, dpi=500, tree_style=tss)
-
-    n_genomes = db.get_n_genomes()
+    e_tree.render(path, dpi=500)
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 

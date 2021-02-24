@@ -83,8 +83,6 @@ function clearBox(elementID)
 					<li><a href="#8" data-toggle="tab" onclick="window.open('{% url 'interactions' data.1 %}', 'frame8'); return false">Interactions</a></li>
 				{% endif %}
 
-				<li><a href="#10" data-toggle="tab" onclick="window.open('{% url 'hydropathy' data.1 %}', 'frame10'); return false">Hydropathy plot</a></li>
-
 				{% if optional2status|keyvalue:"GC_statistics"%}
 					<li><a href="#11" data-toggle="tab" onclick="window.open('{% url 'gc_locus' data.1 %}', 'frame11'); return false">GC</a></li>
 				{% endif %}
