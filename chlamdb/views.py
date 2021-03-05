@@ -103,7 +103,9 @@ from chlamdb.celeryapp import app as celery_app
 
 from metagenlab_libs import db_utils
 from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
+from metagenlab_libs.ete_phylo import KOAndCompleteness
 from metagenlab_libs.ete_phylo import Column
+from metagenlab_libs.KO_module import ModuleParser
 from ete3 import Tree
 
 from reportlab.lib import colors
@@ -288,18 +290,19 @@ def home(request):
     db = db_utils.DB.load_db_from_name(biodb_path)
 
     genomes_data = db.get_genomes_infos()
-    genomes_descr = db.get_genomes_description(indexing="taxon_id", indexing_type="int")
+    genomes_descr = db.get_genomes_description()
 
     asset_path = "/temp/species_tree.svg"
     path = settings.BASE_DIR + '/assets/temp/species_tree.svg'
 
-    data_table_header = ["Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding"]
-    genomes_data["taxon_id"] = genomes_data.index
-    genomes_data["strain"] = genomes_data.taxon_id.map(genomes_descr)
+    genomes_data = genomes_data.join(genomes_descr)
+
     genomes_data.gc = genomes_data.gc.apply(round)
     genomes_data.coding_density = genomes_data.coding_density.apply(lambda x: round(100*x))
     genomes_data.length = genomes_data.length.apply(lambda x: round(x/pow(10,6), 2))
-    data_table = genomes_data[["strain", "gc", "n_prot", "n_contigs", "length", "coding_density"]].values.tolist()
+
+    data_table_header = ["Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding"]
+    data_table = genomes_data[["description", "gc", "n_prot", "n_contigs", "length", "coding_density"]].values.tolist()
 
     # plot phylo only of not already in assets
     tree = db.get_reference_phylogeny()
@@ -313,6 +316,7 @@ def home(request):
     stacked_face_params = {"margin_right": 8, "margin_left": 5}
 
     tree_params = [
+            # serie_name, header, color and is_relative
             ["length", "Size (Mbp)", "#91bfdb", True],
             ["gc", "GC %", "#fc8d59", False],
             ["coding_density", "Coding density %", "#99d594", False],
@@ -326,7 +330,8 @@ def home(request):
                 relative=is_relative, header=header,
                 header_params=header_params, face_params=stacked_face_params)
         e_tree.add_column(stack)
-    e_tree.rename_leaves(genomes_descr)
+
+    e_tree.rename_leaves(genomes_descr.description.to_dict())
 
     e_tree.render(path, dpi=500)
     return render(request, 'chlamdb/home.html', my_locals(locals()))
@@ -572,6 +577,7 @@ def extract_orthogroup(request):
         # add error message in web page
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
     
+    form.get_choices(1)
     include = [int(i) for i in form.cleaned_data['orthologs_in']]
     exclude = [int(i) for i in form.cleaned_data['no_orthologs_in']]
 
@@ -13804,13 +13810,9 @@ def kegg_pathway_heatmap(request):
 
 
 def kegg_module_subcat(request):
-    from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
-    from metagenlab_libs.ete_phylo import KOAndCompleteness
-    from ete3 import Tree
-    from metagenlab_libs import KO_module
-
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+
     module_overview_form = make_module_overview_form(db, True)
     if request.method != "POST":
         form = module_overview_form()
@@ -13822,16 +13824,13 @@ def kegg_module_subcat(request):
         form = module_overview_form()
         return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
 
-    category = form.cleaned_data["category"]
-    leaf_to_name = db.get_genomes_description(indexing="bioentry", exclude_plasmids=True)
+    category        = form.cleaned_data["category"]
+    leaf_to_name    = db.get_genomes_description()
     ko_count_subcat = db.get_ko_count_cat(category=category)
-    ko_count_subcat = ko_count_subcat.set_index(["bioentry", "module_id", "KO"])
 
-    grouped_count = ko_count_subcat.groupby(["bioentry", "module_id"]).sum()
+    grouped_count = ko_count_subcat.groupby(["taxon_id", "module_id"]).sum()
 
-    all_module_ids = ko_count_subcat.index.get_level_values("module_id").tolist()
-    unique_module_ids = list(set(all_module_ids))
-
+    unique_module_ids = ko_count_subcat.index.get_level_values("module_id").unique().tolist()
     if len(unique_module_ids) == 0:
         # add error message : no module found
         envoi = True
@@ -13840,7 +13839,7 @@ def kegg_module_subcat(request):
     module_infos = db.get_modules_info(unique_module_ids)
     expression_tree = {}
     for module_id, descr, definition, *other in module_infos:
-        parser = KO_module.ModuleParser(definition)
+        parser = ModuleParser(definition)
         expression_tree[module_id] = parser.parse()
 
     labels = [format_module(val[0]) for val in module_infos]
@@ -13860,7 +13859,7 @@ def kegg_module_subcat(request):
             n_missing[bioentry] = expr_tree.get_n_missing({ko: 1 for ko in s})
         new_col = KOAndCompleteness(values, n_missing, header)
         e_tree.add_column(new_col)
-    e_tree.rename_leaves(leaf_to_name)
+    e_tree.rename_leaves(leaf_to_name.description.to_dict())
     path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
     asset_path = '/temp/metabo_tree.svg'
     e_tree.render(path, dpi=500, w=800)

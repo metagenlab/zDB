@@ -29,37 +29,18 @@ class GenerateRandomUserForm(forms.Form):
     )
 
 def get_accessions(db, all=False, plasmid=False):
-    result = db.get_genomes_description(exclude_plasmids=not plasmid)
+    """
+    """
+    result = db.get_genomes_description(lst_plasmids=True)
     accession_choices = []
 
-    for index, description in result.items():
-        accession_choices.append( (index,  description) )
-    import re
-    accessions = {}
-    for i, accession in enumerate(accession_choices):
-        #print i, accession
-        description = accession[1]
-        description = re.sub(", complete genome\.", "", description)
-        description = re.sub(", complete genome", "", description)
-        description = re.sub(", complete sequence\.", "", description)
-        description = re.sub("strain ", "", description)
-        description = re.sub("str\. ", "", description)
-        description = re.sub(" complete genome sequence\.", "", description)
-        description = re.sub(" complete genome\.", "", description)
-        description = re.sub(" chromosome", "", description)
-        description = re.sub(" DNA", "S.", description)
-        description = re.sub("Merged record from ", "", description)
-        description = re.sub(", wgs", "", description)
-        description = re.sub("Candidatus ", "", description)
-        description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
-        #accession_choices[i] = (accession[0], description)
-        if description in accessions.values():
-            description += ' v2'
-        accessions[accession[0]] = description
-
-    accession_choices = []
-    for accession in sorted(accessions.keys()):
-        accession_choices.append([accession, accessions[accession]])
+    index = 0
+    for _, data in result.iterrows():
+        accession_choices.append((index, data.description))
+        index += 1
+        if plasmid and data.has_plasmid==1:
+            accession_choices.append((index, data.description + " plasmid"))
+            index += 1
 
     if all:
         accession_choices = [["all", "all"]] + accession_choices
@@ -444,6 +425,9 @@ def make_extract_form(database_name,
         new_choices = [['None', 'None']] + accession_choices
         frequency = forms.ChoiceField(choices=FREQ_CHOICES, label='Missing data (optional)', required = False)
         reference = forms.ChoiceField(choices=new_choices,label="Reference genome (optional)", required = False)
+
+        def get_choices(self, indices):
+            print(accession_choices)
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
