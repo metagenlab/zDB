@@ -82,23 +82,23 @@ error_search.filter { it[1].extension!="gbk" }
     .subscribe { error "Unsupported file extension" }
 
 
-process check_gbk {
-	publishDir 'data/prokka_output_filtered', overwrite: true
-	container "$params.annotation_container"
-
+process check_gbk { #start the process called check_gbk
+	publishDir 'data/prokka_output_filtered', overwrite: true #publishDir is a directive that allows you to publish the process output files to a specified folder. Could we also specify the output location in the output section? Is checked_gbks (name of the folder in which the outputs go according to the output section) a folder in "data/prokka_output_filtere?d"
+	container "$params.annotation_container" #this container directive should be used to specify the Docker image in which we can run the script. Here I think we call different container according to the params we want/(ask for?. He read this in the introduction "The idea is to be able to pass the parameters to external python scripts") 
+							#are these containers in another of our folder that will be used by the tool when run on the web or downloaded by the user if he uses the command line?
 	input:
-	    file prokka_file from gbk_from_local_assembly.collect()
-
+	    file prokka_file from gbk_from_local_assembly.collect() # prokka file should come from gbk_from_local_assembly.collect(), but what is it? Following the tutorial it should be a channel (I may interpret as a folder), but before "process" there are some instructions for the channel with also part of the name "gbk_from_local_assembly.collect()", how do I find the link between them? 
+								#I am also wondering where these prokka_files come from or what they refer to (maybe .gbk? in the way it is writte above "it[1].extension!="gbk"? 
 	output:
 	    file "*_filtered.gbk" into checked_gbks
 
 	script:
-	"""
+	""" #three quotes because it is a multiline string, then they are double to let you access to system environment variables and variables defined in the pipeline script context.
 #!/usr/bin/env python
 import annotations
 
-gbk_files = "${prokka_file}".split() 
-annotations.check_organism_uniqueness(gbk_files)
+gbk_files = "${prokka_file}".split() #it takes the prokka_file given as output and since it is a variable we put $ and {}. But what about the double quotes? is associated also to the python way of writing or because we are using another language from the defult one?
+annotations.check_organism_uniqueness(gbk_files) #use function"check_organism_uniqueness" from annotation library on the gbk_files generated.
 annotations.filter_out_unannotated(gbk_files)
 	"""
 }
