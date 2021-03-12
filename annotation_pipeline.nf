@@ -225,11 +225,11 @@ process gbk_check {
   """
 } */
 
-checked_gbks.into { to_load_gbk_into_db; to_convert_gbk_to_faa }
+checked_gbks.into { to_load_gbk_into_db; to_convert_gbk_to_faa }  #this is a second process (maybe not the second) and it uses the previously created channel "checked_gbks". It connects this channel with two new ones. One of them is called here in the input, while the other is called in the end of this pipelin (it's not important when they will be called, I think that you mainly care of the main channel thorugh which you make the main process go)
 
-process convert_gbk_to_faa {
+process convert_gbk_to_faa {		#name of the process
 
-  publishDir 'data/faa_locus', mode: 'copy', overwrite: true
+  publishDir 'data/faa_locus', mode: 'copy', overwrite: true  #this directive defines the location of the outputs that will be created, the mode ??? understand copy and overwrite
 
   container "$params.annotation_container"
 
