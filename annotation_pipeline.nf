@@ -83,7 +83,7 @@ error_search.filter { it[1].extension!="gbk" } #here it filter the error_Search 
 
 
 process check_gbk { 						  #start the process called check_gbk
-	publishDir 'data/prokka_output_filtered', overwrite: true #publishDir is a directive that allows you to publish the process output files in a specified folder. Could we also specify the output location in the output section? Or in the ouput you specify only the channel, such as checked_gbks while here instead you define the folder "data/prokka_output_filtered", so that the exact location in your machine where the outputs go?
+	publishDir 'data/prokka_output_filtered', overwrite: true #QUESTION AT THE END #publishDir is a directive that allows you to publish the process output files in a specified folder. Could we also specify the output location in the output section? Or in the ouput you specify only the channel, such as checked_gbks while here instead you define the folder "data/prokka_output_filtered", so that the exact location in your machine where the outputs go? Overwritten when true, any existing file in the specified folder will be overridden (default: true during normal pipeline execution). QUESTION: if we want to replace every element, how can they be sorted in the folder? Are the processes run completely or once an item is processed then is moved to the next step (process)? I think the whole process must be completed actually. So at this point why do we want overwriting? I am not sure what the script does here, so maybe it is just a check to see if there is content in the .gkb files and nothing more.
 	container "$params.annotation_container" #this container directive should be used to specify the Docker image in which we can run the script. Here I think we call different container according to the params we want/(ask for?. He read this in the introduction "The idea is to be able to pass the parameters to external python scripts") 
 							#are these containers in another of our folder that will be used by the tool when run on the web or downloaded by the user if he uses the command line?
 	input:
@@ -225,21 +225,20 @@ process gbk_check {
   """
 } */
 
-checked_gbks.into { to_load_gbk_into_db; to_convert_gbk_to_faa }  #this is a second process (maybe not the second) and it uses the previously created channel "checked_gbks". It connects this channel with two new ones. One of them is called here in the input, while the other is called in the end of this pipelin (it's not important when they will be called, I think that you mainly care of the main channel thorugh which you make the main process go)
+checked_gbks.into { to_load_gbk_into_db; to_convert_gbk_to_faa }  #this is a second process (maybe not the second) and it uses the previously created channel "checked_gbks". It connects this channel with two new ones. One of them is called here in the input, while the other is called at the end of this pipelin (it's not important when they will be called, I think that you mainly care of the main channel through which you make the main process go)
 
 process convert_gbk_to_faa {		#name of the process
 
-  publishDir 'data/faa_locus', mode: 'copy', overwrite: true  #this directive defines the location of the outputs that will be created, the mode ??? understand copy and overwrite
-
-  container "$params.annotation_container"
+  publishDir 'data/faa_locus', mode: 'copy', overwrite: true  #this directive defines the location of the outputs that will be created, copy mode: it copies the output files into the published directory.
+  container "$params.annotation_container" #container in which the code should be run (described in the first process. It is however repeated along the whole structure of the pipeline) Even if I still do not know what params are here and how they are defines (see before the first process)
 
   echo false
 
   input:
-  each file(edited_gbk) from to_convert_gbk_to_faa
+  each file(edited_gbk) from to_convert_gbk_to_faa   #edited_gbk is a channel that has been defined before but that part of code is silenced, so not sure if should be fixed
 
   output:
-  file "*.faa" into faa_files
+  file "*.faa" into faa_files #
 
   script:
   """
@@ -261,11 +260,11 @@ faa_locus1.into { faa_genomes1
                   to_macsysfinder 
                   inc_effectors_prediction }
 
-faa_locus2.collectFile(name: 'merged.faa', newLine: true)
-    .set { merged_faa0 }
+faa_locus2.collectFile(name: 'merged.faa', newLine: true) #collectFile let you collect the items that come from a channel and save them in one/more files directing them in a new channel (maybe faa_locus2). Name indicates the name of the file where all received values are stored, while newLine: Appends a newline character automatically after each entry (default: false).
+    .set { merged_faa0 } #assigned the channel to the variable. QUESTION: if the previous line (collectfile) collects the file in the new channel called faa_locus2, why do we need to give a variable name to it with set? Couldn't we avoid it? I see that in the input this channel is called, but why do we need this "change in the name" (I may miss something important, such as that faa_locus2 is not the new channel generated or something else (I checked and before the ouput channel identified in the output section for the first time was then call again as a channel))
 
 
-process get_nr_sequences {
+process get_nr_sequences {		#name of the process
 
   container "$params.annotation_container"
 
@@ -273,7 +272,7 @@ process get_nr_sequences {
 
   input:
   file(seq) from merged_faa0
-  file genome_list from faa_genomes4.collect()
+  file genome_list from faa_genomes4.collect()  #what defined the content of faa_genomes4??? Before we just see that faa_locus1 will be split in 7 channels and one is faa_genomes4, but we do not know how and faa_genomes4 is not mentioned antwhere except here?
 
   output:
 
@@ -281,8 +280,9 @@ process get_nr_sequences {
   file 'nr_mapping.tab' into nr_mapping_to_db_setup
 
   script:
-  fasta_file = seq.name
-  """
+  fasta_file = seq.name   #where do you get this seq.name?? How do you recall it in the process? 
+  
+   """
 	#!/usr/bin/env python
 	
 	import annotations
