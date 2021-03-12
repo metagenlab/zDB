@@ -332,7 +332,6 @@ def home(request):
         e_tree.add_column(stack)
 
     e_tree.rename_leaves(genomes_descr.description.to_dict())
-
     e_tree.render(path, dpi=500)
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
@@ -577,36 +576,27 @@ def extract_orthogroup(request):
         # add error message in web page
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
     
-    form.get_choices(1)
-    include = [int(i) for i in form.cleaned_data['orthologs_in']]
-    exclude = [int(i) for i in form.cleaned_data['no_orthologs_in']]
-
-    # differentiate plasmids from chromosomes
-    diff_plasmid = form.cleaned_data["checkbox_accessions"]
-    if not diff_plasmid:
-        include = db.get_bioentries_in_taxon(bioentries=include)["bioentry"].tolist()
-        exclude = db.get_bioentries_in_taxon(bioentries=exclude)["bioentry"].tolist()
-
-    reference_taxon = form.cleaned_data['reference']
-    n_missing = int(form.cleaned_data['frequency'])
+    include_taxids, include_plasmids = form.get_include_choices()
+    exclude_taxids, exclude_plasmids = form.get_exclude_choices()
+    n_missing = form.get_n_missing()
     single_copy = "checkbox_single_copy" in request.POST
-    if reference_taxon == "None":
-        reference_taxon = include[0]
 
-    if n_missing>=len(include):
+    sum_include_lengths = len(include_taxids)+len(include_plasmids)
+    if n_missing>=sum_include_lengths:
         wrong_n_missing = True
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
-    search_key = "bioentry" if diff_plasmid else "taxon_id"
-    og_counts_in = db.get_og_count(include, search_on="bioentry", indexing=search_key)
+    og_counts_in = db.get_og_count(include_taxids, diff_plasmid=len(include_plasmids)>0)
     if not single_copy:
         og_counts_in["presence"] = og_counts_in[og_counts_in > 0].count(axis=1)
     else:
         og_counts_in["presence"] = og_counts_in[og_counts_in == 1].count(axis=1)
 
-    og_counts_in["selection"] = og_counts_in.presence >= (len(include)-n_missing)
-    if len(exclude) > 0:
-        mat_exclude = db.get_og_count(exclude, search_on="bioentry", indexing=search_key)
+    og_counts_in["selection"] = og_counts_in.presence >= (sum_include_lengths-n_missing)
+
+    sum_exclude_lengths = len(exclude_taxids)+len(exclude_plasmids)
+    if sum_exclude_lengths>0:
+        mat_exclude = db.get_og_count(exclude_taxids, diff_plasmid=len(exclude_plasmids)>0)
         mat_exclude["presence"] = mat_exclude[mat_exclude > 0].count(axis=1)
         mat_exclude["exclude"] = mat_exclude.presence > 0
         neg_index = mat_exclude[mat_exclude.exclude].index
@@ -615,14 +605,13 @@ def extract_orthogroup(request):
 
     pos_index = og_counts_in[og_counts_in.selection].index
     selection = pos_index.difference(neg_index).tolist()
-    sum_group = len(selection)
     if len(selection) == 0:
         no_match = True
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
     # this should be re-implemented in a more scalable way (will explode as the number of
     # orthogroups and genome grow). Alternatively, could also be precomputed or stored in cache.
-    count_all_genomes = db.get_og_count(selection, search_on="orthogroup", indexing=search_key)
+    count_all_genomes = db.get_og_count(selection, search_on="orthogroup")
 
     if not single_copy:
         orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(axis=1)
@@ -631,7 +620,8 @@ def extract_orthogroup(request):
     max_n = orthogroup2count_all.max()
     match_groups_data = []
 
-    annotations = db.get_genes_from_og(orthogroups=selection, bioentries=include,
+    all_taxids = include_plasmids+include_taxids
+    annotations = db.get_genes_from_og(orthogroups=selection, taxon_ids=all_taxids,
         terms=["gene", "product", "locus_tag"])
     if annotations.empty:
         no_match = True
@@ -652,7 +642,7 @@ def extract_orthogroup(request):
 
     table_headers = ["Orthogroup", "Genes", "Products"]
     table_headers.extend(opt_header)
-    table_headers.extend([f"Present in {len(include)}", f"Freq complete database (/{max_n})"])
+    table_headers.extend([f"Present in {sum_include_lengths}", f"Freq complete database (/{max_n})"])
 
     for row, count in orthogroup2count_all.iteritems():
         cnt_in = og_counts_in.loc[row].presence
@@ -1092,28 +1082,19 @@ def venn_orthogroup(request):
     if not form_venn.is_valid():
         return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
 
-    try:
-        targets = [int(t) for t in form_venn.cleaned_data['targets']]
-    except:
-        # add error message
-        return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
-
-    # includes not only the chromosomes, but also the plasmids
-    all_targets = db.get_bioentries_in_taxon(targets)
-    genomes = db.get_genomes_description(targets, indexing="taxon_id", indexing_type="int")
-    og_count = db.get_og_count(all_targets["bioentry"].tolist(),
-            search_on="bioentry", indexing="taxon_id")
-
+    targets = form_venn.get_taxids()
+    genomes = db.get_genomes_description(targets)
+    og_count = db.get_og_count(targets)
     fmt_data = []
     for taxon in og_count:
         ogs = og_count[taxon]
         ogs_str = ",".join(f"{to_s(format_orthogroup(og))}" for og, cnt in ogs.iteritems() if cnt > 0)
-        genome = genomes[taxon]
+        genome = genomes.loc[int(taxon)].description
         fmt_data.append(f"{{name: {to_s(genome)}, data: [{ogs_str}] }}")
     series = "[" + ",".join(fmt_data) + "]"
 
     og_list = og_count.index.tolist()
-    annotations = db.get_genes_from_og(orthogroups=og_list, bioentries=all_targets["bioentry"].tolist())
+    annotations = db.get_genes_from_og(orthogroups=og_list, taxon_ids=genomes.index.tolist())
     grouped = annotations.groupby("orthogroup")
     genes = grouped["gene"].apply(list)
     products = grouped["product"].apply(list)
@@ -12313,18 +12294,20 @@ def plot_heatmap(request, type):
     if not form_venn.is_valid():
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
+    # plasmid differentiation to be implemented later on
     diff_plasmid = "checkbox_accessions" in request.POST
-    target_bioentries = [int(i) for i in form_venn.cleaned_data['targets']]
+    taxon_ids = [int(i) for i in form_venn.cleaned_data['targets']]
+    print(taxon_ids)
     indexing = "bioentry"
     if not diff_plasmid:
-        target_bioentries = db.get_bioentries_in_taxon(target_bioentries)["bioentry"].tolist()
+        # target_bioentries = db.get_bioentries_in_taxon(target_bioentries)["bioentry"].tolist()
         indexing = "taxon_id"
 
     if type=="COG":
         mat = db.get_cog_hits(target_bioentries, as_count=True)
         mat = mat.set_index(["bioentry", "cog"]).unstack(level=0, fill_value=0)
     elif type=="orthology":
-        mat = db.get_og_count(target_bioentries, search_on="bioentry", indexing=indexing)
+        mat = db.get_og_count(taxon_ids)
     elif type == "ko":
         mat = db.get_ko_count(target_bioentries)
         mat = mat.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
@@ -12332,9 +12315,8 @@ def plot_heatmap(request, type):
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
-    target2description = db.get_genomes_description(target_bioentries, indexing=indexing,
-            indexing_type="int")
-    mat.columns = [target2description[i] for i in mat.columns.values]
+    target2description = db.get_genomes_description(taxon_ids).description.to_dict()
+    mat.columns = (target2description[int(i)] for i in mat.columns.values)
     cur_time = datetime.now().strftime("%H%M%S")
 
     filename = f"heatmap_{cur_time}.png"
