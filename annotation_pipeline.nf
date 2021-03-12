@@ -69,38 +69,38 @@ str_pythonized_params = gen_python_args()
 
 
 // Input processing
-Channel.fromPath(params.local_assemblies)
-    .splitCsv(header: true, strip: true)
-    .map { row -> tuple(row.name, file(row.draft_genome)) } #tuple (array), so per each row, create an array with the row.name and something else of the file (file(row.draft_genome), I think it is something fixed like the row.names. map is a function that apply the function of creating the arry for each row and it puts the output in a new channel
-    .into { gbk_from_local_assembly_f; error_search }
+Channel.fromPath(params.local_assemblies) #this is the way to create a channel which emits one or more file path. I think that here you establish a channel that takes the data from "params.local_assemblies", still to unsertand where this params.local_assemblies comes since I do not find this anywhere in the pipeline, even if based on what follows they are .csv tables
+    .splitCsv(header: true, strip: true) #the splitCsv operator let you split the .csv files emitted by the channel according to the header of the csv files and the strip parameter removes the initial and terminal blanks (spazi) of each value 
+    .map { row -> tuple(row.name, file(row.draft_genome)) } #tuple (array), so per each row, create an array with the row.name and something else of the file (file(row.draft_genome), I think it is something fixed like the row.names). map is a function that apply the function of creating the arry for each row and it puts the output in a new channel
+    .into { gbk_from_local_assembly_f; error_search } #The into operator connects a source channel to two or more target channels in such a way the values emitted by the source channel are copied to the target channels, here we have two new channels separated by a ;
+								#at this point it specify how to distribute the values of the source channel in the new channels defined by into
+gbk_from_local_assembly_f.filter { it[1].extension == "gbk" } #the filter operator works on the gbk_from_local_assembly_f channel and applyes the filtering specified in the {}, considering that the extention of each element (it) (I do not know why [1]) is equal to gbk. The thing in {} is a closure (I think). So in the end you take only the elements in gbk_from_local_assembly_f channel with gbk at the end.
+    .map { it[1] } #map operator should appy a function specified in the brackets, in this case I do not know if it makes any function or just "grep" each element it (still do not know the [1])
+    .set { gbk_from_local_assembly } #set operator must be put as last one, and it assigns the channel to a variable, which in this case is then used as the channel called in the input (it is the same of introducing it at the beginning and put "=Chnnel etc", but in this way with .set you can set all your condition before defining the channel) 
 
-gbk_from_local_assembly_f.filter { it[1].extension == "gbk" } #it may be something like applying the filtering on gbk_from_local_assembly_f considering that the extention of each element (it) (I do not know why [1]) is equal to gbk. The thing in {} is a closure (I think) 
-    .map { it[1] }
-    .set { gbk_from_local_assembly } #set operator must be put as last one. 
-
-error_search.filter { it[1].extension!="gbk" }
-    .subscribe { error "Unsupported file extension" }
+error_search.filter { it[1].extension!="gbk" } #here it filter the error_Search channel in the way that it does not contain any element with the extention gbk (I still need to understand to what it referes to, the input should be a csv file (maybe), and it may refer to the output generated or another input file since then it may give an error such as if you submitted something wrong)
+    .subscribe { error "Unsupported file extension" } #.subscribe is the "print" function that prints the message contianed in the {} 
 
 
-process check_gbk { #start the process called check_gbk
-	publishDir 'data/prokka_output_filtered', overwrite: true #publishDir is a directive that allows you to publish the process output files to a specified folder. Could we also specify the output location in the output section? Is checked_gbks (name of the folder in which the outputs go according to the output section) a folder in "data/prokka_output_filtere?d"
+process check_gbk { 						  #start the process called check_gbk
+	publishDir 'data/prokka_output_filtered', overwrite: true #publishDir is a directive that allows you to publish the process output files in a specified folder. Could we also specify the output location in the output section? Or in the ouput you specify only the channel, such as checked_gbks while here instead you define the folder "data/prokka_output_filtered", so that the exact location in your machine where the outputs go?
 	container "$params.annotation_container" #this container directive should be used to specify the Docker image in which we can run the script. Here I think we call different container according to the params we want/(ask for?. He read this in the introduction "The idea is to be able to pass the parameters to external python scripts") 
 							#are these containers in another of our folder that will be used by the tool when run on the web or downloaded by the user if he uses the command line?
 	input:
-	    file prokka_file from gbk_from_local_assembly.collect() # prokka file should come from gbk_from_local_assembly.collect(), but what is it? Following the tutorial it should be a channel (I may interpret as a folder), but before "process" there are some instructions for the channel with also part of the name "gbk_from_local_assembly.collect()", how do I find the link between them? 
-								    #I am also wondering where these prokka_files come from or what they refer to (maybe .gbk sice it is one of the output generated by prokka and above there is this: "it[1].extension!="gbk")
+	    file prokka_file from gbk_from_local_assembly.collect() #prokka file should be those .gbk files which are called from the list generated by the .collect operator which collects the items emitted by a channel (gbk_from_local_assembly, previously created which should contains only .gbk files) in a list.    
+								    #I am also wondering where these prokka_files come from or what they refer to (at first sigth I will say that they are generated by prokka, since .gbk files are one of its outputs, but I am not sure if you actually need to submit prokka files or it is ana anlysis done by "us" on the submitted genomes)
 	output:
-	    file "*_filtered.gbk" into checked_gbks
+	    file "*_filtered.gbk" into checked_gbks #the outputs sould be put in the channel called checked_gbks
 
 	script:
-	""" #three quotes because it is a multiline string, then they are double to let you access to system environment variables and variables defined in the pipeline script context.
+	""" #three quotes because it is a multiline string, then they are double to let you access to system environment variables and variables defined in the pipeline script context (ask about this issue better)
 #!/usr/bin/env python
-import annotations
+import annotations     #ptyhon library
 
-gbk_files = "${prokka_file}".split() #it takes the prokka_file given as output and since it is a variable we put $ and {}. But what about the double quotes? is associated also to the python way of writing or because we are using another language from the defult one?
-annotations.check_organism_uniqueness(gbk_files) #use function"check_organism_uniqueness" from annotation library on the gbk_files generated.
-annotations.filter_out_unannotated(gbk_files)
-	"""
+gbk_files = "${prokka_file}".split() #it takes the prokka_file given as input and since it is a variable we put $ and {}. Are the double quotes mandatory since we call a variable into the pipeline (see isue of where the variables must be define dabove) or is it something associated to Python language? (just for curiosity and to understand the differences with the single quotes)
+annotations.check_organism_uniqueness(gbk_files) #use function"check_organism_uniqueness" from annotation library on the gbk_files treated
+annotations.filter_out_unannotated(gbk_files)# I do not know if in this step a check of the content is done, and also how #moreover are these functions already present in the library (I do not think so beacuse they are too specific, but this will also imply that the annotation library had been modified and that version is the one that should be downloaded) 
+	"""					#do you know in advance that the ouput of the funcitons used has this format "*_filtered.gbk"?
 }
 
 
