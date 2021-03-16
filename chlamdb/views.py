@@ -1083,7 +1083,7 @@ def venn_orthogroup(request):
         return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
 
     targets = form_venn.get_taxids()
-    genomes = db.get_genomes_description(targets)
+    genomes = db.get_genomes_description()
     og_count = db.get_og_count(targets)
     fmt_data = []
     for taxon in og_count:
@@ -14375,19 +14375,17 @@ def orthogroup_comparison(request):
         return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
 
     try:
-        bioentries = [int(i) for i in form.cleaned_data["targets"]]
+        all_targets = form.get_choices()
     except:
         # TODO: add error message
         return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
 
-    all_targets = db.get_bioentries_in_taxon(bioentries)
-    genomes = db.get_genomes_description(bioentries, indexing="taxon_id", indexing_type="int")
-
-    og_count = db.get_og_count(all_targets["bioentry"].tolist(),
-            search_on="bioentry", indexing="taxon_id")
-    og_count.columns = [genomes[col] for col in og_count.columns]
+    genomes = db.get_genomes_description().description.to_dict()
+    og_count = db.get_og_count(all_targets)
+    og_count.columns = [genomes[int(col)] for col in og_count.columns]
     annotations = db.get_genes_from_og(orthogroups=og_count.index.tolist(),
-            bioentries=all_targets["bioentry"].tolist())
+            taxon_ids=all_targets, terms=["product"])
+
     products = annotations.groupby("orthogroup")["product"].apply(list)
     n_orthogroups = len(og_count.index)
 

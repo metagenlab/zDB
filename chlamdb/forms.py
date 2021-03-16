@@ -148,10 +148,13 @@ def make_interpro_from(database_name):
 
 def make_metabo_from(db, add_box=False):
 
-    accession_choices = get_accessions(db)
+    accession_choices, rev_index = get_accessions(db)
 
     class MetaboForm(forms.Form):
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (20), "class":"selectpicker", "data-live-search":"true"}), required = False)
+        targets = forms.MultipleChoiceField(choices=accession_choices,
+                widget=forms.SelectMultiple(attrs={'size':'%s' % (20), "class":"selectpicker", "data-live-search":"true"}),
+                required = False)
+
         if add_box:
             input_box = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
 
@@ -183,6 +186,13 @@ def make_metabo_from(db, add_box=False):
                                             )
             super(MetaboForm, self).__init__(*args, **kwargs)
 
+        def get_choices(self):
+            targets = self.cleaned_data["targets"]
+            taxids = []
+            for index in targets:
+                taxid, _ = rev_index[int(index)]
+                taxids.append(taxid)
+            return taxids
 
     return MetaboForm
 
