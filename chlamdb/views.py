@@ -1932,36 +1932,36 @@ def venn_cog(request, sep_plasmids=False):
 
     display_form = True
     venn_form_class = make_venn_from(db, limit=6, label="COG")
-    if request.method == 'POST': 
-        form_venn = venn_form_class(request.POST)
-
-        if form_venn.is_valid():  
-            targets = form_venn.cleaned_data['targets']
-
-            all_targets = db.get_bioentries_in_taxon(bioentries=targets)["bioentry"].tolist()
-            cog_hits = db.get_cog_hits(all_targets, indexing="taxon_id")
-            genome_desc = db.get_genomes_description(entries=targets, indexing_type="int")
-
-            series_tab = []
-            for target, description in genome_desc.items():
-                cogs = cog_hits[target]
-                non_zero_cogs = cogs[cogs > 0]
-                data = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.iteritems())
-                series_tab.append( f"{{name: \"{genome_desc[target]}\", data: [{data}]}}" )
-            series = "[" + ",".join(series_tab) + "]"
-
-            cog2description_l = []
-            data = db.get_cog_summaries(cog_hits.index.tolist())
-
-            for name, lst_results in data.items():
-                # NOTE: will need to remove the strip when the bug in the database will be fixed
-                for func, func_descr, cog_descr in lst_results:
-                    cog2description_l.append(f"h[\"{format_cog(name)}\"] = \"{func} ({func_descr.strip()}) </td><td>{cog_descr}\"")
-            cog2description = ";".join(cog2description_l)
-            envoi_venn = True
-
-    else:  
+    if request.method != "POST":
         form_venn = venn_form_class()
+        return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
+
+    form_venn = venn_form_class(request.POST)
+    if not form_venn.is_valid():
+        # TODO: add error message
+        return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
+
+    targets = form_venn.get_taxids()
+    cog_hits = db.get_cog_hits(targets, indexing="taxid", search_on="taxid")
+    genome_desc = db.get_genomes_description().description.to_dict()
+
+    series_tab = []
+    for target in targets:
+        cogs = cog_hits[target]
+        non_zero_cogs = cogs[cogs > 0]
+        data = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.iteritems())
+        series_tab.append( f"{{name: \"{genome_desc[target]}\", data: [{data}]}}" )
+    series = "[" + ",".join(series_tab) + "]"
+
+    cog2description_l = []
+    data = db.get_cog_summaries(cog_hits.index.tolist())
+
+    for name, lst_results in data.items():
+        # NOTE: will need to remove the strip when the bug in the database will be fixed
+        for func, func_descr, cog_descr in lst_results:
+            cog2description_l.append(f"h[\"{format_cog(name)}\"] = \"{func} ({func_descr.strip()}) </td><td>{cog_descr}\"")
+    cog2description = ";".join(cog2description_l)
+    envoi_venn = True
 
     return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
 
@@ -12315,7 +12315,7 @@ def plot_heatmap(request, type):
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
-    target2description = db.get_genomes_description(taxon_ids).description.to_dict()
+    target2description = db.get_genomes_description().description.to_dict()
     mat.columns = (target2description[int(i)] for i in mat.columns.values)
     cur_time = datetime.now().strftime("%H%M%S")
 
