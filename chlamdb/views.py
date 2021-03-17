@@ -5161,6 +5161,7 @@ def sunburst(request, locus):
 
     return render(request, 'chlamdb/sunburst.html', my_locals(locals()))
 
+
 def get_cog(request, bioentry, category):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
@@ -5201,6 +5202,7 @@ def get_cog(request, bioentry, category):
     target_taxons.pop(target_taxons.index(bioentry))
     circos_url += "t="+('&t=').join((target_taxons)) + '&h=' + ('&h=').join(locus_list)
     return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
+
 
 def get_cog_multiple(request, category, accessions=False):
     biodb = settings.BIODB
@@ -6188,83 +6190,90 @@ def orthogroup_list_cog_barchart(request, accessions=False):
 
 
 def cog_barchart(request):
+    # Not too happy with this code
+    # should be reviewed and the old hashes replaced by pandas
+    # operations
+
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
     venn_form_class = make_venn_from(db)
 
-    if request.method == 'POST':
-        form = venn_form_class(request.POST)
-
-        if form.is_valid():
-
-            target_bioentries = [int(i) for i in form.cleaned_data['targets']]
-            hsh_counts = db.get_cog_counts_per_category(target_bioentries)
-            taxon2description = db.get_genomes_description(entries = target_bioentries)
-            category_dico = db.get_cog_code_description()
-
-            # create a dictionnary to convert cog category description and one letter code
-            category_map = 'var description2category = {'
-            for i in category_dico:
-                category_map+='"%s":"%s",' % (category_dico[i], i)
-            category_map = category_map[0:-1] + '};'
-
-            taxon_map = 'var taxon2description = {'
-            for i in taxon2description:
-                taxon_map+='"%s":"%s",' % (i, taxon2description[i])
-            taxon_map = taxon_map[0:-1] + '};'
-
-            # Not too happy with this code and its level of indentation
-            # Could also be made faster by avoiding string comparisons and list lookup
-            taxon2category2count = {}
-            all_categories = []
-            for bioentry, hsh_cnt in hsh_counts.items():
-                bioentry_str = str(bioentry)
-                if bioentry_str not in taxon2category2count:
-                    taxon2category2count[bioentry_str] = {}
-
-                for func, cnt in hsh_cnt.items():
-                    # a cog can have multiple functions
-                    for i in range(0, len(func)):
-                        f = func[i]
-                        category = category_dico[f]
-                        if category in taxon2category2count[bioentry_str]:
-                            taxon2category2count[bioentry_str][category] += cnt
-                        else:
-                            taxon2category2count[bioentry_str][category] = cnt
-                            if category not in all_categories:
-                                all_categories.append(category)
-
-            labels_template = '[\n' \
-                              '%s\n' \
-                              ']\n'
-
-            serie_template = '[%s\n' \
-                             ']\n'
-
-            one_serie_template = '{\n' \
-                                 'label: "%s",\n' \
-                                 'values: [%s]\n' \
-                                 '},\n'
-
-
-            all_series_templates = []
-            for taxon in taxon2category2count:
-                one_category_list = []
-                for category in all_categories:
-                    count = taxon2category2count[taxon].get(category, 0)
-                    one_category_list.append(count)
-                one_category_list = [str(i) for i in one_category_list]
-
-                all_series_templates.append(one_serie_template % (taxon, ','.join(one_category_list)))
-
-            series = serie_template % ''.join(all_series_templates)
-            labels = labels_template % ('"'+'","'.join(all_categories) + '"')
-
-            circos_url = '?h=' + ('&h=').join([str(i) for i in target_bioentries])
-            envoi = True
-    else:  
+    if request.method != 'POST':
         form = venn_form_class()
+        print("FOO")
+        return render(request, 'chlamdb/cog_barplot.html', my_locals(locals()))
+
+    form = venn_form_class(request.POST)
+
+    if not form.is_valid():
+        print("Bar")
+        # add error message
+        return render(request, 'chlamdb/cog_barplot.html', my_locals(locals()))
+
+    target_bioentries = form.get_taxids()
+
+    hsh_counts = db.get_cog_counts_per_category(target_bioentries)
+    taxon2description = db.get_genomes_description().description.to_dict()
+    category_dico = db.get_cog_code_description()
+
+    # create a dictionnary to convert cog category description and one letter code
+    category_map = 'var description2category = {'
+    map_lst = (f"\"{func}\" : \"{func_descr}\"" for func, func_descr in category_dico.items())
+    category_map = category_map + ",".join(map_lst) + '};'
+
+    taxon_map = 'var taxon2description = {'
+    taxon_map_lst = (f"\"{target}\":\"{taxon2description[target]}\"" for target in target_bioentries)
+    taxon_map = taxon_map + ",".join(taxon_map_lst) + '};'
+
+    # Not too happy with this code and its level of indentation
+    # Could also be made faster by avoiding string comparisons and list lookup
+    taxon2category2count = {}
+    all_categories = []
+    for bioentry, hsh_cnt in hsh_counts.items():
+        bioentry_str = str(bioentry)
+        if bioentry_str not in taxon2category2count:
+            taxon2category2count[bioentry_str] = {}
+
+        for func, cnt in hsh_cnt.items():
+            # a cog can have multiple functions
+            for i in range(0, len(func)):
+                f = func[i]
+                category = category_dico[f]
+                if category in taxon2category2count[bioentry_str]:
+                    taxon2category2count[bioentry_str][category] += cnt
+                else:
+                    taxon2category2count[bioentry_str][category] = cnt
+                    if category not in all_categories:
+                        all_categories.append(category)
+
+    labels_template = '[\n' \
+                      '%s\n' \
+                      ']\n'
+
+    serie_template = '[%s\n' \
+                     ']\n'
+
+    one_serie_template = '{\n' \
+                         'label: "%s",\n' \
+                         'values: [%s]\n' \
+                         '},\n'
+
+
+    all_series_templates = []
+    for taxon in taxon2category2count:
+        one_category_list = []
+        for category in all_categories:
+            count = taxon2category2count[taxon].get(category, 0)
+            one_category_list.append(count)
+        one_category_list = [str(i) for i in one_category_list]
+
+        all_series_templates.append(one_serie_template % (taxon, ','.join(one_category_list)))
+
+    series = serie_template % ''.join(all_series_templates)
+    labels = labels_template % ('"'+'","'.join(all_categories) + '"')
+    envoi = True
     return render(request, 'chlamdb/cog_barplot.html', my_locals(locals()))
+
 
 def get_locus_annotations(biodb, locus_list):
 
