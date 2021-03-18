@@ -5162,45 +5162,34 @@ def sunburst(request, locus):
     return render(request, 'chlamdb/sunburst.html', my_locals(locals()))
 
 
-def get_cog(request, bioentry, category):
+def get_cog(request, taxon_id, category):
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = db_utils.DB.load_db_from_name(biodb)
 
-    # used for CIRCOS plos generation
-    target_taxons = [i for i in request.GET.getlist('h')]
-    cog_hits = db.get_cog_hits([bioentry], index_by_seqid=True)
-
-    cog_ids = set()
-    seqids = []
-    for seqid, ids in cog_hits.items():
-        seqids.append(seqid)
-        for cog_id in ids:
-            cog_ids.add(cog_id)
-
-    cog_summaries = db.get_cog_summaries(list(cog_ids), only_cog_desc=True)
-    prot_infos = db.get_proteins_info(seqids)
-    organisms = db.get_organism([bioentry], id_type = "bioentry")
+    cog_hits = db.get_cog_hits([int(taxon_id)], indexing="seqid", search_on="taxid")
+    cog_ids = cog_hits.cog.unique().tolist()
+    cog_summaries = db.get_cog_summaries(cog_ids, only_cog_desc=True)
+    prot_infos = db.get_proteins_info(cog_hits.index.unique().to_list())
+    organisms = db.get_genomes_description().description.to_dict()
     functions = db.get_cog_code_description()
 
     data = []
-    locus_list = []
-    for seqid, hits in cog_hits.items():
-        for cog_hit in hits:
-            if cog_hit not in cog_summaries:
-                continue
-            cog_func, cog_desc = cog_summaries[cog_hit]
-            if category not in cog_func:
-                continue
-            locus_tag = prot_infos[seqid][0]
-            product = prot_infos[seqid][3]
-            data.append([organisms[int(bioentry)], locus_tag, format_cog(cog_hit), cog_desc, product])
-            locus_list.append(locus_tag)
+    organism = organisms[int(taxon_id)]
+
+    for seqid, cog_hit_data in cog_hits.iterrows():
+        cog_id = cog_hit_data.cog
+        if cog_id not in cog_summaries:
+            print("Cog id unknown: ", cog_id)
+            continue
+        cog_func, cog_desc = cog_summaries[cog_id]
+        if category not in cog_func:
+            continue
+        locus_tag = prot_infos[seqid][0]
+        product = prot_infos[seqid][3]
+        data.append([organism, locus_tag, format_cog(cog_id), cog_desc, product])
 
     data_type = "cog"
     description = functions[category]
-    circos_url = '?ref=%s&' % bioentry
-    target_taxons.pop(target_taxons.index(bioentry))
-    circos_url += "t="+('&t=').join((target_taxons)) + '&h=' + ('&h=').join(locus_list)
     return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
 
 
@@ -6200,13 +6189,11 @@ def cog_barchart(request):
 
     if request.method != 'POST':
         form = venn_form_class()
-        print("FOO")
         return render(request, 'chlamdb/cog_barplot.html', my_locals(locals()))
 
     form = venn_form_class(request.POST)
 
     if not form.is_valid():
-        print("Bar")
         # add error message
         return render(request, 'chlamdb/cog_barplot.html', my_locals(locals()))
 
@@ -6218,7 +6205,7 @@ def cog_barchart(request):
 
     # create a dictionnary to convert cog category description and one letter code
     category_map = 'var description2category = {'
-    map_lst = (f"\"{func}\" : \"{func_descr}\"" for func, func_descr in category_dico.items())
+    map_lst = (f"\"{func_descr}\" : \"{func}\"" for func, func_descr in category_dico.items())
     category_map = category_map + ",".join(map_lst) + '};'
 
     taxon_map = 'var taxon2description = {'
