@@ -1886,22 +1886,19 @@ def venn_ko(request):
         form_venn = venn_form_class()
         return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
-    bioentries = [int(b) for b in form_venn.cleaned_data["targets"]]
-    genomes = db.get_genomes_description(bioentries)
-    ko_counts = db.get_ko_count(bioentries)
-    ko_counts = ko_counts.set_index(["bioentry", "KO"])
+    taxids    = form_venn.get_taxids()
+    genomes   = db.get_genomes_description().description.to_dict()
+    ko_counts = db.get_ko_count(taxids)
 
     fmt_data = []
-    ko_set = set()
-    for bioentry in bioentries:
-        kos = ko_counts.loc[bioentry].index.values
+    ko_list = ko_counts.index.get_level_values("KO").unique().to_list()
+    for taxid in taxids:
+        kos = ko_counts.loc[taxid].index.values
         kos_str = ",".join(f"{to_s(format_ko(ko))}" for ko in kos)
-        genome = genomes[str(bioentry)]
+        genome = genomes[taxid]
         fmt_data.append(f"{{name: {to_s(genome)}, data: [{kos_str}] }}")
-        ko_set = ko_set.union({ko for ko in kos })
     series = "[" + ",".join(fmt_data) + "]"
 
-    ko_list = list(ko_set)
     ko_descriptions = db.get_ko_desc(ko_list)
     ko2description = []
     for ko, ko_desc in ko_descriptions.items():
