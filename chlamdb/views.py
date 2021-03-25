@@ -3576,19 +3576,19 @@ def fam_cog(request, cog_id):
         return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
     seqids = df_seqid_to_cog.index.tolist()
-    orthogroups = db.get_og_count(seqids, search_on="seqid", indexing="seqid")
+    orthogroups = db.get_og_count(seqids, search_on="seqid")
     cog_info = db.get_cog_summaries([cog_id], only_cog_desc=True)
     all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
 
-    ref_tree = db.get_reference_phylogeny()
-    leaf_to_name = db.get_genomes_description(indexing="bioentry", exclude_plasmids=True)
+    ref_names = db.get_genomes_description()
+    ref_tree  = db.get_reference_phylogeny()
 
-    df_og_count = db.get_og_count(group_count)
-    df_cog_count = db.get_cog_hits(ids=[cog_id], indexing="bioentry", search_on="cog")
+    inter = df_seqid_to_cog.index.intersection(orthogroups.index)
+    to_color_red = db.get_taxid_from_seqid(inter.tolist())
+    print(to_color_red)
 
-    # build the different hashes necessary for multiple_profiles_heatmap
-    # TODO: reimplement using the new tree building lib. CAVE: need to
-    # use seqid for the clustering
+    df_og_count  = db.get_og_count(group_count)
+    df_cog_count = db.get_cog_hits(ids=[cog_id], indexing="taxid", search_on="cog")
 
     group_count = [format_orthogroup(og) for og in group_count]
     fam = format_cog(cog_id)
@@ -14414,13 +14414,13 @@ def ko_comparison(request):
     if not form.is_valid():
         return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
 
-    include = [int(i) for i in form.cleaned_data['targets']]
-    mat_include = db.get_ko_count(include)
-    mat_include = mat_include.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
+    include = form.get_choices()
+    mat_include = db.get_ko_count(include).unstack(level=0, fill_value=0)
     mat_include.columns = [col for col in mat_include["count"].columns.values]
 
     ko2annot = db.get_ko_desc(mat_include.index.tolist())
-    ko2total_count = db.get_ko_total_count(mat_include.index.tolist())["bioentry"].to_dict()
+    df_ttl   = db.get_ko_count(mat_include.index.tolist(), search_on="ko_id")
+    ko2total_count = df_ttl.groupby("KO").sum()["count"].to_dict()
     ko2counts = mat_include.to_dict()
     ko2counts = {}
     ko2_print = {}
@@ -14428,8 +14428,8 @@ def ko_comparison(request):
         ko2counts[key] = values.values.tolist()
         ko2_print[key] = format_ko(key)
 
-    hsh_gen_desc = db.get_genomes_description(include)
-    taxon_list = [hsh_gen_desc[str(col)] for col in mat_include.columns.values]
+    hsh_gen_desc = db.get_genomes_description().description.to_dict()
+    taxon_list = [hsh_gen_desc[int(col)] for col in mat_include.columns.values]
     n_ko = len(mat_include.index.tolist())
     envoi_comp = True
     return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
