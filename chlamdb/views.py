@@ -5480,10 +5480,6 @@ def module_cat_info(request, bioentry, category):
         piece = [organism, locus, format_ko(ko_id), ko_desc, product]
         data.append(piece)
     description = category
-    locus_list = [line[1] for line in data]
-    circos_url = '?ref=%s&' % bioentry
-    target_taxons.pop(target_taxons.index(bioentry))
-    circos_url += "t="+('&t=').join((target_taxons)) + '&h=' + ('&h=').join(locus_list)
     data_type = 'ko'
     return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
 
@@ -5495,6 +5491,7 @@ def js_bioentries_to_description(hsh):
     taxon_map = 'var taxon2description = { '
     mid = ",".join(f"{to_s(bioentry)}:{to_s(description)}" for bioentry, description in hsh.items())
     return taxon_map + mid + "};"
+
 
 def module_barchart(request):
     biodb = settings.BIODB_DB_PATH
@@ -5510,16 +5507,17 @@ def module_barchart(request):
         form = venn_form_class()
         return render(request, 'chlamdb/module_barplot.html', my_locals(locals()))
 
-    target_bioentries = form.cleaned_data['targets']
-    taxon2description = db.get_genomes_description(entries = target_bioentries)
-    ko_counts = db.get_ko_count(target_bioentries, keep_seqids=True)
-    ko_ids = ko_counts["KO"].unique()
+    taxids = form.get_taxids()
+    taxon2description = db.get_genomes_description().description.to_dict()
+
+    ko_counts = db.get_ko_count(taxids, keep_seqids=True, as_multi=False)
+    ko_ids = ko_counts.KO.unique()
     ko_module_ids = db.get_ko_modules(ko_ids.tolist(), as_pandas=True, compact=True)
     ko_modules_info = db.get_modules_info(ko_module_ids["module_id"].unique().tolist(), as_pandas=True)
 
     merged = ko_counts.merge(ko_module_ids, left_on="KO", right_on="ko_id", how="inner")
     merged = merged.merge(ko_modules_info, left_on="module_id", right_on="module_id", how="inner")
-    cat_count = merged[["bioentry", "subcat", "seqid"]].groupby(["bioentry", "subcat"]).nunique()
+    cat_count = merged[["taxid", "subcat", "seqid"]].groupby(["taxid", "subcat"]).nunique()
     subcategories_list = cat_count.index.unique(level="subcat").to_list()
     subcategories = ",".join(f"{to_s(cat)}" for cat in subcategories_list)
     labels = f"[{subcategories}]"
@@ -5531,19 +5529,18 @@ def module_barchart(request):
     # not ideal, but I'm really fed up with multi-indices. Be my guest
     # if you want to improve on this.
     cat_count_dict = cat_count["seqid"].to_dict()
-    bioentries = cat_count.index.unique(level="bioentry")
-    for bioentry in bioentries:
+    taxids = cat_count.index.unique(level="taxid")
+    for taxid in taxids:
         entry_data = []
         for subcat in subcategories_list:
-            if (bioentry, subcat) in cat_count_dict:
-                entry_data.append(cat_count_dict[(bioentry, subcat)])
+            if (taxid, subcat) in cat_count_dict:
+                entry_data.append(cat_count_dict[(taxid, subcat)])
             else:
                 entry_data.append(0)
         str_entry_data = (str(entry) for entry in entry_data)
-        string = f"{{ label: {to_s(bioentry)}, values : [" + ",".join(str_entry_data) + "]}"
+        string = f"{{ label: {to_s(taxid)}, values : [" + ",".join(str_entry_data) + "]}"
         series_data.append(string)
     series = "[" + ",".join(series_data) + "]"
-    circos_url = '?h=' + ('&h=').join(target_bioentries)
     envoi = True
     form = venn_form_class()
     return render(request, 'chlamdb/module_barplot.html', my_locals(locals()))
