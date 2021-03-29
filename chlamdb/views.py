@@ -3613,8 +3613,8 @@ def fam_ko(request, ko_str):
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb_path, settings.BIODB_CONF)
 
-    seqids = db.get_seqids_for_ko([ko_id], only_seqids=True)
-    hsh_seqid_to_og = db.get_og(seqids)
+    seqids = db.get_ko_hits([ko_id], indexing="seqid", search_on="ko").index.tolist()
+    hsh_seqid_to_og = db.get_og_count(seqids, search_on="seqid")
 
     pathways = db.get_ko_pathways([ko_id])
     modules = db.get_ko_modules([ko_id])
@@ -3626,7 +3626,7 @@ def fam_ko(request, ko_str):
     # quasi copy-past from fam_cog... this really needs some refactoring
     # TODO
     ref_tree = db.get_reference_phylogeny()
-    leaf_to_name = db.get_genomes_description(indexing="bioentry", exclude_plasmids=True)
+    leaf_to_name = db.get_genomes_description().description.to_dict()
     df_og_count = db.get_og_count(group_count)
     hsh_ko_count = db.get_ko_count_for_ko(ko_id)
     dico_tree = {}
