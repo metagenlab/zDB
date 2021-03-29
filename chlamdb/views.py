@@ -5464,7 +5464,7 @@ def module_cat_info(request, taxid, category):
     category = category.replace("+", " ")
     ko_counts = db.get_ko_count([taxid], keep_seqids=True, as_multi=False)
     ko_modules = db.get_ko_modules(ko_counts["KO"].values.tolist(), as_pandas=True, compact=True)
-    ko_modules_info = db.get_modules_info(ko_modules["module_id"].values.tolist(), as_pandas=True)
+    ko_modules_info = db.get_modules_info(ko_modules["module_id"].unique().tolist(), as_pandas=True)
     filtered_modules = ko_modules_info[ko_modules_info.subcat == category]
     selected_kos = filtered_modules.merge(ko_modules, left_on="module_id",
             right_on="module_id", how="inner")["ko_id"].unique()
