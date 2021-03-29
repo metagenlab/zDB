@@ -5446,27 +5446,31 @@ def ko_venn_subset(request, category):
     return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
 
-def module_cat_info(request, bioentry, category):
+def module_cat_info(request, taxid, category):
+    # Not really efficient code: it would be better
+    # to get the cat_id associated with category to select
+    # in the category list to avoid multiple string comparison
+
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb_path, settings.BIODB_CONF)
-    target_taxons = [i for i in request.GET.getlist('h')]
-    organisms = db.get_genomes_description([bioentry])
-    if len(organisms) == 0 or bioentry not in organisms:
+
+    organisms = db.get_genomes_description().description.to_dict()
+    taxid = int(taxid)
+    if len(organisms) == 0 or taxid not in organisms:
         return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
     else:
-        organism = organisms[bioentry]
+        organism = organisms[taxid]
 
     category = category.replace("+", " ")
-    ko_counts = db.get_ko_count([bioentry], keep_seqids=True)
+    ko_counts = db.get_ko_count([taxid], keep_seqids=True, as_multi=False)
     ko_modules = db.get_ko_modules(ko_counts["KO"].values.tolist(), as_pandas=True, compact=True)
     ko_modules_info = db.get_modules_info(ko_modules["module_id"].values.tolist(), as_pandas=True)
     filtered_modules = ko_modules_info[ko_modules_info.subcat == category]
     selected_kos = filtered_modules.merge(ko_modules, left_on="module_id",
             right_on="module_id", how="inner")["ko_id"].unique()
-    selected_seqids = ko_counts[ko_counts.KO.isin(selected_kos)]#selected_kos.merge(ko_counts, left_on="ko_id",
-            #right_on="KO", how="inner")
+    selected_seqids = ko_counts[ko_counts.KO.isin(selected_kos)]
     seqids = selected_seqids["seqid"].unique().tolist()
-    hsh_to_prot = db.get_proteins_info(seqids, bioentries=[bioentry])
+    hsh_to_prot = db.get_proteins_info(seqids)
     hsh_ko_desc = db.get_ko_desc(selected_kos.tolist())
 
     # description, locus, KO, KO name, KO description
