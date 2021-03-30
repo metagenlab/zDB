@@ -2332,11 +2332,11 @@ def tab_og_conservation_tree(db, group, compare_to=None):
     from ete3 import Tree
     
     ref_phylogeny = db.get_reference_phylogeny()
-    leaf_to_name = db.get_genomes_description(indexing="taxon_id", exclude_plasmids=True)
+    leaf_to_name = db.get_genomes_description().description.to_dict()
     
     # Note: as the orthogroup may either be in a plasmid or in the chromosome
     # of the bacteria, we need to index by taxon to group them (index on taxon)
-    count = db.get_og_count([group], search_on="orthogroup", indexing="taxon_id")
+    count = db.get_og_count([group], search_on="orthogroup")
 
     tree = Tree(ref_phylogeny)
     R = tree.get_midpoint_outgroup()
