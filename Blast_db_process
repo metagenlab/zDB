@@ -1,0 +1,20 @@
+nr_seqs.into { merged_faa_chunks     
+        to_uniparc_mapping
+        to_string_mapping
+        to_tcdb_mapping
+        to_pdb_mapping
+        to_oma_mapping
+        to_filter_sequences
+        to_make_blastdb} 
+
+
+process make_custom_blastdb {
+
+input:
+file 'nr.faa' into nr_seqs 
+output:
+file ‘blastdb*’ into custom_blastdb
+script:
+"""
+makeblastdb -in nr.faa file -input_type fasta -parse_seqids -dbtype prot -out blastdb
+}
