@@ -2296,7 +2296,7 @@ def tab_lengths(n_homologues, annotations):
 
 class SimpleTextColumn(Column):
     def __init__(self, header=None):
-        self.header=header
+        super().__init__(header)
 
     def get_face(self, index):
         return TextFace(index, fsize=7)
@@ -2569,7 +2569,7 @@ def locusx(request, locus=None, menu=True):
 
     optional2status = db.get_config_table()
     gene_loc = db.get_gene_loc([seqid])
-    og_inf   = db.get_og_count([seqid], search_on="seqid", indexing="seqid")
+    og_inf   = db.get_og_count([seqid], search_on="seqid")
     og_id    = int(og_inf.loc[seqid].orthogroup) # need to convert from numpy64 to int
     og_annot = db.get_genes_from_og(orthogroups=[og_id],
             terms=["locus_tag", "gene", "product", "length"])
