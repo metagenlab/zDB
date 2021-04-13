@@ -3557,10 +3557,20 @@ def format_locus(locus, to_url=False):
     return locus
 
 
+class FamCogColorFunc:
+    def __init__(self, og, red_color):
+        self.og = og
+        self.red_color = red_color
+
+    def get_color(self, taxid):
+        if (self.og, taxid) in self.red_color:
+            return "#FA5858"
+        else:
+            return EteTree.GREEN
+
+
 # TODO : add error handling
 def fam_cog(request, cog_id):
-    from chlamdb.phylo_tree_display import ete_motifs
-
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
     cog_id = int(cog_id[3:])
@@ -3568,35 +3578,49 @@ def fam_cog(request, cog_id):
     if request.method != "GET":
         return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
-    df_seqid_to_cog = db.get_cog_hits([cog_id], indexing="seqid", search_on="cog")
+    df_seqid_to_cog = db.get_cog_hits([cog_id], indexing="seqid", search_on="cog", keep_taxid=True)
     if len(df_seqid_to_cog)==0:
-        return render(request, 'chlamdb/fam.html', my_locals(locals()))
+        return render(request, 'chlamdb/fam.html', {"msg": f"No entry for {format_cog(cog_id)}"})
 
-    seqids = df_seqid_to_cog.index.tolist()
-    orthogroups = db.get_og_count(seqids, search_on="seqid")
-    cog_info = db.get_cog_summaries([cog_id], only_cog_desc=True)
+    seqids      = df_seqid_to_cog.index.tolist()
+    
+    # the (group, taxid) in this dataframe are those that should be colored in red
+    # in the profile (correspondance between a cog entry and an orthogroup)
+    orthogroups = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
+    cog_info    = db.get_cog_summaries([cog_id], only_cog_desc=True)
     all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
+    red_color = set(tuple(entry) for entry in orthogroups.to_numpy())
 
-    ref_names = db.get_genomes_description()
+    ref_names = db.get_genomes_description().description.to_dict()
     ref_tree  = db.get_reference_phylogeny()
 
-    inter = df_seqid_to_cog.index.intersection(orthogroups.index)
-    to_color_red = db.get_taxid_from_seqid(inter.tolist())
-    print(to_color_red)
+    df_og_count  = db.get_og_count([int(i) for i in group_count], search_on="orthogroup").T
+    df_cog_count = df_seqid_to_cog.groupby(["taxid"]).count()
 
-    df_og_count  = db.get_og_count(group_count)
-    df_cog_count = db.get_cog_hits(ids=[cog_id], indexing="taxid", search_on="cog")
+    tree = Tree(ref_tree)
+    R = tree.get_midpoint_outgroup()
+    tree.set_outgroup(R)
+    tree.ladderize()
+    e_tree = EteTree(tree)
+    e_tree.rename_leaves(ref_names)
 
-    group_count = [format_orthogroup(og) for og in group_count]
-    fam = format_cog(cog_id)
-    big = False #len(labels) > 30
-    info = [cog_info[cog_id][1], ""]
-    type = "cog"
-    path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
-    asset_path = '/temp/fam_tree_%s.png' % fam
+    face_params = {"color": EteTree.RED}
+    e_tree.add_column(SimpleColorColumn.fromSeries(df_cog_count.cog,
+        header=format_cog(cog_id), face_params=face_params))
+
+    for og in df_og_count:
+        og_serie = df_og_count[og]
+        color_chooser = FamCogColorFunc(og, red_color)
+        col_column = SimpleColorColumn(og_serie.to_dict(), header=format_orthogroup(og),
+                col_func=color_chooser.get_color)
+        e_tree.add_column(col_column)
+
+    asset_path = f"/temp/fam_tree_{cog_id}.svg"
+    path = settings.BASE_DIR+"/assets/"+asset_path
+    e_tree.render(path, dpi=500)
+
     menu = True
     envoi = True
-    # tree.render(path, dpi=300, tree_style=style)
     return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
 
@@ -4877,7 +4901,7 @@ def KEGG_module_map(request, module_name):
 
     ko_ids = db.get_module_kos(module_id)
     map_data = [(format_ko(ko_id), ko_desc) for ko_id, ko_desc in db.get_ko_desc(ko_ids).items()]
-    leaf_to_name = db.get_genomes_description(indexing="bioentry")
+    leaf_to_name = db.get_genomes_description().description.to_dict()
     mat = db.get_ko_count_for_ko(ko_ids)
     if len(mat.index) == 0:
         # should add an error message: no gene was associated for any
