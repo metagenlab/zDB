@@ -45,10 +45,7 @@
                                   <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
                                   <li><a href="#tab2" data-toggle="tab">Protein list</a></li>
                                   <li><a href="#tab3" data-toggle="tab">Profile</a></li>
-                                  {% if type == 'cog' %}
-                                      <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'eggnog_profile' fam 'phylum' %}', 'orthoIDframe2'); return false">Taxonomic profile (phylum)</a></li>
-                                      <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'eggnog_profile' fam 'order' %}', 'orthoIDframe2'); return false">Taxonomic profile (order)</a></li>
-                                  {% elif type == 'pfam' %}
+                                  {% if type == 'pfam' %}
                                       <li><a href="{% url 'pfam_profile' fam 'phylum' %}">Taxonomic profile (phylum)</a></li>
                                       <li><a href="{% url 'pfam_profile' fam 'order' %}">Taxonomic profile (order)</a></li>
                                   {% elif type == 'Pfam' %}

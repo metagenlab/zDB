@@ -3619,6 +3619,7 @@ def fam_cog(request, cog_id):
     path = settings.BASE_DIR+"/assets/"+asset_path
     e_tree.render(path, dpi=500)
 
+    type = "cog"
     menu = True
     envoi = True
     return render(request, 'chlamdb/fam.html', my_locals(locals()))
@@ -5394,35 +5395,42 @@ def get_ko_multiple(request, type, category):
 
     return render(request, 'chlamdb/ko_info_multiple.html', my_locals(locals()))
 
+
 def cog_venn_subset(request, category):
-    biodb = settings.BIODB
-    server, db = manipulate_biosqldb.load_db(biodb)
-    targets = [i for i in request.GET.getlist('h')]
-    if len(targets)> 5:
+    # Note: add error handling
+
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+
+    targets = [int(i) for i in request.GET.getlist('h')]
+    if len(targets)>5:
         targets = targets[0:6]
 
-    server, db = manipulate_biosqldb.load_db(biodb)
+    cog_hits    = db.get_cog_hits(targets, indexing="taxid", search_on="taxid")
+    genome_desc = db.get_genomes_description().description.to_dict()
+    cog_description = db.get_cog_summaries(cog_hits.index.tolist(), only_cog_desc=True, as_df=True)
+    selected_cogs   = cog_description[cog_description.function.str.contains(category)]
+    cog_codes       = db.get_cog_code_description()
+    func_descr  = cog_codes[category]
 
-    all_cog_list = []
-    series = '['
-    taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+    cog2description_l = []
+    for cog, data in selected_cogs.iterrows():
+        name = data.description
+        func = data.function
+        cog2description_l.append(f"h[\"{format_cog(cog)}\"] = \"{func} ({func_descr.strip()}) </td><td>{name}\"")
+    cog2description = ";".join(cog2description_l)
+
+    sel_cog_ids = selected_cogs.index
+    cog_hits = cog_hits.reindex(sel_cog_ids)
+
+    series_tab = []
     for target in targets:
-        template_serie = '{name: "%s", data: %s}'
-        sql = 'select A.id from (select id from comparative_tables_COG where `%s` > 0) A' \
-              ' inner join COG_cog_names_2014 as t2 on A.id=t2.COG_id where function="%s";' % (target, category)
-        cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-        all_cog_list += cogs
-        data = '"' + '","'.join(cogs) + '"'
-        series+=template_serie % (taxon_id2genome[target], cogs) + ','
-    series = series[0:-1] + ']'
-    cog2description = []
-    sql = 'select * from COG_cog_names_2014 where function="%s"' % category
-    data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    for i in data:
-        if i in all_cog_list:
-            cog2description.append('h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1]))
-        else:
-            pass
+        cogs = cog_hits[target]
+        non_zero_cogs = cogs[cogs > 0]
+        data = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.iteritems())
+        series_tab.append( f"{{name: \"{genome_desc[target]}\", data: [{data}]}}" )
+    series = "[" + ",".join(series_tab) + "]"
+
     display_form = False
     envoi_venn = True
     return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
@@ -6278,6 +6286,7 @@ def cog_barchart(request):
 
         all_series_templates.append(one_serie_template % (taxon, ','.join(one_category_list)))
 
+    taxids = "?" + "&".join((f"h={i}" for i in target_bioentries))
     series = serie_template % ''.join(all_series_templates)
     labels = labels_template % ('"'+'","'.join(all_categories) + '"')
     envoi = True

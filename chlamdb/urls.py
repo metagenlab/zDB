@@ -144,6 +144,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^annotation_overview/$', views.annotation_overview, name="annotation_overview"),
                        url(r'^venn_cog/$', views.venn_cog, name="venn_cog"),
                        url(r'^interpro_taxonomy/$', views.interpro_taxonomy, name="interpro_taxonomy"),
+                       url(r'^cog_venn_subset/([A-Z])$', views.cog_venn_subset, name="cog_venn_subset"),
                        url(r'^venn_cog/([a-zA-Z0-9_]+)$$', views.venn_cog, name="venn_cog"),
                        url(r'^venn_ko/$', views.venn_ko, name="venn_ko"),
                        url(r'^extract_interpro/$', views.extract_interpro, name="extract_interpro"),

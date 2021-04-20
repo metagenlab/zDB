@@ -191,17 +191,16 @@
                           return data.labels[Math.floor(i/data.series.length)];
                         else
                           return ""})
-                          // "/chlamdb/venn_cog/{{biodb}}/" + "/" + category + "{{circos_url|safe}}"
                       .on("click",drill2);
 
                   function drill(d, i) {
                       var taxon = data.series[d3.select(this.parentNode).attr("taxon_id")].label; //data object
                       var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
-                      window.open("/chlamdb/get_cog/" + taxon + "/" + category + "{{circos_url|safe}}");
+                      window.open("/chlamdb/get_cog/" + taxon + "/" + category + "{{taxids|safe}}");
                   }
                   function drill2(d,j) {
                           var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
-                          window.open("/chlamdb/cog_venn_subset/" + category + "{{circos_url|safe}}") };
+                          window.open("/chlamdb/cog_venn_subset/" + category + "{{taxids|safe}}") };
 
                   //bar.on("click", drill);
 
