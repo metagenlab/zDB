@@ -3587,7 +3587,7 @@ def fam_cog(request, cog_id):
     # the (group, taxid) in this dataframe are those that should be colored in red
     # in the profile (correspondance between a cog entry and an orthogroup)
     orthogroups = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
-    cog_info    = db.get_cog_summaries([cog_id], only_cog_desc=True)
+    cog_info    = db.get_cog_summaries([cog_id])
     all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
     red_color = set(tuple(entry) for entry in orthogroups.to_numpy())
 
@@ -3619,6 +3619,7 @@ def fam_cog(request, cog_id):
     path = settings.BASE_DIR+"/assets/"+asset_path
     e_tree.render(path, dpi=500)
 
+    info = cog_info[cog_id][0]
     type = "cog"
     menu = True
     envoi = True

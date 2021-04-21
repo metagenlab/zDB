@@ -172,6 +172,16 @@
                                                                     <td> N/A </td>
                                                                 </tr>
                                                             {% endif %}
+
+														{% elif type == "cog" %}
+                                                            <tr>
+                                                                <th style="width:160px">Description</th>
+                                                                <td> {{ info.2 }} </td>
+                                                            </tr>
+															<tr>
+                                                                <th style="width:160px">Function</th>
+																<td> {{ info.1 }} ({{ info.0 }})</td>
+															</tr>
             
                                                         {% else %}
                                                             <tr>
