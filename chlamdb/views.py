@@ -3590,7 +3590,6 @@ def fam_cog(request, cog_id):
     cog_info    = db.get_cog_summaries([cog_id])
     all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
     red_color = set(tuple(entry) for entry in orthogroups.to_numpy())
-
     ref_names = db.get_genomes_description().description.to_dict()
     ref_tree  = db.get_reference_phylogeny()
 
@@ -3619,6 +3618,7 @@ def fam_cog(request, cog_id):
     path = settings.BASE_DIR+"/assets/"+asset_path
     e_tree.render(path, dpi=500)
 
+    group_count = (format_orthogroup(og, to_url=True) for og in group_count)
     info = cog_info[cog_id][0]
     type = "cog"
     menu = True

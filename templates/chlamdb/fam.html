@@ -317,7 +317,7 @@
                                                         <div style="padding-left:40px">
                                                             <ul style="list-style-type:disc;">
                                                                     {% for group in group_count %}
-                                                                    <li><a href="{% url 'orthogroup' group %}">{{group}}</a></li>
+                                                                    <li>{{group|safe}}</li>
                                                                     {% endfor %}
                                                             </ul>
                                                         </div>
