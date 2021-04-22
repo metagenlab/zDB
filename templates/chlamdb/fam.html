@@ -203,10 +203,11 @@
                                                             <table class="table table-striped" style="width: 100%">
                                                                 <tbody>
                                                                     {% for path in pathway_data %}
+
                                                                     <tr>
-                                                                        <td style="width:160px"><a href="{% url 'KEGG_mapp_ko' path.0 %}">{{path.0}}</a></td>
-                                                                        <td>{{path.1}}</td>
+                                                                        <td>{{path|safe}}</td>
                                                                     </tr>
+
                                                                     {% endfor %}
                                                                 </tbody>
                                                             </table>
@@ -220,10 +221,9 @@
                                                                         <tbody>
                                                                             {% for path in module_data %}
                                                                                 <tr>
-                                                                                    <td style="width:160px"><a href="{% url 'KEGG_module_map' path.0 %}">{{path.0}}</a></td>
+                                                                                    <td>{{path.0|safe}}</td>
                                                                                     <td>{{path.1}}</td>
                                                                                     <td>{{path.2}}</td>
-                                                                                    <td>{{path.3}}</td>
                                                                                 </tr>
                                                                             {% endfor %}
                                                                         </tbody>

@@ -535,7 +535,7 @@ def get_optional_annotations(db, seqids):
         annotations.append(cog_hits)
     if config_table.get("COG", False):
         header.append("COG")
-        ko_hits = db.get_ko_hits(seqids, indexing="seqid", search_on="seqid", )
+        ko_hits = db.get_ko_hits(seqids, search_on="seqid")
         annotations.append(ko_hits)
 
     if len(annotations)==2:
@@ -1254,18 +1254,31 @@ def format_ko_url(ko_id):
     return format_ko(ko_id, as_url=True)
 
 
-def format_ko_path(hsh_pathways, ko):
+def format_ko_path(hsh_pathways, ko, as_list=False):
     pathways = hsh_pathways.get(ko, [])
     if len(pathways) == 0:
+        if as_list:
+            return []
         return "-"
-    return "<br>".join([f"<a href=\"/KEGG_mapp_ko/map{i:05d}\">{d}</a>" for i, d in pathways])
+    fmt_lst = (f"<a href=\"/KEGG_mapp_ko/map{i:05d}\">{d}</a>" for i, d in pathways)
+    
+    if as_list:
+        return list(fmt_lst)
+    return "<br>".join(fmt_lst)
+
+
+def format_ko_module(module_id, module_desc=None):
+    if module_desc is None:
+        return f"<a href=\"/KEGG_module_map/M{module_id:05d}\">M{module_id:05d}</a>"
+    else:
+        return f"<a href=\"/KEGG_module_map/M{module_id:05d}\">{module_desc}</a>"
 
 
 def format_ko_modules(hsh_modules, ko):
     modules = hsh_modules.get(ko, [])
     if len(modules) == 0:
         return "-"
-    return "<br>".join([f"<a href=\"/KEGG_module_map/M{i:05d}\">{d}</a>" for i, d in modules])
+    return "<br>".join([format_ko_modules(i, d) for i, d in modules])
 
 
 def extract_ko(request):
@@ -2370,7 +2383,7 @@ def tab_og_conservation_tree(db, group, compare_to=None):
 
 
 def og_tab_get_kegg_annot(db, seqids):
-    ko_hits = db.get_ko_hits(seqids, indexing="seqid", search_on="seqid")
+    ko_hits = db.get_ko_hits(seqids, search_on="seqid")
     if ko_hits.empty:
         return {}
 
@@ -3618,7 +3631,7 @@ def fam_cog(request, cog_id):
     path = settings.BASE_DIR+"/assets/"+asset_path
     e_tree.render(path, dpi=500)
 
-    group_count = (format_orthogroup(og, to_url=True) for og in group_count)
+    group_count = [format_orthogroup(og, to_url=True) for og in group_count]
     info = cog_info[cog_id][0]
     type = "cog"
     menu = True
@@ -3633,64 +3646,55 @@ def format_module(mod_id):
     return f"M{mod_id:05d}"
 
 def fam_ko(request, ko_str):
-    from chlamdb.phylo_tree_display import ete_motifs
-
     ko_id = int(ko_str[len("K"):])
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb_path, settings.BIODB_CONF)
 
-    seqids = db.get_ko_hits([ko_id], indexing="seqid", search_on="ko").index.tolist()
-    hsh_seqid_to_og = db.get_og_count(seqids, search_on="seqid")
+    df_ko_hits  = db.get_ko_hits([ko_id], search_on="ko", keep_taxid=True)
+    seqids      = df_ko_hits.index.tolist()
+    seqid_to_og = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
+    red_color   = set(tuple(entry) for entry in seqid_to_og.to_numpy())
 
     pathways = db.get_ko_pathways([ko_id])
-    modules = db.get_ko_modules([ko_id])
+    modules  = db.get_ko_modules([ko_id])
     modules_id = [mod_id for key, values in modules.items() for mod_id, desc in values]
     modules_data = db.get_modules_info(modules_id)
-    ko_description = db.get_ko_desc([ko_id])
-    all_locus_data, group_count = get_all_prot_infos(db, seqids, hsh_seqid_to_og)
+    ko_desc      = db.get_ko_desc([ko_id])[ko_id]
+    all_locus_data, group_count = get_all_prot_infos(db, seqids, seqid_to_og)
 
-    # quasi copy-past from fam_cog... this really needs some refactoring
-    # TODO
-    ref_tree = db.get_reference_phylogeny()
+    pathway_data = format_ko_path(pathways, ko_id, as_list=True)
+    module_data = [(format_ko_module(mod_id), cat, mod_desc)
+            for mod_id, mod_desc, mod_def, path, cat in modules_data]
+
+    ref_tree     = db.get_reference_phylogeny()
     leaf_to_name = db.get_genomes_description().description.to_dict()
-    df_og_count = db.get_og_count(group_count)
-    hsh_ko_count = db.get_ko_count_for_ko(ko_id)
-    dico_tree = {}
-    for og in group_count:
-        dico_tree[format_orthogroup(og)] = {}
-    dico_tree[format_ko(ko_id)] = {}
+    df_og_count  = db.get_og_count([int(og) for og in group_count], search_on="orthogroup").T
+    df_ko_count  = df_ko_hits.groupby(["taxid"]).count()
 
-    for index, values in df_og_count.iterrows():
-        for entry, count in values.iteritems():
-            dico_tree[format_orthogroup(index)][str(entry)] = count
-    for bioentry, count in hsh_ko_count.items():
-        dico_tree[format_ko(ko_id)][str(bioentry)] = count
+    tree = Tree(ref_tree)
+    R = tree.get_midpoint_outgroup()
+    tree.set_outgroup(R)
+    tree.ladderize()
+    e_tree = EteTree(tree)
+    e_tree.rename_leaves(leaf_to_name)
 
-    taxon2group2ec = {}
-    for index, values in df_og_count.iterrows():
-        for entry, count in values.iteritems():
-            if not entry in hsh_ko_count:
-                continue
-            if str(entry) not in taxon2group2ec:
-                taxon2group2ec[str(entry)] = {}
-            taxon2group2ec[str(entry)][format_orthogroup(index)] = [format_ko(ko_id)]
+    face_params = {"color": EteTree.RED}
+    e_tree.add_column(SimpleColorColumn.fromSeries(df_ko_count.ko,
+        header=format_ko(ko_id), face_params=face_params))
 
-    fam = ko_str
-    labels = [fam] + [format_orthogroup(og) for og in group_count]
-    tree, style = ete_motifs.multiple_profiles_heatmap(None,
-                                                      labels,
-                                                      dico_tree,
-                                                      taxon2group2value=taxon2group2ec,
-                                                      highlight_first_column=True,
-                                                      tree=ref_tree,
-                                                      leaf_to_name=leaf_to_name)
-    pathway_data = [(format_pathway(pat_id), pat_desc)
-            for ko_id, infos in pathways.items() for pat_id, pat_desc in infos]
-    module_data = [(format_module(dat[0]), dat[3], dat[4], dat[1]) for dat in modules_data]
-    ko_desc = ko_description[ko_id]
-    path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
-    asset_path = '/temp/fam_tree_%s.png' % fam
-    tree.render(path, dpi=300, tree_style=style)
+    for og in df_og_count:
+        og_serie = df_og_count[og]
+        color_chooser = FamCogColorFunc(og, red_color)
+        col_column = SimpleColorColumn(og_serie.to_dict(), header=format_orthogroup(og),
+                col_func=color_chooser.get_color)
+        e_tree.add_column(col_column)
+
+    fam  = format_ko(ko_id)
+    group_count = [format_orthogroup(og, to_url=True) for og in group_count]
+    asset_path = f"/temp/fam_tree_{fam}.svg"
+    path = settings.BASE_DIR + f"/assets/{asset_path}"
+
+    e_tree.render(path, dpi=500)
     type = "ko"
     menu = True
     envoi = True
