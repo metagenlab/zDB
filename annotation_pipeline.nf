@@ -260,9 +260,9 @@ faa_locus1.into { faa_genomes1
                   to_macsysfinder 
                   inc_effectors_prediction }
 
-faa_locus2.collectFile(name: 'merged.faa', newLine: true) #collectFile let you collect the items that come from a channel and save them in one/more files directing them in a new channel (maybe faa_locus2). Name indicates the name of the file where all received values are stored, while newLine: Appends a newline character automatically after each entry (default: false).
-    .set { merged_faa0 } #assigned the channel to the variable. QUESTION: if the previous line (collectfile) collects the file in the new channel called faa_locus2, why do we need to give a variable name to it with set? Couldn't we avoid it? I see that in the input this channel is called, but why do we need this "change in the name" (I may miss something important, such as that faa_locus2 is not the new channel generated or something else (I checked and before the ouput channel identified in the output section for the first time was then call again as a channel))
-
+faa_locus2.collectFile(name: 'merged.faa', newLine: true) #collectFile let you collect the items that come from a channel and save them in one/more files directing them in a new channel Name indicates the name of the file where all received values are stored, while newLine: Appends a newline character automatically after each entry (default: false).
+    .set { merged_faa0 } #assigned the channel to the variable. 
+    
 
 process get_nr_sequences {		#name of the process
 
@@ -272,7 +272,7 @@ process get_nr_sequences {		#name of the process
 
   input:
   file(seq) from merged_faa0
-  file genome_list from faa_genomes4.collect()  #what defined the content of faa_genomes4??? Before we just see that faa_locus1 will be split in 7 channels and one is faa_genomes4, but we do not know how and faa_genomes4 is not mentioned antwhere except here?
+  file genome_list from faa_genomes4.collect()  #here .collect generates a list of the files contained in faa_genomes4 channel
 
   output:
 
