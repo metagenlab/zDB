@@ -69,38 +69,57 @@ str_pythonized_params = gen_python_args()
 
 
 // Input processing
-Channel.fromPath(params.local_assemblies) #this is the way to create a channel which emits one or more file path. I think that here you establish a channel that takes the data from "params.local_assemblies", still to unsertand where this params.local_assemblies comes since I do not find this anywhere in the pipeline, even if based on what follows they are .csv tables
-    .splitCsv(header: true, strip: true) #the splitCsv operator let you split the .csv files emitted by the channel according to the header of the csv files and the strip parameter removes the initial and terminal blanks (spazi) of each value 
-    .map { row -> tuple(row.name, file(row.draft_genome)) } #tuple (array), so per each row, create an array with the row.name and something else of the file (file(row.draft_genome), I think it is something fixed like the row.names). map is a function that apply the function of creating the arry for each row and it puts the output in a new channel
-    .into { gbk_from_local_assembly_f; error_search } #The into operator connects a source channel to two or more target channels in such a way the values emitted by the source channel are copied to the target channels, here we have two new channels separated by a ;
-								#at this point it specify how to distribute the values of the source channel in the new channels defined by into (this step can be done initially if you already want to filter your data in the channel that will be taken as input or the step that follows can be skipped and the output of the script can be redirected to one of these new created channels for example
-gbk_from_local_assembly_f.filter { it[1].extension == "gbk" } #the filter operator works on the gbk_from_local_assembly_f channel and applyes the filtering specified in the {}, considering that the extention of each element (it) (I do not know why [1]) is equal to gbk. The thing in {} is a closure (I think). So in the end you take only the elements in gbk_from_local_assembly_f channel with gbk at the end.
-    .map { it[1] } #map operator should appy a function specified in the brackets, in this case I do not know if it makes any function or just "grep" each element it (still do not know the [1])
-    .set { gbk_from_local_assembly } #set operator must be put as last one, and it assigns the channel to a variable, which in this case is then used as the channel called in the input (it is the same of introducing it at the beginning and put "=Chnnel etc", but in this way with .set you can set all your condition before defining the channel) 
+Channel.fromPath(params.local_assemblies)
+    .splitCsv(header: true, strip: true)
+    .map { row -> tuple(row.name, file(row.draft_genome)) }
+    .into { gbk_from_local_assembly_f; error_search }
 
-error_search.filter { it[1].extension!="gbk" } #here it filters the error_Search channel in the way that it does not contain any element with the extention gbk (I still need to understand to what it referes to, the input should be a csv file (maybe), and it may refer to the output generated or another input file since then it may give an error such as if you submitted something wrong)
-    .subscribe { error "Unsupported file extension" } #.subscribe is the "print" function that prints the message contianed in the {} 
+gbk_from_local_assembly_f.filter { it[1].extension == "gbk" }
+    .map { it[1] }
+    .set { gbk_from_local_assembly }
+
+error_search.filter { it[1].extension!="gbk" }
+    .subscribe { error "Unsupported file extension" }
 
 
-process check_gbk { 						  #start the process called check_gbk
-	publishDir 'data/prokka_output_filtered', overwrite: true #QUESTION AT THE END #publishDir is a directive that allows you to publish the process output files in a specified folder. Could we also specify the output location in the output section? Or in the ouput you specify only the channel, such as checked_gbks while here instead you define the folder "data/prokka_output_filtered", so that the exact location in your machine where the outputs go? Overwritten when true, any existing file in the specified folder will be overridden (default: true during normal pipeline execution). QUESTION: if we want to replace every element, how can they be sorted in the folder? Are the processes run completely or once an item is processed then is moved to the next step (process)? I think the whole process must be completed actually. So at this point why do we want overwriting? I am not sure what the script does here, so maybe it is just a check to see if there is content in the .gkb files and nothing more.
-	container "$params.annotation_container" #this container directive should be used to specify the Docker image in which we can run the script. Here I think we call different container according to the params we want/(ask for?. He read this in the introduction "The idea is to be able to pass the parameters to external python scripts", but I do not understand what is in the 
-							#are these containers in another of our folder that will be used by the tool when run on the web or downloaded by the user if he uses the command line?
+process check_gbk {
+	publishDir 'data/prokka_output_filtered', overwrite: true
+	container "$params.annotation_container"
+
 	input:
-	    file prokka_file from gbk_from_local_assembly.collect() #prokka file should be those .gbk files which are called from the list generated by the .collect operator which collects the items emitted by a channel (gbk_from_local_assembly, previously created which should contains only .gbk files) in a list.    
-								    #I am also wondering where these prokka_files come from or what they refer to (at first sigth I will say that they are generated by prokka, since .gbk files are one of its outputs, but I am not sure if you actually need to submit prokka files or it is ana anlysis done by "us" on the submitted genomes)
+	    file prokka_file from gbk_from_local_assembly.collect()
+
 	output:
-	    file "*_filtered.gbk" into checked_gbks #the outputs sould be put in the channel called checked_gbks
+	    file "*_filtered.gbk" into checked_gbks
 
 	script:
-	""" #three quotes because it is a multiline string, then they are double to let you access to system environment variables and variables defined in the pipeline script context (ask about this issue better)
+	"""
 #!/usr/bin/env python
-import annotations     #ptyhon library
+import annotations
 
-gbk_files = "${prokka_file}".split() #it takes the prokka_file given as input and since it is a variable we put $ and {}. Are the double quotes mandatory since we call a variable into the pipeline (see isue of where the variables must be define dabove) or is it something associated to Python language? (just for curiosity and to understand the differences with the single quotes)
-annotations.check_organism_uniqueness(gbk_files) #use function"check_organism_uniqueness" from annotation library on the gbk_files treated
-annotations.filter_out_unannotated(gbk_files)# I do not know if in this step a check of the content is done, and also how #moreover are these functions already present in the library (I do not think so beacuse they are too specific, but this will also imply that the annotation library had been modified and that version is the one that should be downloaded) 
-	"""					#do you know in advance that the ouput of the funcitons used has this format "*_filtered.gbk"?
+gbk_files = "${prokka_file}".split() 
+annotations.check_organism_uniqueness(gbk_files)
+annotations.filter_out_unannotated(gbk_files)
+	"""
+}
+
+checked_gbks.into { to_load_gbk_into_db; check_locus_tag_uniqueness; to_convert_gbk_to_faa; to_convert_gbk_to_fna }
+
+
+process check_locus_tag_uniqueness {
+  
+  input:
+   each file(gbk_file) from check_locus_tag_uniqueness
+
+  output:
+  file "*_lt_checked.gbk" into lt_checked_gbk
+
+  script:
+  """
+        #!/usr/bin/env python
+        import annotations 
+        annotations.lt_uniqueness_gbk("${gbk_file}")
+  """
 }
 
 
@@ -225,20 +244,20 @@ process gbk_check {
   """
 } */
 
-checked_gbks.into { to_load_gbk_into_db; to_convert_gbk_to_faa }  #this is a second process (maybe not the second) and it uses the previously created channel "checked_gbks". It connects this channel with two new ones. One of them is called here in the input, while the other is called at the end of this pipelin (it's not important when they will be called, I think that you mainly care of the main channel through which you make the main process go)
 
-process convert_gbk_to_faa {		#name of the process
+process convert_gbk_to_faa {
 
-  publishDir 'data/faa_locus', mode: 'copy', overwrite: true  #this directive defines the location of the outputs that will be created, copy mode: it copies the output files into the published directory.
-  container "$params.annotation_container" #container in which the code should be run (described in the first process. It is however repeated along the whole structure of the pipeline) Even if I still do not know what params are here and how they are defines (see before the first process)
+  publishDir 'data/faa_locus', mode: 'copy', overwrite: true
+
+  container "$params.annotation_container"
 
   echo false
 
   input:
-  each file(edited_gbk) from to_convert_gbk_to_faa   #edited_gbk is a channel that has been defined before but that part of code is silenced, so not sure if should be fixed
+  each file(edited_gbk) from to_convert_gbk_to_faa
 
   output:
-  file "*.faa" into faa_files #
+  file "*.faa" into faa_files
 
   script:
   """
@@ -258,13 +277,76 @@ faa_locus1.into { faa_genomes1
                   faa_genomes4
                   to_checkm
                   to_macsysfinder 
-                  inc_effectors_prediction }
+                  inc_effectors_prediction
+		  faa_files_makeblastdb}
 
-faa_locus2.collectFile(name: 'merged.faa', newLine: true) #collectFile let you collect the items that come from a channel and save them in one/more files directing them in a new channel Name indicates the name of the file where all received values are stored, while newLine: Appends a newline character automatically after each entry (default: false).
-    .set { merged_faa0 } #assigned the channel to the variable. 
-    
+process makeblastdb_each_faa {
 
-process get_nr_sequences {		#name of the process
+publishDir 'data/faa_locus/makeblastdb_each_faa/'
+
+  input:
+  file faa from faa_files_makeblastdb
+
+  output:
+  file "${faa.baseName}_merged_faa_blastdb*" into custom_each_faa_blastdb
+
+  script:
+    """
+        makeblastdb -in ${faa} -input_type fasta -parse_seqids -dbtype prot -out  ${faa.baseName}_merged_faa_blastdb
+
+    """
+}
+
+
+
+
+process convert_gbk_to_fna {
+
+  publishDir 'data/fna_locus/', mode: 'copy', overwrite: true
+
+  input:
+   each file(edited_gbk)  from to_convert_gbk_to_fna
+
+  output:
+  file "${edited_gbk.baseName}.fna" into fna_files
+
+  script:
+  """
+        #!/usr/bin/env python
+        import annotations
+        annotations.convert_gbk_to_fna("${edited_gbk}", "${edited_gbk.baseName}.fna")
+  """
+}
+
+fna_files.into {fna_files_makeblastdb
+                fna_files_2
+                fna_files_3}
+
+
+process makeblastdb_each_fna {
+
+publishDir 'data/fna_locus/makeblastdb_each_fna/'
+
+  input:
+  file fna from fna_files_makeblastdb
+
+  output:
+  file "${fna.baseName}_merged_fna_blastdb*" into custom_each_fna_blastdb
+
+  script:
+    """
+        makeblastdb -in ${fna} -input_type fasta -parse_seqids -dbtype nucl -out  ${fna.baseName}_merged_fna_blastdb
+
+    """
+}
+
+
+
+
+faa_locus2.collectFile(name: 'merged.faa', newLine: true)
+    .set { merged_faa0 }
+
+process get_nr_sequences {
 
   container "$params.annotation_container"
 
@@ -272,7 +354,7 @@ process get_nr_sequences {		#name of the process
 
   input:
   file(seq) from merged_faa0
-  file genome_list from faa_genomes4.collect()  #here .collect generates a list of the files contained in faa_genomes4 channel
+  file genome_list from faa_genomes4.collect()
 
   output:
 
@@ -280,9 +362,8 @@ process get_nr_sequences {		#name of the process
   file 'nr_mapping.tab' into nr_mapping_to_db_setup
 
   script:
-  fasta_file = seq.name   #where do you get this seq.name?? How do you recall it in the process? 
-  
-   """
+  fasta_file = seq.name
+  """
 	#!/usr/bin/env python
 	
 	import annotations
@@ -290,22 +371,91 @@ process get_nr_sequences {		#name of the process
   """
 }
 
-nr_seqs.into { merged_faa_chunks      #Despite most of the channels will be used later later in other processes, the first one is then processed in the next step of this process
+
+nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
+.into { merged_faa_chunks
         to_uniparc_mapping
         to_string_mapping
         to_tcdb_mapping
         to_pdb_mapping
         to_oma_mapping
-        to_filter_sequences }
+        to_filter_sequences
+	to_makeblastdb }
 
-merged_faa_chunks.splitFasta( by: 300, file: "chunk_" ) #here one of the newly created channels is processed by the operator .splitFasta that emits text files in a new channel starting from the .fasta files it receives in inputs. It collects 300 sequences of each fasta file in each text file 
-.into { to_rpsblast_COG     #why is into here???
+merged_faa_chunks.splitFasta( by: 300, file: "chunk_" )
+.into { to_rpsblast_COG
         to_blast_swissprot
         to_plat_refseq
         to_diamond_refseq
         to_kofamscan
         to_PRIAM
         to_psortb }
+
+process makeblastdb_merged_faa {
+
+  publishDir 'data/faa_locus/makeblastdb_merged_faa/'
+
+        input:
+        file 'merged_nr.faa' from to_makeblastdb
+
+        output:
+        file 'merged_faa_blastdb*' into custom_merged_faa_blastdb
+
+        script:
+        """
+        makeblastdb -in merged_nr.faa -input_type fasta -parse_seqids -dbtype prot -out merged_faa_blastdb
+
+        """
+}
+
+
+
+
+
+fna_files_2.collectFile(name: 'merged.fna', newLine: true)
+        .set {merged_fna0}
+
+process get_nr_sequences_fna {
+
+  input:
+   file (seq) from merged_fna0
+   file genome_list from fna_files_3.collect()
+
+  output:
+
+   file 'nr.fna' into nr_seqs_fna
+   
+
+  script:
+    fasta_file = seq.name
+
+   """
+        #!/usr/bin/env python
+
+        import annotations
+        annotations.get_nr_sequences_fna("${fasta_file}", "${genome_list}".split())
+  """
+}
+
+
+process makeblastdb_merged_fna {
+
+  publishDir 'data/fna_locus/makeblastdb_merged_fna/'
+
+        input:
+        file 'nr.fna' from nr_seqs_fna
+
+        output:
+        file 'merged_fna_blastdb*' into custom_merged_fna_blastdb
+
+        script:
+        """
+        makeblastdb -in nr.fna -input_type fasta -parse_seqids -dbtype nucl -out merged_fna_blastdb
+
+        """
+}
+
+
 
 
 process prepare_orthofinder {
