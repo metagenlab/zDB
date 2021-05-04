@@ -10,7 +10,7 @@ from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
 from metagenlab_libs import db_utils
 
-import setup_chlamdb
+#import setup_chlamdb
 
 
 import pandas as pd
@@ -817,6 +817,45 @@ def filter_out_unannotated(gbk_files):
         SeqIO.write(itertools.chain([first_rec], to_keep), result_file, "genbank")
 
 
+
+def lt_uniqueness_gbk(gbk_file):
+ records = SeqIO.parse(gbk_file, 'genbank')  #from BioPython, object of class SeqRecord
+ new_gbk = gbk_file.replace(".gbk", "_lt_checked.gbk")
+ genome = os.path.basename(gbk_file).split('.')[0]
+
+ count_locus_tag=0
+ count_nr_locus_tag=0
+ locus_tag_list=[]
+ lt_checked_records_list=[]
+
+ for record in records:
+  record_id=record.id
+  for feature in record.features:
+    if (feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers):
+      if "locus_tag" in feature.qualifiers:
+         count_locus_tag= count_locus_tag +1
+         locus_tag = feature.qualifiers["locus_tag"][0]
+         if locus_tag not in locus_tag_list:
+               locus_tag_list.append(locus_tag)
+               count_nr_locus_tag= count_nr_locus_tag + 1
+         if locus_tag=="":
+            raise Exception(f"Empty locus_tag in {record_id} of {genome}")
+      else:
+            raise Exception(f"No locus_tag in {record_id} of {genome}")
+
+ if not count_locus_tag==count_nr_locus_tag:
+  raise Exception(f"locus_tag in {record_id} of {genome} not unique")
+ else:
+  records = SeqIO.parse(gbk_file, 'genbank')
+  for record in records:
+   lt_checked_records_list.append(record)
+  pass
+  SeqIO.write(lt_checked_records_list, new_gbk, 'genbank')
+
+
+
+
+
 def string_id2pubmed_id_list(accession):
     link = 'http://string-db.org/api/tsv/abstractsList?identifiers=%s' % accession
     try:
@@ -928,6 +967,37 @@ def convert_gbk_to_faa(gbf_file, edited_gbf):
                 except KeyError:
                     print("problem with feature:", feature)
 
+
+def convert_gbk_to_fna(gbf_file, edited_gbf):
+    records = SeqIO.parse(gbf_file, 'genbank')  
+    edited_records = open(edited_gbf, 'w')
+
+    for record in records:
+        protein2count = {}
+        for feature in record.features:
+            if (feature.type == 'CDS'
+                    and 'pseudo' not in feature.qualifiers
+                    and 'pseudogene' not in feature.qualifiers):
+
+                if "locus_tag" in feature.qualifiers:
+                    locus_tag = feature.qualifiers["locus_tag"][0]
+                else:
+                    protein_id = feature.qualifiers["protein_id"][0].split(".")[0]
+                    if protein_id not in protein2count:
+                        protein2count[protein_id] = 1
+                        locus_tag = protein_id
+                    else:
+                        protein2count[protein_id] += 1
+                        locus_tag = "%s_%s" % (protein_id, protein2count[protein_id])
+                try:
+                    edited_records.write(">%s %s\n%s\n" % (locus_tag,
+                                                     record.description, record.seq))
+                except KeyError:
+                    print("problem with feature:", feature)
+
+
+
+
 # filter out small sequences and ambiguous amino-acids
 def filter_sequences(fasta_file):
     records = SeqIO.parse(fasta_file, "fasta")
@@ -992,6 +1062,36 @@ def get_nr_sequences(fasta_file, genomes_list):
                 updated_records.append(record)
 
     SeqIO.write(updated_records, nr_fasta, "fasta")
+
+
+def get_nr_sequences_fna(fasta_file, genomes_list):
+    locus2genome = {}
+    for fasta in genomes_list:
+        genome = os.path.basename(fasta).split('.')[0]
+        for seq in SeqIO.parse(fasta, "fasta"):
+            locus2genome[seq.name] = genome
+    nr_fasta = open('nr.fna', 'w')
+    nr_mapping = open('nr_mapping.tab', 'w')
+
+    checksum_nr_list = []
+
+    records = SeqIO.parse(fasta_file, "fasta")
+    updated_records = []
+
+    for record in records:
+
+        checksum = CheckSum.crc64(record.seq)
+        nr_mapping.write("%s\t%s\t%s\n" % (record.id,
+                                          checksum,
+                                          locus2genome[record.id]))
+        if checksum not in checksum_nr_list:
+            checksum_nr_list.append(checksum)
+            record.id = checksum
+            record.name = ""
+            updated_records.append(record)
+
+    SeqIO.write(updated_records, nr_fasta, "fasta")
+
 
 
 # This function parses the result of orthofinder/orthoMCL, 
