@@ -276,9 +276,12 @@ class StackedBarColumn(Column):
     def get_face(self, index):
         val = self.values[int(index)]
 
-        if self.relative:
+        if self.relative and self.max!=self.min:
             val = 100*float(val-self.min)/(self.max-self.min)
-        face =  StackedBarFace([val, 100-val], width=50, height=9, colors=self.colours)
+        elif self.relative:
+            val = 100
+
+        face = StackedBarFace([val, 100-val], width=50, height=9, colors=self.colours)
         self.set_default_params(face)
         face.inner_border.color = "black"
         face.inner_border.width = 0
@@ -308,7 +311,8 @@ def home(request):
     tree = db.get_reference_phylogeny()
     t1 = Tree(tree)
     R = t1.get_midpoint_outgroup()
-    t1.set_outgroup(R)
+    if not R is None:
+        t1.set_outgroup(R)
     t1.ladderize()
 
     e_tree = EteTree(t1)
@@ -5581,6 +5585,8 @@ def module_barchart(request):
         str_entry_data = (str(entry) for entry in entry_data)
         string = f"{{ label: {to_s(taxid)}, values : [" + ",".join(str_entry_data) + "]}"
         series_data.append(string)
+
+    taxids = "?" + "&".join((f"h={i}" for i in taxids))
     series = "[" + ",".join(series_data) + "]"
     envoi = True
     form = venn_form_class()

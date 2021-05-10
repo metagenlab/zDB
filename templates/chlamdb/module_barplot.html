@@ -189,7 +189,6 @@
                           return data.labels[Math.floor(i/data.series.length)];
                         else
                           return ""})
-                          // "/chlamdb/venn_cog/{{biodb}}/" + "/" + category + "{{circos_url|safe}}"
                       .on("click",drill2);
 
                   function drill(d, i) {
@@ -201,7 +200,7 @@
                   function drill2(d,j) {
                           var category = data.labels[d3.select(this.parentNode).attr("category_id")]; //data object
                           var category = category.split(' ').join('+')
-                          window.open("/chlamdb/ko_venn_subset/" + category + "{{circos_url|safe}}") };
+                          window.open("/chlamdb/ko_venn_subset/" + category + "{{taxids|safe}}") };
 
                   //bar.on("click", drill);
 
