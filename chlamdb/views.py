@@ -1282,7 +1282,7 @@ def format_ko_modules(hsh_modules, ko):
     modules = hsh_modules.get(ko, [])
     if len(modules) == 0:
         return "-"
-    return "<br>".join([format_ko_modules(i, d) for i, d in modules])
+    return "<br>".join([format_ko_module(i, d) for i, d in modules])
 
 
 def extract_ko(request):
@@ -2320,27 +2320,24 @@ class SimpleTextColumn(Column):
 
 
 def tab_og_phylogeny(db, og_id, annot):
-    from metagenlab_libs.ete_phylo import EteTree
-    from ete3 import Tree
-
     og_phylogeny = db.get_og_phylogeny(og_id)
 
     tree = Tree(og_phylogeny)
 
     locuses = [branch.name for branch in tree.iter_leaves()]
     locus_to_genome = db.get_locus_to_genomes(locuses)
+    print(locus_to_genome)
     R = tree.get_midpoint_outgroup()
     tree.set_outgroup(R)
     tree.ladderize()
     e_tree = EteTree(tree)
 
     e_tree.add_column(SimpleTextColumn("Locus tag"))
-    e_tree.rename_leaves(locus_to_genome)
+    e_tree.rename_leaves(locus_to_genome, leaf_name_type=str)
 
-    dpi = 1200
     asset_path = f"/temp/og_phylogeny{og_id}.svg"
     path = settings.BASE_DIR + '/assets/' + asset_path
-    e_tree.render(path, dpi=dpi)
+    e_tree.render(path, dpi=1200)
     return {"og_phylogeny": asset_path}
 
 
