@@ -2357,7 +2357,8 @@ def tab_og_conservation_tree(db, group, compare_to=None):
 
     tree = Tree(ref_phylogeny)
     R = tree.get_midpoint_outgroup()
-    tree.set_outgroup(R)
+    if not R is None:
+        tree.set_outgroup(R)
     tree.ladderize()
     e_tree = EteTree(tree)
 
@@ -5459,17 +5460,19 @@ def ko_venn_subset(request, category):
     if len(targets)>5:
         targets = targets[0:6]
 
-    genomes = db.get_genomes_description(targets)
-    ko_counts = db.get_ko_count_cat(category=None, bioentries=targets, category_name=category)
-    ko_counts = ko_counts.set_index(["bioentry", "KO"])
+    genomes   = db.get_genomes_description(targets).description.to_dict()
+    ko_counts = db.get_ko_count_cat(taxon_ids=targets, category_name=category, index=False)
+    ko_count  = ko_counts.groupby("taxon_id")["KO"].apply(list)
 
     # shameful copy/cape from venn_ko
     fmt_data = []
     ko_set = set()
-    for bioentry in targets:
-        kos = ko_counts.loc[bioentry].index.values
+    for taxid in targets:
+        if not taxid in ko_count.index:
+            continue
+        kos = ko_count.loc[taxid]
         kos_str = ",".join(f"{to_s(format_ko(ko))}" for ko in kos)
-        genome = genomes[str(bioentry)]
+        genome = genomes[taxid]
         fmt_data.append(f"{{name: {to_s(genome)}, data: [{kos_str}] }}")
         ko_set = ko_set.union({ko for ko in kos })
     series = "[" + ",".join(fmt_data) + "]"
