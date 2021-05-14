@@ -11,16 +11,7 @@ from crispy_forms.layout import Layout, Submit, Row, Column, MultiField, Div, Fi
 from crispy_forms.bootstrap import AppendedText
 from django.conf import settings
 
-biodb = settings.BIODB
-
-server,db = load_db(biodb)
-
-sql ="select accession from bioentry where biodatabase_id = 22"
-result = server.adaptor.execute_and_fetchall(sql, )
-accession_list = [i[0] for i in result]
-accession_choices = []
-for i in accession_list:
-    accession_choices.append((i,i))
+choices = []
 
 class GenerateRandomUserForm(forms.Form):
     total_user = forms.IntegerField(
@@ -50,15 +41,6 @@ def get_accessions(db, all=False, plasmid=False):
     # if all:
     # accession_choices = [["all", "all"]] + accession_choices
     return accession_choices, reverse_index
-
-
-biodatabases = [ i for i in get_biodatabase_list(server)]
-
-choices = []
-for i in biodatabases:
-    choices.append((i,i))
-
-choices = tuple(choices)
 
 
 def make_contact_form(server, database_name):
