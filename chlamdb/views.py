@@ -114,9 +114,13 @@ from ete3 import TextFace, StackedBarFace
 
 import pandas as pd
 
-db_driver = settings.DB_DRIVER
-biodb = settings.BIODB
-optional2status, missing_mandatory = manipulate_biosqldb.check_config(biodb)
+
+with db_utils.DB.load_db_from_name(settings.BIODB_DB_PATH) as db:
+    hsh_config = db.get_config_table(ret_mandatory=True)
+    optional2status = { name: value for name, (mandatory, value) in hsh_config.items() if not mandatory}
+    missing_mandatory = [name for name, (mandatory, value) in hsh_config.items()
+            if mandatory and not value]
+    
 
 def my_locals(local_dico):
     local_dico["optional2status"] = optional2status
@@ -2507,7 +2511,7 @@ def orthogroup(request, og):
         **cog_ctx,
         **kegg_ctx
     }
-    return render(request, "chlamdb/og.html", context)
+    return render(request, "chlamdb/og.html", my_locals(context))
 
 
 def tab_general(seqid, hsh_organism, gene_loc, annot):
