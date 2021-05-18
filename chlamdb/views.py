@@ -114,6 +114,8 @@ from ete3 import TextFace, StackedBarFace
 
 import pandas as pd
 
+from Bio.SeqFeature import SeqFeature, FeatureLocation
+
 
 with db_utils.DB.load_db_from_name(settings.BIODB_DB_PATH) as db:
     hsh_config = db.get_config_table(ret_mandatory=True)
@@ -2570,6 +2572,31 @@ class LocusHeatmapColumn(SimpleColorColumn):
         return text_face
 
 
+def get_sequence(db, seqid, flanking=0):
+    loc      = db.get_gene_loc([seqid])
+    bioentry = db.get_bioentry(from_val=seqid)
+    seq      = db.get_DNA_sequence(bioentry)
+    strand, start, stop = loc[seqid]
+    start -= 1
+
+    if start < 50:
+        start_w_flank = 0
+        red_start = start
+    else:
+        start_w_flank = start-flanking
+        red_start = 50
+
+    if stop+flanking > len(seq):
+        stop_w_flank = len(seq)-1
+    else:
+        stop_w_flank = stop+flanking
+    red_stop = red_start + stop-start
+    fet = SeqFeature(FeatureLocation(start_w_flank, stop_w_flank, strand=strand))
+    extracted = fet.extract(seq)
+    return extracted[0:red_start] + "<font color='red'>" + \
+            extracted[red_start:red_stop] + "</font>" + extracted[red_stop:]
+
+
 def locusx(request, locus=None, menu=True):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
@@ -2596,6 +2623,7 @@ def locusx(request, locus=None, menu=True):
     all_org  = db.get_organism(og_annot.index.tolist(), as_hash=True)
     n_homologues = all_og_c.loc[og_id].sum()
     translation = db.get_translation(seqid)
+    sequence = get_sequence(db, seqid, flanking=50)
 
     homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
     general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
@@ -2617,6 +2645,7 @@ def locusx(request, locus=None, menu=True):
         "n_homologues": n_homologues,
         "og_id": format_orthogroup(og_id, to_url=True),
         "translation": translation,
+        "seq": sequence,
         **cog_ctx,
         **kegg_ctx,
         **homolog_tab_ctx,
@@ -2624,7 +2653,7 @@ def locusx(request, locus=None, menu=True):
         **og_conserv_ctx,
         **og_phylogeny_ctx
     }
-    return render(request, 'chlamdb/locus.html', context)
+    return render(request, 'chlamdb/locus.html', my_locals(context))
 
 
 def locusx_legacy(request, locus=None, menu=True):
