@@ -1,15 +1,16 @@
 <script language="Javascript">
 
+/**
+* Note: columns and build_set need to be defined 
+*   in the template file that includes this one.
+*/
+
 var h = new Object();
 {{ description_dico|safe }}
 
 $(document).ready(function() {
 	$("#names").DataTable ({
-		columns: [
-				{title: "Orthogroup"},
-				{title: "Gene"},
-				{title: "Description"}
-			]
+		columns: columns
 	});
 	// initially hide the table when no set is selected
 	$("#names_div").hide();
@@ -21,11 +22,7 @@ $(document).ready(function() {
 		fnClickCallback: function() {
 			var dataSet = []; 
 			for (val in this.list) {
-				var link = "<a href=/orthogroup/"+this.list[val]+">"+this.list[val]+"</a>";
-
-				// data[0] contains the gene name(s); data[1] contains the description(s)
-				var data = h[this.list[val]];
-				var curr_set = [link, data[0], data[1]];
+				curr_set = build_set(this.list[val], h);
 				dataSet.push(curr_set);
 			}
 

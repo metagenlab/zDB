@@ -1926,8 +1926,9 @@ def venn_ko(request):
     ko2description = []
     for ko, ko_desc in ko_descriptions.items():
         forbidden = "\""
-        ko_item = f"h[{to_s(format_ko(ko))}] = {forbidden}{ko_desc}{forbidden};"
+        ko_item = f"h[{to_s(format_ko(ko))}] = [{forbidden}{ko_desc}{forbidden}];"
         ko2description.append(ko_item)
+    ko2description = "\n".join(ko2description)
     envoi_venn = True
     return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
