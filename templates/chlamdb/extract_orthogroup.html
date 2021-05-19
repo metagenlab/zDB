@@ -109,12 +109,12 @@
 						  </div>
 
 
-						<table class="display" id="table_groups" style="border: 1px solid black;">
+						<table class="hover" id="table_groups">
 
 							<thead>
 								<tr>
 								{% for value in table_headers %}
-									<th style="text-align:center; padding: 5px 20px"> {{value|safe}} </th>
+									<th> {{value|safe}} </th>
 								{% endfor %}
 								</tr>
 							</thead>
@@ -124,9 +124,9 @@
 								<tr>
 									{% for entry in value %}
 									{% if forloop.first %}
-										<td style="text-align: center;"><a href="{% url 'orthogroup' entry %}">{{entry}}</a></td>
+										<td><a href="{% url 'orthogroup' entry %}">{{entry}}</a></td>
 									{% else %}
-										<td style="text-align: center;">{{entry|safe}}</td>
+										<td>{{entry|safe}}</td>
 									{% endif %}
 									{% endfor %}
 								</tr>
@@ -146,7 +146,7 @@
 
 						  <h3>Number of orthogroups: {{ sum_group }} </h3>
 
-						  <table class="display" id="cog_table">
+						  <table class="hover" id="orthogroups_table">
 							  <thead>
 								  <tr>
 								  {% for value in details_header %}
@@ -179,6 +179,16 @@
   </div>  <!-- row -->
   
 </div>  <!-- container-fluid -->
+
+<script>
+
+  $(document).ready(function() {
+	  $('#orthogroups_table').DataTable();
+	  $("#table_groups").DataTable();
+  } );
+
+</script>
+
 {% include "chlamdb/style_menu.html" %}
 {% include "chlamdb/show_hide_plasmid_accessions.html" %}
 </body>

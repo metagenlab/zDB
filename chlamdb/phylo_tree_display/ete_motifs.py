@@ -10,8 +10,6 @@ import colorsys
 import matplotlib.colors as pcolors
 from django.conf import settings
 
-db_driver = settings.DB_DRIVER
-
 def _get_colors(num_colors):
     colors=[]
     for i in np.arange(0., 360., 360. / num_colors):
