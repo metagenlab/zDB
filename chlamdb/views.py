@@ -1120,8 +1120,8 @@ def venn_orthogroup(request):
         if og in products.index:
             p = products.loc[og]
             prod_data = format_lst_to_html(p, add_count=False)
-        og_info = gene_data + "</td><td>" + prod_data
-        og_item = f"h[{to_s(format_orthogroup(og))}] = {forbidden}{og_info}{forbidden};"
+        og_info = "[\"" + gene_data + "\",\"" + prod_data + "\"]"
+        og_item = f"h[{to_s(format_orthogroup(og))}] = {og_info};"
         orthogroup2description.append(og_item)
     orthogroup2description = "\n".join(orthogroup2description)
     envoi_venn = True

@@ -1,76 +1,60 @@
+<script language="Javascript">
 
+var h = new Object();
+{{ description_dico|safe }}
 
+$(document).ready(function() {
+	$("#names").DataTable ({
+		columns: [
+				{title: "Orthogroup"},
+				{title: "Gene"},
+				{title: "Description"}
+			]
+	});
+	// initially hide the table when no set is selected
+	$("#names_div").hide();
 
-
-
-
-	<script language="Javascript">
-
-
-
-	var h = new Object(); // or just {}
-
-
-	{{ description_dico|safe }}
-	<!-- h['Marilyn Monroe'] = 1; -->
-
-
-
-    $(document).ready(function(){
-      $('#example').jvenn({
-        series: {{ series|safe }}
-
-		  ,
+	
+	$('#venn_diagram').jvenn({
+		series: {{ series|safe }},
 		displayStat: true,
 		fnClickCallback: function() {
-			var value = `<div id="export_bouttons_groups">
-                         <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'orthogroup_table', 'search');" class="btn btn-primary btn-xs">Export to Excel</a>
-                         <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'orthogroup_table');" class="btn btn-primary btn-xs">Export to CSV</a>
-                        <br/>
-                        </div>`;
-			if (this.listnames.length == 1) {
-				value += "<h3>Elements only in:<br> </h3><ul compact>";
-			} else {
-				value += "<h3>Common elements in: </h3><ul compact>";
-			}
-			for (name in this.listnames) {
-				value += '<li id="list_strains">' +this.listnames[name] + "</li>";
-			}
-			value += '</ul>\n<table id="orthogroup_table" class="table"><tr><th>Orthogroup</th><th>gene(s)</th><th>description(s)</th></tr>';
-
+			var dataSet = []; 
 			for (val in this.list) {
-                <!-- h[this.list[val]] -->
-				value += '<tr><td><a href=/orthogroup/' + this.list[val] + '>'+  this.list[val] + '</a></td><td>' + h[this.list[val]]
-						+ '</td></tr>';
+				var link = "<a href=/orthogroup/"+this.list[val]+">"+this.list[val]+"</a>";
+
+				// data[0] contains the gene name(s); data[1] contains the description(s)
+				var data = h[this.list[val]];
+				var curr_set = [link, data[0], data[1]];
+				dataSet.push(curr_set);
 			}
-		    value += '</table>';
-			$("#names").html(value);
-			var newTableObject = document.getElementById("orthogroup_table");
-			sorttable.makeSortable(newTableObject);
 
+			$("#names_div").show();
+			var table = $("#names").DataTable();
+			table.clear();
+			for(el in dataSet) {
+				table.row.add(dataSet[el]);
+			}
+			table.draw();
 		}
-
-      });
-    });
-
+	});
+});
 
 
-	</script>
+</script>
 
-		<div class="panel panel-success">
-			<div class="panel-heading" style="width:100%">
-				<h5 class="panel-title">Help</h5>
-			</div>
-			<p style="margin: 10px 10px 10px 10px"> Click on a venn diagram figure to display the linked elements:</p>
-		</div>
+<div class="panel panel-success">
+	<div class="panel-heading" style="width:100%">
+		<h5 class="panel-title">Help</h5>
+	</div>
+	<p style="margin: 10px 10px 10px 10px">
+		Click on a venn diagram figure to display the linked elements:
+	</p>
+</div>
 
-		<div id="example" style="display: table;margin: 0;">
+<div id="venn_diagram" style="display: table;margin: 0;">
+</div>
 
-		</div>
-
-		<div>
-
-			<div id="names" style="width: 87%;" wrap="off" rows="10">
-
-			</div>
-		</div>
+<div id="names_div">
+	<table id="names" class="hover"></table>
+</div>
