@@ -78,6 +78,8 @@ gbk_from_local_assembly_f.filter { it[1].extension == "gbk" }
     .map { it[1] }
     .set { gbk_from_local_assembly }
 
+gbk_from_local_assembly.into{check_gbks; check_locus_tag_uniqueness; check_LOCUS_uniqueness }
+
 error_search.filter { it[1].extension!="gbk" }
     .subscribe { error "Unsupported file extension" }
 
@@ -87,7 +89,7 @@ process check_gbk {
 	container "$params.annotation_container"
 
 	input:
-	    file prokka_file from gbk_from_local_assembly.collect()
+	    file prokka_file from check_gbks.collect()
 
 	output:
 	    file "*_filtered.gbk" into checked_gbks
@@ -103,13 +105,14 @@ annotations.filter_out_unannotated(gbk_files)
 	"""
 }
 
-checked_gbks.into { to_load_gbk_into_db; check_locus_tag_uniqueness; to_convert_gbk_to_faa; to_convert_gbk_to_fna }
-
+checked_gbks.into { to_load_gbk_into_db;  to_convert_gbk_to_faa; to_convert_gbk_to_fna }
 
 process check_locus_tag_uniqueness {
   
+  container "$params.annotation_container"
+
   input:
-   each file(gbk_file) from check_locus_tag_uniqueness
+   file prokka_file from check_locus_tag_uniqueness.collect()
 
   output:
   file "*_lt_checked.gbk" into lt_checked_gbk
@@ -117,10 +120,37 @@ process check_locus_tag_uniqueness {
   script:
   """
         #!/usr/bin/env python
-        import annotations 
-        annotations.lt_uniqueness_gbk("${gbk_file}")
+        import annotations
+        gbk_files="${prokka_file}".split()
+        annotations.lt_uniqueness_gbk(gbk_files)
+        annotations.checked_unique_lt(gbk_files)
   """
 }
+
+
+process check_LOCUS_uniqueness {
+
+  container "$params.annotation_container"
+
+  input:
+   file prokka_file from check_LOCUS_uniqueness.collect()
+
+  output:
+  file "*_lt_L_checked.gbk" into L_checked_gbk
+
+  script:
+  """
+        #!/usr/bin/env python
+        import annotations
+        gbk_files="${prokka_file}".split()
+        annotations.LOCUS_uniqueness_gbk(gbk_files)
+        annotations.checked_unique_L(gbk_files)
+
+  """
+}
+
+
+
 
 
 
