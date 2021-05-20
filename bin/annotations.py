@@ -10,7 +10,7 @@ from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
 from metagenlab_libs import db_utils
 
-#import setup_chlamdb
+import setup_chlamdb
 
 
 import pandas as pd
@@ -817,42 +817,83 @@ def filter_out_unannotated(gbk_files):
         SeqIO.write(itertools.chain([first_rec], to_keep), result_file, "genbank")
 
 
+list_locus_tag_nr=[]
+list_locus_tag=[]
 
-def lt_uniqueness_gbk(gbk_file):
- records = SeqIO.parse(gbk_file, 'genbank')  #from BioPython, object of class SeqRecord
- new_gbk = gbk_file.replace(".gbk", "_lt_checked.gbk")
- genome = os.path.basename(gbk_file).split('.')[0]
+def lt_uniqueness_gbk(gbk_list):
+ for gbk_file in gbk_list:
+  records = SeqIO.parse(gbk_file, 'genbank')  #from BioPython, object of class SeqRecord
+  genome = os.path.basename(gbk_file).split('.')[0]
 
- count_locus_tag=0
- count_nr_locus_tag=0
- locus_tag_list=[]
- lt_checked_records_list=[]
-
- for record in records:
-  record_id=record.id
-  for feature in record.features:
-    if (feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers):
-      if "locus_tag" in feature.qualifiers:
-         count_locus_tag= count_locus_tag +1
-         locus_tag = feature.qualifiers["locus_tag"][0]
-         if locus_tag not in locus_tag_list:
-               locus_tag_list.append(locus_tag)
-               count_nr_locus_tag= count_nr_locus_tag + 1
-         if locus_tag=="":
-            raise Exception(f"Empty locus_tag in {record_id} of {genome}")
-      else:
-            raise Exception(f"No locus_tag in {record_id} of {genome}")
+  for record in records:
+   record_id=record.id
+   for feature in record.features:
+     if (feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers):
+       if "locus_tag" in feature.qualifiers:
+          locus_tag = feature.qualifiers["locus_tag"][0]
+          list_locus_tag.append(locus_tag)
+          count_locus_tag= len(list_locus_tag)
+          if locus_tag not in list_locus_tag_nr:
+                list_locus_tag_nr.append(locus_tag)
+                count_nr_locus_tag= len(list_locus_tag_nr)
+          if locus_tag=="":
+             raise Exception(f"Empty locus_tag in {record_id} of {genome}")
+       else:
+             raise Exception(f"No locus_tag in {record_id} of {genome}")
 
  if not count_locus_tag==count_nr_locus_tag:
-  raise Exception(f"locus_tag in {record_id} of {genome} not unique")
- else:
+  raise Exception(f"Non-unique locus_tag")
+
+def checked_unique_lt (gbk_files):
+ for gbk_file in gbk_files:
   records = SeqIO.parse(gbk_file, 'genbank')
+  new_gbk = gbk_file.replace(".gbk", "_lt_checked.gbk") 
+  string= "list"
+  list= string.join({new_gbk})
+  list=[]
   for record in records:
-   lt_checked_records_list.append(record)
+   list.append(record)
   pass
-  SeqIO.write(lt_checked_records_list, new_gbk, 'genbank')
+  SeqIO.write( list, new_gbk, 'genbank')
 
 
+
+
+
+LOCUS_id_list=[]
+LOCUS_id_list_nr=[]
+
+def LOCUS_uniqueness_gbk(gbk_list):
+ for gbk_file in gbk_list:
+  records = SeqIO.parse(gbk_file, 'genbank')  #from BioPython, object of class SeqRecord
+  count_feature_in_record=0
+
+  for record in records:
+   LOCUS_id=record.name
+   for feature in record.features:
+     if (feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers):
+       count_feature_in_record=count_feature_in_record + 1
+   if count_feature_in_record>=1:
+    LOCUS_id_list.append(LOCUS_id)
+    count_LOCUS_id=len(LOCUS_id_list)
+    if LOCUS_id not in LOCUS_id_list_nr:
+       LOCUS_id_list_nr.append(LOCUS_id)
+       count_nr_LOCUS_id= len(LOCUS_id_list_nr)
+ if not  count_nr_LOCUS_id==count_LOCUS_id:
+   raise Exception(f"Non-unique LOCUS identifier")
+
+
+def checked_unique_L (gbk_files):
+ for gbk_file in gbk_files:
+  records = SeqIO.parse(gbk_file, 'genbank')
+  new_gbk = gbk_file.replace(".gbk", "_lt_L_checked.gbk") 
+  string= "list"
+  list= string.join({new_gbk})
+  list=[]
+  for record in records:
+   list.append(record)
+  pass
+  SeqIO.write( list, new_gbk, 'genbank')
 
 
 
