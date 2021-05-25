@@ -417,10 +417,12 @@ def make_extract_form(db, plasmid=False, label="Orthologs"):
     accession_choices, rev_index = get_accessions(db, plasmid=plasmid)
 
     class ExtractForm(forms.Form):
-        checkbox_accessions = forms.BooleanField(required = False, label="Distinguish plasmids from chromosomes")
-        checkbox_single_copy = forms.BooleanField(required = False, label="Only consider single copy %s" % label)
+        checkbox_accessions = forms.BooleanField(required = False,
+                label="Distinguish plasmids from chromosomes")
+        checkbox_single_copy = forms.BooleanField(required = False,
+                label="Only consider single copy %s" % label)
 
-        orthologs_in = forms.MultipleChoiceField(label='%s conserved in' % label,
+        orthologs_in = forms.MultipleChoiceField(label=f"{label} conserved in",
                 choices=accession_choices,
                 widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker", "data-live-search":"true"}), required = True)
         no_orthologs_in = forms.MultipleChoiceField(label="%s absent from (optional)" % label,
@@ -432,19 +434,22 @@ def make_extract_form(db, plasmid=False, label="Orthologs"):
         frequency_choices = ((i, i) for i in range(len(accession_choices)))
         frequency = forms.ChoiceField(choices=frequency_choices,
                 label='Missing data (optional)', required = False)
-        reference = forms.ChoiceField(choices=new_choices,label="Reference genome (optional)", required = False)
-
 
         def extract_choices(self, indices):
             keep_plasmids = self.cleaned_data["checkbox_accessions"]
             taxids = []
-            plasmids = []
+            plasmids = None
+            if keep_plasmids:
+                plasmids = []
+
             for index in indices:
                 taxid, is_plasmid = rev_index[index]
                 if keep_plasmids and is_plasmid:
                     plasmids.append(taxid)
-                taxids.append(taxid)
+                elif not keep_plasmids or not is_plasmid:
+                    taxids.append(taxid)
             return taxids, plasmids
+
 
         def get_n_missing(self):
             return int(self.cleaned_data["frequency"])
@@ -462,22 +467,21 @@ def make_extract_form(db, plasmid=False, label="Orthologs"):
             #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
             #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
             self.helper.layout = Layout(
-                                        Fieldset("Compare genomes",
-                                                Column(
-                                                    Row('checkbox_accessions', style="padding-left:15px"),
-                                                    Row('checkbox_single_copy', style="padding-left:15px"),
-                                                Row(Column("orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
-                                                    Column("no_orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
-                                                Column(Row('frequency'),
-                                                Row('reference'),
-                                                Submit('submit', 'Compare %s' % label), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
-                                                css_class="col-lg-8 col-md-8 col-sm-12")
-                                                )
-                                        )
+                    Fieldset("Compare genomes",
+                            Column(
+                                Row('checkbox_accessions', style="padding-left:15px"),
+                                Row('checkbox_single_copy', style="padding-left:15px"),
+                            Row(Column("orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
+                                Column("no_orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
+                            Column(Row('frequency'),
+                            Submit('submit', 'Compare %s' % label), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                            css_class="col-lg-8 col-md-8 col-sm-12")
+                            )
+                    )
 
             super(ExtractForm, self).__init__(*args, **kwargs)
-
     return ExtractForm
+
 
 def locus_int_form(database_name):
     from chlamdb.biosqldb import manipulate_biosqldb

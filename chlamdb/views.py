@@ -541,12 +541,12 @@ def get_optional_annotations(db, seqids):
     annotations = []
     if config_table.get("KEGG", False):
         header.append("KO")
-        cog_hits = db.get_cog_hits(seqids, indexing="seqid", search_on="seqid")
-        annotations.append(cog_hits)
-    if config_table.get("COG", False):
-        header.append("COG")
         ko_hits = db.get_ko_hits(seqids, search_on="seqid")
         annotations.append(ko_hits)
+    if config_table.get("COG", False):
+        header.append("COG")
+        cog_hits = db.get_cog_hits(seqids, indexing="seqid", search_on="seqid")
+        annotations.append(cog_hits)
 
     if len(annotations)==2:
         return header, annotations[0].join(annotations[1])
@@ -591,12 +591,15 @@ def extract_orthogroup(request):
     n_missing = form.get_n_missing()
     single_copy = "checkbox_single_copy" in request.POST
 
-    sum_include_lengths = len(include_taxids)+len(include_plasmids)
+    sum_include_lengths = len(include_taxids)
+    if not include_plasmids is None:
+        sum_include_lengths += len(include_plasmids)
+
     if n_missing>=sum_include_lengths:
         wrong_n_missing = True
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
-    og_counts_in = db.get_og_count(include_taxids, diff_plasmid=len(include_plasmids)>0)
+    og_counts_in = db.get_og_count(include_taxids, plasmids=include_plasmids)
     if not single_copy:
         og_counts_in["presence"] = og_counts_in[og_counts_in > 0].count(axis=1)
     else:
@@ -604,9 +607,11 @@ def extract_orthogroup(request):
 
     og_counts_in["selection"] = og_counts_in.presence >= (sum_include_lengths-n_missing)
 
-    sum_exclude_lengths = len(exclude_taxids)+len(exclude_plasmids)
+    sum_exclude_lengths = len(exclude_taxids)
+    if not exclude_plasmids is None:
+        sum_exclude_lengths += len(exclude_plasmids)
     if sum_exclude_lengths>0:
-        mat_exclude = db.get_og_count(exclude_taxids, diff_plasmid=len(exclude_plasmids)>0)
+        mat_exclude = db.get_og_count(exclude_taxids, plasmids=exclude_plasmids)
         mat_exclude["presence"] = mat_exclude[mat_exclude > 0].count(axis=1)
         mat_exclude["exclude"] = mat_exclude.presence > 0
         neg_index = mat_exclude[mat_exclude.exclude].index
@@ -630,7 +635,9 @@ def extract_orthogroup(request):
     max_n = orthogroup2count_all.max()
     match_groups_data = []
 
-    all_taxids = include_plasmids+include_taxids
+    all_taxids = include_taxids
+    if not include_plasmids is None:
+        all_taxids += include_plasmids
     annotations = db.get_genes_from_og(orthogroups=selection, taxon_ids=all_taxids,
         terms=["gene", "product", "locus_tag"])
     if annotations.empty:
@@ -655,7 +662,7 @@ def extract_orthogroup(request):
     table_headers.extend([f"Present in {sum_include_lengths}", f"Freq complete database (/{max_n})"])
 
     for row, count in orthogroup2count_all.iteritems():
-        cnt_in = og_counts_in.loc[row].presence
+        cnt_in = og_counts_in.presence.loc[row]
         g = genes.loc[row]
         gene_data = format_lst_to_html("-" if pd.isna(entry) else entry for entry in g)
         prod_data = format_lst_to_html(products.loc[row])
