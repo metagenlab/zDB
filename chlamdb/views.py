@@ -6757,18 +6757,17 @@ def pan_genome(request, type):
     import pandas as pd
     import time
 
-    bioentries = form.cleaned_data['targets']
-    bioentries = db.get_bioentries_in_taxon(bioentries)["bioentry"].tolist()
+    taxids = form.get_taxids()
 
     if type == "COG":
-        df_hits = db.get_cog_hits(bioentries, as_count=True)
+        df_hits = db.get_cog_hits(taxids, as_count=True)
         df_hits = df_hits.set_index(["bioentry", "cog"]).unstack(level=0, fill_value=0)
         type_txt = "COG"
     elif type == "orthology":
-        df_hits = db.get_og_count(bioentries, search_on="bioentry", indexing="taxon_id")
+        df_hits = db.get_og_count(taxids, search_on="taxid")
         type_txt = "orthologs"
     elif type == "ko":
-        df_hits = db.get_ko_count(bioentries)
+        df_hits = db.get_ko_count(taxids)
         type_txt = "KO"
         df_hits = df_hits.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
     else:
@@ -6776,8 +6775,7 @@ def pan_genome(request, type):
         form = venn_form_class()
         return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
 
-    target2description = db.get_genomes_description(bioentries,
-            indexing="taxon_id", indexing_type="int", exclude_plasmids=True)
+    target2description = db.get_genomes_description().description.to_dict()
     df_hits.columns = [target2description[i] for i in df_hits.columns.values]
     path2 = settings.BASE_DIR + '/assets/temp/pangenome_barplot.svg'
     asset_path2 = '/temp/pangenome_barplot.svg'
