@@ -12371,7 +12371,7 @@ def plot_heatmap(request, type):
 
     taxon_ids = form_venn.get_taxids()
     if type=="COG":
-        mat = db.get_cog_hits(taxon_ids)
+        mat = db.get_cog_hits(taxon_ids, indexing="taxid", search_on="taxid")
     elif type=="orthology":
         mat = db.get_og_count(taxon_ids)
     elif type == "ko":
@@ -12380,7 +12380,6 @@ def plot_heatmap(request, type):
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
-    print(mat)
     target2description = db.get_genomes_description().description.to_dict()
     mat.columns = (target2description[i] for i in mat.columns.values)
     cur_time = datetime.now().strftime("%H%M%S")
