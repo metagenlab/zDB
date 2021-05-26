@@ -6768,7 +6768,6 @@ def pan_genome(request, type):
     elif type == "ko":
         df_hits = db.get_ko_hits(taxids, search_on="taxid")
         type_txt = "KO"
-        print(df_hits)
     else:
         # should add an error message
         form = venn_form_class()
@@ -12360,7 +12359,7 @@ def plot_heatmap(request, type):
 
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
-    form_class = make_venn_from(db, plasmid=True)
+    form_class = make_venn_from(db)
 
     if request.method != "POST":
         form_venn = form_class()
@@ -12370,29 +12369,20 @@ def plot_heatmap(request, type):
     if not form_venn.is_valid():
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
-    # plasmid differentiation to be implemented later on
-    diff_plasmid = "checkbox_accessions" in request.POST
-    taxon_ids = [int(i) for i in form_venn.cleaned_data['targets']]
-    print(taxon_ids)
-    indexing = "bioentry"
-    if not diff_plasmid:
-        # target_bioentries = db.get_bioentries_in_taxon(target_bioentries)["bioentry"].tolist()
-        indexing = "taxon_id"
-
+    taxon_ids = form_venn.get_taxids()
     if type=="COG":
-        mat = db.get_cog_hits(target_bioentries, as_count=True)
-        mat = mat.set_index(["bioentry", "cog"]).unstack(level=0, fill_value=0)
+        mat = db.get_cog_hits(taxon_ids)
     elif type=="orthology":
         mat = db.get_og_count(taxon_ids)
     elif type == "ko":
-        mat = db.get_ko_count(target_bioentries)
-        mat = mat.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
+        mat = db.get_ko_hits(taxon_ids)
     else:
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
+    print(mat)
     target2description = db.get_genomes_description().description.to_dict()
-    mat.columns = (target2description[int(i)] for i in mat.columns.values)
+    mat.columns = (target2description[i] for i in mat.columns.values)
     cur_time = datetime.now().strftime("%H%M%S")
 
     filename = f"heatmap_{cur_time}.png"
