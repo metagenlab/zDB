@@ -6760,16 +6760,15 @@ def pan_genome(request, type):
     taxids = form.get_taxids()
 
     if type == "COG":
-        df_hits = db.get_cog_hits(taxids, as_count=True)
-        df_hits = df_hits.set_index(["bioentry", "cog"]).unstack(level=0, fill_value=0)
+        df_hits = db.get_cog_hits(taxids, search_on="taxid", indexing="taxid")
         type_txt = "COG"
     elif type == "orthology":
         df_hits = db.get_og_count(taxids, search_on="taxid")
         type_txt = "orthologs"
     elif type == "ko":
-        df_hits = db.get_ko_count(taxids)
+        df_hits = db.get_ko_hits(taxids, search_on="taxid")
         type_txt = "KO"
-        df_hits = df_hits.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
+        print(df_hits)
     else:
         # should add an error message
         form = venn_form_class()
