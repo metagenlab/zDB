@@ -64,13 +64,7 @@
                                                         <h3 class="panel-title">Description</h3>
                                                     </div>
                                                     <table class="table table-striped" style="width: 100%">
-                                                        {% if type == 'cog' %}
-                                                            <tr>
-                                                                <th>External link</th>
-                                                                <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{ fam }}"> {{ fam }} <i class="fa fa-external-link"></i></a></td>
-                                                            </tr>
-        
-                                                        {% elif type == 'pfam' %}
+                                                        {% if type == 'pfam' %}
 
                                                             <tr>
                                                                 <th>External link</th>
@@ -176,11 +170,11 @@
 														{% elif type == "cog" %}
                                                             <tr>
                                                                 <th style="width:160px">Description</th>
-                                                                <td> {{ info.2 }} </td>
+                                                                <td> {{ info.1 }} </td>
                                                             </tr>
 															<tr>
-                                                                <th style="width:160px">Function</th>
-																<td> {{ info.1 }} ({{ info.0 }})</td>
+                                                                <th style="width:160px">Function(s)</th>
+																<td> {{info.0|safe}}</td>
 															</tr>
             
                                                         {% else %}

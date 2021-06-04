@@ -549,6 +549,7 @@ def get_optional_annotations(db, seqids):
         annotations.append(cog_hits)
 
     if len(annotations)==2:
+        # bug is here: should be an complete join
         return header, annotations[0].join(annotations[1])
     elif len(annotations)==1:
         return header, annotations[0]
@@ -644,6 +645,8 @@ def extract_orthogroup(request):
         no_match = True
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
     
+
+    print(annotations.index.tolist())
     opt_header, optional_annotations = get_optional_annotations(db, seqids=annotations.index.tolist())
     details_header, details_data = get_table_details(db, annotations)
     annotations = annotations.join(optional_annotations)
@@ -653,6 +656,8 @@ def extract_orthogroup(request):
 
     if "COG" in opt_header:
         cogs = grouped["cog"].apply(list)
+
+    print(cogs)
 
     if "KO" in opt_header:
         kos = grouped["ko"].apply(list)
@@ -1797,26 +1802,27 @@ def extract_cog(request):
     if not form.is_valid():
         return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 
-    # list of bioentries
-    include = form.cleaned_data['orthologs_in']
-    exclude = form.cleaned_data['no_orthologs_in']
-    n_missing = int(form.cleaned_data['frequency'])
-    reference = form.cleaned_data['reference']
-    diff_plasmid = form.cleaned_data["checkbox_accessions"]
-    if reference == "None":
-        reference = include[0]
+    include, include_plasmids = form.get_include_choices()
+    exclude, exclude_plasmids = form.get_exclude_choices()
+    n_missing = form.get_n_missing()
 
-    if n_missing>=len(include):
+    sum_include_length = len(include)
+    if not include_plasmids is None:
+        sum_include_length += len(include_plasmids)
+
+    sum_exclude_length = len(exclude)
+    if not exclude_plasmids is None:
+        sum_exclude_length += len(exclude_plasmids)
+
+    if n_missing>=sum_include_length:
         wrong_n_missing = True
         return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 
-    cog_include = db.get_cog_hits(include, as_count=True)
-    cog_include = cog_include.set_index(["bioentry", "cog"]).unstack(level=0, fill_value=0)
-    cog_include.columns = [col for col in cog_include["count"].columns.values]
-    if len(exclude)>0:
-        cog_exclude = db.get_cog_hits(exclude, as_count=True)
-        cog_exclude = cog_exclude.set_index(["bioentry", "cog"]).unstack(level=0, fill_value=0)
-        cog_exclude.columns = [col for col in cog_exclude["count"].columns.values]
+    cog_include = db.get_cog_hits(include, plasmids=include_plasmids, 
+            search_on="taxid", indexing="taxid")
+    if sum_exclude_length > 0:
+        cog_exclude = db.get_cog_hits(exclude, plasmids=exclude_plasmids,
+                search_on="taxid", indexing="taxid")
         cog_exclude["sum_pos"] = cog_exclude[cog_exclude > 0].count(axis=1)
         cog_exclude["exclude"] = cog_exclude.sum_pos > 0
         neg_index = cog_exclude[cog_exclude.exclude].index
@@ -1831,43 +1837,35 @@ def extract_cog(request):
         no_match = True
         return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
 
-    all_database = db.get_all_seqfeature_for_cog(selection)
-    hsh_cog_count_all = {}
-    for seqid, cog_id in all_database.items():
-        cur_count = hsh_cog_count_all.get(cog_id, 0)
-        hsh_cog_count_all[cog_id] = cur_count + 1
+    all_database = db.get_cog_hits(cog_include.index.tolist(), search_on="cog", indexing="taxid")
+    sums = all_database.sum(axis=1)
 
     cat_count = {}
-    cogs_summaries = db.get_cog_summaries(list(hsh_cog_count_all.keys()))
+    cogs_summaries = db.get_cog_summaries(sums.index.tolist())
     cogs_funct = db.get_cog_code_description()
     cog_data = []
     for cog_id in selection:
-        count = hsh_cog_count_all[cog_id]
+        count = sums.loc[cog_id]
 
         # some cogs do not have a description, skip those
         if cog_id not in cogs_summaries:
             continue
         for func, func_descr, cog_descr in cogs_summaries[cog_id]:
-            data = (format_cog(cog_id), func, func_descr, cog_descr, cog_include.loc[cog_id].sum_pos, str(count))
+            data = (format_cog(cog_id), func, func_descr, cog_descr,
+                    cog_include.sum_pos.loc[cog_id], str(count))
             cog_data.append(data)
 
             inc, not_incl = cat_count.get(func, (0, 0))
-            cat_count[func] = (inc+cog_include.loc[cog_id].sum_pos, not_incl)
+            cat_count[func] = (inc+cog_include.sum_pos.loc[cog_id], not_incl)
 
     # get the categories for all cogs
     for cog_id, details_lst in cogs_summaries.items():
         for func, func_descr, cog_descr in details_lst:
             inc, not_incl = cat_count.get(func, (0, 0))
-            cat_count[func] = (inc, not_incl+hsh_cog_count_all[cog_id])
+            cat_count[func] = (inc, not_incl+sums.loc[cog_id])
 
-    max_n = max(hsh_cog_count_all.values())
+    max_n = sums.max(axis=0)
     sum_group = len(selection)
-
-    target_circos_taxons = include + exclude
-    taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
-    taxon_out_url = "&o="+("&o=").join(exclude)
-    circos_url = '?ref=%s&' % reference
-    # circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
 
     # Code to generate the barchart diagrams
     cat_map_str = ",".join([f"\"{func}\": \"{descr}\"" for func, descr in cogs_funct.items()])
@@ -1952,7 +1950,8 @@ def format_cog_url(cog_id):
 def venn_cog(request, sep_plasmids=False):
     """
     Will need to modify the signature of the method to remove the sep_plasmid 
-    parameter as it is not taken into account
+    parameter as it is not taken into account. Or put back the differentiate
+    plasmid parameter in the web page.
     """
 
     biodb = settings.BIODB_DB_PATH
@@ -1971,26 +1970,33 @@ def venn_cog(request, sep_plasmids=False):
 
     targets = form_venn.get_taxids()
     cog_hits = db.get_cog_hits(targets, indexing="taxid", search_on="taxid")
+    data = db.get_cog_summaries(cog_hits.index.tolist(), only_cog_desc=True, as_df=True)
     genome_desc = db.get_genomes_description().description.to_dict()
+
+    # necessary as some COG do not have a description
+    # --> filter them out
+    cog_hits = cog_hits.reindex(data.index)
 
     series_tab = []
     for target in targets:
         cogs = cog_hits[target]
         non_zero_cogs = cogs[cogs > 0]
-        data = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.iteritems())
-        series_tab.append( f"{{name: \"{genome_desc[target]}\", data: [{data}]}}" )
+        str_fmt = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.iteritems())
+        series_tab.append( f"{{name: \"{genome_desc[target]}\", data: [{str_fmt}]}}" )
     series = "[" + ",".join(series_tab) + "]"
 
     cog2description_l = []
-    data = db.get_cog_summaries(cog_hits.index.tolist())
+    cog_codes = db.get_cog_code_description()
+    for cog, data in data.iterrows():
+        name = data.description
+        func = data.function
+        functions = ",".join(f"\"{abbr}\"" for abbr in func)
+        cog2description_l.append(f"h[\"{format_cog(cog)}\"] = [[{functions}], \"{name}\"]")
 
-    for name, lst_results in data.items():
-        # NOTE: will need to remove the strip when the bug in the database will be fixed
-        for func, func_descr, cog_descr in lst_results:
-            cog2description_l.append(f"h[\"{format_cog(name)}\"] = \"{func} ({func_descr.strip()}) </td><td>{cog_descr}\"")
+    cog_func_dict = (f"\"{func}\": \"{descr}\"" for func, descr in cog_codes.items())
+    cog_func_dict = "{"+",".join(cog_func_dict)+"}"
     cog2description = ";".join(cog2description_l)
     envoi_venn = True
-
     return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
 
 
@@ -3643,11 +3649,12 @@ def fam_cog(request, cog_id):
     # the (group, taxid) in this dataframe are those that should be colored in red
     # in the profile (correspondance between a cog entry and an orthogroup)
     orthogroups = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
-    cog_info    = db.get_cog_summaries([cog_id])
+    cog_info    = db.get_cog_summaries([cog_id], only_cog_desc=True, as_df=True)
     all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
     red_color = set(tuple(entry) for entry in orthogroups.to_numpy())
     ref_names = db.get_genomes_description().description.to_dict()
     ref_tree  = db.get_reference_phylogeny()
+    cog_func = db.get_cog_code_description()
 
     df_og_count  = db.get_og_count([int(i) for i in group_count], search_on="orthogroup").T
     df_cog_count = df_seqid_to_cog.groupby(["taxid"]).count()
@@ -3675,8 +3682,11 @@ def fam_cog(request, cog_id):
     e_tree.render(path, dpi=500)
 
     group_count = [format_orthogroup(og, to_url=True) for og in group_count]
-    info = cog_info[cog_id][0]
+    func, cog_description = cog_info.loc[cog_id]
+    info_func = "<br>".join((cog_func[code] for code in func))
     type = "cog"
+
+    info = [info_func, cog_description]
     menu = True
     envoi = True
     return render(request, 'chlamdb/fam.html', my_locals(locals()))
@@ -5459,13 +5469,13 @@ def cog_venn_subset(request, category):
     cog_description = db.get_cog_summaries(cog_hits.index.tolist(), only_cog_desc=True, as_df=True)
     selected_cogs   = cog_description[cog_description.function.str.contains(category)]
     cog_codes       = db.get_cog_code_description()
-    func_descr  = cog_codes[category]
 
     cog2description_l = []
     for cog, data in selected_cogs.iterrows():
         name = data.description
         func = data.function
-        cog2description_l.append(f"h[\"{format_cog(cog)}\"] = \"{func} ({func_descr.strip()}) </td><td>{name}\"")
+        functions = ",".join(f"\"{abbr}\"" for abbr in func)
+        cog2description_l.append(f"h[\"{format_cog(cog)}\"] = [[{functions}], \"{name}\"]")
     cog2description = ";".join(cog2description_l)
 
     sel_cog_ids = selected_cogs.index
@@ -5479,6 +5489,8 @@ def cog_venn_subset(request, category):
         series_tab.append( f"{{name: \"{genome_desc[target]}\", data: [{data}]}}" )
     series = "[" + ",".join(series_tab) + "]"
 
+    cog_func_dict = (f"\"{func}\": \"{descr}\"" for func, descr in cog_codes.items())
+    cog_func_dict = "{"+",".join(cog_func_dict)+"}"
     display_form = False
     envoi_venn = True
     return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))

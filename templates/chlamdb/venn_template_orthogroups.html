@@ -12,22 +12,20 @@ $(document).ready(function() {
 	$("#names").DataTable ({
 		columns: columns
 	});
+
 	// initially hide the table when no set is selected
 	$("#names_div").hide();
-
 	
 	$('#venn_diagram').jvenn({
 		series: {{ series|safe }},
 		displayStat: true,
 		fnClickCallback: function() {
-			var dataSet = []; 
-			for (val in this.list) {
-				curr_set = build_set(this.list[val], h);
-				dataSet.push(curr_set);
-			}
-
+			console.log(this.list);
+			let dataSet = this.list
+				.filter(it => it in h)
+				.map(it => build_set(it, h));
 			$("#names_div").show();
-			var table = $("#names").DataTable();
+			let table = $("#names").DataTable();
 			table.clear();
 			for(el in dataSet) {
 				table.row.add(dataSet[el]);
