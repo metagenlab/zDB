@@ -549,8 +549,7 @@ def get_optional_annotations(db, seqids):
         annotations.append(cog_hits)
 
     if len(annotations)==2:
-        # bug is here: should be an complete join
-        return header, annotations[0].join(annotations[1])
+        return header, annotations[0].join(annotations[1], how="outer")
     elif len(annotations)==1:
         return header, annotations[0]
     return header, pd.DataFrame()
@@ -646,7 +645,6 @@ def extract_orthogroup(request):
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
     
 
-    print(annotations.index.tolist())
     opt_header, optional_annotations = get_optional_annotations(db, seqids=annotations.index.tolist())
     details_header, details_data = get_table_details(db, annotations)
     annotations = annotations.join(optional_annotations)
@@ -656,8 +654,6 @@ def extract_orthogroup(request):
 
     if "COG" in opt_header:
         cogs = grouped["cog"].apply(list)
-
-    print(cogs)
 
     if "KO" in opt_header:
         kos = grouped["ko"].apply(list)
