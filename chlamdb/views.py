@@ -1789,9 +1789,7 @@ def venn_interpro(request):
 
 
 def extract_cog(request):
-    biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
-
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     extract_form_class = make_extract_form(db, plasmid=True, label="COG")
 
     if request.method != "POST":
@@ -1850,13 +1848,17 @@ def extract_cog(request):
         # some cogs do not have a description, skip those
         if cog_id not in cogs_summaries:
             continue
-        for func, func_descr, cog_descr in cogs_summaries[cog_id]:
-            data = (format_cog(cog_id), func, func_descr, cog_descr,
-                    cog_include.sum_pos.loc[cog_id], str(count))
-            cog_data.append(data)
 
+        data = [format_cog(cog_id)]
+        func_acc = []
+        for func, func_descr, cog_descr in cogs_summaries[cog_id]:
+            func_acc.append((func, func_descr))
             inc, not_incl = cat_count.get(func, (0, 0))
             cat_count[func] = (inc+cog_include.sum_pos.loc[cog_id], not_incl)
+        funcs = "<br>".join(f"{func} ({func_desc})" for func, func_desc in func_acc)
+        data = (format_cog(cog_id), funcs, cog_descr,
+                cog_include.sum_pos.loc[cog_id], str(count))
+        cog_data.append(data)
 
     # get the categories for all cogs
     for cog_id, details_lst in cogs_summaries.items():
