@@ -1300,10 +1300,8 @@ def format_ko_modules(hsh_modules, ko):
 
 
 def extract_ko(request):
-    biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
-
-    extract_form_class = make_extract_form(db, label="Kegg Orthologs")
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    extract_form_class = make_extract_form(db, plasmid=True, label="Kegg Orthologs")
 
     if request.method != "POST":
         form = extract_form_class()
@@ -1313,25 +1311,25 @@ def extract_ko(request):
     if not form.is_valid():
         return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
 
-    # form is valid and in post
-    include = [int(i) for i in form.cleaned_data['orthologs_in']]
-    exclude = [int(i) for i in form.cleaned_data['no_orthologs_in']]
-    n_missing = int(form.cleaned_data['frequency'])
-    reference_taxon = form.cleaned_data['reference']
-    if reference_taxon == "None":
-        reference_taxon = include[0]
+    include, include_plasmids = form.get_include_choices()
+    exclude, exclude_plasmids = form.get_exclude_choices()
+    n_missing = form.get_n_missing()
 
-    if int(n_missing)>=len(include):
-        wrong_n_missing = True
-        return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
+    sum_include_length = len(include)
+    if not include_plasmids is None:
+        sum_include_length += len(include_plasmids)
 
-    mat_include = db.get_ko_count(include)
-    mat_include = mat_include.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
-    mat_include.columns = [col for col in mat_include["count"].columns.values]
+    sum_exclude_length = len(exclude)
+    if not exclude_plasmids is None:
+        sum_exclude_length += len(exclude_plasmids)
+
+    if n_missing>=sum_include_length:
+        hsh_var = {"wrong_n_missing": True, "form": form}
+        return render(request, 'chlamdb/extract_ko.html', my_locals(hsh_var))
+
+    mat_include = db.get_ko_hits(include, plasmids=include_plasmids)
     if len(exclude) > 0:
-        mat_exclude = db.get_ko_count(exclude)
-        mat_exclude = mat_exclude.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
-        mat_exclude.columns = [col for col in mat_exclude["count"].columns.values]
+        mat_exclude = db.get_ko_hits(exclude, plasmids=exclude_plasmids)
         mat_exclude["sum_pos"] = mat_exclude[mat_exclude > 0].count(axis=1)
         mat_exclude["exclude"] = mat_exclude.sum_pos > 0
         neg_index = mat_exclude[mat_exclude.exclude].index
@@ -1343,10 +1341,11 @@ def extract_ko(request):
     pos_index = mat_include[mat_include.selection].index
     selection = pos_index.difference(neg_index).tolist()
     if len(selection) == 0:
-        no_match = True
-        return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
+        hsh_var = {"no_match": True, "form": form}
+        return render(request, 'chlamdb/extract_ko.html', my_locals(hsh_var))
 
-    ko_total_count = db.get_ko_total_count(selection)
+    all_database = db.get_ko_hits(selection, search_on="ko", indexing="taxid")
+    ko_total_count = all_database.sum(axis=1)
     ko_desc = db.get_ko_desc(selection)
     ko_mod = db.get_ko_modules(selection)
     ko_path = db.get_ko_pathways(selection)
@@ -1356,14 +1355,13 @@ def extract_ko(request):
         kod = ko_desc.get(ko, "-")
         kop = format_ko_path(ko_path, ko)
         kom = format_ko_modules(ko_mod, ko)
-        data = [kof, kod, kop, kom, mat_include.loc[ko].sum_pos, ko_total_count.loc[ko].bioentry]
+        kot = ko_total_count.loc[ko]
+        data = [kof, kod, kop, kom, mat_include.sum_pos.loc[ko], kot]
         match_groups_data.append(data)
 
     # should contain the loci of the KO in the reference genome
-    max_n = ko_total_count["bioentry"].max()
+    max_n = ko_total_count.max()
     locus_list = [] # [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-    circos_url = '?ref=%s&' % reference_taxon
-    circos_url+= "t="+('&t=').join((str(i) for i in include + exclude)) + '&h=' + ('&h=').join(locus_list)
     target_circos_taxons = include + exclude
 
     # url to get the barchart of selected KO
@@ -3701,7 +3699,7 @@ def fam_ko(request, ko_str):
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb_path, settings.BIODB_CONF)
 
-    df_ko_hits  = db.get_ko_hits([ko_id], search_on="ko", keep_taxid=True)
+    df_ko_hits  = db.get_ko_hits([ko_id], search_on="ko", indexing="seqid", keep_taxid=True)
     seqids      = df_ko_hits.index.tolist()
     seqid_to_og = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
     red_color   = set(tuple(entry) for entry in seqid_to_og.to_numpy())
