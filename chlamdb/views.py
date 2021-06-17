@@ -3718,7 +3718,8 @@ def fam_cog(request, cog_id):
 
     tree = Tree(ref_tree)
     R = tree.get_midpoint_outgroup()
-    tree.set_outgroup(R)
+    if not R is None:
+        tree.set_outgroup(R)
     tree.ladderize()
     e_tree = EteTree(tree)
     e_tree.rename_leaves(ref_names)
@@ -3783,7 +3784,8 @@ def fam_ko(request, ko_str):
 
     tree = Tree(ref_tree)
     R = tree.get_midpoint_outgroup()
-    tree.set_outgroup(R)
+    if not R is None:
+        tree.set_outgroup(R)
     tree.ladderize()
     e_tree = EteTree(tree)
     e_tree.rename_leaves(leaf_to_name)
