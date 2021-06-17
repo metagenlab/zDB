@@ -100,6 +100,8 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^search_taxonomy/$', views.search_taxonomy, name="search_taxonomy"),
                        url(r'^priam_kegg/$', views.priam_kegg, name="priam_kegg"),
                        url(r'^locusx/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)', views.locusx, name="locusx"),
+                       url(r'^search_bar$', views.search_bar, name="search_bar"),
+                       url(r'^search_bar/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)', views.search_bar, name="search_bar"),
                        url(r'^locusx/([a-zA-Z0-9_\.\-]+)', views.locusx, name="locusx"),
                        url(r'^orthogroup/([a-zA-Z0-9_\.\-]+)', views.orthogroup, name="orthogroup"),
                        url(r'^locusx$', views.locusx, name="locusx"),

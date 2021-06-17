@@ -106,6 +106,8 @@ from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleComplete
 from metagenlab_libs.ete_phylo import KOAndCompleteness
 from metagenlab_libs.ete_phylo import Column
 from metagenlab_libs.KO_module import ModuleParser
+from metagenlab_libs.chlamdb import search_bar as sb
+
 from ete3 import Tree
 
 from reportlab.lib import colors
@@ -541,7 +543,7 @@ def get_optional_annotations(db, seqids):
     annotations = []
     if config_table.get("KEGG", False):
         header.append("KO")
-        ko_hits = db.get_ko_hits(seqids, search_on="seqid")
+        ko_hits = db.get_ko_hits(seqids, search_on="seqid", indexing="seqid")
         annotations.append(ko_hits)
     if config_table.get("COG", False):
         header.append("COG")
@@ -2342,7 +2344,6 @@ def tab_og_phylogeny(db, og_id, annot):
 
     locuses = [branch.name for branch in tree.iter_leaves()]
     locus_to_genome = db.get_locus_to_genomes(locuses)
-    print(locus_to_genome)
     R = tree.get_midpoint_outgroup()
     tree.set_outgroup(R)
     tree.ladderize()
@@ -2401,7 +2402,7 @@ def tab_og_conservation_tree(db, group, compare_to=None):
 
 
 def og_tab_get_kegg_annot(db, seqids):
-    ko_hits = db.get_ko_hits(seqids, search_on="seqid")
+    ko_hits = db.get_ko_hits(seqids, search_on="seqid", indexing="seqid")
     if ko_hits.empty:
         return {}
 
@@ -2638,7 +2639,11 @@ def locusx(request, locus=None, menu=True):
     homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
     general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
     og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
-    og_phylogeny_ctx= tab_og_phylogeny(db, og_id, og_annot)
+
+    try:
+        og_phylogeny_ctx = tab_og_phylogeny(db, og_id, og_annot)
+    except:
+        og_phylogeny_ctx = {}
 
     kegg_ctx, cog_ctx = {}, {}
     if optional2status.get("KEGG", False):
@@ -2664,6 +2669,53 @@ def locusx(request, locus=None, menu=True):
         **og_phylogeny_ctx
     }
     return render(request, 'chlamdb/locus.html', my_locals(context))
+
+
+def str_if_none(s):
+    if s is None:
+        return "-"
+    return s
+
+
+def search_bar(request):
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    option2status = db.get_config_table()
+
+    index = sb.ChlamdbIndex.use_index(settings.SEARCH_INDEX)
+    user_query = request.GET.get("accession")
+
+    results = list(index.search(user_query, limit=100))
+
+    if len(results) == 0:
+        ctx = {"search_failed": True, "search_term": user_query}
+        return render(request, "chlamdb/search.html", my_locals(ctx))
+
+    search_results = []
+    for result in results:
+        locus_tag = format_locus(result.locus_tag, to_url=True)
+        gene = str_if_none(result.gene)
+        product = str_if_none(result.product)
+        line = [locus_tag, gene, product]
+
+        if option2status.get("COG", False):
+            cog = str_if_none(result.cog)
+            line.append(cog)
+        if option2status.get("KEGG", False):
+            ko = str_if_none(result.ko)
+            line.append(ko)
+        line.append(result.organism)
+        search_results.append(line)
+
+    header = ["accession", "gene", "product", "organism"]
+    if option2status.get("COG", False):
+        header.insert(3, "COG")
+    if option2status.get("KEGG", False):
+        header.insert(4, "KO")
+
+    ctx = {"search_term": user_query,
+            "header": header,
+            "search_results": search_results }
+    return render(request, "chlamdb/search.html", my_locals(ctx))
 
 
 def locusx_legacy(request, locus=None, menu=True):
