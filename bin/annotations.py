@@ -1026,6 +1026,8 @@ def orthofinder2core_groups(fasta_list,
     df = pd.DataFrame(index=orthogroup2locus_list.keys(), columns=set(locus2genome.values()))
     df = df.fillna(0)
 
+    # NOTE: to be replace by a map-reduce algo, to avoid
+    # a slow for loop in python and to make the code more compact
     for group_id,loci_list in orthogroup2locus_list.items():
         for locus in loci_list:
             genome = locus2genome[locus]
@@ -1042,7 +1044,6 @@ def orthofinder2core_groups(fasta_list,
     df = df.drop(groups_with_paralogs)
 
     core_groups = df[(df == 1).sum(axis=1) >= limit].index.tolist()
-
     return core_groups, orthogroup2locus_list, locus2genome
 
 def get_core_orthogroups(genomes_list, int_core_missing):

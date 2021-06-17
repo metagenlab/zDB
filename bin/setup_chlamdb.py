@@ -3,6 +3,7 @@ import sys
 import re
 
 from metagenlab_libs import db_utils
+from metagenlab_libs.chlamdb import search_bar
 
 import pandas as pd
 
@@ -488,3 +489,23 @@ def load_KO(params, ko_files, db_name):
     db.set_status_in_config_table("KEGG", 1)
     db.commit()
 
+
+def setup_chlamdb_search_index(params, db_name, index_name):
+    db = db_utils.DB.load_db(db_name, params)
+    os.mkdir(index_name)
+
+    genomes = db.get_genomes_description()
+    index = search_bar.ChlamdbIndex.new_index(index_name)
+
+    for taxid, data in genomes.iterrows():
+        all_infos = db.get_proteins_info([taxid], search_on="taxid")
+
+        # data contains: locus_tag, protein_id, gene, product
+        for seqid, (locus_tag, protein_id, gene, product) in all_infos.items():
+            if product=="hypothetical protein":
+                product = None
+
+            index.add(seqid=str(seqid), locus_tag=locus_tag,
+                    gene=gene, product=product)
+
+    index.done_adding()

@@ -542,10 +542,10 @@ process get_core_orthogroups {
   script:
 
   """
-  #!/usr/bin/env python
-  import annotations
-  genomes_list = "$genomes_list".split()
-  annotations.get_core_orthogroups(genomes_list, int("${params.core_missing}"))
+#!/usr/bin/env python
+import annotations
+genomes_list = "$genomes_list".split()
+annotations.get_core_orthogroups(genomes_list, int("${params.core_missing}"))
   """
 }
 
@@ -1598,7 +1598,7 @@ process load_KO_into_db {
         file db from to_load_KO_db
 
     output:
-        file db
+        file db into to_create_index
 
     script:
     if(params.ko)
@@ -1619,19 +1619,24 @@ process load_KO_into_db {
         """
 }
 
-workflow.onComplete {
-  // Display complete message
-  log.info "Completed at: " + workflow.complete
-  log.info "Duration    : " + workflow.duration
-  log.info "Success     : " + workflow.success
-  log.info "Exit status : " + workflow.exitStatus
-  mail = [ to: 'trestan.pillonel@gmail.com',
-           subject: 'Annotation Pipeline - DONE',
-           body: 'SUCCESS!' ]
-}
 
-workflow.onError {
-  // Display error message
-  log.info "Workflow execution stopped with the following message:"
-  log.info "  " + workflow.errorMessage
+process create_chlamdb_search_index {
+    publishDir "search_index/"
+
+    input:
+        file db from to_create_index
+
+    output:
+        file index_name
+
+    script:
+    index_name = "$workflow.runName"
+    """
+        #!/usr/bin/env python
+
+        import setup_chlamdb
+
+        params = ${gen_python_args()}
+        setup_chlamdb.setup_chlamdb_search_index(params, "$db", "$index_name")
+    """
 }
