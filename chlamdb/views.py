@@ -2695,22 +2695,29 @@ def search_bar(request):
         locus_tag = format_locus(result.locus_tag, to_url=True)
         gene = str_if_none(result.gene)
         product = str_if_none(result.product)
-        line = [locus_tag, gene, product]
+        orthogroup = format_orthogroup(result.og, to_url=True, from_str=True)
+        line = [locus_tag, gene, product, orthogroup]
 
         if option2status.get("COG", False):
-            cog = str_if_none(result.cog)
+            if result.cog is None:
+                cog = "-"
+            else:
+                cog = f"<a href=\"/fam_cog/{result.cog}\">{result.cog}</a>"
             line.append(cog)
         if option2status.get("KEGG", False):
-            ko = str_if_none(result.ko)
+            if result.ko is None:
+                ko = "-"
+            else:
+                ko = f"<a href=\"/fam_ko/{result.ko}\">{result.ko}</a>"
             line.append(ko)
         line.append(result.organism)
         search_results.append(line)
 
-    header = ["accession", "gene", "product", "organism"]
+    header = ["accession", "gene", "product", "Orthogroup", "organism"]
     if option2status.get("COG", False):
-        header.insert(3, "COG")
+        header.insert(4, "COG")
     if option2status.get("KEGG", False):
-        header.insert(4, "KO")
+        header.insert(5, "KO")
 
     ctx = {"search_term": user_query,
             "header": header,
@@ -3654,8 +3661,10 @@ def get_all_prot_infos(db, seqids, orthogroups):
     return all_locus_data, group_count
 
 
-def format_orthogroup(og, to_url=False):
-    base_str = f"group_{og}"
+def format_orthogroup(og, to_url=False, from_str=False):
+    base_str = og
+    if not from_str:
+        base_str = f"group_{og}"
     if to_url:
         return f"<a href=\"/orthogroup/{base_str}\">{base_str}</a>"
     return base_str
