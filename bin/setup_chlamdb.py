@@ -11,6 +11,8 @@ from Bio import SeqIO
 from Bio import AlignIO
 from Bio import SeqUtils
 
+from collections import namedtuple
+
 
 # assumes orthofinder named: OG000N
 # returns the N as int
@@ -453,6 +455,56 @@ def load_genomes_info(kwargs, gbk_list, checkm_results, db_file):
     db.set_status_in_config_table("genome_statistics", 1)
     db.commit()
 
+PfamEntry = namedtuple("PfamEntry", ["accession", "description"])
+
+
+def parse_pfam_entry(file_iter):
+    accession, description = None, None 
+    for line in file_iter:
+        if line.startswith("//"):
+            yield PfamEntry(accession=accession, description=description)
+            accession, description = None, None
+        if line.startswith("#=GF AC"):
+            accession_offset = len("#=GF AC   PF") 
+            accession_length = 5
+            accession = int(line[accession_offset:accession_offset+accession_length])
+        elif line.startswith("#=GF DE"):
+            description = line[len("#=GF DE   "):-1]
+
+
+def load_pfam(params, pfam_files, db, pfam_def_file):
+    db = db_utils.DB.load_db(db, params)
+
+    db.create_pfam_hits_table()
+    pfam_ids = set()
+    for pfam in pfam_files:
+        entries = []
+        for line in open(pfam, "r"):
+            if len(line)<len("CRC-") or line[0:len("CRC-")]!="CRC-":
+                continue
+
+            tokens = line.split()
+            hsh_i = simplify_hash(tokens[0])
+            start = int(tokens[1])
+            end = int(tokens[2])
+            pfam_raw_str = tokens[5].split(".")[0]
+            pfam_i = int(pfam_raw_str[len("PF"):])
+            entries.append((hsh_i, pfam_i, start, end))
+            pfam_ids.add(pfam_i)
+
+        db.load_data_into_table("pfam_hits", entries)
+    db.commit()
+
+    pfam_entries = []
+    pfam_def_file_iter = open(pfam_def_file, "r")
+    for entry in parse_pfam_entry(pfam_def_file_iter):
+        if not entry.accession in pfam_ids:
+            continue
+        pfam_entries.append([entry.accession, entry.description])
+    db.create_pfam_def_table(pfam_entries)
+    db.commit()
+    db.set_status_in_config_table("pfam", 1)
+
 
 def simplify_ko(raw_ko):
     return int(raw_ko[len("ko:K"):])
@@ -489,23 +541,62 @@ def load_KO(params, ko_files, db_name):
     db.set_status_in_config_table("KEGG", 1)
     db.commit()
 
+def format_cog(cog_n):
+    if pd.isna(cog_n):
+        return None
+    return f"COG{int(cog_n):04}"
+
+def format_ko(ko_n):
+    if pd.isna(ko_n):
+        return None
+    return f"KO{int(ko_n):05}"
+
+def format_og(og_n):
+    return f"group_{int(og_n)}"
 
 def setup_chlamdb_search_index(params, db_name, index_name):
     db = db_utils.DB.load_db(db_name, params)
     os.mkdir(index_name)
 
+    has_cog = params.get("params.cog", False)
+    has_ko = params.get("params.ko", False)
+    has_pfam = params.get("params.pfam_scan", False)
+
     genomes = db.get_genomes_description()
     index = search_bar.ChlamdbIndex.new_index(index_name)
 
     for taxid, data in genomes.iterrows():
-        all_infos = db.get_proteins_info([taxid], search_on="taxid")
+        all_infos = db.get_proteins_info([taxid], search_on="taxid", as_df=True)
+        all_seqids = all_infos.index.tolist()
 
-        # data contains: locus_tag, protein_id, gene, product
-        for seqid, (locus_tag, protein_id, gene, product) in all_infos.items():
+        og_hits = db.get_og_count(all_seqids, search_on="seqid")
+        all_infos = all_infos.join(og_hits, how="left")
+        if has_ko:
+            ko_hits = db.get_ko_hits(all_seqids, search_on="seqid", indexing="seqid")
+            all_infos = all_infos.join(ko_hits, how="left")
+        if has_cog:
+            cog_hits = db.get_cog_hits(all_seqids, search_on="seqid", indexing="seqid")
+            all_infos = all_infos.join(cog_hits, how="left")
+
+        for seqid, data in all_infos.iterrows():
+            product, locus_tag, gene = data[["product", "locus_tag", "gene"]]
+            ko, cog = None, None
+            if has_ko:
+                ko = data["ko"]
+            if has_cog:
+                cog = data["cog"]
+
+            og = data["orthogroup"]
+            if pd.isna(gene):
+                gene = None
+
             if product=="hypothetical protein":
                 product = None
 
-            index.add(seqid=str(seqid), locus_tag=locus_tag,
-                    gene=gene, product=product)
+            organism = genomes.loc[taxid].description
+            index.add(locus_tag=locus_tag,
+                    gene=gene, product=product, organism=organism, 
+                    ko=format_ko(ko), cog=format_cog(cog), og=format_og(og))
 
     index.done_adding()
+

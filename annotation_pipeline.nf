@@ -84,7 +84,6 @@ error_search.filter { it[1].extension!="gbk" }
 
 process check_gbk {
 	publishDir 'data/prokka_output_filtered', overwrite: true
-	container "$params.annotation_container"
 
 	input:
 	    file prokka_file from gbk_from_local_assembly.collect()
@@ -231,8 +230,6 @@ process convert_gbk_to_faa {
 
   publishDir 'data/faa_locus', mode: 'copy', overwrite: true
 
-  container "$params.annotation_container"
-
   echo false
 
   input:
@@ -266,9 +263,6 @@ faa_locus2.collectFile(name: 'merged.faa', newLine: true)
 
 
 process get_nr_sequences {
-
-  container "$params.annotation_container"
-
   publishDir 'data/', mode: 'copy', overwrite: true
 
   input:
@@ -305,7 +299,28 @@ merged_faa_chunks.splitFasta( by: 300, file: "chunk_" )
         to_diamond_refseq
         to_kofamscan
         to_PRIAM
-        to_psortb }
+        to_psortb
+        to_pfam_scan }
+
+
+process pfam_scan {
+    container "$params.pfam_scan_container"
+
+    when:
+    params.pfam_scan
+
+    input:
+        file faa_chunk from to_pfam_scan
+
+    output:
+        file pfam_result_file into pfam_results
+
+    script:
+    pfam_result_file="${faa_chunk}_results"
+    """
+        pfam_scan.pl -f $faa_chunk -d $params.pfam_database > $pfam_result_file
+    """
+}
 
 
 process prepare_orthofinder {
@@ -391,8 +406,6 @@ orthogroups
         to_load_orthofinder_in_db }
 
 process orthogroups2fasta {
-  container "$params.annotation_container"
-
   publishDir 'orthology/orthogroups_fasta', mode: 'copy', overwrite: true
 
   input:
@@ -525,10 +538,6 @@ process orthogroups_phylogeny_with_iqtree_no_boostrap {
 }
 
 process get_core_orthogroups {
-
-  container "$params.annotation_container"
-  memory '16 GB'
-  echo false
   publishDir 'orthology/core_groups', mode: 'copy', overwrite: true
 
   input:
@@ -550,8 +559,6 @@ annotations.get_core_orthogroups(genomes_list, int("${params.core_missing}"))
 }
 
 process concatenate_core_orthogroups {
-
-  container "$params.annotation_container"
 
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
@@ -618,27 +625,30 @@ process checkm_analyse {
 }
 
 
-process rpsblast_COG {
-  
-  publishDir 'annotation/COG', overwrite: true
-  container "$params.blast_container"
+if(params.cog) {
+    process rpsblast_COG {
+      
+      publishDir 'annotation/COG', overwrite: true
+      container "$params.blast_container"
 
-  when:
-  params.cog
 
-  input:
-  file seq from to_rpsblast_COG
+      input:
+      file seq from to_rpsblast_COG
 
-  output:
-  file result_file into COG_to_load_db
+      output:
+      file result_file into COG_to_load_db
 
-  script:
-  n = seq.name
-  result_file = "${n}.tab"
-  """
-  rpsblast -db $params.databases_dir/cdd/profiles/Cog -query $seq -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > ${result_file}
-  """
+      script:
+      n = seq.name
+      result_file = "${n}.tab"
+      """
+      rpsblast -db $params.databases_dir/cdd/profiles/Cog -query $seq -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > ${result_file}
+      """
+    }
+} else {
+    Channel.value("void").set { COG_to_load_db }
 }
+
 
 process blast_swissprot {
 
@@ -1049,27 +1059,28 @@ process execute_interproscan_uniparc_matches {
 }
 
 
-process execute_kofamscan {
+if(params.ko) {
+    process execute_kofamscan {
 
-  publishDir 'annotation/KO', mode: 'copy', overwrite: true
+      publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  container "$params.kegg_container"
+      container "$params.kegg_container"
 
-  when:
-  params.ko == true
+      input:
+      file(seq) from to_kofamscan
 
-  input:
-  file(seq) from to_kofamscan
+      output:
+      file '*tab' into to_load_KO
 
-  output:
-  file '*tab' into to_load_KO
+      script:
+      n = seq.name
 
-  script:
-  n = seq.name
-
-  """
-  exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list.txt --cpu ${task.cpus} -o ${n}.tab
-  """
+      """
+      exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list.txt --cpu ${task.cpus} -o ${n}.tab
+      """
+    }
+} else {
+    Channel.value("void").set { to_load_KO }
 }
 
 
@@ -1102,7 +1113,6 @@ PRIAM_results.collectFile(name: 'annotation/PRIAM/sequenceECs.txt')
 // Filter out small sequences and ambiguous AA
 process filter_sequences {
 
-  container "$params.annotation_container"
   publishDir 'data/', mode: 'copy', overwrite: true
 
   when:
@@ -1567,6 +1577,7 @@ process load_taxo_stats_into_db {
     """
 }
 
+
 process load_COG_into_db {
     input:
         file db from to_load_COG
@@ -1592,13 +1603,14 @@ process load_COG_into_db {
         """
 }
 
+
 process load_KO_into_db {
     input:
         file KO_results from to_load_KO.collect()
         file db from to_load_KO_db
 
     output:
-        file db into to_create_index
+        file db into to_pfam_db
 
     script:
     if(params.ko)
@@ -1616,6 +1628,31 @@ process load_KO_into_db {
     else
         """
         echo \"Not supposed to load kegg orthologs, passing\"
+        """
+}
+
+process load_PFAM_info_db {
+    input:
+        file db from to_pfam_db
+        file pfam_annot from pfam_results.collect()
+
+    output:
+        file db into to_create_index
+
+    script:
+    if(params.pfam_scan)
+        """
+#!/usr/bin/env python
+import setup_chlamdb
+
+kwargs = ${gen_python_args()}
+pfam_files = "$pfam_annot".split()
+
+setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$params.pfam_database/Pfam-A.hmm.dat")
+        """
+    else
+        """
+        echo \"Not supposed to load pfam, passing\"
         """
 }
 
@@ -1640,3 +1677,4 @@ process create_chlamdb_search_index {
         setup_chlamdb.setup_chlamdb_search_index(params, "$db", "$index_name")
     """
 }
+
