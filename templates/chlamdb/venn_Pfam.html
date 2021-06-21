@@ -56,15 +56,11 @@
                           {% csrf_token %}
                           {{ form_venn.as_p }}
                           <input type="submit" name="venn" value="Compare Pfam" id="venn_button" />
-
                       </form>
-
                   </div>
 
                {% if envoi_venn %}
-
-                  {% include "chlamdb/venn_template_Pfam.html" with series=series description_dico=pfam2description %}
-
+                  {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=pfam2description %}
               {% endif %}
 
               </div>
@@ -73,13 +69,18 @@
       </div>
     </div>
   </div>
-
-<!--
-<script type="text/javascript">$(document).ready( function(){ $("#jqtest").html("JQuery installed successfully!"); } ); </script>
-
--->
-
 <script>
+	var columns = [
+		{title: "PFAM"},
+		{title: "Description"}
+	];
+	function build_set(val, dict) {
+		let link = "<a href=/pfam/"+val+">"+val+"</a>";
+		let data = dict[val];
+		return [link, data];
+	}
+
+
   var update_fields = function () {
     if ($("#id_get_groups").is(":checked")) {
 
@@ -89,12 +90,7 @@
 
         $('#table_groups').hide();
         $('#export_bouttons_groups').hide();
-    }
-
-
-
-    else {
-
+    } else {
        $('#id_get_groups').prop('disabled', false);
        $('#search_table').hide();
        $('#export_bouttons_detail').hide();

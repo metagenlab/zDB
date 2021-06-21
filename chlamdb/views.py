@@ -1138,130 +1138,78 @@ def venn_orthogroup(request):
     return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
 
 
+def format_pfam(pfam_id):
+    return f"PF{pfam_id:04d}"
+
+
 def extract_pfam(request, classification="taxon_id"):
-    biodb = settings.BIODB
-    '''
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    extract_form_class = make_extract_form(db, plasmid=True, label="Pfam domains")
 
-    :param request:
-    :param biodb:
-    :param classification: either taxon_id or accession (merging plasmids or not)
-    :return:
-    '''
-
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    extract_form_class = make_extract_form(biodb, label="PFAM domains")
-
-    if request.method == 'POST': 
-
-        form = extract_form_class(request.POST)
-
-        if form.is_valid():  
-            from chlamdb.biosqldb import biosql_own_sql_tables
-
-            include = form.cleaned_data['orthologs_in']
-            exclude = form.cleaned_data['no_orthologs_in']
-            n_missing = form.cleaned_data['frequency']
-            reference_taxon = form.cleaned_data['reference']
-            if reference_taxon == "None":
-                reference_taxon = include[0]
-
-
-            if int(n_missing)>=len(include):
-                wrong_n_missing = True
-            else:
-                server, db = manipulate_biosqldb.load_db(biodb)
-
-
-                freq_missing = (len(include)-float(n_missing))/len(include)
-
-                # get sub matrix and complete matrix
-                mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                              "Pfam",
-                                                                              "id",
-                                                                              include,
-                                                                              exclude,
-                                                                              freq_missing,
-                                                                              cache=cache)
-
-                match_groups = mat.index.tolist()
-
-                if len(match_groups) == 0:
-                    no_match = True
-                else:
-                    from chlamdb.biosqldb import biosql_own_sql_tables
-                    # get count in subgroup
-                    pfam2count = dict((mat > 0).sum(axis=1))
-                    # get count in complete database
-                    pfam2count_all = dict((mat_all > 0).sum(axis=1))
-                    max_n = max(pfam2count_all.values())
-
-                    # GET max frequency for template
-                    sum_group = len(match_groups)
-
-                    sql_include = 'taxon_id ='
-                    for i in range(0, len(include)-1):
-                        sql_include+='%s or taxon_id =' % include[i]
-                    sql_include+=include[-1]
-                    n = 1
-                    search_result = []
-
-                    group_filter = 'where ('
-
-                    for i, group in enumerate(match_groups):
-                        if i == 0:
-                            group_filter += 'orthogroup="%s"' % group
-                        else:
-                            group_filter += ' or orthogroup="%s"' % group
-                    group_filter += ')'
-
-                    columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                              'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-                              
-                    sql_2 = 'select %s from orthology_detail %s' % (columns, group_filter)
-
-                    raw_data = server.adaptor.execute_and_fetchall(sql_2,)
-
-                    pfam2descr = biosql_own_sql_tables.pfam2description(biodb)
-                    match_groups_data = []
-                    for i, pfam in enumerate(match_groups):
-                        match_groups_data.append([i, pfam, pfam2descr[pfam], pfam2count[pfam], pfam2count_all[pfam]])
-
-                    n = 1
-                    extract_result = []
-                    for one_hit in raw_data:
-                        extract_result.append((n,) + one_hit)
-                        n+=1
-
-                    envoi_extract = True
-                    asset_path = '/temp/profil_tree.svg'
-
-                    motif_list = '"' + '","'.join(match_groups) + '"'
-
-                    locus_list_sql = 'select locus_tag from interpro where taxon_id=%s ' \
-                                 ' and signature_accession in (%s)' % (reference_taxon, motif_list)
-
-                    locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-
-                    circos_url = '?ref=%s&' % reference_taxon
-                    circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
-                    target_circos_taxons = include + exclude
-
-                    locus2annot, \
-                    locus_tag2cog_catego, \
-                    locus_tag2cog_name, \
-                    locus_tag2ko, \
-                    pathway2category, \
-                    module2category, \
-                    ko2ko_pathways, \
-                    ko2ko_modules,\
-                    locus2interpro = get_locus_annotations(biodb, locus_list)
-
-
-    else:  
+    if request.method != "POST":
         form = extract_form_class()
+        return render(request, 'chlamdb/extract_Pfam.html', my_locals(locals()))
 
-    return render(request, 'chlamdb/extract_Pfam.html', my_locals(locals()))
+    form = extract_form_class(request.POST)
+    if not form.is_valid():
+        return render(request, 'chlamdb/extract_Pfam.html', my_locals(locals()))
+
+    include, include_plasmids = form.get_include_choices()
+    exclude, exclude_plasmids = form.get_exclude_choices()
+    n_missing = form.get_n_missing()
+
+    sum_include_length = len(include)
+    if not include_plasmids is None:
+        sum_include_length += len(include_plasmids)
+
+    sum_exclude_length = len(exclude)
+    if not exclude_plasmids is None:
+        sum_exclude_length += len(exclude_plasmids)
+
+    if n_missing>=sum_include_length:
+        ctx = {"wrong_n_missing" : True}
+        return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
+
+    pfam_include = db.get_pfam_hits(include, plasmids=include_plasmids, 
+            search_on="taxid", indexing="taxid")
+    if sum_exclude_length > 0:
+        pfam_exclude = db.get_pfam_hits(exclude, plasmids=exclude_plasmids,
+                search_on="taxid", indexing="taxid")
+        pfam_exclude["sum_pos"] = pfam_exclude[cog_exclude > 0].count(axis=1)
+        pfam_exclude["exclude"] = pfam_exclude.sum_pos > 0
+        neg_index = pfam_exclude[pfam_exclude.exclude].index
+    else:
+        neg_index = pd.Index([])
+
+    pfam_include["sum_pos"] = pfam_include[pfam_include > 0].count(axis=1)
+    pfam_include["selection"] = pfam_include.sum_pos >= len(include)-n_missing
+    pos_index = pfam_include[pfam_include.selection].index
+    selection = pos_index.difference(neg_index).tolist()
+    pfam_defs = db.get_pfam_def(selection)
+
+    if len(selection) == 0:
+        ctx = {no_match: True}
+        return render(request, 'chlamdb/extract_ko.html', my_locals(ctx))
+
+    all_database = db.get_pfam_hits(pfam_include.index.tolist(), search_on="pfam", indexing="taxid")
+    sums = all_database.sum(axis=1)
+    sum_group = len(selection)
+
+    match_groups_data = []
+    for no, pfam in enumerate(selection):
+        count = sums.loc[pfam]
+        pfam_def = pfam_defs["def"].loc[pfam]
+        data = [no+1, format_pfam(pfam), pfam_def,
+                pfam_include.sum_pos.loc[pfam], sums.loc[pfam]]
+        match_groups_data.append(data)
+
+    ctx = {"envoi_extract": True,
+            "sum_group": sum_group,
+            "n_genomes": sum_include_length,
+            "max_n": sums.max(),
+            "match_groups_data": match_groups_data,
+            "form": form}
+    return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
 
 
 def format_ko(ko_id, as_url=False):
@@ -1564,48 +1512,42 @@ def extract_EC(request):
 
 
 def venn_pfam(request):
-    biodb = settings.BIODB
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    venn_form_class = make_venn_from(biodb, limit=6)
-    if request.method == 'POST': 
-
-        form_venn = venn_form_class(request.POST)
-        #form2 = ContactForm(request.POST)
-        if 'venn' in request.POST and form_venn.is_valid():
-            targets = form_venn.cleaned_data['targets']
-
-            server, db = manipulate_biosqldb.load_db(biodb)
-
-            all_pfam_list = []
-            series = '['
-            taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
-            for target in targets:
-                template_serie = '{name: "%s", data: %s}'
-                sql ='select id from comparative_tables_Pfam where `%s` > 0' % (target)
-                cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-                all_pfam_list += cogs
-                data = '"' + '","'.join(cogs) + '"'
-                series+=template_serie % (taxon_id2genome[target], cogs) + ','
-            series = series[0:-1] + ']'
-
-
-            pfam2description = ''
-            sql = 'select signature_accession, signature_description, count(*) from interpro where analysis="Pfam" group by signature_accession, signature_description;'
-            data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-            for i in data:
-                if i in all_pfam_list:
-                    pfam2description+='h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1])
-                else:
-                    pass
-
-            envoi_venn = True
-    else:  
+    venn_form_class = make_venn_from(db, limit=6)
+    if request.method != "POST":
         form_venn = venn_form_class()
-    return render(request, 'chlamdb/venn_Pfam.html', my_locals(locals()))
+        return render(request, 'chlamdb/venn_Pfam.html', my_locals({"form_venn": form_venn}))
 
+    form_venn = venn_form_class(request.POST)
+    if not form_venn.is_valid():  
+        # add error message
+        form_venn = venn_form_class()
+        return render(request, 'chlamdb/venn_Pfam.html', my_locals(locals()))
+
+    targets = form_venn.get_taxids()
+    pfam_hits = db.get_pfam_hits(targets, search_on="taxid", indexing="taxid")
+    data = db.get_pfam_def(pfam_hits.index.tolist())
+    genomes_desc = db.get_genomes_description().description.to_dict()
+
+    series_tab = []
+    for target in targets:
+        pfams = pfam_hits[target]
+        non_zero = pfams[pfams > 0]
+        str_fmt = ",".join(f"\"{format_pfam(pfam)}\"" for pfam, _ in non_zero.iteritems())
+        series_tab.append(f"{{name: \"{genomes_desc[target]}\", data: [{str_fmt}]}}")
+    series = "[" + ",".join(series_tab) + "]"
+
+    descriptions = []
+    for pfam, pfam_info in data.iterrows():
+        pfam_def = pfam_info["def"]
+        descriptions.append(f"h[\"{format_pfam(pfam)}\"] = \"{pfam_def}\"")
+
+    ctx = {"envoi_venn": True,
+            "series": series,
+            "pfam2description": ";".join(descriptions)}
+    return render(request, 'chlamdb/venn_Pfam.html', my_locals(ctx))
 
 
 def venn_EC(request):
