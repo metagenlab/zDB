@@ -2677,6 +2677,15 @@ def str_if_none(s):
     return s
 
 
+def search_bar_helper(fam_name, fam_url, results):
+    val = getattr(results, fam_name)
+    if val is None:
+        val = "-"
+    else:
+        val = f"<a href=\"/{fam_url}/{val}\">{val}</a>"
+    return val
+
+
 def search_bar(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     option2status = db.get_config_table()
@@ -2699,25 +2708,27 @@ def search_bar(request):
         line = [locus_tag, gene, product, orthogroup]
 
         if option2status.get("COG", False):
-            if result.cog is None:
-                cog = "-"
-            else:
-                cog = f"<a href=\"/fam_cog/{result.cog}\">{result.cog}</a>"
+            cog = search_bar_helper("cog", "fam_cog", result)
             line.append(cog)
         if option2status.get("KEGG", False):
-            if result.ko is None:
-                ko = "-"
-            else:
-                ko = f"<a href=\"/fam_ko/{result.ko}\">{result.ko}</a>"
+            ko = search_bar_helper("ko", "fam_ko", result)
             line.append(ko)
+        if option2status.get("pfam", False):
+            pfam = search_bar_helper("pfam", "fam_pfam", result)
+            line.append(pfam)
         line.append(result.organism)
         search_results.append(line)
 
     header = ["accession", "gene", "product", "Orthogroup", "organism"]
+    insert_index = 4
     if option2status.get("COG", False):
-        header.insert(4, "COG")
+        header.insert(insert_index, "COG")
+        insert_index += 1
     if option2status.get("KEGG", False):
-        header.insert(5, "KO")
+        header.insert(insert_index, "KO")
+        insert_index += 1
+    if option2status.get("pfam", False):
+        header.insert(insert_index, "PFAM")
 
     ctx = {"search_term": user_query,
             "header": header,
