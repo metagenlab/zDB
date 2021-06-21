@@ -6,10 +6,8 @@
 
 
 <head>
-<!-- Global site tag (gtag.js) - Google Analytics -->
-
 <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/calipho-sib/feature-viewer/v1.0.0/dist/feature-viewer.min.css">
-<script src="https://cdn.rawgit.com/calipho-sib/feature-viewer/v1.0.0/dist/feature-viewer.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/calipho-sib/feature-viewer@v1.0.6/dist/feature-viewer.bundle.js"></script>
 
 
 {% load static %}
@@ -705,6 +703,27 @@ function clearBox(elementID)
 						</div>
 					  {% endif %}
 
+					 {% if pfam_domains|length > 0%}
+					 	<div class="row">
+							<div class="panel panel-default">
+								<div class="panel-heading">
+								  <h3 class="panel-title">Domains</h3>
+								</div>
+								<div id="div_features">
+								</div>
+
+								<table id="panel_table" class="table table-striped" style="width: 100%">
+								{% for val in pfam_def %}
+								<tr>
+									<th>{{val.0}}</th>
+									<td>{{val.1}}</td>
+								</tr>
+								{% endfor %}
+								</table>
+							</div>
+						</div>
+					 {% endif %}
+
 					 {% if ko_entries|length > 0 %}
 						<div class="row">
 						  <div class="panel panel-default">
@@ -1243,37 +1262,25 @@ function resizeIframe(obj)
   console.log(obj.style.height);
 }
 
-//var FeatureViewer = require("feature-viewer");
-//Create a new Feature Viewer and add some rendering options
-{% if input_type != 'orthogroup' %}
-    window.onload = function() {
-        //Create a new Feature Viewer and add some rendering options
-        var ft2 = new FeatureViewer("{{ data.13 }}","#div_features", {
-            showAxis: true,
-            showSequence: false,
-            brushActive: false,
-            toolbar:false,
-            bubbleHelp:true,
-            zoomMax:1
-                    });
+window.onload = function() {
+	var ft2 = new FeatureViewer("{{translation}}",
+		"#div_features", 
+		{
+			showAxis: true,
+			showSequence: false,
+			brushActive: false,
+			toolbar:false,
+			bubbleHelp:true,
+			zoomMax:1}
+	);
 
+	features = {{pfam_domains|safe}};
 
-        //Beside positions of each element, you can also give a specific description, which will appears in the tooltip when mouse hover, and a specific ID, for example to link a click event on the feature with something else in your project.
-
-        {{features_js|safe}}
-
-        {{phobius_features|safe}}
-
-        {{superfamily_features|safe}}
-
-        ft2.on('all',function(name,data){var obj = {name: name, data: data};if(inIframe()){ parent.postMessage(obj, "*") }})
-        ft2.onAll(function(name,data){
-            console.log(arguments);
-        });
-
-
-    };
-{% endif %}
+	for(fet in features) {
+		let curr_fet = features[fet];
+		ft2.addFeature(curr_fet);
+	}
+}
 
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 

@@ -626,8 +626,6 @@ def extract_orthogroup(request):
         no_match = True
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
-    # this should be re-implemented in a more scalable way (will explode as the number of
-    # orthogroups and genome grow). Alternatively, could also be precomputed or stored in cache.
     count_all_genomes = db.get_og_count(selection, search_on="orthogroup")
 
     if not single_copy:
@@ -2550,6 +2548,34 @@ def get_sequence(db, seqid, flanking=0):
             extracted[red_start:red_stop] + "</font>" + extracted[red_stop:]
 
 
+def og_tab_get_pfam_annot(db, seqid):
+    pfam_hits = db.get_pfam_hits_info(seqid)
+    feature_viewer_fet = []
+    pfam_grouped = pfam_hits.groupby(["pfam"])
+    pfam_starts = pfam_grouped["start"].apply(list)
+    pfam_ends = pfam_grouped["end"].apply(list)
+    pfam_defs_df = db.get_pfam_def(pfam_hits.pfam.tolist())
+
+    pfam_defs = []
+    for pfam, starts in pfam_starts.iteritems():
+        ends = pfam_ends.loc[pfam]
+        name = format_pfam(pfam)
+        data = "["+",".join(f"{{x:{start}, y:{end}}}" for start, end in zip(starts, ends))+"]"
+        feature = (
+            f"{{ data: {data}, "
+            f" name: \"{name}\","
+            "  color: \"#0F8292\","
+            "  type : \"rect\","
+            "}"
+        )
+        pfam_def = pfam_defs_df["def"].loc[pfam]
+        pfam_defs.append((name, pfam_def))
+        feature_viewer_fet.append(feature)
+
+    return {"pfam_domains": "[" + ",".join(feature_viewer_fet) + "]",
+            "pfam_def": pfam_defs}
+
+
 def locusx(request, locus=None, menu=True):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
@@ -2587,12 +2613,15 @@ def locusx(request, locus=None, menu=True):
     except:
         og_phylogeny_ctx = {}
 
-    kegg_ctx, cog_ctx = {}, {}
+    kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
     if optional2status.get("KEGG", False):
         kegg_ctx = og_tab_get_kegg_annot(db, [seqid])
 
     if optional2status.get("COG", False):
         cog_ctx = og_tab_get_cog_annot(db, [seqid])
+
+    if optional2status.get("pfam", False):
+        pfam_ctx = og_tab_get_pfam_annot(db, [seqid])
 
     context = {
         "valid_id": valid_id,
@@ -2608,7 +2637,8 @@ def locusx(request, locus=None, menu=True):
         **homolog_tab_ctx,
         **general_tab,
         **og_conserv_ctx,
-        **og_phylogeny_ctx
+        **og_phylogeny_ctx,
+        **pfam_ctx
     }
     return render(request, 'chlamdb/locus.html', my_locals(context))
 
