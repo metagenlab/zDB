@@ -502,8 +502,8 @@ def load_pfam(params, pfam_files, db, pfam_def_file):
             continue
         pfam_entries.append([entry.accession, entry.description])
     db.create_pfam_def_table(pfam_entries)
-    db.commit()
     db.set_status_in_config_table("pfam", 1)
+    db.commit()
 
 
 def simplify_ko(raw_ko):
@@ -554,13 +554,18 @@ def format_ko(ko_n):
 def format_og(og_n):
     return f"group_{int(og_n)}"
 
+def format_pfam(pfam_n):
+    if pd.isna(pfam_n):
+        return None
+    return f"PF{int(pfam_n):05}"
+
 def setup_chlamdb_search_index(params, db_name, index_name):
     db = db_utils.DB.load_db(db_name, params)
     os.mkdir(index_name)
 
-    has_cog = params.get("params.cog", False)
-    has_ko = params.get("params.ko", False)
-    has_pfam = params.get("params.pfam_scan", False)
+    has_cog = params.get("cog", False)
+    has_ko = params.get("ko", False)
+    has_pfam = params.get("pfam_scan", False)
 
     genomes = db.get_genomes_description()
     index = search_bar.ChlamdbIndex.new_index(index_name)
@@ -577,26 +582,31 @@ def setup_chlamdb_search_index(params, db_name, index_name):
         if has_cog:
             cog_hits = db.get_cog_hits(all_seqids, search_on="seqid", indexing="seqid")
             all_infos = all_infos.join(cog_hits, how="left")
+        if has_pfam:
+            pfam_hits = db.get_pfam_hits(all_seqids, search_on="seqid", indexing="seqid")
+            all_infos = all_infos.join(pfam_hits, how="left")
 
         for seqid, data in all_infos.iterrows():
             product, locus_tag, gene = data[["product", "locus_tag", "gene"]]
-            ko, cog = None, None
+            ko, cog, pfam = None, None, None
             if has_ko:
                 ko = data["ko"]
             if has_cog:
                 cog = data["cog"]
+            if has_pfam:
+                pfam = data["pfam"]
 
             og = data["orthogroup"]
             if pd.isna(gene):
                 gene = None
-
             if product=="hypothetical protein":
                 product = None
 
             organism = genomes.loc[taxid].description
             index.add(locus_tag=locus_tag,
                     gene=gene, product=product, organism=organism, 
-                    ko=format_ko(ko), cog=format_cog(cog), og=format_og(og))
+                    ko=format_ko(ko), cog=format_cog(cog),
+                    og=format_og(og), pfam=format_pfam(pfam))
 
     index.done_adding()
 
