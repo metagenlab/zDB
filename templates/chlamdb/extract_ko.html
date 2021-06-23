@@ -3,9 +3,6 @@
 
 <html>
     <head>
-
-
-
         {% load static %}
         {% load custom_tags %}
         {% load crispy_forms_tags %}
@@ -109,18 +106,6 @@
                 <div id="my-tab-content" class="tab-content">
 
                     <div class="tab-pane active" id="red">
-
-
-                        <div id="export_bouttons_groups">
-                                <form name="circos_form" id="circos_form" action="{% url 'circos_main' %}" method="post">
-                                {% csrf_token %}
-                                    <input type="hidden" name="reference_taxon" value="{{ reference_taxon }}">
-                                    <input type="hidden" name="target_list" value="{{ target_circos_taxons }}">
-                                    <input type="hidden" name="highlight" value="{{ locus_list }}">
-                                    <button class="btn btn-success">Show on circular map</button>
-                                </form>
-                            <br/>
-                        </div>
 
                         <h3>Number of Kegg Orthologs: {{ sum_group }} </h3>
 
@@ -273,30 +258,6 @@
 
 <script type="text/javascript" id="js2">
   $(document).ready(function() {
-
-      var x=document.getElementById("id_reference");
-      for (var i = 0; i < x.options.length; i++) {
-          $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
-      }
-
-      $("#id_orthologs_in").change(function() {
-          document.getElementById("id_reference").selectedIndex=0;
-          var x=document.getElementById("id_orthologs_in");
-          for (var i = 0; i < x.options.length; i++) {
-              if(x.options[i].selected ==true){
-
-              $("#id_reference").children("option[value^=" + x.options[i].value + "]").show()
-              }else{
-              $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
-
-              }
-              }
-      })
-
-  })
-
-
-  $(document).ready(function() {
   $('#extract_ko').DataTable( {
    dom: 'Bfrtip',
   "paging":   true,
@@ -333,18 +294,16 @@
   ],
   } );
   } );
-
-
-
 </script>
-
-
 
 </body>
 {% include "chlamdb/style_menu.html" %}
+{% include "chlamdb/show_hide_plasmid_accessions.html" %}
+
 <style>
 #div_id_checkbox_single_copy{
   display: none;
 }
 </style>
+
 </html>

@@ -5,7 +5,7 @@
     {% include "chlamdb/header.html" %}
     {% load custom_tags %}
     <script type="text/javascript" src="{% static 'js/mark.min.js' %}?v1"></script>
-</head>§
+</head>
 
 <body>
     <div class="container-fluid" id="main_container">
@@ -16,428 +16,43 @@
                         <div class="col-lg-12">
                             {% include "chlamdb/menu.html" %}
 
-                            {% if search_echec %} <!-- no matches, display tips -->
+                            {% if search_failed %}
 
                                 <div class="panel panel-warning" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
                                     <div class="panel-heading" style="width:100%">
                                         <h3 class="panel-title">No match!</h3>
+										Sorry, des bisous.
                                     </div>
                                     <p style="margin: 0px 0px 0px 10px">
-                                    <h3>The following protein accessions are recognised:</h3>
-                                
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Example</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Genbank locus tag</td> 
-                                                <td><a href="{% url 'locusx' %}?accession=wcw_1594">wcw_1594</a></td> 
-                                            </tr>
-                                            <tr>
-                                                <td>Genbank protein accession</td> 
-                                                <td><a href="{% url 'locusx' %}?accession=ADI38940.1">ADI38940.1</a></td> 
-                                            </tr>                                       
-                                            <tr>
-                                                <td>RefSeq locus tag</td> 
-                                                <td><a href="{% url 'locusx' %}?accession=WCW_RS07680">WCW_RS07680</a></td> 
-                                            </tr> 
-                                            <tr>
-                                                <td>RefSeq protein accession</td> 
-                                                <td><a href="{% url 'locusx' %}?accession=WP_013182646.1">WP_013182646.1</a></td> 
-                                            </tr>  
-                                            <tr>
-                                                <td>UniParc accession</td> 
-                                                <td><a href="{% url 'locusx' %}?accession=UPI0001D5C1DD">UPI0001D5C1DD</a></td> 
-                                            </tr>  
-                                            <tr>
-                                                <td>UniProtKB-Accession</td> 
-                                                <td><a href="{% url 'locusx' %}?accession=D6YS95">D6YS95</a></td> 
-                                            </tr> 
-                                            <tr>
-                                                <td>UniProtKB-ID</td> 
-                                                <td><a href="{% url 'locusx' %}?accession=D6YS95_WADCW">D6YS95_WADCW</a></td> 
-                                            </tr> 
-                                        </tbody>
-                                    </table>
-                                    <br>
-                                    <h3>Accessions from KEGG, COG, Pfam and InterPro can also be searched:</h3>
-                                
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Accession type</th>
-                                                <th>Example</th>
-                                                <th>Description</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>KEGG ortholog</td> 
-                                                <td><a href="{% url 'locusx' %}?accession=K00844">K00844</a></td> 
-                                                <td>hexokinase [EC:2.7.1.1]</td>
-                                            </tr>
-                                            <tr>
-                                                <td>COG</td> 
-                                                <td><a href="{% url 'locusx' %}?accession=COG0333">COG0333</a></td> 
-                                                <td>Ribosomal protein L32</td>
-                                            </tr>                                       
-                                            <tr>
-                                                <td>PFAM</td> 
-                                                <td><a href="{% url 'locusx' %}?accession=PF06723">PF06723</a></td> 
-                                                <td>MreB/Mbl protein</td>
-                                            </tr> 
-                                            <tr>
-                                                <td>InterPro</td> 
-                                                <td><a href="{% url 'locusx' %}?accession=IPR004753">IPR004753</a></td> 
-                                                <td>Cell shape determining protein MreB</td>
-                                            </tr>  
-                                            <tr>
-                                                <td>KEGG modules</td> 
-                                                <td><a href="{% url 'locusx' %}?accession=M00023">M00023</a></td> 
-                                                <td>Amino acid metabolism </td>
-                                            </tr>  
-                                            <tr>
-                                                <td>Kegg pathways</td> 
-                                                <td><a href="{% url 'locusx' %}?accession=map00400">map00400</a></td> 
-                                                <td>Phenylalanine, tyrosine and tryptophan biosynthesis </td>
-                                            </tr> 
-                                        </tbody>
-                                    </table>
-                                
-                                    <h3>It's also possible to seach for a gene or product name</h3>
-                                    <ul>
-                                        <li><a href="{% url 'locusx' %}?accession=mreb">mreb</a></li>
-                                        <li><a href="{% url 'locusx' %}?accession=mreb+Waddlia">mreb Waddlia</a></li>
-                                        <li><a href="{% url 'locusx' %}?accession=secretion+system">secretion system</a></li>
-                                    </ul>
-                                    <h3>It's also possible to browse genomes tables from links listed in the <a href="{% url 'home' %}#genomes">home page</a> table (column: Browse online) </h3> 
-                                    
-                                    <h3>A <a href="{% url 'blast' %}">BLAST</a> interface is also available for homology search</h3> 
-                                
-                                </div> <!-- warning panel -->
-                                
-                                
+								</div>
 
-                            {% else %} <!-- not echec -->
-
-                                <h3>Search term: {{search_term}}. Search limited to 100 hits/Category.</h3>
-
-                                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                                        {% if not synonymous %}
-                                            <li class="active"><a href="#tab0" data-toggle="tab">Locus</a></li>
-                                        {% endif %}
-                                        {% if synonymous %}
-                                            <li class="active"><a href="#tabsy" data-toggle="tab">Exact match</a></li>
-                                        {% endif %}
-                                        {% if raw_data_EC %}
-                                        <li><a href="#tab1" data-toggle="tab">EC</a></li>
-                                        {% endif %}
-                                        {% if raw_data_ko %}
-                                        <li><a href="#tab2" data-toggle="tab">KO</a></li>
-                                        {% endif %}
-                                        {% if raw_data_cog %}
-                                        <li><a href="#tab3" data-toggle="tab">COG</a></li>
-                                        {% endif %}
-                                        {% if raw_data_interpro %}
-                                        <li><a href="#tab4" data-toggle="tab">Interpro</a></li>
-                                        {% endif %}
-                                        {% if raw_data_module %}
-                                        <li><a href="#tab5" data-toggle="tab">Modules</a></li>
-                                        {% endif %}
-                                        {% if raw_data_pathway %}
-                                        <li><a href="#tab6" data-toggle="tab">Pathways</a></li>
-                                        {% endif %}
-                                        {% if pmid_data %}
-                                        <li><a href="#tab7" data-toggle="tab">PubMed</a></li>
-                                        {% endif %}
-                                    </ul>
+                            {% else %}
+                                <h3>Search limited to 100 hits/Category.</h3>
                                         
                                 <div id="my-tab-content" class="tab-content">
 
-                                    {% if synonymous %}
-                    
                                         <div class="tab-pane active" id="tabsy">
                                             <table class="table table-striped" id="search_table1" name="search">
                                                 <thead>
                                                     <tr>
-                                                        <th></th>
-                                                        <th>Acc. type</th>
-                                                        <th>Accession</th>
-                                                        <th>Orthogroup</th>
-                                                        <th>Locus</th>
-                                                        <th>Start</th>
-                                                        <th>Stop</th>
-                                                        <th>S.</th>
-                                                        <th>Gene</th>
-                                                        <th>nH</th>
-                                                        <th>nG</th>
-                                                        <th>TM</th>
-                                                        <th>SP</th>
-                                                        <th>Product</th>
-                                                        <th>Organism</th>
+														{% for col in header %}
+														<th> {{col}} </th>
+														{% endfor %}
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {% load static %}
-                                                    {% for values in locus_list %}
-                                                    <tr>
-                                                        <td>{{values.0}}</td>
-                                                        <td>{{values.1}}</td>
-                                                        <td>{{values.2}}</td>
-                                                        <td><a href="{% url 'locusx' values.3 True%}"  target="_top">{{values.3}}</a></td>
-                                                        <td><a href="{% url 'locusx' values.4 True%}"  target="_top">{{values.4}}</a></td>
-                                                        <td>{{values.5}}</td>
-                                                        <td>{{values.6}}</td>
-                                                        <td>{{values.7}}</td>
-                                                        <td>{{values.8}}</td>
-                                                        <td>{{values.9}}</td>
-                                                        <td>{{values.10}}</td>
-                                                        <td>{{values.11}}</td>
-                                                        <td>{{values.12}}</td>
-                                                        <td>{{values.13}}</td>
-                                                        <td>{{values.14}}</td>
-                                                    </tr>
-                                                {% endfor %}
+                                                    {% for values in search_results %}
+														<tr>
+														{% for val in values %}
+															<td>{{val|safe}} </td>
+														{% endfor %}
+														</tr>
+													{% endfor %}
                                                 </tbody>
                                             </table>
                                         </div> <!-- panel -->
-                                    {% endif %}
-                                    {% if not synonymous %}
-                                        
-                                        <div class="tab-pane active" id="tab0">
-                                            <h2>CDS</h2>
-                                            <div id="help_text">
 
-                                                <div class="panel panel-warning" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                                                    <div class="panel-heading" style="width:100%">
-                                                        <h3 class="panel-title">Acronyms</h3>
-                                                    </div>
-                                                    <table class="table table-striped">
-                                                    <tr><td>S</td>  <td> strand</td> </tr>
-                                                    <tr><td>nH</td> <td> total number of homologues</td> </tr>
-                                                    <tr><td>nG</td> <td> number of genomes in which at least one homologous protein is present</td> </tr>
-                                                    <tr><td>TM</td> <td> Transmmembrane domains</td> </tr>
-                                                    <tr><td>SP</td> <td> Signl peptide</td> </tr>
-                                                    </table>
-                                                </div>
-                                            </div>
-
-                                            <table class="table table-striped" id="search_table1" name="search">
-                                                <thead>
-                                                    <tr>
-                                                        <th></th>
-                                                        <th>Orthogroup</th>
-                                                        <th>Locus</th>
-                                                        <th>Start</th>
-                                                        <th>Stop</th>
-                                                        <th>S.</th>
-                                                        <th>Gene</th>
-                                                        <th>nH</th>
-                                                        <th>nG</th>
-                                                        <th>TM</th>
-                                                        <th>SP</th>
-                                                        <th>Product</th>
-                                                        <th>Organism</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% load static %}
-
-
-                                                        {% for values in locus_list %}
-                                                            <tr>
-                                                                <td>{{values.0}}</td>
-                                                                <td><a href="{% url 'locusx' values.1 True%}"  target="_top">{{values.1}}</a></td>
-                                                                <td><a href="{% url 'locusx' values.2 True%}"  target="_top">{{values.2}}</a></td>
-                                                                <td>{{values.4}}</td>
-                                                                <td>{{values.5}}</td>
-                                                                <td>{{values.6}}</td>
-                                                                <td>{{values.7}}</td>
-                                                                <td>{{values.8}}</td>
-                                                                <td>{{values.9}}</td>
-                                                                <td>{{values.10}}</td>
-                                                                <td>{{values.11}}</td>
-                                                                <td>{{values.12}}</td>
-                                                                <td>{{values.13}}</td>
-                                                            </tr>
-                                                        {% endfor %}
-
-                                                </tbody>
-                                            </table>
-                                        </div> <!-- first tab -->
-                                    {% endif %} <!-- synonymous results -->
-
-                                    {% if raw_data_EC %}
-                                        <div class="tab-pane" id="tab1">
-                                            <h2>Enzymes</h2>
-                                            <table id="search_table2" class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th id="entete_locus">EC</th>
-                                                    <th id="entete_locus">Description</th>
-                                                </tr>
-                                            </thead>
-                                            {% for values in raw_data_EC %}
-                                                <tr>
-                                                    <td><a href="{% url 'fam' values.0 'EC' %}"  target="_top">{{values.0}}</a></td>
-                                                    <td>{{values.1}}</td>
-                                                </tr>
-                                            {% endfor %}
-                                            </table>
-                                        </div>
-                                    {% endif %}
-                                    {% if raw_data_ko %}
-                                        <div class="tab-pane" id="tab2">
-                                            <h2>Kegg Orthologs</h2>
-                                            <table id="search_table3" class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th id="entete_locus">KO id</th>
-                                                    <th id="entete_locus">name</th>
-                                                    <th id="entete_locus">description</th>
-                                                </tr>
-                                            </thead>
-                                            {% for values in raw_data_ko %}
-                                                <tr>
-                                                    <td><a href="{% url 'fam' values.0 'ko' %}"  target="_top">{{values.0}}</a></td>
-                                                    <td>{{values.1}}</td>
-                                                    <td>{{values.2}}</td>
-                                                </tr>
-                                            {% endfor %}
-                                            </table>
-                                        </div>
-                                    {% endif %}
-                                    {% if raw_data_cog %}
-                                        <div class="tab-pane" id="tab3">
-                                            <h2>COGs</h2>
-                                            <table id="search_table4" class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th id="entete_locus">COG id</th>
-                                                    <th id="entete_locus">Category</th>
-                                                    <th id="entete_locus">Description</th>
-                                                </tr>
-                                            </thead>
-                                            {% for values in raw_data_cog %}
-                                                <tr>
-                                                    <td><a href="{% url 'fam' values.0 'cog' %}"  target="_top">{{values.0}}</a></td>
-                                                    <td>{{values.1}} / {{values.2}}</td>
-                                                    <td>{{values.3}}</td>
-                                                </tr>
-                                            {% endfor %}
-                                            </table>
-                                        </div>
-                                    {% endif %}
-                                    {% if raw_data_interpro %}
-                                        <div class="tab-pane" id="tab4">
-                                            <h2>Interpro entries</h2>
-                                            <table id="search_table5" class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th id="entete_locus">Interpro</th>
-                                                    <th id="entete_locus">Analysis</th>
-                                                    <th id="entete_locus">Accession</th>
-                                                    <th id="entete_locus">Description</th>
-                                                    <th id="entete_locus">Description</th>
-
-
-                                                </tr>
-                                            </thead>
-                                            {% for values in raw_data_interpro %}
-                                                <tr>
-                                                    <td><a href="{% url 'fam' values.3 'interpro' %}"  target="_top">{{values.3}}</a></td>
-                                                    <td>{{values.0}}</td>
-                                                    <td><a href="{% url 'fam_interpro' values.1 values.0 %}"  target="_top">{{values.1}}</a></td>
-                                                    <td>{{values.2}}</td>
-                                                    <td>{{values.4}}</td>
-
-
-                                                </tr>
-                                            {% endfor %}
-                                            </table>
-                                        </div>
-                                    {% endif %}
-                                    {% if raw_data_module %}
-                                        <div class="tab-pane" id="tab5">
-                                            <h2>Kegg Modules</h2>
-                                            <table id="search_table6" class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th id="entete_locus">Name</th>
-                                                    <th id="entete_locus">Category</th>
-                                                    <th id="entete_locus">Sub category</th>
-                                                    <th id="entete_locus">Description</th>
-
-                                                </tr>
-                                            </thead>
-                                            {% for values in raw_data_module %}
-                                                <tr>
-                                                    <td><a href="{% url 'KEGG_module_map' values.0 %}"  target="_top">{{values.0}}</a></td>
-                                                    <td>{{values.1}}</td>
-                                                    <td>{{values.2}}</td>
-                                                    <td>{{values.3}}</td>
-                                                </tr>
-                                            {% endfor %}
-                                            </table>
-                                        </div>
-                                    {% endif %}
-                                    {% if raw_data_pathway %}
-                                        <div class="tab-pane" id="tab6">
-                                            <h2>Kegg Modules</h2>
-                                            <table id="search_table7" class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th id="entete_locus">Name</th>
-                                                    <th id="entete_locus">Category</th>
-                                                    <th id="entete_locus">Description</th>
-
-                                                </tr>
-                                            </thead>
-                                            {% for values in raw_data_pathway %}
-                                                <tr>
-                                                    <td><a href="{% url 'KEGG_mapp_ko' values.0 %}"  target="_top">{{values.0}}</a></td>
-                                                    <td>{{values.1}}</td>
-                                                    <td>{{values.2}}</td>
-                                                </tr>
-
-                                            {% endfor %}
-                                            </table>
-                                        </div>
-                                    {% endif %}
-                                    {% if pmid_data %}
-                                        <div class="tab-pane" id="tab7">
-                                            <h2>PubMed</h2>
-                                            <table id="search_table8" class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th id="entete_locus">PMID</th>
-                                                    <th id="entete_locus">Title</th>
-                                                    <th id="entete_locus">Journal</th>
-                                                    <th id="entete_locus">Year</th>
-                                                    <th id="entete_locus">Authors</th>
-                                                    <th id="entete_locus">Associated orthogroups</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                            {% for row in raw_data_pmid %}
-                                                <tr>
-                                                    <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{row.0}}"  target="_top">{{row.0}}</a></td>
-                                                    <td>{{row.1}}</td>
-                                                    <td>{{row.3}}</td>
-                                                    <td>{{row.2}}</td>
-                                                    <td>{{row.4}}</td>
-                                                    <td><a href="{% url 'pmid_associations_orthogroups' row.0 "STRING" %}">{{ pmid2n_homologs|keyvalue:row.0 }}</a></td>
-                                                </tr>
-
-                                            {% endfor %}
-                                            </tbody>
-                                            </table>
-                                        </div>
-                                    {% endif %}
                                 </div> <!-- tab-content -->
                             {% endif %} <!-- not echec -->
                         </div> <!-- column -->
@@ -466,173 +81,16 @@ mark{
   };
 
   $(document).ready(function() {
-    $('#search_table1').DataTable( {
-      dom: 'Bfrtip',
-      buttons: [
-        {
-            extend: 'excel',
-            title: 'search'
-        },
-        {
-            extend: 'csv',
-            title: 'search'
-        }
-      ],
-    "paging":   false,
-    "ordering": true,
-    "info":     false,
-    colReorder: true,
-    fixedHeader: true
-    } );
-  } );
-
-
-  $(document).ready(function() {
-    $('#search_table2').DataTable( {
-      dom: 'Bfrtip',
-      buttons: [
-        {
-            extend: 'excel',
-            title: 'search'
-        },
-        {
-            extend: 'csv',
-            title: 'search'
-        }
-      ],
-    "paging":   true,
-    "ordering": true,
-    "info":     false,
-    colReorder: true,
-    fixedHeader: true
-    } );
-  } );
-
-  $(document).ready(function() {
-    $('#search_table3').DataTable( {
-      dom: 'Bfrtip',
-      buttons: [
-        {
-            extend: 'excel',
-            title: 'search'
-        },
-        {
-            extend: 'csv',
-            title: 'search'
-        }
-      ],
-    "paging":   true,
-    "ordering": true,
-    "info":     false,
-    colReorder: true,
-    fixedHeader: true
-    } );
-  } );
-
-
-  $(document).ready(function() {
-    $('#search_table4').DataTable( {
-      dom: 'Bfrtip',
-      buttons: [
-        {
-            extend: 'excel',
-            title: 'search'
-        },
-        {
-            extend: 'csv',
-            title: 'search'
-        }
-      ],
-    "paging":   true,
-    "ordering": true,
-    "info":     false,
-    colReorder: true,
-    fixedHeader: true
-    } );
-  } );
-
-  $(document).ready(function() {
-    $('#search_table5').DataTable( {
-      dom: 'Bfrtip',
-      buttons: [
-        {
-            extend: 'excel',
-            title: 'search'
-        },
-        {
-            extend: 'csv',
-            title: 'search'
-        }
-      ],
-    "paging":   true,
-    "ordering": true,
-    "info":     false,
-    colReorder: true,
-    fixedHeader: true
-    } );
-  } );
-
-  $(document).ready(function() {
-    $('#search_table6').DataTable( {
-      dom: 'Bfrtip',
-      buttons: [
-        {
-            extend: 'excel',
-            title: 'search'
-        },
-        {
-            extend: 'csv',
-            title: 'search'
-        }
-      ],
-    "paging":   true,
-    "ordering": true,
-    "info":     false,
-    colReorder: true,
-    fixedHeader: true
-    } );
-  } );
-
-  $(document).ready(function() {
-    $('#search_table7').DataTable( {
-      dom: 'Bfrtip',
-      buttons: [
-        {
-            extend: 'excel',
-            title: 'search'
-        },
-        {
-            extend: 'csv',
-            title: 'search'
-        }
-      ],
-    "paging":   true,
-    "ordering": true,
-    "info":     false,
-    colReorder: true,
-    fixedHeader: true
-    } );
-  } );
-
-  $(document).ready(function() {
-    $('#search_table8').DataTable( {
-      dom: 'Bfrtip',
-      buttons: [
-        {
-            extend: 'excel',
-            title: 'search'
-        },
-        {
-            extend: 'csv',
-            title: 'search'
-        }
-      ],
-    "paging":   true,
-    "info":     false,
-    fixedHeader: true,
-    "ordering": false
-    } );
-  } );
+	$('#search_table1').DataTable( {
+		dom: 'Bfrtip',
+		buttons: [ ],
+		"paging":   false,
+		"ordering": true,
+		"info":     false,
+		colReorder: true,
+		fixedHeader: true
+	});
+  });
 
 
   $(document).ready(function() {

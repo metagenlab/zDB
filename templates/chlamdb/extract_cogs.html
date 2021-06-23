@@ -124,15 +124,6 @@
                         <div class="tab-pane active" id="red">
 
 
-                            <div id="export_bouttons_groups">
-                                <form name="circos_form" id="circos_form" action="{% url 'circos_main' %}" method="post">
-                                {% csrf_token %}
-                                    <input type="hidden" name="reference_taxon" value="{{ reference_taxon }}">
-                                    <input type="hidden" name="target_list" value="{{ target_circos_taxons }}">
-                                    <input type="hidden" name="highlight" value="{{ locus_list }}">
-                                    <button class="btn btn-success">Show on circular map</button>
-                                </form>
-                            </div>
                             <ul style="list-style-type:square">
                              <div style="padding-top:10px">
 
@@ -174,10 +165,10 @@
                                     {% for value in cog_data %}
                                         <tr>
                                             <td><a href="{% url 'fam_cog' value.0 %}">{{value.0}}</a></td>
-                                            <td>{{value.1}} ({{value.2}})</td>
+                                            <td>{{value.1|safe}}</td>
+                                            <td>{{value.2}}</td>
                                             <td>{{value.3}}</td>
                                             <td>{{value.4}}</td>
-                                            <td>{{value.5}}</td>
                                         </tr>
                                     {% endfor %}
                                 </table>
@@ -352,8 +343,6 @@
 									return (category_description[data.labels[Math.floor(i/data.series.length)]] + " (" +data.labels[Math.floor(i/data.series.length)] + ")");
 								  else
 									return ""});
-									// "/chlamdb/venn_cog/{{biodb}}/" + "/" + category + "{{circos_url|safe}}"
-								//.on("click",drill2);
 
 							function drill(d, i) {
 
@@ -535,22 +524,13 @@
 <script>
 $(document).ready(function() {
 $('#cog_table').DataTable( {
- dom: 'Bfrtip',   
-"paging":   true,
-"ordering": true,
-"info":     false,
-buttons: [
-{
-    extend: 'excel',
-    title: 'cog_table'
-},
-{
-    extend: 'csv',
-    title: 'cog_table'
-}
-],
-} );
-} );
+	 dom: 'Bfrtip',   
+	"paging":   true,
+	"ordering": true,
+	"info":     false,
+	buttons: [{ extend: 'excel', title: 'cog_table'},
+			  {extend: 'csv', title: 'cog_table'}]});
+});
 
 $(document).ready(function() {
 $('#table_reference_genome').DataTable( {

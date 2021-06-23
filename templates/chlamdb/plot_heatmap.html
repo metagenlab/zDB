@@ -89,18 +89,6 @@
 
                 <form action="{% url "plot_heatmap" type %}" method="post" id="heatmap-form">
 
-                    <div class="form-inline">
-                        <div class="form-group">
-                             <div class="col-md-11" style="width: 100%;">
-                                  <label style="width:380px;text-align:left;" >
-                                      <input type="checkbox" id="id_checkbox_accessions" name="checkbox_accessions">
-                                      Distinguish plasmids from chromosomes
-                                  </label>
-                            </div>
-                        </div>
-                    </div>
-
-
                     {% csrf_token %}
                     {{ form_venn.as_p }}
                     <input type="submit" name="venn" value="Show" id="venn_button" />

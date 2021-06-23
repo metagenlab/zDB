@@ -4,26 +4,26 @@
 <html>
 <head>
   {% include "chlamdb/header.html" %}
-  
-    <script type="text/javascript" id="js">
-        $(document).ready(function() {
-        // call the tablesorter plugin
-        $("table").tablesorter({
-        // change the default sorting order from 'asc' to 'desc'
-        sortInitialOrder: 1
-        });
-        });
-    </script>
-    <script type="text/javascript">
-        jQuery(document).ready(function ($) {
-            $('#tabs').tab();
-        });
-    </script>
-    <script type="text/javascript">
-        jQuery(document).ready(function ($) {
-            $('#tabs1').tab();
-        });
-    </script>
+
+	<script>
+		var cog_func_dict = {{cog_func_dict|safe}};
+
+		var columns = [
+			{title: "ID"},
+			{title: "Category"},
+			{title: "Description"},
+		];
+
+		function build_set(val, dict) {
+			let link = "<a href=/fam_cog/"+val+">"+val+"</a>";
+			let raw_data = dict[val];
+			categories = raw_data[0].
+				map(it => cog_func_dict[it]+" ("+it+")").
+				join("<br>");
+			description = raw_data[1];
+			return [link, categories, description];
+		}
+	</script>
 
 {% load crispy_forms_tags %}
 <head>
@@ -66,8 +66,9 @@
 
                           </div>
               {% endif %}
+
                {% if envoi_venn %}
-                  {% include "chlamdb/venn_template_COGs.html" with series=series description_dico=cog2description %}
+                  {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=cog2description %}
 
               {% endif %}
               </div>
@@ -76,44 +77,6 @@
       </div>
     </div>
   </div>
-
-<!--
-<script type="text/javascript">$(document).ready( function(){ $("#jqtest").html("JQuery installed successfully!"); } ); </script>
-
--->
-
-<script>
-  var update_fields = function () {
-    if ($("#id_get_groups").is(":checked")) {
-
-        $('#id_region').prop('disabled', false);
-        $('#search_table').show();
-        $('#export_bouttons_detail').show();
-
-        $('#table_groups').hide();
-        $('#export_bouttons_groups').hide();
-    }
-
-
-
-    else {
-
-       $('#id_get_groups').prop('disabled', false);
-       $('#search_table').hide();
-       $('#export_bouttons_detail').hide();
-       $('#table_groups').show();
-       $('#export_bouttons_groups').show();
-    }
-  };
-  $(update_fields);
-  $("#id_get_groups").change(update_fields);
-
-</script>
-
-
-
-<p id="jqtest"></p>
-
 </body>
 {% include "chlamdb/style_menu.html" %}
 </html>
