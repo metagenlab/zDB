@@ -2572,7 +2572,6 @@ def og_tab_get_pfam_annot(db, seqid):
         pfam_def = pfam_defs_df["def"].loc[pfam]
         pfam_defs.append((name, pfam_def))
         feature_viewer_fet.append(feature)
-
     return {"pfam_domains": "[" + ",".join(feature_viewer_fet) + "]",
             "pfam_def": pfam_defs}
 
@@ -2594,8 +2593,6 @@ def locusx_genomic_region(db, seqid, window):
     gd_diagram = GenomeDiagram.Diagram("foo")
     gd_track = gd_diagram.new_track(1, name="bar", greytrack=True)
     gd_features = gd_track.new_set()
-    print(all_infos)
-
     for curr_seqid, data in all_infos.iterrows():
         # NOTE: if none of the CDS/RNA have annotated genes, should be cautious here
         loc = FeatureLocation(data.start, data.end, data.strand)
@@ -2612,7 +2609,8 @@ def locusx_genomic_region(db, seqid, window):
     
     asset_dir = "/assets/"
     filename = f"/temp/{filename}"
-    gd_diagram.draw(format="linear", pagesize=(100, 600), start=window_start, end=window_stop, fragments=1)
+    gd_diagram.draw(format="linear", pagesize=(100, 600), start=all_infos.start.min(),
+            end=all_infos.end.max(), fragments=1)
     gd_diagram.write(settings.BASE_DIR+asset_dir+filename, "SVG")
     return {"genomic_region_svg": filename}
 
