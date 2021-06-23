@@ -58,6 +58,7 @@ function clearBox(elementID)
 					<a href="#tab3" data-toggle="tab">Sequences</a>
 				</li>
 
+				{% if sequence_type == "CDS" %}
                 <li>
 					<a href="#homologs_tab" data-toggle="tab">
 				 	Homologs <span class="badge">{{n_homologues}}</span><br>
@@ -67,6 +68,8 @@ function clearBox(elementID)
                 <li>
 					<a href="#phylogenetic_distrib" data-toggle="tab">Phylogenetic distribution</a>
 				</li>
+
+				{% endif %}
 
 
 				{% if optional2status|keyvalue:"BLAST_refseq"%}
@@ -171,33 +174,18 @@ function clearBox(elementID)
 
                                       <tr>
                                           <th>Length</th>
-                                          <td>{{nucl_length}} (nucleotides) / {{length}} (amino acids)</td>
+										  {% if sequence_type == "CDS" %}
+											  <td>{{nucl_length}} (nucleotides) / {{length}} (amino acids)</td>
+										  {% else %}
+											  <td>{{nucl_length}} (nucleotides)</td>
+										  {% endif %}
                                       </tr>
                                       
                                   </table>
                               </div>
                             </div>
 
-                            <div class="row">
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">Download</h3>
-                                </div>
-                                <div class="panel-body">
-                                  <div style="width: 100%;padding-left:20px">
-                                      <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' data.0 "aa"%}'">fasta aa</button>
-                                      <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' data.0 "nucl"%}'">fasta nucl</button>
-                                          {% if optional2status|keyvalue:"gene_phylogenies" %}
-                                              <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_newick_tree' data.0 False %}'">newick tree</button>
-                                          {% endif %}
-                                          {% if optional2status|keyvalue:"orthogroup_MSA" %}
-                                              <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% static alignment_fasta %}'">MSA</button>
-                                          {% endif %}
-
-                                  </div>
-                                </div>
-                              </div>
-                           </div>
+						{% if sequence_type == "CDS" %}
                            <div class="row">
                              <div class="panel panel-default">
                                <div class="panel-heading">
@@ -219,95 +207,10 @@ function clearBox(elementID)
                                        <td></td>
                                    </tr>
 
-                                   {%if cog_data %}
-                                       <tr>
-                                          <th>COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
-                                          <td><a <a href="{% url 'fam' cog_data.0 'cog' %}" target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
-                                          <td><a data-toggle="collapse" href="#multiCollapseCOG" role="button" aria-expanded="false" aria-controls="multiCollapseCOG"><span class="badge" aria-hidden="true">Score <i class="fa fa-plus"></i></span></a> </td>
-                                       </tr>
-
-                                          <tr class="collapse" id="multiCollapseCOG">
-                                            <td colspan="2">
-                                                  <table class="table table" style="width: 100%">
-                                                    <tr bgcolor="#CEFFFE">
-                                                          <th>Query start</th>
-                                                          <td>{{cog_data.3}}</td>
-                                                    </tr>
-                                                    <tr bgcolor="#CEFFFE">
-                                                          <th>Query end</th>
-                                                          <td>{{cog_data.4}}</td>
-                                                    </tr>
-                                                    <tr bgcolor="#CEFFFE">
-                                                          <th>Hit start</th>
-                                                          <td>{{cog_data.5}}</td>
-                                                    </tr>
-                                                    <tr bgcolor="#CEFFFE">
-                                                          <th>Hit end</th>
-                                                          <td>{{cog_data.6}}</td>
-                                                    </tr>
-                                                    <tr bgcolor="#CEFFFE">
-                                                          <th>Query coverage (%)</th>
-                                                          <td>{{cog_data.7}}</td>
-                                                    </tr>
-                                                    <tr bgcolor="#CEFFFE">
-                                                          <th>Hit coverage (%)</th>
-                                                          <td>{{cog_data.8}}</td>
-                                                    </tr>
-                                                    <tr bgcolor="#CEFFFE">
-                                                          <th>Identity (%)</th>
-                                                          <td>{{cog_data.9}}</td>
-                                                    </tr>
-                                                    <tr bgcolor="#CEFFFE">
-                                                          <th>Evalue</th>
-                                                          <td>{{cog_data.10}}</td>
-                                                    </tr>
-                                                    <tr bgcolor="#CEFFFE">
-                                                          <th>Bitscore</th>
-                                                          <td>{{cog_data.11}}</td>
-                                                    </tr>
-                                                </table>
-                                            <td>
-                                          </tr>
-
-
-                                   {% endif %}
-
-                                   {%if ko_data %}
-                                       <tr>
-                                          <th>KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
-                                          <td><a href="{% url 'fam' ko_data.0 'ko' %}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
-                                          <td><a data-toggle="collapse" href="#multiCollapseKO" role="button" aria-expanded="false" aria-controls="multiCollapseKO"><span class="badge" aria-hidden="true">Score <i class="fa fa-plus"></i></span></a> </td>
-                                       </tr>
-
-
-                                          <tr class="collapse" id="multiCollapseKO">
-                                            <td colspan="2">
-                                                  <table class="table table" style="width: 100%">
-                                                    <tr bgcolor="#CEFFFE">
-                                                          <th>KoFamScan Score threshold</th>
-                                                          <td>{{ko_data.5}}</td>
-                                                    </tr>
-                                                    <tr bgcolor="#CEFFFE">
-                                                          <th>Score</th>
-                                                          <td>{{ko_data.6}}</td>
-                                                    </tr>
-                                                    <tr bgcolor="#CEFFFE">
-                                                          <th>Evalue</th>
-                                                          <td>{{ko_data.7}}</td>
-                                                    </tr>
-                                                </table>
-                                            <td>
-                                          </tr>
-
-
-
-                                   {% endif %}
                                 </table>
-
                              </div>
                            </div>
-
-
+						 {% endif %}
                            
 
                           {% if optional2status|keyvalue:"T3SS_data"%}
@@ -499,12 +402,17 @@ function clearBox(elementID)
                         </div> <!-- fluid container -->
                       </div> <!-- first column -->
                       <div class="col-md-12 col-lg-8">
-                          <a download="genomic_region.svg" class="btn" href="{% static name %}"><i class="fa fa-download"></i> Download SVG</a>
-                          <a onclick='exportPNG("genomic_region", "genomic_region");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
 
-                            <div class="row" style="height:150px">
-                                <object width="105%" height="230px"  type="image/svg+xml" style="margin-left: 3px; margin-top: 10px; padding-bottom: -100px;" data="{% static name %}" id="genomic_region"></object>
+						  <div class=row>
+						<div class="panel panel-default">
+							  <div class="panel-heading">
+								<h3 class="panel-title">Genomic region</h3>
+							  </div>
+                            <div class="row" style="height:100px; display:flex; justify-content:center; align-items:center;">
+                                <object type="image/svg+xml"  data="{% static genomic_region_svg %}" id="genomic_region"></object>
                             </div>
+						  </div>
+						  </div>
 
                             {% if uniprot_annotation%}
                               <div class="row">
@@ -899,10 +807,13 @@ function clearBox(elementID)
 
                     </div> <!-- second column -->
                 </div> <!-- first tab -->
+
+
                 <div class="tab-pane" id="tab3" width="100%" height="100%">
                   <div class="row" style="padding-top:15px;">
                     <div class="col-lg-6">
 
+					{% if sequence_type == "CDS" %}
                       <div class="row">
                         <div class="panel panel-default">
                           <div class="panel-heading">
@@ -912,8 +823,9 @@ function clearBox(elementID)
                             <p style="word-wrap: break-word;" class="text-justify">{{translation}}</p>
                           </div>
                         </div>
-
                       </div>
+					{% endif %}
+
                       <div class="row">
 
                         <div class="panel panel-default">

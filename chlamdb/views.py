@@ -117,6 +117,7 @@ from ete3 import TextFace, StackedBarFace
 import pandas as pd
 
 from Bio.SeqFeature import SeqFeature, FeatureLocation
+from Bio.Graphics import GenomeDiagram
 
 
 with db_utils.DB.load_db_from_name(settings.BIODB_DB_PATH) as db:
@@ -2576,23 +2577,95 @@ def og_tab_get_pfam_annot(db, seqid):
             "pfam_def": pfam_defs}
 
 
+def locusx_genomic_region(db, seqid, window):
+    filename = f"genomic_region_{window}_{seqid}.svg"
+    hsh_loc = db.get_gene_loc([seqid])
+    strand, start, end = hsh_loc[seqid]
+    window_start, window_stop = start-window, end+window
+
+    if window_start<0:
+        window_start=0
+    df_seqids = db.get_seqid_in_neighborhood(seqid, window_start, window_stop)
+
+    infos = db.get_proteins_info(df_seqids.index.tolist(),
+            to_return=["gene", "locus_tag"], as_df=True, inc_non_CDS=True)
+    cds_type = db.get_CDS_type(df_seqids.index.tolist())
+    all_infos = infos.join(cds_type).join(df_seqids)
+    gd_diagram = GenomeDiagram.Diagram("foo")
+    gd_track = gd_diagram.new_track(1, name="bar", greytrack=True)
+    gd_features = gd_track.new_set()
+    print(all_infos)
+
+    for curr_seqid, data in all_infos.iterrows():
+        # NOTE: if none of the CDS/RNA have annotated genes, should be cautious here
+        loc = FeatureLocation(data.start, data.end, data.strand)
+        fet = SeqFeature(location=loc)
+        color = colors.green
+        if seqid==curr_seqid:
+            color = colors.red
+        elif data.type=="tRNA":
+            color = colors.orange
+        elif data.type=="rRNA":
+            color = colors.blue
+
+        gd_features.add_feature(fet, color=color, sigil="ARROW", label=True)
+    
+    asset_dir = "/assets/"
+    filename = f"/temp/{filename}"
+    gd_diagram.draw(format="linear", pagesize=(100, 600), start=window_start, end=window_stop, fragments=1)
+    gd_diagram.write(settings.BASE_DIR+asset_dir+filename, "SVG")
+    return {"genomic_region_svg": filename}
+
+
+def locusx_RNA(db, seqid):
+    hsh_infos = db.get_proteins_info([seqid], to_return=["locus_tag", "gene", "product"],
+            inc_non_CDS=True)
+    hsh_loc = db.get_gene_loc([seqid])
+    locus_tag, gene, product = hsh_infos[seqid]
+    if gene is None:
+        gene = "-"
+    strand, start, stop = hsh_loc[seqid]
+    return {
+        "locus_tag": locus_tag,
+        "gene": gene,
+        "prot": product,
+        "start": start,
+        "end": stop,
+        "strand": strand,
+        "nucl_length": stop-start
+    }
+
+
 def locusx(request, locus=None, menu=True):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
     
     if locus==None:
-        valid_id = False
-        return render(request, 'chlamdb/locus.html', my_locals(locals()))
+        return render(request, 'chlamdb/locus.html', my_locals({"valid_id": False}))
 
     try:
-        seqid = db.get_seqid(locus_tag=locus)
+        seqid, feature_type = db.get_seqid(locus_tag=locus, feature_type=True)
     except:
-        valid = False
-        return render(request, 'chlamdb/locus.html', my_locals(locals()))
+        return render(request, 'chlamdb/locus.html', my_locals({"valid": False}))
     else:
         valid_id = True
 
+    sequence = get_sequence(db, seqid, flanking=50)
+    genomic_region_ctx = locusx_genomic_region(db, seqid, window=8000)
     optional2status = db.get_config_table()
+    if feature_type!="CDS":
+        ctx_RNA = locusx_RNA(db, seqid)
+        context = {
+            "valid_id": valid_id,
+            "optional2status": optional2status,
+            "menu": True,
+            "seq": sequence,
+            "sequence_type": feature_type,
+            **ctx_RNA,
+            **genomic_region_ctx
+        }
+        return render(request, 'chlamdb/locus.html', my_locals(context))
+
     gene_loc = db.get_gene_loc([seqid])
     og_inf   = db.get_og_count([seqid], search_on="seqid")
     og_id    = int(og_inf.loc[seqid].orthogroup) # need to convert from numpy64 to int
@@ -2602,8 +2675,6 @@ def locusx(request, locus=None, menu=True):
     all_org  = db.get_organism(og_annot.index.tolist(), as_hash=True)
     n_homologues = all_og_c.loc[og_id].sum()
     translation = db.get_translation(seqid)
-    sequence = get_sequence(db, seqid, flanking=50)
-
     homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
     general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
     og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
@@ -2627,18 +2698,19 @@ def locusx(request, locus=None, menu=True):
         "valid_id": valid_id,
         "optional2status": optional2status,
         "menu": True,
-        "data": ["foo", "bar"],
         "n_homologues": n_homologues,
         "og_id": format_orthogroup(og_id, to_url=True),
         "translation": translation,
         "seq": sequence,
+        "sequence_type": feature_type,
         **cog_ctx,
         **kegg_ctx,
         **homolog_tab_ctx,
         **general_tab,
         **og_conserv_ctx,
         **og_phylogeny_ctx,
-        **pfam_ctx
+        **pfam_ctx,
+        **genomic_region_ctx
     }
     return render(request, 'chlamdb/locus.html', my_locals(context))
 
