@@ -157,11 +157,10 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
                           <tr><td>tblastn</td><td>protein sequence vs translated nucleotide sequences database</td></tr>
                       </table>
 
-                      </p>
-                      </p>
+                    
                   </div>
                   <form action="{% url "blast" %}" method="post">{% csrf_token %}
-                    {{ form.as_p }}
+                    {{ form.as_p }} 
                     <input type="submit" value="Submit" />
                   </form>
 
@@ -173,8 +172,8 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
                           <h3 class="panel-title">Wrong format combination</h3>
                       </div>
                       The format combination is incorrect: check BLAST version and database.
-                      </p>
-                      </p>
+                      
+                      
                   </div>
 
                   {% endif %}
@@ -186,26 +185,26 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
                   {% endif %}
 
                   {% if envoi %}
-                      &nbsp
+                      &nbsp   #space 
 
                       <h2>Blast result</h2>
 
                       {% if js_out %}
                           <div id='snippetDiv'></div>
-                          <div id="blast-multiple-alignments"></div>
-                          <div id="blast-alignments-table"></div>
-                          <div id="blast-single-alignment"></div>
+                          <div id="blast-multiple-alignments"></div> #centeral for the image and table of blast result # but it controls the first graph
+                          <div id="blast-alignments-table"></div> #central as well for all #but it controls the table
+                          <div id="blast-single-alignment"></div> #central as well for all #but it controls the last alignment graph
                       {% endif %}
-                  {% if blast_result %}
+                  {% if blast_result %} #this part is in def primer_search (what does it do?)
                       <h3>Result</h3>
                        <div id="blast_res">
                       {% autoescape off %}{{blast_result}}{% endautoescape %}</div>
-                  {% elif blast_no_hits %}
+                  {% elif blast_no_hits %}    #we have this in def blast
                   <h3>No hits</h3>
-                        <pre id="blast_result">
+                        <pre id="blast_result">  #it displays the failed search in an organized way
                          {% autoescape off %}{{blast_no_hits}}{% endautoescape %}
                         </pre>
-                  {% elif blast_err %}
+                  {% elif blast_err %}    #we have this in def blast
                         <h3>Error</h3>
                         <pre id="blast_result">
                          {% autoescape off %}{{blast_err}}{% endautoescape %}
@@ -214,17 +213,17 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
 
                   {% if all_data %}
                       <h2>Best hit region </h2>
-
+#THIS PART IS FOR THE HELP TABLE WITH tblastn
                       <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                           <div class="panel-heading" style="width:100%">
                               <h3 class="panel-title">Help</h3>
                           </div>
                           The tBLASTn hit is indicated in purple.
-                          </p>
-                          </p>
+                          
+                          
                       </div>
 
-
+#FROM HERE WE HAVE SOMEHOW THE DISPAYMENT OF THE LOCUS WITH THE IDENTIFIED GENES AROUND THE INPUT SEQUENCE
                       <div style="height:100px;">
                         {% for fig in fig_list%}
                           <h3>{{fig.0}}</h3>
@@ -255,7 +254,7 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
 
                   </table>
 
-
+#UNTIL THIS PART (tblastn)
 
 
                   {% endif %}

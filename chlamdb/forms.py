@@ -38,9 +38,34 @@ def get_accessions(db, all=False, plasmid=False):
             index += 1
             is_plasmid = True
 
-    # if all:
-    # accession_choices = [["all", "all"]] + accession_choices
-    return accession_choices, reverse_index
+    if all:
+        accession_choices = [["all", "all"]] + accession_choices
+    return accession_choices , reverse_index
+
+
+def get_accessions_BLAST(db, all=False, plasmid=False):
+    result            = db.get_genomes_description(lst_plasmids=True)
+    accession_choices = []
+    index          = 1
+    reverse_index     = []
+
+    # cannot use taxid because plasmids have the same
+    # taxids as the chromosome
+    for taxid, data in result.iterrows():
+        accession_choices.append((index, data.description))
+        reverse_index.append((taxid, False))
+        try:
+            if plasmid and data.has_plasmid==1:
+                accession_choices.append((str(index) + " plasmid", data.description + " plasmid"))
+                reverse_index.append((taxid, True))
+                is_plasmid = True
+                index += 1
+        except:
+            index += 1
+
+    if all:
+        accession_choices = [["all", "all"]] + accession_choices
+    return accession_choices #, reverse_index  #understand why there is this 'reverse_index' in the original def (error in def blast)
 
 
 def make_contact_form(server, database_name):
@@ -789,8 +814,9 @@ class BlastProfileForm(forms.Form):
 
 def make_blast_form(biodb):
 
-    accession_choices =  get_accessions(biodb, plasmid=True, all=True)
+    accession_choices =  get_accessions_BLAST(biodb, plasmid=True, all=True)
 
+    print(accession_choices)
     class BlastForm(forms.Form):
         blast = forms.ChoiceField(choices=[("blastn_ffn", "blastn_ffn"),
                                            ("blastn_fna", "blastn_fna"),
@@ -799,6 +825,13 @@ def make_blast_form(biodb):
                                            ("tblastn", "tblastn")])
         target = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
         blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 20}))
+        evalue= forms.CharField(widget=forms.Textarea(attrs={'cols': 1, 'rows': 1}))
+        
+        max_number_of_hits = forms.ChoiceField(choices=[("10", "10"),
+                                           ("5", "5"),
+                                           ("20", "20"),
+                                           ("30", "30"),
+                                           ("all", "all")])
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)

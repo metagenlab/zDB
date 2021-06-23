@@ -8,6 +8,7 @@
 
 #from django.shortcuts import render
 #from datetime import datetime
+#from bin.metagenlab_libs.metagenlab_libs.db_utils import DB
 from django.shortcuts import render
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
@@ -11299,10 +11300,10 @@ def blast_profile(request):
 
 
 def blast(request):
-    biodb = settings.BIODB
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    blast_form_class = make_blast_form(biodb)
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    #server = manipulate_biosqldb.load_db(db)
+    blast_form_class = make_blast_form(db) 
 
     if request.method == 'POST': 
 
@@ -11317,173 +11318,215 @@ def blast(request):
             from tempfile import NamedTemporaryFile
             from io import StringIO
             from Bio.Blast import NCBIXML
-            from Bio.Alphabet import IUPAC
-            from Bio.Alphabet import _verify_alphabet
+          
+            
             import os
             from chlamdb.biosqldb import shell_command
             import re
 
 
             input_sequence = form.cleaned_data['blast_input']
+            customized_evalue = form.cleaned_data['evalue']
+            number_blast_hits = form.cleaned_data['max_number_of_hits']
+            print('NUMBER HITS', number_blast_hits)
+            print('customized_evalue', customized_evalue)
 
-            target_accession = form.cleaned_data['target']
-
+            target_accession = form.cleaned_data['target'] #form.cleaned_data returns a dictionary of validated form input fields and their values, where string primary keys are returned as objects 
             blast_type = form.cleaned_data['blast']
 
+            target_accession_pl=''
+            if target_accession.endswith(' plasmid'):
+                target_accession_pl=target_accession #keep for plasmid filtering
+                target_accession= int (target_accession.replace(' plasmid', ''))
+                
 
             unknown_format = False
 
+            print('target_accession' , target_accession)
+
             if '>' in input_sequence:
-                my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta', alphabet=IUPAC.ambiguous_dna)]
+                my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
                 seq = my_record[0]
-                seq.alphabet = IUPAC.ambiguous_dna
-                if _verify_alphabet(seq):
-                    my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta', alphabet=IUPAC.ambiguous_dna)]
-                else:
-                    seq.alphabet = IUPAC.extended_protein
-                    if _verify_alphabet(seq):
-                        my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta', alphabet=IUPAC.extended_protein)]
-                    else:
-                        unknown_format = True
+                                          
             else:
-                input_sequence = input_sequence.rstrip(os.linesep)
+                input_sequence == input_sequence.rstrip(os.linesep)
                 seq = Seq(input_sequence)
-                seq.alphabet = IUPAC.ambiguous_dna
-                if _verify_alphabet(seq):
-                    my_record = [SeqRecord(seq, id="INPUT", description="INPUT")]
-                else:
-                    seq.alphabet = IUPAC.extended_protein
-                    if _verify_alphabet(seq):
-                        my_record = [SeqRecord(seq, id="INPUT", description="INPUT")]
-                    else:
-                        unknown_format = True
+                                
+            dna = set("ATGCN") #add ambiguous N
+            prot = set('ACDEFGHIKLMNPQRSTVWYX') #search for special characters 
+            check_seq_DNA = set(seq) - dna
+            check_seq_prot = set(seq) - prot
+            
+            if  not check_seq_DNA:
+                try: my_record[0].description = "DNA"
+                except: my_record = [SeqRecord(seq, id="INPUT", description="DNA")]
+                seq_type= my_record[0].description
+                    
+            elif  not check_seq_prot:
+                try: my_record[0].description = "Protein"
+                except: my_record = [SeqRecord(seq, id="INPUT", description="Protein")]
+                seq_type= my_record[0].description
+                print('my_record_changed', my_record)
+            else:
+                unknown_format = True
+                                                   
+                
             if not unknown_format:
-                if my_record[0].seq.alphabet == IUPAC.extended_protein and blast_type in ["blastn_ffn", "blastn_fna", "blastx"]:
+                if seq_type == 'DNA' and blast_type in ["blastp", "tblastn"]:
                     wrong_format = True
-                elif my_record[0].seq.alphabet == IUPAC.ambiguous_dna and blast_type in ["blastp", "tblastn"]:
+                elif seq_type =='Protein' and blast_type in ["blastn_ffn", "blastn_fna", "blastx"]:
                     wrong_format = True
+
                 else:
                     query_file = NamedTemporaryFile(mode='w')
                     SeqIO.write(my_record, query_file, "fasta")
                     query_file.flush()
+                    
+                    
+                    if target_accession =='all':
+                        key_dict = 'merged'
+                    
+                    else:
+                        dictionary_acc_names=db.get_taxon_id_to_filenames() #here db replaces 'db_utils.DB' that is used to create the link because it has already been done
+                        key_dict=dictionary_acc_names[int(target_accession)]               
+                        print('dictionary_key', key_dict)  
+                        print('dictionary_acc_names', dictionary_acc_names)
 
+                    if number_blast_hits=='all':
+                       number_blast_hits = 100000                 
                     if blast_type=='blastn_ffn':
                         blastType = 'locus'
-                        blastdb = settings.BASE_DIR + "/assets/%s/ffn/%s.ffn" % (biodb, target_accession)
-                        blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+                        blastdb = settings.BLAST_PATH + "ffn/%s" % (key_dict)
+                        blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits, outfmt=0 )
+                        print('BLASTDB', blastdb)
                     if blast_type=='blastn_fna':
                         blastType = 'genome'
-                        blastdb = settings.BASE_DIR + "/assets/%s/fna/%s.fna" % (biodb, target_accession)
-                        blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+                        blastdb = settings.BLAST_PATH  + "fna/%s" % (key_dict)
+                        print(blastdb)
+                        blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits,  outfmt=0)
                     if blast_type=='blastp':
                         blastType = 'locus'
-                        blastdb = settings.BASE_DIR + "/assets/%s/faa/%s.faa" % (biodb, target_accession)
-                        blast_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+                        blastdb = settings.BLAST_PATH  + "faa/%s" % (key_dict)
+                        blast_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits, outfmt=0)
                     if blast_type=='tblastn':
                         blastType = 'genome'
-                        blastdb = settings.BASE_DIR + "/assets/%s/fna/%s.fna" % (biodb, target_accession)
-                        blast_cline = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
-                        blast_cline2 = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=5)
+                        blastdb = settings.BLAST_PATH  + "fna/%s" % (key_dict)
+                        blast_cline = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits,  outfmt=0)
+                        blast_cline2 = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits, outfmt=5)
                     if blast_type=='blastx':
                         blastType = 'locus'
-                        blastdb = settings.BASE_DIR + "/assets/%s/faa/%s.faa" % (biodb, target_accession)
-                        blast_cline = NcbiblastxCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
-
+                        blastdb = settings.BLAST_PATH  + "faa/%s" % (key_dict)
+                        blast_cline = NcbiblastxCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits,  outfmt=0) #max_target_seqs=number_blast_hits
+                    
+                    
                     blast_stdout, blast_stderr = blast_cline()
+                    print('FINISH FIRST PART')
+                          
+             
+             
+                     #part below is for tblastn      
 
                     if blast_type=='tblastn':
                         from Bio.SeqUtils import six_frame_translations
 
                         blast_stdout2, blast_stderr2 = blast_cline2()
+                        print('blast_stdout2', blast_stdout2)
 
                         blast_records = NCBIXML.parse(StringIO(blast_stdout2))
+                        print('blast_records', blast_records)
                         all_data = []
                         best_hit_list = []
                         for record in blast_records:
-                            for n, alignment in enumerate(record.alignments):
-                                accession = alignment.title.split(' ')[1]
+                            print(record)
+                            for n, alignment in enumerate(record.alignments): #n is a increasing number given from 0 going on to each allignment considering at n=0 the best hit
+                                print('ALIGNMENTS', alignment)
+                                print('n', n)
+                                accession = alignment.title.split(' ')[0] #before it was 1 but it went to the beginning of the name of the sample, with 0 we take the contig name
+                                print('ACCESSION', accession)
+                                description=alignment.title.replace(accession, '') #not sure if this description is what it wanted before
+                                print('SQL',sql)
+                                #sql = 'select description from bioentry where accession="%s" ' % accession
+                                #description = server.adaptor.execute_and_fetchall(sql,)[0][0]
 
-                                sql = 'select description from bioentry where accession="%s" ' % accession
-
-                                description = server.adaptor.execute_and_fetchall(sql,)[0][0]
-
-                                for n2, hsp in enumerate(alignment.hsps):
-                                    if n == 0 and n2 == 0:
+                                for n2, hsp in enumerate(alignment.hsps): #all n2 are 0
+                                    print('hsp', hsp)
+                                    print('n2', n2)
+                                    if n == 0 and n2 == 0:  #select the best hit
+                                        print('record.query', record.query)
+                                        print('hsp.sbjct_start', hsp.sbjct_start)
+                                        print('hsp.sbjct_end', hsp.sbjct_end)
                                         best_hit_list.append([record.query, hsp.sbjct_start, hsp.sbjct_end])
-                                
+
                                     start = hsp.sbjct_start
                                     end = hsp.sbjct_end
                                     if start > end:
                                         start = hsp.sbjct_end
                                         end = hsp.sbjct_start
-                                    length = end-start
                                     leng = end-start
-                                    seq = manipulate_biosqldb.location2sequence(server, accession, biodb, start, leng)
+                                    #seq = db.location2sequence(accession, start, end) #replaced biodb wtih db
+                                    #print('VEDIAMO', seq)
+                                    #seq = manipulate_biosqldb.location2sequence(db, db.db_name, accession, db, start, end, leng) #replaced biodb wtih db
                                     
-                                    anti = reverse_complement(seq)
-                                    comp = anti[::-1]
-                                    length = len(seq)
-                                    frames = {}
-                                    for i in range(0, 3):
-                                        fragment_length = 3 * ((length-i) // 3)
-                                        tem1 = translate(seq[i:i+fragment_length], 1)
-                                        frames[i+1] = '<span style="color: #181407;">%s</span><span style="color: #bb60d5;">%s</span><span style="color: #181407;">%s</span>' % (tem1[0:100], tem1[100:len(tem1)-99], tem1[len(tem1)-99:])
-                                        tmp2 = translate(anti[i:i+fragment_length], 1)[::-1]
-                                        frames[-(i+1)] = tmp2
-                                    all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq])
-                        if len(best_hit_list) > 0:
-                            fig_list = []
-                            for best_hit in best_hit_list:
-                                accession = best_hit[0]
-                                best_hit_start = best_hit[1]
-                                best_hit_end = best_hit[2]
-                                temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
-                                temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-                                name = 'temp/' + os.path.basename(temp_file.name)
-                                fig_list.append([accession, name])
-                                orthogroup_list = mysqldb_plot_genomic_feature.location2plot(db,
-                                                                                            biodb,
-                                                                                            target_accession,
-                                                                                            temp_file.name,
-                                                                                            best_hit_start-15000,
-                                                                                            best_hit_end+15000,
-                                                                                            cache,
-                                                                                            color_locus_list = [],
-                                                                                            region_highlight=[best_hit_start, best_hit_end])
+                    #                anti = reverse_complement(seq)
+                    #                comp = anti[::-1]
+                    #                length = len(seq)
+                    #                frames = {}
+                    #                for i in range(0, 3):
+                    #                    fragment_length = 3 * ((length-i) // 3)
+                    #                    tem1 = translate(seq[i:i+fragment_length], 1)
+                    #                    frames[i+1] = '<span style="color: #181407;">%s</span><span style="color: #bb60d5;">%s</span><span style="color: #181407;">%s</span>' % (tem1[0:100], tem1[100:len(tem1)-99], tem1[len(tem1)-99:])
+                    #                    tmp2 = translate(anti[i:i+fragment_length], 1)[::-1]
+                    #                    frames[-(i+1)] = tmp2
+                    #                all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq])   #all_data is required in the hyml file to display the second graph
+                    #    if len(best_hit_list) > 0:
+                    #        fig_list = []
+                    #        for best_hit in best_hit_list:
+                    #            accession = best_hit[0]
+                    #            print['ACCESSION', accession]
+                    #            best_hit_start = best_hit[1]
+                    #            best_hit_end = best_hit[2]
+                    #            temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
+                    #            temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
+                    #            name = 'temp/' + os.path.basename(temp_file.name)
+                    #            fig_list.append([accession, name])
+                    #            orthogroup_list = mysqldb_plot_genomic_feature.location2plot(db, #UNDERSTAND WHAT WAS THE DIFFERENCE BETWEEN db AND biodb IN THE PREVIOUS TOP CODE #I removed biodb
+                    #                                                                        target_accession,
+                    #                                                                        temp_file.name,
+                    #                                                                        best_hit_start-15000,
+                    #                                                                        best_hit_end+15000,
+                    #                                                                        cache,
+                    #                                                                        color_locus_list = [],
+                    #                                                                        region_highlight=[best_hit_start, best_hit_end])
+
+                             #part above is for tblastn
 
 
-                    no_match = re.compile('.* No hits found .*', re.DOTALL)
+                    no_match = re.compile('.* No hits found .*', re.DOTALL) #I still do not know how it knows that there are no hits bit it works properly
+                    
 
                     if no_match.match(blast_stdout):
                         print ("no blast hit")
                         blast_no_hits = blast_stdout
                     elif len(blast_stderr) != 0:
                         print ("blast error")
-                        blast_err = blast_stderr
+                        blast_err = blast_stderr #linked to the html file
                     else:
-                        from Bio import SearchIO
-                        blast_record = [i for i  in SearchIO.parse(StringIO(blast_stdout), 'blast-text')]
-                        all_locus_tag = []
-                        for query in blast_record:
-                            for hit in query:
-                                locus_tag = hit.id
-                                all_locus_tag.append(locus_tag)
 
-                        locus_filter = '"' + '","'.join(all_locus_tag) + '"'
-                        sql = 'select locus_tag, product from orthology_detail_%s where locus_tag in (%s)' % (biodb, locus_filter)
-                        locus2product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-                        rand_id = id_generator(6)
-
-                        blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
+                        rand_id = id_generator(6) #it generates a random id of 6 character
+                        
+                        blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id #this file changes every time you run it and it contians the blast output
                         f = open(blast_file_l, 'w')
                         f.write(blast_stdout)
+                        #print('stout', blast_stdout)
+                        #print('f', f)
                         f.close()
+                        
 
                         asset_blast_path = '/assets/temp/%s.xml' % rand_id
-                        js_out = True
+                        js_out = True #it could be for java script
 
-                envoi = True
+            envoi= True #here the data are passed when it is done correctly
 
     else:  
         form = blast_form_class()
