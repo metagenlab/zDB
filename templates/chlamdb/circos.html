@@ -9,6 +9,8 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.js'></script>
 <script src="{% static 'js/circos.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
+
 
 {% include "chlamdb/header.html" %}
 </head>
@@ -76,7 +78,7 @@ var configuration = {
           ticks: {display: true},
           gap: 0,
           tooltipContent: function (d) {
-          return `<h5> TEST: ${d.locus_tag}: ${d.value} % identity</h5>`
+          return `<h5> TEST: ${d.bioentry_id}</h5>`
           },
           labels: {
             position: 'center',
@@ -104,8 +106,10 @@ var configuration = {
 			}
 		  },
       events: {'click.alert': function (datum, index, nodes, event) {
-
             window.alert(datum.label)
+      },
+      'mouseover': function (datum, index, nodes, event) {
+            return 'test'
       },
       }
 }
@@ -129,24 +133,25 @@ myCircos.layout(data, configuration);
 
 var i = 0;
 for (var key in heatmap_data_lst) { 
-    var heatmap_configuration = {
-    innerRadius: 0.9 - (i * 0.1),
-    outerRadius: 0.98 -(i * 0.1),
-    min: 0,
-    max: 100,
-    color: 'YlOrRd',
-    logScale: false,
-    tooltipContent: function (d) {
-        return `<h5>${d.locus_tag}: ${d.value} % identity</h5>`
-      },
-    events: {'click.alert': function (datum, index, nodes, event) {
-      window.location='/locusx/' + datum.locus_tag;
-      //window.alert(JSON.stringify(nodes[index]['__data__'].locus_tag))
-            }
-            }
-    }
     i = i+1;
-    myCircos.heatmap(key, heatmap_data_lst[key], heatmap_configuration);
+    var data = heatmap_data_lst[key][0];
+    console.log(heatmap_data_lst[key][1]);
+    var conf = heatmap_data_lst[key][1];
+    conf["tooltipContent"] = function (d) { if (d.value == "false"){return None} else if (d.value == -1) {return `<h5>${d.locus_tag}</h5>`} else {return `<h5>${d.locus_tag}: ${d.value} % identity</h5>` }}
+    conf["events"] = {"click.alert": function (datum, index, nodes, event) { window.location="/locusx/" + datum.locus_tag;}}
+    if (conf["color"] == "comp"){ 
+      conf["color"] = function(datum, index) {
+                          var color_scale = chroma.scale('YlOrRd').domain([1,0]);
+                          if (datum.value == "false") {
+                            return "lightblue"
+                          } else {
+                            var col = color_scale(1-(datum.value/100)).hex();
+                            console.log(col)
+                            return col
+                          }
+      };
+    };
+    myCircos.heatmap(key, data, conf);
 }
 
 myCircos.render();

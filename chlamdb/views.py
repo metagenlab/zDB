@@ -10755,19 +10755,19 @@ def circos(request):
             df_bioentry = db.get_bioentry_list(reference_taxon)
             
             # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
-            df_feature_location = db.get_features_location(reference_taxon)
+            df_feature_location = db.get_features_location(reference_taxon).set_index(["seqfeature_id"])
             
             # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
-            df_identity = db.get_identity_closest_homolog(reference_taxon, target_taxons).set_index(["seqfeature_id_1", "target_taxid"])
+            df_identity = db.get_identity_closest_homolog(reference_taxon, target_taxons).set_index(["target_taxid"])
             
             contigs_data = []
             #{ len: 31000, color: "#8dd3c7", label: "January", id: "january" },
             i = 0
             for bioentry, row in df_bioentry.iterrows():
                 if i % 2 == 0:
-                    contigs_data.append({"len": row["length"], "color": "#8dd3c7", "label": row["accession"], "id": bioentry})
+                    contigs_data.append({"len": row.length, "color": "#8dd3c7", "label": row.accession, "id": bioentry, "value": row.accession})
                 else:
-                    contigs_data.append({"len": row["length"], "color": "#fb8072", "label": row["accession"], "id": bioentry})
+                    contigs_data.append({"len": row.length, "color": "#fb8072", "label": row.accession, "id": bioentry, "value": row.accession})
                 i+=1
             
             # heatmap_data
@@ -10777,23 +10777,60 @@ def circos(request):
             #    end: 1225,
             #    value: 55
             #},
+            # sort taxons by number of homologs (from mot similar to most dissmilar)
+            target_taxon_n_homologs = df_identity.groupby(["target_taxid"]).count()["seqfeature_id_1"].sort_values(ascending=False)
             locus2seqfeature_id = db.get_hsh_locus_to_seqfeature_id()
             seqfeature_id2locus_tag = {value:key for key, value in locus2seqfeature_id.items()}
             heatmap_data_list = {}
-            for target_taxid in target_taxons:
-                heatmap_data = []
-                for index, row in df_feature_location.iterrows():
-                    bioentry_id, seqfeature_id = index
-                    if int(seqfeature_id) in (23,24):
-                        print("23-24!", int(seqfeature_id), int(target_taxid))
-                        print(df_identity.loc[(df_identity.index.get_level_values(0) == int(seqfeature_id)) & (df_identity.index.get_level_values(1) == int(target_taxid)) ,["identity", seqfeature_id_2]])
-                    try:
-                        seqfeatures = df_identity.loc[(df_identity.index.get_level_values(0) == int(seqfeature_id)) & (df_identity.index.get_level_values(1) == int(target_taxid)),["identity", "seqfeature_id_2"]].sort_values(["identity"],ascending=False)
-                        heatmap_data.append({"block_id": str(bioentry_id), "start":row["start_pos"], "end": row["end_pos"], "value": round(seqfeatures.iloc[0]["identity"], 1), "locus_tag": seqfeature_id2locus_tag[seqfeatures.iloc[0]["seqfeature_id_2"]]})
-                    except:
-                        heatmap_data.append({"block_id": str(bioentry_id), "start":row["start_pos"], "end": row["end_pos"], "value": 0, "color": "#3333ff"})
-                heatmap_data_list[f"test_{target_taxid}"] = heatmap_data
-            #print(heatmap_data_list)
+            # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
+            # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
+            # join on seqfeature id
+            
+            
+            heatmap_configuration_template = {
+                "outerRadius": 0,
+                "innerRadius": 0,
+                "min": 0,
+                "max": 100,
+                "color": "comp",
+                "logScale": "false",
+                }
+            
+            df_feature_location["locus_ref"] = [seqfeature_id2locus_tag[seqfeature_id] for seqfeature_id in df_feature_location.index]
+            minus_strand = df_feature_location.set_index("strand").loc[-1]
+            plus_strand = df_feature_location.set_index("strand").loc[1]
+            # set value to -1 to be able to adapt on hover for these tracks
+            minus_heatmap_data = [{"block_id": str(row.bioentry_id), "start":row.start_pos, "end": row.end_pos, "value": -1, "locus_tag": row.locus_ref} for n, row in minus_strand.iterrows()]
+            plus_heatmap_data = [{"block_id": str(row.bioentry_id), "start":row.start_pos, "end": row.end_pos, "value": -1, "locus_tag": row.locus_ref} for n, row in plus_strand.iterrows()]
+
+            
+            conf_plus = heatmap_configuration_template.copy()
+            conf_plus["outerRadius"] = 0.98
+            conf_plus["innerRadius"] = 0.94
+            conf_plus["color"] = 'grey'
+
+            conf_minus = heatmap_configuration_template.copy()
+            conf_minus["outerRadius"] = 0.94
+            conf_minus["innerRadius"] = 0.9
+            conf_minus["color"] = 'grey'
+            
+            heatmap_data_list["plus"] = [plus_heatmap_data, conf_plus]
+            heatmap_data_list["minus"] = [minus_heatmap_data, conf_minus]
+            
+            for n, target_taxon in enumerate(target_taxon_n_homologs.index):
+                df_combined = df_feature_location.join(df_identity.loc[target_taxon].reset_index().set_index("seqfeature_id_1")).reset_index()
+                df_combined.identity = df_combined.identity.fillna(0).astype(int)
+                df_combined.bioentry_id = df_combined.bioentry_id.astype(str)
+                # only keep the highest identity for each seqfeature id
+                df_combined = df_combined.sort_values('identity', ascending=False).drop_duplicates('index').sort_index()
+                df_combined["locus_tag"] = [seqfeature_id2locus_tag[seqfeature_id] if not pd.isna(seqfeature_id) else None for seqfeature_id in df_combined["seqfeature_id_2"]]
+                heatmap_data = [{"block_id": row.bioentry_id, "start":row.start_pos, "end": row.end_pos, "value": row.identity, "locus_tag": row.locus_tag} if row.locus_tag is not None else {"block_id": row.bioentry_id, "start":row.start_pos, "end": row.end_pos, "value": "false"} for n, row in df_combined.iterrows()]
+                
+                conf = heatmap_configuration_template.copy()
+                conf["outerRadius"] = 0.87 -(n * 0.08)
+                conf["innerRadius"] = 0.80 - (n * 0.08)
+                print(conf)
+                heatmap_data_list[f"test_{target_taxon}"] = [heatmap_data, conf]
     else:
         form = circos_form_class()
     
