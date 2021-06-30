@@ -29,19 +29,17 @@
                       <div class="panel-heading" style="width:100%">
                           <h3 class="panel-title">Help</h3>
                       </div>
-                      <p style="margin: 10px 10px 10px 10px"><h3>Circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. </h3>
-                      Click on the circos plot to open a new windows with clickable version of the plot.
+                      <div style="margin: 10px 10px 10px 10px; padding-left:20px"><h3>Circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. </h3>
+                      Click on features to get detailed information about the corresponding locus.
                        <ul id="circos_ul" style="list-style-type:disc;">  
                             <li>The first outer circle show contig/chromosome boundaries</li>
                             <li>The second and third circles show open reading frames from the reference genome (in gray)</li>
                             <ol>
                                 <li>rRNA are colored in blue, tRNA in red</li>
                             </ol>
-                            <li>Inner blue/red circle(s) incicate the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes</li>
-                            <li>The last two inner circles show GC content (blue/red) and GC skew (blue/green)</li>
-                            
+                            <li>Inner blue/red circle(s) indicate the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes</li>                            
                       </ul>
-                      </p>
+                    </div>
                   </div>
                   <div class="row">
 
@@ -69,92 +67,54 @@
 
 
 <script type="text/javascript">
+function hide_submenus(hidden_menu) {
 
-var width = 800;
+var menu_ul = $('.' + hidden_menu +'> ul'),
+    menu_a  = $('.' + hidden_menu +'> a');
 
-var configuration = {
-          innerRadius: width / 2 - 40,
-          outerRadius: width / 2 - 30,
-          ticks: {display: true},
-          gap: 0,
-          tooltipContent: function (d) {
-          return `<h5> TEST: ${d.bioentry_id}</h5>`
-          },
-          labels: {
-            position: 'center',
-            display: true,
-            size: 0,
-            color: 'red',
-            radialOffset: 5
-          },
-		  ticks: {
-			display: true,
-			color: 'grey',
-			spacing: 50000,
-			labels: false,
-			labelSpacing: 1,
-			labelSuffix: 'Kb',
-			labelDenominator: 1000,
-			labelDisplay0: true,
-			labelSize: '10px',
-			labelColor: '#000000',
-			labelFont: 'default',
-			majorSpacing: 5,
-			size: {
-			  minor: 0,
-			  major: 0,
-			}
-		  },
-      events: {'click.alert': function (datum, index, nodes, event) {
-            window.alert(datum.label)
-      },
-      'mouseover': function (datum, index, nodes, event) {
-            return 'test'
-      },
-      }
-}
+menu_ul.hide();
 
-var data = {{contigs_data|safe}}
-
-
-var myCircos = new Circos({
-    container: '#heatmapChart',
-    width: 800,
-    height: 800,
-    defaultTrackWidth: 10
+menu_a.click(function(e) {
+    e.preventDefault();
+    if(!$(this).hasClass('active')) {
+        menu_a.removeClass('active');
+        menu_ul.filter(':visible').slideUp('normal');
+        $(this).addClass('active').next().stop(true,true).slideDown('normal');
+    } else {
+        $(this).removeClass('active');
+        $(this).next().stop(true,true).slideUp('normal');
+    }
 });
 
+};
+
+$(hide_submenus("rollmenu1"))
 
 
+{{js_code|safe}}
 
-var heatmap_data_lst = {{heatmap_data_list|safe}} ;
-
-myCircos.layout(data, configuration);
-
-var i = 0;
-for (var key in heatmap_data_lst) { 
-    i = i+1;
-    var data = heatmap_data_lst[key][0];
-    console.log(heatmap_data_lst[key][1]);
-    var conf = heatmap_data_lst[key][1];
-    conf["tooltipContent"] = function (d) { if (d.value == "false"){return None} else if (d.value == -1) {return `<h5>${d.locus_tag}</h5>`} else {return `<h5>${d.locus_tag}: ${d.value} % identity</h5>` }}
-    conf["events"] = {"click.alert": function (datum, index, nodes, event) { window.location="/locusx/" + datum.locus_tag;}}
-    if (conf["color"] == "comp"){ 
-      conf["color"] = function(datum, index) {
-                          var color_scale = chroma.scale('YlOrRd').domain([1,0]);
-                          if (datum.value == "false") {
-                            return "lightblue"
-                          } else {
-                            var col = color_scale(1-(datum.value/100)).hex();
-                            console.log(col)
-                            return col
-                          }
-      };
-    };
-    myCircos.heatmap(key, data, conf);
-}
-
-myCircos.render();
+$(document).ready(function(){
+  d3.select("#heatmapChart").append("button")
+          .attr("type","button")
+          .attr("class", "btn btn-primary btn-sm")
+          .text("Download SVG")
+          .on("click", function() {
+              // download the svg
+  //get svg element.
+  var svg = document.getElementsByTagName('svg')[0];
+  var svgData =  document.getElementsByTagName('svg')[0].outerHTML;
+  console.log(svgData)
+  var preface = '<?xml version="1.0" standalone="no"?>\r\n';
+  var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
+  var svgUrl = URL.createObjectURL(svgBlob);
+  var downloadLink = document.createElement("a");
+  downloadLink.href = svgUrl;
+  downloadLink.download = "circos.svg";
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+          });
+});
 
 </script>
 
