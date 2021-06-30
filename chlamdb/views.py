@@ -10731,28 +10731,74 @@ def circos_blastnr(request):
 
 
 def circos(request):
-    biodb = settings.BIODB
+    
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
 
-    circos_form_class = make_circos_form(biodb)
-    server, db = manipulate_biosqldb.load_db(biodb)
+    circos_form_class = make_circos_form(db)
 
     if request.method == 'POST':
 
         form = circos_form_class(request.POST)
 
         if form.is_valid():
-            reference_taxon = form.cleaned_data['circos_reference']
-            target_taxons = form.cleaned_data['targets']
-            task = run_circos.delay(reference_taxon, target_taxons)
-            print("task", task)
-            return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
-        else:
-            return HttpResponse(json.dumps({'task_id': None}), content_type='application/json')
+            reference = form.cleaned_data['circos_reference']
+            targets = form.cleaned_data['targets']
+            target_taxons = form.get_target_taxids()
+            reference_taxon = form.get_ref_taxid()
+
+            print("reference_taxon", reference_taxon)
+            print("target_taxons", target_taxons)
+            #task = run_circos.delay(reference_taxon, target_taxons)
+            
+            # "bioentry_id", "accession" ,"length"
+            df_bioentry = db.get_bioentry_list(reference_taxon)
+            
+            # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
+            df_feature_location = db.get_features_location(reference_taxon)
+            
+            # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
+            df_identity = db.get_identity_closest_homolog(reference_taxon, target_taxons).set_index(["seqfeature_id_1", "target_taxid"])
+            
+            contigs_data = []
+            #{ len: 31000, color: "#8dd3c7", label: "January", id: "january" },
+            i = 0
+            for bioentry, row in df_bioentry.iterrows():
+                if i % 2 == 0:
+                    contigs_data.append({"len": row["length"], "color": "#8dd3c7", "label": row["accession"], "id": bioentry})
+                else:
+                    contigs_data.append({"len": row["length"], "color": "#fb8072", "label": row["accession"], "id": bioentry})
+                i+=1
+            
+            # heatmap_data
+            #  {
+            #    block_id: 'january',
+            #    start: 0,
+            #    end: 1225,
+            #    value: 55
+            #},
+            locus2seqfeature_id = db.get_hsh_locus_to_seqfeature_id()
+            seqfeature_id2locus_tag = {value:key for key, value in locus2seqfeature_id.items()}
+            heatmap_data_list = {}
+            for target_taxid in target_taxons:
+                heatmap_data = []
+                for index, row in df_feature_location.iterrows():
+                    bioentry_id, seqfeature_id = index
+                    if int(seqfeature_id) in (23,24):
+                        print("23-24!", int(seqfeature_id), int(target_taxid))
+                        print(df_identity.loc[(df_identity.index.get_level_values(0) == int(seqfeature_id)) & (df_identity.index.get_level_values(1) == int(target_taxid)) ,["identity", seqfeature_id_2]])
+                    try:
+                        seqfeatures = df_identity.loc[(df_identity.index.get_level_values(0) == int(seqfeature_id)) & (df_identity.index.get_level_values(1) == int(target_taxid)),["identity", "seqfeature_id_2"]].sort_values(["identity"],ascending=False)
+                        heatmap_data.append({"block_id": str(bioentry_id), "start":row["start_pos"], "end": row["end_pos"], "value": round(seqfeatures.iloc[0]["identity"], 1), "locus_tag": seqfeature_id2locus_tag[seqfeatures.iloc[0]["seqfeature_id_2"]]})
+                    except:
+                        heatmap_data.append({"block_id": str(bioentry_id), "start":row["start_pos"], "end": row["end_pos"], "value": 0, "color": "#3333ff"})
+                heatmap_data_list[f"test_{target_taxid}"] = heatmap_data
+            #print(heatmap_data_list)
     else:
         form = circos_form_class()
     
     local_vars = my_locals(locals())
-    local_vars["form"] = form
+    #local_vars["form"] = form
     
     return render(request, 'chlamdb/circos.html', local_vars)
 

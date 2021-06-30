@@ -7,7 +7,9 @@
 {% load static %}
 {% load crispy_forms_tags %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.js'></script>
+<script src="{% static 'js/circos.js' %}"></script>
+
 {% include "chlamdb/header.html" %}
 </head>
 <body>
@@ -50,16 +52,7 @@
 
                   </div>
 
-                  <div id="progress-div" class="row" style="padding-top:5px;height:25px;" class="row"></div>
-
-                  <div class="progress row" style="width=50%;" id="progress">
-                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 20%"></div>
-                  </div>
-
-
-
-                  <div id="results" class="row">
-                  </div>
+                  <div id='heatmapChart' class='chartclass'></div>
 
               </div>
           </div>
@@ -68,112 +61,96 @@
     </div>
   </div>
 </body>
+
 {% include "chlamdb/style_menu.html" %}
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script type="text/javascript">
-function hide_submenus(hidden_menu) {
 
-    var menu_ul = $('.' + hidden_menu +'> ul'),
-        menu_a  = $('.' + hidden_menu +'> a');
-
-    menu_ul.hide();
-
-    menu_a.click(function(e) {
-        e.preventDefault();
-        if(!$(this).hasClass('active')) {
-            menu_a.removeClass('active');
-            menu_ul.filter(':visible').slideUp('normal');
-            $(this).addClass('active').next().stop(true,true).slideDown('normal');
-        } else {
-            $(this).removeClass('active');
-            $(this).next().stop(true,true).slideUp('normal');
-        }
-    });
-
-};
-
-$(hide_submenus("rollmenu1"))
-
-</script>
 
 
 <script type="text/javascript">
-    $("#progress").hide();
 
-    var frm = $('#circos-form');
-    var prg_dv = $('#progress-div');
-    var pgrbar = $('.progress-bar');
-    frm.submit(function () {
-        $.ajax({
-            type: frm.attr('method'),
-            url: frm.attr('action'),
-            data: frm.serialize(),
-            success: function (data) {
-                if (data.task_id != null) {
-                    get_task_info(data.task_id);
-                }
-            },
-            error: function (data) {
-                console.log("Something went wrong!");
+var width = 800;
+
+var configuration = {
+          innerRadius: width / 2 - 40,
+          outerRadius: width / 2 - 30,
+          ticks: {display: true},
+          gap: 0,
+          tooltipContent: function (d) {
+          return `<h5> TEST: ${d.locus_tag}: ${d.value} % identity</h5>`
+          },
+          labels: {
+            position: 'center',
+            display: true,
+            size: 0,
+            color: 'red',
+            radialOffset: 5
+          },
+		  ticks: {
+			display: true,
+			color: 'grey',
+			spacing: 50000,
+			labels: false,
+			labelSpacing: 1,
+			labelSuffix: 'Kb',
+			labelDenominator: 1000,
+			labelDisplay0: true,
+			labelSize: '10px',
+			labelColor: '#000000',
+			labelFont: 'default',
+			majorSpacing: 5,
+			size: {
+			  minor: 0,
+			  major: 0,
+			}
+		  },
+      events: {'click.alert': function (datum, index, nodes, event) {
+
+            window.alert(datum.label)
+      },
+      }
+}
+
+var data = {{contigs_data|safe}}
+
+
+var myCircos = new Circos({
+    container: '#heatmapChart',
+    width: 800,
+    height: 800,
+    defaultTrackWidth: 10
+});
+
+
+
+
+var heatmap_data_lst = {{heatmap_data_list|safe}} ;
+
+myCircos.layout(data, configuration);
+
+var i = 0;
+for (var key in heatmap_data_lst) { 
+    var heatmap_configuration = {
+    innerRadius: 0.9 - (i * 0.1),
+    outerRadius: 0.98 -(i * 0.1),
+    min: 0,
+    max: 100,
+    color: 'YlOrRd',
+    logScale: false,
+    tooltipContent: function (d) {
+        return `<h5>${d.locus_tag}: ${d.value} % identity</h5>`
+      },
+    events: {'click.alert': function (datum, index, nodes, event) {
+      window.location='/locusx/' + datum.locus_tag;
+      //window.alert(JSON.stringify(nodes[index]['__data__'].locus_tag))
             }
-        });
-        return false;
-    });
-
-    function get_task_info(task_id) {
-        $.ajax({
-            type: 'get',
-            url: '/get-task-info/',
-            data: {'task_id': task_id},
-            success: function (data) {
-                pgrbar.css('width', 10+'%').attr('aria-valuenow', 10)
-                $("#progress").show();
-                $('#results').html('')
-                if (data.state == 'PENDING') {
-                    prg_dv.html('Please wait...');
-                }
-                else if (data.state == 'PROGRESS') {
-                    pgrbar.css('width', data.result.percent+'%').attr('aria-valuenow', data.result.percent)
-                    console.log(data.result.percent);
-                    prg_dv.html('Step ' + data.result.current + '/' + data.result.total + ': ' + data.result.description);
-                }
-                else if (data.state == 'SUCCESS') {
-                    // pgrbar.hide();
-                    prg_dv.html('Done');
-                    $('#results').html(data.result);
-                    $("#progress").hide();
-                }
-
-                if (data.state != 'SUCCESS') {
-                    setTimeout(function () {
-                        get_task_info(task_id)
-                    }, 1000);
-                }
-            },
-            error: function (data) {
-                prg_dv.html("Something went wrong!");
             }
-        });
     }
+    i = i+1;
+    myCircos.heatmap(key, heatmap_data_lst[key], heatmap_configuration);
+}
+
+myCircos.render();
+
 </script>
-
-<style>
-
-#circos_ul {
-  display: block;
-  list-style-type: decimal;
-  margin-top: 1em;
-  margin-bottom: 1em;
-  margin-left: 0;
-  margin-right: 0;
-  padding-left: 40px;
-}
-
-ol > ul > li {
-  padding: 4px;
-  margin-left: 25px;
-}
-
-</style>
 
 </html>

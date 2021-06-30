@@ -326,7 +326,7 @@ def make_species_curation_form(database_name, species_id):
 
 def make_circos_form(database_name):
 
-    accession_choices = get_accessions(database_name)
+    accession_choices, reverse_index = get_accessions(database_name)
 
     class CircosForm(forms.Form):
         circos_reference = forms.ChoiceField(choices=accession_choices)
@@ -356,6 +356,18 @@ def make_circos_form(database_name):
             self.get_region = self.cleaned_data["get_region"]
             self.region = self.cleaned_data["region"]
 
+        def get_target_taxids(self):
+            indices = self.cleaned_data["targets"]
+            taxids  = []
+            for index in indices:
+                taxid, _ = reverse_index[int(index)]
+                taxids.append(taxid)
+            return taxids
+
+        def get_ref_taxid(self):
+            indice = self.cleaned_data["circos_reference"][0]
+            taxid, _ = reverse_index[int(indice)]
+            return taxid
 
     return CircosForm
 
