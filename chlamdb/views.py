@@ -10588,20 +10588,6 @@ def circos_main(request):
         target_taxons = eval(request.POST["target_list"])
         highlight = eval(request.POST["highlight"])
         
-        if len(target_taxons) == 0:
-            try:
-                sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (reference_taxon)
-                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-                target_taxons = ordered_taxons[0:10]
-            except:
-                sql_order = 'select taxon_2 from comparative_tables_shared_orthogroups where taxon_1=%s order by n_shared_orthogroups DESC;' % (reference_taxon)
-
-                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-                target_taxons = ordered_taxons[0:10]   
-                         
-        task = run_circos_main.delay(reference_taxon, target_taxons, highlight)
-        print("task", task)
-        task_id = task.id
         envoi_circos = True
         envoi_region = True
             
@@ -10628,7 +10614,6 @@ def circos_main(request):
         #sql = 'select locus_tag,traduction from orthology_detail_k_cosson_05_16 where orthogroup in (%s) and accession="NC_016845"' % ('"'+'","'.join(highlight)+'"')
 
         task = run_circos_main.delay(reference_taxon, target_taxons, highlight)
-        print("task", task)
         task_id = task.id
         envoi_circos = True
         envoi_region = True
@@ -10774,8 +10759,11 @@ def circos(request):
             # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
             # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
             # join on seqfeature id
+            df_feature_location["gene"] = df_feature_location["gene"].fillna("-")
+            df_feature_location["gene_product"] = df_feature_location["product"].fillna("-")
             
-            df_feature_location["locus_ref"] = [seqfeature_id2locus_tag[seqfeature_id] for seqfeature_id in df_feature_location.index]
+            df_feature_location = df_feature_location.rename(columns={"locus_tag":"locus_ref"})
+            #= [seqfeature_id2locus_tag[seqfeature_id] for seqfeature_id in df_feature_location.index]
             minus_strand = df_feature_location.set_index("strand").loc[-1]
             plus_strand = df_feature_location.set_index("strand").loc[1]
             c.add_gene_track(minus_strand, "minus", color="gray", sep=0, radius_diff=0.04)
@@ -10798,7 +10786,7 @@ def circos(request):
                 c.add_heatmap_track(df_combined, f"target_{target_taxon}", color="comp", sep=sep, radius_diff=0.04)
 
             js_code = c.get_js_code()
-
+            envoi = True
     else:
         form = circos_form_class()
     

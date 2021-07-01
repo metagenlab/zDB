@@ -51,7 +51,7 @@
                     {% endblock %}
 
                   </div>
-
+                  <div id='download' class='download'></div>
                   <div id='heatmapChart' class='chartclass'></div>
 
               </div>
@@ -93,29 +93,30 @@ $(hide_submenus("rollmenu1"))
 
 {{js_code|safe}}
 
-$(document).ready(function(){
-  d3.select("#heatmapChart").append("button")
-          .attr("type","button")
-          .attr("class", "btn btn-primary btn-sm")
-          .text("Download SVG")
-          .on("click", function() {
-              // download the svg
-  //get svg element.
-  var svg = document.getElementsByTagName('svg')[0];
-  var svgData =  document.getElementsByTagName('svg')[0].outerHTML;
-  console.log(svgData)
-  var preface = '<?xml version="1.0" standalone="no"?>\r\n';
-  var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
-  var svgUrl = URL.createObjectURL(svgBlob);
-  var downloadLink = document.createElement("a");
-  downloadLink.href = svgUrl;
-  downloadLink.download = "circos.svg";
-  document.body.appendChild(downloadLink);
-  downloadLink.click();
-  document.body.removeChild(downloadLink);
-          });
-});
-
+{% if envoi %}
+  $(document).ready(function(){
+    d3.select("#download").append("button")
+            .attr("type","button")
+            .attr("class", "btn btn-primary btn-sm")
+            .text("Download SVG")
+            .on("click", function() {
+                // download the svg
+    //get svg element.
+    var svg = document.getElementsByTagName('svg')[0];
+    var svgData =  document.getElementsByTagName('svg')[0].outerHTML;
+    console.log(svgData)
+    var preface = '<?xml version="1.0" standalone="no"?>\r\n';
+    var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
+    var svgUrl = URL.createObjectURL(svgBlob);
+    var downloadLink = document.createElement("a");
+    downloadLink.href = svgUrl;
+    downloadLink.download = "circos.svg";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+            });
+  });
+{% endif %}
 </script>
 
 </html>
