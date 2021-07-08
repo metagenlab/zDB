@@ -1,6 +1,6 @@
 ﻿--FAQ FOR COMPARATIVE DATABASE--
  
-1) HOW THE PIPELINE WORKS
+1) ABOUT THE PIPELINE
 
 	-What is Comparative_db?
 The Comparative_db is a customizable comparative genomics database which enables the user to compare and analyse genomes. Comparative_db integrates multiple tools for comparative genomic analyses and facilitates the access to comprehensive annotations from multiple databases including UniProt (curated and automated protein annotations), KEGG (annotation of pathways) and COG (orthology). Next to this, phylogenetic trees and phylogenetic relationships of genes, conservation of gene neighbourhood and taxonomic profiles can be visualized using dynamically generated graphs, available for download.
@@ -56,10 +56,13 @@ For a detailed description link (Bastian’s documentation)
 	-Can I customize the analyses I want to perform?
 The user can select which analyses she/he wants to perform turning on or off some of the parameters of the configuration file. See the list of ‘optional’ parameters in Q-‘Which analyses does the pipeline include?’and refer to documentation (link)
 
-2) HOW TO USE THE COMPARATIVE DATABASE WEB
+2) HOW TO NAVIGATE INTO THE COMPARATIVE DATABASE 
 	-How do I identify which proteins are part of a specific orthogroup?
 	-How do I use the search bar? – list of terms (cog, kegg ,accession)
-
+	-How to extract metabolic information?
+	--Be sure that this type of analysis was turned on when you run the pipeline --
+	In the menu through the metabolism/kegg maps section you can search for which KEGG maps have been annotated for each genome and ...
+	 while with kegg maps section you can investigate in a specific KEGG category of interest and visualize the KEGG modules identifed for each genome and which ko entries belongs to each module. Besides, you can visualize a list of all the proteins annotated with ko identifiers belonging to a selected Kegg module and navigate to the locus where a selected protein is present in a specific genome. This analysis let you navigate from a global kegg characterizations of your genomes to a pecific description of each kegg-described protein.  
 -Other analysis ...
 
 3) BIOLOGICAL ASPECTS 
