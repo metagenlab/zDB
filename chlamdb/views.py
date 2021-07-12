@@ -2586,15 +2586,19 @@ def locusx_genomic_region(db, seqid, window):
         window_start=0
     df_seqids = db.get_seqid_in_neighborhood(seqid, window_start, window_stop)
 
+    hsh_organism = db.get_organism([seqid], id_type="seqid")
     infos = db.get_proteins_info(df_seqids.index.tolist(),
             to_return=["gene", "locus_tag"], as_df=True, inc_non_CDS=True)
     cds_type = db.get_CDS_type(df_seqids.index.tolist())
     all_infos = infos.join(cds_type).join(df_seqids)
-    gd_diagram = GenomeDiagram.Diagram("foo")
-    gd_track = gd_diagram.new_track(1, name="bar", greytrack=True)
+    gd_diagram = GenomeDiagram.Diagram(f"{seqid}")
+    gd_track = gd_diagram.new_track(1, name=hsh_organism[seqid], greytrack=True)
     gd_features = gd_track.new_set()
     for curr_seqid, data in all_infos.iterrows():
-        # NOTE: if none of the CDS/RNA have annotated genes, should be cautious here
+        feature_name = ""
+        if not pd.isna(data.gene):
+            feature_name = data.gene
+
         loc = FeatureLocation(data.start, data.end, data.strand)
         fet = SeqFeature(location=loc)
         color = colors.green
@@ -2605,12 +2609,15 @@ def locusx_genomic_region(db, seqid, window):
         elif data.type=="rRNA":
             color = colors.blue
 
-        gd_features.add_feature(fet, color=color, sigil="ARROW", label=True)
+        gd_features.add_feature(fet, name=feature_name, color=color, label_position="middle",
+                label_size=10, label_strand=1, sigil="ARROW", label=True)
     
     asset_dir = "/assets/"
     filename = f"/temp/{filename}"
+    
+    # the yt parameters allows longer gene names to not be cropped out of the image
     gd_diagram.draw(format="linear", pagesize=(100, 600), start=all_infos.start.min(),
-            end=all_infos.end.max(), fragments=1)
+            end=all_infos.end.max(), fragments=1, yt=.2)
     gd_diagram.write(settings.BASE_DIR+asset_dir+filename, "SVG")
     return {"genomic_region_svg": filename}
 
