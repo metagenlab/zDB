@@ -1155,25 +1155,6 @@ $(document).ready(function(){
 });
 
 
-function resizeIframe(obj)
-{
-  console.log(obj.contentWindow.document)
-  var a = obj.contentWindow.document.getElementById("pfam_tree");
-
-  console.log(a)
-
-  // Get the SVG document inside the Object tag
-  var svgDoc = a.contentDocument;
-  console.log(svgDoc);
-  var svg = svgDoc.querySelector("svg");
-
-  var svg_height = svg.getAttribute("height");
-  console.log(svg_height);
-  obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
-  obj.style.width = obj.contentWindow.document.body.scrollWidth + 'px';
-  console.log(obj.style.height);
-}
-
 window.onload = function() {
 	var ft2 = new FeatureViewer("{{translation}}",
 		"#div_features", 

@@ -12,7 +12,11 @@ from django.shortcuts import render
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 import chlamdb.plots
+
 import seaborn as sns
+import matplotlib.colors as mpl_col
+
+
 import numpy 
 import re
 # from django.core.cache import cache
@@ -2399,6 +2403,55 @@ def og_tab_get_cog_annot(db, seqids):
     }
 
 
+def og_tab_get_pfams(db, annotations):
+    seqids = annotations.index.tolist()
+    max_length = annotations.length.max()
+
+    pfam_hits = db.get_pfam_hits_info(seqids)
+    pfam_defs = db.get_pfam_def(pfam_hits.pfam.unique().tolist())
+    fmt_pfam = (format_pfam(pfam) for pfam in pfam_defs.index.values)
+    
+    locus_tag = db.get_proteins_info(seqids, to_return=["locus_tag"])
+    color_palette = (mpl_col.to_hex(col) for col in sns.color_palette(None, len(pfam_defs)))
+    hsh_pfam_to_color = dict(zip(pfam_defs.index.values, color_palette))
+
+    # a bit brute-forcish. Would maybe be better to first sort
+    # on seqid and iterate on it
+    pfam_by_seqid = pfam_hits.groupby(["seqid"])
+    df_starts = pfam_by_seqid["start"].apply(list)
+    df_stops = pfam_by_seqid["end"].apply(list)
+    df_pfams = pfam_by_seqid["pfam"].apply(list)
+
+    pfam_domains = []
+    for seqid, starts in df_starts.iteritems():
+        ends = df_stops.loc[seqid]
+        pfams = df_pfams.loc[seqid]
+
+        fmt_data = []
+        for start, end, pfam in zip(starts, ends, pfams):
+            data = (
+                f"{{x:{start}, y:{end},"
+                f" name: \"{locus_tag[seqid][0]}\","
+                f" description:\"{format_pfam(pfam)}\","
+                f" color:\"{hsh_pfam_to_color[pfam]}\"}}"
+            )
+            fmt_data.append(data)
+        data = "["+",".join(fmt_data)+"]"
+        feature = (
+            f"{{ data: {data}, "
+            f" name: \"{locus_tag[seqid][0]}\","
+            "  color: \"#0F8292\","
+            "  type : \"rect\","
+            "}"
+        )
+        pfam_domains.append(feature)
+    return {
+        "pfam_domains": "["+",".join(pfam_domains)+"]",
+        "pfam_def": list(zip(fmt_pfam, pfam_defs["def"].values)),
+        "dummy_translation": max_length*"A"
+    }
+
+
 def orthogroup(request, og):
     tokens = og.split("_")
     try:
@@ -2441,12 +2494,15 @@ def orthogroup(request, og):
             product = "-"
         product_annotations.append([index+1, product, cnt])
 
-    cog_ctx, kegg_ctx = {}, {}
+    cog_ctx, kegg_ctx, pfam_ctx = {}, {}, {}
     if optional2status.get("COG", False):
         cog_ctx = og_tab_get_cog_annot(db, annotations.index.tolist())
 
     if optional2status.get("KEGG", False):
         kegg_ctx = og_tab_get_kegg_annot(db, annotations.index.tolist())
+
+    if optional2status.get("pfam", False):
+        pfam_ctx = og_tab_get_pfams(db, annotations)
 
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
@@ -2462,8 +2518,7 @@ def orthogroup(request, og):
         **homolog_tab_ctx,
         **length_tab_ctx,
         **og_conserv_ctx,
-        **cog_ctx,
-        **kegg_ctx
+        **cog_ctx, **kegg_ctx, **pfam_ctx
     }
     return render(request, "chlamdb/og.html", my_locals(context))
 
@@ -2549,7 +2604,7 @@ def get_sequence(db, seqid, flanking=0):
             extracted[red_start:red_stop] + "</font>" + extracted[red_stop:]
 
 
-def og_tab_get_pfam_annot(db, seqid):
+def tab_get_pfam_annot(db, seqid):
     pfam_hits = db.get_pfam_hits_info(seqid)
     feature_viewer_fet = []
     pfam_grouped = pfam_hits.groupby(["pfam"])
@@ -2697,7 +2752,7 @@ def locusx(request, locus=None, menu=True):
         cog_ctx = og_tab_get_cog_annot(db, [seqid])
 
     if optional2status.get("pfam", False):
-        pfam_ctx = og_tab_get_pfam_annot(db, [seqid])
+        pfam_ctx = tab_get_pfam_annot(db, [seqid])
 
     context = {
         "valid_id": valid_id,
