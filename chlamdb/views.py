@@ -16,6 +16,8 @@ import chlamdb.plots
 import seaborn as sns
 import matplotlib.colors as mpl_col
 
+import collections
+
 
 import numpy 
 import re
@@ -116,7 +118,7 @@ from ete3 import Tree
 
 from reportlab.lib import colors
 
-from ete3 import TextFace, StackedBarFace
+from ete3 import TextFace, StackedBarFace, SeqMotifFace
 
 import pandas as pd
 
@@ -132,11 +134,11 @@ with db_utils.DB.load_db_from_name(settings.BIODB_DB_PATH) as db:
     missing_mandatory = [name for name, (mandatory, value) in hsh_config.items()
             if mandatory and not value]
     
-
 def my_locals(local_dico):
     local_dico["optional2status"] = optional2status
     local_dico["missing_mandatory"] = missing_mandatory
     return local_dico
+
 
 @celery_app.task(bind=True)
 def debug_task(self):
@@ -2284,11 +2286,43 @@ class SimpleTextColumn(Column):
         return TextFace(index, fsize=7)
 
 
+class PfamColumn(Column):
+    def __init__(self, header, pfam_col, pfam_cmap):
+        super().__init__(header)
+        self.pfam_col = pfam_col
+        self.pfam_cmap = pfam_cmap
+
+    def get_face(self, index):
+        prot_length, pfam_infos = self.pfam_col[index]
+        dummy_seq = "-"*prot_length
+        pfam_entries = []
+        for pfam, start, end in pfam_infos:
+            fmt_entry = f"arial|6|white|{format_pfam(pfam)}"
+            entry = [start, end, "[]", None, 8, "black", self.pfam_cmap[pfam], fmt_entry]
+            pfam_entries.append(entry)
+        return SeqMotifFace(dummy_seq, motifs=pfam_entries, seq_format="line")
+
+
 def tab_og_phylogeny(db, og_id):
     og_phylogeny = db.get_og_phylogeny(og_id)
+    pfam_col = None
+    if optional2status.get("pfam", False):
+        annots = db.get_genes_from_og(orthogroups=[og_id], terms=["locus_tag", "length"])
+        pfams = db.get_pfam_hits_info(annots.index.tolist())
+        unique_pfams = pfams.pfam.unique()
+
+        color_palette = (mpl_col.to_hex(col) for col in sns.color_palette(None, len(unique_pfams)))
+        pfam_cmap = dict(zip(unique_pfams, color_palette))
+        tmp_hsh_infos = collections.defaultdict(list)
+        hsh_pfam_infos = {}
+        for index, infos in pfams.iterrows():
+            tmp_hsh_infos[infos.seqid].append([infos.pfam, infos.start, infos.end])
+        for seqid, pfam_entries in tmp_hsh_infos.items():
+            data = annots.loc[seqid]
+            hsh_pfam_infos[data.locus_tag] = [data.length, pfam_entries]
+        pfam_col = PfamColumn("Pfam domains", hsh_pfam_infos, pfam_cmap)
 
     tree = Tree(og_phylogeny)
-
     locuses = [branch.name for branch in tree.iter_leaves()]
     locus_to_genome = db.get_locus_to_genomes(locuses)
     R = tree.get_midpoint_outgroup()
@@ -2297,6 +2331,8 @@ def tab_og_phylogeny(db, og_id):
     e_tree = EteTree(tree)
 
     e_tree.add_column(SimpleTextColumn("Locus tag"))
+    if not pfam_col is None:
+        e_tree.add_column(pfam_col)
     e_tree.rename_leaves(locus_to_genome, leaf_name_type=str)
 
     asset_path = f"/temp/og_phylogeny{og_id}.svg"
@@ -2468,7 +2504,6 @@ def orthogroup(request, og):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
-    optional2status = db.get_config_table()
     og_counts = db.get_og_count([og_id], search_on="orthogroup")
     if len(og_counts.index) == 0:
         valid_id = False
@@ -2506,17 +2541,15 @@ def orthogroup(request, og):
     if optional2status.get("pfam", False):
         pfam_ctx = og_tab_get_pfams(db, annotations)
 
-    try:
-        og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
-    except:
-        og_phylogeny_ctx = {}
+    # try:
+    og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
+    # og_phylogeny_ctx = {}
 
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
     homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms)
     context = {
         "valid_id": valid_id,
-        "optional2status": optional2status,
         "n_homologues": n_homologues,
         "og": og,
         "menu": True,
@@ -2719,12 +2752,10 @@ def locusx(request, locus=None, menu=True):
 
     sequence = get_sequence(db, seqid, flanking=50)
     genomic_region_ctx = locusx_genomic_region(db, seqid, window=8000)
-    optional2status = db.get_config_table()
     if feature_type!="CDS":
         ctx_RNA = locusx_RNA(db, seqid)
         context = {
             "valid_id": valid_id,
-            "optional2status": optional2status,
             "menu": True,
             "seq": sequence,
             "sequence_type": feature_type,
@@ -2746,11 +2777,6 @@ def locusx(request, locus=None, menu=True):
     general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
     og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
 
-    try:
-        og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
-    except:
-        og_phylogeny_ctx = {}
-
     kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
     if optional2status.get("KEGG", False):
         kegg_ctx = og_tab_get_kegg_annot(db, [seqid])
@@ -2761,9 +2787,13 @@ def locusx(request, locus=None, menu=True):
     if optional2status.get("pfam", False):
         pfam_ctx = tab_get_pfam_annot(db, [seqid])
 
+    try:
+        og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
+    except:
+        og_phylogeny_ctx = {}
+
     context = {
         "valid_id": valid_id,
-        "optional2status": optional2status,
         "menu": True,
         "n_homologues": n_homologues,
         "og_id": format_orthogroup(og_id, to_url=True),
