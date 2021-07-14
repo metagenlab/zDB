@@ -2310,15 +2310,14 @@ def tab_og_phylogeny(db, og_id):
         annots = db.get_genes_from_og(orthogroups=[og_id], terms=["locus_tag", "length"])
         pfams = db.get_pfam_hits_info(annots.index.tolist())
         unique_pfams = pfams.pfam.unique()
-
         color_palette = (mpl_col.to_hex(col) for col in sns.color_palette(None, len(unique_pfams)))
         pfam_cmap = dict(zip(unique_pfams, color_palette))
         tmp_hsh_infos = collections.defaultdict(list)
         hsh_pfam_infos = {}
         for index, infos in pfams.iterrows():
             tmp_hsh_infos[infos.seqid].append([infos.pfam, infos.start, infos.end])
-        for seqid, pfam_entries in tmp_hsh_infos.items():
-            data = annots.loc[seqid]
+        for seqid, data in annots.iterrows():
+            pfam_entries = tmp_hsh_infos.get(seqid, [])
             hsh_pfam_infos[data.locus_tag] = [data.length, pfam_entries]
         pfam_col = PfamColumn("Pfam domains", hsh_pfam_infos, pfam_cmap)
 
@@ -2326,7 +2325,10 @@ def tab_og_phylogeny(db, og_id):
     locuses = [branch.name for branch in tree.iter_leaves()]
     locus_to_genome = db.get_locus_to_genomes(locuses)
     R = tree.get_midpoint_outgroup()
-    tree.set_outgroup(R)
+    root = "(unrooted)"
+    if not R is None:
+        root = "(midpoint rooted)"
+        tree.set_outgroup(R)
     tree.ladderize()
     e_tree = EteTree(tree)
 
@@ -2338,7 +2340,7 @@ def tab_og_phylogeny(db, og_id):
     asset_path = f"/temp/og_phylogeny{og_id}.svg"
     path = settings.BASE_DIR + '/assets/' + asset_path
     e_tree.render(path, dpi=1200)
-    return {"og_phylogeny": asset_path}
+    return {"og_phylogeny": asset_path, "root": root}
 
 
 def tab_og_conservation_tree(db, group, compare_to=None):
