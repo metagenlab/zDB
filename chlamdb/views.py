@@ -2284,7 +2284,7 @@ class SimpleTextColumn(Column):
         return TextFace(index, fsize=7)
 
 
-def tab_og_phylogeny(db, og_id, annot):
+def tab_og_phylogeny(db, og_id):
     og_phylogeny = db.get_og_phylogeny(og_id)
 
     tree = Tree(og_phylogeny)
@@ -2506,6 +2506,11 @@ def orthogroup(request, og):
     if optional2status.get("pfam", False):
         pfam_ctx = og_tab_get_pfams(db, annotations)
 
+    try:
+        og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
+    except:
+        og_phylogeny_ctx = {}
+
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
     homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms)
@@ -2520,7 +2525,7 @@ def orthogroup(request, og):
         **homolog_tab_ctx,
         **length_tab_ctx,
         **og_conserv_ctx,
-        **cog_ctx, **kegg_ctx, **pfam_ctx
+        **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx
     }
     return render(request, "chlamdb/og.html", my_locals(context))
 
@@ -2742,7 +2747,7 @@ def locusx(request, locus=None, menu=True):
     og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
 
     try:
-        og_phylogeny_ctx = tab_og_phylogeny(db, og_id, og_annot)
+        og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
     except:
         og_phylogeny_ctx = {}
 

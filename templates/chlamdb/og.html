@@ -42,11 +42,11 @@
 				<a href="#og_distribution_tab" data-toggle="tab">Phylogenetic distribution</a>
 			</li>
 
-		{% if homologues > 2 and optional2status|keyvalue:"gene_phylogenies" %}
-			<li>
-				<a href="#9" data-toggle="tab" onclick="window.open('{% url 'phylogeny' og %}', 'frame9'); return false">Orthogroup phylogeny</a>
-			</li>
-		{% endif %}
+			{% if n_homologues > 2 and optional2status|keyvalue:"gene_phylogenies" %}
+				<li>
+					<a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a>
+				</li>
+			{% endif %}
 		</ul>
 
 		  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.48.1/plotly.min.js"></script>
@@ -60,6 +60,15 @@
 
 		  <div class="tab-pane" id="og_distribution_tab">
 			  {% include "chlamdb/orthogroup_conservation.html" %}
+		  </div>
+
+		  <div class="tab-pane" id="og_phylogeny">
+				<h3>Phylogeny of {{og}} </h3>
+				<div class="tab-pane active" id="tab1">
+				  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
+				  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
+
+				</div>
 		  </div>
 
 		  <div class="tab-pane active" id="overview_tab">
