@@ -113,13 +113,11 @@
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {% for key, values in pfam2data.items %}
+                                  {% for values in pfam2data %}
                                       <tr>
-                                          <td><a href="{% url 'fam' values.0 'pfam' %}" target="_top">{{values.0}}</a></td><td>{{values.1}}</td><td>{{values.2}}</td>
-                                          {%for taxon_dico in taxon_dicos %}
-                                              <td data-hist="{{taxon_dico|keyvalue:values.0}}">{{taxon_dico|keyvalue:values.0}}</td>
+										  {% for value in values %}
+											  <td> {{value|safe}}</td>
                                           {% endfor %}
-
                                       </tr>
                                   {% endfor %}
                                 </tbody>
@@ -136,8 +134,6 @@
     <script src="{% static 'js/jquery.hottie.js' %}"></script>
     <script>
       $(function(){
-
-
         $("#table_pfam td").hottie({
           readValue : function(e) {
             return $(e).attr("data-hist");

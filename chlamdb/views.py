@@ -124,6 +124,8 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.Graphics import GenomeDiagram
 
 
+# could also be extended to cache the results of frequent queries
+# (e.g. taxid -> organism name) to avoid db queries
 with db_utils.DB.load_db_from_name(settings.BIODB_DB_PATH) as db:
     hsh_config = db.get_config_table(ret_mandatory=True)
     optional2status = { name: value for name, (mandatory, value) in hsh_config.items() if not mandatory}
@@ -14552,64 +14554,38 @@ def metabo_comparison_ko(request):
 
 
 def pfam_comparison(request):
-    biodb = settings.BIODB
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    comp_metabo_form = make_metabo_from(biodb)
-
-    if request.method == 'POST': 
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    comp_metabo_form = make_metabo_from(db)
+    if request.method != 'POST': 
         form = comp_metabo_form(request.POST)
-        #form2 = ContactForm(request.POST)
-        if form.is_valid():
-            from chlamdb.biosqldb import biosql_own_sql_tables
-            taxon_list = form.cleaned_data['targets']
+        return render(request, 'chlamdb/pfam_comp.html', my_locals(locals()))
 
-            sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
+    form = comp_metabo_form(request.POST)
+    if not form.is_valid():
+        return render(request, 'chlamdb/pfam_comp.html', my_locals(locals()))
 
-            database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
+    try:
+        all_targets = form.get_choices()
+    except:
+        # TODO: add error message
+        return render(request, 'chlamdb/pfam_comp.html', my_locals(locals()))
 
-            taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+    genomes = db.get_genomes_description().description.to_dict()
 
-            columns = '`' + '`,`'.join(taxon_list) + '`'
-            filter = '(`' + '`>0 or`'.join(taxon_list) + '`>0)'
-
-
-            sql = 'select * from (select id from comparative_tables_Pfam where %s group by id) A' \
-                  ' inner join (select distinct signature_accession,signature_description,count(*) as n ' \
-                  ' from interpro where analysis="Pfam" group by signature_accession,signature_description) B on A.id = B.signature_accession' % (filter)
-
-            sql_pathway_count = 'select distinct signature_accession,signature_description,count(*) as n ' \
-                                ' from interpro where analysis="Pfam" group by signature_accession,signature_description;'
-
-            pfam_data_raw = server.adaptor.execute_and_fetchall(sql,)
-            pfam2data = {}
-            for one_pfam_entry in pfam_data_raw:
-                pfam2data[one_pfam_entry[0]] = one_pfam_entry[1:]
-
-
-
-
-            taxon_dicos = []
-            for taxon in taxon_list:
-
-                sql = 'select distinct signature_accession,count(*) as n ' \
-                      ' from interpro where analysis="Pfam" and taxon_id=%s ' \
-                      ' group by signature_accession;' % (taxon)
-
-                accession2count_taxon = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-
-                for accession in pfam2data:
-                    if accession not in accession2count_taxon:
-                        accession2count_taxon[accession] = 0
-                taxon_dicos.append(accession2count_taxon)
-
-            envoi_comp = True
-
-    else:  
-        form = comp_metabo_form()
-
-    return render(request, 'chlamdb/pfam_comp.html', my_locals(locals()))
+    pfam_hits = db.get_pfam_hits(ids=all_targets)
+    pfam_defs = db.get_pfam_def(pfam_hits.index.tolist(), add_ttl_count=True)
+    data = []
+    for pfam, entry_data in pfam_hits.iterrows():
+        entry_infos = pfam_defs.loc[pfam]
+        base_infos = [format_pfam(pfam), entry_infos["def"], entry_infos.ttl_cnt]
+        data.append(base_infos+entry_data.values.tolist())
+    ctx = {
+        "envoi_comp": True,
+        "taxon_list": pfam_hits.columns.tolist(),
+        "pfam2data" : data,
+        "taxon_id2description": genomes
+    }
+    return render(request, 'chlamdb/pfam_comp.html', my_locals(ctx))
 
 
 def orthogroup_comparison(request):
