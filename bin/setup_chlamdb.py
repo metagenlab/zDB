@@ -580,6 +580,7 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta):
         descr, taxid, org, gene, pe, version = parse_swissprot_entry(record.description)
         swiss_prot_defs.append((db_prot_id, prot_id, descr, taxid, org, gene, pe))
     db.load_swissprot_defs(swiss_prot_defs)
+    db.set_status_in_config_table("BLAST_swissprot", 1)
     db.commit()
 
 
