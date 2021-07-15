@@ -669,7 +669,7 @@ process blast_swissprot {
 
   n = seq.name
   """
-  blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
+  blastp -db $params.swissprot_db -query ${n} -outfmt 6 -evalue 0.001 > ${n}.tab
   """
 }
 
@@ -1637,7 +1637,7 @@ process load_PFAM_info_db {
         file pfam_annot from pfam_results.collect()
 
     output:
-        file db into to_create_index
+        file db into to_load_swissprot_hits
 
     script:
     if(params.pfam_scan)
@@ -1653,6 +1653,32 @@ setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$params.pfam_database/Pfam-A
     else
         """
         echo \"Not supposed to load pfam, passing\"
+        """
+}
+
+
+process load_swissprot_hits_into_db {
+    input:
+        file db from to_load_swissprot_hits
+        file blast_results from swissprot_blast.collect()
+
+    output:
+        file db into to_create_index
+
+    script:
+    if(params.blast_swissprot)
+        """
+#!/usr/bin/env python
+import setup_chlamdb
+
+kwargs = ${gen_python_args()}
+blast_results = "$blast_results".split()
+
+setup_chlamdb.load_swissprot(kwargs, blast_results, "$db", "$params.swissprot_db")
+        """
+    else
+        """
+        echo \"Not supposed to load swissprot hits, passing\"
         """
 }
 

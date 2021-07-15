@@ -12,6 +12,7 @@ from Bio import AlignIO
 from Bio import SeqUtils
 
 from collections import namedtuple
+from collections import defaultdict
 
 
 # assumes orthofinder named: OG000N
@@ -503,6 +504,82 @@ def load_pfam(params, pfam_files, db, pfam_def_file):
         pfam_entries.append([entry.accession, entry.description])
     db.create_pfam_def_table(pfam_entries)
     db.set_status_in_config_table("pfam", 1)
+    db.commit()
+
+
+class SwissProtIdCount(defaultdict):
+    def __init__(self):
+        super().__init__()
+        self.id_count = 0
+
+    def __missing__(self, key):
+        tmp = self.id_count
+        self[key] = self.id_count
+        self.id_count += 1
+        return tmp
+
+def parse_swissprot_entry(description):
+    tokens = iter(description.split())
+
+    # skip entry id
+    next(tokens)
+    acc = []
+    gene = None
+    for curr_token in tokens:
+        if curr_token.startswith("OS="):
+            organism = curr_token[len("OS="):]
+            prot_name = " ".join(acc)
+            acc = [organism]
+        elif curr_token.startswith("OX="):
+            taxid = int(curr_token[len("OX="):])
+        elif curr_token.startswith("GN="):
+            gene = curr_token[len("GN="):]
+        elif curr_token.startswith("PE="):
+            pe = int(curr_token[len("PE="):])
+        elif curr_token.startswith("SV="):
+            version = curr_token[len("SV="):]
+        else:
+            acc.append(curr_token)
+    return prot_name, taxid, " ".join(acc), gene, pe, version
+
+
+# Swissprot id are in the format
+# db|UniqueIdentifier|EntryName
+def parse_swissprot_id(to_parse):
+    db, ident, name = to_parse.split("|")
+    return db, ident, name
+
+
+def load_swissprot(params, blast_results, db_name, swissprot_fasta):
+    db = db_utils.DB.load_db(db_name, params)
+    hsh_swissprot_id = SwissProtIdCount()
+    db.create_swissprot_tables()
+
+    # Note: this is not really scalable to x genomes, as 
+    # it necessitates to keep the prot id in memory
+    # may need to process the blast results in batch instead (slower but
+    # spares memory).
+    for blast_file in blast_results:
+        data = []
+        for line in open(blast_file, "r"):
+            crc, prot_id, perid, leng, n_mis, n_gap, qs, qe, ss, se, e, score = line.split()
+            hsh = simplify_hash(crc)
+            # swissprot accession in the format x|prot_id|org
+            _, prot_id, _ = parse_swissprot_id(prot_id)
+            db_prot_id = hsh_swissprot_id[prot_id]
+            data.append((hsh, db_prot_id, float(e), int(float(score)),
+                int(float(perid)), int(n_gap), int(leng)))
+        db.load_swissprot_hits(data)
+
+    swiss_prot_defs = []
+    for record in SeqIO.parse(swissprot_fasta, "fasta"):
+        _, prot_id, _ = parse_swissprot_id(record.name)
+        if prot_id not in hsh_swissprot_id:
+            continue
+        db_prot_id = hsh_swissprot_id[prot_id]
+        descr, taxid, org, gene, pe, version = parse_swissprot_entry(record.description)
+        swiss_prot_defs.append((db_prot_id, prot_id, descr, taxid, org, gene, pe))
+    db.load_swissprot_defs(swiss_prot_defs)
     db.commit()
 
 
