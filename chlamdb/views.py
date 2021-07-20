@@ -2303,6 +2303,14 @@ class PfamColumn(Column):
         return SeqMotifFace(dummy_seq, motifs=pfam_entries, seq_format="line")
 
 
+def og_tab_get_swissprot_homologs(db, annotations):
+    homologs = db.get_swissprot_homologs(annotations.index.tolist(), indexing="accession")
+    swissprot = []
+    for _, data in homologs.iterrows():
+        swissprot.append([data.accession, data.definition])
+    return {"reviewed": swissprot}
+
+
 def tab_og_phylogeny(db, og_id):
     og_phylogeny = db.get_og_phylogeny(og_id)
     pfam_col = None
@@ -2533,7 +2541,7 @@ def orthogroup(request, og):
             product = "-"
         product_annotations.append([index+1, product, cnt])
 
-    cog_ctx, kegg_ctx, pfam_ctx = {}, {}, {}
+    swissprot, cog_ctx, kegg_ctx, pfam_ctx = {}, {}, {}, {}
     if optional2status.get("COG", False):
         cog_ctx = og_tab_get_cog_annot(db, annotations.index.tolist())
 
@@ -2543,9 +2551,14 @@ def orthogroup(request, og):
     if optional2status.get("pfam", False):
         pfam_ctx = og_tab_get_pfams(db, annotations)
 
-    # try:
-    og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
-    # og_phylogeny_ctx = {}
+    if optional2status.get("BLAST_swissprot", False):
+        swissprot = og_tab_get_swissprot_homologs(db, annotations)
+        print(swissprot)
+
+    try:
+        og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
+    except:
+        og_phylogeny_ctx = {}
 
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
@@ -2560,7 +2573,7 @@ def orthogroup(request, og):
         **homolog_tab_ctx,
         **length_tab_ctx,
         **og_conserv_ctx,
-        **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx
+        **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx, **swissprot
     }
     return render(request, "chlamdb/og.html", my_locals(context))
 
@@ -2742,7 +2755,7 @@ def locusx(request, locus=None, menu=True):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
     
-    if locus==None:
+    if locus is None:
         return render(request, 'chlamdb/locus.html', my_locals({"valid_id": False}))
 
     try:
@@ -2780,6 +2793,7 @@ def locusx(request, locus=None, menu=True):
     og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
 
     kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
+    n_swissprot_hits = 0
     if optional2status.get("KEGG", False):
         kegg_ctx = og_tab_get_kegg_annot(db, [seqid])
 
@@ -2788,6 +2802,9 @@ def locusx(request, locus=None, menu=True):
 
     if optional2status.get("pfam", False):
         pfam_ctx = tab_get_pfam_annot(db, [seqid])
+
+    if optional2status.get("BLAST_swissprot", False):
+        n_swissprot_hits = db.get_n_swissprot_homologs(seqid)
 
     try:
         og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
@@ -2802,6 +2819,8 @@ def locusx(request, locus=None, menu=True):
         "translation": translation,
         "seq": sequence,
         "sequence_type": feature_type,
+        "n_swissprot_hits": n_swissprot_hits,
+        "locus": locus,
         **cog_ctx,
         **kegg_ctx,
         **homolog_tab_ctx,
@@ -9100,35 +9119,33 @@ def format_gene(gene):
 
 
 def blastswissprot(request, locus_tag):
-    biodb = settings.BIODB
-    print ('blast swissprot %s -- %s' % (biodb, locus_tag))
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
+    if locus_tag is None:
+        return render(request, 'chlamdb/blastswiss.html', my_locals({"valid_id": False}))
+    try:
+        seqid = db.get_seqid(locus_tag=locus_tag)
+    except:
+        return render(request, 'chlamdb/blastswiss.html', my_locals({"valid_id": False}))
 
-    server, db = manipulate_biosqldb.load_db(biodb)
+    swissprot_homologs = db.get_swissprot_homologs([seqid])
+    transl = db.get_translation(seqid)
 
-    if request.method == 'GET': 
-
-        server, db = manipulate_biosqldb.load_db(biodb)
-
-        columns = 'hit_number,subject_accession,subject_kingdom,subject_scientific_name,subject_taxid,' \
-                  ' subject_title,evalue,bit_score,percent_identity,gaps,query_cov,genes,annot_score'
-        sql = 'select A.*, B.phylum, B.order, B.family from (select %s from custom_tables_locus2seqfeature_id t1 ' \
-              ' inner join blastnr_blast_swissprot t2 on t1.seqfeature_id=t2.seqfeature_id' \
-              ' where locus_tag="%s") A ' \
-              ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id' % (columns,locus_tag)
-        blast_data = server.adaptor.execute_and_fetchall(sql,)
-
-        if len(blast_data) > 0:
-            valid_id = True
-            #'<a href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s">%s<a> ' % (taxon, name)
-
-
-
-
-        return render(request, 'chlamdb/blastswiss.html', my_locals(locals()))
-
-
-    return render(request, 'chlamdb/blastswiss.html', my_locals(locals()))
+    # NOTE: to fix, some queries have a > 100% coverage. Need to use query start and query end.
+    swissprot_homologs["perc_cover"] = (swissprot_homologs.match_len*100/len(transl)).round(2)
+    blast_data = []
+    for num, data in swissprot_homologs.iterrows():
+        line = [num+1, data.accession, data.evalue, data.bitscore, data.perc_id,
+                data.gaps, data.perc_cover, data.pe, data.gene, data.definition,
+                data.organism, data.taxid]
+        blast_data.append(line)
+    ctx = {
+        "valid_id": not swissprot_homologs.empty,
+        "locus_tag": locus_tag,
+        "blast_data": blast_data
+    }
+    return render(request, 'chlamdb/blastswiss.html', my_locals(ctx))
 
 
 def blastnr(request, locus_tag):

@@ -2,9 +2,6 @@
 
 
 <html>
-
-
-
 <head>
 {% load static %}
 {% load static %}
@@ -31,32 +28,25 @@
 
             <h3> SwissProt hits for: {{locus_tag}} (homology search computed with BLAST)</h3>
             <ul>
-             <li><A HREF={% url 'locusx' locus_tag True%}>{{ locus_tag }}</A></li>
+             <li><a href={% url 'locusx' locus_tag True%}>{{ locus_tag }}</a></li>
               <li>Number of SwisProt hits: {{ blast_data|length }}</li>
 
 
             </ul>
-
-                <!-- hit_number,subject_accession,subject_kingdom,subject_scientific_name,-->
-                <!--subject_taxid,subject_title,evalue,bit_score,percent_identity,gaps,query_cov,genes,annot_score -->
                 <table id="blast_nr_table" class="sortable">
                 <thead>
                 <tr>
                 <th>n</th>
-                <th>Subject</th>
-                <th>Kingdom</th>
-                <th>Phylum</th>
-                <th>Order</th>
-                <th>Family</th>
+                <th>Swissprot accession</th>
                 <th>eval.</th>
                 <th>score</th>
                 <th>ID(%)</th>
                 <th>N gaps</th>
                 <th>Cov.(%)</th>
                 <th>Annot score</th>
-                <th>Gene(s)</th>
-                <th id=blast_subject_title>Subject title</th>
-                <th id=blast_taxonomy>Taxonomy</th>
+                <th>Gene </th>
+                <th id=blast_subject_title>Swissprot description</th>
+                <th id=blast_taxonomy>Organism</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -67,18 +57,14 @@
                     <td>{{ values.0 }}</td>
                     <td><a href="http://www.uniprot.org/uniprot/{{ values.1 }}" target="_top">{{ values.1 }}<a></td>
                     <td>{{ values.2 }}</td>
-                    <td>{{ values.13 }}</td>
-                    <td>{{ values.14 }}</td>
-                    <td>{{ values.15 }}</td>
+                    <td>{{ values.3 }}</td>
+                    <td>{{ values.4 }}</td>
+                    <td>{{ values.5 }}</td>
                     <td>{{ values.6 }}</td>
                     <td>{{ values.7 }}</td>
                     <td>{{ values.8 }}</td>
                     <td>{{ values.9 }}</td>
-                    <td>{{ values.10 }}</td>
-                    <td>{{ values.12 }}</td>
-                    <td>{{ values.11 }}</td>
-                    <td>{{ values.5 }}</td>
-                    <td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{values.4}}" target="_top">{{values.3}}</a></td>
+                    <td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{values.11}}" target="_top">{{values.10}}</a></td>
 
                 </tr>
             {%  endfor %}

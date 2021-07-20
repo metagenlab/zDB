@@ -7,6 +7,8 @@
 
 <head>
 <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/calipho-sib/feature-viewer/v1.0.0/dist/feature-viewer.min.css">
+
+
 <script src="https://cdn.jsdelivr.net/gh/calipho-sib/feature-viewer@v1.0.6/dist/feature-viewer.bundle.js"></script>
 
 
@@ -64,11 +66,9 @@ function clearBox(elementID)
 				 	Homologs <span class="badge">{{n_homologues}}</span><br>
 					</a>
 				</li>
-
                 <li>
 					<a href="#phylogenetic_distrib" data-toggle="tab">Phylogenetic distribution</a>
 				</li>
-
 				{% endif %}
 
 
@@ -76,8 +76,8 @@ function clearBox(elementID)
 					<li><a href="#6" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'frame6'); return false">RefSeq homologs <span class="badge">{{n_blastnr_hits}}</span></a></li>
 				{% endif %}
 
-				{% if optional2status|keyvalue:"BLAST_refseq"%}
-					<li><a href="#7" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' data.1 %}', 'frame7'); return false">SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span></a></li>
+				{% if optional2status|keyvalue:"BLAST_swissprot" and n_swissprot_hits > 0 %}
+					<li><a href="#7" data-toggle="tab" onclick="window.open('http://155.105.138.104:8080/blastswissprot/{{locus}}', 'frame7'); return false">SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span></a></li>
 				{% endif %}
 
 				{% if optional2status|keyvalue:"phylogenetic_profile" or optional2status|keyvalue:"gene_clusters" %}
