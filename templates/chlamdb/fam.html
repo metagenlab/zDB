@@ -45,13 +45,6 @@
                                   <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
                                   <li><a href="#tab2" data-toggle="tab">Protein list</a></li>
                                   <li><a href="#tab3" data-toggle="tab">Profile</a></li>
-                                  {% if type == 'pfam' %}
-                                      <li><a href="{% url 'pfam_profile' fam 'phylum' %}">Taxonomic profile (phylum)</a></li>
-                                      <li><a href="{% url 'pfam_profile' fam 'order' %}">Taxonomic profile (order)</a></li>
-                                  {% elif type == 'Pfam' %}
-                                      <li><a href="{% url 'pfam_profile' fam 'phylum' %}">Taxonomic profile (phylum)</a></li>
-                                      <li><a href="{% url 'pfam_profile' fam 'order' %}">Taxonomic profile (order)</a></li>
-                                  {% endif %}
                               </ul>
 
                                 <div id="my-tab-content" class="tab-content">
@@ -310,9 +303,9 @@
                                                         </table>
                                                         <div style="padding-left:40px">
                                                             <ul style="list-style-type:disc;">
-                                                                    {% for group in group_count %}
-                                                                    <li>{{group|safe}}</li>
-                                                                    {% endfor %}
+																{% for group in group_count %}
+																<li>{{group|safe}}</li>
+																{% endfor %}
                                                             </ul>
                                                         </div>
                                                 </div>
@@ -334,7 +327,6 @@
                                                     <th>#</th>
                                                     <th>Orthogroup</th>
                                                     <th>Locus</th>
-                                                    <th>Protein id</th>
                                                     <th>Start</th>
                                                     <th>Stop</th>
                                                     <th>S.</th>
@@ -350,9 +342,8 @@
                                                 {% for values in all_locus_data %}
                                                     <tr>
                                                         <td>{{values.0}}</td>
-                                                        <td>{{values.1}}</td>
+                                                        <td>{{values.1|safe}}</td>
                                                         <td><a href='{% url "locusx" values.2 True %}' target="_top">{{values.2}}</a></td>
-                                                        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</a></td>
                                                         <td>{{values.4}}</td>
                                                         <td>{{values.5}}</td>
                                                         <td>{{values.6}}</td>

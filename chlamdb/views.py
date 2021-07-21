@@ -3814,22 +3814,21 @@ def get_all_prot_infos(db, seqids, orthogroups):
     hsh_gene_locs = db.get_gene_loc(seqids, as_hash=True)
     hsh_prot_infos = db.get_proteins_info(seqids)
     hsh_organisms = db.get_organism(seqids, as_hash=True)
-    group_count = []
+    group_count = set()
     all_locus_data = []
 
     for index, seqid in enumerate(seqids):
         # NOTE: all seqids are attributed an orthogroup, the case where
         # seqid is not in orthogroups should therefore not arise.
         og = orthogroups.loc[seqid].orthogroup
-        if og not in group_count:
-            group_count.append(og)
-
+        fmt_orthogroup = format_orthogroup(og, to_url=True)
+        group_count.add(fmt_orthogroup)
         strand, start, end = hsh_gene_locs[seqid]
         organism = hsh_organisms[seqid]
         locus, prot_id, gene, product = hsh_prot_infos[seqid]
         if gene==None:
             gene = ""
-        data = (index, og, locus, prot_id, start, end, strand, gene, product, organism)
+        data = (index, fmt_orthogroup, locus, prot_id, start, end, strand, gene, product, organism)
         all_locus_data.append(data)
     return all_locus_data, group_count
 
@@ -3861,6 +3860,44 @@ class FamCogColorFunc:
             return EteTree.GREEN
 
 
+def tab_gen_profile_tree(db, main_series, header, intersect):
+    """
+     Generate the tree from the profiles tab in the pfam/ko/cog pages:
+     -ref_tree: the phylogenetic tree
+     - main_series: the cog/ko/pfam count per taxid
+     - header: the header of the main_series in the tree
+     -intersect: a dataframe containing the seqid, taxid and orthogroups of the pfam/cog/ko hits
+    """
+
+    # the (group, taxid) in this dataframe are those that should be colored in red
+    # in the profile (correspondance between a cog entry and an orthogroup)
+    unique_og = intersect.orthogroup.unique().tolist()
+    red_color = set(tuple(entry) for entry in intersect.to_numpy())
+    df_og_count = db.get_og_count(list(unique_og), search_on="orthogroup").T
+    ref_tree = db.get_reference_phylogeny()
+    ref_names = db.get_genomes_description().description.to_dict()
+
+    tree = Tree(ref_tree)
+    R = tree.get_midpoint_outgroup()
+    if not R is None:
+        tree.set_outgroup(R)
+    tree.ladderize()
+    e_tree = EteTree(tree)
+    e_tree.rename_leaves(ref_names)
+
+    face_params = {"color": EteTree.RED}
+    e_tree.add_column(SimpleColorColumn.fromSeries(main_series,
+        header=header, face_params=face_params))
+
+    for og in df_og_count:
+        og_serie = df_og_count[og]
+        color_chooser = FamCogColorFunc(og, red_color)
+        col_column = SimpleColorColumn(og_serie.to_dict(), header=format_orthogroup(og),
+                col_func=color_chooser.get_color)
+        e_tree.add_column(col_column)
+    return e_tree
+
+
 # TODO : add error handling
 def fam_cog(request, cog_id):
     biodb_path = settings.BIODB_DB_PATH
@@ -3876,38 +3913,14 @@ def fam_cog(request, cog_id):
 
     seqids      = df_seqid_to_cog.index.tolist()
     
-    # the (group, taxid) in this dataframe are those that should be colored in red
-    # in the profile (correspondance between a cog entry and an orthogroup)
     orthogroups = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
     cog_info    = db.get_cog_summaries([cog_id], only_cog_desc=True, as_df=True)
     all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
-    red_color = set(tuple(entry) for entry in orthogroups.to_numpy())
-    ref_names = db.get_genomes_description().description.to_dict()
     ref_tree  = db.get_reference_phylogeny()
     cog_func = db.get_cog_code_description()
 
-    df_og_count  = db.get_og_count([int(i) for i in group_count], search_on="orthogroup").T
     df_cog_count = df_seqid_to_cog.groupby(["taxid"]).count()
-
-    tree = Tree(ref_tree)
-    R = tree.get_midpoint_outgroup()
-    if not R is None:
-        tree.set_outgroup(R)
-    tree.ladderize()
-    e_tree = EteTree(tree)
-    e_tree.rename_leaves(ref_names)
-
-    face_params = {"color": EteTree.RED}
-    e_tree.add_column(SimpleColorColumn.fromSeries(df_cog_count.cog,
-        header=format_cog(cog_id), face_params=face_params))
-
-    for og in df_og_count:
-        og_serie = df_og_count[og]
-        color_chooser = FamCogColorFunc(og, red_color)
-        col_column = SimpleColorColumn(og_serie.to_dict(), header=format_orthogroup(og),
-                col_func=color_chooser.get_color)
-        e_tree.add_column(col_column)
-
+    e_tree = tab_gen_profile_tree(db, df_cog_count.cog, format_cog(cog_id), orthogroups)
     asset_path = f"/temp/fam_tree_{cog_id}.svg"
     path = settings.BASE_DIR+"/assets/"+asset_path
     e_tree.render(path, dpi=500)
@@ -3931,8 +3944,7 @@ def format_module(mod_id):
 
 def fam_ko(request, ko_str):
     ko_id = int(ko_str[len("K"):])
-    biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb_path, settings.BIODB_CONF)
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
 
     df_ko_hits  = db.get_ko_hits([ko_id], search_on="ko", indexing="seqid", keep_taxid=True)
     seqids      = df_ko_hits.index.tolist()
@@ -3949,33 +3961,10 @@ def fam_ko(request, ko_str):
     pathway_data = format_ko_path(pathways, ko_id, as_list=True)
     module_data = [(format_ko_module(mod_id), cat, mod_desc)
             for mod_id, mod_desc, mod_def, path, cat in modules_data]
-
-    ref_tree     = db.get_reference_phylogeny()
-    leaf_to_name = db.get_genomes_description().description.to_dict()
-    df_og_count  = db.get_og_count([int(og) for og in group_count], search_on="orthogroup").T
     df_ko_count  = df_ko_hits.groupby(["taxid"]).count()
 
-    tree = Tree(ref_tree)
-    R = tree.get_midpoint_outgroup()
-    if not R is None:
-        tree.set_outgroup(R)
-    tree.ladderize()
-    e_tree = EteTree(tree)
-    e_tree.rename_leaves(leaf_to_name)
-
-    face_params = {"color": EteTree.RED}
-    e_tree.add_column(SimpleColorColumn.fromSeries(df_ko_count.ko,
-        header=format_ko(ko_id), face_params=face_params))
-
-    for og in df_og_count:
-        og_serie = df_og_count[og]
-        color_chooser = FamCogColorFunc(og, red_color)
-        col_column = SimpleColorColumn(og_serie.to_dict(), header=format_orthogroup(og),
-                col_func=color_chooser.get_color)
-        e_tree.add_column(col_column)
-
     fam  = format_ko(ko_id)
-    group_count = [format_orthogroup(og, to_url=True) for og in group_count]
+    e_tree = tab_gen_profile_tree(db, df_ko_count.ko, fam, seqid_to_og)
     asset_path = f"/temp/fam_tree_{fam}.svg"
     path = settings.BASE_DIR + f"/assets/{asset_path}"
 
@@ -3986,382 +3975,40 @@ def fam_ko(request, ko_str):
     return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
 
-def fam(request, fam, type):
-    biodb = settings.BIODB
-    if request.method == 'GET': 
-
-        valid_id = True
-
-        server, db = manipulate_biosqldb.load_db(biodb)
-        # should have be redirected in fam_cog instead
-        assert(type != "cog")
-
-        print ('-- family request: biodb %s -- type %s -- name %s' % (biodb, type, fam))
-        if type =='pfam':
-            sql1 =   'select seqfeature_id from interpro_signature t1 ' \
-                     ' inner join interpro_interpro t2 on t1.signature_id=t2.signature_id ' \
-                     ' where t1.signature_accession="%s" group by seqfeature_id;' % (fam)
-            sql2 = 'select signature_description from interpro where signature_accession="%s" limit 1' % (fam)
-            try:
-                info = server.adaptor.execute_and_fetchall(sql2, )[0]
-            except:
-                valid_id = False
-        elif type == 'cog':
-            sql1 = 'select seqfeature_id from COG_seqfeature_id2best_COG_hit t1 ' \
-                   ' inner join COG_cog_names_2014 t2 on t1.hit_cog_id=t2.cog_id ' \
-                   ' where COG_name="%s"' % (fam)
-                   
-            sql2 = 'select t2.description from COG_seqfeature_id2best_COG_hit t1 ' \
-                   ' inner join COG_cog_names_2014 t2 on t1.hit_cog_id=t2.cog_id where t2.COG_name="%s";' % (fam)
-            try:
-                info = server.adaptor.execute_and_fetchall(sql2, )[0]
-            except:
-                valid_id = False
-        elif type == 'interpro':
-            sql1 =   'select seqfeature_id from interpro_entry t1 inner join interpro_signature t2 on t1.interpro_id=t2.interpro_id ' \
-                     ' inner join interpro_interpro t3 on t2.signature_id=t3.signature_id ' \
-                     ' where name="%s" group by seqfeature_id;' % (fam)
-            sql2 = 'select interpro_description from interpro where interpro_accession="%s" limit 1' % (fam)
-            
-            try:
-                info = server.adaptor.execute_and_fetchall(sql2, )[0]
-            except IndexError:
-                valid_id = False
-        elif type == 'EC':
-            sql1 = f'select distinct seqfeature_id from enzyme_seqfeature_id2ec t1' \
-                   f' inner join enzyme_enzymes t2 on t1.ec_id=t2.enzyme_id where ec="{fam}";' 
-
-            sql2 = 'select line,value from (select * from enzyme_enzymes where ec="%s") t1 ' \
-                   ' inner join enzyme_enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id;' % (fam)
-            path = fam.split('.')
-
-            external_link = 'https://www.qmul.ac.uk/sbcs/iubmb/enzyme/EC%s/%s/%s/%s.html' % (path[0], path[1], path[2], path[3])
-
-            sql_pathways = 'select distinct pathway_name,pathway_category,description ' \
-                           ' from (select * from enzyme_enzymes where ec = "%s") t1 ' \
-                           ' inner join enzyme_kegg2ec as t2 on t2.ec_id=t1.enzyme_id ' \
-                           ' inner join enzyme_kegg_pathway as t3 on t2.pathway_id=t3.pathway_id' \
-                           ' where pathway_category !="1.0 Global and overview maps";' % (fam)
-
-            pathway_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_pathways, )]
-            
-            try:
-                info =  server.adaptor.execute_and_fetchall(sql2, )
-            except:
-                valid_id = False
-
-            sql_ko = f'select distinct t3.ko_accession,t3.definition from enzyme_ko2ec t1' \
-                     f' inner join enzyme_enzymes t2 on t1.enzyme_id=t2.enzyme_id ' \
-                     f' inner join enzyme_ko_annotation t3 on t1.ko_id=t3.ko_accession where t2.ec="{fam}";'
-            associated_ko = [list(i) for i in server.adaptor.execute_and_fetchall(sql_ko, )]
-            sql_ko_freq = f'select ko_accession,count(*) as n from (select distinct t3.ko_accession,seqfeature_id from enzyme_ko2ec t1 ' \
-                          f' inner join enzyme_enzymes t2 on t1.enzyme_id=t2.enzyme_id' \
-                          f' inner join enzyme_ko_annotation t3 on t1.ko_id=t3.ko_accession ' \
-                          f' inner join enzyme_seqfeature_id2ko t4 on t3.ko_id=t4.ko_id ' \
-                          f'where t2.ec="{fam}") A group by ko_accession;'
-            ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_ko_freq,))
-
-        elif type == 'ko':
-            sql1 = 'select distinct seqfeature_id from enzyme_seqfeature_id2ko t1 ' \
-                   ' inner join enzyme_ko_annotation t2 on t1.ko_id=t2.ko_id where t2.ko_accession="%s";' % (fam)
-
-            sql2 = 'select * from enzyme_ko_annotation where ko_accession="%s"' % (fam)
-            try:
-                ko_data = server.adaptor.execute_and_fetchall(sql2,)[0]
-                external_link = 'http://www.genome.jp/dbget-bin/www_bget?%s' % (fam)
-
-                sql_modules = 'select pathways, modules from enzyme_ko_annotation where ko_accession="%s";' % (fam)
-                data = server.adaptor.execute_and_fetchall(sql_modules,)[0]
-
-                if data[0] != '-':
-                    import re
-                    pathway_list = [re.sub('ko', 'map',i) for i in data[0].split(',')]
-                    pathway_list = '("' + '","'.join(pathway_list) + '")'
-                    sql = 'select distinct pathway_name,pathway_category,description from enzyme_kegg_pathway where pathway_name in %s' % pathway_list
-                    pathway_data = server.adaptor.execute_and_fetchall(sql,)
-                if data[1] != '-':
-                    module_list = '("' + '","'.join(data[1].split(',')) + '")'
-                    sql = 'select distinct module_name,module_sub_sub_cat,description from enzyme_kegg_module where module_name in %s' % module_list
-                    module_data = server.adaptor.execute_and_fetchall(sql,)
-            except:
-                valid_id = False
-        else:
-            valid_id = False
-            return render(request, 'chlamdb/fam.html', my_locals(locals()))
-        try:
-            seqfeature_id_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql1, )]
-            seqfeature_list_form = '"' + '","'.join(seqfeature_id_list) + '"'
-            
-        except IndexError:
-            valid_id = False
-            return render(request, 'chlamdb/fam.html', my_locals(locals()))
-        else:
-            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-            sql2 = 'select %s from orthology_detail where seqfeature_id in (%s)' % (columns, seqfeature_list_form)
-
-            all_locus_raw_data = server.adaptor.execute_and_fetchall(sql2, )
-            orthogroup_list = [i[0] for i in all_locus_raw_data]
-            all_locus_data = []
-            group_count = []
-            for i in range(0, len(all_locus_raw_data)):
-                 all_locus_data.append([i] + list(all_locus_raw_data[i]))
-                 if all_locus_raw_data[i][0] not in group_count:
-                    group_count.append(all_locus_raw_data[i][0])
-        envoi = True
-        menu = True
-        from chlamdb.phylo_tree_display import ete_motifs
-        if type =='pfam':
-            taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
-                                                                              [fam],
-                                                                              'Pfam')
-
-            sql3= 'select distinct taxon_id,orthogroup,signature_accession from interpro ' \
-                  ' where analysis="Pfam" and orthogroup in (%s);' % ('"'+'","'.join(set(orthogroup_list))+'"')
-
-        elif type == 'cog':
-            taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
-                                                                              [fam],
-                                                                              'COG')
-
-            sql3='select distinct taxon_id,orthogroup,COG_id from (select taxon_id,locus_tag,orthogroup ' \
-                 ' from orthology_detail where orthogroup in (%s)) A ' \
-                 ' inner join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag;' % ('"'+'","'.join(set(orthogroup_list))+'"')
-
-        elif type == 'interpro':
-            taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
-                                                                              [fam],
-                                                                              'interpro')
-
-            sql3 = 'select distinct taxon_id,orthogroup,interpro_accession from ' \
-                   ' interpro where orthogroup in (%s);' % ('"'+'","'.join(set(orthogroup_list))+'"')
-
-        elif type == 'EC':
-            taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
-                                                                              [fam],
-                                                                              'EC')
-
-            group_filter = '"'+'","'.join(set(orthogroup_list))+'"'   
-
-            sql3 = f'select distinct taxon_id,orthogroup_name,ec from enzyme_seqfeature_id2ec t1 ' \
-                   f' inner join enzyme_enzymes t2 on t1.ec_id=t2.enzyme_id ' \
-                   f' inner join annotation_seqfeature_id2locus t3 on t1.seqfeature_id=t3.seqfeature_id ' \
-                   f' inner join orthology_seqfeature_id2orthogroup t4 on t1.seqfeature_id=t4.seqfeature_id ' \
-                   f' inner join orthology_orthogroup as t5 on t4.orthogroup_id=t5.orthogroup_id ' \
-                   f' where orthogroup_name in ({group_filter});'
-
-        elif type == 'ko':
-            taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
-                                                                              [fam],
-                                                                              'ko')
-
-            sql3 = 'select t1.taxon_id, t1.orthogroup, t3.ko_accession ' \
-                   ' from orthology_detail t1 ' \
-                   ' inner join enzyme_seqfeature_id2ko t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                   ' inner join enzyme_ko_annotation t3 on t2.ko_id=t3.ko_id ' \
-                   ' where t1.orthogroup in (%s);' % ('"'+'","'.join(set(orthogroup_list))+'"')
-
-        else:
-            taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
-                                                                              [fam],
-                                                                              'ko')
-            sql3 = 'select distinct A.taxon_id,A.orthogroup,B.ko_id from (' \
-                   ' select locus_tag,orthogroup,taxon_id from orthology_detail ' \
-                   ' where orthogroup in (%s)) A inner join enzyme_locus2ko as B ' \
-                   ' on A.locus_tag=B.locus_tag;' % ('"'+'","'.join(set(orthogroup_list))+'"')
-
-        print(sql3)
-        data = server.adaptor.execute_and_fetchall(sql3,)
-
-
-        taxon2orthogroup2ec = {}
-        # dico of the form:
-        # taxid: {group: {domain}}
-        # 58: {'group_414': ['PF06723']}, 216: {'group_414': ['PF06723']}, 269: {'group_414': ['PF06723']},
-        for one_row in data:
-            taxon = str(one_row[0])
-            group = one_row[1]
-            ec = one_row[2]
-            if taxon not in taxon2orthogroup2ec:
-                taxon2orthogroup2ec[taxon] = {}
-                taxon2orthogroup2ec[taxon][group] = [ec]
-            else:
-                if group not in taxon2orthogroup2ec[taxon]:
-                    taxon2orthogroup2ec[taxon][group] = [ec]
-                else:
-                    if ec not in taxon2orthogroup2ec[taxon][group]:
-                        taxon2orthogroup2ec[taxon][group].append(ec)
-
-        if len(taxon2orthogroup2ec) == 0:
-            no_match = True
-        else:
-            taxon2orthogroup2count = ete_motifs.get_taxon2orthogroup2count(biodb, group_count)
-            merged_dico = taxon2orthogroup2count
-            for i in taxon2orthogroup2count_reference:
-                merged_dico[i] = taxon2orthogroup2count_reference[i]
-
-            labels = [fam] + group_count
-
-            print("plotting")
-
-            #print("merged_dico", merged_dico)
-            #print("taxon2orthogroup2ec", taxon2orthogroup2ec)
-            print("taxon2orthogroup2count_reference", taxon2orthogroup2count_reference)
-            tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
-                                                               labels,
-                                                               merged_dico,
-                                                               taxon2group2value=taxon2orthogroup2ec,
-                                                               highlight_first_column=True)
-
-
-            if len(labels) > 30:
-                big = True
-                path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
-                asset_path = '/temp/fam_tree_%s.png' % fam
-                tree.render(path, dpi=300, tree_style=style)
-            else:
-                big = False
-                path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.svg' % fam
-                asset_path = '/temp/fam_tree_%s.svg' % fam
-
-                tree.render(path, dpi=300, tree_style=style)
-
-    return render(request, 'chlamdb/fam.html', my_locals(locals()))
-
-
-def fam_interpro(request, fam, type):
-
-    # flag for template rendering
-    fam_interpro = True
-
-    if type == "Gene3D":
-        Gene3D_acc = fam.split(":")[1]
-
-    '''
-    Same as fam but don't rely on comparative matrix
-    retrieve pattern of presence/absence from interproscan result table
-    '''
-    biodb = settings.BIODB
-    if request.method == 'GET': 
-        from chlamdb.phylo_tree_display import ete_motifs
-
-        valid_id = True
-
-        server, db = manipulate_biosqldb.load_db(biodb)
-
-        print ('-- family request: biodb %s -- type %s -- name %s' % (biodb, type, fam))
-
-        sql1 = f'select distinct t1.seqfeature_id from interpro.interpro_{biodb} t1 ' \
-               f' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
-               f' inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id ' \
-               f' where analysis_name="{type}" and signature_accession="{fam}";'
-
-        sql2 =   f'select signature_accession,signature_description from interpro.interpro_{biodb} t1 ' \
-                 f' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
-                 f' inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id ' \
-                 f' where analysis_name="{type}" and signature_accession="{fam}" limit 1'
-
-        try:
-            info = server.adaptor.execute_and_fetchall(sql2, )[0]
-        except IndexError:
-            #    valid_id = False
-            no_match = True
-            menu = True
-            return render(request, 'chlamdb/fam.html', my_locals(locals()))
-
-        try:
-            seqfeature_id_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql1, )]
-
-            seqfeature_list_form = '"' + '","'.join(seqfeature_id_list) + '"'
-
-        except IndexError:
-            valid_id = False
-            return render(request, 'chlamdb/fam.html', my_locals(locals()))
-        else:
-
-            # retrieve locus list and their annotations
-            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-            sql2 = 'select %s from orthology_detail_%s where seqfeature_id in (%s)' % (columns, biodb, seqfeature_list_form)
-
-            all_locus_raw_data = server.adaptor.execute_and_fetchall(sql2, )
-            orthogroup_list = [i[0] for i in all_locus_raw_data]
-            all_locus_data = []
-            group_count = []
-            for i in range(0, len(all_locus_raw_data)):
-                 all_locus_data.append([i] + list(all_locus_raw_data[i]))
-                 if all_locus_raw_data[i][0] not in group_count:
-                    group_count.append(all_locus_raw_data[i][0])
-        envoi = True
-        menu = True
-        
-        
-
-        signature2taxon_id2count = ete_motifs.get_interpro2taxon_id2count(biodb,
-                                                                          [fam],
-                                                                          type)
-
-
-        sql3 = 'select distinct taxon_id,orthogroup,signature_accession from ' \
-                ' interpro where orthogroup in (%s) and signature_accession="%s";' % ('"'+'","'.join(set(orthogroup_list))+'"',
-                                                                                       fam)
-
-
-        data = server.adaptor.execute_and_fetchall(sql3,)
-
-        # dico of the form:
-        # taxid: {group: {domain}}
-        # one group can be associated to multiple domains
-        # 58: {'group_414': ['PF06723']}, 216: {'group_414': ['PF06723']}, 269: {'group_414': ['PF06723']},
-
-        taxon2orthogroup2target_domain = {}
-        for one_row in data:
-            taxon = int(one_row[0])
-            group = one_row[1]
-            signature = one_row[2]
-            if taxon not in taxon2orthogroup2target_domain:
-                taxon2orthogroup2target_domain[taxon] = {}
-                taxon2orthogroup2target_domain[taxon][group] = [signature]
-            else:
-                if group not in taxon2orthogroup2target_domain[taxon]:
-                    taxon2orthogroup2target_domain[taxon][group] = [signature]
-                else:
-                    if signature not in taxon2orthogroup2target_domain[taxon][group]:
-                        taxon2orthogroup2target_domain[taxon][group].append(signature)
-
-        if len(taxon2orthogroup2target_domain) == 0:
-            no_match = True
-        else:
-            taxon2orthogroup2count = ete_motifs.get_taxon2orthogroup2count(biodb, group_count)
-            merged_dico = taxon2orthogroup2count
-            for i in signature2taxon_id2count:
-                merged_dico[i] = signature2taxon_id2count[i]
-
-            labels = [fam] + group_count
-
-
-            print("plotting")
-
-            tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
-                                                               labels,
-                                                               merged_dico, # group2taxon2count
-                                                               taxon2group2value=taxon2orthogroup2target_domain,
-                                                               highlight_first_column=True)
-
-
-            if len(labels) > 30:
-                big = True
-                path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
-                asset_path = '/temp/fam_tree_%s.png' % fam
-                tree.render(path, dpi=300, tree_style=style)
-            else:
-                big = False
-                path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.svg' % fam
-                asset_path = '/temp/fam_tree_%s.svg' % fam
-
-                tree.render(path, dpi=300, tree_style=style)
-
-    return render(request, 'chlamdb/fam.html', my_locals(locals()))
+def fam_pfam(request, pfam):
+    context = {
+        "type": "pfam",
+        "menu" : True,
+        "envoi" : True,
+        "fam": pfam
+    }
+    if len(pfam)<2 or not pfam.startswith("PF"):
+        # add error message
+        return render(request, 'chlamdb/fam.html', my_locals(context))
+    try:
+        pfam_id = int(pfam[len("PF"):])
+    except:
+        return render(request, 'chlamdb/fam.html', my_locals(context))
+
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    pfam_hits = db.get_pfam_hits([pfam_id], search_on="pfam", indexing="seqid", keep_taxid=True)
+    seqids = pfam_hits.seqid.unique().tolist()
+    orthogroups = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
+    all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
+    infos = db.get_pfam_def([pfam_id])
+
+    e_tree = tab_gen_profile_tree(db, pfam_hits.groupby(["taxid"])["pfam"].count(),
+        pfam, orthogroups)
+
+    asset_path = f"/temp/fam_tree_{pfam_id}.svg"
+    path = settings.BASE_DIR+"/assets/"+asset_path
+    e_tree.render(path, dpi=500)
+
+    context["all_locus_data"] = all_locus_data
+    context["group_count"] = group_count
+    context["info"] = [infos.loc[pfam_id]["def"]] 
+    context["asset_path"] = asset_path
+    return render(request, 'chlamdb/fam.html', my_locals(context))
 
 
 def COG_phylo_heatmap(request, frequency):
@@ -12621,6 +12268,8 @@ def plot_heatmap(request, type):
         mat = db.get_og_count(taxon_ids)
     elif type == "ko":
         mat = db.get_ko_hits(taxon_ids)
+    elif type == "Pfam":
+        mat = db.get_pfam_hits(taxon_ids)
     else:
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
