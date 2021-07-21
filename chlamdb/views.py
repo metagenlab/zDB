@@ -1145,8 +1145,11 @@ def venn_orthogroup(request):
     return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
 
 
-def format_pfam(pfam_id):
-    return f"PF{pfam_id:04d}"
+def format_pfam(pfam_id, to_url=False):
+    fmt_entry = f"PF{pfam_id:04d}"
+    if to_url:
+        return f"<a href=/fam_pfam/{fmt_entry}>{fmt_entry}</a>"
+    return fmt_entry
 
 
 def extract_pfam(request, classification="taxon_id"):
@@ -2454,50 +2457,17 @@ def og_tab_get_cog_annot(db, seqids):
 
 def og_tab_get_pfams(db, annotations):
     seqids = annotations.index.tolist()
-    max_length = annotations.length.max()
 
-    pfam_hits = db.get_pfam_hits_info(seqids)
-    pfam_defs = db.get_pfam_def(pfam_hits.pfam.unique().tolist())
-    fmt_pfam = (format_pfam(pfam) for pfam in pfam_defs.index.values)
-    
-    locus_tag = db.get_proteins_info(seqids, to_return=["locus_tag"])
-    color_palette = (mpl_col.to_hex(col) for col in sns.color_palette(None, len(pfam_defs)))
-    hsh_pfam_to_color = dict(zip(pfam_defs.index.values, color_palette))
+    pfam_hits = db.get_pfam_hits(seqids, search_on="seqid", indexing="seqid")
+    pfam_hits_count = pfam_hits.groupby(["pfam"]).count()
+    pfam_defs = db.get_pfam_def(pfam_hits_count.index.tolist())
+    all_infos = pfam_hits_count.join(pfam_defs)
 
-    # a bit brute-forcish. Would maybe be better to first sort
-    # on seqid and iterate on it
-    pfam_by_seqid = pfam_hits.groupby(["seqid"])
-    df_starts = pfam_by_seqid["start"].apply(list)
-    df_stops = pfam_by_seqid["end"].apply(list)
-    df_pfams = pfam_by_seqid["pfam"].apply(list)
-
-    pfam_domains = []
-    for seqid, starts in df_starts.iteritems():
-        ends = df_stops.loc[seqid]
-        pfams = df_pfams.loc[seqid]
-
-        fmt_data = []
-        for start, end, pfam in zip(starts, ends, pfams):
-            data = (
-                f"{{x:{start}, y:{end},"
-                f" name: \"{locus_tag[seqid][0]}\","
-                f" description:\"{format_pfam(pfam)}\","
-                f" color:\"{hsh_pfam_to_color[pfam]}\"}}"
-            )
-            fmt_data.append(data)
-        data = "["+",".join(fmt_data)+"]"
-        feature = (
-            f"{{ data: {data}, "
-            f" name: \"{locus_tag[seqid][0]}\","
-            "  color: \"#0F8292\","
-            "  type : \"rect\","
-            "}"
-        )
-        pfam_domains.append(feature)
+    all_infos_tab = []
+    for pfam, data in all_infos.iterrows():
+        all_infos_tab.append([format_pfam(pfam, to_url=True), data.seqid, data["def"]])
     return {
-        "pfam_domains": "["+",".join(pfam_domains)+"]",
-        "pfam_def": list(zip(fmt_pfam, pfam_defs["def"].values)),
-        "dummy_translation": max_length*"A"
+        "pfam_def": all_infos_tab
     }
 
 
@@ -2680,7 +2650,7 @@ def tab_get_pfam_annot(db, seqid):
             "}"
         )
         pfam_def = pfam_defs_df["def"].loc[pfam]
-        pfam_defs.append((name, pfam_def))
+        pfam_defs.append((format_pfam(pfam, to_url=True), pfam_def))
         feature_viewer_fet.append(feature)
     return {"pfam_domains": "[" + ",".join(feature_viewer_fet) + "]",
             "pfam_def": pfam_defs}
@@ -14283,7 +14253,7 @@ def pfam_comparison(request):
     data = []
     for pfam, entry_data in pfam_hits.iterrows():
         entry_infos = pfam_defs.loc[pfam]
-        base_infos = [format_pfam(pfam), entry_infos["def"], entry_infos.ttl_cnt]
+        base_infos = [format_pfam(pfam, to_url=True), entry_infos["def"], entry_infos.ttl_cnt]
         data.append(base_infos+entry_data.values.tolist())
     ctx = {
         "envoi_comp": True,

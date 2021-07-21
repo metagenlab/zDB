@@ -623,7 +623,7 @@ function clearBox(elementID)
 								<table id="panel_table" class="table table-striped" style="width: 100%">
 								{% for val in pfam_def %}
 								<tr>
-									<th>{{val.0}}</th>
+									<th>{{val.0|safe}}</th>
 									<td>{{val.1}}</td>
 								</tr>
 								{% endfor %}

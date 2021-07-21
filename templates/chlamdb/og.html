@@ -146,6 +146,35 @@
 					  </div>
 					</div>
 
+					 {% if pfam_def|length > 0 %}
+					 	<div class="row">
+							<div class="panel panel-default">
+								<div class="panel-heading">
+								  <h3 class="panel-title">PFAM domains </h3>
+								</div>
+
+								<table id="panel_table" class="table table-striped" style="width: 100%">
+									<thead>
+									  <tr>
+										  <th>Domain</th>
+										  <th>Domain definition</th>
+										  <th>N. occurrences</th>
+									  </tr>
+									</thead>
+									<tbody>
+										{% for val in pfam_def %}
+										<tr>
+											<th>{{val.0|safe}}</th>
+											<td>{{val.2}}</td>
+											<td>{{val.1}}</td>
+										</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					 {% endif %}
+
 
 				</div>
 			  </div>
@@ -263,26 +292,6 @@
 						</div>
                   	{% endif %}
 
-					 {% if pfam_def|length > 0 %}
-					 	<div class="row">
-							<div class="panel panel-default">
-								<div class="panel-heading">
-								  <h3 class="panel-title">PFAM domains organization</h3>
-								</div>
-									<div id="pfam_div_features">
-								</div>
-
-								<table id="panel_table" class="table table-striped" style="width: 100%">
-								{% for val in pfam_def %}
-								<tr>
-									<th>{{val.0}}</th>
-									<td>{{val.1}}</td>
-								</tr>
-								{% endfor %}
-								</table>
-							</div>
-						</div>
-					 {% endif %}
 
 					<div class="row">
 					  <div class="panel panel-default">
@@ -349,24 +358,6 @@ $(document).ready(function() {
   });
 });
 
-window.onload = function() {
-	var ft2 = new FeatureViewer("{{dummy_translation|safe}}",
-		"#pfam_div_features", 
-		{
-			showAxis: true,
-			showSequence: false,
-			brushActive: false,
-			toolbar:false,
-			bubbleHelp:true,
-			zoomMax:1}
-	);
-
-	features = {{pfam_domains|safe}};
-
-	for(fet in features) {
-		ft2.addFeature(features[fet]);
-	}
-}
 </script>
 
 </body>
