@@ -7012,6 +7012,9 @@ def pan_genome(request, type):
     elif type == "ko":
         df_hits = db.get_ko_hits(taxids, search_on="taxid")
         type_txt = "KO"
+    elif type=="Pfam":
+        df_hits = db.get_pfam_hits(taxids, search_on="taxid")
+        type_txt = "PFAM"
     else:
         # should add an error message
         form = venn_form_class()
