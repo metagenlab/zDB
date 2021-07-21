@@ -20,13 +20,11 @@
                   <nav>
                   <ul id="tabs" class="nav nav-tabs">
                           {% if type == 'Pfam' %}
-
                               <li><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
                               <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
                               <li><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
-                              <li class="active"><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
-
-
+                              <li><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
+							  <li class="active"><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
                           {% elif type == 'COG' %}
                               <li><a href="{% url 'extract_cog' %}">Detailed comparison</a></li>
                               <li><a href="{% url 'venn_cog' %}">Venn diagram</a></li>

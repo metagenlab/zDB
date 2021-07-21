@@ -2305,10 +2305,11 @@ class PfamColumn(Column):
 
 def og_tab_get_swissprot_homologs(db, annotations):
     homologs = db.get_swissprot_homologs(annotations.index.tolist(), indexing="accession")
+    summary = homologs.groupby("definition").count()
     swissprot = []
-    for _, data in homologs.iterrows():
-        swissprot.append([data.accession, data.definition])
-    return {"reviewed": swissprot}
+    for definition, data in summary.iterrows():
+        swissprot.append([definition, data.accession])
+    return {"reviewed": swissprot, "n_swissprot_hits": len(homologs)}
 
 
 def tab_og_phylogeny(db, og_id):
@@ -2553,7 +2554,6 @@ def orthogroup(request, og):
 
     if optional2status.get("BLAST_swissprot", False):
         swissprot = og_tab_get_swissprot_homologs(db, annotations)
-        print(swissprot)
 
     try:
         og_phylogeny_ctx = tab_og_phylogeny(db, og_id)

@@ -287,22 +287,22 @@
 					<div class="row">
 					  <div class="panel panel-default">
 
-						{% if reviewed|length != 0 %}
+						{% if n_swissprot_hits != 0 %}
 							<div class="panel-heading">
-							  <h3 class="panel-title">{{reviewed|length}} SwissProt homologs</h3>
+							  <h3 class="panel-title">Annotations of the {{n_swissprot_hits}} SwissProt hits</h3>
 							</div>
 							<div style="margin-top:10px; margin-left:3px; margin-right:3px; margin-bottom:3px">
 							<table class="table table-striped" style="width: 100%" id="swissprot_hits">
 								<thead>
 									<tr>
-										<th>UniProt accession</th>
-										<th>Definition</th>
+										<th>Annotation</th>
+										<th>Number of occurrences</th>
 									</tr>
 								</thead>
 								<tbody>
 								{% for swissprot in reviewed %}
 									  <tr>
-										  <td><a href="https://www.uniprot.org/uniprot/{{swissprot.0}}">{{swissprot.0}}</a></td>
+										  <td>{{swissprot.0}}</td>
 										  <td>{{swissprot.1}}</td>
 									  </tr>
 								{% endfor %}
