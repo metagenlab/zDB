@@ -3992,22 +3992,51 @@ def COG_phylo_heatmap(request, frequency):
         return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
     freq = frequency!="False"
 
-    from ete3 import Tree
-    from chlamdb.phylo_tree_display import ete_motifs
-    from chlamdb.plots import cog_heatmap
-
     db = db_utils.DB.load_db_from_name(biodb)
     tree = db.get_reference_phylogeny()
+    descr = db.get_genomes_description()
+    all_taxids = descr.index.tolist()
+
+    all_cog_hits = db.get_cog_hits(all_taxids, indexing="taxid", search_on="taxid")
+    all_cog_funcs = db.get_cog_summaries(all_cog_hits.index.unique().tolist(),
+            only_cog_desc=True, as_df=True)
+    all_cog_hits = all_cog_hits.join(all_cog_funcs.function)
+    summed_entries = all_cog_hits.groupby("function").sum()
+
+    # this is necessary as some cog are assigned several functions, in
+    # which case, all functions are concatenated into a single string
+    # e.g. MCT to say that a cog has the three functions
+    for func, entries in summed_entries.iterrows():
+        if len(func)==1:
+            continue
+        for single_func in func:
+            if single_func in summed_entries.index:
+                summed_entries.loc[single_func] += entries
+            else:
+                summed_entries.loc[single_func] = entries
+    grouped_by_functions = summed_entries[summed_entries.index.map(len) == 1].T
+
     t1 = Tree(tree)
     R = t1.get_midpoint_outgroup()
     t1.set_outgroup(R)
     t1.ladderize()
-    tree, style = cog_heatmap.plot_cog_heatmap(db, t1, frequency=freq)
+
+    funcs_descr = db.get_cog_code_description()
+    e_tree = EteTree(t1)
+    e_tree.rename_leaves(descr.description.to_dict())
+    for func in grouped_by_functions.columns:
+        detailed_func = funcs_descr[func]
+        func_count = grouped_by_functions[func]
+        if freq:
+            func_count /= (sum(func_count)/100.0)
+            func_count = func_count.round(2)
+        col = SimpleColorColumn(func_count, header=detailed_func + "("+func+")")
+        e_tree.add_column(col)
 
     freq = frequency
     path = settings.BASE_DIR + f"/assets/temp/COG_tree_{freq}.svg"
     asset_path = f"/temp/COG_tree_{freq}.svg"
-    tree.render(path, dpi=600, tree_style=style)
+    e_tree.render(path, dpi=600)
     envoi = True
     return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
 

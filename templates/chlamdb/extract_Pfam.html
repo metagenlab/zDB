@@ -118,7 +118,7 @@
                                     {% for value in match_groups_data %}
                                         <tr>
                                             <td>{{value.0}}</td>
-                                            <td><a href="{% url 'fam' value.1 'pfam' %}">{{value.1}}</a></td>
+                                            <td><a href="{% url 'fam_pfam' value.1 %}">{{value.1}}</a></td>
                                             <td>{{value.2}}</td>
                                             <td>{{value.3}}</td>
                                             <td>{{value.4}}</td>
