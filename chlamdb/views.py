@@ -2582,8 +2582,9 @@ class LocusHeatmapColumn(SimpleColorColumn):
     def __init__(self, values, ref_taxon=None, header=None):
         super().__init__(values, header)
         self.ref_taxon = ref_taxon
-        self.min_val = min(v for k, v in values.items())
-        self.max_val = max(v for k, v in values.items())
+        if len(values) > 0:
+            self.min_val = min(v for k, v in values.items())
+            self.max_val = max(v for k, v in values.items())
 
 
     def get_face(self, index):
@@ -2676,7 +2677,7 @@ def locusx_genomic_region(db, seqid, window):
     gd_features = gd_track.new_set()
     for curr_seqid, data in all_infos.iterrows():
         feature_name = ""
-        if not pd.isna(data.gene):
+        if "gene" in data and not pd.isna(data.gene):
             feature_name = data.gene
 
         loc = FeatureLocation(data.start, data.end, data.strand)
