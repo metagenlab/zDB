@@ -1897,6 +1897,9 @@ def format_cog(cog_id, as_url=False):
 def format_cog_url(cog_id):
     return format_cog(cog_id, as_url=True)
 
+def escape_quotes(unsafe):
+    return unsafe.replace("\"", "\\\"")
+
 def venn_cog(request, sep_plasmids=False):
     """
     Will need to modify the signature of the method to remove the sep_plasmid 
@@ -1938,7 +1941,7 @@ def venn_cog(request, sep_plasmids=False):
     cog2description_l = []
     cog_codes = db.get_cog_code_description()
     for cog, data in data.iterrows():
-        name = data.description
+        name = escape_quotes(data.description)
         func = data.function
         functions = ",".join(f"\"{abbr}\"" for abbr in func)
         cog2description_l.append(f"h[\"{format_cog(cog)}\"] = [[{functions}], \"{name}\"]")
