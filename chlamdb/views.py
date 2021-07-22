@@ -4024,11 +4024,13 @@ def COG_phylo_heatmap(request, frequency):
     funcs_descr = db.get_cog_code_description()
     e_tree = EteTree(t1)
     e_tree.rename_leaves(descr.description.to_dict())
+    ttl_cnt = grouped_by_functions.sum(axis=1)
     for func in grouped_by_functions.columns:
         detailed_func = funcs_descr[func]
         func_count = grouped_by_functions[func]
         if freq:
-            func_count /= (sum(func_count)/100.0)
+            func_count /= ttl_cnt
+            func_count *= 100
             func_count = func_count.round(2)
         col = SimpleColorColumn(func_count, header=detailed_func + "("+func+")")
         e_tree.add_column(col)
