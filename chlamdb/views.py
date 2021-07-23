@@ -3899,7 +3899,6 @@ def fam_cog(request, cog_id):
     path = settings.BASE_DIR+"/assets/"+asset_path
     e_tree.render(path, dpi=500)
 
-    group_count = [format_orthogroup(og, to_url=True) for og in group_count]
     func, cog_description = cog_info.loc[cog_id]
     info_func = "<br>".join((cog_func[code] for code in func))
     type = "cog"
