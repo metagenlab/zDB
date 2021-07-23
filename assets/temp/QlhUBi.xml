@@ -1,0 +1,139 @@
+TBLASTN 2.9.0+
+
+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro A.
+Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J.
+Lipman (1997), "Gapped BLAST and PSI-BLAST: a new generation of
+protein database search programs", Nucleic Acids Res. 25:3389-3402.
+
+
+
+Database: 1809202927_Kn_filtered.fna
+           115 sequences; 5,576,416 total letters
+
+
+
+Query= INPUT Protein
+
+Length=127
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+I_contig_1 Bacillus cereus strain 1809202927_K                        256        6e-81
+I_contig_7 Bacillus cereus strain 1809202927_K                        30.8       0.031
+I_contig_8 Bacillus cereus strain 1809202927_K                        28.1       0.34 
+I_contig_67 Bacillus cereus strain 1809202927_K                       25.4       2.4  
+I_contig_15 Bacillus cereus strain 1809202927_K                       25.4       2.5  
+I_contig_19 Bacillus cereus strain 1809202927_K                       25.0       2.9  
+
+
+>I_contig_1 Bacillus cereus strain 1809202927_K
+Length=298778
+
+ Score = 256 bits (653),  Expect = 6e-81, Method: Compositional matrix adjust.
+ Identities = 127/127 (100%), Positives = 127/127 (100%), Gaps = 0/127 (0%)
+ Frame = -2
+
+Query  1     NNELIIQSMTTTKTHDVEATVAEIKRLEEAGCQVVRVAVPDERAANAIADIKKQINIPLV  60
+             NNELIIQSMTTTKTHDVEATVAEIKRLEEAGCQVVRVAVPDERAANAIADIKKQINIPLV
+Sbjct  9223  NNELIIQSMTTTKTHDVEATVAEIKRLEEAGCQVVRVAVPDERAANAIADIKKQINIPLV  9044
+
+Query  61    ADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVVNAAKERGIPIRIGVNAGSLERH  120
+             ADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVVNAAKERGIPIRIGVNAGSLERH
+Sbjct  9043  ADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVVNAAKERGIPIRIGVNAGSLERH  8864
+
+Query  121   ILEKYGY  127
+             ILEKYGY
+Sbjct  8863  ILEKYGY  8843
+
+
+>I_contig_7 Bacillus cereus strain 1809202927_K
+Length=176287
+
+ Score = 30.8 bits (68),  Expect = 0.031, Method: Compositional matrix adjust.
+ Identities = 27/97 (28%), Positives = 43/97 (44%), Gaps = 7/97 (7%)
+ Frame = -3
+
+Query  19      ATVAEIKRLEEAGCQVVRVAVPDERAANAIADIKKQINIPLVAD--IHF--DYRLALKAI  74
+               A    +KRL+E    ++   + D    +  A ++K+I  P+  D  IH   D R+A+   
+Sbjct  147821  ADTESLKRLDEFQLMMIEQPLADYDFLDH-AQLQKKIETPICLDESIHSLEDARVAITL-  147648
+
+Query  75      EGGIDKVRINPGNIGRRHKVEAVVNAAKERGIPIRIG  111
+                G    V I PG +G   +   + N   E  IP+  G
+Sbjct  147647  -GSCQIVNIKPGRVGGLTESIQIHNYCMEHNIPVWCG  147540
+
+
+>I_contig_8 Bacillus cereus strain 1809202927_K
+Length=170687
+
+ Score = 28.1 bits (61),  Expect = 0.34, Method: Composition-based stats.
+ Identities = 14/37 (38%), Positives = 22/37 (59%), Gaps = 1/37 (3%)
+ Frame = -2
+
+Query  40      PDERAANAIADIKKQINIPLVADIHFDYRLALKAIEG  76
+               P ER  +    IK + +IP++AD HF Y +++   EG
+Sbjct  118012  PSERTLHTAELIKGERDIPIIADEHF-YEISMGIWEG  117905
+
+
+>I_contig_67 Bacillus cereus strain 1809202927_K
+Length=13101
+
+ Score = 25.4 bits (54),  Expect = 2.4, Method: Composition-based stats.
+ Identities = 16/45 (36%), Positives = 22/45 (49%), Gaps = 3/45 (7%)
+ Frame = +3
+
+Query  59    LVADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVVNAAKE  103
+              VA     + L +K I   +DKV     N GR+HK+  + NA  E
+Sbjct  7044  FVAKAKPSFSLKMKKI---VDKVSEFDKNEGRKHKLYGITNADLE  7169
+
+
+>I_contig_15 Bacillus cereus strain 1809202927_K
+Length=120341
+
+ Score = 25.4 bits (54),  Expect = 2.5, Method: Compositional matrix adjust.
+ Identities = 14/50 (28%), Positives = 28/50 (56%), Gaps = 0/50 (0%)
+ Frame = +1
+
+Query  25     KRLEEAGCQVVRVAVPDERAANAIADIKKQINIPLVADIHFDYRLALKAI  74
+              +++EEA   ++  AV +E+  + I    +Q+++PL  ++    R   KAI
+Sbjct  30061  RKVEEAAISILSEAVTEEQDRHVILAGIRQLSVPLYTNVFTKKREIAKAI  30210
+
+
+>I_contig_19 Bacillus cereus strain 1809202927_K
+Length=111172
+
+ Score = 25.0 bits (53),  Expect = 2.9, Method: Composition-based stats.
+ Identities = 26/85 (31%), Positives = 35/85 (41%), Gaps = 15/85 (18%)
+ Frame = -3
+
+Query  40     PDERAANAIADIKKQINIPLVADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVV-  98
+              PD++A  AIAD  +    P   D+H +    L+    G     +   + G + KV  V  
+Sbjct  83549  PDKKARFAIADWVRPAEFPAEFDLHINNGRMLEHFHEG----NMTNKSTGIQTKVPGVFV  83382
+
+Query  99     ----NAAKERGIPIRIGVNAGSLER  119
+                    AKER      GV  GSL R
+Sbjct  83381  EVSPALAKER------GVKTGSLVR  83325
+
+
+
+Lambda      K        H        a         alpha
+   0.318    0.136    0.376    0.792     4.96 
+
+Gapped
+Lambda      K        H        a         alpha    sigma
+   0.267   0.0410    0.140     1.90     42.6     43.6 
+
+Effective search space used: 92497500
+
+
+  Database: 1809202927_Kn_filtered.fna
+    Posted date:  Jun 23, 2021  11:47 AM
+  Number of letters in database: 5,576,416
+  Number of sequences in database:  115
+
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Neighboring words threshold: 13
+Window for multiple hits: 40

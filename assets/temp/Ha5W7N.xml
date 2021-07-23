@@ -1,0 +1,149 @@
+BLASTN 2.9.0+
+
+
+Reference: Zheng Zhang, Scott Schwartz, Lukas Wagner, and Webb
+Miller (2000), "A greedy algorithm for aligning DNA sequences", J
+Comput Biol 2000; 7(1-2):203-14.
+
+
+
+Database: merged_SEQ.fna
+           264 sequences; 16,740,558 total letters
+
+
+
+Query= INPUT DNA
+
+Length=640
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+NZ_CP011527.1 Staphylococcus aureus strain DSM 20231 plasmid unna...  1182       0.0  
+E_contig_30 Staphylococcus aureus strain 3487                         1182       0.0  
+
+
+>NZ_CP011527.1 Staphylococcus aureus strain DSM 20231 plasmid unnamed, complete 
+sequence
+Length=27490
+
+ Score = 1182 bits (640),  Expect = 0.0
+ Identities = 640/640 (100%), Gaps = 0/640 (0%)
+ Strand=Plus/Plus
+
+Query  1     aaaaaaaGCTGGTTTAACATCTGAAGTTGAATACATAAATAGAAACATATTATTTTTTGA  60
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  1110  AAAAAAAGCTGGTTTAACATCTGAAGTTGAATACATAAATAGAAACATATTATTTTTTGA  1169
+
+Query  61    ATTAGTCATAGATAATGATTTATTAGTGCCTTTCATATTCTTAGGCGTATTATATCTTTT  120
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  1170  ATTAGTCATAGATAATGATTTATTAGTGCCTTTCATATTCTTAGGCGTATTATATCTTTT  1229
+
+Query  121   GTACTTCTTATATGACAGAGGATATAATTTGAAATTTTATGCTATTCAAAAGCTACATGG  180
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  1230  GTACTTCTTATATGACAGAGGATATAATTTGAAATTTTATGCTATTCAAAAGCTACATGG  1289
+
+Query  181   CTTTTCAACTACACGCATTATTTTTCATAATATTCATATAAAAATCATTTATTGGCTAGT  240
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  1290  CTTTTCAACTACACGCATTATTTTTCATAATATTCATATAAAAATCATTTATTGGCTAGT  1349
+
+Query  241   ACTTACCACTATTTTCTTTATTGCTAATATATTAATCATTCATATAGCCAATTTAGAATT  300
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  1350  ACTTACCACTATTTTCTTTATTGCTAATATATTAATCATTCATATAGCCAATTTAGAATT  1409
+
+Query  301   GGATTTCTTAATGTTTATTCGTAGATTTATCGTGTTGCTTTTTGTTTTTGCTTGTATTAC  360
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  1410  GGATTTCTTAATGTTTATTCGTAGATTTATCGTGTTGCTTTTTGTTTTTGCTTGTATTAC  1469
+
+Query  361   TACATTGTTGTGGCTGATTTCGTATAGTCTTCTTTTGAAGTTAAGTATTCCATTAACCTT  420
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  1470  TACATTGTTGTGGCTGATTTCGTATAGTCTTCTTTTGAAGTTAAGTATTCCATTAACCTT  1529
+
+Query  421   AAAAGGGAAAAAAGGATATAAGTTTTCAATATTTATGGGTACCTTCACCAAATGTATCAT  480
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  1530  AAAAGGGAAAAAAGGATATAAGTTTTCAATATTTATGGGTACCTTCACCAAATGTATCAT  1589
+
+Query  481   GGTGCTAATACTATCTTTTTTACTGGCACAAAATTTAAATGCTTATACGAAGTTAAAGAA  540
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  1590  GGTGCTAATACTATCTTTTTTACTGGCACAAAATTTAAATGCTTATACGAAGTTAAAGAA  1649
+
+Query  541   TATATATGACTCTGAAAAAATCTGGCAAAAGTTAGATAATTACTATACATTAGAGATTTC  600
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  1650  TATATATGACTCTGAAAAAATCTGGCAAAAGTTAGATAATTACTATACATTAGAGATTTC  1709
+
+Query  601   TCCTAATATTAGAAATTCAGAAGAAAAACAAATTTTAGAA  640
+             ||||||||||||||||||||||||||||||||||||||||
+Sbjct  1710  TCCTAATATTAGAAATTCAGAAGAAAAACAAATTTTAGAA  1749
+
+
+>E_contig_30 Staphylococcus aureus strain 3487
+Length=6889
+
+ Score = 1182 bits (640),  Expect = 0.0
+ Identities = 640/640 (100%), Gaps = 0/640 (0%)
+ Strand=Plus/Plus
+
+Query  1     aaaaaaaGCTGGTTTAACATCTGAAGTTGAATACATAAATAGAAACATATTATTTTTTGA  60
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  4186  AAAAAAAGCTGGTTTAACATCTGAAGTTGAATACATAAATAGAAACATATTATTTTTTGA  4245
+
+Query  61    ATTAGTCATAGATAATGATTTATTAGTGCCTTTCATATTCTTAGGCGTATTATATCTTTT  120
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  4246  ATTAGTCATAGATAATGATTTATTAGTGCCTTTCATATTCTTAGGCGTATTATATCTTTT  4305
+
+Query  121   GTACTTCTTATATGACAGAGGATATAATTTGAAATTTTATGCTATTCAAAAGCTACATGG  180
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  4306  GTACTTCTTATATGACAGAGGATATAATTTGAAATTTTATGCTATTCAAAAGCTACATGG  4365
+
+Query  181   CTTTTCAACTACACGCATTATTTTTCATAATATTCATATAAAAATCATTTATTGGCTAGT  240
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  4366  CTTTTCAACTACACGCATTATTTTTCATAATATTCATATAAAAATCATTTATTGGCTAGT  4425
+
+Query  241   ACTTACCACTATTTTCTTTATTGCTAATATATTAATCATTCATATAGCCAATTTAGAATT  300
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  4426  ACTTACCACTATTTTCTTTATTGCTAATATATTAATCATTCATATAGCCAATTTAGAATT  4485
+
+Query  301   GGATTTCTTAATGTTTATTCGTAGATTTATCGTGTTGCTTTTTGTTTTTGCTTGTATTAC  360
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  4486  GGATTTCTTAATGTTTATTCGTAGATTTATCGTGTTGCTTTTTGTTTTTGCTTGTATTAC  4545
+
+Query  361   TACATTGTTGTGGCTGATTTCGTATAGTCTTCTTTTGAAGTTAAGTATTCCATTAACCTT  420
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  4546  TACATTGTTGTGGCTGATTTCGTATAGTCTTCTTTTGAAGTTAAGTATTCCATTAACCTT  4605
+
+Query  421   AAAAGGGAAAAAAGGATATAAGTTTTCAATATTTATGGGTACCTTCACCAAATGTATCAT  480
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  4606  AAAAGGGAAAAAAGGATATAAGTTTTCAATATTTATGGGTACCTTCACCAAATGTATCAT  4665
+
+Query  481   GGTGCTAATACTATCTTTTTTACTGGCACAAAATTTAAATGCTTATACGAAGTTAAAGAA  540
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  4666  GGTGCTAATACTATCTTTTTTACTGGCACAAAATTTAAATGCTTATACGAAGTTAAAGAA  4725
+
+Query  541   TATATATGACTCTGAAAAAATCTGGCAAAAGTTAGATAATTACTATACATTAGAGATTTC  600
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  4726  TATATATGACTCTGAAAAAATCTGGCAAAAGTTAGATAATTACTATACATTAGAGATTTC  4785
+
+Query  601   TCCTAATATTAGAAATTCAGAAGAAAAACAAATTTTAGAA  640
+             ||||||||||||||||||||||||||||||||||||||||
+Sbjct  4786  TCCTAATATTAGAAATTCAGAAGAAAAACAAATTTTAGAA  4825
+
+
+
+Lambda      K        H
+    1.33    0.621     1.12 
+
+Gapped
+Lambda      K        H
+    1.28    0.460    0.850 
+
+Effective search space used: 10308280752
+
+
+  Database: merged_SEQ.fna
+    Posted date:  Jun 21, 2021  3:14 PM
+  Number of letters in database: 16,740,558
+  Number of sequences in database:  264
+
+
+
+Matrix: blastn matrix 1 -2
+Gap Penalties: Existence: 0, Extension: 2.5

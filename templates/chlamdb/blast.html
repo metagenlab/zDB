@@ -6,9 +6,9 @@
 {% load static %}
 <STYLE TYPE="text/css">
 <!--
-A:link{background:transparent;color:blue}
+A:link{background:transparent;color:rgb(81, 255, 0)}
 A:active{background:transparent;color:red}
-A:visited{background:transparent;color:purple}
+
 -->
 </STYLE>
 <STYLE TYPE="text/css">
@@ -129,19 +129,28 @@ FONT.S111{background-color:#e903a8;color:#FFFFFF} FONT.T111{color:#e903a8} /* fi
 FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* find-T */
 #container{font-size: 10px; line-height: 12px;}
 #blast_res {font-size: 8px; line-height: 10px;}
+body {
+background-color: rgb(255, 255, 255); 
+margin-top: 15em;
+
+}
+
 </STYLE>
 <script type="text/javascript" src="{% static 'js/html2canvas.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/blaster.min.js' %}"></script>
 {% include "chlamdb/header.html" %}
 </head>
 <body>
-  <div class="container-fluid" id="main_container">
+  {% include "chlamdb/menu.html" %}
+
+  <div class="container-fluid" id="main_container" >
     <div class="row">
       <div id="wrapper">
           <div id="page-content-wrapper">
             <div class="row">
-              <div class="col-lg-12">
-                  {% include "chlamdb/menu.html" %}
+                <div class="col-lg-12">
+                
+                <div style="padding:2em ">
 
                   <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                       <div class="panel-heading" style="width:100%">
@@ -264,7 +273,7 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
           </div>
         </div>
     </div>
-
+  </div>
 </body>
 
 

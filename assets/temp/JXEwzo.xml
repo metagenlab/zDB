@@ -1,0 +1,285 @@
+BLASTP 2.9.0+
+
+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro A.
+Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J.
+Lipman (1997), "Gapped BLAST and PSI-BLAST: a new generation of
+protein database search programs", Nucleic Acids Res. 25:3389-3402.
+
+
+Reference for composition-based statistics: Alejandro A. Schaffer,
+L. Aravind, Thomas L. Madden, Sergei Shavirin, John L. Spouge, Yuri
+I. Wolf, Eugene V. Koonin, and Stephen F. Altschul (2001),
+"Improving the accuracy of PSI-BLAST protein database searches with
+composition-based statistics and other refinements", Nucleic Acids
+Res. 29:2994-3005.
+
+
+
+Database: merged_SEQ.faa
+           16,630 sequences; 4,660,936 total letters
+
+
+
+Query= INPUT Protein
+
+Length=100
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+E_prokka_00014 Staphylococcus aureus strain 3487                      209        3e-71
+AA076_RS09160 Staphylococcus aureus strain DSM 20231 chromosome, ...  204        4e-69
+1809202927_K_3_5592 Bacillus cereus strain 1809202927_K               29.3       0.12 
+prokka_05611 Bacillus cereus strain 1810093995_B                      29.3       0.12 
+E_prokka_02648 Staphylococcus aureus strain 3487                      27.7       0.38 
+AA076_RS10875 Staphylococcus aureus strain DSM 20231 chromosome, ...  27.7       0.39 
+1809202927_K_3_2283 Bacillus cereus strain 1809202927_K               26.2       1.4  
+prokka_02705 Bacillus cereus strain 1810093995_B                      26.2       1.4  
+AA076_RS00825 Staphylococcus aureus strain DSM 20231 chromosome, ...  26.2       1.6  
+E_prokka_00902 Staphylococcus aureus strain 3487                      26.2       1.6  
+E_prokka_00717 Staphylococcus aureus strain 3487                      25.8       2.2  
+AA076_RS03660 Staphylococcus aureus strain DSM 20231 chromosome, ...  25.4       2.9  
+E_prokka_01346 Staphylococcus aureus strain 3487                      24.3       6.7  
+1809202927_K_3_2783 Bacillus cereus strain 1809202927_K               23.9       8.1  
+prokka_04424 Bacillus cereus strain 1810093995_B                      23.9       8.1  
+1809202927_K_3_1553 Bacillus cereus strain 1809202927_K               23.9       9.6  
+prokka_01884 Bacillus cereus strain 1810093995_B                      23.9       9.6  
+
+
+>E_prokka_00014 Staphylococcus aureus strain 3487
+Length=208
+
+ Score = 209 bits (532),  Expect = 3e-71, Method: Compositional matrix adjust.
+ Identities = 100/100 (100%), Positives = 100/100 (100%), Gaps = 0/100 (0%)
+
+Query  1    LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTEKQMTPQEAEDIVRNDYKARGANEN  60
+            LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTEKQMTPQEAEDIVRNDYKARGANEN
+Sbjct  15   LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTEKQMTPQEAEDIVRNDYKARGANEN  74
+
+Query  61   QTLNYKTNLERSNEHEYYVEHLVRDAVGTPLKRCAIVNRH  100
+            QTLNYKTNLERSNEHEYYVEHLVRDAVGTPLKRCAIVNRH
+Sbjct  75   QTLNYKTNLERSNEHEYYVEHLVRDAVGTPLKRCAIVNRH  114
+
+
+>AA076_RS09160 Staphylococcus aureus strain DSM 20231 chromosome, complete genome
+Length=208
+
+ Score = 204 bits (518),  Expect = 4e-69, Method: Compositional matrix adjust.
+ Identities = 98/100 (98%), Positives = 98/100 (98%), Gaps = 0/100 (0%)
+
+Query  1    LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTEKQMTPQEAEDIVRNDYKARGANEN  60
+            LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTEKQMTPQEAEDIVRNDYKARG NE 
+Sbjct  15   LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTEKQMTPQEAEDIVRNDYKARGVNEY  74
+
+Query  61   QTLNYKTNLERSNEHEYYVEHLVRDAVGTPLKRCAIVNRH  100
+            QTLNYKTNLERSNEHEYYVEHLVRDAVGTPLKRCAIVNRH
+Sbjct  75   QTLNYKTNLERSNEHEYYVEHLVRDAVGTPLKRCAIVNRH  114
+
+
+>1809202927_K_3_5592 Bacillus cereus strain 1809202927_K
+Length=546
+
+ Score = 29.3 bits (64),  Expect = 0.12, Method: Compositional matrix adjust.
+ Identities = 27/101 (27%), Positives = 47/101 (47%), Gaps = 11/101 (11%)
+
+Query  1    LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTE----KQMTPQEAEDIVRNDYK---  53
+            LLTACG N+   + +K+ND     Q  + +  S        + T  E+ +++RN ++   
+Sbjct  18   LLTACGGNKDNASGAKANDKAPDKQAINLSFASEIPTMDVAKATDGESMNVMRNVFEGLY  77
+
+Query  54   ARGANENQTLNYKTNLERSNEHEYYVEHLVRDAV---GTPL  91
+            A G +         +++ S +   Y  HL RD+    GTP+
+Sbjct  78   AMGEDNKPIPGVAESVDVSPDKTKYTFHL-RDSKWSNGTPV  117
+
+
+>prokka_05611 Bacillus cereus strain 1810093995_B
+Length=546
+
+ Score = 29.3 bits (64),  Expect = 0.12, Method: Compositional matrix adjust.
+ Identities = 27/101 (27%), Positives = 47/101 (47%), Gaps = 11/101 (11%)
+
+Query  1    LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTE----KQMTPQEAEDIVRNDYK---  53
+            LLTACG N+   + +K+ND     Q  + +  S        + T  E+ +++RN ++   
+Sbjct  18   LLTACGGNKDNASGAKANDKAPDKQAINLSFASEIPTMDVAKATDGESMNVMRNVFEGLY  77
+
+Query  54   ARGANENQTLNYKTNLERSNEHEYYVEHLVRDAV---GTPL  91
+            A G +         +++ S +   Y  HL RD+    GTP+
+Sbjct  78   AMGEDNKPIPGVAESVDVSPDKTKYTFHL-RDSKWSNGTPV  117
+
+
+>E_prokka_02648 Staphylococcus aureus strain 3487
+Length=363
+
+ Score = 27.7 bits (60),  Expect = 0.38, Method: Composition-based stats.
+ Identities = 12/39 (31%), Positives = 18/39 (46%), Gaps = 0/39 (0%)
+
+Query  8    NQHKENSSKSNDTNKKTQQTDNTTQSNTEKQMTPQEAED  46
+            N   EN   +     KT++  ++   NT K MT  + ED
+Sbjct  321  NTKVENDKVTTSVETKTEKAQDSLNDNTTKTMTSDKPED  359
+
+
+>AA076_RS10875 Staphylococcus aureus strain DSM 20231 chromosome, complete genome
+Length=363
+
+ Score = 27.7 bits (60),  Expect = 0.39, Method: Composition-based stats.
+ Identities = 12/39 (31%), Positives = 18/39 (46%), Gaps = 0/39 (0%)
+
+Query  8    NQHKENSSKSNDTNKKTQQTDNTTQSNTEKQMTPQEAED  46
+            N   EN   +     KT++  ++   NT K MT  + ED
+Sbjct  321  NTKVENDKVTTSVETKTEKAQDSLNDNTTKTMTSDKPED  359
+
+
+>1809202927_K_3_2283 Bacillus cereus strain 1809202927_K
+Length=975
+
+ Score = 26.2 bits (56),  Expect = 1.4, Method: Composition-based stats.
+ Identities = 23/81 (28%), Positives = 38/81 (47%), Gaps = 6/81 (7%)
+
+Query  20   TNKKTQQTDNTTQSNTEKQMTPQEAEDIVRNDY---KARGANENQTLNYKTNLERSNEHE  76
+            TN+  ++  N  +   E  +TPQE E +V+ DY   K     E + L      E  +  E
+Sbjct  676  TNQAGKEIVNKAKVTGE-NITPQEPEKLVKVDYKNPKVESVKEVKNLQQGKKYEVKDTIE  734
+
+Query  77   YYVEHLVRDAVGTPLKRCAIV  97
+            Y ++  VR+ V   + R ++V
+Sbjct  735  YTIK--VRNTVKDSIIRNSLV  753
+
+
+>prokka_02705 Bacillus cereus strain 1810093995_B
+Length=975
+
+ Score = 26.2 bits (56),  Expect = 1.4, Method: Composition-based stats.
+ Identities = 23/81 (28%), Positives = 38/81 (47%), Gaps = 6/81 (7%)
+
+Query  20   TNKKTQQTDNTTQSNTEKQMTPQEAEDIVRNDY---KARGANENQTLNYKTNLERSNEHE  76
+            TN+  ++  N  +   E  +TPQE E +V+ DY   K     E + L      E  +  E
+Sbjct  676  TNQAGKEIVNKAKVTGE-NITPQEPEKLVKVDYKNPKVESVKEVKNLQQGKKYEVKDTIE  734
+
+Query  77   YYVEHLVRDAVGTPLKRCAIV  97
+            Y ++  VR+ V   + R ++V
+Sbjct  735  YTIK--VRNTVKDSIIRNSLV  753
+
+
+>AA076_RS00825 Staphylococcus aureus strain DSM 20231 chromosome, complete genome
+Length=423
+
+ Score = 26.2 bits (56),  Expect = 1.6, Method: Composition-based stats.
+ Identities = 15/40 (38%), Positives = 23/40 (58%), Gaps = 1/40 (3%)
+
+Query  1   LLTACGANQHKENSSKS-NDTNKKTQQTDNTTQSNTEKQM  39
+           ++TACG N+ KE+  K+ N  N K +    T   + +KQM
+Sbjct  17  IVTACGPNRSKEDIDKALNKDNSKDKPNQLTMWVDGDKQM  56
+
+
+>E_prokka_00902 Staphylococcus aureus strain 3487
+Length=423
+
+ Score = 26.2 bits (56),  Expect = 1.6, Method: Composition-based stats.
+ Identities = 15/40 (38%), Positives = 23/40 (58%), Gaps = 1/40 (3%)
+
+Query  1   LLTACGANQHKENSSKS-NDTNKKTQQTDNTTQSNTEKQM  39
+           ++TACG N+ KE+  K+ N  N K +    T   + +KQM
+Sbjct  17  IVTACGPNRSKEDIDKALNKDNSKDKPNQLTMWVDGDKQM  56
+
+
+>E_prokka_00717 Staphylococcus aureus strain 3487
+Length=342
+
+ Score = 25.8 bits (55),  Expect = 2.2, Method: Composition-based stats.
+ Identities = 14/38 (37%), Positives = 19/38 (50%), Gaps = 0/38 (0%)
+
+Query  1   LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTEKQ  38
+           LL ACG N  KE S      +K T + +N  +   EK+
+Sbjct  15  LLAACGNNSDKEQSKSETKGSKDTVKIENNYKMRGEKK  52
+
+
+>AA076_RS03660 Staphylococcus aureus strain DSM 20231 chromosome, complete genome
+Length=342
+
+ Score = 25.4 bits (54),  Expect = 2.9, Method: Compositional matrix adjust.
+ Identities = 14/38 (37%), Positives = 19/38 (50%), Gaps = 0/38 (0%)
+
+Query  1   LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTEKQ  38
+           LL ACG N  KE S      +K T + +N  +   EK+
+Sbjct  15  LLAACGNNSDKEQSKSETKGSKDTVKIENNYKMRGEKK  52
+
+
+>E_prokka_01346 Staphylococcus aureus strain 3487
+Length=645
+
+ Score = 24.3 bits (51),  Expect = 6.7, Method: Composition-based stats.
+ Identities = 15/75 (20%), Positives = 33/75 (44%), Gaps = 5/75 (7%)
+
+Query  7    ANQH--KENSSKSNDTNKKTQQTDNTTQSNTEKQMTPQEAEDIVRNDYKARGANENQTLN  64
+            ++QH  +E +   N  N+     +  T+ + + Q +  +  +     Y A+  N  +   
+Sbjct  62   SSQHTAREEARIDNKDNQNQVSLNKQTEGSEQDQASFTDNNESDEEVYAAKNPNSEE---  118
+
+Query  65   YKTNLERSNEHEYYV  79
+            YK N +   EH+ ++
+Sbjct  119  YKVNEKIKKEHKNFI  133
+
+
+>1809202927_K_3_2783 Bacillus cereus strain 1809202927_K
+Length=209
+
+ Score = 23.9 bits (50),  Expect = 8.1, Method: Compositional matrix adjust.
+ Identities = 20/46 (43%), Positives = 24/46 (52%), Gaps = 12/46 (26%)
+
+Query  2   LTACGANQHKENSSKSNDTN-----KKTQQTD------NTTQSNTE  36
+           L+ CG N   + SS+S +TN     KK Q TD      NT Q NTE
+Sbjct  18  LSGCG-NTSDKTSSESKETNSKQEEKKVQTTDEAKTKENTKQKNTE  62
+
+
+>prokka_04424 Bacillus cereus strain 1810093995_B
+Length=209
+
+ Score = 23.9 bits (50),  Expect = 8.1, Method: Compositional matrix adjust.
+ Identities = 20/46 (43%), Positives = 24/46 (52%), Gaps = 12/46 (26%)
+
+Query  2   LTACGANQHKENSSKSNDTN-----KKTQQTD------NTTQSNTE  36
+           L+ CG N   + SS+S +TN     KK Q TD      NT Q NTE
+Sbjct  18  LSGCG-NTSDKTSSESKETNSKQEEKKVQTTDEAKTKENTKQKNTE  62
+
+
+>1809202927_K_3_1553 Bacillus cereus strain 1809202927_K
+Length=401
+
+ Score = 23.9 bits (50),  Expect = 9.6, Method: Composition-based stats.
+ Identities = 16/49 (33%), Positives = 23/49 (47%), Gaps = 1/49 (2%)
+
+Query  26   QTDNTTQSNTEKQMTPQEAEDIVRNDYKARGANENQTLNYKTNLERSNE  74
+            +T N  +  T K++  + A  IV ND KA+GA      N  T   +  E
+Sbjct  325  ETTNVEEYAT-KKLREKNANMIVANDVKAQGAGFGTDTNIVTMYRKDGE  372
+
+
+>prokka_01884 Bacillus cereus strain 1810093995_B
+Length=401
+
+ Score = 23.9 bits (50),  Expect = 9.6, Method: Composition-based stats.
+ Identities = 16/49 (33%), Positives = 23/49 (47%), Gaps = 1/49 (2%)
+
+Query  26   QTDNTTQSNTEKQMTPQEAEDIVRNDYKARGANENQTLNYKTNLERSNE  74
+            +T N  +  T K++  + A  IV ND KA+GA      N  T   +  E
+Sbjct  325  ETTNVEEYAT-KKLREKNANMIVANDVKAQGAGFGTDTNIVTMYRKDGE  372
+
+
+
+Lambda      K        H        a         alpha
+   0.305    0.120    0.329    0.792     4.96 
+
+Gapped
+Lambda      K        H        a         alpha    sigma
+   0.267   0.0410    0.140     1.90     42.6     43.6 
+
+Effective search space used: 117041958
+
+
+  Database: merged_SEQ.faa
+    Posted date:  Jun 23, 2021  11:47 AM
+  Number of letters in database: 4,660,936
+  Number of sequences in database:  16,630
+
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Neighboring words threshold: 11
+Window for multiple hits: 40

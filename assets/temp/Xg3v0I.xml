@@ -1,0 +1,98 @@
+BLASTP 2.9.0+
+
+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro A.
+Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J.
+Lipman (1997), "Gapped BLAST and PSI-BLAST: a new generation of
+protein database search programs", Nucleic Acids Res. 25:3389-3402.
+
+
+Reference for composition-based statistics: Alejandro A. Schaffer,
+L. Aravind, Thomas L. Madden, Sergei Shavirin, John L. Spouge, Yuri
+I. Wolf, Eugene V. Koonin, and Stephen F. Altschul (2001),
+"Improving the accuracy of PSI-BLAST protein database searches with
+composition-based statistics and other refinements", Nucleic Acids
+Res. 29:2994-3005.
+
+
+
+Database: 1809202927_Kn_filtered_seq.faa
+           111 sequences; 1,553,679 total letters
+
+
+
+Query= INPUT Protein
+
+Length=102
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+I_contig_15 Bacillus cereus strain 1809202927_K                       25.0       1.4  
+I_contig_2 Bacillus cereus strain 1809202927_K                        25.0       1.4  
+I_contig_14 Bacillus cereus strain 1809202927_K                       25.0       1.5  
+I_contig_19 Bacillus cereus strain 1809202927_K                       24.3       3.0  
+I_contig_48 Bacillus cereus strain 1809202927_K                       23.9       3.5  
+I_contig_27 Bacillus cereus strain 1809202927_K                       23.9       3.6  
+I_contig_4 Bacillus cereus strain 1809202927_K                        23.9       4.0  
+I_contig_1 Bacillus cereus strain 1809202927_K                        23.9       4.1  
+I_contig_13 Bacillus cereus strain 1809202927_K                       23.5       4.4  
+I_contig_3 Bacillus cereus strain 1809202927_K                        22.7       9.8  
+I_contig_21 Bacillus cereus strain 1809202927_K                       22.7       9.9  
+
+
+
+Query_1      1      MKKFKLFLDFSTLLLISGLLFLFFFKENEEIIPESSNILTISNWDKSNSKSKVLDVIESG  60
+I_contig_15  27757                                        V..T...QGHM..RL.QF.H.L  27779
+                                                                      \         
+                                                                      |         
+                                                                      L
+I_contig_2   49644            A..A.VRAVQA.A.LRGR.YCT..DIQL.VP.V.NH                49679
+I_contig_14  25891              .FVL....Q.GHY..AI.F.QQE...                        25916
+I_contig_19  2489             ACICI.G....FM.Y..                                   2505
+I_contig_48  5389     .M.SS.K..EMFA..LM..AL..GAGNM.F.PA                           5421
+I_contig_27  11364  LQQ.LQQY..NNTSH.DKM..RS.YN..KKL..N.--.A..ESVMIN.R.QTL.        11419
+                                           \                                    
+                                           |                                    
+                                        NTPQ
+I_contig_27  17041                                          VM....A.G.V.AK.IV.TA  17062
+                                                                    \           
+                                                                    |           
+                                                                   LE
+I_contig_4   74916                                                       ..L.QE.  74922
+I_contig_1   20418                     ..I...EK.T...SPPFS..                       20437
+I_contig_13  35094                         Y.LKTR...E.PKSVV.MQFFQ.E.ATDE.IALLQTF  35136
+                                                      \              \          
+                                                      |              |          
+                                                     FR           VLCG
+I_contig_13  14946      QF..EL..ARI.V.I..VL.                                      14965
+I_contig_3   53066                        ..I.KEDLL..NF..V--.Y...                 53086
+I_contig_21  27385     .....LT...FT.---I..L..                                     27403
+
+Query_1      61     AKNQNIQIIKSVKDFDNKKEFFVFNSK  87
+I_contig_15  27780  IM.------..IYGI.ICG.LP.YP.Q  27800
+I_contig_27  17063  K.                           17064
+I_contig_4   74923  ----.MGL..A.EK..YR.G.        74939
+I_contig_13  35137  ...PEELE.N.L..G.KISP.        35157
+
+
+Lambda      K        H        a         alpha
+   0.319    0.136    0.368    0.792     4.96 
+
+Gapped
+Lambda      K        H        a         alpha    sigma
+   0.267   0.0410    0.140     1.90     42.6     43.6 
+
+Effective search space used: 46370610
+
+
+  Database: 1809202927_Kn_filtered_seq.faa
+    Posted date:  Jun 22, 2021  11:34 AM
+  Number of letters in database: 1,553,679
+  Number of sequences in database:  111
+
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Neighboring words threshold: 11
+Window for multiple hits: 40

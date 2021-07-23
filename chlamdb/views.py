@@ -109,14 +109,24 @@ from metagenlab_libs.ete_phylo import Column
 from metagenlab_libs.KO_module import ModuleParser
 from metagenlab_libs.chlamdb import search_bar as sb
 
+from Bio.Blast.Applications import NcbiblastpCommandline
+from Bio.Blast.Applications import NcbiblastnCommandline
+from Bio.Blast.Applications import NcbitblastnCommandline
+from Bio.Blast.Applications import NcbiblastxCommandline
+from Bio.Seq import reverse_complement, translate
+from tempfile import NamedTemporaryFile
+from io import StringIO
+from Bio.Blast import NCBIXML
+          
+            
+import os
+from chlamdb.biosqldb import shell_command
+import re
+
 from ete3 import Tree
-
 from reportlab.lib import colors
-
 from ete3 import TextFace, StackedBarFace
-
 import pandas as pd
-
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 
 
@@ -11397,39 +11407,14 @@ def blast(request):
         form = blast_form_class(request.POST)
 
         if form.is_valid():  
-            from Bio.Blast.Applications import NcbiblastpCommandline
-            from Bio.Blast.Applications import NcbiblastnCommandline
-            from Bio.Blast.Applications import NcbitblastnCommandline
-            from Bio.Blast.Applications import NcbiblastxCommandline
-            from Bio.Seq import reverse_complement, translate
-            from tempfile import NamedTemporaryFile
-            from io import StringIO
-            from Bio.Blast import NCBIXML
-          
-            
-            import os
-            from chlamdb.biosqldb import shell_command
-            import re
-
-
             input_sequence = form.cleaned_data['blast_input']
             customized_evalue = form.cleaned_data['evalue']
             number_blast_hits = form.cleaned_data['max_number_of_hits']
-            print('NUMBER HITS', number_blast_hits)
-            print('customized_evalue', customized_evalue)
-
             target_accession = form.cleaned_data['target'] #form.cleaned_data returns a dictionary of validated form input fields and their values, where string primary keys are returned as objects 
             blast_type = form.cleaned_data['blast']
 
-            target_accession_pl=''
-            if target_accession.endswith(' plasmid'):
-                target_accession_pl=target_accession #keep for plasmid filtering
-                target_accession= int (target_accession.replace(' plasmid', ''))
-                
-
+          
             unknown_format = False
-
-            print('target_accession' , target_accession)
 
             if '>' in input_sequence:
                 my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
@@ -11439,8 +11424,8 @@ def blast(request):
                 input_sequence == input_sequence.rstrip(os.linesep)
                 seq = Seq(input_sequence)
                                 
-            dna = set("ATGCN") #add ambiguous N
-            prot = set('ACDEFGHIKLMNPQRSTVWYX') #search for special characters 
+            dna = set("ATGCNRYKMSWBDHV") #added ambiguous nucleotides from CoGePEDIA
+            prot = set('ACDEFGHIKLMNPQRSTVWYXZJOU') #added ambiguous aa 
             check_seq_DNA = set(seq) - dna
             check_seq_prot = set(seq) - prot
             
@@ -11463,7 +11448,6 @@ def blast(request):
                     wrong_format = True
                 elif seq_type =='Protein' and blast_type in ["blastn_ffn", "blastn_fna", "blastx"]:
                     wrong_format = True
-
                 else:
                     query_file = NamedTemporaryFile(mode='w')
                     SeqIO.write(my_record, query_file, "fasta")
@@ -11472,13 +11456,10 @@ def blast(request):
                     
                     if target_accession =='all':
                         key_dict = 'merged'
-                    
                     else:
                         dictionary_acc_names=db.get_taxon_id_to_filenames() #here db replaces 'db_utils.DB' that is used to create the link because it has already been done
                         key_dict=dictionary_acc_names[int(target_accession)]               
-                        print('dictionary_key', key_dict)  
-                        print('dictionary_acc_names', dictionary_acc_names)
-
+                        
                     if number_blast_hits=='all':
                        number_blast_hits = 100000                 
                     if blast_type=='blastn_ffn':
@@ -11507,11 +11488,7 @@ def blast(request):
                     
                     
                     blast_stdout, blast_stderr = blast_cline()
-                    print('FINISH FIRST PART')
-                          
-             
-             
-                     #part below is for tblastn      
+                                    
 
                     if blast_type=='tblastn':
                         from Bio.SeqUtils import six_frame_translations
@@ -11526,66 +11503,53 @@ def blast(request):
                         for record in blast_records:
                             print(record)
                             for n, alignment in enumerate(record.alignments): #n is a increasing number given from 0 going on to each allignment considering at n=0 the best hit
-                                print('ALIGNMENTS', alignment)
-                                print('n', n)
                                 accession = alignment.title.split(' ')[0] #before it was 1 but it went to the beginning of the name of the sample, with 0 we take the contig name
-                                print('ACCESSION', accession)
                                 description=alignment.title.replace(accession, '') #not sure if this description is what it wanted before
-                                print('SQL',sql)
-                                #sql = 'select description from bioentry where accession="%s" ' % accession
-                                #description = server.adaptor.execute_and_fetchall(sql,)[0][0]
-
+                                
                                 for n2, hsp in enumerate(alignment.hsps): #all n2 are 0
-                                    print('hsp', hsp)
-                                    print('n2', n2)
                                     if n == 0 and n2 == 0:  #select the best hit
-                                        print('record.query', record.query)
-                                        print('hsp.sbjct_start', hsp.sbjct_start)
-                                        print('hsp.sbjct_end', hsp.sbjct_end)
-                                        best_hit_list.append([record.query, hsp.sbjct_start, hsp.sbjct_end])
-
+                                        best_hit_list.append([alignment.title.split(' ')[0], hsp.sbjct_start, hsp.sbjct_end])
                                     start = hsp.sbjct_start
                                     end = hsp.sbjct_end
                                     if start > end:
                                         start = hsp.sbjct_end
                                         end = hsp.sbjct_start
-                                    leng = end-start
-                                    #seq = db.location2sequence(accession, start, end) #replaced biodb wtih db
-                                    #print('VEDIAMO', seq)
-                                    #seq = manipulate_biosqldb.location2sequence(db, db.db_name, accession, db, start, end, leng) #replaced biodb wtih db
-                                    
-                    #                anti = reverse_complement(seq)
-                    #                comp = anti[::-1]
-                    #                length = len(seq)
-                    #                frames = {}
-                    #                for i in range(0, 3):
-                    #                    fragment_length = 3 * ((length-i) // 3)
-                    #                    tem1 = translate(seq[i:i+fragment_length], 1)
-                    #                    frames[i+1] = '<span style="color: #181407;">%s</span><span style="color: #bb60d5;">%s</span><span style="color: #181407;">%s</span>' % (tem1[0:100], tem1[100:len(tem1)-99], tem1[len(tem1)-99:])
-                    #                    tmp2 = translate(anti[i:i+fragment_length], 1)[::-1]
-                    #                    frames[-(i+1)] = tmp2
-                    #                all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq])   #all_data is required in the hyml file to display the second graph
-                    #    if len(best_hit_list) > 0:
-                    #        fig_list = []
-                    #        for best_hit in best_hit_list:
-                    #            accession = best_hit[0]
-                    #            print['ACCESSION', accession]
-                    #            best_hit_start = best_hit[1]
-                    #            best_hit_end = best_hit[2]
-                    #            temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
-                    #            temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-                    #            name = 'temp/' + os.path.basename(temp_file.name)
-                    #            fig_list.append([accession, name])
-                    #            orthogroup_list = mysqldb_plot_genomic_feature.location2plot(db, #UNDERSTAND WHAT WAS THE DIFFERENCE BETWEEN db AND biodb IN THE PREVIOUS TOP CODE #I removed biodb
-                    #                                                                        target_accession,
-                    #                                                                        temp_file.name,
-                    #                                                                        best_hit_start-15000,
-                    #                                                                        best_hit_end+15000,
-                    #                                                                        cache,
-                    #                                                                        color_locus_list = [],
-                    #                                                                        region_highlight=[best_hit_start, best_hit_end])
+                                    length = end-start
+                                    seq_A = db.location2sequence(accession, start, end) #replaced biodb wtih db
+                                    anti = reverse_complement(seq_A)
+                                    comp = anti[::-1]
+                                    length = len(seq_A)
+                                    frames = {}
+                                    for i in range(0, 3):
+                                        fragment_length = 3 * ((length-i) // 3)
+                                        tem1 = translate(seq_A[i:i+fragment_length])
+                                        frames[i+1] = '<span style="color: #181407;">%s</span><span style="color: #bb60d5;">%s</span><span style="color: #181407;">%s</span>' % (tem1[0:100], tem1[100:len(tem1)-99], tem1[len(tem1)-99:])
+                                        tmp2 = translate(anti[i:i+fragment_length])[::-1]
+                                        frames[-(i+1)] = tmp2
 
-                             #part above is for tblastn
+                                    all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq_A])   #all_data is required in the hyml file to display the second graph
+                                    print('all_data', all_data)
+
+                        if len(best_hit_list) > 0:
+                            print('best_hit_list', best_hit_list)
+                            fig_list = []
+                            for best_hit in best_hit_list:
+                                accession = best_hit[0]
+                                best_hit_start = best_hit[1]
+                                best_hit_end = best_hit[2]
+                                temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
+                                temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
+                                name = 'temp/' + os.path.basename(temp_file.name)
+                                fig_list.append([accession, name])
+                                orthogroup_list = db.location2plot(accession, #it wants the contig name, but it should take the locus tag
+                                                                    temp_file.name,
+                                                                    best_hit_start-15000,
+                                                                    best_hit_end+15000,
+                                                                    cache,
+                                                                    color_locus_list = [],
+                                                                    region_highlight=[best_hit_start, best_hit_end])
+                                print('orthogroup_list', orthogroup_list)
+                             
 
 
                     no_match = re.compile('.* No hits found .*', re.DOTALL) #I still do not know how it knows that there are no hits bit it works properly
@@ -11599,9 +11563,7 @@ def blast(request):
                         blast_err = blast_stderr #linked to the html file
                     else:
 
-
                         rand_id = id_generator(6) #it generates a random id of 6 character
-                        
                         blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id #this file changes every time you run it and it contians the blast output
                         f = open(blast_file_l, 'w')
                         f.write(blast_stdout)
@@ -11609,7 +11571,6 @@ def blast(request):
                         #print('f', f)
                         f.close()
                         
-
                         asset_blast_path = '/assets/temp/%s.xml' % rand_id
                         js_out = True #it could be for java script
 
@@ -14600,3 +14561,111 @@ def ko_comparison(request):
     envoi_comp = True
     return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
 
+
+def faq(request):
+    a =2
+    return render(request, 'chlamdb/FAQ.html', my_locals(locals()))
+
+def phylogeny_intro(request):
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
+
+    genomes_data = db.get_genomes_infos()
+    genomes_descr = db.get_genomes_description()
+
+    asset_path = "/temp/species_tree.svg"
+    path = settings.BASE_DIR + '/assets/temp/species_tree.svg'
+
+    genomes_data = genomes_data.join(genomes_descr)
+
+    genomes_data.gc = genomes_data.gc.apply(round)
+    genomes_data.coding_density = genomes_data.coding_density.apply(lambda x: round(100*x))
+    genomes_data.length = genomes_data.length.apply(lambda x: round(x/pow(10,6), 2))
+
+    data_table_header = ["Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding"]
+    data_table = genomes_data[["description", "gc", "n_prot", "n_contigs", "length", "coding_density"]].values.tolist()
+
+    # plot phylo only of not already in assets
+    tree = db.get_reference_phylogeny()
+    t1 = Tree(tree)
+    R = t1.get_midpoint_outgroup()
+    if not R is None:
+        t1.set_outgroup(R)
+    t1.ladderize()
+
+    e_tree = EteTree(t1)
+    header_params = {"rotation": -30}
+    stacked_face_params = {"margin_right": 8, "margin_left": 5}
+
+    tree_params = [
+            # serie_name, header, color and is_relative
+            ["length", "Size (Mbp)", "#91bfdb", True],
+            ["gc", "GC %", "#fc8d59", False],
+            ["coding_density", "Coding density %", "#99d594", False],
+            ["completeness", "Completeness", "#d7191c", False],
+            ["contamination", "Contamination", "black", False]]
+        
+    for serie_name, header, col, is_relative in tree_params:
+        data = genomes_data[serie_name]
+        e_tree.add_column(SimpleColorColumn.fromSeries(data, header=None, use_col=False))
+        stack = StackedBarColumn(data.to_dict(), colours = [col, "white"],
+                relative=is_relative, header=header,
+                header_params=header_params, face_params=stacked_face_params)
+        e_tree.add_column(stack)
+
+    e_tree.rename_leaves(genomes_descr.description.to_dict())
+    e_tree.render(path, dpi=500)
+    return render(request, 'chlamdb/phylogeny_intro.html', my_locals(locals()))
+
+def genomes_intro(request):
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
+
+    genomes_data = db.get_genomes_infos()
+    genomes_descr = db.get_genomes_description()
+
+    asset_path = "/temp/species_tree.svg"
+    path = settings.BASE_DIR + '/assets/temp/species_tree.svg'
+
+    genomes_data = genomes_data.join(genomes_descr)
+
+    genomes_data.gc = genomes_data.gc.apply(round)
+    genomes_data.coding_density = genomes_data.coding_density.apply(lambda x: round(100*x))
+    genomes_data.length = genomes_data.length.apply(lambda x: round(x/pow(10,6), 2))
+
+    data_table_header = ["Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding"]
+    data_table = genomes_data[["description", "gc", "n_prot", "n_contigs", "length", "coding_density"]].values.tolist()
+
+    # plot phylo only of not already in assets
+    tree = db.get_reference_phylogeny()
+    t1 = Tree(tree)
+    R = t1.get_midpoint_outgroup()
+    if not R is None:
+        t1.set_outgroup(R)
+    t1.ladderize()
+
+    e_tree = EteTree(t1)
+    header_params = {"rotation": -30}
+    stacked_face_params = {"margin_right": 8, "margin_left": 5}
+
+    tree_params = [
+            # serie_name, header, color and is_relative
+            ["length", "Size (Mbp)", "#91bfdb", True],
+            ["gc", "GC %", "#fc8d59", False],
+            ["coding_density", "Coding density %", "#99d594", False],
+            ["completeness", "Completeness", "#d7191c", False],
+            ["contamination", "Contamination", "black", False]]
+        
+    for serie_name, header, col, is_relative in tree_params:
+        data = genomes_data[serie_name]
+        e_tree.add_column(SimpleColorColumn.fromSeries(data, header=None, use_col=False))
+        stack = StackedBarColumn(data.to_dict(), colours = [col, "white"],
+                relative=is_relative, header=header,
+                header_params=header_params, face_params=stacked_face_params)
+        e_tree.add_column(stack)
+
+    e_tree.rename_leaves(genomes_descr.description.to_dict())
+    e_tree.render(path, dpi=500)
+    return render(request, 'chlamdb/genomes_intro.html', my_locals(locals()))
+
+    

@@ -1,0 +1,118 @@
+BLASTP 2.9.0+
+
+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro A.
+Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J.
+Lipman (1997), "Gapped BLAST and PSI-BLAST: a new generation of
+protein database search programs", Nucleic Acids Res. 25:3389-3402.
+
+
+Reference for composition-based statistics: Alejandro A. Schaffer,
+L. Aravind, Thomas L. Madden, Sergei Shavirin, John L. Spouge, Yuri
+I. Wolf, Eugene V. Koonin, and Stephen F. Altschul (2001),
+"Improving the accuracy of PSI-BLAST protein database searches with
+composition-based statistics and other refinements", Nucleic Acids
+Res. 29:2994-3005.
+
+
+
+Database: merged_SEQ.faa
+           254 sequences; 4,660,936 total letters
+
+
+
+Query= INPUT Protein
+
+Length=102
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+NZ_CP011527 Staphylococcus aureus strain DSM 20231 plasmid unname...  199        4e-61
+E_contig_30 Staphylococcus aureus strain 3487                         198        8e-61
+NZ_CP011526 Staphylococcus aureus strain DSM 20231 chromosome, co...  75.1       1e-17
+E_contig_8 Staphylococcus aureus strain 3487                          73.9       3e-17
+
+
+>NZ_CP011527 Staphylococcus aureus strain DSM 20231 plasmid unnamed, complete 
+sequence
+Length=7189
+
+ Score = 199 bits (505),  Expect = 4e-61, Method: Compositional matrix adjust.
+ Identities = 102/102 (100%), Positives = 102/102 (100%), Gaps = 0/102 (0%)
+
+Query  1    MKKFKLFLDFSTLLLISGLLFLFFFKENEEIIPESSNILTISNWDKSNSKSKVLDVIESG  60
+            MKKFKLFLDFSTLLLISGLLFLFFFKENEEIIPESSNILTISNWDKSNSKSKVLDVIESG
+Sbjct  98   MKKFKLFLDFSTLLLISGLLFLFFFKENEEIIPESSNILTISNWDKSNSKSKVLDVIESG  157
+
+Query  61   AKNQNIQIIKSVKDFDNKKEFFVFNSKRNNSDFIRNKTSLLT  102
+            AKNQNIQIIKSVKDFDNKKEFFVFNSKRNNSDFIRNKTSLLT
+Sbjct  158  AKNQNIQIIKSVKDFDNKKEFFVFNSKRNNSDFIRNKTSLLT  199
+
+
+>E_contig_30 Staphylococcus aureus strain 3487
+Length=1891
+
+ Score = 198 bits (503),  Expect = 8e-61, Method: Compositional matrix adjust.
+ Identities = 102/102 (100%), Positives = 102/102 (100%), Gaps = 0/102 (0%)
+
+Query  1     MKKFKLFLDFSTLLLISGLLFLFFFKENEEIIPESSNILTISNWDKSNSKSKVLDVIESG  60
+             MKKFKLFLDFSTLLLISGLLFLFFFKENEEIIPESSNILTISNWDKSNSKSKVLDVIESG
+Sbjct  937   MKKFKLFLDFSTLLLISGLLFLFFFKENEEIIPESSNILTISNWDKSNSKSKVLDVIESG  996
+
+Query  61    AKNQNIQIIKSVKDFDNKKEFFVFNSKRNNSDFIRNKTSLLT  102
+             AKNQNIQIIKSVKDFDNKKEFFVFNSKRNNSDFIRNKTSLLT
+Sbjct  997   AKNQNIQIIKSVKDFDNKKEFFVFNSKRNNSDFIRNKTSLLT  1038
+
+
+>NZ_CP011526 Staphylococcus aureus strain DSM 20231 chromosome, complete genome
+Length=763400
+
+ Score = 75.1 bits (183),  Expect = 1e-17, Method: Compositional matrix adjust.
+ Identities = 37/91 (41%), Positives = 62/91 (68%), Gaps = 3/91 (3%)
+
+Query  1       MKKFKLFLDFSTLLLISGLLFLFFFKENEEIIPESSNILTISNWDKSNSKSKVLDVIESG  60
+               MK FKL LD +  +LI+ LLF++ +KENEEI+P++   + +++W+K  SK+++   I+  
+Sbjct  278534  MKWFKLILDVTIFILIAILLFVYTYKENEEILPDTKYPIAVTDWNKKYSKNEIYKRIDQF  278593
+
+Query  61      AKNQNIQIIKSVKDFDNK---KEFFVFNSKR  88
+               AKN+N+ I KS  ++ NK   K+ +VFN  +
+Sbjct  278594  AKNENVAIYKSTSNYTNKNVDKDIYVFNKSK  278624
+
+
+>E_contig_8 Staphylococcus aureus strain 3487
+Length=39440
+
+ Score = 73.9 bits (180),  Expect = 3e-17, Method: Compositional matrix adjust.
+ Identities = 37/94 (39%), Positives = 62/94 (66%), Gaps = 3/94 (3%)
+
+Query  1      MKKFKLFLDFSTLLLISGLLFLFFFKENEEIIPESSNILTISNWDKSNSKSKVLDVIESG  60
+              MK FKL LD +  +LI+ LLF++ +KENEEI+P++   + +++W+K  SK+++   I   
+Sbjct  27811  MKWFKLILDVTIFILIAILLFVYTYKENEEILPDTKYPIAVTDWNKKYSKNEIYKRINQF  27870
+
+Query  61     AKNQNIQIIKSVKDFDNK---KEFFVFNSKRNNS  91
+              AKN+N+ I KS  ++ NK   K+ +VFN  +  +
+Sbjct  27871  AKNENVAIYKSTSNYTNKNVDKDIYVFNKSKATT  27904
+
+
+
+Lambda      K        H        a         alpha
+   0.319    0.136    0.368    0.792     4.96 
+
+Gapped
+Lambda      K        H        a         alpha    sigma
+   0.267   0.0410    0.140     1.90     42.6     43.6 
+
+Effective search space used: 116034450
+
+
+  Database: merged_SEQ.faa
+    Posted date:  Jun 22, 2021  4:36 PM
+  Number of letters in database: 4,660,936
+  Number of sequences in database:  254
+
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Neighboring words threshold: 11
+Window for multiple hits: 40

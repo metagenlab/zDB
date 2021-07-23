@@ -1,0 +1,219 @@
+<style>
+
+  .sidebar-title{
+    padding-left: 12px;
+  }
+  #wrapper {
+    z-index: 10;
+      margin-top: 3em;
+      padding-left: 0;
+      -webkit-transition: all 0.6s ease;
+      -moz-transition: all 0.6s ease;
+      -o-transition: all 0.6s ease;
+      transition: all 0.6s ease;
+  }
+
+  #wrapper.toggled {
+      padding-left: 200px;
+  }
+
+  #main_container {
+      padding-left: 10em;
+      padding-top: 0em;
+      padding-right: 10em;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%), url("/bin/chlamdb/img/portfolio-5.jpg");
+  }
+ 
+  .dataTables_filter {
+     padding-right:200px;
+  }
+
+  #sidebar-wrapper {
+     
+      position: fixed;
+      left: 250px;
+      width: 0;
+      height: 100%;
+      margin-left: -250px;
+      overflow-y: auto;
+      background-color: #333244; /*#32373D !Important;*/
+
+      -webkit-transition: all 0.5s ease;
+      -moz-transition: all 0.5s ease;
+      -o-transition: all 0.5s ease;
+      transition: all 0.5s ease;
+      margin-top:2px;
+  }
+
+.sidebar-submenu ul li a {
+  background-color: rgb(240, 215, 72);/*#1f1f2e;*/
+  color: #ffffe6;
+}
+
+  #wrapper.toggled #sidebar-wrapper {
+      width: 0em;
+  }
+
+  #page-content-wrapper {
+      width: 100%;
+      position: absolute;
+      padding: 20em;
+  }
+
+  #wrapper.toggled #page-content-wrapper {
+      position: absolute;
+      margin-left:25px;
+  }
+
+  /* Sidebar Styles */
+
+  .sidebar-nav {
+      position: absolute;
+      top: 0;
+      right:5px;
+      width: 200px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+  }
+
+  .sidebar-nav li {
+      text-indent: 10px;
+      line-height: 22px;
+  }
+
+  .sidebar-nav li a {
+      display: block;
+      text-decoration: none;
+      color:  #003c58;;
+      padding-left: 2px;
+      font-size: 1.2em;
+  }
+
+  #separator {
+      display: block;
+      text-decoration: none;
+      line-height: 31px;
+      color: #FBFBEF;
+      padding-left:2px;
+      
+      background-color: rgb(187, 203, 218); /* #15729A; */
+      font-size: 15px;
+  }
+
+.accordion-toggle span {
+    font-size: 13px;
+  }
+
+  .item {
+      padding-left:20px; padding-top: 0em
+  }
+
+  .sidebar-nav li a:hover {
+      text-decoration: none;
+      color:  rgb(240, 215, 72);
+      font-size: 1.2em; padding-top: 0em
+  }
+
+  .sidebar-nav li a:active,
+  .sidebar-nav li a:focus {
+      text-decoration: none;
+      color: #776b01; padding-top: 0em
+  }
+
+  .sidebar-nav > .sidebar-brand {
+      height: 2em;
+      font-size: 2em;
+      line-height: 60px; padding-top: 0em
+  }
+
+  .sidebar-nav > .sidebar-brand a {
+      color: rgb(230, 216, 140), 215, 72); padding-top: 0em
+  }
+
+  .sidebar-nav > .sidebar-brand a:hover {
+      color:   rgb(145, 183, 218);
+      background: none; padding-top: 0em
+      
+  }
+
+  
+
+  @media(min-width:950px) {
+      #wrapper {
+          padding-left: 13em; 
+      }
+
+      #wrapper.toggled {
+          padding-left: 0; 
+      }
+
+      #sidebar-wrapper {
+          width: 16em; 
+      }
+
+      #wrapper.toggled #sidebar-wrapper {
+          width: 0em;
+          padding-right: 0em;
+
+      }
+    #wrapper.toggled i #toggle_button {
+   float:right; 
+   } 
+
+    #page-content-wrapper {
+          padding: 20px;
+          position: relative;
+          
+      }
+
+      #wrapper.toggled #page-content-wrapper {
+          position: relative;
+          margin-right: 0; 
+          
+      }
+  }
+
+
+  @media(max-width:950px) {
+    #wrapper {
+        padding-left: 0px;
+    }
+
+    #wrapper.toggled #page-content-wrapper {
+      position: absolute;
+      margin-right:60px;
+    }
+
+    #wrapper.toggled {
+        padding-left: 170px;
+    }
+
+      #sidebar-wrapper {
+          width: 50px;
+      }
+
+      #wrapper.toggled #sidebar-wrapper {
+          width: 200px;
+
+      }
+
+      #page-content-wrapper {
+          padding: 5px;
+          position: relative;
+      }
+
+      #wrapper.toggled #page-content-wrapper {
+          position: relative;
+          margin-right: 0;
+      }
+  }
+
+/* always align tabs on the left */
+.nav.nav-tabs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+</style>

@@ -1,0 +1,87 @@
+TBLASTN 2.9.0+
+
+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro A.
+Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J.
+Lipman (1997), "Gapped BLAST and PSI-BLAST: a new generation of
+protein database search programs", Nucleic Acids Res. 25:3389-3402.
+
+
+
+Database: merged_SEQ.fna
+           264 sequences; 16,740,558 total letters
+
+
+
+Query= INPUT Protein
+
+Length=134
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+F_contig_15 Bacillus cereus strain 1810093995_B                       268        2e-84
+I_contig_1 Bacillus cereus strain 1809202927_K                        268        2e-84
+
+
+>F_contig_15 Bacillus cereus strain 1810093995_B
+Length=127723
+
+ Score = 268 bits (684),  Expect = 2e-84, Method: Compositional matrix adjust.
+ Identities = 134/134 (100%), Positives = 134/134 (100%), Gaps = 0/134 (0%)
+ Frame = +1
+
+Query  1       HRTKTRPVKVGNLTIGGNNELIIQSMTTTKTHDVEATVAEIKRLEEAGCQVVRVAVPDER  60
+               HRTKTRPVKVGNLTIGGNNELIIQSMTTTKTHDVEATVAEIKRLEEAGCQVVRVAVPDER
+Sbjct  118450  HRTKTRPVKVGNLTIGGNNELIIQSMTTTKTHDVEATVAEIKRLEEAGCQVVRVAVPDER  118629
+
+Query  61      AANAIADIKKQINIPLVADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVVNAAKE  120
+               AANAIADIKKQINIPLVADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVVNAAKE
+Sbjct  118630  AANAIADIKKQINIPLVADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVVNAAKE  118809
+
+Query  121     RGIPIRIGVNAGSL  134
+               RGIPIRIGVNAGSL
+Sbjct  118810  RGIPIRIGVNAGSL  118851
+
+
+>I_contig_1 Bacillus cereus strain 1809202927_K
+Length=298778
+
+ Score = 268 bits (684),  Expect = 2e-84, Method: Compositional matrix adjust.
+ Identities = 134/134 (100%), Positives = 134/134 (100%), Gaps = 0/134 (0%)
+ Frame = -2
+
+Query  1     HRTKTRPVKVGNLTIGGNNELIIQSMTTTKTHDVEATVAEIKRLEEAGCQVVRVAVPDER  60
+             HRTKTRPVKVGNLTIGGNNELIIQSMTTTKTHDVEATVAEIKRLEEAGCQVVRVAVPDER
+Sbjct  9274  HRTKTRPVKVGNLTIGGNNELIIQSMTTTKTHDVEATVAEIKRLEEAGCQVVRVAVPDER  9095
+
+Query  61    AANAIADIKKQINIPLVADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVVNAAKE  120
+             AANAIADIKKQINIPLVADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVVNAAKE
+Sbjct  9094  AANAIADIKKQINIPLVADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVVNAAKE  8915
+
+Query  121   RGIPIRIGVNAGSL  134
+             RGIPIRIGVNAGSL
+Sbjct  8914  RGIPIRIGVNAGSL  8873
+
+
+
+Lambda      K        H        a         alpha
+   0.317    0.135    0.376    0.792     4.96 
+
+Gapped
+Lambda      K        H        a         alpha    sigma
+   0.267   0.0410    0.140     1.90     42.6     43.6 
+
+Effective search space used: 272329554
+
+
+  Database: merged_SEQ.fna
+    Posted date:  Jun 23, 2021  11:47 AM
+  Number of letters in database: 16,740,558
+  Number of sequences in database:  264
+
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Neighboring words threshold: 13
+Window for multiple hits: 40

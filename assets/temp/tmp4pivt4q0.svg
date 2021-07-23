@@ -1,0 +1,158 @@
+<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" fill-rule="evenodd" height="150" preserveAspectRatio="xMinYMin meet" version="1.0" viewBox="0 0 1016 150" width="1016.6666666666666">
+	<ns0:title>...</ns0:title>
+	<ns0:desc>...</ns0:desc>
+	<ns0:clipPath id="clip">
+		<ns0:rect height="150" width="1016.6666666666666" x="0" y="0" />
+	</ns0:clipPath>
+	<ns0:g id="group" style="clip-path: url(#clip)" transform="scale(1,-1) translate(0,-150)">
+		<ns0:g transform="">
+			<ns0:polygon points="50.83333 52.21875, 965.8033 52.21875, 965.8033 97.78125, 50.83333 97.78125" style="stroke: rgb(96%,96%,96%); stroke-linecap: butt; stroke-width: 1; fill: rgb(96%,96%,96%); fill-rule: evenodd;" />
+			<ns0:polygon points="500.8186 52.21875, 515.8181 52.21875, 515.8181 97.78125, 500.8186 97.78125" style="stroke: rgb(29%,4%,52%); stroke-linecap: butt; stroke-width: 1; fill: rgb(29%,4%,52%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_6/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="53.89323 90.94688, 69.41173 90.94688, 69.41173 97.78125, 80.80235 86.39062, 69.41173 75, 69.41173 81.83437, 53.89323 81.83437" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_7/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="89.23207 68.16563, 89.23207 75, 81.58233 63.60938, 89.23207 52.21875, 89.23207 59.05313" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_8/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="93.73193 90.94688, 108.7104 90.94688, 108.7104 97.78125, 120.1011 86.39062, 108.7104 75, 108.7104 81.83437, 93.73193 81.83437" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_9/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="125.5009 90.94688, 137.2395 90.94688, 137.2395 97.78125, 148.6301 86.39062, 137.2395 75, 137.2395 81.83437, 125.5009 81.83437" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_10/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="148.6001 90.94688, 162.2287 90.94688, 162.2287 97.78125, 173.6193 86.39062, 162.2287 75, 162.2287 81.83437, 148.6001 81.83437" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_11/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="174.0093 90.94688, 175.0383 90.94688, 175.0383 97.78125, 186.4289 86.39062, 175.0383 75, 175.0383 81.83437, 174.0093 81.83437" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_12/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="222.2177 68.16563, 200.2194 68.16563, 200.2194 75, 188.8288 63.60938, 200.2194 52.21875, 200.2194 59.05313, 222.2177 59.05313" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_13/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="237.8472 68.16563, 237.8472 75, 226.8676 63.60938, 237.8472 52.21875, 237.8472 59.05313" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_14/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="262.3864 68.16563, 250.8278 68.16563, 250.8278 75, 239.4371 63.60938, 250.8278 52.21875, 250.8278 59.05313, 262.3864 59.05313" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_15/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="269.6162 90.94688, 269.6162 97.78125, 271.8961 86.39062, 269.6162 75, 269.6162 81.83437" style="stroke: rgb(100%,64%,0%); stroke-linecap: round; stroke-width: 1; fill: rgb(100%,64%,0%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_16/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="278.4959 90.94688, 285.4646 90.94688, 285.4646 97.78125, 296.8553 86.39062, 285.4646 75, 285.4646 81.83437, 278.4959 81.83437" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_17/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="300.3352 90.94688, 327.2833 90.94688, 327.2833 97.78125, 338.6739 86.39062, 327.2833 75, 327.2833 81.83437, 300.3352 81.83437" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_18/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="341.9438 90.94688, 394.1811 90.94688, 394.1811 97.78125, 405.5717 86.39062, 394.1811 75, 394.1811 81.83437, 341.9438 81.83437" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_19/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="415.2314 90.94688, 431.3799 90.94688, 431.3799 97.78125, 442.7705 86.39062, 431.3799 75, 431.3799 81.83437, 415.2314 81.83437" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_20/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="443.5805 90.94688, 460.7189 90.94688, 460.7189 97.78125, 472.1095 86.39062, 460.7189 75, 460.7189 81.83437, 443.5805 81.83437" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_21/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="472.1395 90.94688, 486.758 90.94688, 486.758 97.78125, 498.1487 86.39062, 486.758 75, 486.758 81.83437, 472.1395 81.83437" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_22/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="498.9886 90.94688, 512.0772 90.94688, 512.0772 97.78125, 523.4678 86.39062, 512.0772 75, 512.0772 81.83437, 498.9886 81.83437" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_23/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="527.6077 90.94688, 536.8264 90.94688, 536.8264 97.78125, 548.217 86.39062, 536.8264 75, 536.8264 81.83437, 527.6077 81.83437" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_24/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="559.6167 90.94688, 618.8737 90.94688, 618.8737 97.78125, 630.2643 86.39062, 618.8737 75, 618.8737 81.83437, 559.6167 81.83437" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_25/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="632.3343 90.94688, 632.3343 97.78125, 636.8341 86.39062, 632.3343 75, 632.3343 81.83437" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_26/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="639.954 90.94688, 645.9328 90.94688, 645.9328 97.78125, 657.3234 86.39062, 645.9328 75, 645.9328 81.83437, 639.954 81.83437" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_27/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="660.4133 90.94688, 660.4133 97.78125, 666.4431 86.39062, 660.4133 75, 660.4133 81.83437" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_28/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="667.0131 90.94688, 685.1415 90.94688, 685.1415 97.78125, 696.5322 86.39062, 685.1415 75, 685.1415 81.83437, 667.0131 81.83437" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_29/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="707.1218 68.16563, 707.1218 75, 698.9321 63.60938, 707.1218 52.21875, 707.1218 59.05313" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_30/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="709.2517 90.94688, 716.7605 90.94688, 716.7605 97.78125, 728.1511 86.39062, 716.7605 75, 716.7605 81.83437, 709.2517 81.83437" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_31/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="728.4211 90.94688, 750.4194 90.94688, 750.4194 97.78125, 761.81 86.39062, 750.4194 75, 750.4194 81.83437, 728.4211 81.83437" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_32/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="774.8296 68.16563, 774.8296 75, 766.0999 63.60938, 774.8296 52.21875, 774.8296 59.05313" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_33/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="803.2087 68.16563, 799.2098 68.16563, 799.2098 75, 787.8192 63.60938, 799.2098 52.21875, 799.2098 59.05313, 803.2087 59.05313" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_34/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="842.8674 68.16563, 819.3391 68.16563, 819.3391 75, 807.9485 63.60938, 819.3391 52.21875, 819.3391 59.05313, 842.8674 59.05313" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_35/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="876.1363 68.16563, 854.138 68.16563, 854.138 75, 842.7474 63.60938, 854.138 52.21875, 854.138 59.05313, 876.1363 59.05313" style="stroke: rgb(25%,94%,22%); stroke-linecap: round; stroke-width: 1; fill: rgb(25%,94%,22%); fill-rule: evenodd;" />
+			<ns0:polygon onclick="window.open(&quot;/chlamdb/locusx/1809202927_K_3_36/True&quot;, &quot;_top&quot;);" onmouseout="this.style.stroke = '#000000'; this.style['stroke-width'] = 0;" onmouseover="this.style.stroke = '#ff0000'; this.style['stroke-width'] = 5;" points="893.7457 90.94688, 937.3433 90.94688, 937.3433 97.78125, 948.7339 86.39062, 937.3433 75, 937.3433 81.83437, 893.7457 81.83437" style="stroke: rgb(5%,37%,4%); stroke-linecap: round; stroke-width: 1; fill: rgb(5%,37%,4%); fill-rule: evenodd;" />
+			<ns0:path d="M 965.803334,52.21875 L 965.803334,97.78125 Z" style="stroke: rgb(0%,0%,0%); stroke-linecap: butt; stroke-width: 1;" />
+			<ns0:path d="M 50.833333,75 L 965.803334,75 Z" style="stroke: rgb(0%,0%,0%); stroke-linecap: butt; stroke-width: 1;" />
+			<ns0:path d="M 50.833333,52.21875 L 50.833333,97.78125 Z" style="stroke: rgb(0%,0%,0%); stroke-linecap: butt; stroke-width: 1;" />
+			<ns0:path d="M 350.823498,75 L 350.823498,81.834375 Z" style="stroke: rgb(0%,0%,0%); stroke-linecap: butt; stroke-width: 1;" />
+			<ns0:path d="M 650.813662,75 L 650.813662,81.834375 Z" style="stroke: rgb(0%,0%,0%); stroke-linecap: butt; stroke-width: 1;" />
+			<ns0:path d="M 950.803826,75 L 950.803826,81.834375 Z" style="stroke: rgb(0%,0%,0%); stroke-linecap: butt; stroke-width: 1;" />
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,67.347792,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">nfo</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,85.4072,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">1809202927_K_3_7</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,106.916495,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">1809202927_K_3_8</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,137.065506,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">znuC</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,161.109718,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">znuB</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,180.219091,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">zur</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,205.523262,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">ispG</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,232.357382,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">1809202927_K_3_13</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,250.911773,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">1809202927_K_3_14</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,270.756123,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">1809202927_K_3_15</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,287.675568,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">sodA1</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,319.504524,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">1809202927_K_3_17</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,373.757746,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">pbpH_1</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,429.000934,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">sphX</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,457.844989,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">pstC_1</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,485.144094,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">pstA</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,511.228238,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">pstB3</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,537.912364,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">phoU</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,594.940494,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">cugP</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,634.584194,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">rpmGA</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,648.638733,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">yqgN</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,663.428248,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">yqgQ</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,681.772647,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">glcK</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,703.02695,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">1809202927_K_3_29</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,718.701436,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">1809202927_K_3_30</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,745.11557,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">1809202927_K_3_31</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,770.464739,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">pagR_1</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,795.513918,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">rutB_1</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,825.407937,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">metC</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,859.441822,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">metI</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(0.766044,0.642788,-0.642788,0.766044,921.239795,97.78125)">
+				<ns0:text style="font-family: Helvetica; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">yitJ</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(1,0,-0,1,50,52.21875)">
+				<ns0:text style="font-family: Helvetica; font-size: 8px;fill: rgb(60%,60%,60%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">Bacillus cereus strain 1809202927_K</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(1,0,-0,1,232,52.21875)">
+				<ns0:text style="font-family: Helvetica; font-size: 8px;fill: rgb(60%,60%,60%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">Bacillus cereus strain 1809202927_K</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(1,0,-0,1,414,52.21875)">
+				<ns0:text style="font-family: Helvetica; font-size: 8px;fill: rgb(60%,60%,60%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">Bacillus cereus strain 1809202927_K</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(1,0,-0,1,596,52.21875)">
+				<ns0:text style="font-family: Helvetica; font-size: 8px;fill: rgb(60%,60%,60%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">Bacillus cereus strain 1809202927_K</ns0:text>
+			</ns0:g>
+			<ns0:g transform=" matrix(1,0,-0,1,778,52.21875)">
+				<ns0:text style="font-family: Helvetica; font-size: 8px;fill: rgb(60%,60%,60%); stroke:none;" transform="translate(0,0) scale(1,-1)" x="0" y="0">Bacillus cereus strain 1809202927_K</ns0:text>
+			</ns0:g>
+		</ns0:g>
+	</ns0:g>
+</ns0:svg>

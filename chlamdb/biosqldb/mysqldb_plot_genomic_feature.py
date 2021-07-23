@@ -698,8 +698,7 @@ def proteins_id2cossplot(server,
                                                         color_locus_list=color_locus_list)
     return region_locus_list, orthogroup_list
 
-def location2plot(biodb,
-                  biodb_name,
+def location2plot(db,
                   accession,
                   out_name,
                   start,
@@ -710,7 +709,7 @@ def location2plot(biodb,
     import copy
     if start < 0:
         start=0
-    key = biodb_name + "_" + accession
+    key = accession
     biorecord = cache.get(key)
     if biorecord:
         print (key, "in memory")
@@ -718,8 +717,9 @@ def location2plot(biodb,
         print (key, "NOT in memory")
         cache_time = None
 
-        new_record = biodb.lookup(accession=accession)
-        new_record_reformat = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
+        db=db.server[db.db_name]
+        new_record = db.lookup(accession=accession)
+        new_record_reformat = SeqRecord(Seq(new_record.seq.data),
                                                          id=new_record.id, name=new_record.name,
                                                          description=new_record.description,
                                                          dbxrefs =new_record.dbxrefs,
@@ -744,7 +744,6 @@ def location2plot(biodb,
                                                         [sub_record],
                                                         [False],
                                                         out_name,
-                                                        biodb_name,
                                                         color_locus_list=color_locus_list)
     return region_locus_list
 

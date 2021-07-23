@@ -1,0 +1,66 @@
+TBLASTN 2.9.0+
+
+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro A.
+Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J.
+Lipman (1997), "Gapped BLAST and PSI-BLAST: a new generation of
+protein database search programs", Nucleic Acids Res. 25:3389-3402.
+
+
+
+Database: 1809202927_Kn_filtered.fna
+           115 sequences; 5,576,416 total letters
+
+
+
+Query= INPUT Protein
+
+Length=127
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+I_contig_1 Bacillus cereus strain 1809202927_K                        256        6e-81
+
+
+>I_contig_1 Bacillus cereus strain 1809202927_K
+Length=298778
+
+ Score = 256 bits (653),  Expect = 6e-81, Method: Compositional matrix adjust.
+ Identities = 127/127 (100%), Positives = 127/127 (100%), Gaps = 0/127 (0%)
+ Frame = -2
+
+Query  1     NNELIIQSMTTTKTHDVEATVAEIKRLEEAGCQVVRVAVPDERAANAIADIKKQINIPLV  60
+             NNELIIQSMTTTKTHDVEATVAEIKRLEEAGCQVVRVAVPDERAANAIADIKKQINIPLV
+Sbjct  9223  NNELIIQSMTTTKTHDVEATVAEIKRLEEAGCQVVRVAVPDERAANAIADIKKQINIPLV  9044
+
+Query  61    ADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVVNAAKERGIPIRIGVNAGSLERH  120
+             ADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVVNAAKERGIPIRIGVNAGSLERH
+Sbjct  9043  ADIHFDYRLALKAIEGGIDKVRINPGNIGRRHKVEAVVNAAKERGIPIRIGVNAGSLERH  8864
+
+Query  121   ILEKYGY  127
+             ILEKYGY
+Sbjct  8863  ILEKYGY  8843
+
+
+
+Lambda      K        H        a         alpha
+   0.318    0.136    0.376    0.792     4.96 
+
+Gapped
+Lambda      K        H        a         alpha    sigma
+   0.267   0.0410    0.140     1.90     42.6     43.6 
+
+Effective search space used: 92497500
+
+
+  Database: 1809202927_Kn_filtered.fna
+    Posted date:  Jun 23, 2021  11:47 AM
+  Number of letters in database: 5,576,416
+  Number of sequences in database:  115
+
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Neighboring words threshold: 13
+Window for multiple hits: 40

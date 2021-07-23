@@ -1,0 +1,110 @@
+BLASTX 2.9.0+
+
+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro A.
+Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J.
+Lipman (1997), "Gapped BLAST and PSI-BLAST: a new generation of
+protein database search programs", Nucleic Acids Res. 25:3389-3402.
+
+
+
+Database: 1809202927_Kn_filtered.faa
+           5,681 sequences; 1,553,679 total letters
+
+
+
+Query= INPUT
+
+Length=40
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+1809202927_K_3_921 Bacillus cereus strain 1809202927_K                29.3       0.001
+1809202927_K_3_4084 Bacillus cereus strain 1809202927_K               19.2       3.8  
+1809202927_K_3_2150 Bacillus cereus strain 1809202927_K               19.2       3.8  
+1809202927_K_3_3264 Bacillus cereus strain 1809202927_K               19.2       3.8  
+1809202927_K_3_3771 Bacillus cereus strain 1809202927_K               18.5       8.0  
+
+
+>1809202927_K_3_921 Bacillus cereus strain 1809202927_K
+Length=131
+
+ Score = 29.3 bits (64),  Expect = 0.001, Method: Compositional matrix adjust.
+ Identities = 13/13 (100%), Positives = 13/13 (100%), Gaps = 0/13 (0%)
+ Frame = +2
+
+Query  2   GDALWALMIFIGF  40
+           GDALWALMIFIGF
+Sbjct  40  GDALWALMIFIGF  52
+
+
+>1809202927_K_3_4084 Bacillus cereus strain 1809202927_K
+Length=529
+
+ Score = 19.2 bits (38),  Expect = 3.8, Method: Composition-based stats.
+ Identities = 5/7 (71%), Positives = 7/7 (100%), Gaps = 0/7 (0%)
+ Frame = +1
+
+Query  13  MGVNDFH  33
+           +G+NDFH
+Sbjct  41  LGINDFH  47
+
+
+>1809202927_K_3_2150 Bacillus cereus strain 1809202927_K
+Length=529
+
+ Score = 19.2 bits (38),  Expect = 3.8, Method: Composition-based stats.
+ Identities = 5/7 (71%), Positives = 7/7 (100%), Gaps = 0/7 (0%)
+ Frame = +1
+
+Query  13  MGVNDFH  33
+           +G+NDFH
+Sbjct  41  LGINDFH  47
+
+
+>1809202927_K_3_3264 Bacillus cereus strain 1809202927_K
+Length=307
+
+ Score = 19.2 bits (38),  Expect = 3.8, Method: Composition-based stats.
+ Identities = 3/11 (27%), Positives = 10/11 (91%), Gaps = 0/11 (0%)
+ Frame = +1
+
+Query  7   CFMGVNDFHWI  39
+           C++ +N+++W+
+Sbjct  79  CYVSINNYYWL  89
+
+
+>1809202927_K_3_3771 Bacillus cereus strain 1809202927_K
+Length=406
+
+ Score = 18.5 bits (36),  Expect = 8.0, Method: Compositional matrix adjust.
+ Identities = 6/10 (60%), Positives = 9/10 (90%), Gaps = 0/10 (0%)
+ Frame = +2
+
+Query  5   DALWALMIFI  34
+           D++WA+ IFI
+Sbjct  88  DSIWAIYIFI  97
+
+
+
+Lambda      K        H        a         alpha
+   0.318    0.134    0.401    0.792     4.96 
+
+Gapped
+Lambda      K        H        a         alpha    sigma
+   0.267   0.0410    0.140     1.90     42.6     43.6 
+
+Effective search space used: 20197827
+
+
+  Database: 1809202927_Kn_filtered.faa
+    Posted date:  Jun 16, 2021  8:43 AM
+  Number of letters in database: 1,553,679
+  Number of sequences in database:  5,681
+
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Neighboring words threshold: 12
+Window for multiple hits: 40

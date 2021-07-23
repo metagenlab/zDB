@@ -1,0 +1,302 @@
+{% load static %}
+{% load custom_tags %}
+
+
+
+
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" style="z-index:5">
+      <div class="container-fluid" style="background-color: rgb(230, 197, 106) ; border: rgb(226, 210, 116) ; color:rgb(23, 124, 131); height: 4.5em; padding:0.5em 1em 0.8em 1em; z-index:5">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button id="toggle_button" type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="#menu-toggle"  id="menu-toggle" style="margin-top:0.1em; margin-right: 0em; font-size: 2.5em" > <i class="fa fa-bars "  style="font-size:0.8em !Important;" aria-hidden="true" aria-hidden="true"></i></a>
+          <a class="navbar-brand" style="color:#003c58; font-size: 1.5em;" href="{% url 'home' %}">ChlamDB</a>
+         
+        </div>
+
+
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+
+          <div class="col-sm-3 col-md-4 col-lg-5">
+              <form class="navbar-form" role="search" action='{% url "search_bar" %}' method="GET" class="form-inline pull-xs-right">
+                <div class="input-group" style="width:100%;max-width:50em; margin-left: 10em;  ">
+                    <input type="text" class="form-control" style="width:100%;" placeholder="Gene, product, orthogroup, COG, KEGG id, ..." name="accession">
+                    <div class="input-group-btn">
+                        <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+                    </div>
+                </div>
+              </form>
+          </div>
+
+         
+
+          <ul class="nav navbar-nav navbar-right" style="padding-right:2em;">
+            <a id="help_button" class="btn btn-default navbar-btn" style="color: #003c58;" href="/docs/index.html" target="_top">Documentation</a>
+            <li><a style="color: #003c58;" href="{% url 'FAQ' %}">FAQ</a></li>
+            <li><a style="color: #003c58;" href="{% url 'about' %}">About</a></li>
+          </ul>
+
+        </div><!-- /.navbar-collapse -->
+      </div> <!-- /.container-fluid -->
+    </nav>
+
+
+
+
+
+
+
+    <div class="sidenav" style=" margin-top: 0; padding-top: 0;" >      <!-- Sidebar -->
+      <div id="sidebar-wrapper" style="background-color: rgb(178, 212, 218);  z-index:10 ; height: 100%; margin-top: 0; padding-top: 0;" >
+        <div class="container-fluid" style=" margin-top: 0; padding-top: 0;"  >
+          <ul class="sidebar-nav"  style=" margin-top: 0; padding-top: 0;" >
+              <li class="sidebar-brand" style=" margin-top: 0; padding-top: 0;" >
+                
+              </li>
+
+                  
+                  <li class="sidebar-dropdown" id="comp">
+                    <li class="item"  style="margin-left: 2em;"><a  href="{% url 'genomes_intro' %}" ><b>Genomes</b></a></li>
+                    <li class="item" style=" margin-left: 2em; margin-bottom: 2em; ;" ><a style="margin-left: 0;" href="{% url 'phylogeny_intro' %}"><b>Phylogeny</b></a></li>
+                  </li>
+               
+              
+                  <li class="sidebar-dropdown" id="comp">
+                        <p style=" padding-left: 1em; padding-bottom: 0em ; margin-bottom: 0; color: rgb(226, 210, 115);  background-color: #306680 ; width: 100%; font-size: 1.5em;">Search</p>
+                        <!--<div class="sidebar-submenu" style="background-color: rgb(155, 176, 196) ">-->
+                        <!--<ul id="submenu" >-->
+                              
+                              {% if optional2status|keyvalue:"BLAST_database"%}
+                              <li class="item" style="margin-top: 0;"><a style="background-color:rgb(178, 212, 218); margin-top: 0.5em; " href="{% url 'blast' %}">Blast</a></li>
+                              {% endif %}
+                              <!--<li class="item6"><a href="{% url 'motif_search' %}">Motif search</a>-->
+                              <!--</li>-->
+                              <!--<li class="item6"><a href="{% url 'interpro' %}">Interpro search</a>-->
+                              <li class="item" style="margin-top: 0;"><a style="background-color:  rgb(178, 212, 218)"  href="{% url 'extract_region' %}">Retrieve sequence</a></li>
+                        <!-- </ul>-->
+                      <!-- </div>-->
+                  </li>
+                <!--<li class="item6"><a href="{% url 'primer_search' %}">Primer search</a>->
+                <!--</li>-->
+
+                  <li class="sidebar-dropdown" id="comp">
+                      <p style=" padding-left: 1em; padding-bottom: 0em ; margin-bottom: 0; background-color:  #306680; color: rgb(240, 215, 72);width: 100%; font-size: 1.5em;">Comparisons</p><a id="separator" >
+                      
+                          <li class="item" style="margin-top: 0.5em;"><a style="background-color:  rgb(178, 212, 218)"   href="{% url 'extract_orthogroup' %}">Orthogroups</a></li>
+                            {% if optional2status|keyvalue:"COG" == 1 %}
+                            <li class="item" style="margin-top: 0;"><a style="background-color: rgb(178, 212, 218)"  href="{% url 'extract_cog' %}">COGs</a></li>
+                            {% endif %}
+                            {% if optional2status|keyvalue:"pfam" == 1 %}
+                            <li class="item" style="margin-top: 0;"><a style="background-color: rgb(178, 212, 218)"  href="{% url 'extract_pfam' %}">Pfam domains</a></li>
+                            {% endif %}
+                            {% if optional2status|keyvalue:"KEGG" == 1 %}
+                                <!--<li class="item"><a href="{% url 'extract_EC' %}">EC numbers</a></li>-->
+                                <li class="item" style="margin-top: 0;"><a style="background-color:  rgb(178, 212, 218)"  href="{% url 'extract_ko' %}">Kegg Orthologs</a></li>
+                            {% endif %}
+                       
+                  </li>
+
+            
+
+
+              <li class="sidebar-dropdown">
+                <p style=" padding-left: 1em; padding-bottom: 0em ; margin-bottom: 0; background-color: #306680 ; color: rgb(240, 215, 72);width: 100%; font-size: 1.4em;">Genome alignments</p><a id="separator" ><a id="separator">
+                  
+
+                      <li class="item"style="margin-top: 0.5em;;"><a style="background-color:  rgb(178, 212, 218)"  href="{% url 'plot_region' %}">Plot region</a></li>
+                      <li class="item" style="margin-top: 0;"><a style="background-color: rgb(178, 212, 218)"  href="{% url 'circos' %}">Circos</a></li>
+                      <!--<li class="item6"><a href="{% url 'circos2genomes' %}">Circos 2 genomes</a>-->
+                      <!--<li class="item5"><a href="{% url 'circos_homology' %}">Homologues location</a>-->
+                      <!--</li>-->
+                      <!--<li class="item5"><a href="{% url 'mummer' %}">Dot plots</a>-->
+                  
+              </li>
+
+
+              {% if optional2status|keyvalue:"KEGG" %}
+
+                  <li class="sidebar-dropdown">
+                    <p style=" padding-left: 1em; padding-bottom: 0em ; margin-bottom: 0; background-color:   #306680; color: rgb(240, 215, 72); width: 100%; font-size: 1.5em;">Metabolism </p><a id="separator" ><a id="separator" >
+                      
+                          <li class="item" style="margin-top: 0.5em;;"><a style="background-color: rgb(178, 212, 218)"   href="{% url 'priam_kegg' %}">Kegg maps</a></li>
+                          <!--<li class="item"><a href="{% url 'metabo_overview' %}">Metabo comparisons</a></li>-->
+                          <li class="item" style="margin-top: 0;"><a style="background-color: rgb(178, 212, 218)"  href="{% url 'kegg_module' %}">Kegg modules</a></li>
+                        
+                  </li>
+              {% endif %}
+
+
+        
+
+            {% if debug %}
+
+
+            <li class="sidebar-dropdown">
+                <a id="separator" >
+                    <i class="fa fa-list"></i>
+                    <span> Dev</span>
+                </a>
+                <div class="sidebar-submenu" style="display:block;">
+                  <ul id="submenu" class="panel-collapse collapse panel-switch" role="menu">
+                    <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'locus_int' %}">Locus Int</a></li>
+                    <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'add_locus_int' %}">ADD Locus Int</a></li>
+                    <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'orthogroup_annotation' True%}">Orthog. annot.</a></li>
+                    <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'locus_annotation' True%}">Locus annot.</a></li>
+                    <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'locus_list2orthogroups' %}">locus2group</a></li>
+                    <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'blast_profile' %}">blast2profile</a></li>
+                    <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'hmm2circos' %}">hmm2circos</a></li>
+                    <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'hmm' %}">hmm sets</a></li>
+                    <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'blast_sets' %}">blast sets</a></li>
+                    <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'interactions_genome' %}">locus2network</a></li>
+                  </ul>
+                </div>
+            </li>
+
+
+            {% endif %}
+
+
+        </ul>
+    </div> <!-- /.container-fluid -->
+  </div> <!-- /#sidebar-wrapper -->
+
+
+
+
+
+
+
+<script>
+
+$("#menu-toggle").click(function(e) {
+  e.preventDefault();
+  $("#wrapper").toggleClass("toggled");
+  
+});
+
+jQuery(function ($) {
+
+
+    $(".sidebar-dropdown > a").click(function() {
+
+  if (
+    $(this)
+      .parent()
+      .hasClass("active")
+  ) {
+    $(this)
+      .parent()
+      .removeClass("active");
+  } else {
+    $(this)
+      .next(".sidebar-submenu")
+      .slideDown(200);
+    $(this)
+      .parent()
+      .addClass("active");
+  }
+});
+
+$("#close-sidebar").click(function() {
+  $(".page-wrapper").removeClass("toggled");
+});
+$("#show-sidebar").click(function() {
+  $(".page-wrapper").addClass("toggled");
+});
+
+});
+
+$('[data-toggle=offcanvas]').click(function() {
+$('.row-offcanvas').toggleClass('active');
+$('.collapse').toggleClass('in').toggleClass('hidden-xs').toggleClass('visible-xs');
+});
+
+
+$(function(){
+var myElem = document.getElementById('learn_more');
+if (myElem === null) {
+ console.log("No match!");
+}
+else{
+  $("#help_button").hide();
+  console.log("Match:", url);
+}
+});
+
+
+$(function(){
+    // Get current url
+    // Select an a element that has the matching href and apply a class of 'active'. Also prepend a - to the content of the link
+    var url = window.location.href;
+    if (url.includes('home')) {
+     $("#help_button").hide();
+     console.log("match!")
+    }
+    else{console.log("No match:", url)}
+
+});
+
+</script>
+<style>
+
+.right-caret {
+    border-bottom: 4px solid transparent;
+    border-top: 4px solid #FAFAFA;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    display: inline-block;
+    height: 0;
+    opacity: 1;
+    width: 0;
+}
+.bottom-caret {
+    border-bottom: 4px solid transparent;
+    border-top: 4px solid #FAFAFA;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    display: inline-block;
+    height: 0;
+    opacity: 1;
+    width: 0;
+}
+ul{
+  list-style-type: none;
+  padding-left: 5px;
+}
+
+.accordion-toggle:after {
+    /* symbol for "opening" panels */
+    font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+    content: "\e114";    /* adjust as needed, taken from bootstrap.css */
+    float: right;        /* adjust as needed */
+    padding-right: 20px;
+    color: grey;         /* adjust as needed */
+}
+
+.accordion-toggle.collapsed:after {
+    /* symbol for "collapsed" panels */
+    content: "\e080";    /* adjust as needed, taken from bootstrap.css */
+}
+
+.sidebar-title_NO { 
+    background-color: rgb(245, 205, 131);
+}
+.sidebar-submenu_NO {
+    background-color: rgb(245, 205, 131);
+}
+
+.id_lista_A {
+    background-color: rgb(245, 205, 131);
+}
+
+
+{% include "chlamdb/style_menu.html" %}
+
+</style>

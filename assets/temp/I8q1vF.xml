@@ -1,0 +1,4545 @@
+TBLASTN 2.9.0+
+
+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro A.
+Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J.
+Lipman (1997), "Gapped BLAST and PSI-BLAST: a new generation of
+protein database search programs", Nucleic Acids Res. 25:3389-3402.
+
+
+
+Database: 1809202927_Kn_filtered.fna
+           5,681 sequences; 789,726,797 total letters
+
+
+
+Query= INPUT Protein
+
+Length=63
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+1809202927_K_3_925 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_924 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_923 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_922 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_921 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_920 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_919 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_918 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_917 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_916 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_915 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_914 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_913 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_912 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_911 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_910 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_909 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_908 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_907 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_906 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_905 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_904 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_903 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_902 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_901 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_900 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_899 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_898 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_897 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_896 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_895 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_894 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_893 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_892 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_891 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_890 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_889 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_888 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_887 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_886 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_885 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_884 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_883 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_882 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_881 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_880 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_879 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_878 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_877 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_876 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_875 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_874 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_873 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_872 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_871 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_870 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_869 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_868 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_867 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_866 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_865 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_864 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_863 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_862 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_861 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_860 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_859 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_858 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_857 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_856 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_855 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_854 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_853 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_852 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_851 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_850 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_849 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_848 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_847 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_846 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_845 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_844 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_843 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_842 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_841 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_840 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_839 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_838 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_837 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_836 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_835 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_834 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_833 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_832 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_831 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_830 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_829 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_828 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_827 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_826 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_825 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_824 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_823 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_822 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_821 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_820 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_819 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_818 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_817 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_816 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_815 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_814 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_813 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_812 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_811 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_810 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_809 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_808 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_807 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_806 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_805 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_804 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_803 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_802 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_801 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_800 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_799 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_798 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_797 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_796 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_795 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_794 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_793 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_792 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_791 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_790 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_789 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_788 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_787 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_786 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_785 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_784 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_783 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_782 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_781 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_780 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_779 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_778 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_777 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_776 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_775 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_774 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_773 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_772 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_771 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_770 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_769 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_768 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_767 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_766 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_765 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_764 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_763 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_762 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_761 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_760 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_759 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_758 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_757 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_756 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_755 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_754 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_753 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_752 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_751 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_750 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_749 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_748 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_747 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_746 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_745 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_744 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_743 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_742 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_741 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_740 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_739 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_738 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_737 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_736 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_735 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_734 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_733 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_732 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_731 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_730 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_729 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_728 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_727 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_726 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_725 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_724 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_723 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_722 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_721 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_720 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_719 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_718 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_717 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_716 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_715 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_714 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_713 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_712 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_711 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_710 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_709 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_708 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_707 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_706 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_705 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_704 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_703 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_702 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_701 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_700 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_699 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_698 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_697 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_696 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_695 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_694 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_693 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_692 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_691 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_690 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_689 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_688 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_687 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_686 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_685 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_684 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_683 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_682 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_681 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_680 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_679 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_678 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_677 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_676 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_675 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_674 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_673 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_672 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_671 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_670 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_669 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_668 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_667 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_666 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_665 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_664 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_663 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_662 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_661 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_660 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_659 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_658 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_657 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_656 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_655 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_654 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_653 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_652 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_651 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_650 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_649 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_648 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_647 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_646 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_645 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_644 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_643 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_642 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_641 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_640 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_639 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_638 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_637 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_636 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_635 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_634 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_633 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_632 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_631 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_630 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_629 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_628 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_627 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_626 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_625 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_624 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_623 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_622 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_621 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_620 Bacillus cereus strain 1809202927_K                127        4e-35
+1809202927_K_3_1212 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1211 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1210 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1209 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1208 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1207 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1206 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1205 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1204 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1203 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1202 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1201 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1200 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1199 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1198 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1197 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1196 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1195 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1194 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1193 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1192 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1191 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1190 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1189 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1188 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1187 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1186 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1185 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1184 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1183 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1182 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1181 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1180 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1179 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1178 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1177 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1176 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1175 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1174 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1173 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1172 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1171 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1170 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1169 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1168 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1167 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1166 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1165 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1164 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1163 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1162 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1161 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1160 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1159 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1158 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1157 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1156 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1155 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1154 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1153 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1152 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1151 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1150 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1149 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1148 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1147 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1146 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1145 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1144 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1143 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1142 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1141 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1140 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1139 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1138 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1137 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1136 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1135 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1134 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1133 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1132 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1131 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1130 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1129 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1128 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1127 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1126 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1125 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1124 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1123 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1122 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1121 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1120 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1119 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1118 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1117 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1116 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1115 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1114 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1113 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1112 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1111 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1110 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1109 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1108 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1107 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1106 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1105 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1104 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1103 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1102 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1101 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1100 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1099 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1098 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1097 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1096 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1095 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1094 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1093 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1092 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1091 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1090 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1089 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1088 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1087 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1086 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1085 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1084 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1083 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1082 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1081 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1080 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1079 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1078 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1077 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1076 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1075 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1074 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1073 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1072 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1071 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1070 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1069 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1068 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1067 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1066 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1065 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1064 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1063 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1062 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1061 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1060 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1059 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1058 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1057 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1056 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1055 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1054 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1053 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1052 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1051 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1050 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1049 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1048 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1047 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1046 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1045 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1044 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1043 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1042 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1041 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1040 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1039 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1038 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1037 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1036 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1035 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1034 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1033 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1032 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1031 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1030 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1029 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1028 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1027 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1026 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1025 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1024 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1023 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1022 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1021 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1020 Bacillus cereus strain 1809202927_K               42.0       7e-05
+1809202927_K_3_1019 Bacillus cereus strain 1809202927_K               42.0       7e-05
+
+
+>1809202927_K_3_925 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_924 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_923 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_922 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_921 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_920 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_919 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_918 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_917 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_916 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_915 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_914 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_913 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_912 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_911 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_910 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_909 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_908 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_907 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_906 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_905 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_904 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_903 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_902 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_901 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_900 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_899 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_898 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_897 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_896 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_895 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_894 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_893 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_892 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_891 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_890 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_889 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_888 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_887 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_886 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_885 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_884 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_883 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_882 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_881 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_880 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_879 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_878 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_877 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_876 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_875 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_874 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_873 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_872 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_871 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_870 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_869 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_868 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_867 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_866 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_865 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_864 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_863 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_862 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_861 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_860 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_859 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_858 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_857 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_856 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_855 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_854 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_853 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_852 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_851 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_850 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_849 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_848 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_847 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_846 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_845 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_844 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_843 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_842 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_841 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_840 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_839 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_838 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_837 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_836 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_835 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_834 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_833 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_832 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_831 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_830 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_829 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_828 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_827 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_826 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_825 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_824 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_823 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_822 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_821 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_820 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_819 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_818 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_817 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_816 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_815 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_814 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_813 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_812 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_811 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_810 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_809 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_808 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_807 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_806 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_805 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_804 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_803 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_802 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_801 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_800 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_799 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_798 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_797 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_796 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_795 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_794 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_793 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_792 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_791 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_790 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_789 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_788 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_787 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_786 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_785 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_784 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_783 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_782 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_781 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_780 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_779 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_778 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_777 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_776 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_775 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_774 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_773 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_772 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_771 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_770 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_769 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_768 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_767 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_766 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_765 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_764 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_763 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_762 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_761 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_760 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_759 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_758 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_757 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_756 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_755 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_754 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_753 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_752 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_751 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_750 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_749 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_748 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_747 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_746 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_745 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_744 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_743 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_742 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_741 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_740 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_739 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_738 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_737 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_736 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_735 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_734 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_733 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_732 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_731 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_730 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_729 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_728 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_727 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_726 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_725 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_724 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_723 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_722 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_721 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_720 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_719 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_718 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_717 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_716 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_715 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_714 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_713 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_712 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_711 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_710 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_709 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_708 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_707 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_706 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_705 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_704 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_703 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_702 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_701 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_700 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_699 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_698 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_697 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_696 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_695 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_694 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_693 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_692 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_691 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_690 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_689 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_688 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_687 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_686 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_685 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_684 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_683 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_682 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_681 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_680 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_679 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_678 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_677 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+>1809202927_K_3_676 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 127 bits (320),  Expect = 4e-35, Method: Compositional matrix adjust.
+ Identities = 63/63 (100%), Positives = 63/63 (100%), Gaps = 0/63 (0%)
+ Frame = -3
+
+Query  1       NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  60
+               NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI
+Sbjct  273122  NELIGFARVVSDGVFRAYLEDVVVHERVRNKGIGEKMLTMLLEEISHIDIVSLFCGEKLI  272943
+
+Query  61      KFY  63
+               KFY
+Sbjct  272942  KFY  272934
+
+
+
+Lambda      K        H        a         alpha
+   0.327    0.146    0.413    0.792     4.96 
+
+Gapped
+Lambda      K        H        a         alpha    sigma
+   0.267   0.0410    0.140     1.90     42.6     43.6 
+
+Effective search space used: 6575659675
+
+
+  Database: 1809202927_Kn_filtered.fna
+    Posted date:  Jun 8, 2021  3:33 PM
+  Number of letters in database: 789,726,797
+  Number of sequences in database:  5,681
+
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Neighboring words threshold: 13
+Window for multiple hits: 40

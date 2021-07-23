@@ -210,5 +210,10 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^get-task-info/', views.get_task_info),
                        url(r'^docs/(?P<path>.*)$', static.serve, {'document_root': settings.DOCS_ROOT}),
                        url(r'^favicon\.ico$', favicon_view),
+                       url(r'^FAQ', views.faq, name='FAQ'),
+                       url(r'^phylogeny_intro', views.phylogeny_intro, name='phylogeny_intro'),
+                       url(r'^genomes_intro', views.genomes_intro, name='genomes_intro'),
                        url(r'^.*$', views.home, name="home"),
+                       
+                       #url(r'^FAQ',TemplateView.as_view(template_name='FAQ.html')),
 ]

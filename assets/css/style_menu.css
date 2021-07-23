@@ -1,0 +1,1016 @@
+
+
+.sidebar-nav {
+  position: absolute;
+  top: 0;
+  width: 250px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: 0.5s;
+}
+
+
+
+.sidebar-nav li.sidebar-nav-item a {
+  display: block;
+  text-decoration: none;
+  color: #fff;
+  padding: 13px;
+}
+
+
+.sidebar-nav li a:hover {
+  text-decoration: none;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-nav li a:active,
+.sidebar-nav li a:focus {
+  text-decoration: none;
+}
+
+.sidebar-nav > .sidebar-brand {
+  font-size: 1.2rem;
+  background: rgba(228, 0, 179, 0.932);
+  height: 80px;
+  line-height: 50px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 15px;
+}
+
+.sidebar-nav > .sidebar-brand a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.sidebar-nav > .sidebar-brand a:hover {
+  color: #fff;
+  background: none;
+}
+
+#sidebar-wrapper.active {
+  right: 250px;
+  width: 250px;
+  transition: all 0.4s ease 0s;
+}
+
+.menu-toggle {
+  position: fixed;
+  right: 15px;
+  top: 15px;
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  color: #fff;
+  background: rgba(52, 58, 64, 0.5);
+  line-height: 50px;
+  z-index: 999;
+}
+.menu-toggle:focus, .menu-toggle:hover {
+  color: #fff;
+}
+.menu-toggle:hover {
+  background: #343a40;
+}
+
+.btn-xl {
+  padding: 1.25rem 2.5rem;
+}
+
+
+
+
+
+  .masthead {
+    min-height: 30rem;
+    position: relative;
+    display: table;
+    width: 100%;
+    height: auto;
+    padding-top: 15em;
+    padding-bottom: 5em;
+    padding-left: 10em;
+    padding-right: 10em;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+  .masthead h1, .masthead .h1 {
+    font-size: 4rem;
+    padding-top: 10em;
+    padding-bottom: 5em;
+    
+    margin: 0;
+    padding: 0;
+  }
+
+    .masthead {
+      height: 100vh;
+    }
+    .masthead h1, .masthead .h1 {
+      font-size: 5.5rem;
+    }
+
+
+.content-section {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.content-section-heading h2, .content-section-heading .h2 {
+  font-size: 3rem;
+}
+.content-section-heading h3, .content-section-heading .h3 {
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.search-bar {
+  margin-top: 2em;
+  margin-left: 1em;
+}
+
+
+.home-title{
+  font-size: 3em; text-align: center; color:#196d87;; margin-top: 2em;
+}
+
+.lines-home {
+  height:2px;border-width:0;colorrgb(240, 215, 72);background-color:#196d87; width: 70%;
+}
+.subtitle-home{
+  font-size: 1.5em; text-align: center; color:#196d87;; margin-top: 1em;
+}
+
+.tab-content {
+  margin-right: 10em;
+  margin-left: 10em;
+}
+
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
+.tree{
+  padding-left: 4em;
+  padding-right: 1em;
+}
+
+.form-control{
+width:100%;max-width:500px;
+position: fixed;
+margin: 0 auto;
+padding: 1em
+;
+
+
+}
+
+.page-content-wrapper{
+  margin-left: 2em; margin-right:20em;
+}
+
+
+
+
+.navbar {
+  overflow: hidden;
+  background-color: #333;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+
+.navbar a {
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.navbar a:hover {
+  background: #f1f1f1;
+  color: black;
+}
+
+.navbar a.active {
+  background-color: #04AA6D;
+  color: white;
+}
+
+
+.body {
+  margin: 0;
+  font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  position: relative;
+  padding-bottom: 5em;
+  min-height: 100vh;
+}
+
+
+
+.footer_id{
+  text-align: center;
+  background-color: #333;
+  color: #fff;
+  padding: 5em;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+
+
+
+
+ 
+  #wrapper {
+   
+      margin-top: 3em;
+      padding-left: 0;
+      -webkit-transition: all 0.6s ease;
+      -moz-transition: all 0.6s ease;
+      -o-transition: all 0.6s ease;
+      transition: all 0.6s ease;
+  }
+
+  /* padding-left: 2em;
+      padding-top: 0em;
+      padding-right: 2em;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%), url("/bin/chlamdb/img/portfolio-5.jpg");*/
+
+
+ 
+
+
+
+  @media(min-width:950px) {
+      #wrapper {
+          padding-right: 15em; 
+      }
+
+      #wrapper.toggled {
+          padding-right: 0em; 
+      }
+
+     
+      }
+
+      #wrapper.toggled #sidebar-wrapper {
+          width: 0em;
+          padding-right: -5em;
+
+      }
+    #wrapper.toggled i #toggle_button {
+   float:right; 
+   } 
+
+    #page-content-wrapper {
+          padding: 20px;
+          position: relative;
+          
+      }
+
+      #wrapper.toggled #page-content-wrapper {
+          position: relative;
+          margin-right: 0; 
+          
+      }
+
+}
+
+
+  @media(max-width:770px) {
+    #wrapper {
+        padding-left: 0px;
+    }
+
+
+    #wrapper.toggled {
+        padding-left: 2px;
+    }
+
+ 
+      #wrapper.toggled #sidebar-wrapper {
+          width: 0px;
+
+      }
+
+      #page-content-wrapper {
+          padding: 5px;
+          position: relative;
+      }
+
+      #wrapper.toggled #page-content-wrapper {
+          position: relative;
+          margin-right: 0;
+      }
+
+      .container-fluid {
+        width: 100%;
+        margin-left: 0;
+        
+      }
+
+      
+
+      
+      
+  }
+
+/* always align tabs on the left */
+.nav.nav-tabs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@media only screen and (min-width: 350px)
+ {
+  .masthead {
+    background-color: rgb(84, 84, 184);
+    }
+  
+  .page {
+      
+      background-color: rgb(185, 122, 27);
+      }
+  
+  .header-h1 {
+        font-size: 3em;
+        padding-bottom: 2em;
+        padding-left: 0.5em;
+        margin: 0;
+        padding: 0;
+      }
+  .header-h3 {
+            padding-bottom: 5em;
+            margin: 0;
+            padding: 0;
+            margin-bottom: 0.25rem ;
+            font-size: 1em;
+            padding-left: 1em;
+          }
+   
+    .btn-xl{
+      display: none;
+    }
+    
+
+    .content-section-heading h2, .content-section-heading .h2 {
+      font-size: 3rem;
+    }
+    .content-section-heading h3, .content-section-heading .h3 {
+      font-size: 1rem;
+      text-transform: uppercase;
+    }
+    
+    .search-bar {
+      margin-top: 2em;
+      margin-left: 1em;
+    }
+    
+    
+    .home-title{
+      font-size: 2em; text-align: center; color:#196d87;; margin-top: 1em;
+    }
+    
+    .lines-home {
+      height:2px;border-width:0;background-color:#196d87; width: 70%;
+    }
+    .subtitle-home{
+      font-size: 1.5em; text-align: center; color:#196d87;; margin-top: 1em;
+    }
+    
+    .tab-content {
+      margin-right: 1em;
+      margin-left: 1em;
+    }
+    .panel-body{
+    font-size:3em
+    }
+    
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 50%;
+    }
+    .tab-pane{
+      padding-left: 1em; width: 100%;  padding-right: 1em
+    }
+    
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+    
+    
+
+    .tree{
+      padding-left: 1em;
+      padding-right: 1em;
+      width: 100%;
+    }
+    
+
+
+    
+    .help-par {
+      margin-right: 1em;
+      margin-left: 1em;
+    }
+    
+    .form-control{
+    width:100%;max-width:500px;
+    position: fixed;
+    margin: 0 auto;
+    padding: 1em
+    ;
+    
+    
+    }
+    
+    .page-content-wrapper{
+      margin-left: 2em; margin-right:20em;
+    }
+    
+    
+    
+    
+    .navbar {
+      overflow: hidden;
+      background-color: #333;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+    
+    .navbar a {
+      float: left;
+      display: block;
+      color: #f2f2f2;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 17px;
+    }
+    
+    .navbar a:hover {
+      background: #f1f1f1;
+      color: black;
+    }
+    
+    .navbar a.active {
+      background-color: #04AA6D;
+      color: white;
+    }
+    
+    
+    .body {
+      margin: 0;
+      font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: #212529;
+      background-color: #fff;
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+      position: relative;
+      padding-bottom: 5em;
+      min-height: 100vh;
+    }
+    
+    
+    
+    .footer_id{
+      text-align: center;
+      background-color: #333;
+      color: #fff;
+      padding: 5em;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+    }
+    
+    
+    
+    
+    
+     
+      #wrapper {
+       
+          margin-top: 3em;
+          padding-left: 0;
+          -webkit-transition: all 0.6s ease;
+          -moz-transition: all 0.6s ease;
+          -o-transition: all 0.6s ease;
+          transition: all 0.6s ease;
+      }
+    
+      /* padding-left: 2em;
+          padding-top: 0em;
+          padding-right: 2em;
+          background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%), url("/bin/chlamdb/img/portfolio-5.jpg");*/
+    
+  }
+
+@media only screen and (min-width:768px) {
+  .masthead {
+    min-height: 30rem;
+    position: relative;
+    display: table;
+    width:95%;
+    height: auto;
+    margin-left: 2em;
+    margin-right: 8em;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: rgb(45, 45, 206);
+    }
+  
+    .page {
+      
+      background-color: rgb(62, 212, 42);
+      width: 100%;
+      margin-left: 2em;
+      margin-right: 8em;
+      
+      }
+  
+      .header-h1 {
+      
+        padding-top: 10em;
+        padding-bottom: 5em;
+        margin: 0;
+        padding: 0;
+        margin-bottom: 0.25rem ;
+        font-size: 5em;
+        padding-left: 1em;
+      }
+
+      
+      .header-h3 {
+        padding-top: 10em;
+            padding-bottom: 5em;
+            margin: 0;
+            padding: 0;
+            margin-bottom: 0.25rem ;
+            font-size: 3em;
+            padding-left: 1em;
+          }
+
+        .masthead {
+          height: 100vh;
+        }
+  
+    
+    .content-section {
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+    
+    .content-section-heading h2, .content-section-heading .h2 {
+      font-size: 3rem;
+    }
+    .content-section-heading h3, .content-section-heading .h3 {
+      font-size: 1rem;
+      text-transform: uppercase;
+    }
+    
+    .search-bar {
+      margin-top: 2em;
+      margin-left: 1em;
+    }
+    
+    
+    .home-title{
+      font-size: 3em; text-align: center; color:#196d87;; margin-top: 2em;
+    }
+    
+    .lines-home {
+      height:2px;border-width:0;colorrgb(240, 215, 72);background-color:#196d87; width: 70%;
+    }
+    .subtitle-home{
+      font-size: 1.5em; text-align: center; color:#196d87;; margin-top: 1em;
+    }
+    
+    .tab-content {
+      margin-right: 5em;
+      margin-left: 5em;
+    }
+    
+    .panel-body{
+      margin: 1em 1em 1em 1em; font-size:3em
+      }
+      
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+
+    .tab-pane{
+      padding: 1em 10em 0em 10em; width: 100%
+    }
+
+    .tree{
+      padding-left: 4em;
+      padding-right: 1em;
+    }
+    
+    .img{
+      min-height: 30rem;
+      position: relative;
+      display: table;
+      width: 100%;
+      height: auto;
+      padding-top: 15em;
+      padding-bottom: 15em;
+      padding-left: 10em;
+      padding-right: 10em;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+    
+    .help-par {
+      margin-right: 5em;
+      margin-left: 5em;
+    }
+    
+    .form-control{
+    width:100%;max-width:500px;
+    position: fixed;
+    margin: 0 auto;
+    padding: 1em
+    ;
+    
+    
+    }
+    
+    .page-content-wrapper{
+      margin-left: 2em; margin-right:20em;
+    }
+    
+    
+    
+    
+    .navbar {
+      overflow: hidden;
+      background-color: #333;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+    
+    .navbar a {
+      float: left;
+      display: block;
+      color: #f2f2f2;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 17px;
+    }
+    
+    .navbar a:hover {
+      background: #f1f1f1;
+      color: black;
+    }
+    
+    .navbar a.active {
+      background-color: #04AA6D;
+      color: white;
+    }
+    
+    
+    .body {
+      margin: 0;
+      font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: #212529;
+      background-color: #fff;
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+      position: relative;
+      padding-bottom: 5em;
+      min-height: 100vh;
+    }
+    
+    
+    
+    .footer_id{
+      text-align: center;
+      background-color: #333;
+      color: #fff;
+      padding: 5em;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+    }
+    
+    
+    
+    
+    
+     
+      #wrapper {
+       
+          margin-top: 3em;
+          padding-left: 0;
+          -webkit-transition: all 0.6s ease;
+          -moz-transition: all 0.6s ease;
+          -o-transition: all 0.6s ease;
+          transition: all 0.6s ease;
+      }
+ }   
+      /* padding-left: 2em;
+          padding-top: 0em;
+          padding-right: 2em;
+          background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%), url("/bin/chlamdb/img/portfolio-5.jpg");*/
+    
+
+
+@media only screen and (min-width:  992px) {
+.masthead {
+  min-height: 30rem;
+  position: relative;
+  display: table;
+  width:90%;
+  height: auto;
+  padding-top: 15em;
+  padding-bottom: 5em;
+  padding-left: 10em;
+  margin-right: 1em;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-color: rgb(151, 151, 192);
+  
+  }
+
+  .page {
+    
+    background-color: rgb(212, 119, 42);
+    width: 82%;
+    margin-left: 2em;
+    
+    }
+
+    .header-h1 {
+      
+      padding-top: 10em;
+      padding-bottom: 5em;
+      margin: 0;
+      padding: 0;
+      margin-bottom: 0.25rem ;
+      font-size: 6em;
+      padding-left: 1em;
+    }
+
+    .header-h3 {
+      padding-top: 10em;
+          padding-bottom: 5em;
+          margin: 0;
+          padding: 0;
+          margin-bottom: 0.25rem ;
+          font-size: 3em;
+          padding-left: 1em;
+        }
+  
+      .masthead {
+        height: 100vh;
+      }
+  
+  .content-section {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  .content-section-heading h2, .content-section-heading .h2 {
+    font-size: 7rem;
+  }
+  .content-section-heading h3, .content-section-heading .h3 {
+    font-size: 1rem;
+    text-transform: uppercase;
+  }
+  
+  .search-bar {
+    margin-top: 2em;
+    margin-left: 1em;
+  }
+  
+  
+  .home-title{
+    font-size: 3em; text-align: center; color:#196d87;; margin-top: 2em;
+  }
+  
+  .lines-home {
+    height:2px;border-width:0;colorrgb(240, 215, 72);background-color:#196d87; width: 70%;
+  }
+  .subtitle-home{
+    font-size: 1.5em; text-align: center; color:#196d87;; margin-top: 1em;
+  }
+  
+  .tab-content {
+    margin-right: 5em;
+    margin-left: 5em;
+  }
+  
+  .panel-body{
+    margin: 1em 1em 1em 1em; font-size:3em
+    }
+    
+  
+  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+  
+  tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+
+  .tab-pane{
+    padding: 1em 10em 0em 10em; width: 100%
+  }
+  .tree{
+    padding-left: 4em;
+    padding-right: 1em;
+  }
+  
+
+  .help-par {
+    margin-right: 5em;
+    margin-left: 5em;
+  }
+  
+
+
+
+  .form-control{
+  width:100%;max-width:500px;
+  position: fixed;
+  margin: 0 auto;
+  padding: 1em
+  ;
+  
+  
+  }
+  
+  .page-content-wrapper{
+    margin-left: 2em; margin-right:20em;
+  }
+  
+  
+  
+  
+  .navbar {
+    overflow: hidden;
+    background-color: #333;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+  }
+  
+  .navbar a {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+  }
+  
+  .navbar a:hover {
+    background: #f1f1f1;
+    color: black;
+  }
+  
+  .navbar a.active {
+    background-color: #04AA6D;
+    color: white;
+  }
+  
+  
+  .body {
+    margin: 0;
+    font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    position: relative;
+    padding-bottom: 5em;
+    min-height: 100vh;
+  }
+  
+  
+  
+  .footer_id{
+    text-align: center;
+    background-color: #333;
+    color: #fff;
+    padding: 5em;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+  }
+  
+  
+  
+  
+  
+   
+    #wrapper {
+     
+        margin-top: 3em;
+        padding-left: 0;
+        -webkit-transition: all 0.6s ease;
+        -moz-transition: all 0.6s ease;
+        -o-transition: all 0.6s ease;
+        transition: all 0.6s ease;
+    }
+  
+    /* padding-left: 2em;
+        padding-top: 0em;
+        padding-right: 2em;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%), url("/bin/chlamdb/img/portfolio-5.jpg");*/
+  
+  }
+  

@@ -1,0 +1,175 @@
+BLASTX 2.9.0+
+
+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro A.
+Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J.
+Lipman (1997), "Gapped BLAST and PSI-BLAST: a new generation of
+protein database search programs", Nucleic Acids Res. 25:3389-3402.
+
+
+
+Database: merged_nr.faa
+           8,331 sequences; 2,342,215 total letters
+
+
+
+Query= INPUT
+
+Length=84
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+CRC-EFF4D44451A88368 1809202927_K_3_4477 Bacillus cereus strain 1...  60.5       3e-14
+CRC-E9A4A47360F25290 1809202927_K_3_5073 Bacillus cereus strain 1...  22.3       1.3  
+CRC-8AEBBD2AD630AE65 1809202927_K_3_4250 Bacillus cereus strain 1...  21.2       3.0  
+CRC-2A24F8B922210E99 1809202927_K_3_3523 Bacillus cereus strain 1...  20.8       5.1  
+CRC-2990E3A81B6B156D 1809202927_K_3_4068 Bacillus cereus strain 1...  20.8       5.5  
+CRC-480092AC2DA47D68 1809202927_K_3_3524 Bacillus cereus strain 1...  20.4       5.9  
+CRC-2FEAFAC63BFAA2B0 1809202927_K_3_309 Bacillus cereus strain 18...  20.4       6.1  
+CRC-40200C140D9E083C E_prokka_00591 Staphylococcus aureus strain ...  20.0       7.5  
+CRC-9F70EBDAAC8C3EF7 E_prokka_00752 Staphylococcus aureus strain ...  20.0       7.6  
+CRC-50E145133B840F01 1809202927_K_3_4303 Bacillus cereus strain 1...  20.0       8.3  
+
+
+>CRC-EFF4D44451A88368 1809202927_K_3_4477 Bacillus cereus strain 1809202927_K
+Length=351
+
+ Score = 60.5 bits (145),  Expect = 3e-14, Method: Compositional matrix adjust.
+ Identities = 27/27 (100%), Positives = 27/27 (100%), Gaps = 0/27 (0%)
+ Frame = -2
+
+Query  83   KEFAWIKQNARIIEQFTTMLTSPPDKP  3
+            KEFAWIKQNARIIEQFTTMLTSPPDKP
+Sbjct  158  KEFAWIKQNARIIEQFTTMLTSPPDKP  184
+
+
+>CRC-E9A4A47360F25290 1809202927_K_3_5073 Bacillus cereus strain 1809202927_K
+Length=423
+
+ Score = 22.3 bits (46),  Expect = 1.3, Method: Composition-based stats.
+ Identities = 7/13 (54%), Positives = 9/13 (69%), Gaps = 0/13 (0%)
+ Frame = +1
+
+Query  31   VVNCSIIRAFCFI  69
+            V+NC  I A CF+
+Sbjct  228  VINCQFIIAICFV  240
+
+
+>CRC-8AEBBD2AD630AE65 1809202927_K_3_4250 Bacillus cereus strain 1809202927_K
+Length=473
+
+ Score = 21.2 bits (43),  Expect = 3.0, Method: Composition-based stats.
+ Identities = 7/14 (50%), Positives = 10/14 (71%), Gaps = 0/14 (0%)
+ Frame = +3
+
+Query  30  CSKLFNNTSILFYP  71
+           CS+L+ NT+ L  P
+Sbjct  66  CSQLYTNTATLMSP  79
+
+
+>CRC-2A24F8B922210E99 1809202927_K_3_3523 Bacillus cereus strain 1809202927_K
+Length=362
+
+ Score = 20.8 bits (42),  Expect = 5.1, Method: Compositional matrix adjust.
+ Identities = 8/17 (47%), Positives = 11/17 (65%), Gaps = 0/17 (0%)
+ Frame = -2
+
+Query  71   WIKQNARIIEQFTTMLT  21
+            WI+ N+R    FTT+ T
+Sbjct  165  WIRMNSRQASDFTTLKT  181
+
+
+>CRC-2990E3A81B6B156D 1809202927_K_3_4068 Bacillus cereus strain 1809202927_K
+Length=316
+
+ Score = 20.8 bits (42),  Expect = 5.5, Method: Composition-based stats.
+ Identities = 8/28 (29%), Positives = 17/28 (61%), Gaps = 0/28 (0%)
+ Frame = +1
+
+Query  1    DGLSGGDVNIVVNCSIIRAFCFIHANSL  84
+            DGL   ++++ ++   I +F F H N++
+Sbjct  86   DGLEPHEIDLFISDRYIVSFHFSHNNAI  113
+
+
+>CRC-480092AC2DA47D68 1809202927_K_3_3524 Bacillus cereus strain 1809202927_K
+Length=1478
+
+ Score = 20.4 bits (41),  Expect = 5.9, Method: Composition-based stats.
+ Identities = 6/21 (29%), Positives = 12/21 (57%), Gaps = 0/21 (0%)
+ Frame = -2
+
+Query  77   FAWIKQNARIIEQFTTMLTSP  15
+            F W +++ +++EQ  T    P
+Sbjct  453  FGWDREHIQLLEQMATKGVEP  473
+
+
+>CRC-2FEAFAC63BFAA2B0 1809202927_K_3_309 Bacillus cereus strain 1809202927_K
+Length=311
+
+ Score = 20.4 bits (41),  Expect = 6.1, Method: Composition-based stats.
+ Identities = 7/15 (47%), Positives = 9/15 (60%), Gaps = 0/15 (0%)
+ Frame = -2
+
+Query  71   WIKQNARIIEQFTTM  27
+            WI  +  IIEQ  +M
+Sbjct  131  WINDDGEIIEQHPSM  145
+
+
+>CRC-40200C140D9E083C E_prokka_00591 Staphylococcus aureus strain 3487
+Length=422
+
+ Score = 20.0 bits (40),  Expect = 7.5, Method: Composition-based stats.
+ Identities = 5/20 (25%), Positives = 13/20 (65%), Gaps = 0/20 (0%)
+ Frame = -2
+
+Query  83   KEFAWIKQNARIIEQFTTML  24
+            ++FAW+ QN  ++   + ++
+Sbjct  385  EQFAWLTQNGIVLGAISAII  404
+
+
+>CRC-9F70EBDAAC8C3EF7 E_prokka_00752 Staphylococcus aureus strain 3487
+Length=300
+
+ Score = 20.0 bits (40),  Expect = 7.6, Method: Composition-based stats.
+ Identities = 7/15 (47%), Positives = 11/15 (73%), Gaps = 0/15 (0%)
+ Frame = +3
+
+Query  39   LFNNTSILFYPCELF  83
+            LFN ++  +YP +LF
+Sbjct  109  LFNASATGYYPPDLF  123
+
+
+>CRC-50E145133B840F01 1809202927_K_3_4303 Bacillus cereus strain 1809202927_K
+Length=405
+
+ Score = 20.0 bits (40),  Expect = 8.3, Method: Composition-based stats.
+ Identities = 6/18 (33%), Positives = 11/18 (61%), Gaps = 0/18 (0%)
+ Frame = -2
+
+Query  77  FAWIKQNARIIEQFTTML  24
+           + WI +N   +EQF  ++
+Sbjct  11  YDWITENDVTVEQFDELI  28
+
+
+
+Lambda      K        H        a         alpha
+   0.318    0.134    0.401    0.792     4.96 
+
+Gapped
+Lambda      K        H        a         alpha    sigma
+   0.267   0.0410    0.140     1.90     42.6     43.6 
+
+Effective search space used: 57930550
+
+
+  Database: merged_nr.faa
+    Posted date:  Jun 16, 2021  8:43 AM
+  Number of letters in database: 2,342,215
+  Number of sequences in database:  8,331
+
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Neighboring words threshold: 12
+Window for multiple hits: 40

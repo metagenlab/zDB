@@ -827,15 +827,17 @@ def make_blast_form(biodb):
                                            ("blastp", "blastp"),
                                            ("blastx", "blastx"),
                                            ("tblastn", "tblastn")])
-        target = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
-        blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 20}))
-        evalue= forms.CharField(widget=forms.Textarea(attrs={'cols': 1, 'rows': 1}))
-        
+
         max_number_of_hits = forms.ChoiceField(choices=[("10", "10"),
                                            ("5", "5"),
                                            ("20", "20"),
                                            ("30", "30"),
                                            ("all", "all")])
+        evalue= forms.CharField(widget=forms.TextInput({'placeholder': '10'}))
+
+        target = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
+        blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
+
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)

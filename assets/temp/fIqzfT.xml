@@ -1,0 +1,85 @@
+BLASTN 2.9.0+
+
+
+Reference: Zheng Zhang, Scott Schwartz, Lukas Wagner, and Webb
+Miller (2000), "A greedy algorithm for aligning DNA sequences", J
+Comput Biol 2000; 7(1-2):203-14.
+
+
+
+Database: merged_SEQ.ffn
+           16,630 sequences; 14,032,698 total letters
+
+
+
+Query= INPUT DNA
+
+Length=124
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+E_prokka_02684 Staphylococcus aureus strain 3487                      230        8e-61
+AA076_RS14015 Staphylococcus aureus strain DSM 20231 plasmid unna...  230        8e-61
+
+
+>E_prokka_02684 Staphylococcus aureus strain 3487
+Length=1935
+
+ Score = 230 bits (124),  Expect = 8e-61
+ Identities = 124/124 (100%), Gaps = 0/124 (0%)
+ Strand=Plus/Plus
+
+Query  1     AAATGCTTATACGAAGTTAAAGAATATATATGACTCTGAAAAAATCTGGCAAAAGTTAGA  60
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  909   AAATGCTTATACGAAGTTAAAGAATATATATGACTCTGAAAAAATCTGGCAAAAGTTAGA  968
+
+Query  61    TAATTACTATACATTAGAGATTTCTCCTAATATTAGAAATTCAGAAGAAAAACAAATTTT  120
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  969   TAATTACTATACATTAGAGATTTCTCCTAATATTAGAAATTCAGAAGAAAAACAAATTTT  1028
+
+Query  121   AGAA  124
+             ||||
+Sbjct  1029  AGAA  1032
+
+
+>AA076_RS14015 Staphylococcus aureus strain DSM 20231 plasmid unnamed, complete 
+sequence
+Length=1935
+
+ Score = 230 bits (124),  Expect = 8e-61
+ Identities = 124/124 (100%), Gaps = 0/124 (0%)
+ Strand=Plus/Plus
+
+Query  1     AAATGCTTATACGAAGTTAAAGAATATATATGACTCTGAAAAAATCTGGCAAAAGTTAGA  60
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  909   AAATGCTTATACGAAGTTAAAGAATATATATGACTCTGAAAAAATCTGGCAAAAGTTAGA  968
+
+Query  61    TAATTACTATACATTAGAGATTTCTCCTAATATTAGAAATTCAGAAGAAAAACAAATTTT  120
+             ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  969   TAATTACTATACATTAGAGATTTCTCCTAATATTAGAAATTCAGAAGAAAAACAAATTTT  1028
+
+Query  121   AGAA  124
+             ||||
+Sbjct  1029  AGAA  1032
+
+
+
+Lambda      K        H
+    1.33    0.621     1.12 
+
+Gapped
+Lambda      K        H
+    1.28    0.460    0.850 
+
+Effective search space used: 1409397204
+
+
+  Database: merged_SEQ.ffn
+    Posted date:  Jun 23, 2021  11:57 AM
+  Number of letters in database: 14,032,698
+  Number of sequences in database:  16,630
+
+
+
+Matrix: blastn matrix 1 -2
+Gap Penalties: Existence: 0, Extension: 2.5

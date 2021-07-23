@@ -1,0 +1,60 @@
+BLASTN 2.9.0+
+
+
+Reference: Zheng Zhang, Scott Schwartz, Lukas Wagner, and Webb
+Miller (2000), "A greedy algorithm for aligning DNA sequences", J
+Comput Biol 2000; 7(1-2):203-14.
+
+
+
+Database: GCF_001027105_filtered_seq.fna
+           2 sequences; 2,782,562 total letters
+
+
+
+Query= INPUT DNA
+
+Length=101
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+NZ_CP011527.1 Staphylococcus aureus strain DSM 20231 plasmid unna...  187        8e-49
+
+
+>NZ_CP011527.1 Staphylococcus aureus strain DSM 20231 plasmid unnamed, complete 
+sequence
+Length=27490
+
+ Score = 187 bits (101),  Expect = 8e-49
+ Identities = 101/101 (100%), Gaps = 0/101 (0%)
+ Strand=Plus/Plus
+
+Query  1    TGATGAGAGTATTAATACAGTTAATTATTTGAAATACTTTAGTTTACATAATGTTGAATT  60
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  89   TGATGAGAGTATTAATACAGTTAATTATTTGAAATACTTTAGTTTACATAATGTTGAATT  148
+
+Query  61   ATAGGTAGTGAAATTGTATTTATTATACATTGTCATATCGT  101
+            |||||||||||||||||||||||||||||||||||||||||
+Sbjct  149  ATAGGTAGTGAAATTGTATTTATTATACATTGTCATATCGT  189
+
+
+
+Lambda      K        H
+    1.33    0.621     1.12 
+
+Gapped
+Lambda      K        H
+    1.28    0.460    0.850 
+
+Effective search space used: 228166968
+
+
+  Database: GCF_001027105_filtered_seq.fna
+    Posted date:  Jun 21, 2021  3:14 PM
+  Number of letters in database: 2,782,562
+  Number of sequences in database:  2
+
+
+
+Matrix: blastn matrix 1 -2
+Gap Penalties: Existence: 0, Extension: 2.5

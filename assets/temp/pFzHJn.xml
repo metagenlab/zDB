@@ -1,0 +1,87 @@
+TBLASTN 2.9.0+
+
+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro A.
+Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J.
+Lipman (1997), "Gapped BLAST and PSI-BLAST: a new generation of
+protein database search programs", Nucleic Acids Res. 25:3389-3402.
+
+
+
+Database: merged_SEQ.fna
+           264 sequences; 16,740,558 total letters
+
+
+
+Query= INPUT Protein
+
+Length=179
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+E_contig_1 Staphylococcus aureus strain 3487                          301        2e-95
+NZ_CP011526 Staphylococcus aureus strain DSM 20231 chromosome, co...  283        3e-89
+
+
+>E_contig_1 Staphylococcus aureus strain 3487
+Length=478024
+
+ Score = 301 bits (772),  Expect = 2e-95, Method: Compositional matrix adjust.
+ Identities = 179/179 (100%), Positives = 179/179 (100%), Gaps = 0/179 (0%)
+ Frame = -1
+
+Query  1      LLTACGANQHKENSSKSndtnkktqqtdnttqsntEKQMTPQEAEDIVRNDYKARGANEN  60
+              LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTEKQMTPQEAEDIVRNDYKARGANEN
+Sbjct  12157  LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTEKQMTPQEAEDIVRNDYKARGANEN  11978
+
+Query  61     QTLNYKTNLERSNEHEYYVEHLVRDAVGTPLKRCAIVNRHNGTIINIFDDMSekdkeefe  120
+              QTLNYKTNLERSNEHEYYVEHLVRDAVGTPLKRCAIVNRHNGTIINIFDDMSEKDKEEFE
+Sbjct  11977  QTLNYKTNLERSNEHEYYVEHLVRDAVGTPLKRCAIVNRHNGTIINIFDDMSEKDKEEFE  11798
+
+Query  121    afkkRSPKYNPGMNDQAEMDNESEDIQHHDIDNNKAIQNDLPDQKVDDKNDKNAVNKEE  179
+              AFKKRSPKYNPGMNDQAEMDNESEDIQHHDIDNNKAIQNDLPDQKVDDKNDKNAVNKEE
+Sbjct  11797  AFKKRSPKYNPGMNDQAEMDNESEDIQHHDIDNNKAIQNDLPDQKVDDKNDKNAVNKEE  11621
+
+
+>NZ_CP011526 Staphylococcus aureus strain DSM 20231 chromosome, complete genome
+Length=2755072
+
+ Score = 283 bits (725),  Expect = 3e-89, Method: Compositional matrix adjust.
+ Identities = 171/179 (96%), Positives = 173/179 (97%), Gaps = 0/179 (0%)
+ Frame = +2
+
+Query  1        LLTACGANQHKENSSKSndtnkktqqtdnttqsntEKQMTPQEAEDIVRNDYKARGANEN  60
+                LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTEKQMTPQEAEDIVRNDYKARG NE 
+Sbjct  1847300  LLTACGANQHKENSSKSNDTNKKTQQTDNTTQSNTEKQMTPQEAEDIVRNDYKARGVNEY  1847479
+
+Query  61       QTLNYKTNLERSNEHEYYVEHLVRDAVGTPLKRCAIVNRHNGTIINIFDDMSekdkeefe  120
+                QTLNYKTNLERSNEHEYYVEHLVRDAVGTPLKRCAIVNRHNGTIINIFDDMSEKDKEEFE
+Sbjct  1847480  QTLNYKTNLERSNEHEYYVEHLVRDAVGTPLKRCAIVNRHNGTIINIFDDMSEKDKEEFE  1847659
+
+Query  121      afkkRSPKYNPGMNDQAEMDNESEDIQHHDIDNNKAIQNDLPDQKVDDKNDKNAVNKEE  179
+                AFKKRSPKYNPGMN+  E D ESEDIQHHDIDNNKAIQND+PDQKVDDKNDKNAVNKEE
+Sbjct  1847660  AFKKRSPKYNPGMNNHDETDGESEDIQHHDIDNNKAIQNDIPDQKVDDKNDKNAVNKEE  1847836
+
+
+
+Lambda      K        H        a         alpha
+   0.307    0.126    0.352    0.792     4.96 
+
+Gapped
+Lambda      K        H        a         alpha    sigma
+   0.267   0.0410    0.140     1.90     42.6     43.6 
+
+Effective search space used: 500102100
+
+
+  Database: merged_SEQ.fna
+    Posted date:  Jun 23, 2021  11:47 AM
+  Number of letters in database: 16,740,558
+  Number of sequences in database:  264
+
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Neighboring words threshold: 13
+Window for multiple hits: 40

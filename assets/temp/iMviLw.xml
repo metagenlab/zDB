@@ -1,0 +1,142 @@
+BLASTN 2.9.0+
+
+
+Reference: Zheng Zhang, Scott Schwartz, Lukas Wagner, and Webb
+Miller (2000), "A greedy algorithm for aligning DNA sequences", J
+Comput Biol 2000; 7(1-2):203-14.
+
+
+
+Database: merged_SEQ.ffn
+           16,630 sequences; 14,032,698 total letters
+
+
+
+Query= INPUT DNA
+
+Length=439
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+prokka_01764 Bacillus cereus strain 1810093995_B                      534        6e-152
+1809202927_K_3_1433 Bacillus cereus strain 1809202927_K               534        6e-152
+prokka_01763 Bacillus cereus strain 1810093995_B                      233        2e-61 
+1809202927_K_3_1432 Bacillus cereus strain 1809202927_K               233        2e-61 
+
+
+>prokka_01764 Bacillus cereus strain 1810093995_B
+Length=396
+
+ Score = 534 bits (289),  Expect = 6e-152
+ Identities = 289/289 (100%), Gaps = 0/289 (0%)
+ Strand=Plus/Minus
+
+Query  151  TTACTTTATTTCAATGTGTGGATTTTTACTTGTAACGAGATTGATAAATTGCTCTTTATC  210
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  396  TTACTTTATTTCAATGTGTGGATTTTTACTTGTAACGAGATTGATAAATTGCTCTTTATC  337
+
+Query  211  TTTAGGAGAAATAATTTCTGTTTGATGTGATCCATAAACAATTTCAAGTCGATCAAGTGA  270
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  336  TTTAGGAGAAATAATTTCTGTTTGATGTGATCCATAAACAATTTCAAGTCGATCAAGTGA  277
+
+Query  271  CAATGCATAAGCTGCTATTGGATTTTTCGTATTTGAAATTTGTTTTATATCTCGTATCAA  330
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  276  CAATGCATAAGCTGCTATTGGATTTTTCGTATTTGAAATTTGTTTTATATCTCGTATCAA  217
+
+Query  331  TATGCACTTTTTCACGAAACCGGATCTAATAGTAATTGTTTCTTCTCCAACAATGTATTT  390
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  216  TATGCACTTTTTCACGAAACCGGATCTAATAGTAATTGTTTCTTCTCCAACAATGTATTT  157
+
+Query  391  TGTTGAAAACCAACTCCACATCAATAAGATAGATAATGGGATTGTGAAA  439
+            |||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  156  TGTTGAAAACCAACTCCACATCAATAAGATAGATAATGGGATTGTGAAA  108
+
+
+>1809202927_K_3_1433 Bacillus cereus strain 1809202927_K
+Length=396
+
+ Score = 534 bits (289),  Expect = 6e-152
+ Identities = 289/289 (100%), Gaps = 0/289 (0%)
+ Strand=Plus/Minus
+
+Query  151  TTACTTTATTTCAATGTGTGGATTTTTACTTGTAACGAGATTGATAAATTGCTCTTTATC  210
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  396  TTACTTTATTTCAATGTGTGGATTTTTACTTGTAACGAGATTGATAAATTGCTCTTTATC  337
+
+Query  211  TTTAGGAGAAATAATTTCTGTTTGATGTGATCCATAAACAATTTCAAGTCGATCAAGTGA  270
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  336  TTTAGGAGAAATAATTTCTGTTTGATGTGATCCATAAACAATTTCAAGTCGATCAAGTGA  277
+
+Query  271  CAATGCATAAGCTGCTATTGGATTTTTCGTATTTGAAATTTGTTTTATATCTCGTATCAA  330
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  276  CAATGCATAAGCTGCTATTGGATTTTTCGTATTTGAAATTTGTTTTATATCTCGTATCAA  217
+
+Query  331  TATGCACTTTTTCACGAAACCGGATCTAATAGTAATTGTTTCTTCTCCAACAATGTATTT  390
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  216  TATGCACTTTTTCACGAAACCGGATCTAATAGTAATTGTTTCTTCTCCAACAATGTATTT  157
+
+Query  391  TGTTGAAAACCAACTCCACATCAATAAGATAGATAATGGGATTGTGAAA  439
+            |||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  156  TGTTGAAAACCAACTCCACATCAATAAGATAGATAATGGGATTGTGAAA  108
+
+
+>prokka_01763 Bacillus cereus strain 1810093995_B
+Length=399
+
+ Score = 233 bits (126),  Expect = 2e-61
+ Identities = 126/126 (100%), Gaps = 0/126 (0%)
+ Strand=Plus/Plus
+
+Query  1    GGTGATACAGTAACGATTACTGGAAAAAGTGCAGGTAGAGCAGTCGTAATTGTTACAACT  60
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  274  GGTGATACAGTAACGATTACTGGAAAAAGTGCAGGTAGAGCAGTCGTAATTGTTACAACT  333
+
+Query  61   GCTGAAGGTAAGTTCAGGGACCTATGCATCATTCATGTACAACCTTATATGACAAACCCA  120
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  334  GCTGAAGGTAAGTTCAGGGACCTATGCATCATTCATGTACAACCTTATATGACAAACCCA  393
+
+Query  121  AAGTAA  126
+            ||||||
+Sbjct  394  AAGTAA  399
+
+
+>1809202927_K_3_1432 Bacillus cereus strain 1809202927_K
+Length=399
+
+ Score = 233 bits (126),  Expect = 2e-61
+ Identities = 126/126 (100%), Gaps = 0/126 (0%)
+ Strand=Plus/Plus
+
+Query  1    GGTGATACAGTAACGATTACTGGAAAAAGTGCAGGTAGAGCAGTCGTAATTGTTACAACT  60
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  274  GGTGATACAGTAACGATTACTGGAAAAAGTGCAGGTAGAGCAGTCGTAATTGTTACAACT  333
+
+Query  61   GCTGAAGGTAAGTTCAGGGACCTATGCATCATTCATGTACAACCTTATATGACAAACCCA  120
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  334  GCTGAAGGTAAGTTCAGGGACCTATGCATCATTCATGTACAACCTTATATGACAAACCCA  393
+
+Query  121  AAGTAA  126
+            ||||||
+Sbjct  394  AAGTAA  399
+
+
+
+Lambda      K        H
+    1.33    0.621     1.12 
+
+Gapped
+Lambda      K        H
+    1.28    0.460    0.850 
+
+Effective search space used: 5678486528
+
+
+  Database: merged_SEQ.ffn
+    Posted date:  Jun 21, 2021  3:24 PM
+  Number of letters in database: 14,032,698
+  Number of sequences in database:  16,630
+
+
+
+Matrix: blastn matrix 1 -2
+Gap Penalties: Existence: 0, Extension: 2.5

@@ -1,0 +1,292 @@
+
+<!DOCTYPE html>
+
+</script>
+{% include "chlamdb/style_menu.html" %}
+
+{% include "chlamdb/header.html" %}
+</html>
+
+
+
+<html>
+    
+<head>
+
+<style>
+.card-body {
+  
+  background-color: #aec5db;
+  color:black;
+  outline: none;
+  font-size: 15px;
+  padding: 0 18px;
+  overflow: hidden;
+  background-color: #f1f1f1;
+ 
+  
+}
+.mb-0{
+    font-size: 15px;
+    background-color: #777;
+  color: white;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+}
+
+
+</style>
+
+</head>
+<body>
+    <div class="container-fluid" id="main_container">
+        <div class="row">
+          <div id="wrapper">
+            <div id="page-content-wrapper"> 
+                  {% include "chlamdb/menu.html" %}       
+                  <h2 style="color:black; text-align: center">FAQ</h2>
+                  <hr>
+                  <h3>How the pipeline works</h3>
+                  <div class="tab-content">
+                    
+                        
+                            <div class="card">
+                                    <div class="card-header" id="infraThree">
+                                        <a href="#collapseOne" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                            <p class="mb-0">
+                                                -What is Comparative_db? 
+                                            </p>
+                                        </a>
+                                    </div>
+                                    <div id="collapseOne" class="collapse" aria-labelledby="infraOne" data-parent="#accordion">
+                                        <div class="card-body">
+                                            The Comparative_db is a customizable comparative genomics database which enables the user to compare and analyse genomes. Comparative_db integrates multiple tools for comparative genomic analyses and facilitates the access to comprehensive annotations from multiple databases including UniProt (curated and automated protein annotations), KEGG (annotation of pathways) and COG (orthology). Next to this, phylogenetic trees and phylogenetic relationships of genes, conservation of gene neighbourhood and taxonomic profiles can be visualized using dynamically generated graphs, available for download.
+                                            
+                                        </div>
+                                    </div>
+                                </div><!-- close card-->                                
+                                <div class="card">
+                                    <div class="card-header" id="infraThree">
+                                        <a href="#collapseTwo" class="collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                            <p class="mb-0"> -How does Comparative_db work?</p>
+                                        </a>
+                                    </div>
+                                    <div id="collapseTwo" class="collapse" aria-labelledby="infraTwo" data-parent="#accordion">
+                                        <div class="card-body">
+                                            Comparative_db  consists of two parts:
+                                            <br>1. generation of a SQL database through a Nextflow–based pipeline applied on two or more input .gbk files. (see question ‘-Which analysis does the pipeline include?’)
+                                            <br>2. launch of an overview and interacting webpage that displays the results retrieved in step 1.
+                                            
+                                        </div>
+                                    </div>
+                                </div><!-- card-->
+                                <div class="card">
+                                    <div class="card-header" id="infraThree">
+                                        <a href="#collapseThree" class="collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                            <p class="mb-0"> -What is the input format file?</p>
+                                        </a>
+                                    </div>
+                                    <div id="collapseThree" class="collapse" aria-labelledby="infraThree" data-parent="#accordion">
+                                        <div class="card-body">
+                                            Standard Genbank file that contains genome sequences and annotations.
+                                            <br>Only the extention “.gbk” is used, consequently Genbank files downloaded from NCBI, with the extention “.gbff” must be renamed as “.gbk”.
+                                            <br>You can annotate a genome and generate the corresponding “.gbk” file using Prokka (see Prokka documentation – put citation).
+                                            
+                                        </div>
+                                    </div>
+                                </div><!-- card-->
+                                <div class="card">
+                                    <div class="card-header" id="infraThree">
+                                        <a href="#collapseFour" class="collapsed" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                            <p class="mb-0"> -Which input files do I need to provide? </p>
+                                        </a>
+                                    </div>
+                                    <div id="collapseFour" class="collapse" aria-labelledby="infraFour" data-parent="#accordion">
+                                        <div class="card-body">
+                                            1. STEP 1 – generation of SQL database:
+                                            <br>-Input tabel (.csv/.tsv ):
+                                            <br>it contains an identifier for each input file and the local or absolute path of the gbk files. 
+                                            <br>Download an example of input table here ( link to an example table)
+                                            <br>For a detailed explanation go here (link to the documentation).
+                                            <br>-Config file
+                                            <br>it let you control which analyses among those classified as ‘optional’ in question X (How does Comparative_db work?) will be run.
+                                            <br>Download an example of Config file here (link).
+                                            <br>Rely on the Documentation to set up this file in the proper way. (link Documentation)
+                                            <br>2. STEP 2 – launch of the web app
+                                            <br>settings file (not sure if the user will need to modify it or it will be automatically linked to the newly generated db)
+                                            
+                                        </div>
+                                    </div>
+                                </div><!-- card-->
+                                <div class="card">
+                                    <div class="card-header" id="infraThree">
+                                        <a href="#collapseFive" class="collapsed" data-toggle="collapse" data-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                            <p class="mb-0"> -Which tools do I need to install to run the pipeline?</p>
+                                        </a>
+                                    </div>
+                                    <div id="collapseFive" class="collapse" aria-labelledby="infraThree" data-parent="#accordion">
+                                        <div class="card-body">
+                                            You need to install Nextflow (see Nextflow documentation – install – put link) in your environment for running the annotation analysis.
+                                            <br>For launching the webapp you need to create an environment based on the chlamdb.yml file provided.
+                                            <br>Please see the documentation
+                                            
+                                        </div>
+                                    </div>
+                                </div><!-- card-->
+                                <div class="card">
+                                    <div class="card-header" id="infraThree">
+                                        <a href="#collapseSix" class="collapsed" data-toggle="collapse" data-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+                                            <p class="mb-0"> -How many genomes can I compare?</p>
+                                        </a>
+                                    </div>
+                                    <div id="collapseSix" class="collapse" aria-labelledby="infraThree" data-parent="#accordion">
+                                        <div class="card-body">
+                                            There is no limits on the number of genomes given as input.
+                                            
+                                        </div>
+                                    </div>
+                                </div><!-- card-->
+                                <div class="card">
+                                    <div class="card-header" id="infraThree">
+                                        <a href="#collapseSeven" class="collapsed" data-toggle="collapse" data-target="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">
+                                            <p class="mb-0"> -How long does it take to run the pipeline?</p>
+                                        </a>
+                                    </div>
+                                    <div id="collapseSeven" class="collapse" aria-labelledby="infraThree" data-parent="#accordion">
+                                        <div class="card-body">
+                                            Test with x number of genomes, size of genomes, cpu to run it, etc (to do)
+                                            
+                                        </div>
+                                    </div>
+                                </div><!-- card-->
+                                <div class="card">
+                                    <div class="card-header" id="infraThree">
+                                        <a href="#collapseEight" class="collapsed" data-toggle="collapse" data-target="#collapseEight" aria-expanded="false" aria-controls="collapseEight">
+                                            <p class="mb-0"> -Which analyses does the pipeline include?</p>
+                                        </a>
+                                    </div>
+                                    <div id="collapseEight" class="collapse" aria-labelledby="infraThree" data-parent="#accordion">
+                                        <div class="card-body">
+                                            The pipeline performs the following analyses:
+                                            <br>-Orthologous proteins identified with OrthoFinder (optional)
+                                            <br>-Detailed annotation of proteins based on 
+                                            <br>    KEGG (Kegg orthologs) - (optional)
+                                            <br>    COG (clusters of orthologous groups) - (optional)
+                                            <br>    SwissProt (manually annotated proteins) (NOT SURE).
+                                            <br>-Precomputed homology searches with RefSeq and SwissProt databases for each protein 
+                                            <br>-Precomputed phylogenetic reconstructions of orthologous groups
+                                            <br>-COG phylogenetic profiles
+                                            <br>-Generation of customized databases for blast search (optional)
+                                            <br>For a detailed description link (Bastian’s documentation)
+                                            
+                                        </div>
+                                    </div>
+                                </div><!-- card-->
+                                <div class="card">
+                                    <div class="card-header" id="infraThree">
+                                        <a href="#collapseNine" class="collapsed" data-toggle="collapse" data-target="#collapseNine" aria-expanded="false" aria-controls="collapseNine">
+                                            <p class="mb-0"> -Can I customize the analyses I want to perform?</p>
+                                        </a>
+                                    </div>
+                                    <div id="collapseNine" class="collapse" aria-labelledby="infraThree" data-parent="#accordion">
+                                        <div class="card-body">
+                                            The user can select which analyses she/he wants to perform turning on or off some of the parameters of the configuration file. See the list of ‘optional’ parameters in Q-‘Which analyses does the pipeline include?’and refer to documentation (link)
+                                            <br>
+                                        </div>
+                                    </div>
+                                </div><!-- card-->
+                           
+                <h3>How to use the Comparative database web</h3>
+                            <div class="card">
+                                <div class="card-header" id="infraThree">
+                                    <a href="#collapseTen" data-toggle="collapse" data-target="#collapseTen" aria-expanded="false" aria-controls="collapseTen">
+                                        <p class="mb-0">
+                                            -How do I identify which proteins are part of a specific orthogroup?
+                                        </p>
+                                    </a>
+                                </div>
+                                <div id="collapseTen" class="collapse" aria-labelledby="infraOne" data-parent="#accordion" background-color: #777>
+                                    <div class="card-body">
+                                        ...
+                                        
+                                    </div>
+                                </div>
+                            </div><!-- close card-->                  
+                            <div class="card">
+                                <div class="card-header" id="infraThree">
+                                    <a href="#collapseEleven" data-toggle="collapse" data-target="#collapseEleven" aria-expanded="false" aria-controls="collapseEleven">
+                                        <p class="mb-0">
+                                            -How do I use the search bar? – list of terms (cog, kegg ,accession)
+                                        </p>
+                                    </a>
+                                </div>
+                                <div id="collapseEleven" class="collapse" aria-labelledby="infraOne" data-parent="#accordion">
+                                    <div class="card-body">
+                                        ...
+                                        
+                                    </div>
+                                </div>
+                            </div><!-- close card-->     
+                        
+                            <div class="card">
+                                <div class="card-header" id="infraThree">
+                                    <a href="#collapseTwelve" data-toggle="collapse" data-target="#collapseTwelve" aria-expanded="false" aria-controls="collapseTwelve">
+                                        <p class="mb-0">
+                                            -Other analyses 
+                                        </p>
+                                    </a>
+                                </div>
+                                <div id="collapseTwelve" class="collapse" aria-labelledby="infraOne" data-parent="#accordion">
+                                    <div class="card-body">
+                                        ...
+                                        
+                                    </div>
+                                </div>
+                            </div><!-- close card-->    
+                <h3>Biological aspects</h3> 
+                            <div class="card">
+                                <div class="card-header" id="infraThree">
+                                    <a href="#collapseThirteen" data-toggle="collapse" data-target="#collapseThirteen" aria-expanded="false" aria-controls="collapseThirteen">
+                                        <p class="mb-0">
+                                            -Are plasmids identified?
+                                        </p>
+                                    </a>
+                                </div>
+                                <div id="collapseThirteen" class="collapse" aria-labelledby="infraOne" data-parent="#accordion">
+                                    <div class="card-body">
+                                        The distinction between chromosome and plasmids is done only based on the annoations reported in the input file. 
+                                    </div>
+                                </div>
+                            </div><!-- close card-->    
+                            <div class="card">
+                                <div class="card-header" id="infraThree">
+                                    <a href="#collapseFourteen" data-toggle="collapse" data-target="#collapseFourteen" aria-expanded="false" aria-controls="collapseFourteen">
+                                        <p class="mb-0">
+                                            -Orthogroups accurate (?)
+                                        </p>
+                                    </a>
+                                </div>
+                                <div id="collapseFourteen" class="collapse" aria-labelledby="infraOne" data-parent="#accordion">
+                                    <div class="card-body">
+                                        ...
+                                    </div>
+                                </div>
+                            </div><!-- close card-->    
+                            
+                </div>       
+
+                      
+              
+            </div>
+          </div>
+        </div>
+    </div>
+
+</body>
+
+

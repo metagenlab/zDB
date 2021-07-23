@@ -1,0 +1,59 @@
+BLASTN 2.9.0+
+
+
+Reference: Zheng Zhang, Scott Schwartz, Lukas Wagner, and Webb
+Miller (2000), "A greedy algorithm for aligning DNA sequences", J
+Comput Biol 2000; 7(1-2):203-14.
+
+
+
+Database: 1809202927_Kn_filtered.ffn
+           5,681 sequences; 4,678,080 total letters
+
+
+
+Query= INPUT DNA
+
+Length=129
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+1809202927_K_3_4066 Bacillus cereus strain 1809202927_K               167        2e-42
+
+
+>1809202927_K_3_4066 Bacillus cereus strain 1809202927_K
+Length=885
+
+ Score = 167 bits (90),  Expect = 2e-42
+ Identities = 90/90 (100%), Gaps = 0/90 (0%)
+ Strand=Plus/Plus
+
+Query  1    CTAGAATACATTCATTACTACAATTGTGTGCGAATTCAAGAAAAATTAAACCACCTATCC  60
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  796  CTAGAATACATTCATTACTACAATTGTGTGCGAATTCAAGAAAAATTAAACCACCTATCC  855
+
+Query  61   CCTAAAGAATTTAGGGAACAAGTGGTTTAG  90
+            ||||||||||||||||||||||||||||||
+Sbjct  856  CCTAAAGAATTTAGGGAACAAGTGGTTTAG  885
+
+
+
+Lambda      K        H
+    1.34    0.623     1.13 
+
+Gapped
+Lambda      K        H
+    1.28    0.460    0.850 
+
+Effective search space used: 497526140
+
+
+  Database: 1809202927_Kn_filtered.ffn
+    Posted date:  Jun 23, 2021  11:47 AM
+  Number of letters in database: 4,678,080
+  Number of sequences in database:  5,681
+
+
+
+Matrix: blastn matrix 1 -2
+Gap Penalties: Existence: 0, Extension: 2.5
