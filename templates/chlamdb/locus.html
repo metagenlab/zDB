@@ -60,7 +60,7 @@ function clearBox(elementID)
 					<a href="#tab3" data-toggle="tab">Sequences</a>
 				</li>
 
-				{% if sequence_type == "CDS" %}
+				{% if feature_type == "CDS" %}
                 <li>
 					<a href="#homologs_tab" data-toggle="tab">
 				 	Homologs <span class="badge">{{n_homologues}}</span><br>
@@ -157,12 +157,16 @@ function clearBox(elementID)
                                           <td>{{locus_tag}}</td>
                                       </tr>
 
+									  <tr>
+										  <th> Feature type </th>
+										  <td> {{feature_type}} </td>
+									  </tr>
+
                                       <th>Gene</th>
                                           <td>{{gene}}</td>
                                       </tr>
 
 									  <tr>
-
 									  <th>Product</th>
 										  <td>{{prot}}</td>
 									  </tr>

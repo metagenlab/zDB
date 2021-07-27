@@ -2672,7 +2672,7 @@ def locusx_genomic_region(db, seqid, window):
 
     hsh_organism = db.get_organism([seqid], id_type="seqid")
     infos = db.get_proteins_info(df_seqids.index.tolist(),
-            to_return=["gene", "locus_tag"], as_df=True, inc_non_CDS=True)
+            to_return=["gene", "locus_tag"], as_df=True, inc_non_CDS=True, inc_pseudo=True)
     cds_type = db.get_CDS_type(df_seqids.index.tolist())
     all_infos = infos.join(cds_type).join(df_seqids)
     gd_diagram = GenomeDiagram.Diagram(f"{seqid}")
@@ -2688,17 +2688,17 @@ def locusx_genomic_region(db, seqid, window):
         color = colors.green
         if seqid==curr_seqid:
             color = colors.red
+        elif data.is_pseudo:
+            color = colors.black
         elif data.type=="tRNA":
             color = colors.orange
         elif data.type=="rRNA":
             color = colors.blue
-
         gd_features.add_feature(fet, name=feature_name, color=color, label_position="middle",
                 label_size=10, label_strand=1, sigil="ARROW", label=True)
     
     asset_dir = "/assets/"
     filename = f"/temp/{filename}"
-    
     # the yt parameters allows longer gene names to not be cropped out of the image
     gd_diagram.draw(format="linear", pagesize=(100, 600), start=all_infos.start.min(),
             end=all_infos.end.max(), fragments=1, yt=.2)
@@ -2706,10 +2706,12 @@ def locusx_genomic_region(db, seqid, window):
     return {"genomic_region_svg": filename}
 
 
-def locusx_RNA(db, seqid):
+def locusx_RNA(db, seqid, is_pseudogene):
     hsh_infos = db.get_proteins_info([seqid], to_return=["locus_tag", "gene", "product"],
-            inc_non_CDS=True)
+            inc_non_CDS=True, inc_pseudo=True)
     hsh_loc = db.get_gene_loc([seqid])
+    organism = db.get_organism([seqid])
+
     locus_tag, gene, product = hsh_infos[seqid]
     if gene is None:
         gene = "-"
@@ -2721,7 +2723,8 @@ def locusx_RNA(db, seqid):
         "start": start,
         "end": stop,
         "strand": strand,
-        "nucl_length": stop-start
+        "nucl_length": stop-start,
+        "organism": organism[seqid]
     }
 
 
@@ -2731,9 +2734,9 @@ def locusx(request, locus=None, menu=True):
     
     if locus is None:
         return render(request, 'chlamdb/locus.html', my_locals({"valid_id": False}))
-
     try:
-        seqid, feature_type = db.get_seqid(locus_tag=locus, feature_type=True)
+        seqid, feature_type, is_pseudogene = db.get_seqid(locus_tag=locus,
+                feature_type=True)
     except:
         return render(request, 'chlamdb/locus.html', my_locals({"valid": False}))
     else:
@@ -2741,13 +2744,15 @@ def locusx(request, locus=None, menu=True):
 
     sequence = get_sequence(db, seqid, flanking=50)
     genomic_region_ctx = locusx_genomic_region(db, seqid, window=8000)
-    if feature_type!="CDS":
-        ctx_RNA = locusx_RNA(db, seqid)
+    if feature_type!="CDS" or is_pseudogene:
+        ctx_RNA = locusx_RNA(db, seqid, is_pseudogene)
+        if is_pseudogene:
+            feature_type = "Pseudogene"
         context = {
             "valid_id": valid_id,
             "menu": True,
             "seq": sequence,
-            "sequence_type": feature_type,
+            "feature_type": feature_type,
             **ctx_RNA,
             **genomic_region_ctx
         }
@@ -2795,6 +2800,7 @@ def locusx(request, locus=None, menu=True):
         "sequence_type": feature_type,
         "n_swissprot_hits": n_swissprot_hits,
         "locus": locus,
+        "feature_type" : "CDS",
         **cog_ctx,
         **kegg_ctx,
         **homolog_tab_ctx,
@@ -8779,7 +8785,7 @@ def blastswissprot(request, locus_tag):
     if locus_tag is None:
         return render(request, 'chlamdb/blastswiss.html', my_locals({"valid_id": False}))
     try:
-        seqid = db.get_seqid(locus_tag=locus_tag)
+        seqid, _ = db.get_seqid(locus_tag=locus_tag)
     except:
         return render(request, 'chlamdb/blastswiss.html', my_locals({"valid_id": False}))
 
