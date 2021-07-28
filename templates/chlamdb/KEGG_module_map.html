@@ -50,9 +50,6 @@
                         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                             <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
                             <li><a href="#tab2" data-toggle="tab">Profile</a></li>
-                            <li><a href="#tab3" data-toggle="tab">Profile + homologs</a></li>
-
-                            <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.genome.jp/kegg-bin/show_module?{{module_name}}{{ko_url}}', 'orthoIDframe2'); return false">Informations</a></li>
                         </ul>
 
                         <div id="my-tab-content" class="tab-content">
@@ -83,10 +80,6 @@
                             <div class="tab-pane" id="tab2">
                                 <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
                             </div>
-                            <div class="tab-pane" id="tab3">
-                                <object type="image/svg+xml" data="{% static asset_path2 %}" id="cog_tree2"></object>
-                            </div>
-
                         </div>
 
                {% endif %}

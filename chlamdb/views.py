@@ -2421,7 +2421,7 @@ def og_tab_get_kegg_annot(db, seqids):
         entry.append(format_ko_modules(ko_modules, ko_id))
         ko_entries.append(entry)
 
-    ko_header = ["KO", "Occurences", "Description", "Modules", "Pathways"]
+    ko_header = ["KO", "Occurences", "Description", "Pathways", "Modules"]
     return {
         "ko_entries": ko_entries,
         "ko_header": ko_header
@@ -4819,16 +4819,18 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
     return render(request, 'chlamdb/interpro_taxonomy_homologs.html', my_locals(locals()))
 
 
-def KEGG_module_map(request, module_name):
-    from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn 
-    from metagenlab_libs.KO_module import ModuleParser
-    from ete3 import Tree
+class KOModuleChooser:
+    def __init__(self, hsh):
+        self.hsh = hsh
 
+    def get_color(self, index):
+        return self.hsh[index]
+
+
+def KEGG_module_map(request, module_name):
     if request.method != "GET":
         return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
-
-    biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
 
     try:
         module_id = int(module_name[len("M"):])
@@ -4846,11 +4848,8 @@ def KEGG_module_map(request, module_name):
 
     parser = ModuleParser(module_def)
     expr_tree = parser.parse()
-
     ko_ids = db.get_module_kos(module_id)
-    map_data = [(format_ko(ko_id), ko_desc) for ko_id, ko_desc in db.get_ko_desc(ko_ids).items()]
-    leaf_to_name = db.get_genomes_description().description.to_dict()
-    mat = db.get_ko_count_for_ko(ko_ids)
+    mat = db.get_ko_hits(ko_ids, search_on="ko", indexing="taxid").T
     if len(mat.index) == 0:
         # should add an error message: no gene was associated for any
         # of the KO of the current module
@@ -4859,19 +4858,47 @@ def KEGG_module_map(request, module_name):
         valid_id = True
         return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
 
-    mat = mat.set_index(["bioentry", "ko_id"]).unstack(level=1, fill_value=0)
-    mat.columns = [col for col in mat["count"].columns.values]
+    seqids = db.get_ko_hits(ko_ids, search_on="ko", indexing="seqid")
+    associated_ogs = db.get_og_count(seqids.index.tolist(), search_on="seqid")
+    og_taxid = db.get_og_count(associated_ogs.orthogroup.unique().tolist(), search_on="orthogroup").T
+    ko_to_og_mapping = seqids.join(associated_ogs).groupby(["ko"])["orthogroup"].unique()
+    leaf_to_name = db.get_genomes_description().description.to_dict()
+
     tree = Tree(db.get_reference_phylogeny())
     R = tree.get_midpoint_outgroup()
     tree.set_outgroup(R)
     tree.ladderize()
     e_tree = EteTree(tree)
 
-    for column in mat.columns:
-        values = mat[column].to_dict()
-        new_col = SimpleColorColumn(values)
-        new_col.header = format_ko(column)
-        e_tree.add_column(new_col)
+    hsh_pres = collections.defaultdict(dict)
+    for ko in ko_ids:
+        if not ko in mat.columns:
+            e_tree.add_column(SimpleColorColumn({}, header=format_ko(ko), default_val="-"))
+            continue
+        if not ko in ko_to_og_mapping.index:
+            e_tree.add_column(SimpleColorColumn.fromSeries(mat[ko], header=format_ko(ko)))
+            continue
+            
+        associated_ogs = ko_to_og_mapping.loc[ko]
+        n_homologs = og_taxid[associated_ogs].sum(axis=1)
+        hsh_col, hsh_val = {}, {}
+        for taxid, count in mat[ko].iteritems():
+            hsh_curr = hsh_pres[taxid]
+            if count>0:
+                hsh_curr[ko] = 1
+                hsh_val[taxid] = count
+                hsh_col[taxid] = EteTree.RED
+            elif taxid in n_homologs.index:
+                cnt = n_homologs.loc[taxid]
+                hsh_val[taxid] = cnt
+                if cnt>0:
+                    hsh_col[taxid] = EteTree.GREEN
+                    hsh_curr[ko] = 1
+            else:
+                hsh_val[taxid] = 0
+        col_chooser = KOModuleChooser(hsh_col)
+        e_tree.add_column(SimpleColorColumn(hsh_val, header=format_ko(ko),
+            col_func=col_chooser.get_color))
 
     hsh_n_missing = {}
     for bioentry, _ in leaf_to_name.items():
@@ -4879,12 +4906,14 @@ def KEGG_module_map(request, module_name):
         if index not in mat.index:
             n_missing = expr_tree.get_n_missing({})
         else:
-            n_missing = expr_tree.get_n_missing(mat.loc[index].to_dict())
+            n_missing = expr_tree.get_n_missing(hsh_pres[index])
         hsh_n_missing[index] = n_missing
 
-    completeness = ModuleCompletenessColumn(hsh_n_missing, "Missing")
+    e_tree.add_column(SimpleColorColumn({}, default_val = " "))
+    completeness = ModuleCompletenessColumn(hsh_n_missing, "", add_missing=False)
     e_tree.add_column(completeness)
     e_tree.rename_leaves(leaf_to_name)
+    map_data = [(format_ko(ko_id), ko_desc) for ko_id, ko_desc in db.get_ko_desc(ko_ids).items()]
 
     big = len(mat.columns) >= 40
     dpi = 800 if big else 1200
@@ -4940,15 +4969,12 @@ def kegg_multi(request, map_name, ko_name):
 
 
 def KEGG_mapp_ko(request, map_name):
-    biodb = settings.BIODB
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    module_id = int(map_name[len("M"):])
 
-    if request.method == 'GET': 
-
-        task = KEGG_map_ko_task.delay(biodb, map_name)
-        task_id = task.id
-
+    module_infos = db.get_modules_info([module_id])
+    print(module_infos)
     return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(locals()))
-
 
 
 def KEGG_mapp_ko_organism(request, map_name, taxon_id):
