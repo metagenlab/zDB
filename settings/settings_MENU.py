@@ -105,11 +105,11 @@ CACHES = {
 #TEMPLATE_DEBUG
 
 
-BIODB = "db_sleepy_thompson" # '2019_06_PVC' #'chlamydia_04_16' #'2017_06_29b_motile_chlamydiae'
-BIODB_DB_PATH = "/scratch/hdd2/acarrara/ChlamDB_pipeline/Comparative_db/july_26_ann_pipeline/db/" + BIODB  + ".db"
+BIODB = "db_gloomy_meucci" # '2019_06_PVC' #'chlamydia_04_16' #'2017_06_29b_motile_chlamydiae'
+BIODB_DB_PATH = "/scratch/hdd2/acarrara/ChlamDB_pipeline/Comparative_db/annotation_pipeline_3_genomes_MENU/db/" + BIODB  + ".db"
 
-BLAST_PATH= "/scratch/hdd2/acarrara/ChlamDB_pipeline/Comparative_db/july_26_ann_pipeline/blast_DB/" #makeblastdb output split in /fna and /faa
-FASTA_PATH=  "/scratch/hdd2/acarrara/ChlamDB_pipeline/Comparative_db/july_26_ann_pipeline/blast_DB/"
+BLAST_PATH= "/scratch/hdd2/acarrara/ChlamDB_pipeline/Comparative_db/annotation_pipeline_3_genomes_MENU/blast_DB/" #makeblastdb output split in /fna and /faa
+
 
 BIODB_CONF = {
         "chlamdb.db_type" : "sqlite",
@@ -162,7 +162,7 @@ DB_DRIVER = "sqlite"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': "/scratch/hdd2/acarrara/ChlamDB_pipeline/Comparative_db/annotation_pipeline_3_genomes_MENU/db/db_sleepy_thompson" #os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': "/scratch/hdd2/acarrara/ChlamDB_pipeline/Comparative_db/annotation_pipeline_3_genomes_MENU/db/db_gloomy_meucci" #os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 

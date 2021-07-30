@@ -139,7 +139,7 @@
 }
 
 .lines-home {
-  height:2px;border-width:0;colorrgb(240, 215, 72);background-color:#196d87; width: 70%;
+  height:2px;border-width:0;background-color:#196d87; width: 70%;
 }
 .subtitle-home{
   font-size: 1.5em; text-align: center; color:#196d87;; margin-top: 1em;
@@ -640,7 +640,7 @@ padding: 1em
     }
     
     .lines-home {
-      height:2px;border-width:0;colorrgb(240, 215, 72);background-color:#196d87; width: 70%;
+      height:2px;border-width:0;background-color:#196d87; width: 70%;
     }
     .subtitle-home{
       font-size: 1.5em; text-align: center; color:#196d87;; margin-top: 1em;
@@ -809,7 +809,7 @@ padding: 1em
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
-  background-color: rgb(151, 151, 192);
+  background-color: rgb(128, 155, 98);
   
   }
 
@@ -828,7 +828,7 @@ padding: 1em
       margin: 0;
       padding: 0;
       margin-bottom: 0.25rem ;
-      font-size: 6em;
+      font-size: 16em;
       padding-left: 1em;
     }
 
@@ -838,7 +838,7 @@ padding: 1em
           margin: 0;
           padding: 0;
           margin-bottom: 0.25rem ;
-          font-size: 3em;
+          font-size: 4em;
           padding-left: 1em;
         }
   
@@ -870,7 +870,7 @@ padding: 1em
   }
   
   .lines-home {
-    height:2px;border-width:0;colorrgb(240, 215, 72);background-color:#196d87; width: 70%;
+    height:2px;border-width:0;background-color:#196d87; width: 70%;
   }
   .subtitle-home{
     font-size: 1.5em; text-align: center; color:#196d87;; margin-top: 1em;

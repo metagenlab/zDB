@@ -213,7 +213,10 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^FAQ', views.faq, name='FAQ'),
                        url(r'^phylogeny_intro', views.phylogeny_intro, name='phylogeny_intro'),
                        url(r'^genomes_intro', views.genomes_intro, name='genomes_intro'),
+                       url(r'^extract_contigs/([0-9]+)', views.extract_contigs, name='extract_contigs'),
                        url(r'^.*$', views.home, name="home"),
                        
                        #url(r'^FAQ',TemplateView.as_view(template_name='FAQ.html')),
 ]
+
+

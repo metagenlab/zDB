@@ -260,6 +260,27 @@ class BiodatabaseForm(forms.Form):
     def save(self):
         self.biodatabase = self.cleaned_data["biodatabase"]
 
+def make_blast_form(biodb):
+
+    accession_choices =  get_accessions_BLAST(biodb, plasmid=True, all=True)
+
+    print(accession_choices)
+    class BlastForm(forms.Form):
+        blast = forms.ChoiceField(choices=[("blastn_ffn", "blastn_ffn"),
+                                           ("blastn_fna", "blastn_fna"),
+                                           ("blastp", "blastp"),
+                                           ("blastx", "blastx"),
+                                           ("tblastn", "tblastn")])
+
+        max_number_of_hits = forms.ChoiceField(choices=[("10", "10"),
+                                           ("5", "5"),
+                                           ("20", "20"),
+                                           ("30", "30"),
+                                           ("all", "all")])
+        evalue= forms.CharField(widget=forms.TextInput({'placeholder': '10'}))
+
+        target = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
+        blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
 
 
 

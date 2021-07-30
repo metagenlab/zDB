@@ -142,8 +142,7 @@ margin-top: 15em;
 </head>
 <body>
   {% include "chlamdb/menu.html" %}
-
-  <div class="container-fluid" id="main_container" >
+  <div class="container-fluid" id="main_container" onclick="myFunction()" >
     <div class="row">
       <div id="wrapper">
           <div id="page-content-wrapper">
@@ -152,7 +151,7 @@ margin-top: 15em;
                 
                 <div style="padding:2em ">
 
-                  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                  <div class="panel panel-success">
                       <div class="panel-heading" style="width:100%">
                           <h3 class="panel-title">Help</h3>
                       </div>
@@ -267,6 +266,8 @@ margin-top: 15em;
 
 
                   {% endif %}
+
+                  
                 </div>
               </div>
             </div>
@@ -324,7 +325,53 @@ $(document).ready(function(){
     }, 'text');
 });
 
+
+  function myFunction() {
+    var x = document.getElementById("myLinks");
+    var y = document.getElementById("main_container");
+    if (x.style.display === "block") {
+      x.style.display = "none";
+      y.style.backgroundColor == "blue";
+    } else {
+      x.style.display = "block";
+      $("#wrapper").toggleClass("toggled");
+    }
+  }
+
+  // Hide submenus
+$('#body-row .collapse').collapse('hide'); 
+
+// Collapse/Expand icon
+$('#collapse-icon').addClass('fas fa-bars'); 
+
+// Collapse click
+$('[data-toggle=sidebar-colapse]').click(function() {
+SidebarCollapse();
+});
+
+function SidebarCollapse () {
+$('.menu-collapsed').toggleClass('d-none');
+$('.sidebar-submenu').toggleClass('d-none');
+$('.submenu-icon').toggleClass('d-none');
+$('#sidebar-container').toggleClass('sidebar-expanded sidebar-collapsed');
+
+// Treating d-flex/d-none on separators with title
+var SeparatorTitle = $('.sidebar-separator-title');
+if ( SeparatorTitle.hasClass('d-flex') ) {
+    SeparatorTitle.removeClass('d-flex');
+} else {
+    SeparatorTitle.addClass('d-flex');
+}
+
+// Collapse/Expand icon
+$('#collapse-icon').toggleClass('fas fa-bars fa-angle-double-right');
+}
+
+  </script>
+
+
 </script>
 
 {% include "chlamdb/style_menu.html" %}
 </html>
+

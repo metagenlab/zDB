@@ -1,0 +1,198 @@
+TBLASTN 2.9.0+
+
+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro A.
+Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J.
+Lipman (1997), "Gapped BLAST and PSI-BLAST: a new generation of
+protein database search programs", Nucleic Acids Res. 25:3389-3402.
+
+
+
+Database: merged_SEQ.fna
+           264 sequences; 16,740,558 total letters
+
+
+
+Query= INPUT Protein
+
+Length=192
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+I_contig_8 Bacillus cereus strain 1809202927_K                        385        3e-124
+F_contig_10 Bacillus cereus strain 1810093995_B                       385        3e-124
+E_contig_1 Staphylococcus aureus strain 3487                          33.1       0.056 
+I_contig_21 Bacillus cereus strain 1809202927_K                       32.7       0.073 
+F_contig_19 Bacillus cereus strain 1810093995_B                       32.7       0.073 
+I_contig_3 Bacillus cereus strain 1809202927_K                        32.3       0.090 
+F_contig_1 Bacillus cereus strain 1810093995_B                        32.3       0.090 
+I_contig_7 Bacillus cereus strain 1809202927_K                        30.0       0.59  
+F_contig_9 Bacillus cereus strain 1810093995_B                        30.0       0.59  
+
+
+>I_contig_8 Bacillus cereus strain 1809202927_K
+Length=170687
+
+ Score = 385 bits (988),  Expect = 3e-124, Method: Compositional matrix adjust.
+ Identities = 182/182 (100%), Positives = 182/182 (100%), Gaps = 0/182 (0%)
+ Frame = -2
+
+Query  1    GRTNKEMTAYANRVAAELNASFVKRNDIPVHKLHEQYEQDVLVVGKNRLAIYPKGTEESF  60
+            GRTNKEMTAYANRVAAELNASFVKRNDIPVHKLHEQYEQDVLVVGKNRLAIYPKGTEESF
+Sbjct  664  GRTNKEMTAYANRVAAELNASFVKRNDIPVHKLHEQYEQDVLVVGKNRLAIYPKGTEESF  485
+
+Query  61   FFHPNSAMFRVKRLMRGEHDPFVQATQLERGMTVLDCTLGMASDSIVASYIVGESGKVTG  120
+            FFHPNSAMFRVKRLMRGEHDPFVQATQLERGMTVLDCTLGMASDSIVASYIVGESGKVTG
+Sbjct  484  FFHPNSAMFRVKRLMRGEHDPFVQATQLERGMTVLDCTLGMASDSIVASYIVGESGKVTG  305
+
+Query  121  LEGNEYMAYIMENGLKTWSSSVSEIDEAMQRIDVKQTEHFAFLKQCEDNSYDIVYLDPMV  180
+            LEGNEYMAYIMENGLKTWSSSVSEIDEAMQRIDVKQTEHFAFLKQCEDNSYDIVYLDPMV
+Sbjct  304  LEGNEYMAYIMENGLKTWSSSVSEIDEAMQRIDVKQTEHFAFLKQCEDNSYDIVYLDPMV  125
+
+Query  181  RP  182
+            RP
+Sbjct  124  RP  119
+
+
+>F_contig_10 Bacillus cereus strain 1810093995_B
+Length=170687
+
+ Score = 385 bits (988),  Expect = 3e-124, Method: Compositional matrix adjust.
+ Identities = 182/182 (100%), Positives = 182/182 (100%), Gaps = 0/182 (0%)
+ Frame = -2
+
+Query  1    GRTNKEMTAYANRVAAELNASFVKRNDIPVHKLHEQYEQDVLVVGKNRLAIYPKGTEESF  60
+            GRTNKEMTAYANRVAAELNASFVKRNDIPVHKLHEQYEQDVLVVGKNRLAIYPKGTEESF
+Sbjct  664  GRTNKEMTAYANRVAAELNASFVKRNDIPVHKLHEQYEQDVLVVGKNRLAIYPKGTEESF  485
+
+Query  61   FFHPNSAMFRVKRLMRGEHDPFVQATQLERGMTVLDCTLGMASDSIVASYIVGESGKVTG  120
+            FFHPNSAMFRVKRLMRGEHDPFVQATQLERGMTVLDCTLGMASDSIVASYIVGESGKVTG
+Sbjct  484  FFHPNSAMFRVKRLMRGEHDPFVQATQLERGMTVLDCTLGMASDSIVASYIVGESGKVTG  305
+
+Query  121  LEGNEYMAYIMENGLKTWSSSVSEIDEAMQRIDVKQTEHFAFLKQCEDNSYDIVYLDPMV  180
+            LEGNEYMAYIMENGLKTWSSSVSEIDEAMQRIDVKQTEHFAFLKQCEDNSYDIVYLDPMV
+Sbjct  304  LEGNEYMAYIMENGLKTWSSSVSEIDEAMQRIDVKQTEHFAFLKQCEDNSYDIVYLDPMV  125
+
+Query  181  RP  182
+            RP
+Sbjct  124  RP  119
+
+
+>E_contig_1 Staphylococcus aureus strain 3487
+Length=478024
+
+ Score = 33.1 bits (74),  Expect = 0.056, Method: Compositional matrix adjust.
+ Identities = 28/89 (31%), Positives = 42/89 (47%), Gaps = 13/89 (15%)
+ Frame = +2
+
+Query  88      LERGMTVLDCTLGMASDSIVASYIVGESGKVTGLEGNEYMAYIMENGLKTWSSSVSEIDE  147
+               + +GM  LD   G    +I  S  VG +G+VTG++ +E M   +E G         E   
+Sbjct  398033  VRKGMKALDVCCGTGDWTIALSKAVGSTGEVTGIDFSENM---LEVG--------KEKTA  398179
+
+Query  148     AMQRIDVKQTEHFAFLKQCEDNSYDIVYL  176
+               +M+  +VK     A     EDNS+D V +
+Sbjct  398180  SME--NVKLVHGDAMELPFEDNSFDYVTI  398260
+
+
+>I_contig_21 Bacillus cereus strain 1809202927_K
+Length=96994
+
+ Score = 32.7 bits (73),  Expect = 0.073, Method: Compositional matrix adjust.
+ Identities = 26/86 (30%), Positives = 38/86 (44%), Gaps = 11/86 (13%)
+ Frame = -2
+
+Query  91     GMTVLDCTLGMASDSIVASYIVGESGKVTGLEGNEYMAYIMENGLKTWSSSVSEIDEAMQ  150
+              G   LD   G A  +I  +  VGE GKV GL+ +E M  + +  +           EA+Q
+Sbjct  49161  GSKALDVCCGTADWTIALAGAVGEQGKVVGLDFSENMLSVGKQKV-----------EALQ  49015
+
+Query  151    RIDVKQTEHFAFLKQCEDNSYDIVYL  176
+                 V+     A     EDN++D V +
+Sbjct  49014  LKQVELLHGNAMELPFEDNTFDYVTI  48937
+
+
+>F_contig_19 Bacillus cereus strain 1810093995_B
+Length=96994
+
+ Score = 32.7 bits (73),  Expect = 0.073, Method: Compositional matrix adjust.
+ Identities = 26/86 (30%), Positives = 38/86 (44%), Gaps = 11/86 (13%)
+ Frame = -2
+
+Query  91     GMTVLDCTLGMASDSIVASYIVGESGKVTGLEGNEYMAYIMENGLKTWSSSVSEIDEAMQ  150
+              G   LD   G A  +I  +  VGE GKV GL+ +E M  + +  +           EA+Q
+Sbjct  49161  GSKALDVCCGTADWTIALAGAVGEQGKVVGLDFSENMLSVGKQKV-----------EALQ  49015
+
+Query  151    RIDVKQTEHFAFLKQCEDNSYDIVYL  176
+                 V+     A     EDN++D V +
+Sbjct  49014  LKQVELLHGNAMELPFEDNTFDYVTI  48937
+
+
+>I_contig_3 Bacillus cereus strain 1809202927_K
+Length=274279
+
+ Score = 32.3 bits (72),  Expect = 0.090, Method: Compositional matrix adjust.
+ Identities = 14/30 (47%), Positives = 19/30 (63%), Gaps = 0/30 (0%)
+ Frame = +2
+
+Query  149   MQRIDVKQTEHFAFLKQCEDNSYDIVYLDP  178
+             +QRIDV   E  AFL    D+S+D ++LD 
+Sbjct  7133  LQRIDVHNQEAGAFLDSQLDHSFDFIFLDS  7222
+
+
+>F_contig_1 Bacillus cereus strain 1810093995_B
+Length=432135
+
+ Score = 32.3 bits (72),  Expect = 0.090, Method: Compositional matrix adjust.
+ Identities = 14/30 (47%), Positives = 19/30 (63%), Gaps = 0/30 (0%)
+ Frame = -1
+
+Query  149     MQRIDVKQTEHFAFLKQCEDNSYDIVYLDP  178
+               +QRIDV   E  AFL    D+S+D ++LD 
+Sbjct  267147  LQRIDVHNQEAGAFLDSQLDHSFDFIFLDS  267058
+
+
+>I_contig_7 Bacillus cereus strain 1809202927_K
+Length=176287
+
+ Score = 30.0 bits (66),  Expect = 0.59, Method: Compositional matrix adjust.
+ Identities = 16/45 (36%), Positives = 25/45 (56%), Gaps = 3/45 (7%)
+ Frame = +3
+
+Query  81     PFVQA---TQLERGMTVLDCTLGMASDSIVASYIVGESGKVTGLE  122
+              PF +    T ++ G   +D TLG   D+   + IVG++GKV G +
+Sbjct  55647  PFARTLLQTAVKEGDYAVDATLGNGHDTCFLAEIVGDNGKVFGFD  55781
+
+
+>F_contig_9 Bacillus cereus strain 1810093995_B
+Length=177138
+
+ Score = 30.0 bits (66),  Expect = 0.59, Method: Compositional matrix adjust.
+ Identities = 16/45 (36%), Positives = 25/45 (56%), Gaps = 3/45 (7%)
+ Frame = +3
+
+Query  81     PFVQA---TQLERGMTVLDCTLGMASDSIVASYIVGESGKVTGLE  122
+              PF +    T ++ G   +D TLG   D+   + IVG++GKV G +
+Sbjct  55647  PFARTLLQTAVKEGDYAVDATLGNGHDTCFLAEIVGDNGKVFGFD  55781
+
+
+
+Lambda      K        H        a         alpha
+   0.318    0.132    0.378    0.792     4.96 
+
+Gapped
+Lambda      K        H        a         alpha    sigma
+   0.267   0.0410    0.140     1.90     42.6     43.6 
+
+Effective search space used: 566755452
+
+
+  Database: merged_SEQ.fna
+    Posted date:  Jul 26, 2021  10:35 AM
+  Number of letters in database: 16,740,558
+  Number of sequences in database:  264
+
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Neighboring words threshold: 13
+Window for multiple hits: 40

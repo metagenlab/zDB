@@ -2104,107 +2104,62 @@ def pmid(request, seqfeature_id):
     return render(request, 'chlamdb/pmid.html', my_locals(locals()))
 
 
+
 def extract_region(request):
-    biodb = settings.BIODB
-    extract_region_form_class = make_extract_region_form(biodb)
-    server, db = manipulate_biosqldb.load_db(biodb)
-    from Bio.Alphabet import generic_protein
-    import re
+    
+    
+    
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
+
+    genomes_data = db.get_genomes_infos()
+    genomes_descr = db.get_genomes_description()
+
+    genomes_data = genomes_data.join(genomes_descr)
+
+    genomes_data.gc = genomes_data.gc.apply(round)
+    genomes_data.coding_density = genomes_data.coding_density.apply(lambda x: round(100*x))
+    genomes_data.length = genomes_data.length.apply(lambda x: round(x/pow(10,6), 2))
+
+    data_table_header = ["taxon_id", "Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding", "N plasmids"]
+    data_table = genomes_data[[ "id", "description", "gc", "n_prot", "n_contigs", "length", "coding_density", "has_plasmid"]].values.tolist()
 
 
 
-    if request.method == 'POST':
-
-        form = extract_region_form_class(request.POST)
-
-        if form.is_valid():
-            genome_accession = form.cleaned_data['genome']
-
-            region = form.cleaned_data['region']
-
-            start_stop = re.sub(' ', '', form.cleaned_data['region']).split(",")
-
-            extract = form.cleaned_data['extract']
-
-            genome_description = manipulate_biosqldb.accession2description(server, biodb)[genome_accession]
-
-
-            if extract == 'annotation':
-                get_annotation = True
-                columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                          'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-
-
-                sql2 = 'select %s from orthology_detail where start > %s and stop < %s and accession="%s"' % (columns,
-                                                                                                              start_stop[0],
-                                                                                                              start_stop[1],
-                                                                                                              genome_accession)
-
-
-                try:
-                    raw_data = server.adaptor.execute_and_fetchall(sql2, )
-                except IndexError:
-                    valid_id = False
-                    return render(request, 'chlamdb/extract_region.html', my_locals(locals()))
-                if not raw_data:
-                        valid_id = False
-                else:
-                    n = 1
-                    search_result = []
-                    for one_hit in raw_data:
-
-                        sql = 'select contig from '
-
-
-                        if one_hit[2] != '-':
-                            interpro_id = one_hit[2]
-                        else:
-                            interpro_id = one_hit[1]
-                        search_result.append((n,) + one_hit + (interpro_id,))
-                        n+=1
-
-
-            if extract == 'sequence' or extract == 'sequence_trans':
-                get_sequence = True
-                seq = manipulate_biosqldb.location2sequence(server, genome_accession, biodb, start_stop[0], int(start_stop[1])-int(start_stop[0]))
-
-                record = SeqRecord(Seq(seq, generic_protein),
-                   id="%s_%s_%s" % (genome_accession, start_stop[0], start_stop[1]), description=genome_description)
-
-                temp_file = os.path.join(settings.BASE_DIR, "assets/temp/%s_region.fa" % genome_accession)
-                temp_location = "temp/%s_region.fa" % genome_accession
-
-                with open(temp_file, 'w') as f:
-                    SeqIO.write(record, f, 'fasta')
-
-                if extract == 'sequence_trans':
-                    extract_trans = True
-                    from Bio.Seq import reverse_complement, translate
-                    anti = reverse_complement(seq)
-                    comp = anti[::-1]
-                    length = len(seq)
-                    frames = {}
-                    for i in range(0, 3):
-                        fragment_length = 3 * ((length-i) // 3)
-                        frames[i+1] = translate(seq[i:i+fragment_length], 1)
-                        frames[-(i+1)] = translate(anti[i:i+fragment_length], 1)[::-1]
-
-
-
-                    frame_plus_1 = frames[1]
-                    frame_plus_2 = frames[2]
-                    frame_plus_3 = frames[3]
-                    frame_minus_1 = frames[-1]
-                    frame_minus_2 = frames[-2]
-                    frame_minus_3 = frames[-3]
-
-
-
-            envoi = True
-
-    else:
-        form = extract_region_form_class()
     return render(request, 'chlamdb/extract_region.html', my_locals(locals()))
+
+def extract_contigs(request, genome):
+    
+    taxid = int(genome)
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
+
+    foo = db.get_proteins_info([taxid], search_on="taxid", as_df=True)
+    seqids = foo.index.tolist()
+
+    ogs = db.get_og_count(seqids, search_on="seqid")
+    taxid_seqid = db.get_taxid_from_seqid(seqids)
+    taxid_seqid_db = pd.DataFrame.from_dict(list(taxid_seqid.items()))
+    taxid_seqid_db.columns = ['seqid','taxon_id']
+
+    loc = db.get_gene_loc(seqids, as_hash=True) 
+    loc_db= pd.DataFrame.from_dict(list(loc.items()))
+    loc_db.columns = ['seqid','all']
+    loc_info= loc_db["all"]
+    loc_info.columns = ['all']
+    loc_info = pd.DataFrame(loc_info.to_list(), columns=['strand','start', 'stop'])
+    loc_info.strand = [format(num).rstrip('0').rstrip('.')for num in loc_info.strand]
+    loc_info.start = [format(num).rstrip('0').rstrip('.')for num in loc_info.start] 
+    loc_info.stop = [format(num).rstrip('0').rstrip('.')for num in loc_info.stop] 
+
+    contigs=db.get_contigs_to_seqid(taxid)
+    bar = foo.join(ogs).join(taxid_seqid_db).join(loc_info).join(contigs)
+    
+
+    data_table_header = [ "Name", "Gene",   "Product",  "Locus_tag", "Orthogroup", "Contig" ,"Strand", "Start", "Stop", ]
+    data_table = bar[["description", "gene",  "product", "locus_tag", "orthogroup", "contig" ,"strand", "start", "stop" ]].values.tolist()
+    
+    return render(request, 'chlamdb/extract_contigs.html', my_locals(locals()))
 
 
 def format_lst(lst):
