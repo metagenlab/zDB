@@ -3918,8 +3918,13 @@ def fam_cog(request, cog_id):
 def format_pathway(pat_id):
     return f"map{pat_id:05d}"
 
-def format_module(mod_id):
-    return f"M{mod_id:05d}"
+
+def format_module(mod_id, to_url=False):
+    formated = f"M{mod_id:05d}"
+    if to_url:
+        return f"<a href=/KEGG_module_map/{formated}>{formated}</a>"
+    return formated
+
 
 def fam_ko(request, ko_str):
     ko_id = int(ko_str[len("K"):])
@@ -5426,7 +5431,7 @@ def ko_venn_subset(request, category):
         targets = targets[0:6]
 
     genomes   = db.get_genomes_description(targets).description.to_dict()
-    ko_counts = db.get_ko_count_cat(taxon_ids=targets, category_name=category, index=False)
+    ko_counts = db.get_ko_count_cat(taxon_ids=targets, subcategory_name=category, index=False)
     ko_count  = ko_counts.groupby("taxon_id")["KO"].apply(list)
 
     # shameful copy/cape from venn_ko
@@ -13803,7 +13808,7 @@ def kegg_module_subcat(request):
 
     category        = form.cleaned_data["category"]
     leaf_to_name    = db.get_genomes_description()
-    ko_count_subcat = db.get_ko_count_cat(category=category)
+    ko_count_subcat = db.get_ko_count_cat(subcategory=category)
 
     grouped_count = ko_count_subcat.groupby(["taxon_id", "module_id"]).sum()
 
@@ -13845,14 +13850,10 @@ def kegg_module_subcat(request):
 
 
 def kegg_module(request):
-    from chlamdb.phylo_tree_display import ete_motifs
-    from chlamdb.plots import module_heatmap
-
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
     module_overview_form = make_module_overview_form(db)
-
-    if request != "POST":
+    if request.method != "POST":
         form = module_overview_form()
         return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
 
@@ -13862,7 +13863,52 @@ def kegg_module(request):
         form = module_overview_form()
         return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
 
-    envoie = True
+    cat = form.cleaned_data["category"]
+    
+    cat_count = db.get_ko_count_cat(category=cat)
+    leaf_to_name = db.get_genomes_description()
+    grouped_count = cat_count.groupby(["taxon_id", "module_id"]).sum()
+    n_occurences = grouped_count.groupby(["module_id"]).count()
+    unique_module_ids = cat_count.index.get_level_values("module_id").unique().tolist()
+    if len(unique_module_ids) == 0:
+        # add error message : no module found
+        envoi = True
+        return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
+
+    data = []
+    module_infos = db.get_modules_info(unique_module_ids)
+    expression_tree = {}
+    for module_id, descr, definition, *other in module_infos:
+        occurences = 0
+        if module_id in n_occurences.index:
+            occurences = n_occurences["count"].loc[module_id]
+        parser = ModuleParser(definition)
+        expression_tree[module_id] = parser.parse()
+        data.append((format_module(module_id, to_url=True), descr, occurences))
+
+    labels = [format_module(val[0]) for val in module_infos]
+
+    grouped_count = grouped_count.unstack(level=1, fill_value=0)
+    grouped_count.columns = [col for col in grouped_count["count"].columns]
+    ref_tree = db.get_reference_phylogeny()
+    e_tree = EteTree.default_tree(ref_tree)
+    for module, counts in grouped_count.iteritems():
+        values = counts.to_dict()
+        header = format_module(module)
+        expr_tree = expression_tree[module]
+        n_missing = {}
+        for bioentry, count in counts.iteritems():
+            # hack for now
+            s = cat_count.loc[bioentry].index.get_level_values("KO").tolist()
+            n_missing[bioentry] = expr_tree.get_n_missing({ko: 1 for ko in s})
+        new_col = KOAndCompleteness(values, n_missing, header)
+        e_tree.add_column(new_col)
+    e_tree.rename_leaves(leaf_to_name.description.to_dict())
+    path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
+    asset_path = '/temp/metabo_tree.svg'
+    e_tree.render(path, dpi=500, w=800)
+
+    envoi = True
     return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
 
 
