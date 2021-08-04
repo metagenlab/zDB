@@ -52,49 +52,34 @@
                                 white-space: nowrap;
                             }
 
-                                .header th {
-                                  height: 250px;
-                                  line-height: 2px;
-                                }
+							.header th {
+							  height: 250px;
+							  line-height: 2px;
+							}
 
                         </style>
                           <thead class="header">
-                            <tr>
-                                <th id="entete_meta6">Category</th>
-                                <th id="entete_meta5">SubCategory</th>
-                                <th id="entete_meta2" >Map</th>
-                                <th id="entete_meta3">Description</th>
-                                <th id="entete_meta4">nKO</th>
-                                <th id="entete_meta4">nKO+</th>
-                                <th id="entete_meta4">%</th>
-                                {% for taxon in taxon_list %}
-                                    <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
-                                {% endfor %}
-                            </tr>
+                              <tr>
+								  {% for entry in header %}
+								  <th> {{entry|safe}} </th>
+								  {% endfor %}
+
+                                  {% for taxon in taxons %}
+                                      <th id="entete_meta4" valign="bottom"><div class="rotate">
+									     {{ taxon}}</div>
+									  </th>
+                                  {% endfor %}
+							  </tr>
                           </thead>
                           <body>
-                            {% for category, values in category2maps.items %}
-                                {% for value0, value1 in values %}
-                                <tr>
-
-                                    <td>{{category}}</td><td>{{module2sub_category|keyvalue:value0}}</td>
-                                    <td><a href="{% url 'KEGG_module_map' value0 %}">{{value0}}</a></td>
-                                    <td>{{value1}}</td>
-                                    {% for value in map2count|keyvalue:value0 %}
-                                    
-                                        <td>{{value}}</td>
-                                    {% endfor %}
-                                    {%for map_dico in taxon_maps %}
-                                        {% if map_dico|keyvalue:value0 == None %}
-                                        <td data-hist="None">0</td>
-                                        {% else %}
-                                        <td data-hist="{{map_dico|keyvalue:value0}}">{{map_dico|keyvalue:value0}}</td>
-                                        {% endif %}
-                                    {% endfor %}
-
-                                </tr>
-                                {% endfor %}
-                            {% endfor %}
+                              <tr>
+								  {% for line in entries %}
+                                  <tr>
+                                  {% for value in line %}
+								  		<td> {{value|safe}} </td>
+                                  {% endfor %}
+                                  </tr>
+                              {% endfor %}
                           </tbody>
                         </table>
                     {% endif %}

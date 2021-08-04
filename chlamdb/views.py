@@ -14025,17 +14025,43 @@ def module_comparison(request):
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
     comp_metabo_form = make_metabo_from(db)
 
-    if request != "POST":
+    if request.method!="POST":
         form = comp_metabo_form()
         return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
 
     form = comp_metabo_form(request.POST)
     if not form.is_valid():
-        # TODO: add error message
         form = comp_metabo_form()
         return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
 
-    envoie = True
+    taxids = form.get_choices()
+    if len(taxids) == 0:
+        form = comp_metabo_form()
+        return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
+
+    module_hits = db.get_ko_count_cat(taxon_ids=taxids)
+    grouped_count = module_hits.groupby(["taxon_id", "module_id"]).sum()
+    grouped_count = grouped_count.unstack(level="taxon_id")
+    grouped_count.columns = grouped_count["count"].columns
+    grouped_count.fillna(0, inplace=True, downcast="infer")
+    taxids = grouped_count.columns
+    genomes = db.get_genomes_description().description.to_dict()
+    modules_info = db.get_modules_info(grouped_count.index.tolist(), as_pandas=True)
+    all_infos = modules_info.set_index("module_id").join(grouped_count)
+
+    header = ["Module", "Category", "Sub-category", "Description"]
+    entries = []
+
+    taxons = []
+    for taxid in taxids:
+        taxons.append(genomes[taxid])
+
+    for module_id, data in all_infos.iterrows():
+        line = [format_module(module_id, to_url=True), data["cat"], data.subcat, data.descr]
+        for taxid in taxids:
+            line.append(data[taxid])
+        entries.append(line)
+    envoi_comp=True
     return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
 
 
