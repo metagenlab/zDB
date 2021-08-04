@@ -13864,17 +13864,14 @@ def kegg_module(request):
         return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
 
     cat = form.cleaned_data["category"]
-    
-    modules_infos = db.get_modules_info(ids=cat, search_on="category")
+    modules_infos = db.get_modules_info(ids=[cat], search_on="category")
     cat_count = db.get_ko_count_cat(category=cat)
     leaf_to_name = db.get_genomes_description()
     grouped_count = cat_count.groupby(["taxon_id", "module_id"]).sum()
-    n_occurences = grouped_count.groupby(["module_id"]).count()
-    unique_module_ids = cat_count.index.get_level_values("module_id").unique().tolist()
-    if len(unique_module_ids) == 0:
-        # add error message : no module found
-        envoi = True
-        return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
+    if grouped_count.empty:
+        n_occurences = pd.DataFrame()
+    else:
+        n_occurences = grouped_count.groupby(["module_id"]).count()
 
     data = []
     expression_tree = {}
@@ -13885,6 +13882,10 @@ def kegg_module(request):
             parser = ModuleParser(definition)
             expression_tree[module_id] = parser.parse()
         data.append((format_module(module_id, to_url=True), descr, occurences))
+
+    if grouped_count.empty:
+        envoi = True
+        return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
 
     grouped_count = grouped_count.unstack(level=1, fill_value=0)
     grouped_count.columns = [col for col in grouped_count["count"].columns]
