@@ -13865,6 +13865,7 @@ def kegg_module(request):
 
     cat = form.cleaned_data["category"]
     
+    modules_infos = db.get_modules_info(ids=cat, search_on="category")
     cat_count = db.get_ko_count_cat(category=cat)
     leaf_to_name = db.get_genomes_description()
     grouped_count = cat_count.groupby(["taxon_id", "module_id"]).sum()
@@ -13876,17 +13877,14 @@ def kegg_module(request):
         return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
 
     data = []
-    module_infos = db.get_modules_info(unique_module_ids)
     expression_tree = {}
-    for module_id, descr, definition, *other in module_infos:
+    for module_id, descr, definition, *other in modules_infos:
         occurences = 0
         if module_id in n_occurences.index:
             occurences = n_occurences["count"].loc[module_id]
-        parser = ModuleParser(definition)
-        expression_tree[module_id] = parser.parse()
+            parser = ModuleParser(definition)
+            expression_tree[module_id] = parser.parse()
         data.append((format_module(module_id, to_url=True), descr, occurences))
-
-    labels = [format_module(val[0]) for val in module_infos]
 
     grouped_count = grouped_count.unstack(level=1, fill_value=0)
     grouped_count.columns = [col for col in grouped_count["count"].columns]
