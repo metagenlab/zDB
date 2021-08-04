@@ -4855,7 +4855,8 @@ def KEGG_module_map(request, module_name):
     expr_tree = parser.parse()
     ko_ids = db.get_module_kos(module_id)
     mat = db.get_ko_hits(ko_ids, search_on="ko", indexing="taxid").T
-    if len(mat.index) == 0:
+    map_data = [(format_ko(ko_id), ko_desc) for ko_id, ko_desc in db.get_ko_desc(ko_ids).items()]
+    if mat.empty:
         # should add an error message: no gene was associated for any
         # of the KO of the current module
         envoi = True
@@ -4918,7 +4919,6 @@ def KEGG_module_map(request, module_name):
     completeness = ModuleCompletenessColumn(hsh_n_missing, "", add_missing=False)
     e_tree.add_column(completeness)
     e_tree.rename_leaves(leaf_to_name)
-    map_data = [(format_ko(ko_id), ko_desc) for ko_id, ko_desc in db.get_ko_desc(ko_ids).items()]
 
     big = len(mat.columns) >= 40
     dpi = 800 if big else 1200
