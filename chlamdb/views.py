@@ -4975,7 +4975,7 @@ def kegg_multi(request, map_name, ko_name):
 
 def KEGG_mapp_ko(request, map_name):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    module_id = int(map_name[len("M"):])
+    pathway = int(map_name[len("map"):])
 
     module_infos = db.get_modules_info([module_id])
     print(module_infos)
@@ -12662,46 +12662,48 @@ def orthogroup_conservation_tree_legacy(request, orthogroup_or_locus):
     return render(request, 'chlamdb/orthogroup_conservation.html', my_locals(locals()))
 
 
+def format_pathway(path_id, to_url=False, taxid=None):
+    base_string = f"map{path_id:05d}"
+    if not to_url:
+        return base_string
+    if taxid is None:
+        to_page = f"KEGG_map_ko/{base_string}"
+    else:
+        to_page = f"KEGG_mapp_ko_organism/{base_string}/{taxid}"
+    return f"<a href=\"{to_page}\">{base_string}</a>"
+
+
 def priam_kegg(request):
-    biodb = settings.BIODB
-    priam_form_class = make_priam_form(biodb)
-
-    if request.method == 'POST': 
-        form = priam_form_class(request.POST)
-        if form.is_valid():
-
-            server, db = manipulate_biosqldb.load_db(biodb)
-
-            genome = form.cleaned_data['genome']
-
-            sql = 'select taxon_id from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id' \
-                  ' where t2.name="%s" and t1.accession="%s"' % (biodb, 
-                                                                 genome)
-            taxon_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
-
-            sql = 'select pathway_name,pathway_category,description from enzyme_locus2ko t1 ' \
-                  ' inner join enzyme_pathway2ko_v1 t2 on t1.ko_id=t2.ko_id  ' \
-                  ' inner join enzyme_kegg_pathway t3 on t2.pathway_id=t3.pathway_id ' \
-                  ' where taxon_id=%s and pathway_category ' \
-                  ' not in ("6.9 Infectious diseases: Viral", "6.8 Infectious diseases: Bacterial", ' \
-                  ' "6.7 Endocrine and metabolic diseases", "6.5 Substance dependence", ' \
-                  ' "6.4 Neurodegenerative diseases", "6.3 Immune diseases", "6.2 Cancers: Specific types", ' \
-                  ' "6.12 Drug resistance: Antineoplastic", "6.1 Cancers: Overview", "5.9 Aging", ' \
-                  ' "5.6 Nervous system", "5.7 Sensory system", "5.8 Development", "6.10 Infectious diseases: Parasitic", ' \
-                  ' "5.1 Immune system", "5.3 Circulatory system", "5.2 Endocrine system", ' \
-                  ' "5.5 Excretory system", "5.10 Environmental adaptation","4.4 Cellular community - eukaryotes", ' \
-                  ' "5.4 Digestive system", "3.3 Signaling molecules and interaction", "1.0 Global and overview maps") ' \
-                  ' group by pathway_name order by pathway_category;' % (taxon_id)
-            data = server.adaptor.execute_and_fetchall(sql,)
-
-
-            envoi = True
-
-    else:  
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    priam_form_class = make_priam_form(db)
+    if request.method != "POST":
         form = priam_form_class()
+        return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
 
-    return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
+    form = priam_form_class(request.POST)
+    if not form.is_valid():
+        form = priam_form_class()
+        return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
 
+    taxid, _ = form.get_genome()
+    ko_hits = db.get_ko_hits([taxid], search_on="taxid")
+    kos = ko_hits.index.tolist()
+    ko_pathways = db.get_ko_pathways(kos)
+    header = ["Pathway", "Description", "Number of KO"]
+    data = []
+    pathway_count = collections.Counter()
+    hsh_path_to_descr = {}
+    for ko, pathways in ko_pathways.items():
+        pathway_count.update(path_id for path_id, pathway in pathways)
+        hsh_path_to_descr.update(pathways)
+
+    for element, count in pathway_count.items():
+        descr = hsh_path_to_descr[element]
+        entry = (format_pathway(element, to_url=True, taxid=taxid), descr, count)
+        data.append(entry)
+
+    ctx = {"envoi":True, "data":data, "header": header}
+    return render(request, 'chlamdb/priam_kegg.html', my_locals(ctx))
 
 
 def locus_list2circos(request, target_taxon):

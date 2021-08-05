@@ -275,13 +275,15 @@ def make_extract_region_form(database_name):
     return ExtractRegionForm
 
 
-def make_priam_form(database_name):
-
-    accession_choices = get_accessions(database_name, plasmid=True)
+def make_priam_form(db):
+    accession_choices, rev_index = get_accessions(db)
 
     class PriamForm(forms.Form):
         genome = forms.ChoiceField(choices=accession_choices)
 
+        def get_genome(self):
+            target = self.cleaned_data["genome"]
+            return rev_index[int(target)]
     return PriamForm
 
 
