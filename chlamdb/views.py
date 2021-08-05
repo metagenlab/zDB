@@ -4968,29 +4968,109 @@ def kegg_multi(request, map_name, ko_name):
         ko_filter = '"'+ '","'.join(ko_list)+'"'
         sql = 'select ko_accession,name,definition,modules,pathways from enzyme_ko_annotation where ko_accession in (%s)' % (ko_filter)
         ko_data = server.adaptor.execute_and_fetchall(sql,)
-
-
     return render(request, 'chlamdb/KEGG_map_multi.html', my_locals(locals()))
+
+
+def gen_pathway_profile(db, ko_ids):
+    mat = db.get_ko_hits(ko_ids, search_on="ko", indexing="taxid").T
+    seqids = db.get_ko_hits(ko_ids, search_on="ko", indexing="seqid")
+    associated_ogs = db.get_og_count(seqids.index.tolist(), search_on="seqid")
+    og_taxid = db.get_og_count(associated_ogs.orthogroup.unique().tolist(), search_on="orthogroup").T
+    ko_to_og_mapping = seqids.join(associated_ogs).groupby(["ko"])["orthogroup"].unique()
+    leaf_to_name = db.get_genomes_description().description.to_dict()
+
+    tree = Tree(db.get_reference_phylogeny())
+    R = tree.get_midpoint_outgroup()
+    tree.set_outgroup(R)
+    tree.ladderize()
+    e_tree = EteTree(tree)
+    for ko in ko_ids:
+        if not ko in mat.columns:
+            continue
+        if not ko in ko_to_og_mapping.index:
+            e_tree.add_column(SimpleColorColumn.fromSeries(mat[ko], header=format_ko(ko)))
+            continue
+            
+        associated_ogs = ko_to_og_mapping.loc[ko]
+        n_homologs = og_taxid[associated_ogs].sum(axis=1)
+        hsh_col, hsh_val = {}, {}
+        for taxid, count in mat[ko].iteritems():
+            if count>0:
+                hsh_val[taxid] = count
+                hsh_col[taxid] = EteTree.RED
+            elif taxid in n_homologs.index:
+                cnt = n_homologs.loc[taxid]
+                hsh_val[taxid] = cnt
+                if cnt>0:
+                    hsh_col[taxid] = EteTree.GREEN
+            else:
+                hsh_val[taxid] = 0
+        col_chooser = KOModuleChooser(hsh_col)
+        e_tree.add_column(SimpleColorColumn(hsh_val, header=format_ko(ko),
+            col_func=col_chooser.get_color))
+    e_tree.rename_leaves(leaf_to_name)
+    return e_tree
 
 
 def KEGG_mapp_ko(request, map_name):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     pathway = int(map_name[len("map"):])
 
-    module_infos = db.get_modules_info([module_id])
-    print(module_infos)
+    kos = db.get_ko_pathways([pathway], search_on="pathway", as_df=True)
+    ko_list = kos["ko"].unique().tolist()
+    ko_hits = db.get_ko_hits(ko_list, search_on="ko", indexing="taxid")
+    ko_desc = db.get_ko_desc(ko_list)
+    ko_ttl_count = ko_hits.sum(axis=1)
+
+    asset_path = gen_pathway_profile(db, ko_ids, map_name)
     return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(locals()))
 
 
 def KEGG_mapp_ko_organism(request, map_name, taxon_id):
-    biodb = settings.BIODB
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    pathway = int(map_name[len("map"):])
+    kos = db.get_ko_pathways([pathway], search_on="pathway", as_df=True)
+    taxid = int(taxon_id)
 
-    if request.method == 'GET': 
- 
-        task = KEGG_map_ko_organism_task.delay(biodb, map_name, taxon_id)
-        task_id = task.id
+    ko_list = kos["ko"].unique().tolist()
+    ko_hits = db.get_ko_hits(ko_list, search_on="ko", indexing="taxid")
+    ko_desc = db.get_ko_desc(ko_list)
+    ko_ttl_count = ko_hits.sum(axis=1)
+    hsh_organisms = db.get_genomes_description().description.to_dict()
 
-    return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(locals()))
+    header = ["KO", "Description", "# in this genome", "All occurrences"]
+    data = []
+    for ko_id, descr in ko_desc.items():
+        if ko_id in ko_ttl_count.index:
+            ttl = ko_ttl_count.loc[ko_id]
+        else:
+            ttl = 0
+        if ko_id in ko_hits.index:
+            in_this_genome = ko_hits[taxid].loc[ko_id]
+        else:
+            in_this_genome = 0
+        entry = (format_ko(ko_id, as_url=True), descr, in_this_genome, ttl)
+        data.append(entry)
+    e_tree = gen_pathway_profile(db, ko_list)
+    path = settings.BASE_DIR + f"/assets/temp/{map_name}.svg"
+    asset_path = f"/temp/{map_name}.svg"
+    e_tree.render(path, dpi=800)
+
+    all_kos = []
+    for col in e_tree.columns:
+        # hack: we should not have access to the inner details
+        # of a class, but I am in an hurry
+        if taxid in col.values:
+            all_kos.append(col.header)
+    ctx = {
+        "organism": hsh_organisms[taxid],
+        "pathway": kos.iloc[0].description,
+        "header": header,
+        "data": data,
+        "asset_path": asset_path,
+        "url": map_name+"+"+"+".join(all_kos)
+    }
+    return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(ctx))
 
 
 def KEGG_mapp(request, map_name):
@@ -12667,9 +12747,9 @@ def format_pathway(path_id, to_url=False, taxid=None):
     if not to_url:
         return base_string
     if taxid is None:
-        to_page = f"KEGG_map_ko/{base_string}"
+        to_page = f"/KEGG_map_ko/{base_string}"
     else:
-        to_page = f"KEGG_mapp_ko_organism/{base_string}/{taxid}"
+        to_page = f"/KEGG_mapp_ko_organism/{base_string}/{taxid}"
     return f"<a href=\"{to_page}\">{base_string}</a>"
 
 
