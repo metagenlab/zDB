@@ -5012,25 +5012,13 @@ def gen_pathway_profile(db, ko_ids):
     return e_tree
 
 
-def KEGG_mapp_ko(request, map_name):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    pathway = int(map_name[len("map"):])
-
-    kos = db.get_ko_pathways([pathway], search_on="pathway", as_df=True)
-    ko_list = kos["ko"].unique().tolist()
-    ko_hits = db.get_ko_hits(ko_list, search_on="ko", indexing="taxid")
-    ko_desc = db.get_ko_desc(ko_list)
-    ko_ttl_count = ko_hits.sum(axis=1)
-
-    asset_path = gen_pathway_profile(db, ko_ids, map_name)
-    return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(locals()))
-
-
-def KEGG_mapp_ko_organism(request, map_name, taxon_id):
+def KEGG_mapp_ko(request, map_name, taxon_id=None):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     pathway = int(map_name[len("map"):])
     kos = db.get_ko_pathways([pathway], search_on="pathway", as_df=True)
-    taxid = int(taxon_id)
+
+    if not taxon_id is None:
+        taxid = int(taxon_id)
 
     ko_list = kos["ko"].unique().tolist()
     ko_hits = db.get_ko_hits(ko_list, search_on="ko", indexing="taxid")
@@ -5045,7 +5033,7 @@ def KEGG_mapp_ko_organism(request, map_name, taxon_id):
             ttl = ko_ttl_count.loc[ko_id]
         else:
             ttl = 0
-        if ko_id in ko_hits.index:
+        if ko_id in ko_hits.index and not taxon_id is None:
             in_this_genome = ko_hits[taxid].loc[ko_id]
         else:
             in_this_genome = 0
@@ -5060,16 +5048,18 @@ def KEGG_mapp_ko_organism(request, map_name, taxon_id):
     for col in e_tree.columns:
         # hack: we should not have access to the inner details
         # of a class, but I am in an hurry
-        if taxid in col.values:
+        if not taxon_id is None and taxid in col.values:
             all_kos.append(col.header)
     ctx = {
-        "organism": hsh_organisms[taxid],
         "pathway": kos.iloc[0].description,
         "header": header,
         "data": data,
         "asset_path": asset_path,
         "url": map_name+"+"+"+".join(all_kos)
     }
+
+    if not taxon_id is None:
+        ctx["organism"] = hsh_organisms[taxid]
     return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(ctx))
 
 
@@ -12749,7 +12739,7 @@ def format_pathway(path_id, to_url=False, taxid=None):
     if taxid is None:
         to_page = f"/KEGG_map_ko/{base_string}"
     else:
-        to_page = f"/KEGG_mapp_ko_organism/{base_string}/{taxid}"
+        to_page = f"/KEGG_mapp_ko/{base_string}/{taxid}"
     return f"<a href=\"{to_page}\">{base_string}</a>"
 
 
