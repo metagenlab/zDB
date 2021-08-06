@@ -72,12 +72,20 @@ function clearBox(elementID)
 				{% endif %}
 
 
-				{% if optional2status|keyvalue:"BLAST_refseq"%}
-					<li><a href="#6" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'frame6'); return false">RefSeq homologs <span class="badge">{{n_blastnr_hits}}</span></a></li>
+				{% if optional2status|keyvalue:"BLAST_database"%}
+				<li>
+					<a href="#refseq_homologs_tab" data-toggle="tab">
+						RefSeq homologs <span class="badge">{{n_refseq_homologs}}</span>
+					</a>
+				</li>
 				{% endif %}
 
 				{% if optional2status|keyvalue:"BLAST_swissprot" and n_swissprot_hits > 0 %}
-					<li><a href="#7" data-toggle="tab" onclick="window.open('http://155.105.138.104:8080/blastswissprot/{{locus}}', 'frame7'); return false">SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span></a></li>
+					<li>
+						<a href="#7" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' locus %}', 'frame7'); return false">
+							SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span>
+						</a>
+					</li>
 				{% endif %}
 
 				{% if optional2status|keyvalue:"phylogenetic_profile" or optional2status|keyvalue:"gene_clusters" %}
@@ -129,14 +137,41 @@ function clearBox(elementID)
 						</div>
 				  </div>
 
+
 				  <div class="tab-pane" id="og_phylogeny">
 						<h3>Phylogeny of {{og_id|safe}} </h3>
 						<div class="tab-pane active" id="tab1">
 						  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
 						  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
-
 						</div>
 				  </div>
+
+				
+				<div class=tab-pane" id="refseq_homologs_tab">
+					<h3> RefSeq homologs </h3>
+					<ul>
+					 <li>Number of RefSeq hits (max 100): {{n_refseq_homologs}} </li>
+					</ul>
+					<table id="blast_nr_table" class="table">
+					  <thead>
+						<tr>
+							{% for entry in refseq_headers %}
+							<th> {{entry}} </th>
+							{% endfor %}
+						</tr>
+					  </thead>
+					  <tbody>
+
+					  {% for values in blast_data %}
+					  <tr>
+						  {% for entry in values %}
+						  <td>{{entry|safe}}</td>
+						  {% endfor %}
+					  </tr>
+					  {%  endfor %}
+					  </tbody>
+					</table>
+				</div>
 
                 <div class="tab-pane active" id="main_tab" style="padding-left: 15px;padding-top:20px">
                         <div class="col-md-12 col-lg-4">
@@ -1178,6 +1213,31 @@ window.onload = function() {
 		ft2.addFeature(curr_fet);
 	}
 }
+
+$(document).ready(function() {
+	$('#blast_nr_table').DataTable( {
+	  dom: 'lBfrtip',
+	  buttons: [
+		  {
+			  extend: 'colvis',
+			  columns: ':not(.noVis)',
+		  },
+		  {
+			  extend: 'excel',
+			  title: 'plast_refseq'
+		  },
+		  {
+			  extend: 'csv',
+			  title: 'plast_refseq'
+		  }
+	  ],
+	  "paging":   true,
+	  "ordering": true,
+	  "info":     false,
+	  } );
+});
+
+$('.dropdown-toggle').dropdown()
 
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 

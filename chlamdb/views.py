@@ -2728,6 +2728,22 @@ def locusx_RNA(db, seqid, is_pseudogene):
     }
 
 
+def tab_get_refseq_homologs(db, seqid):
+    refseq_hits = db.get_refseq_hits([seqid]).set_index("match_id")
+    refseq_hits_infos = db.get_refseq_matches_info(refseq_hits.index.tolist())
+    all_infos = refseq_hits.join(refseq_hits_infos)
+
+    header = ["Refseq accession", "Evalue", "Score", "ID(%)", "# gaps", "Len", "Description", "Organism"]
+    entries = []
+
+    for match_id, data in all_infos.iterrows():
+        entries.append((data.accession, data.evalue, data.bitscore,
+            data.pident, data.length, data.description, data.taxid))
+    return { "n_refseq_homologs": len(refseq_hits),
+            "refseq_headers": header,
+            "blast_data": entries }
+
+
 def locusx(request, locus=None, menu=True):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
@@ -2772,6 +2788,7 @@ def locusx(request, locus=None, menu=True):
     og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
 
     kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
+    diamond_matches_ctx = {}
     n_swissprot_hits = 0
     if optional2status.get("KEGG", False):
         kegg_ctx = og_tab_get_kegg_annot(db, [seqid])
@@ -2784,6 +2801,9 @@ def locusx(request, locus=None, menu=True):
 
     if optional2status.get("BLAST_swissprot", False):
         n_swissprot_hits = db.get_n_swissprot_homologs(seqid)
+
+    if optional2status.get("BLAST_database", False):
+        diamond_matches_ctx = tab_get_refseq_homologs(db, seqid)
 
     try:
         og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
@@ -2808,7 +2828,8 @@ def locusx(request, locus=None, menu=True):
         **og_conserv_ctx,
         **og_phylogeny_ctx,
         **pfam_ctx,
-        **genomic_region_ctx
+        **genomic_region_ctx,
+        **diamond_matches_ctx
     }
     return render(request, 'chlamdb/locus.html', my_locals(context))
 
@@ -8108,6 +8129,7 @@ def format_gene(gene):
 
 
 def blastswissprot(request, locus_tag):
+    print("FOO")
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
