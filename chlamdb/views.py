@@ -2737,8 +2737,10 @@ def tab_get_refseq_homologs(db, seqid):
     entries = []
 
     for match_id, data in all_infos.iterrows():
-        entries.append((data.accession, data.evalue, data.bitscore,
-            data.pident, data.length, data.description, data.taxid))
+        to_ncbi = f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{data.accession}\">{data.accession}</a>"
+        to_taxo = f"<a href=\"http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={data.taxid}\">{data.taxid}</a>"
+        entries.append((to_ncbi, data.evalue, data.bitscore,
+            data.pident, data.gaps, data.length, data.description, to_taxo))
     return { "n_refseq_homologs": len(refseq_hits),
             "refseq_headers": header,
             "blast_data": entries }
