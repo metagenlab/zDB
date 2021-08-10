@@ -2238,9 +2238,11 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
         entry = [index+1, locus_fmt, organism, format_gene(data.gene), data["product"]]
         if ref_seqid!=None:
             if seqid==ref_seqid:
-                ident = "-"
+                ident = "N/A"
             else:
                 ident = round(identities.loc[seqid].identity, 1)
+            if ident==0:
+                ident = "-"
             entry.insert(2, ident)
 
         homologues.append(entry)
@@ -2673,6 +2675,10 @@ def locusx_genomic_region(db, seqid, window):
             to_return=["gene", "locus_tag"], as_df=True, inc_non_CDS=True, inc_pseudo=True)
     cds_type = db.get_CDS_type(df_seqids.index.tolist())
     all_infos = infos.join(cds_type).join(df_seqids)
+
+    features = []
+    genome_range = [window_start, window_stop]
+
     gd_diagram = GenomeDiagram.Diagram(f"{seqid}")
     gd_track = gd_diagram.new_track(1, name=hsh_organism[seqid], greytrack=True)
     gd_features = gd_track.new_set()
@@ -2682,7 +2688,7 @@ def locusx_genomic_region(db, seqid, window):
             feature_name = data.gene
 
         loc = FeatureLocation(data.start, data.end, data.strand)
-        fet = SeqFeature(location=loc)
+        fet = SeqFeature(location=loc, id=curr_seqid)
         color = colors.green
         if seqid==curr_seqid:
             color = colors.red
@@ -2694,6 +2700,7 @@ def locusx_genomic_region(db, seqid, window):
             color = colors.blue
         gd_features.add_feature(fet, name=feature_name, color=color, label_position="middle",
                 label_size=10, label_strand=1, sigil="ARROW", label=True)
+        features.append(f"{{start: {data.start}, end: {data.end}, strand: {data.strand}, locus_tag: {to_s(data.locus_tag)}}}")
     
     asset_dir = "/assets/"
     filename = f"/temp/{filename}"
@@ -2701,7 +2708,10 @@ def locusx_genomic_region(db, seqid, window):
     gd_diagram.draw(format="linear", pagesize=(100, 600), start=all_infos.start.min(),
             end=all_infos.end.max(), fragments=1, yt=.2)
     gd_diagram.write(settings.BASE_DIR+asset_dir+filename, "SVG")
-    return {"genomic_region_svg": filename}
+
+    return {"genomic_region_svg": filename,
+            "genome_range": genome_range,
+            "features": "[" + ",".join(features)+"]"}
 
 
 def locusx_RNA(db, seqid, is_pseudogene):
