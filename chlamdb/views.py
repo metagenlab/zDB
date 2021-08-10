@@ -789,8 +789,6 @@ def orthogroup_annotation(request, display_form):
 
     return render(request, 'chlamdb/orthogroup_annotation.html', my_locals(locals()))
 
-def test():
-    from chlamdb.plots import plot_genomic_feature
 
 def locus_annotation(request, display_form):
     biodb = settings.BIODB
@@ -2735,10 +2733,16 @@ def tab_get_refseq_homologs(db, seqid):
 
     header = ["Refseq accession", "Evalue", "Score", "ID(%)", "# gaps", "Len", "Description", "Organism"]
     entries = []
+    taxids = db.get_refseq_taxonomy(all_infos.taxid.tolist())
 
     for match_id, data in all_infos.iterrows():
+        if data.taxid not in taxids.index:
+            taxonomic_name = "-"
+        else:
+            taxonomic_name = taxids.loc[data.taxid].taxonomic_name
+
         to_ncbi = f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{data.accession}\">{data.accession}</a>"
-        to_taxo = f"<a href=\"http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={data.taxid}\">{data.taxid}</a>"
+        to_taxo = f"<a href=\"http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={data.taxid}\">{taxonomic_name}</a>"
         entries.append((to_ncbi, data.evalue, data.bitscore,
             data.pident, data.gaps, data.length, data.description, to_taxo))
     return { "n_refseq_homologs": len(refseq_hits),
