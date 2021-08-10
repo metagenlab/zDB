@@ -1491,6 +1491,7 @@ if(!params.diamond_refseq) {
         if(params.diamond_refseq)
             """
             #!/usr/bin/env python
+            # small modif'
             import setup_chlamdb
             
             kwargs = ${gen_python_args()}

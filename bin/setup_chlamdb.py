@@ -125,49 +125,57 @@ def get_identity(seq1, seq2):
         return 0
     return 100*(identical/float(aligned))
 
+
+# will need to rewrite it using iterators instead of 
+# copying the whole list
 def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i+n]
 
-def get_prot(refseq_file, hsh_accessions):
-    from io import StringIO
-    import mmap
 
-    refseq_merged = open(refseq_file, "r")
-    refseq = mmap.mmap(refseq_merged.fileno(), 0, access=mmap.ACCESS_READ)
-    accession_starts = bytes(">", "utf-8")
-    found = 0
+def get_prot(refseq_file, hsh_accession):
+    # Brute-force scanning of the whole refseq file.
+    # This is however faster than serial SQL queries.
+
     hsh_results = {}
-    ttl_to_find = len(hsh_accessions)
-    start_index = refseq.find(accession_starts)
-
-    while found<ttl_to_find and start_index!=-1:
-        next_record = refseq.find(accession_starts, start_index+1)
-        end_accession = refseq.find(bytes(".", "utf-8"), start_index+1)
-        refseq.seek(start_index+1)
-
-        # Not the easiest to read, but avoids to have to parse every single
-        # record in refseq
-        curr_accession = refseq.read(end_accession-start_index-1).decode("utf-8")
-        refseq.seek(start_index)
-        if curr_accession in hsh_accessions:
-            found += 1
-            if next_record != -1:
-                buf = refseq.read(next_record-start_index).decode("utf-8")
-            else:
-                buf = refseq.read(refseq.size()-start_index).decode("utf-8")
-
-            # StringIO simulates a file. There should be only one record in the list.
-            record = next(SeqIO.parse(StringIO(buf), "fasta"))
-            hsh_results[curr_accession] = record
-        start_index = next_record
+    for record in SeqIO.parse(refseq_file, "fasta"):
+        accession = remove_accession_version(record.name)
+        if not accession in hsh_accession:
+            continue
+        hsh_results[accession] = record
     return hsh_results
+
+
+def get_taxids(ncbi_tax_file, hsh_accession_to_taxid):
+    line_iter = open(ncbi_tax_file, "r")
+    
+    # pass header
+    next(line_iter)
+    for line in open(ncbi_tax_file, "r"):
+        end_of_accession = line.index("\t")
+        accession = line[:end_of_accession]
+        if not accession in hsh_accession_to_taxid:
+            continue
+        tokens = line.split("\t")
+        hsh_accession_to_taxid[accession] = int(tokens[2])
+
 
 def remove_accession_version(accession):
     return accession.split(".")[0]
 
+
 def simplify_hash(hsh):
     return hsh_from_s(hsh[len("CRC-"):])
+
+
+def parse_description(description):
+    end_accession_index = description.index(' ')
+    # NOTE: this assumes that no brackets are found in the
+    # name of the protein
+    beg_tax_index = description.index('[')
+    # also skip the white spaces
+    return description[end_accession_index+1:beg_tax_index-1]
+
 
 # Heavy-duty function, with several things performed to avoid database
 # queries and running too many times acrosse refseq_merged.faa :
@@ -175,6 +183,12 @@ def simplify_hash(hsh):
 #  * get the linear taxonomy for all taxids that were extracted at the previous step
 #  * extract the protein informations for 
 #  * for all protein of all orthogroup, get the non-PVC hits and output them in OG.fasta
+#
+# This function will not scale for big sets of genomes: it will be necessary
+# to run it several time for a given chunk of results.
+#
+# Alternatively, already pre-process the results directly after diamond finishes. This should
+# be possible as the files are accessed as read-only.
 def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     db = db_utils.DB.load_db(db_file, args)
     columns=["str_hsh", "accession", "pident", "length", "mismatch", "gapopen",
@@ -189,12 +203,10 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     print("Initial size: ", len(all_data.index), flush=True)
     all_data.accession = all_data.accession.map(remove_accession_version)
     all_data.str_hsh = all_data.str_hsh.map(simplify_hash)
-    hsh_accession_to_taxid = {}
+    hsh_accession_to_taxid = {accession:None for index, accession in all_data.accession.iteritems()}
 
     print("Obtaining accession to taxid", flush=True)
-    for chunk in chunks(all_data.accession.unique(), 5000):
-        hsh_temp = db.get_accession_to_taxid(chunk, args)
-        hsh_accession_to_taxid.update(hsh_temp)
+    get_taxids(args["ncbi_taxonomy"], hsh_accession_to_taxid)
     all_data["taxid"] = all_data.accession.map(hsh_accession_to_taxid)
 
     taxid_set = set(hsh_accession_to_taxid.values())
@@ -232,7 +244,7 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     for sseqid, (accession, taxid) in enumerate(hsh_accession_to_taxid.items()):
         hsh_accession_to_match_id[accession] = sseqid
         record = hsh_accession_to_record[accession]
-        data = [sseqid, accession, taxid, record.description, len(record)]
+        data = [sseqid, accession, taxid, parse_description(record.description), len(record)]
         refseq_match_id.append(data)
     db.load_diamond_refseq_match_id(refseq_match_id)
     db.create_diamond_refseq_match_id_indices()
@@ -654,6 +666,8 @@ def setup_chlamdb_search_index(params, db_name, index_name):
 
         og_hits = db.get_og_count(all_seqids, search_on="seqid")
         all_infos = all_infos.join(og_hits, how="left")
+
+        print(all_infos[all_infos["orthogroup"].isna()])
         if has_ko:
             ko_hits = db.get_ko_hits(all_seqids, search_on="seqid", indexing="seqid")
             all_infos = all_infos.join(ko_hits, how="left")
