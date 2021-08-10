@@ -147,7 +147,7 @@ function clearBox(elementID)
 				  </div>
 
 				
-				<div class=tab-pane" id="refseq_homologs_tab">
+				<div class="tab-pane" id="refseq_homologs_tab">
 					<h3> RefSeq homologs </h3>
 					<ul>
 					 <li>Number of RefSeq hits (max 100): {{n_refseq_homologs}} </li>
@@ -161,14 +161,13 @@ function clearBox(elementID)
 						</tr>
 					  </thead>
 					  <tbody>
-
-					  {% for values in blast_data %}
-					  <tr>
-						  {% for entry in values %}
-						  <td>{{entry|safe}}</td>
-						  {% endfor %}
-					  </tr>
-					  {%  endfor %}
+						  {% for values in blast_data %}
+						  <tr>
+							  {% for entry in values %}
+							  <td>{{entry|safe}}</td>
+							  {% endfor %}
+						  </tr>
+						  {%  endfor %}
 					  </tbody>
 					</table>
 				</div>
