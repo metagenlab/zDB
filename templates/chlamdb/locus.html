@@ -1258,11 +1258,13 @@ var svg = d3.select("#test_d3_genomic_region")
 	.append("g");
 
 var mouseover_feature = function(d) {
-	d3.select(this).attr("stroke", "red")
+	d3.select(this)
+		.style("stroke", "red")
 }
 
 var mouseleave_feature = function(d) {
-	d3.select(this).style("stroke", "none");
+	d3.select(this)
+		.style("stroke", "none");
 }
 
 var click_feature = function(d) {
@@ -1335,7 +1337,7 @@ svg.selectAll("polygon")
 		});
 		return points.join(",");
 	})
-	.style("stroke-width", 4)
+	.style("stroke-width", 2)
 	.style("fill", function(d) {
 		if(d.locus_tag == "{{locus_tag}}") {
 			return "red";
@@ -1344,7 +1346,7 @@ svg.selectAll("polygon")
 		}
 	})
 	.on("mouseover", mouseover_feature)
-	.on("mousemove", mouseleave_feature)
+	.on("mouseleave", mouseleave_feature)
 	.on("click", click_feature);
 </script>
 
