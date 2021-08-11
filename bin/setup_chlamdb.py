@@ -661,34 +661,38 @@ def setup_chlamdb_search_index(params, db_name, index_name):
     index = search_bar.ChlamdbIndex.new_index(index_name)
 
     for taxid, data in genomes.iterrows():
-        all_infos = db.get_proteins_info([taxid], search_on="taxid", as_df=True)
+        all_infos = db.get_proteins_info([taxid], search_on="taxid",
+                as_df=True, inc_non_CDS=True, inc_pseudo=True)
         all_seqids = all_infos.index.tolist()
 
         og_hits = db.get_og_count(all_seqids, search_on="seqid")
         all_infos = all_infos.join(og_hits, how="left")
 
-        print(all_infos[all_infos["orthogroup"].isna()])
         if has_ko:
             ko_hits = db.get_ko_hits(all_seqids, search_on="seqid", indexing="seqid")
-            all_infos = all_infos.join(ko_hits, how="left")
         if has_cog:
             cog_hits = db.get_cog_hits(all_seqids, search_on="seqid", indexing="seqid")
-            all_infos = all_infos.join(cog_hits, how="left")
         if has_pfam:
             pfam_hits = db.get_pfam_hits(all_seqids, search_on="seqid", indexing="seqid")
-            all_infos = all_infos.join(pfam_hits, how="left")
+            pfam_hits = pfam_hits.groupby("seqid").apply(list)
 
         for seqid, data in all_infos.iterrows():
             product, locus_tag, gene = data[["product", "locus_tag", "gene"]]
             ko, cog, pfam = None, None, None
-            if has_ko:
-                ko = data["ko"]
-            if has_cog:
-                cog = data["cog"]
-            if has_pfam:
-                pfam = data["pfam"]
+            annotations = []
+            if has_ko and seqid in ko_hits.index:
+                ko = ko_hits.loc[seqid].ko
+                annotations.append(format_ko(ko))
+            if has_cog and seqid in cog_hits.index:
+                cog = cog_hits.loc[seqid].cog
+                annotations.append(format_cog(cog))
+            if has_pfam and seqid in pfam_hits.index:
+                pfams = pfam_hits.loc[seqid]
+                annotations.extend(format_pfam(pfam) for pfam in pfams)
 
             og = data["orthogroup"]
+            if not pd.isna(og):
+                annotations.append(format_og(og))
             if pd.isna(gene):
                 gene = None
             if product=="hypothetical protein":
@@ -696,9 +700,9 @@ def setup_chlamdb_search_index(params, db_name, index_name):
 
             organism = genomes.loc[taxid].description
             index.add(locus_tag=locus_tag,
-                    gene=gene, product=product, organism=organism, 
-                    ko=format_ko(ko), cog=format_cog(cog),
-                    og=format_og(og), pfam=format_pfam(pfam))
+                    name=gene, description=product, organism=organism, 
+                    annotations=",".join(annotations),
+                    entry_type = search_bar.EntryTypes.Gene)
 
     index.done_adding()
 

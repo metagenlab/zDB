@@ -1697,7 +1697,6 @@ process create_chlamdb_search_index {
     index_name = "$workflow.runName"
     """
         #!/usr/bin/env python
-
         import setup_chlamdb
 
         params = ${gen_python_args()}
