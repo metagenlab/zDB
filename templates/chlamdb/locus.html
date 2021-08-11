@@ -1243,25 +1243,26 @@ $('.dropdown-toggle').dropdown()
 
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 
-var margin = {top:5, right: 5, bottom:5, left:5};
+const GENOME_DIAGRAM_SIZE = {x: 600, y:80};
+const margin = {top:5, right: 5, bottom:5, left:5};
+const arrow_height = 40;
+const base_line_width = 1;
+
 var genomic_region =  {{genome_range}};
 var features = {{features|safe}};
 
 var svg = d3.select("#test_d3_genomic_region")
 	.append("svg")
-	.attr("width", 500)
-	.attr("height", 100)
+	.attr("width", GENOME_DIAGRAM_SIZE.x)
+	.attr("height", GENOME_DIAGRAM_SIZE.y)
 	.append("g");
 
-var arrow_height = 40;
-var base_line_width = 1;
-
 var mouseover_feature = function(d) {
-	d3.select(this).attr("stroke", "red");
+	d3.select(this).attr("stroke", "red")
 }
 
 var mouseleave_feature = function(d) {
-	d3.select(this).attr("stroke", "green");
+	d3.select(this).style("stroke", "none");
 }
 
 var click_feature = function(d) {
@@ -1270,28 +1271,28 @@ var click_feature = function(d) {
 
 let x_scale = d3.scale.linear()
 	.domain(genomic_region)
-	.range([0+margin.right, 500-margin.left]);
+	.range([0+margin.right, GENOME_DIAGRAM_SIZE.x-margin.left]);
 
 let y_scale = d3.scale.linear()
 	.domain([0, 2*arrow_height+base_line_width])
-	.range([0+margin.top, 100-margin.bottom]);
+	.range([0+margin.top, GENOME_DIAGRAM_SIZE.y-margin.bottom]);
 
 // x axis
 svg.append("line")
 	.style("stroke", "black")
 	.style("stroke-width", base_line_width)
 	.attr("x1", x_scale(genomic_region[0]))
-	.attr("y1", y_scale(arrow_height))
+	.attr("y1", y_scale(arrow_height+base_line_width/2))
 	.attr("x2", x_scale(genomic_region[1]))
-	.attr("y2", y_scale(arrow_height));
+	.attr("y2", y_scale(arrow_height+base_line_width/2));
 
 // border lines
 svg.append("line")
 	.style("stroke", "black")
 	.style("stroke-width", 2)
-	.attr("x1", x_scale(genomic_region[1]))
+	.attr("x1", x_scale(genomic_region[0]))
 	.attr("y1", y_scale(0))
-	.attr("x2", x_scale(genomic_region[1]))
+	.attr("x2", x_scale(genomic_region[0]))
 	.attr("y2", y_scale(2*arrow_height+base_line_width));
 
 // border lines
@@ -1334,9 +1335,14 @@ svg.selectAll("polygon")
 		});
 		return points.join(",");
 	})
-	.attr("stroke", "green")
-	.attr("stroke-width", 2)
-	.style("fill", "green")
+	.style("stroke-width", 4)
+	.style("fill", function(d) {
+		if(d.locus_tag == "{{locus_tag}}") {
+			return "red";
+		} else {
+			return "green";
+		}
+	})
 	.on("mouseover", mouseover_feature)
 	.on("mousemove", mouseleave_feature)
 	.on("click", click_feature);
