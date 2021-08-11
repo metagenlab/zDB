@@ -28,33 +28,41 @@
 
                             {% else %}
                                 <h3>Search limited to 100 hits/Category.</h3>
-                                        
+
+								{% if genes|length > 0%}
+									<li>
+										<a href="#genes" data-toggle="tab">
+										Genes <span class="badge">{{genes|length}}</span><br>
+										</a>
+									</li>
+								{% endif %}
+
+
                                 <div id="my-tab-content" class="tab-content">
-
-                                        <div class="tab-pane active" id="tabsy">
-                                            <table class="table table-striped" id="search_table1" name="search">
-                                                <thead>
-                                                    <tr>
-														{% for col in header %}
-														<th> {{col}} </th>
-														{% endfor %}
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% load static %}
-                                                    {% for values in search_results %}
-														<tr>
-														{% for val in values %}
-															<td>{{val|safe}} </td>
-														{% endfor %}
-														</tr>
+									<div class="tab-pane active" id="genes">
+										<table class="table table-striped" id="search_table1" name="search">
+											<thead>
+												<tr>
+													{% for col in header %}
+													<th> {{col}} </th>
 													{% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div> <!-- panel -->
+												</tr>
+											</thead>
+											<tbody>
+												{% load static %}
+												{% for values in genes %}
+													<tr>
+													{% for val in values %}
+														<td>{{val|safe}} </td>
+													{% endfor %}
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div> <!-- panel -->
 
-                                </div> <!-- tab-content -->
-                            {% endif %} <!-- not echec -->
+                                </div>
+                            {% endif %}
                         </div> <!-- column -->
                     </div> <!-- row -->
                 </div> <!-- page-content-wrapper -->

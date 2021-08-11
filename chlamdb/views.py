@@ -112,6 +112,7 @@ from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleComplete
 from metagenlab_libs.ete_phylo import KOAndCompleteness
 from metagenlab_libs.ete_phylo import Column
 from metagenlab_libs.KO_module import ModuleParser
+
 from metagenlab_libs.chlamdb import search_bar as sb
 
 from ete3 import Tree
@@ -1220,8 +1221,9 @@ def extract_pfam(request, classification="taxon_id"):
     return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
 
 
-def format_ko(ko_id, as_url=False):
-    base = f"K{int(ko_id):05d}"
+def format_ko(ko_id, as_url=False, base=None):
+    if base is None:
+        base = f"K{int(ko_id):05d}"
     if not as_url:
         return base
     return f"<a href=\"/fam_ko/{base}\">{base}</a>"
@@ -1886,8 +1888,9 @@ def venn_ko(request):
     return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
 
-def format_cog(cog_id, as_url=False):
-    base = f"COG{int(cog_id):04d}"
+def format_cog(cog_id, as_url=False, base=None):
+    if base is None:
+        base = f"COG{int(cog_id):04d}"
     if as_url==False:
         return base
     return f"<a href=\"/fam_cog/{base}\">{base}</a>"
@@ -2858,52 +2861,39 @@ def search_bar_helper(fam_name, fam_url, results):
 def search_bar(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     option2status = db.get_config_table()
-
     index = sb.ChlamdbIndex.use_index(settings.SEARCH_INDEX)
     user_query = request.GET.get("accession")
 
-    results = list(index.search(user_query, limit=100))
+    results = list(index.search(user_query, limit=None))
 
     if len(results) == 0:
         ctx = {"search_failed": True, "search_term": user_query}
         return render(request, "chlamdb/search.html", my_locals(ctx))
 
     search_results = []
+    has_ko = option2status.get("KO", False)
+    has_cog = option2status.get("COG", False)
+    has_pfam = option2status.get("pfam", False)
+
+    genes, cog, ko, pfam = [], [], [], []
     for result in results:
-        locus_tag = format_locus(result.locus_tag, to_url=True)
-        gene = str_if_none(result.gene)
-        product = str_if_none(result.product)
-        orthogroup = format_orthogroup(result.og, to_url=True, from_str=True)
-        line = [locus_tag, gene, product, orthogroup]
-
-        if option2status.get("COG", False):
-            cog = search_bar_helper("cog", "fam_cog", result)
-            line.append(cog)
-        if option2status.get("KEGG", False):
-            ko = search_bar_helper("ko", "fam_ko", result)
-            line.append(ko)
-        if option2status.get("pfam", False):
-            pfam = search_bar_helper("pfam", "fam_pfam", result)
-            line.append(pfam)
-        line.append(result.organism)
-        search_results.append(line)
-
-    header = ["accession", "gene", "product", "Orthogroup", "organism"]
+        if result.entry_type == sb.EntryTypes.Gene:
+            locus_tag = format_locus(result.locus_tag, to_url=True)
+            gene = str_if_none(result.name)
+            product = str_if_none(result.description)
+            genes.append([locus_tag, gene, product, result.organism])
+        elif result.entry_type == sb.EntryTypes.COG and has_cog:
+            cog.append([format_cog(base=result.name, as_url=True), result.description])
+        elif result.entry_type == sb.EntryTypes.KO and has_ko:
+            ko.append([format_ko(base=result.name, as_url=True), result.description])
+        elif result.entry_type == sb.EntryTypes.PFAM and has_pfam:
+            pfam.append([result.name, result.description])
+    header = ["Accession", "Gene", "Product", "Organism"]
     insert_index = 4
-    if option2status.get("COG", False):
-        header.insert(insert_index, "COG")
-        insert_index += 1
-    if option2status.get("KEGG", False):
-        header.insert(insert_index, "KO")
-        insert_index += 1
-    if option2status.get("pfam", False):
-        header.insert(insert_index, "PFAM")
-
     ctx = {"search_term": user_query,
             "header": header,
-            "search_results": search_results }
+            "genes": genes }
     return render(request, "chlamdb/search.html", my_locals(ctx))
-
 
 
 def hydropathy(request, locus):
