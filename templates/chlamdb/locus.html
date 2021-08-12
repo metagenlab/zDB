@@ -1306,6 +1306,15 @@ svg.append("line")
 	.attr("x2", x_scale(genomic_region[1]))
 	.attr("y2", y_scale(2*arrow_height+base_line_width));
 
+// background rectangle
+svg.append("rect")
+	.attr("x", x_scale(genomic_region[0]))
+	.attr("y", y_scale(0))
+	.attr("width", x_scale(genomic_region[1])-x_scale(genomic_region[0]))
+	.attr("height", y_scale(2*arrow_height+base_line_width)-y_scale(0))
+	.attr("opacity", .2)
+	.attr("fill", "gray");
+
 // for now, returns a rectangle, arrow to come.
 var get_feature_points = function(feature) {
 	let start = feature.start;
@@ -1338,11 +1347,16 @@ svg.selectAll("polygon")
 		return points.join(",");
 	})
 	.style("stroke-width", 2)
+	.style("opacity", .9)
 	.style("fill", function(d) {
 		if(d.locus_tag == "{{locus_tag}}") {
 			return "red";
-		} else {
+		} else if(d.type=="CDS") {
 			return "green";
+		} else if(d.type=="tmRNA" || d.type=="tRNA" || d.type=="rRNA") {
+			return "orange";
+		} else if(d.type=="pseudo") {
+			return "black";
 		}
 	})
 	.on("mouseover", mouseover_feature)

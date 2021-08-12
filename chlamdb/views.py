@@ -2690,9 +2690,11 @@ def locusx_genomic_region(db, seqid, window):
         loc = FeatureLocation(data.start, data.end, data.strand)
         fet = SeqFeature(location=loc, id=curr_seqid)
         color = colors.green
+        feature_type = data.type
         if seqid==curr_seqid:
             color = colors.red
         elif data.is_pseudo:
+            feature_type = "pseudo"
             color = colors.black
         elif data.type=="tRNA":
             color = colors.orange
@@ -2700,7 +2702,7 @@ def locusx_genomic_region(db, seqid, window):
             color = colors.blue
         gd_features.add_feature(fet, name=feature_name, color=color, label_position="middle",
                 label_size=10, label_strand=1, sigil="ARROW", label=True)
-        features.append(f"{{start: {data.start}, end: {data.end}, strand: {data.strand}, locus_tag: {to_s(data.locus_tag)}}}")
+        features.append(f"{{start: {data.start}, end: {data.end}, strand: {data.strand}, type: {to_s(feature_type)}, locus_tag: {to_s(data.locus_tag)}}}")
     
     asset_dir = "/assets/"
     filename = f"/temp/{filename}"
