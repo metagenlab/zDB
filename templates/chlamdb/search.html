@@ -27,7 +27,9 @@
 								</div>
 
                             {% else %}
-                                <h3>Search limited to 100 hits/Category.</h3>
+                                <h3>Search results </h3>
+
+								<ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
 
 								{% if genes|length > 0%}
 									<li>
@@ -37,13 +39,39 @@
 									</li>
 								{% endif %}
 
+								{% if cogs|length > 0 %}
+									<li>
+										<a href="#cogs" data-toggle="tab">
+										COG <span class="badge">{{cogs|length}}</span><br>
+										</a>
+									</li>
+								{% endif %}
+
+								{% if ko|length > 0 %}
+									<li>
+										<a href="#KO" data-toggle="tab">
+										KEGG orthologs <span class="badge">{{ko|length}}</span><br>
+										</a>
+									</li>
+								{% endif %}
+
+								{% if pfam|length > 0 %}
+									<li>
+										<a href="#PFAM" data-toggle="tab">
+										PFAM domains <span class="badge">{{pfam|length}}</span><br>
+										</a>
+									</li>
+								{% endif %}
+
+								</ul>
+
 
                                 <div id="my-tab-content" class="tab-content">
 									<div class="tab-pane active" id="genes">
 										<table class="table table-striped" id="search_table1" name="search">
 											<thead>
 												<tr>
-													{% for col in header %}
+													{% for col in genes_headers %}
 													<th> {{col}} </th>
 													{% endfor %}
 												</tr>
@@ -51,6 +79,72 @@
 											<tbody>
 												{% load static %}
 												{% for values in genes %}
+													<tr>
+													{% for val in values %}
+														<td>{{val|safe}} </td>
+													{% endfor %}
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div> <!-- panel -->
+
+									<div class="tab-pane" id="cogs">
+										<table class="table table-striped" id="search_table1" name="search">
+											<thead>
+												<tr>
+													{% for col in cog_headers %}
+													<th> {{col}} </th>
+													{% endfor %}
+												</tr>
+											</thead>
+											<tbody>
+												{% load static %}
+												{% for values in cogs %}
+													<tr>
+													{% for val in values %}
+														<td>{{val|safe}} </td>
+													{% endfor %}
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div> <!-- panel -->
+
+									<div class="tab-pane" id="KO">
+										<table class="table table-striped" id="search_table1" name="search">
+											<thead>
+												<tr>
+													{% for col in ko_headers %}
+													<th> {{col}} </th>
+													{% endfor %}
+												</tr>
+											</thead>
+											<tbody>
+												{% load static %}
+												{% for values in ko %}
+													<tr>
+													{% for val in values %}
+														<td>{{val|safe}} </td>
+													{% endfor %}
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div> <!-- panel -->
+
+									<div class="tab-pane" id="PFAM">
+										<table class="table table-striped" id="search_table1" name="search">
+											<thead>
+												<tr>
+													{% for col in pfam_headers %}
+													<th> {{col}} </th>
+													{% endfor %}
+												</tr>
+											</thead>
+											<tbody>
+												{% load static %}
+												{% for values in pfam %}
 													<tr>
 													{% for val in values %}
 														<td>{{val|safe}} </td>

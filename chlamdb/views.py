@@ -1144,8 +1144,11 @@ def venn_orthogroup(request):
     return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
 
 
-def format_pfam(pfam_id, to_url=False):
-    fmt_entry = f"PF{pfam_id:04d}"
+def format_pfam(pfam_id, base=None, to_url=False):
+    if base is None:
+        fmt_entry = f"PF{pfam_id:04d}"
+    else:
+        fmt_entry = base
     if to_url:
         return f"<a href=/fam_pfam/{fmt_entry}>{fmt_entry}</a>"
     return fmt_entry
@@ -2871,7 +2874,7 @@ def search_bar(request):
         return render(request, "chlamdb/search.html", my_locals(ctx))
 
     search_results = []
-    has_ko = option2status.get("KO", False)
+    has_ko = option2status.get("KEGG", False)
     has_cog = option2status.get("COG", False)
     has_pfam = option2status.get("pfam", False)
 
@@ -2883,16 +2886,26 @@ def search_bar(request):
             product = str_if_none(result.description)
             genes.append([locus_tag, gene, product, result.organism])
         elif result.entry_type == sb.EntryTypes.COG and has_cog:
-            cog.append([format_cog(base=result.name, as_url=True), result.description])
+            cog.append([format_cog(None, base=result.name, as_url=True), result.description])
         elif result.entry_type == sb.EntryTypes.KO and has_ko:
-            ko.append([format_ko(base=result.name, as_url=True), result.description])
+            ko.append([format_ko(None, base=result.name, as_url=True), result.description])
         elif result.entry_type == sb.EntryTypes.PFAM and has_pfam:
-            pfam.append([result.name, result.description])
-    header = ["Accession", "Gene", "Product", "Organism"]
+            pfam.append([format_pfam(None, base=result.name, to_url=True), result.description])
+
+    genes_headers = ["Accession", "Gene", "Product", "Organism"]
+    cog_headers = ["COG", "Description"]
+    ko_headers = ["KO", "Description"]
+    pfam_headers = ["PFAM domain", "Description"]
     insert_index = 4
     ctx = {"search_term": user_query,
-            "header": header,
-            "genes": genes }
+            "genes_headers": genes_headers,
+            "genes": genes,
+            "cog_headers": cog_headers,
+            "pfam_headers": pfam_headers, 
+            "ko_headers": ko_headers,
+            "cogs": cog,
+            "pfam": pfam,
+            "ko": ko}
     return render(request, "chlamdb/search.html", my_locals(ctx))
 
 
