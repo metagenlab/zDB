@@ -67,7 +67,9 @@
 
 
                                 <div id="my-tab-content" class="tab-content">
-									<div class="tab-pane active" id="genes">
+
+									{% if genes|length > 0 %}
+									<div class="tab-pane {{gene_active}}" id="genes">
 										<table class="table table-striped" id="search_table1" name="search">
 											<thead>
 												<tr>
@@ -88,8 +90,9 @@
 											</tbody>
 										</table>
 									</div> <!-- panel -->
+									{% endif %}
 
-									<div class="tab-pane" id="cogs">
+									<div class="tab-pane {{cogs_active}}" id="cogs">
 										<table class="table table-striped" id="search_table1" name="search">
 											<thead>
 												<tr>
@@ -109,9 +112,9 @@
 												{% endfor %}
 											</tbody>
 										</table>
-									</div> <!-- panel -->
+									</div>
 
-									<div class="tab-pane" id="KO">
+									<div class="tab-pane {{ko_active}}" id="KO">
 										<table class="table table-striped" id="search_table1" name="search">
 											<thead>
 												<tr>
@@ -133,7 +136,7 @@
 										</table>
 									</div> <!-- panel -->
 
-									<div class="tab-pane" id="PFAM">
+									<div class="tab-pane {{pfam_active}}" id="PFAM">
 										<table class="table table-striped" id="search_table1" name="search">
 											<thead>
 												<tr>

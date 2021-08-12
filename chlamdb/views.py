@@ -2892,12 +2892,26 @@ def search_bar(request):
         elif result.entry_type == sb.EntryTypes.PFAM and has_pfam:
             pfam.append([format_pfam(None, base=result.name, to_url=True), result.description])
 
+    gene_active, cogs_active, ko_active, pfam_active = "active", "", "", ""
+    if len(genes)==0:
+        gene_active = ""
+        if len(cog)>0:
+            cogs_active = "active"
+        elif len(ko)>0:
+            ko_active = "active"
+        elif len(pfam)>0:
+            pfam_active = "active"
+
     genes_headers = ["Accession", "Gene", "Product", "Organism"]
     cog_headers = ["COG", "Description"]
     ko_headers = ["KO", "Description"]
     pfam_headers = ["PFAM domain", "Description"]
     insert_index = 4
     ctx = {"search_term": user_query,
+            "gene_active": gene_active,
+            "cogs_active": cogs_active,
+            "ko_active": ko_active, 
+            "pfam_active": pfam_active,
             "genes_headers": genes_headers,
             "genes": genes,
             "cog_headers": cog_headers,
