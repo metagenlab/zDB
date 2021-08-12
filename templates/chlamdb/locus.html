@@ -1248,6 +1248,10 @@ const margin = {top:5, right: 5, bottom:5, left:5};
 const arrow_height = 40;
 const base_line_width = 1;
 
+// if gene size smaller than this value, 
+// draw a triangle
+const MAX_ARROW_SIZE=300;
+
 var genomic_region =  {{genome_range}};
 var features = {{features|safe}};
 
@@ -1312,7 +1316,7 @@ svg.append("rect")
 	.attr("y", y_scale(0))
 	.attr("width", x_scale(genomic_region[1])-x_scale(genomic_region[0]))
 	.attr("height", y_scale(2*arrow_height+base_line_width)-y_scale(0))
-	.attr("opacity", .2)
+	.attr("opacity", .1)
 	.attr("fill", "gray");
 
 // for now, returns a rectangle, arrow to come.
@@ -1321,18 +1325,22 @@ var get_feature_points = function(feature) {
 	let stop = feature.end;
 	let top_y = 0;
 	let bot_y = arrow_height;
-
-	if(feature.strand == -1) {
-		start = feature.end;
-		stop = feature.start;
-		top_y += arrow_height+base_line_width;
-		bot_y += arrow_height+base_line_width;
-	}
 	top_left = {x: start, y:top_y};
 	bottom_left = {x: start, y:bot_y};
 	top_right = {x: stop, y:top_y};
 	bottom_right = {x: stop, y:bot_y};
-	return [top_left, top_right, bottom_right, bottom_left];
+
+	points = [top_left, top_right, bottom_right, bottom_left];
+
+	if(feature.strand == -1) {
+		let midpoint = (feature.start+feature.end)/2;
+		for(point in points) {
+			let x_coord = points[point].x;
+			points[point].y += arrow_height+base_line_width;
+			points[point].x -= 2*(x_coord-midpoint);
+		}
+	}
+	return points;
 }
 
 svg.selectAll("polygon")
