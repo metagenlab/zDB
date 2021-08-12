@@ -70,7 +70,7 @@ function clearBox(elementID)
 				{% endif %}
 
 
-				{% if optional2status|keyvalue:"BLAST_database"%}
+				{% if optional2status|keyvalue:"BLAST_database" and n_refseq_homologs > 0 %}
 				<li>
 					<a href="#refseq_homologs_tab" data-toggle="tab">
 						RefSeq homologs <span class="badge">{{n_refseq_homologs}}</span>
