@@ -1250,7 +1250,8 @@ const base_line_width = 1;
 
 // if gene size smaller than this value, 
 // draw a triangle
-const MAX_ARROW_SIZE=300;
+const MAX_ARROW_SIZE=350;
+const ARROW_TUBE_SIZE = 18;
 
 var genomic_region =  {{genome_range}};
 var features = {{features|safe}};
@@ -1319,18 +1320,29 @@ svg.append("rect")
 	.attr("opacity", .1)
 	.attr("fill", "gray");
 
-// for now, returns a rectangle, arrow to come.
+
 var get_feature_points = function(feature) {
 	let start = feature.start;
 	let stop = feature.end;
 	let top_y = 0;
 	let bot_y = arrow_height;
-	top_left = {x: start, y:top_y};
-	bottom_left = {x: start, y:bot_y};
-	top_right = {x: stop, y:top_y};
-	bottom_right = {x: stop, y:bot_y};
 
-	points = [top_left, top_right, bottom_right, bottom_left];
+	if(stop-start <= MAX_ARROW_SIZE) {
+		top_left = {x: start , y:top_y};
+		bottom_left = {x:start, y:bot_y};
+		spike = {x:stop, y:(top_y+bot_y)/2};
+		points = [top_left, bottom_left, spike];
+	} else {
+		let diff = (arrow_height-ARROW_TUBE_SIZE)/2;
+		arrow_top = {x: stop-MAX_ARROW_SIZE, y:top_y};
+		arrow_bot = {x: stop-MAX_ARROW_SIZE, y:bot_y};
+		arrow_spike = {x: stop, y:(top_y+bot_y)/2};
+		tube_beg_top = {x:start, y: diff};
+		tube_beg_bot = {x:start, y: diff+ARROW_TUBE_SIZE};
+		tube_end_top = {x: stop-MAX_ARROW_SIZE, y:diff}
+		tube_end_bot = {x: stop-MAX_ARROW_SIZE, y:diff+ARROW_TUBE_SIZE}
+		points = [tube_beg_top, tube_end_top, arrow_top, arrow_spike, arrow_bot, tube_end_bot, tube_beg_bot];
+	}
 
 	if(feature.strand == -1) {
 		let midpoint = (feature.start+feature.end)/2;
