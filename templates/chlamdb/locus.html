@@ -1195,6 +1195,7 @@ $(document).ready(function(){
 });
 
 
+{% if pfam_def|length > 0 %}
 window.onload = function() {
 	var ft2 = new FeatureViewer("{{translation}}",
 		"#div_features", 
@@ -1214,6 +1215,7 @@ window.onload = function() {
 		ft2.addFeature(curr_fet);
 	}
 }
+{% endif %}
 
 $(document).ready(function() {
 	$('#blast_nr_table').DataTable( {
