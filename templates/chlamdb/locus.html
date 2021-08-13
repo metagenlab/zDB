@@ -446,12 +446,11 @@ function clearBox(elementID)
 							  <div class="panel-heading">
 								<h3 class="panel-title">Genomic region</h3>
 							  </div>
-                            <div class="row" style="height:100px; display:flex; justify-content:center; align-items:center;">
-                                <object type="image/svg+xml"  data="{% static genomic_region_svg %}" id="genomic_region"></object>
+                            <div class="row" style="height:100px; display:flex; justify-content:center; align-items:center; margin-bottom:30px">
+								<div id="test_d3_genomic_region">
+								</div>
                             </div>
 
-							<div id="test_d3_genomic_region">
-							</div>
 
 						  </div>
 						  </div>
@@ -1246,7 +1245,12 @@ function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 var genomic_region =  {{genome_range}};
 var features = {{features|safe}};
 
-const GENOME_DIAGRAM_SIZE = {x: 600*(genomic_region[1]-genomic_region[0])/{{window_size}}, y:80};
+const TEXT_FIELD_SIZE = 40;
+const DIAGRAM_VERTICAL_SIZE = 60;
+
+const GENOME_DIAGRAM_SIZE = {x: 600*(genomic_region[1]-genomic_region[0])/{{window_size}},
+	y:TEXT_FIELD_SIZE+DIAGRAM_VERTICAL_SIZE};
+
 const margin = {top:5, right: 5, bottom:5, left:5};
 const arrow_height = 40;
 const base_line_width = 1;
@@ -1265,11 +1269,15 @@ var svg = d3.select("#test_d3_genomic_region")
 
 var mouseover_feature = function(d) {
 	d3.select(this)
-		.style("stroke", "red")
+		.style("stroke", "red");
+	d3.select("#"+d.locus_tag)
+		.style("stroke", "red");
 }
 
 var mouseleave_feature = function(d) {
 	d3.select(this)
+		.style("stroke", "none");
+	d3.select("#"+d.locus_tag)
 		.style("stroke", "none");
 }
 
@@ -1283,7 +1291,7 @@ let x_scale = d3.scale.linear()
 
 let y_scale = d3.scale.linear()
 	.domain([0, 2*arrow_height+base_line_width])
-	.range([0+margin.top, GENOME_DIAGRAM_SIZE.y-margin.bottom]);
+	.range([TEXT_FIELD_SIZE, TEXT_FIELD_SIZE+DIAGRAM_VERTICAL_SIZE]);
 
 // x axis
 svg.append("line")
@@ -1355,6 +1363,19 @@ var get_feature_points = function(feature) {
 	}
 	return points;
 }
+
+svg.selectAll("text")
+	.data(features)
+	.enter()
+	.append("text")
+	.attr("x", d => x_scale((d.start+d.end)/2))
+	.attr("y", TEXT_FIELD_SIZE)
+	.attr("text-anchor", "start")
+	.attr("transform", function(d ) {
+		return "rotate(315,"+x_scale((d.start+d.end)/2)+","+TEXT_FIELD_SIZE+")";
+	})
+	.attr("id", d => d.locus_tag)
+	.text(d => d.gene);
 
 svg.selectAll("polygon")
 	.data(features)

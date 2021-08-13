@@ -2706,7 +2706,7 @@ def locusx_genomic_region(db, seqid, window):
             color = colors.blue
         gd_features.add_feature(fet, name=feature_name, color=color, label_position="middle",
                 label_size=10, label_strand=1, sigil="ARROW", label=True)
-        features.append(f"{{start: {data.start}, end: {data.end}, strand: {data.strand}, type: {to_s(feature_type)}, locus_tag: {to_s(data.locus_tag)}}}")
+        features.append(f"{{start: {data.start}, gene: {to_s(feature_name)}, end: {data.end}, strand: {data.strand}, type: {to_s(feature_type)}, locus_tag: {to_s(data.locus_tag)}}}")
     
     asset_dir = "/assets/"
     filename = f"/temp/{filename}"
