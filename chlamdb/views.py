@@ -2683,39 +2683,17 @@ def locusx_genomic_region(db, seqid, window):
         window_stop = contig_size
     genome_range = [window_start, window_stop]
 
-    gd_diagram = GenomeDiagram.Diagram(f"{seqid}")
-    gd_track = gd_diagram.new_track(1, name=hsh_organism[seqid], greytrack=True)
-    gd_features = gd_track.new_set()
     for curr_seqid, data in all_infos.iterrows():
         feature_name = ""
         if "gene" in data and not pd.isna(data.gene):
             feature_name = data.gene
-
-        loc = FeatureLocation(data.start, data.end, data.strand)
-        fet = SeqFeature(location=loc, id=curr_seqid)
-        color = colors.green
         feature_type = data.type
-        if seqid==curr_seqid:
-            color = colors.red
-        elif data.is_pseudo:
-            feature_type = "pseudo"
-            color = colors.black
-        elif data.type=="tRNA":
-            color = colors.orange
-        elif data.type=="rRNA":
-            color = colors.blue
-        gd_features.add_feature(fet, name=feature_name, color=color, label_position="middle",
-                label_size=10, label_strand=1, sigil="ARROW", label=True)
-        features.append(f"{{start: {data.start}, gene: {to_s(feature_name)}, end: {data.end}, strand: {data.strand}, type: {to_s(feature_type)}, locus_tag: {to_s(data.locus_tag)}}}")
-    
-    asset_dir = "/assets/"
-    filename = f"/temp/{filename}"
-    # the yt parameters allows longer gene names to not be cropped out of the image
-    gd_diagram.draw(format="linear", pagesize=(100, 600), start=all_infos.start.min(),
-            end=all_infos.end.max(), fragments=1, yt=.2)
-    gd_diagram.write(settings.BASE_DIR+asset_dir+filename, "SVG")
-    return {"genomic_region_svg": filename,
-            "genome_range": genome_range, "window_size": 2*window,
+        features.append((
+            f"{{start: {data.start}, gene: {to_s(feature_name)}, end: {data.end},"
+            f"strand: {data.strand}, type: {to_s(feature_type)},"
+            f"locus_tag: {to_s(data.locus_tag)}}}"
+        ))
+    return {"genome_range": genome_range, "window_size": 2*window,
             "features": "[" + ",".join(features)+"]"}
 
 
