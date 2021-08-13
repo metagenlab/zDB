@@ -1243,7 +1243,10 @@ $('.dropdown-toggle').dropdown()
 
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 
-const GENOME_DIAGRAM_SIZE = {x: 600, y:80};
+var genomic_region =  {{genome_range}};
+var features = {{features|safe}};
+
+const GENOME_DIAGRAM_SIZE = {x: 600*(genomic_region[1]-genomic_region[0])/{{window_size}}, y:80};
 const margin = {top:5, right: 5, bottom:5, left:5};
 const arrow_height = 40;
 const base_line_width = 1;
@@ -1251,10 +1254,8 @@ const base_line_width = 1;
 // if gene size smaller than this value, 
 // draw a triangle
 const MAX_ARROW_SIZE=350;
-const ARROW_TUBE_SIZE = 18;
+const ARROW_TUBE_SIZE = 17;
 
-var genomic_region =  {{genome_range}};
-var features = {{features|safe}};
 
 var svg = d3.select("#test_d3_genomic_region")
 	.append("svg")
@@ -1278,7 +1279,7 @@ var click_feature = function(d) {
 
 let x_scale = d3.scale.linear()
 	.domain(genomic_region)
-	.range([0+margin.right, GENOME_DIAGRAM_SIZE.x-margin.left]);
+	.range([0, GENOME_DIAGRAM_SIZE.x]);
 
 let y_scale = d3.scale.linear()
 	.domain([0, 2*arrow_height+base_line_width])

@@ -2669,6 +2669,8 @@ def locusx_genomic_region(db, seqid, window):
     if window_start<0:
         window_start=0
     df_seqids = db.get_seqid_in_neighborhood(seqid, window_start, window_stop)
+    bioentry = db.get_bioentry(seqid)
+    contig_size = db.get_contig_size(bioentry)
 
     hsh_organism = db.get_organism([seqid], id_type="seqid")
     infos = db.get_proteins_info(df_seqids.index.tolist(),
@@ -2677,6 +2679,8 @@ def locusx_genomic_region(db, seqid, window):
     all_infos = infos.join(cds_type).join(df_seqids)
 
     features = []
+    if window_stop > contig_size:
+        window_stop = contig_size
     genome_range = [window_start, window_stop]
 
     gd_diagram = GenomeDiagram.Diagram(f"{seqid}")
@@ -2710,9 +2714,8 @@ def locusx_genomic_region(db, seqid, window):
     gd_diagram.draw(format="linear", pagesize=(100, 600), start=all_infos.start.min(),
             end=all_infos.end.max(), fragments=1, yt=.2)
     gd_diagram.write(settings.BASE_DIR+asset_dir+filename, "SVG")
-
     return {"genomic_region_svg": filename,
-            "genome_range": genome_range,
+            "genome_range": genome_range, "window_size": 2*window,
             "features": "[" + ",".join(features)+"]"}
 
 
