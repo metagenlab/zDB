@@ -2688,6 +2688,8 @@ def locusx_genomic_region(db, seqid, window):
         if "gene" in data and not pd.isna(data.gene):
             feature_name = data.gene
         feature_type = data.type
+        if data.is_pseudo:
+            feature_type = "pseudo"
         features.append((
             f"{{start: {data.start}, gene: {to_s(feature_name)}, end: {data.end},"
             f"strand: {data.strand}, type: {to_s(feature_type)},"
