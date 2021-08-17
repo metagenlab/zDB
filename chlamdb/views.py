@@ -27,6 +27,8 @@ import re
 import os
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
+from django.http import JsonResponse
+
 from chlamdb.forms import make_contact_form
 from chlamdb.forms import make_plot_form
 from chlamdb.forms import SearchForm
@@ -13800,4 +13802,17 @@ def ko_comparison(request):
     n_ko = len(mat_include.index.tolist())
     envoi_comp = True
     return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
+
+
+def genomic_locus_tag_infos(request):
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    locus_tag = request.POST.get("locus_tag", None)
+    
+    if locus_tag is None:
+        return JsonResponse({"error_msg": "no locus_tag"})
+    seqid, is_pseudo = db.get_seqid(locus_tag=locus_tag, feature_type=False)
+    prot_infos = db.get_proteins_info([seqid], as_df=True)
+    entry = prot_infos.loc[seqid]
+    data = {"product": entry["product"]}
+    return JsonResponse(data)
 

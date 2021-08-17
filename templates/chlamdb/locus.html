@@ -1142,6 +1142,8 @@ function clearBox(elementID)
 
 </body>
 
+{% csrf_token %}
+
 <script>
 
 
@@ -1262,6 +1264,19 @@ const base_line_width = 1;
 const MAX_ARROW_SIZE=350;
 const ARROW_TUBE_SIZE = 17;
 
+const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+
+var Tooltip = d3.select("#test_d3_genomic_region")
+	.append("div")
+	.style("opacity", 0)
+	.attr("class", "tooltip")
+	.style("background-color", "white")
+	.style("border", "solid")
+	.style("border-width", "2px")
+	.style("border-radius", "5px")
+	.style("padding", "5px");
+
 
 var svg = d3.select("#test_d3_genomic_region")
 	.append("svg")
@@ -1270,6 +1285,21 @@ var svg = d3.select("#test_d3_genomic_region")
 	.append("g");
 
 var mouseover_feature = function(d) {
+	$("body").css("cursor", "progress");
+	$.ajax({
+		method: "POST",
+		url: "/genomic_locus_tag",
+		headers: {"X-CSRFToken": csrftoken},
+		data: {locus_tag: d.locus_tag, },
+		dataType: "json",
+		success: function(data) {
+			$("body").css("cursor", "default");
+			Tooltip.style("opacity", 1)
+				.html(data.product)
+				.style("left", (d3.mouse(this)[0]) + "px")
+				.style("top", (d3.mouse(this)[1]) + "px");
+		}
+	});
 	d3.select(this)
 		.style("stroke", "red");
 	d3.select("#"+d.locus_tag)
@@ -1277,10 +1307,12 @@ var mouseover_feature = function(d) {
 }
 
 var mouseleave_feature = function(d) {
+	Tooltip.style("opacity", 0);
 	d3.select(this)
 		.style("stroke", "none");
 	d3.select("#"+d.locus_tag)
 		.style("stroke", "none");
+	$("body").css("cursor", "default");
 }
 
 var click_feature = function(d) {
