@@ -58,16 +58,22 @@ The user can select which analyses she/he wants to perform turning on or off som
 
 2) HOW TO NAVIGATE INTO THE COMPARATIVE DATABASE 
 	-How do I identify which proteins are part of a specific orthogroup?
-	-How do I use the search bar? – list of terms (cog, kegg ,accession)
+In the 'analyses menu', in the section called 'Comparison', you can select  'orthologies' and discovering the orthogroups identified in a specific 		genome or those shared by several genomes of interest. Clicking on one of the orthogroup names (example: group_50) it lists the genes that belongs to it, 	the COG and KEG annotations,the organization of Pfam domains and info regarding transmembrane domains.
+	-How do I use the search bar? –
+The search bar can be used to search any term into the datbase. For example it is possible to access a cog, a kegg or an accession term directly typing it 	   in the searchbar.  
 	-How to extract metabolic information?
 	--Be sure that this type of analysis was turned on when you run the pipeline --
-	In the menu through the metabolism/kegg maps section you can search for which KEGG maps have been annotated for each genome and ...
-	 while with kegg maps section you can investigate in a specific KEGG category of interest and visualize the KEGG modules identifed for each genome and which ko entries belongs to each module. Besides, you can visualize a list of all the proteins annotated with ko identifiers belonging to a selected Kegg module and navigate to the locus where a selected protein is present in a specific genome. This analysis let you navigate from a global kegg characterizations of your genomes to a pecific description of each kegg-described protein.  
+In the 'analyses menu', in the section called 'Metabolism', you can select 'kegg modules' and investigate a specific KEGG category of interest (example: Energy metabolism, lipid metabolism, etc). Within the category,for each gneome you can visualize the KEGG modules and the ko entries that belong to each module. Besides, you can list the proteins, annotated with ko identifiers further linked to the Ko database, that belong to a selected Kegg module and navigate to the protein locus. This analysis let you navigate from a global kegg characterizations of your genomes to a more detailed description of each kegg-described protein.  
+If you select 'kegg maps' you can visualize whch genes of each metabolic map are carried by a selected genome of interest.
 -Other analysis ...
-
+A phylogenetic tree annotated with the presence/absence and quantification of the genes which belong to each KO entry is available (for both a single entry with an addiitonal comparison with the associated orthogroup, and all the entries together) (MAPS BOTH FOR CATEOGIRES AND SUBCATEGOIES - I DON'T GET THE DIFFERENCE ABOUT IT - IT DOES NOT SEEM TO DERIVE FROM THE KEGG DATABASE).
+In addition, you can compare the strains and have an easy-readable table that reports all the ko modules the number of proteins that belongs to each one. THERE IS ALSO nKO 	nKO+ THAT I DO NOT GET)
+Differently, you can use the Kegg Orthologs anlyses in the 'analyses menu', section called 'Comparison', where you can compare two or more genomes and idenfity which KO entries have in common (you can also exclude those which belong to other genome(s)). For each Ko entry you can investigate which pathway and module it is part of, how many proteins are associated with it and of which orthogroup(s) they are part. Discrepencies between orthogroup clustering and ko prediction are higlighted in the phylogentic tree. Similar comparison can be done focusing on COGs and orthologs. 
 3) BIOLOGICAL ASPECTS 
 	-Are plasmids identified?
 Genes belonging to plasmids are reported only if this feature is annotated in the input file, otherwise no distinction between chromosome and plasmids is done. 
-	-Orthogroups accurate (?)
+	-How have orthogroups been identified?
+Orthogroups (or orthologous groups) were identified with OrthoFinder (https://github.com/davidemms/OrthoFinder). This tools identify orthogroups based on BLASTp (parameters: -evalue 0.001) results using the MCL (https://micans.org/mcl/) clustering software.
+	
       
 
