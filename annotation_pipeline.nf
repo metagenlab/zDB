@@ -105,7 +105,7 @@ annotations.filter_out_unannotated(gbk_files)
 	"""
 }
 
-checked_gbks.into { to_load_gbk_into_db;  to_convert_gbk_to_faa; to_convert_gbk_to_fna }
+checked_gbks.into { to_load_gbk_into_db;  to_convert_gbk_to_faa; to_convert_gbk_to_faa_SEQ; to_convert_gbk_to_fna_SEQ ; to_convert_gbk_to_ffn_SEQ}
 
 process check_locus_tag_uniqueness {
   
@@ -277,7 +277,6 @@ process gbk_check {
 
 process convert_gbk_to_faa {
 
-  publishDir 'data/faa_locus', mode: 'copy', overwrite: true
 
   container "$params.annotation_container"
 
@@ -308,69 +307,7 @@ faa_locus1.into { faa_genomes1
                   to_checkm
                   to_macsysfinder 
                   inc_effectors_prediction
-		  faa_files_makeblastdb}
-
-process makeblastdb_each_faa {
-
-publishDir 'data/faa_locus/makeblastdb_each_faa/'
-
-  input:
-  file faa from faa_files_makeblastdb
-
-  output:
-  file "${faa.baseName}_merged_faa_blastdb*" into custom_each_faa_blastdb
-
-  script:
-    """
-        makeblastdb -in ${faa} -input_type fasta -parse_seqids -dbtype prot -out  ${faa.baseName}_merged_faa_blastdb
-
-    """
-}
-
-
-
-
-process convert_gbk_to_fna {
-
-  publishDir 'data/fna_locus/', mode: 'copy', overwrite: true
-
-  input:
-   each file(edited_gbk)  from to_convert_gbk_to_fna
-
-  output:
-  file "${edited_gbk.baseName}.fna" into fna_files
-
-  script:
-  """
-        #!/usr/bin/env python
-        import annotations
-        annotations.convert_gbk_to_fna("${edited_gbk}", "${edited_gbk.baseName}.fna")
-  """
-}
-
-fna_files.into {fna_files_makeblastdb
-                fna_files_2
-                fna_files_3}
-
-
-process makeblastdb_each_fna {
-
-publishDir 'data/fna_locus/makeblastdb_each_fna/'
-
-  input:
-  file fna from fna_files_makeblastdb
-
-  output:
-  file "${fna.baseName}_merged_fna_blastdb*" into custom_each_fna_blastdb
-
-  script:
-    """
-        makeblastdb -in ${fna} -input_type fasta -parse_seqids -dbtype nucl -out  ${fna.baseName}_merged_fna_blastdb
-
-    """
-}
-
-
+		  }
 
 
 faa_locus2.collectFile(name: 'merged.faa', newLine: true)
@@ -410,7 +347,7 @@ nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
         to_pdb_mapping
         to_oma_mapping
         to_filter_sequences
-	to_makeblastdb }
+	 }
 
 merged_faa_chunks.splitFasta( by: 300, file: "chunk_" )
 .into { to_rpsblast_COG
@@ -421,69 +358,192 @@ merged_faa_chunks.splitFasta( by: 300, file: "chunk_" )
         to_PRIAM
         to_psortb }
 
+
+
+
+
+process convert_gbk_to_fna {
+
+  publishDir 'blast_DB/fna/fna_SEQ', mode: 'copy', overwrite: true
+
+  input:
+   each file(edited_gbk)  from to_convert_gbk_to_fna_SEQ
+
+  output:
+  file "${edited_gbk.baseName}.fna" into fna_files_SEQ
+
+  script:
+  """
+        #!/usr/bin/env python
+        import annotations
+        annotations.convert_gbk_to_fna_SEQ("${edited_gbk}", "${edited_gbk.baseName}.fna")
+  """
+}
+fna_files_SEQ.into {fna_files_SEQ_1; fna_files_SEQ_2}
+
+process convert_gbk_to_faa_seq {
+
+  publishDir 'blast_DB/faa/faa_SEQ', mode: 'copy', overwrite: true
+
+  container "$params.annotation_container"
+
+  echo false
+
+  input:
+  each file(edited_gbk) from  to_convert_gbk_to_faa_SEQ
+
+  output:
+  file "*.faa" into faa_files_SEQ
+
+  script:
+  """
+	#!/usr/bin/env python
+	import annotations
+
+	annotations.convert_gbk_to_faa_SEQ("${edited_gbk}", "${edited_gbk.baseName}.faa")
+  """
+}
+faa_files_SEQ.into {faa_files_SEQ_1; faa_files_SEQ_2}
+faa_files_SEQ_1.collectFile(name: 'merged_SEQ.faa', newLine: true).set { merged_faa_makeblastdb}
+
+process convert_gbk_to_ffn {
+
+  publishDir 'blast_DB/ffn/ffn_seq', mode: 'copy', overwrite: true
+
+  input:
+   each file(edited_gbk)  from to_convert_gbk_to_ffn_SEQ
+
+  output:
+  file "${edited_gbk.baseName}.ffn" into ffn_files_seq
+
+  script:
+  """
+        #!/usr/bin/env python
+        import annotations
+        annotations.convert_gbk_to_ffn_seq("${edited_gbk}", "${edited_gbk.baseName}.ffn")
+  """
+}
+ffn_files_seq.into{ffn_files_seq_1 ; ffn_files_seq_2}
+ffn_files_seq_1.collectFile(name: 'merged_seq.ffn', newLine: true).set { merged_ffn_makeblastdb}
+
+
+
+
+process makeblastdb_each_faa {
+
+publishDir 'blast_DB/faa', mode: 'copy', overwrite: true
+
+  input:
+  file faa from faa_files_SEQ_2
+
+  output:
+  file "${faa.baseName}*" into custom_each_faa_blastdb
+
+  script:
+    """
+        makeblastdb -in ${faa} -input_type fasta -parse_seqids -dbtype prot -out  ${faa.baseName}
+    """
+}
+
+
+
+process makeblastdb_each_fna {
+
+publishDir 'blast_DB/fna/' , mode: 'copy', overwrite: true
+
+  input:
+  file fna from fna_files_SEQ_2
+
+  output:
+  file "${fna.baseName}*" into custom_each_fna_blastdb
+
+  script:
+    """
+        makeblastdb -in ${fna} -input_type fasta -parse_seqids -dbtype nucl -out  ${fna.baseName}
+
+    """
+}
+
+process makeblastdb_each_ffn {
+
+publishDir 'blast_DB/ffn/' , mode: 'copy', overwrite: true
+
+  input:
+  file ffn from ffn_files_seq_2
+
+  output:
+  file "${ffn.baseName}*" into custom_each_ffn_blastdb
+
+  script:
+    """
+        makeblastdb -in ${ffn} -input_type fasta -parse_seqids -dbtype nucl -out  ${ffn.baseName}
+
+    """
+}
+
+
+
 process makeblastdb_merged_faa {
 
-  publishDir 'data/faa_locus/makeblastdb_merged_faa/'
+  publishDir 'blast_DB/faa/', mode: 'copy', overwrite: true
 
         input:
-        file 'merged_nr.faa' from to_makeblastdb
+        file 'merged_SEQ.faa' from merged_faa_makeblastdb
 
         output:
-        file 'merged_faa_blastdb*' into custom_merged_faa_blastdb
+        file 'merged*' into custom_merged_faa_blastdb
 
         script:
         """
-        makeblastdb -in merged_nr.faa -input_type fasta -parse_seqids -dbtype prot -out merged_faa_blastdb
+        makeblastdb -in merged_SEQ.faa -input_type fasta -parse_seqids -dbtype prot -out merged
 
         """
 }
 
-
-
-
-
-fna_files_2.collectFile(name: 'merged.fna', newLine: true)
-        .set {merged_fna0}
-
-process get_nr_sequences_fna {
-
-  input:
-   file (seq) from merged_fna0
-   file genome_list from fna_files_3.collect()
-
-  output:
-
-   file 'nr.fna' into nr_seqs_fna
-   
-
-  script:
-    fasta_file = seq.name
-
-   """
-        #!/usr/bin/env python
-
-        import annotations
-        annotations.get_nr_sequences_fna("${fasta_file}", "${genome_list}".split())
-  """
-}
 
 
 process makeblastdb_merged_fna {
 
-  publishDir 'data/fna_locus/makeblastdb_merged_fna/'
+  publishDir 'blast_DB/fna/', mode: 'copy', overwrite: true
 
         input:
-        file 'nr.fna' from nr_seqs_fna
+        file 'merged_SEQ.fna' from fna_files_SEQ_1.collectFile(name: 'merged_SEQ.fna', newLine: true)
 
         output:
-        file 'merged_fna_blastdb*' into custom_merged_fna_blastdb
+        file 'merged*' into custom_merged_fna_blastdb
 
         script:
         """
-        makeblastdb -in nr.fna -input_type fasta -parse_seqids -dbtype nucl -out merged_fna_blastdb
+        makeblastdb -in merged_SEQ.fna -input_type fasta -parse_seqids -dbtype nucl -out merged
 
         """
 }
+
+process makeblastdb_merged_ffn {
+
+  publishDir 'blast_DB/ffn/', mode: 'copy', overwrite: true
+
+        input:
+        file 'merged_SEQ.ffn' from merged_ffn_makeblastdb
+
+        output:
+        file 'merged*' into custom_merged_ffn_blastdb
+
+        script:
+        """
+        makeblastdb -in merged_SEQ.ffn -input_type fasta -parse_seqids -dbtype nucl -out merged
+
+        """
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1640,6 +1700,9 @@ process load_base_db {
 
     print("Loading checkm results", flush=True)
     setup_chlamdb.load_genomes_info(kwargs, gbk_list, "$checkm_results", "$db_base")
+
+    print("Loading blastDBs", flush=True)
+    setup_chlamdb.load_blastDBs(kwargs, "$db_base") #turn on the BLAST_database value of the config_table of the SQL database (by default it is turned on, otherwise it will depend on the user selection for blast dbs)
     """
 }
 
