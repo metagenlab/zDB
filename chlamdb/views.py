@@ -2618,8 +2618,7 @@ class LocusHeatmapColumn(SimpleColorColumn):
 
 def get_sequence(db, seqid, flanking=0):
     loc      = db.get_gene_loc([seqid])
-    bioentry = db.get_bioentry(from_val=seqid)
-    seq      = db.get_DNA_sequence(bioentry)
+    bioentry, accession, length, seq= db.get_bioentry_list(seqid, search_on="seqid")
     strand, start, stop = loc[seqid]
     start -= 1
 
