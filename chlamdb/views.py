@@ -9782,20 +9782,6 @@ def circos_main(request):
         target_taxons = eval(request.POST["target_list"])
         highlight = eval(request.POST["highlight"])
         
-        if len(target_taxons) == 0:
-            try:
-                sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (reference_taxon)
-                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-                target_taxons = ordered_taxons[0:10]
-            except:
-                sql_order = 'select taxon_2 from comparative_tables_shared_orthogroups where taxon_1=%s order by n_shared_orthogroups DESC;' % (reference_taxon)
-
-                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-                target_taxons = ordered_taxons[0:10]   
-                         
-        task = run_circos_main.delay(reference_taxon, target_taxons, highlight)
-        print("task", task)
-        task_id = task.id
         envoi_circos = True
         envoi_region = True
             
@@ -9822,7 +9808,6 @@ def circos_main(request):
         #sql = 'select locus_tag,traduction from orthology_detail_k_cosson_05_16 where orthogroup in (%s) and accession="NC_016845"' % ('"'+'","'.join(highlight)+'"')
 
         task = run_circos_main.delay(reference_taxon, target_taxons, highlight)
-        print("task", task)
         task_id = task.id
         envoi_circos = True
         envoi_region = True
@@ -9925,28 +9910,82 @@ def circos_blastnr(request):
 
 
 def circos(request):
-    biodb = settings.BIODB
+    
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
 
-    circos_form_class = make_circos_form(biodb)
-    server, db = manipulate_biosqldb.load_db(biodb)
+    circos_form_class = make_circos_form(db)
 
     if request.method == 'POST':
 
         form = circos_form_class(request.POST)
 
         if form.is_valid():
-            reference_taxon = form.cleaned_data['circos_reference']
-            target_taxons = form.cleaned_data['targets']
-            task = run_circos.delay(reference_taxon, target_taxons)
-            print("task", task)
-            return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
-        else:
-            return HttpResponse(json.dumps({'task_id': None}), content_type='application/json')
+            from metagenlab_libs import circosjs
+            
+            reference = form.cleaned_data['circos_reference']
+            targets = form.cleaned_data['targets']
+            target_taxons = form.get_target_taxids()
+            reference_taxon = form.get_ref_taxid()
+
+            print("reference_taxon", reference_taxon)
+            print("target_taxons", target_taxons)
+            #task = run_circos.delay(reference_taxon, target_taxons)
+            
+            # "bioentry_id", "accession" ,"length"
+            df_bioentry = db.get_bioentry_list(reference_taxon)
+            
+            # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
+            df_feature_location = db.get_features_location(reference_taxon).set_index(["seqfeature_id"])
+            
+            # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
+            df_identity = db.get_identity_closest_homolog(reference_taxon, target_taxons).set_index(["target_taxid"])
+            
+            c = circosjs.CircosJs()
+            
+            c.add_contigs_data(df_bioentry)
+            
+            # sort taxons by number of homologs (from mot similar to most dissmilar)
+            target_taxon_n_homologs = df_identity.groupby(["target_taxid"]).count()["seqfeature_id_1"].sort_values(ascending=False)
+            locus2seqfeature_id = db.get_hsh_locus_to_seqfeature_id()
+            seqfeature_id2locus_tag = {value:key for key, value in locus2seqfeature_id.items()}
+            heatmap_data_list = {}
+            # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
+            # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
+            # join on seqfeature id
+            df_feature_location["gene"] = df_feature_location["gene"].fillna("-")
+            df_feature_location["gene_product"] = df_feature_location["product"].fillna("-")
+            
+            df_feature_location = df_feature_location.rename(columns={"locus_tag":"locus_ref"})
+            #= [seqfeature_id2locus_tag[seqfeature_id] for seqfeature_id in df_feature_location.index]
+            minus_strand = df_feature_location.set_index("strand").loc[-1]
+            plus_strand = df_feature_location.set_index("strand").loc[1]
+            c.add_gene_track(minus_strand, "minus", color="gray", sep=0, radius_diff=0.04)
+            c.add_gene_track(plus_strand, "plus", color="gray", sep=0, radius_diff=0.04)
+
+            # iterate ordered list of target taxids, add track to circos
+            for n, target_taxon in enumerate(target_taxon_n_homologs.index):
+                df_combined = df_feature_location.join(df_identity.loc[target_taxon].reset_index().set_index("seqfeature_id_1")).reset_index()
+                df_combined.identity = df_combined.identity.fillna(0).astype(int)
+                df_combined.bioentry_id = df_combined.bioentry_id.astype(str)
+                
+                # only keep the highest identity for each seqfeature id
+                df_combined = df_combined.sort_values('identity', ascending=False).drop_duplicates('index').sort_index()
+                df_combined["locus_tag"] = [seqfeature_id2locus_tag[seqfeature_id] if not pd.isna(seqfeature_id) else None for seqfeature_id in df_combined["seqfeature_id_2"]]
+                # comp is a custom scale with missing orthologs coloured in light blue
+                if n == 0:
+                    sep = 0.03
+                else:
+                    sep= 0.01
+                c.add_heatmap_track(df_combined, f"target_{target_taxon}", color="comp", sep=sep, radius_diff=0.04)
+
+            js_code = c.get_js_code()
+            envoi = True
     else:
         form = circos_form_class()
     
     local_vars = my_locals(locals())
-    local_vars["form"] = form
+    #local_vars["form"] = form
     
     return render(request, 'chlamdb/circos.html', local_vars)
 
