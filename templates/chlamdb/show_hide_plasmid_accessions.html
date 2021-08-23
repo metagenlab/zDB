@@ -4,9 +4,11 @@ $(document).ready(function() {
 
 	/* only show selected genomes as possible references */
 	$("#id_orthologs_in").change(function() {
-		console.log("In id_orthologs_in changed");
+		console.log("In id_orthologs_in changed" + this.value);
 		var x = document.getElementById("id_orthologs_in");
-		var y = document.getElementById("id_orthologs_in");
+		text = $("#id_orthologs_in").find("[value="+this.value+"]").text();
+		$("#id_no_orthologs_in").find(":contains(\""+text+"\")").remove();
+
 		for (var i = 0; i < x.options.length; i++) {
 			if(x.options[i].selected){
 				$("#id_no_orthologs_in").children("option[value^=" + x.options[i].value + "]").hide();
@@ -66,13 +68,5 @@ $(document).ready(function() {
 		$("#id_orthologs_in").selectpicker('refresh');
 		$("#id_no_orthologs_in").selectpicker('refresh');
 	});
-
-	/** This is a hack I honestly do not really understand : 
-	 *  manually hiding the plasmids at the beginning of the function
-     *  do not work, whereas manually triggering a onChange event does the trick 
-	 *  No explanation for that... */ 
-	chEvent = new Event("change");
-	var foo = document.getElementById("id_checkbox_accessions");
-	foo.dispatchEvent(chEvent);
 })
 </script>
