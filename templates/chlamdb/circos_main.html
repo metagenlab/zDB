@@ -5,8 +5,13 @@
 <head>
 {% load static %}
 {% load static %}
+{% load crispy_forms_tags %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.js'></script>
+<script src="{% static 'js/circos.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
+
+
 {% include "chlamdb/header.html" %}
 </head>
 <body>
@@ -19,36 +24,28 @@
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
 
+
                   <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                       <div class="panel-heading" style="width:100%">
                           <h3 class="panel-title">Help</h3>
                       </div>
-                      <p style="margin: 10px 10px 10px 10px"><h3>Circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. </h3>
-                      Click on the circos plot to open a new windows with clickable version of the plot.
+                      <div style="margin: 10px 10px 10px 10px; padding-left:20px"><h3>Circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. </h3>
+                      Click on features to get detailed information about the corresponding locus.
                        <ul id="circos_ul" style="list-style-type:disc;">  
                             <li>The first outer circle show contig/chromosome boundaries</li>
                             <li>The second and third circles show open reading frames from the reference genome (in gray)</li>
                             <ol>
                                 <li>rRNA are colored in blue, tRNA in red</li>
-                                <li><strong>Locus coloured in pink are specific or exhibit specific features (Interpro or Pfam domains/COG/Kegg) that are absent from the compared genomes (inner red circles).</strong></li>
                             </ol>
-                            <li>Inner blue/red circle(s) incicate the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes</li>
-                            <li>The last two inner circles show GC content (blue/red) and GC skew (blue/green)</li>
-                            
+                            <li>Inner blue/red circle(s) indicate the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes</li>                            
                       </ul>
-                      </p>
+                    </div>
                   </div>
                   <div class="row">
 
                   </div>
-                    <h3>Progress</h3>
-                  <div id="progress-div" class="row" style="padding-top:5px;height:25px;" class="row"></div>
-
-                  <div class="progress row" style="width=50%;" id="progress">
-                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 20%"></div>
-                  </div>
-
-                  <div id="results" class="row"></div>
+                  <div id='download' class='download'></div>
+                  <div id='heatmapChart' class='chartclass'></div>
 
               </div>
           </div>
@@ -57,74 +54,62 @@
     </div>
   </div>
 </body>
+
 {% include "chlamdb/style_menu.html" %}
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+
 
 <script type="text/javascript">
-    $("#progress").hide();
+function hide_submenus(hidden_menu) {
 
-    var prg_dv = $('#progress-div');
-    var pgrbar = $('.progress-bar');
+var menu_ul = $('.' + hidden_menu +'> ul'),
+    menu_a  = $('.' + hidden_menu +'> a');
 
-    var task_id = "{{ task_id }}";
-    console.log(task_id)
-    get_task_info(task_id);
+menu_ul.hide();
 
-    function get_task_info(task_id) {
-        $.ajax({
-            type: 'get',
-            url: '/get-task-info/',
-            data: {'task_id': task_id},
-            success: function (data) {
-                pgrbar.css('width', 10+'%').attr('aria-valuenow', 10)
-                $("#progress").show();
-                $('#results').html('')
-                if (data.state == 'PENDING') {
-                    prg_dv.html('Please wait...');
-                }
-                else if (data.state == 'PROGRESS') {
-                    pgrbar.css('width', data.result.percent+'%').attr('aria-valuenow', data.result.percent)
-                    console.log(data.result.percent);
-                    prg_dv.html('Step ' + data.result.current + '/' + data.result.total + ': ' + data.result.description);
-                }
-                else if (data.state == 'SUCCESS') {
-                    // pgrbar.hide();
-                    prg_dv.html('Done');
-                    $('#results').html(data.result);
-                    $("#progress").hide();
-                }
-
-                if (data.state != 'SUCCESS') {
-                    setTimeout(function () {
-                        get_task_info(task_id)
-                    }, 1000);
-                }
-            },
-            error: function (data) {
-                console.log(data)
-                prg_dv.html("Something went wrong!");
-            }
-        });
+menu_a.click(function(e) {
+    e.preventDefault();
+    if(!$(this).hasClass('active')) {
+        menu_a.removeClass('active');
+        menu_ul.filter(':visible').slideUp('normal');
+        $(this).addClass('active').next().stop(true,true).slideDown('normal');
+    } else {
+        $(this).removeClass('active');
+        $(this).next().stop(true,true).slideUp('normal');
     }
+});
+
+};
+
+$(hide_submenus("rollmenu1"))
+
+
+{{js_code|safe}}
+
+{% if envoi %}
+  $(document).ready(function(){
+    d3.select("#download").append("button")
+            .attr("type","button")
+            .attr("class", "btn btn-primary btn-sm")
+            .text("Download SVG")
+            .on("click", function() {
+                // download the svg
+    //get svg element.
+    var svg = document.getElementsByTagName('svg')[0];
+    var svgData =  document.getElementsByTagName('svg')[0].outerHTML;
+    console.log(svgData)
+    var preface = '<?xml version="1.0" standalone="no"?>\r\n';
+    var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
+    var svgUrl = URL.createObjectURL(svgBlob);
+    var downloadLink = document.createElement("a");
+    downloadLink.href = svgUrl;
+    downloadLink.download = "circos.svg";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+            });
+  });
+{% endif %}
 </script>
-
-<style>
-
-#circos_ul {
-  display: block;
-  list-style-type: decimal;
-  margin-top: 1em;
-  margin-bottom: 1em;
-  margin-left: 0;
-  margin-right: 0;
-  padding-left: 40px;
-}
-
-ol > ul > li {
-  padding: 4px;
-  margin-left: 25px;
-}
-
-</style>
 
 </html>

@@ -678,6 +678,8 @@ def extract_orthogroup(request):
         entry = [column_header, gene_data, prod_data, *optional, cnt_in, count]
         match_groups_data.append(entry)
 
+    ref_genomes = db.get_genomes_description().loc[include_taxids].reset_index()
+
     envoi_extract = True
     return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
@@ -2568,18 +2570,20 @@ class LocusHeatmapColumn(SimpleColorColumn):
     def get_face(self, index):
         index = int(index)
         if index==self.ref_taxon:
-            text_face = TextFace(" - ")
+            text_face = TextFace("-".center(11))
             text_face.inner_background.color = EteTree.GREEN
+            self.set_default_params(text_face)
             return text_face
 
         val = self.values.get(index, None)
         if val is None:
-            return TextFace(" - ")
+            return TextFace("-")
 
         color = colors.linearlyInterpolatedColor(colors.gray,
                 colors.firebrick, self.min_val, self.max_val, val)
-        text_face = TextFace(int(val))
+        text_face = TextFace(str(int(val)).center(12-len(str(int(val)))))
         text_face.inner_background.color = to_color_code(color)
+        self.set_default_params(text_face)
         return text_face
 
 
@@ -10579,17 +10583,28 @@ def api_vs_16S_identity(request):
 
 def circos_main(request):
     biodb = settings.BIODB
-    from chlamdb.plots import gbk2circos
-    from chlamdb.biosqldb import circos
 
     if request.method == 'POST':
         
-        reference_taxon = request.POST["reference_taxon"]
-        target_taxons = eval(request.POST["target_list"])
-        highlight = eval(request.POST["highlight"])
+        reference_taxon = request.POST["reference_taxid"]
+        include_taxids = eval(request.POST["include_taxids"])
+        exclude_taxids = eval(request.POST["exclude_taxids"])
+        og_list = eval(request.POST["og_list"])
         
-        envoi_circos = True
+        target_taxons = include_taxids + exclude_taxids
+        
+        
+        print("reference_taxon", reference_taxon)
+        print("target_taxons", target_taxons)
+        target_taxons.pop(target_taxons.index(int(reference_taxon)))
+        
+        js_code = get_circos_data(int(reference_taxon), [int(i) for i in target_taxons], highlight_og=og_list)
+        
+        envoi = True
         envoi_region = True
+        
+        return render(request, 'chlamdb/circos_main.html', my_locals(locals()))
+        
             
     if request.method == 'GET':
         server, db = manipulate_biosqldb.load_db(biodb)
@@ -10715,6 +10730,95 @@ def circos_blastnr(request):
     return render(request, 'chlamdb/circos_blastnr.html', my_locals(locals()))
 
 
+
+def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
+
+    from metagenlab_libs import circosjs
+    
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
+    
+    print("reference_taxon", reference_taxon)
+    print("target_taxons", target_taxons)
+    #task = run_circos.delay(reference_taxon, target_taxons)
+    
+    if highlight_og:
+        df_genes = db.get_genes_from_og(highlight_og, taxon_ids=[reference_taxon], terms=["locus_tag"])
+        locus_list = df_genes["locus_tag"].to_list()
+    else:
+        locus_list = []
+    
+    # "bioentry_id", "accession" ,"length"
+    df_bioentry = db.get_bioentry_list(reference_taxon, min_bioentry_length=1000)
+    
+    # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
+    df_feature_location = db.get_features_location(reference_taxon, ["CDS", "rRNA", "tRNA"]).set_index(["seqfeature_id"])
+    print("df_feature_location", df_feature_location.head())
+    
+    # retrieve n_orthologs of list of seqids
+
+    seq_og   = db.get_og_count(df_feature_location.index.to_list(), search_on="seqid")
+    print("seq_og", seq_og.head())
+    count_all_genomes = db.get_og_count(seq_og["orthogroup"].to_list(), search_on="orthogroup")
+    print("count_all_genomes", count_all_genomes.head())
+    orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(axis=1)
+    homologs_count = df_feature_location.loc[df_feature_location.term_name=='CDS'].join(seq_og).reset_index().set_index("orthogroup").merge(orthogroup2count_all.rename('value'), left_index=True, right_index=True)[["bioentry_id", "start_pos", "end_pos", "value"]]
+
+    print("homologs_count", homologs_count.head())
+    
+    df_identity = db.get_identity_closest_homolog(reference_taxon, target_taxons).set_index(["target_taxid"])
+    
+    c = circosjs.CircosJs()
+    
+    c.add_contigs_data(df_bioentry)
+    
+    # sort taxons by number of homologs (from mot similar to most dissmilar)
+    target_taxon_n_homologs = df_identity.groupby(["target_taxid"]).count()["seqfeature_id_1"].sort_values(ascending=False)
+    locus2seqfeature_id = db.get_hsh_locus_to_seqfeature_id()
+    seqfeature_id2locus_tag = {value:key for key, value in locus2seqfeature_id.items()}
+    heatmap_data_list = {}
+    # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
+    # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
+    # join on seqfeature id
+    df_feature_location["gene"] = df_feature_location["qualifier_value_gene"].fillna("-")
+    df_feature_location["gene_product"] = df_feature_location["qualifier_value_product"].fillna("-")
+    df_feature_location["locus_tag"] = df_feature_location["qualifier_value_locus_tag"].fillna("-")
+    
+    df_feature_location["color"]  = "grey"
+    print(df_feature_location.head())
+    df_feature_location["color"][df_feature_location["term_name"] == 'tRNA']  = "magenta"
+    df_feature_location["color"][df_feature_location["term_name"] == 'rRNA']  = "magenta"
+    
+    df_feature_location = df_feature_location.rename(columns={"locus_tag":"locus_ref"})
+    #= [seqfeature_id2locus_tag[seqfeature_id] for seqfeature_id in df_feature_location.index]
+    minus_strand = df_feature_location.set_index("strand").loc[-1]
+    plus_strand = df_feature_location.set_index("strand").loc[1]
+    c.add_histogram_track(homologs_count, "n_genomes", radius_diff=0.1, sep= 0.005, outer=True)
+    c.add_gene_track(minus_strand, "minus", sep=0, radius_diff=0.04, highlight_list=locus_list)
+    c.add_gene_track(plus_strand, "plus", sep=0, radius_diff=0.04, highlight_list=locus_list)
+
+    # iterate ordered list of target taxids, add track to circos    
+    for n, target_taxon in enumerate(target_taxon_n_homologs.index):
+        df_combined = df_feature_location.join(df_identity.loc[target_taxon].reset_index().set_index("seqfeature_id_1")).reset_index()
+        df_combined.identity = df_combined.identity.fillna(0).astype(int)
+        df_combined.bioentry_id = df_combined.bioentry_id.astype(str)
+        
+        # only keep the highest identity for each seqfeature id
+        df_combined = df_combined.sort_values('identity', ascending=False).drop_duplicates('index').sort_index()
+        df_combined["locus_tag"] = [seqfeature_id2locus_tag[seqfeature_id] if not pd.isna(seqfeature_id) else None for seqfeature_id in df_combined["seqfeature_id_2"]]
+        # comp is a custom scale with missing orthologs coloured in light blue
+        if n == 0:
+            sep = 0.03
+        else:
+            sep= 0.01
+        c.add_heatmap_track(df_combined, f"target_{target_taxon}", color="comp", sep=sep, radius_diff=0.04)
+
+    c.add_line_track(df_bioentry, "GC_content", radius_diff= 0.12, fillcolor="green")
+    
+    js_code = c.get_js_code()
+    return js_code
+
+
 def circos(request):
     
     biodb_path = settings.BIODB_DB_PATH
@@ -10727,65 +10831,13 @@ def circos(request):
         form = circos_form_class(request.POST)
 
         if form.is_valid():
-            from metagenlab_libs import circosjs
             
-            reference = form.cleaned_data['circos_reference']
-            targets = form.cleaned_data['targets']
+            
             target_taxons = form.get_target_taxids()
             reference_taxon = form.get_ref_taxid()
 
-            print("reference_taxon", reference_taxon)
-            print("target_taxons", target_taxons)
-            #task = run_circos.delay(reference_taxon, target_taxons)
-            
-            # "bioentry_id", "accession" ,"length"
-            df_bioentry = db.get_bioentry_list(reference_taxon)
-            
-            # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
-            df_feature_location = db.get_features_location(reference_taxon).set_index(["seqfeature_id"])
-            
-            # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
-            df_identity = db.get_identity_closest_homolog(reference_taxon, target_taxons).set_index(["target_taxid"])
-            
-            c = circosjs.CircosJs()
-            
-            c.add_contigs_data(df_bioentry)
-            
-            # sort taxons by number of homologs (from mot similar to most dissmilar)
-            target_taxon_n_homologs = df_identity.groupby(["target_taxid"]).count()["seqfeature_id_1"].sort_values(ascending=False)
-            locus2seqfeature_id = db.get_hsh_locus_to_seqfeature_id()
-            seqfeature_id2locus_tag = {value:key for key, value in locus2seqfeature_id.items()}
-            heatmap_data_list = {}
-            # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
-            # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
-            # join on seqfeature id
-            df_feature_location["gene"] = df_feature_location["gene"].fillna("-")
-            df_feature_location["gene_product"] = df_feature_location["product"].fillna("-")
-            
-            df_feature_location = df_feature_location.rename(columns={"locus_tag":"locus_ref"})
-            #= [seqfeature_id2locus_tag[seqfeature_id] for seqfeature_id in df_feature_location.index]
-            minus_strand = df_feature_location.set_index("strand").loc[-1]
-            plus_strand = df_feature_location.set_index("strand").loc[1]
-            c.add_gene_track(minus_strand, "minus", color="gray", sep=0, radius_diff=0.04)
-            c.add_gene_track(plus_strand, "plus", color="gray", sep=0, radius_diff=0.04)
+            js_code = get_circos_data(reference_taxon, target_taxons)
 
-            # iterate ordered list of target taxids, add track to circos
-            for n, target_taxon in enumerate(target_taxon_n_homologs.index):
-                df_combined = df_feature_location.join(df_identity.loc[target_taxon].reset_index().set_index("seqfeature_id_1")).reset_index()
-                df_combined.identity = df_combined.identity.fillna(0).astype(int)
-                df_combined.bioentry_id = df_combined.bioentry_id.astype(str)
-                
-                # only keep the highest identity for each seqfeature id
-                df_combined = df_combined.sort_values('identity', ascending=False).drop_duplicates('index').sort_index()
-                df_combined["locus_tag"] = [seqfeature_id2locus_tag[seqfeature_id] if not pd.isna(seqfeature_id) else None for seqfeature_id in df_combined["seqfeature_id_2"]]
-                # comp is a custom scale with missing orthologs coloured in light blue
-                if n == 0:
-                    sep = 0.03
-                else:
-                    sep= 0.01
-                c.add_heatmap_track(df_combined, f"target_{target_taxon}", color="comp", sep=sep, radius_diff=0.04)
-
-            js_code = c.get_js_code()
             envoi = True
     else:
         form = circos_form_class()

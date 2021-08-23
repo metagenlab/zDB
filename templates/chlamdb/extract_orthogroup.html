@@ -109,7 +109,21 @@
 						  </div>
 
 
-						<table class="hover" id="table_groups">
+              <form action="/circos_main/" method="POST" id="carform">
+                {% csrf_token %}
+                <input type="hidden" name="exclude_taxids" value="{{exclude_taxids}}">
+                <input type="hidden" name="include_taxids" value="{{include_taxids}}">
+                <input type="hidden" name="og_list" value="{{selection}}">
+                    <select name="reference_taxid" id="reference_taxid" class="bootstrap-select" style="height:36px;">
+                      <option disabled selected>Select reference genome</option>
+                      {% for row in ref_genomes.itertuples %}
+                          <option value="{{row.taxon_id}}">{{row.description}}</option>
+                      {% endfor %}
+                    </select>
+              <button type="submit">Show on circular map</button>
+            </form>
+
+            <table class="hover" id="table_groups">
 
 							<thead>
 								<tr>
@@ -193,3 +207,9 @@
 {% include "chlamdb/show_hide_plasmid_accessions.html" %}
 </body>
 </html>
+
+<style>
+option:first {
+    color: #999;
+}
+</style>
