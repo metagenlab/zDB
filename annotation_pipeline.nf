@@ -145,7 +145,7 @@ process check_LOCUS_uniqueness {
 
 process convert_gbk {
   input:
-      each file(edited_gbk) from to_convert_gbk_to_faa
+      each file(edited_gbk) from to_convert_gbk
 
   output:
       file "*.faa" into faa_files
@@ -154,12 +154,12 @@ process convert_gbk {
 
   script:
   """
-	#!/usr/bin/env python
-	import annotations
+    #!/usr/bin/env python
+    import annotations
 
-	annotations.convert_gbk_to_faa("${edited_gbk}", "${edited_gbk.baseName}.faa")
-    annotations.convert_gbk_to_ffn_seq("${edited_gbk}", "${edited_gbk.baseName}.ffn")
-    annotations.convert_gbk_to_fna_SEQ("${edited_gbk}", "${edited_gbk.baseName}.fna",
+    annotations.convert_gbk_to_fasta("${edited_gbk}", "${edited_gbk.baseName}.faa")
+    annotations.convert_gbk_to_fna("${edited_gbk}", "${edited_gbk.baseName}.ffn")
+    annotations.convert_gbk_to_fasta("${edited_gbk}", "${edited_gbk.baseName}.fna",
         output_fmt="fna", keep_pseudo=True)
   """
 }
@@ -167,6 +167,8 @@ process convert_gbk {
 
 faa_files.into{ faa_locus1; faa_locus2; faa_files_SEQ }
 
+faa_locus2.collectFile(name: 'merged.faa', newLine: true)
+    .set { to_get_nr_sequences }
 
 faa_locus1.into { faa_genomes1
                   faa_genomes2
@@ -174,16 +176,12 @@ faa_locus1.into { faa_genomes1
                   faa_genomes4
                   to_checkm }
 
-faa_locus2.collectFile(name: 'merged.faa', newLine: true)
-    .set { merged_faa0 }
-
-
 process get_nr_sequences {
   publishDir 'data/', mode: 'copy', overwrite: true
 
   input:
-  file(seq) from merged_faa0
-  file genome_list from faa_genomes4.collect()
+    file(seq) from to_get_nr_sequences
+    file genome_list from faa_genomes4.collect()
 
   output:
 
@@ -288,7 +286,6 @@ publishDir 'blast_DB/ffn/' , mode: 'copy', overwrite: true
 }
 
 
-
 process makeblastdb_merged_faa {
 
   publishDir 'blast_DB/faa/', mode: 'copy', overwrite: true
@@ -341,18 +338,6 @@ process makeblastdb_merged_ffn {
 
         """
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 process prepare_orthofinder {
 

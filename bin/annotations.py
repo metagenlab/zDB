@@ -433,7 +433,7 @@ def checked_unique_L (gbk_files):
   SeqIO.write( list, new_gbk, 'genbank')
 
 
-def convert_gbk_to_faa(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=False):
+def convert_gbk_to_fasta(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=False):
     records = SeqIO.parse(gbf_file, 'genbank')
     edited_records = open(edited_gbf, 'w')
 
@@ -453,7 +453,7 @@ def convert_gbk_to_faa(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=False
                         continue
                     data = feature.qualifiers["translation"][0]
                 elif output_fmt=="fna":
-                    data = feature.location.extract(record)
+                    data = feature.location.extract(record).seq
                 else:
                     raise Exception(f"Unsupported option: {output_fmt}, must be either faa or fna")
 
@@ -461,7 +461,7 @@ def convert_gbk_to_faa(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=False
                                                  record.description, data))
 
 
-def convert_gbk_to_fna_SEQ (gbf_file, fna_contigs):
+def convert_gbk_to_fna(gbf_file, fna_contigs):
     records = SeqIO.parse(gbf_file, 'genbank')  #from BioPython, object of class SeqRecord
     edited_records = open(fna_contigs, 'w')
 
