@@ -268,67 +268,6 @@ def pmid2abstract_info(pmid_list):
         pmid2data[pmid]["pmid"] = pmid
     return pmid2data
 
-def get_PMID_data():
-    Entrez.email = "trestan.pillonel@chuv.ch"
-    conn = sqlite3.connect("string_mapping_PMID.db")
-    cursor = conn.cursor()
-    sql = 'create table if not exists hash2pmid (hash binary, pmid INTEGER)'
-    sql2 = 'create table if not exists pmid2data (pmid INTEGER, title TEXT, authors TEXT, source TEXT, abstract TEXT)'
-    cursor.execute(sql,)
-    cursor.execute(sql2,)
-
-    # get PMID nr list and load PMID data into sqldb
-    pmid_nr_list = []
-    sql_template = 'insert into hash2pmid values (?, ?)'
-    with open("string_mapping_PMID.tab", "r") as f:
-        n = 0
-        for row in f:
-            data = row.rstrip().split("\t")
-            if data[1] != 'None':
-                n+=1
-                cursor.execute(sql_template, data)
-                if data[1] not in pmid_nr_list:
-                    pmid_nr_list.append(data[1])
-            if n % 1000 == 0:
-                print(n, 'hash2pmid ---- insert ----')
-                conn.commit()
-
-    pmid_chunks = [i for i in chunks(pmid_nr_list, 50)]
-
-    # get PMID data and load into sqldb
-    sql_template = 'insert into pmid2data values (?, ?, ?, ?, ?)'
-    for n, chunk in enumerate(pmid_chunks):
-        print("pmid2data -- chunk %s / %s" % (n, len(pmid_chunks)))
-        pmid2data = pmid2abstract_info(chunk)
-        for pmid in pmid2data:
-            cursor.execute(sql_template, (pmid, pmid2data[pmid]["title"], str(pmid2data[pmid]["authors"]), pmid2data[pmid]["source"], pmid2data[pmid]["abstract"]))
-        if n % 10 == 0:
-            conn.commit()
-    conn.commit()
-
-# Removed error handling possibly leading
-# to endless loop. A quick death is usually better.
-# TODO: we should improve the error handling rather than 
-# remove it (with eg a max number of retry) 
-
-def uniprot_accession2score(uniprot_accession_list):
-    # https://www.uniprot.org/uniprot/?query=id:V8TQN7+OR+id:V8TR74&format=xml
-    link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=id,annotation%%20score&format=tab" % ("+OR+id:".join(uniprot_accession_list))
-
-    page = urllib.request.urlopen(link)
-    data = page.read().decode('utf-8').split('\n')
-    rows = [i.rstrip().split('\t') for i in data]
-    unirpot2score = {}
-    for row in rows:
-        if len(row) > 0:
-            if row[0] == 'Entry':
-                continue
-            elif len(row)<2:
-                continue
-            else:
-                unirpot2score[row[0]] = row[1]
-    return unirpot2score
-
 
 def get_uniprot_data(databases_dir, table):
     conn = sqlite3.connect(databases_dir + "/uniprot/idmapping/uniprot_sprot_trembl.db")
@@ -1065,32 +1004,6 @@ def get_core_orthogroups(genomes_list, int_core_missing):
         SeqIO.write(new_fasta, out_handle, "fasta")
         out_handle.close()
 
-
-def accession2taxid_entrez(accession):
-    from Bio import Entrez
-    from socket import error as SocketError
-    import errno
-
-    Entrez.email = "trestan.pillonel@chuv.ch"
-    Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
-    try:
-        handle = Entrez.esummary(db="protein", id="%s" % accession, retmax=1)
-    except SocketError as e:
-        if e.errno != errno.ECONNRESET:
-            raise('error connexion with %s' % accession)
-        else:
-            import time
-            print ('connexion error, trying again...')
-            time.sleep(60)
-            accession2taxid_entrez(accession)
-    record = Entrez.read(handle, validate=False)[0]
-    # record['AccessionVersion'],
-    # record['TaxId'],
-    # record['Title'],
-    # record['Length']
-    return int(record['TaxId'])
-
-
 def concatenate_core_orthogroups(fasta_files):
     out_name = 'msa.faa'
 
@@ -1120,19 +1033,6 @@ def concatenate_core_orthogroups(fasta_files):
     MSA = MultipleSeqAlignment([concat_data[i] for i in concat_data])
     with open(out_name, "w") as handle:
         AlignIO.write(MSA, handle, "fasta")
-
-# TODO: we should improve the error handling rather than remove it 
-# because errors can occur (kind of randomly) with Entez (those errors
-# are not reproducible, this is why I did not care dealing with the 
-# infinite call)
-# NOTE: redundant code, kept for now until chlamdb is fully functional with 
-# the new version
-def refseq_accession2fasta(accession_list):
-    Entrez.email = "trestan.pillonel@chuv.ch"
-    handle = Entrez.efetch(db='protein', id=','.join(accession_list), rettype="fasta", retmode="text")
-    records = [i for i in SeqIO.parse(handle, "fasta")]
-    return records
-
 
 def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
     conn = sqlite3.connect(database_dir + "/goa/goa_uniprot.db")
