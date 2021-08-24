@@ -5,483 +5,21 @@ from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation, ExactPosition
 from Bio import AlignIO
 from Bio.Align import MultipleSeqAlignment
-from Bio.SeqUtils.ProtParam import ProteinAnalysis
-
-from metagenlab_libs import db_utils
 
 import setup_chlamdb
-
 
 import pandas as pd
 import itertools
 import sys
-import sqlite3
-import urllib
 import gzip
 import re
 import os
-import datetime
-import logging
-import http.client
-
-import mmap
 
 
-# Heuristic to detect T3SS effectors inc proteins
-# according to https://doi.org/10.1093/dnares/10.1.9
-# - bi-lobed hydropathic domain, 55-65 aa long,
-#   either 20-100 residues downstream the N-terminus or
-#   100 residus from the C-terminus
-# - no other hydrophic domain of more than 20 amino acid is present
-# - the N-terminal portion doesn't contain any hydrophobic domain 
-#    or signal peptide (to be determined)
-# 
-# Note : 
-# - protein scale using the Kyte-Doolittle algorithm
-#
-# Input: fasta file
-# Output: the set of proteins satisfying the conditions
-# above
-
-# Used to compute the hydrophobic plot
-# CAVE : Should be an odd number
-SLIDING_WINDOW = 7
-
-N_TERMINUS_RANGE = (20, 100)
-C_TERMINUS_LIMIT = 100 # must be within 100 aa from the C-terminal end
-BILOBED_DOMAIN_MIN_SIZE = 55
-BILOBED_DOMAIN_MAX_SIZE = 65
-
-
-# if another hydrophobic domain bigger or equal to this
-# is present, probably not an INC protein
-HYDROPHOBIC_DOMAIN_EXCLUSION_SIZE = 20
-
-# Amino-acid hydrophobicity values value, from
-# Kyte J., Doolittle R.F. 
-# J. Mol. Biol. 157:105-132(1982).
-AA_HYDROPHOBICITY_SCALE_VALUES = {
-    'A' : 1.8,
-    'R' : -4.5,
-    'N' : -3.5,
-    'D' : -3.5,
-    'C' : 2.5,
-    'Q' : -3.5,
-    'E' : -3.5,
-    'G' : -0.4,
-    'H' : -3.2,
-    'I' : 4.5,
-    'L' : 3.8,
-    'K' : -3.9,
-    'M' : 1.9,
-    'F' : 2.8,
-    'P' : -1.6,
-    'S' : -0.8,
-    'T' : -0.7,
-    'W' : -0.9,
-    'Y' : -1.3,
-    'V' : 4.2
-}
-
-
-# Note: the criteria are a bit loosened as candidates will
-# necessitate a manual control of the hydropathy plot anyway
-#
-# TODO : add detection of the different types of effectors according to the paper
-# Type I, II and III and modify the manual handpicking accordingly
-def T3SS_inc_proteins_detection(fasta_file, out_file):
-    T3SS_hydropathy_values = []
-
-    # because of the sliding window algorithm, we have results for the following
-    # positions [index_shift;index_shift + 1... ; len-index_shift-1; len-index_shift]
-    index_shift = (SLIDING_WINDOW+1)/2
-
-    for record in SeqIO.parse(fasta_file, "fasta"):
-        analysis = ProteinAnalysis(str(record.seq))
-        values = analysis.protein_scale(AA_HYDROPHOBICITY_SCALE_VALUES, SLIDING_WINDOW)
-
-        hydropathy_domains = []
-        i = 0
-        while i<len(values):
-            # not hydrophic, skip
-            if values[i] < 0:
-                i += 1
-                continue
-            
-            j = i+1
-            # Note : may be too stringent, what if a single value
-            # in the middle of an otherwise perfect sequence is
-            # too low. Should we keep it or tolerate short hydrophilic window
-            # in the middle of an overall hydrophobic bilobed domain ?
-            while j<len(values) and values[j]>=0:
-                j+=1
-
-            # not interesting to take into account if size
-            # lower than this --> wouldn't change anything
-            if j-i>=HYDROPHOBIC_DOMAIN_EXCLUSION_SIZE:
-                hydropathy_domains.append((i, j-1))
-            i = j+1
-
-        C_terminus_start_limit = len(values)-C_TERMINUS_LIMIT
-        n_domains = 0
-        has_other_hydrophobic_domain = False
-        bilobed_domain = []
-        for start, end in hydropathy_domains:
-            length = end-start+1
-            if length<BILOBED_DOMAIN_MIN_SIZE or length>BILOBED_DOMAIN_MAX_SIZE:
-                has_other_hydrophobic_domain = True
-                break
-
-            # see if end or beginning of the domain is within bounds
-            # Note: this is less stringent than the initial conditions
-            if ((start+index_shift>=N_TERMINUS_RANGE[0] and start+index_shift<=N_TERMINUS_RANGE[1]) \
-                    or (end+index_shift>=N_TERMINUS_RANGE[0] and end+index_shift<=N_TERMINUS_RANGE[1]) \
-                    or end>=C_terminus_start_limit+index_shift):
-                n_domains += 1
-                bilobed_domain = (start, end)
-            else:
-                has_other_hydrophobic_domain = True
-                break
-
-        if n_domains==1 and not has_other_hydrophobic_domain:
-            T3SS_hydropathy_values.append([values, bilobed_domain, record.id])
-    
-    hydrophobic_plot_file = open(out_file, "w")
-    for values, domain, record_id in T3SS_hydropathy_values:
-        string_val = [str(i) for i in values]
-        hydrophobic_plot_file.write(f">{record_id}\n")
-        hydrophobic_plot_file.write(f">{domain[0]}-{domain[1]}\n")
-        hydrophobic_plot_file.write("\n".join(string_val) + "\n")
 
 def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i+n]
-
-def get_idmapping_crossreferences(databases_dir, table):
-    conn = sqlite3.connect(databases_dir + "/uniprot/idmapping/idmapping.db")
-    cursor = conn.cursor()
-    o = open("idmapping_crossreferences.tab", "w")
-    sql = """SELECT uniprokb_accession, db_name, accession 
-        FROM uniparc2uniprotkb t1 INNER JOIN uniprotkb_cross_references t2 ON t1.uniprotkb_id=t2.uniprotkb_id 
-        INNER JOIN database t3 ON t2.db_id=t3.db_id 
-        WHERE uniparc_accession=?;"""
-
-    with open(table, 'r') as f:
-        f.readline()
-        for row in f:
-            data = row.rstrip().split("\t")
-            uniparc_accession = data[2]
-            checksum = data[0]
-            cursor.execute(sql, [uniparc_accession])
-            crossref_list = cursor.fetchall()
-            for crossref in crossref_list:
-                uniprot_accession = crossref[0]
-                db_name = crossref[1]
-                db_accession = crossref[2]
-                o.write("%s\t%s\t%s\t%s\n" % ( checksum,
-                                               uniprot_accession,
-                                               db_name,
-                                               db_accession))
-
-def get_uniparc_crossreferences(databases_dir, table):
-    conn = sqlite3.connect(databases_dir + "/uniprot/uniparc/uniparc.db")
-    cursor = conn.cursor()
-    o = open("uniparc_crossreferences.tab", "w")
-
-    sql = """SELECT db_name, accession, status 
-        FROM uniparc_cross_references t1 INNER JOIN crossref_databases t2 ON t1.db_id=t2.db_id 
-        WHERE uniparc_id=? AND db_name NOT IN ("SEED", "PATRIC", "EPO", "JPO", "KIPO", "USPTO");"""
-
-    with open(table, 'r') as f:
-        # skip header
-        f.readline()
-        for row in f:
-            data = row.rstrip().split("\t")
-            uniparc_id = str(data[1])
-            checksum = data[0]
-            cursor.execute(sql, [uniparc_id])
-            crossref_list = cursor.fetchall()
-            for crossref in crossref_list:
-                db_name = crossref[0]
-                db_accession = crossref[1]
-                entry_status = crossref[2]
-                o.write("%s\t%s\t%s\t%s\n" % ( checksum,
-                                          db_name,
-                                          db_accession,
-                                          entry_status))
-
-
-def get_oma_mapping(databases_dir, fasta_file):
-    conn = sqlite3.connect(databases_dir + "/oma/oma.db")
-    cursor = conn.cursor()
-    oma_map = open('oma_mapping.tab', 'w')
-    no_oma_mapping = open('no_oma_mapping.faa', 'w')
-    oma_map.write("locus_tag\toma_id\n")
-    records = SeqIO.parse(fasta_file, "fasta")
-    no_oma_mapping_records = []
-
-    # TODO : parallelize database requests or make a single big request
-    #  using IN with all the accessions
-    for record in records:
-        sql = 'select accession from hash_table where sequence_hash=?'
-        cursor.execute(sql, (CheckSum.seguid(record.seq),))
-        hits = cursor.fetchall()
-        if len(hits) == 0:
-            no_oma_mapping_records.append(record)
-        for hit in hits:
-            oma_map.write("%s\t%s\n" % (record.id, hit[0]))
-    SeqIO.write(no_oma_mapping_records, no_oma_mapping, "fasta")
-
-def pmid2abstract_info(pmid_list):
-    from Bio import Medline
-
-    # make sure that pmid are strings
-    pmid_list = [str(i) for i in pmid_list]
-
-    try:
-        handle = Entrez.efetch(db="pubmed", id=','.join(pmid_list), rettype="medline", retmode="text")
-        records = Medline.parse(handle)
-    except:
-        print("FAIL:", pmid)
-        return None
-
-    pmid2data = {}
-    for record in records:
-        try:
-            pmid = record["PMID"]
-        except:
-            print(record)
-            #{'id:': ['696885 Error occurred: PMID 28696885 is a duplicate of PMID 17633143']}
-            if 'duplicate' in record['id:']:
-                duplicate = record['id:'].split(' ')[0]
-                correct = record['id:'].split(' ')[-1]
-                print("removing duplicated PMID... %s --> %s" % (duplicate, correct))
-                # remove duplicate from list
-                pmid_list.remove(duplicate)
-                return pmid2abstract_info(pmid_list)
-
-        pmid2data[pmid] = {}
-        pmid2data[pmid]["title"] = record.get("TI", "?")
-        pmid2data[pmid]["authors"] = record.get("AU", "?")
-        pmid2data[pmid]["source"] = record.get("SO", "?")
-        pmid2data[pmid]["abstract"] = record.get("AB", "?")
-        pmid2data[pmid]["pmid"] = pmid
-    return pmid2data
-
-def get_PMID_data():
-    Entrez.email = "trestan.pillonel@chuv.ch"
-    conn = sqlite3.connect("string_mapping_PMID.db")
-    cursor = conn.cursor()
-    sql = 'create table if not exists hash2pmid (hash binary, pmid INTEGER)'
-    sql2 = 'create table if not exists pmid2data (pmid INTEGER, title TEXT, authors TEXT, source TEXT, abstract TEXT)'
-    cursor.execute(sql,)
-    cursor.execute(sql2,)
-
-    # get PMID nr list and load PMID data into sqldb
-    pmid_nr_list = []
-    sql_template = 'insert into hash2pmid values (?, ?)'
-    with open("string_mapping_PMID.tab", "r") as f:
-        n = 0
-        for row in f:
-            data = row.rstrip().split("\t")
-            if data[1] != 'None':
-                n+=1
-                cursor.execute(sql_template, data)
-                if data[1] not in pmid_nr_list:
-                    pmid_nr_list.append(data[1])
-            if n % 1000 == 0:
-                print(n, 'hash2pmid ---- insert ----')
-                conn.commit()
-
-    pmid_chunks = [i for i in chunks(pmid_nr_list, 50)]
-
-    # get PMID data and load into sqldb
-    sql_template = 'insert into pmid2data values (?, ?, ?, ?, ?)'
-    for n, chunk in enumerate(pmid_chunks):
-        print("pmid2data -- chunk %s / %s" % (n, len(pmid_chunks)))
-        pmid2data = pmid2abstract_info(chunk)
-        for pmid in pmid2data:
-            cursor.execute(sql_template, (pmid, pmid2data[pmid]["title"], str(pmid2data[pmid]["authors"]), pmid2data[pmid]["source"], pmid2data[pmid]["abstract"]))
-        if n % 10 == 0:
-            conn.commit()
-    conn.commit()
-
-# Removed error handling possibly leading
-# to endless loop. A quick death is usually better.
-# TODO: we should improve the error handling rather than 
-# remove it (with eg a max number of retry) 
-
-def uniprot_accession2score(uniprot_accession_list):
-    # https://www.uniprot.org/uniprot/?query=id:V8TQN7+OR+id:V8TR74&format=xml
-    link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=id,annotation%%20score&format=tab" % ("+OR+id:".join(uniprot_accession_list))
-
-    page = urllib.request.urlopen(link)
-    data = page.read().decode('utf-8').split('\n')
-    rows = [i.rstrip().split('\t') for i in data]
-    unirpot2score = {}
-    for row in rows:
-        if len(row) > 0:
-            if row[0] == 'Entry':
-                continue
-            elif len(row)<2:
-                continue
-            else:
-                unirpot2score[row[0]] = row[1]
-    return unirpot2score
-
-
-def get_uniprot_data(databases_dir, table):
-    conn = sqlite3.connect(databases_dir + "/uniprot/idmapping/uniprot_sprot_trembl.db")
-    cursor = conn.cursor()
-    uniprot_table = open(table, 'r')
-    uniprot_data = open('uniprot_data.tab', 'w')
-    uniprot_data.write("uniprot_accession\tuniprot_score\tuniprot_status\tproteome\tcomment_function\tec_number\tcomment_subunit\tgene\trecommendedName_fullName\tproteinExistence\tdevelopmentalstage\tcomment_similarity\tcomment_catalyticactivity\tcomment_pathway\tkeywords\n")
-
-    uniprot_accession_list = [row.rstrip().split("\t")[1].split(".")[0] for row in uniprot_table if row.rstrip().split("\t")[1] != 'uniprot_accession']
-    uniprot_accession_chunks = chunks(uniprot_accession_list, 300)
-
-    sql_uniprot_annot = 'SELECT * FROM uniprot_annotation WHERE uniprot_accession IN ("%s");'
-
-    # parallelizing those requests could be interesting if this function
-    # took too much time
-    for one_chunk in uniprot_accession_chunks:
-        uniprot2score = uniprot_accession2score(one_chunk)
-        filter = '","'.join(one_chunk)
-        uniprot_annot_data = cursor.execute(sql_uniprot_annot % filter,).fetchall()
-
-        for uniprot_annotation in uniprot_annot_data:
-            uniprot_accession = uniprot_annotation[0]
-            if uniprot_accession in uniprot2score:
-                uniprot_score = uniprot2score[uniprot_accession]
-            else:
-                uniprot_score = 0
-            comment_function = uniprot_annotation[1]
-            ec_number = uniprot_annotation[2]
-            comment_similarity = uniprot_annotation[3]
-            comment_catalyticactivity = uniprot_annotation[4]
-            comment_pathway = uniprot_annotation[5]
-            keywords = uniprot_annotation[6]
-            comment_subunit = uniprot_annotation[7]
-            gene = uniprot_annotation[8]
-            recommendedName_fullName = uniprot_annotation[9]
-            proteinExistence = uniprot_annotation[10]
-            developmentalstage = uniprot_annotation[11]
-            proteome = uniprot_annotation[12]
-            reviewed = uniprot_annotation[14]
-
-            uniprot_data.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n"
-                    % (uniprot_accession, uniprot_score, reviewed, proteome, comment_function, ec_number,
-                       comment_subunit, gene, recommendedName_fullName, proteinExistence,
-                       developmentalstage, comment_similarity, comment_catalyticactivity,
-                       comment_pathway, keywords))
-
-def get_uniparc_mapping(databases_dir, fasta_file):
-    conn = sqlite3.connect(databases_dir + "/uniprot/uniparc/uniparc.db")
-    cursor = conn.cursor()
-
-    uniparc_map = open('uniparc_mapping.tab', 'w')
-    uniprot_map = open('uniprot_mapping.tab', 'w')
-    no_uniprot_mapping = open('no_uniprot_mapping.faa', 'w')
-    no_uniparc_mapping = open('no_uniparc_mapping.faa', 'w')
-    uniparc_mapping_faa = open('uniparc_mapping.faa', 'w')
-
-    uniparc_map.write("locus_tag\tuniparc_id\tuniparc_accession\tstatus\n")
-    uniprot_map.write("locus_tag\tuniprot_accession\ttaxon_id\tdescription\n")
-
-    records = SeqIO.parse(fasta_file, "fasta")
-    no_mapping_uniprot_records = []
-    no_mapping_uniparc_records = []
-    mapping_uniparc_records = []
-
-    for record in records:
-        match = False
-        sql = """SELECT t1.uniparc_id, uniparc_accession, accession,taxon_id, description, db_name, status
-            FROM uniparc_accession t1 INNER JOIN uniparc_cross_references t2 ON t1.uniparc_id=t2.uniparc_id
-            INNER JOIN crossref_databases t3 ON t2.db_id=t3.db_id 
-            WHERE sequence_hash=?"""
-        cursor.execute(sql, (CheckSum.seguid(record.seq),))
-        hits = cursor.fetchall()
-        if len(hits) == 0:
-            no_mapping_uniparc_records.append(record)
-            no_mapping_uniprot_records.append(record)
-        else:
-            # All rows have the same UP 
-            # accession, but we have to check that there is at least one active cross-reference.
-            # If all entries are dead, it means that the sequence was removed from 
-            # all cross-referenced databases. In that case, we consider it as a "new"
-            # sequence and annotate it "de novo" with interproscan.
-            mapping_uniparc_records.append(record)
-            all_status = [i[6] for i in hits]
-            if 1 in all_status:
-                status = 'active'
-            else:
-                status = 'dead'
-            uniparc_map.write(f"{record.id}\t{hits[0][0]}\t{hits[0][1]}\t{status}\n")
-            for uniprot_hit in hits:
-                if uniprot_hit[5] in ["UniProtKB/Swiss-Prot", "UniProtKB/TrEMBL"] and uniprot_hit[6] == 1:
-                    match = True
-                    uniprot_map.write("%s\t%s\t%s\t%s\t%s\n" % (record.id,
-                                                                 uniprot_hit[2],
-                                                                 uniprot_hit[3],
-                                                                 uniprot_hit[4],
-                                                                 uniprot_hit[5]))
-            if not match:
-                no_mapping_uniprot_records.append(record)
-    SeqIO.write(no_mapping_uniprot_records, no_uniprot_mapping, "fasta")
-    SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
-    SeqIO.write(mapping_uniparc_records, uniparc_mapping_faa, "fasta")
-
-def refseq_locus_mapping(accessions_list):
-    o = open("refseq_corresp.tab", "w")
-    for accession in accessions_list:
-        with gzip.open(accession, "rt") as handle:
-            records = SeqIO.parse(handle, "genbank")
-            for record in records:
-                for feature in record.features:
-                    if 'protein_id' in feature.qualifiers and 'old_locus_tag' in feature.qualifiers:
-                        refseq_locus_tag = feature.qualifiers["locus_tag"][0]
-                        protein_id = feature.qualifiers["protein_id"][0]
-                        old_locus_tag = feature.qualifiers["old_locus_tag"][0]
-                        o.write(f"{old_locus_tag}\t{refseq_locus_tag}\t{protein_id}\n")
-
-
-def merge_plasmids(plasmids_records):
-    """
-    Same idea as for merge_gbk: some plasmids may be composed of several contigs.
-    The identification is based on the name in the /plasmid qualifier in the feature:
-    if the name is the same, then the contigs are grouped with a 200*N assembly gap and the 
-    informations from the first contig is kept.
-    """
-
-    hsh_name_to_records = {}
-    untouched_records = []
-
-    # group the records in fonction of the plasmid name
-    for record in plasmids_records:
-        found_name = False
-        for feature in record.features:
-            if feature.type != "source":
-                continue
-            if "plasmid" not in feature.qualifiers:
-                continue
-            names = feature.qualifiers["plasmid"]
-            if len(names) == 0:
-                continue
-            name = names[0]
-            lst = hsh_name_to_records.get(name, [])
-            lst.append(record)
-            hsh_name_to_records[name] = lst
-            found_name = True
-            break
-
-        if not found_name:
-            untouched_records.append(record)
-
-    modified_records = []
-    for name, records in hsh_name_to_records.items():
-        modified_records.append(merge_gbk(records, plasmids=True))
-
-    return untouched_records + modified_records
 
 
 def merge_gbk(gbk_records, filter_size=0, gi=False, plasmids=False):
@@ -895,117 +433,29 @@ def checked_unique_L (gbk_files):
   SeqIO.write( list, new_gbk, 'genbank')
 
 
-
-def string_id2pubmed_id_list(accession):
-    link = 'http://string-db.org/api/tsv/abstractsList?identifiers=%s' % accession
-    try:
-        data = urllib.request.urlopen(link).read().rstrip().decode('utf-8').split('\n')[1:]
-    except urllib.URLError:
-        return False
-    pid_list = [row.split(':')[1] for row in data]
-    return pid_list
-
-
-def get_string_PMID_mapping(string_map):
-    o = open("string_mapping_PMID.tab", "w")
-    with open(string_map, 'r') as f:
-        # skip header
-        f.readline()
-        for row in f:
-            data = row.rstrip().split("\t")
-            pmid_list = string_id2pubmed_id_list(data[1])
-            if pmid_list:
-                for id in pmid_list:
-                    o.write("%s\t%s\n" % (data[0], id))
-            else:
-                o.write("%s\tNone\n" % (data[0]))
-
-
-def get_pdb_mapping(fasta_file, database_dir):
-    conn = sqlite3.connect(database_dir + "/pdb/pdb.db")
-    cursor = conn.cursor()
-    pdb_map = open('pdb_mapping.tab', 'w')
-    no_pdb_mapping = open('no_pdb_mapping.faa', 'w')
-
-    pdb_map.write("locus_tag\tpdb_id\n")
-
-    records = SeqIO.parse(fasta_file, "fasta")
-    no_pdb_mapping_records = []
-    for record in records:
-        sql = 'select accession from hash_table where sequence_hash=?'
-        cursor.execute(sql, (CheckSum.seguid(record.seq),))
-        hits = cursor.fetchall()
-        if len(hits) == 0:
-            no_pdb_mapping_records.append(record)
-        for hit in hits:
-            pdb_map.write("%s\t%s\n" % (record.id, hit[0]))
-    SeqIO.write(no_pdb_mapping_records, no_pdb_mapping, "fasta")
-
-
-def get_tcdb_mapping(fasta_file, database_dir):
-    conn = sqlite3.connect(database_dir + "/TCDB/tcdb.db")
-    cursor = conn.cursor()
-    tcdb_map = open('tcdb_mapping.tab', 'w')
-    no_tcdb_mapping = open('no_tcdb_mapping.faa', 'w') 
-    tcdb_map.write("locus_tag\ttcdb_id\n")
-
-    records = SeqIO.parse(fasta_file, "fasta")
-    no_tcdb_mapping_records = []
-    for record in records:
-        sql = 'select accession from hash_table where sequence_hash=?'
-        cursor.execute(sql, (CheckSum.seguid(record.seq),))
-        hits = cursor.fetchall()
-        if len(hits) == 0:
-            no_tcdb_mapping_records.append(record)
-        for hit in hits:
-            tcdb_map.write("%s\t%s\n" % (record.id, hit[0]))
-
-    SeqIO.write(no_tcdb_mapping_records, no_tcdb_mapping, "fasta")
-
-
-def get_string_mapping(fasta_file, database_dir):
-    conn = sqlite3.connect(database_dir + "/string/string_proteins.db")
-    cursor = conn.cursor()
-    string_map = open('string_mapping.tab', 'w')
-    string_map.write("locus_tag\tstring_id\n")
-
-    records = SeqIO.parse(fasta_file, "fasta")
-    no_mapping_string_records = []
-    for record in records:
-        sql = 'select accession from hash_table where sequence_hash=?'
-        cursor.execute(sql, (CheckSum.seguid(record.seq),))
-        hits = cursor.fetchall()
-        for hit in hits:
-          string_map.write("%s\t%s\n" % (record.id, hit[0]))
-
-
-def convert_gbk_to_faa(gbf_file, edited_gbf):
+def convert_gbk_to_faa(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=False):
     records = SeqIO.parse(gbf_file, 'genbank')
     edited_records = open(edited_gbf, 'w')
 
     for record in records:
-        protein2count = {}
         for feature in record.features:
             if (feature.type == 'CDS'
                     and 'pseudo' not in feature.qualifiers
                     and 'pseudogene' not in feature.qualifiers):
 
-                if "locus_tag" in feature.qualifiers:
-                    locus_tag = feature.qualifiers["locus_tag"][0]
+                if "locus_tag" not in feature.qualifier:
+                    raise Exception(f"Feature without locus tag in record {record.name}")
+
+                locus_tag = feature.qualifiers["locus_tag"][0]
+                if output_fmt=="faa":
+                    data = feature.seq
+                elif output_fmt=="fna":
+                    data = feature.qualifiers["translation"][0]
                 else:
-                    protein_id = feature.qualifiers["protein_id"][0].split(".")[0]
-                    if protein_id not in protein2count:
-                        protein2count[protein_id] = 1
-                        locus_tag = protein_id
-                    else:
-                        protein2count[protein_id] += 1
-                        locus_tag = "%s_%s" % (protein_id, protein2count[protein_id])
-                try:
-                    edited_records.write(">%s %s\n%s\n" % (locus_tag,
-                                                     record.description,
-                                                     feature.qualifiers['translation'][0]))
-                except KeyError:
-                    print("problem with feature:", feature)
+                    raise Exception(f"Unsupported option: {output_fmt}, must be either faa or fna")
+
+                edited_records.write(">%s %s\n%s\n" % (locus_tag,
+                                                 record.description, data))
 
 
 def convert_gbk_to_faa_SEQ(gbf_file, edited_gbf):
@@ -1066,21 +516,6 @@ def convert_gbk_to_ffn_seq (gbf_file, edited_gbf):
                 except KeyError:
                     print("problem with feature:", feature)
 
-
-
-
-# filter out small sequences and ambiguous amino-acids
-def filter_sequences(fasta_file):
-    records = SeqIO.parse(fasta_file, "fasta")
-    processed_records = []
-    for record in records:
-        if len(record.seq) >= 10:
-            processed_records.append(SeqRecord(Seq(re.sub("B|Z|J", "X", str(record.seq)), IUPAC.protein),
-                                  id=record.id, 
-                                  name=record.name,
-                                  description=record.description))
-
-    SeqIO.write(processed_records, "filtered_sequences.faa", "fasta")
 
 # all faa files are merged into fasta_file
 def get_nr_sequences(fasta_file, genomes_list):
@@ -1168,6 +603,8 @@ def orthofinder2core_groups(fasta_list,
     df = pd.DataFrame(index=orthogroup2locus_list.keys(), columns=set(locus2genome.values()))
     df = df.fillna(0)
 
+    # NOTE: to be replace by a map-reduce algo, to avoid
+    # a slow for loop in python and to make the code more compact
     for group_id,loci_list in orthogroup2locus_list.items():
         for locus in loci_list:
             genome = locus2genome[locus]
@@ -1184,7 +621,6 @@ def orthofinder2core_groups(fasta_list,
     df = df.drop(groups_with_paralogs)
 
     core_groups = df[(df == 1).sum(axis=1) >= limit].index.tolist()
-
     return core_groups, orthogroup2locus_list, locus2genome
 
 def get_core_orthogroups(genomes_list, int_core_missing):
@@ -1206,32 +642,6 @@ def get_core_orthogroups(genomes_list, int_core_missing):
         out_handle = open(dest, 'w')
         SeqIO.write(new_fasta, out_handle, "fasta")
         out_handle.close()
-
-
-def accession2taxid_entrez(accession):
-    from Bio import Entrez
-    from socket import error as SocketError
-    import errno
-
-    Entrez.email = "trestan.pillonel@chuv.ch"
-    Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
-    try:
-        handle = Entrez.esummary(db="protein", id="%s" % accession, retmax=1)
-    except SocketError as e:
-        if e.errno != errno.ECONNRESET:
-            raise('error connexion with %s' % accession)
-        else:
-            import time
-            print ('connexion error, trying again...')
-            time.sleep(60)
-            accession2taxid_entrez(accession)
-    record = Entrez.read(handle, validate=False)[0]
-    # record['AccessionVersion'],
-    # record['TaxId'],
-    # record['Title'],
-    # record['Length']
-    return int(record['TaxId'])
-
 
 def concatenate_core_orthogroups(fasta_files):
     out_name = 'msa.faa'
@@ -1262,37 +672,4 @@ def concatenate_core_orthogroups(fasta_files):
     MSA = MultipleSeqAlignment([concat_data[i] for i in concat_data])
     with open(out_name, "w") as handle:
         AlignIO.write(MSA, handle, "fasta")
-
-# TODO: we should improve the error handling rather than remove it 
-# because errors can occur (kind of randomly) with Entez (those errors
-# are not reproducible, this is why I did not care dealing with the 
-# infinite call)
-# NOTE: redundant code, kept for now until chlamdb is fully functional with 
-# the new version
-def refseq_accession2fasta(accession_list):
-    Entrez.email = "trestan.pillonel@chuv.ch"
-    handle = Entrez.efetch(db='protein', id=','.join(accession_list), rettype="fasta", retmode="text")
-    records = [i for i in SeqIO.parse(handle, "fasta")]
-    return records
-
-
-def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
-    conn = sqlite3.connect(database_dir + "/goa/goa_uniprot.db")
-    cursor = conn.cursor()
-    o = open("goa_uniprot_exact_annotations.tab", "w")
-
-    sql = """SELECT GO_id, reference, evidence_code, category 
-        FROM goa_table 
-        WHERE uniprotkb_accession IN (\"{}\");"""
-
-    accessions_base = [i.split(".")[0].strip() for i in uniprot_acc_list]
-    query = sql.format("\",\"".join(accessions_base))
-    cursor.execute(sql.format(",".join(accessions_base)),)
-    go_list = cursor.fetchall()
-    for go in go_list:
-        GO_id = go[0]
-        reference = go[1]
-        evidence_code = go[2]
-        category = go[3]
-        o.write(f"{accession_base}\t{GO_id}\t{reference}\t{evidence_code}\t{category}\n")
 
