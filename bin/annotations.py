@@ -439,43 +439,26 @@ def convert_gbk_to_faa(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=False
 
     for record in records:
         for feature in record.features:
-            if (feature.type == 'CDS'
-                    and 'pseudo' not in feature.qualifiers
-                    and 'pseudogene' not in feature.qualifiers):
+            if feature.type == 'CDS':
+                if not keep_pseudo and ('pseudo' in feature.qualifiers 
+                    or 'pseudogene' in feature.qualifiers):
+                    continue
 
-                if "locus_tag" not in feature.qualifier:
+                if "locus_tag" not in feature.qualifiers:
                     raise Exception(f"Feature without locus tag in record {record.name}")
 
                 locus_tag = feature.qualifiers["locus_tag"][0]
                 if output_fmt=="faa":
-                    data = feature.seq
-                elif output_fmt=="fna":
+                    if "translation" not in feature.qualifiers:
+                        continue
                     data = feature.qualifiers["translation"][0]
+                elif output_fmt=="fna":
+                    data = feature.location.extract(record)
                 else:
                     raise Exception(f"Unsupported option: {output_fmt}, must be either faa or fna")
 
                 edited_records.write(">%s %s\n%s\n" % (locus_tag,
                                                  record.description, data))
-
-
-def convert_gbk_to_faa_SEQ(gbf_file, edited_gbf):
-    records = SeqIO.parse(gbf_file, 'genbank')  #from BioPython, object of class SeqRecord
-    edited_records = open(edited_gbf, 'w')
-    genome = (gbf_file).split('.')[0]
-
-
-    for record in records:
-        description=record.description
-        record_name=record.name
-        all_trans_seq=""
-
-        for feature in record.features:
-           if "translation" in feature.qualifiers:
-             translation_seq = feature.qualifiers["translation"][0]
-             translation_seq_str=''.join(translation_seq)
-             all_trans_seq= all_trans_seq + translation_seq_str
-        edited_records.write(">%s %s\n%s\n" % (record_name, description, all_trans_seq))
-
 
 
 def convert_gbk_to_fna_SEQ (gbf_file, fna_contigs):
@@ -484,37 +467,6 @@ def convert_gbk_to_fna_SEQ (gbf_file, fna_contigs):
 
     for record in records:
        edited_records.write(">%s %s\n%s\n" % (record.name, record.description, record.seq))
-
-
-
-
-def convert_gbk_to_ffn_seq (gbf_file, edited_gbf):
-    records = SeqIO.parse(gbf_file, 'genbank')  
-    edited_records = open(edited_gbf, 'w')
-
-    for record in records:
-        protein2count = {}
-        record_id = record.id
-        for feature in record.features:
-            if (feature.type == 'CDS'
-                    and 'pseudo' not in feature.qualifiers
-                    and 'pseudogene' not in feature.qualifiers):
-
-                if "locus_tag" in feature.qualifiers:
-                    locus_tag = feature.qualifiers["locus_tag"][0]
-                else:
-                    protein_id = feature.qualifiers["protein_id"][0].split(".")[0]
-                    if protein_id not in protein2count:
-                        protein2count[protein_id] = 1
-                        locus_tag = protein_id
-                    else:
-                        protein2count[protein_id] += 1
-                        locus_tag = "%s_%s" % (protein_id, protein2count[protein_id])
-                try:
-                    edited_records.write(">%s %s\n%s\n" % (locus_tag,
-                                                     record.description, feature.location.extract(record).seq))
-                except KeyError:
-                    print("problem with feature:", feature)
 
 
 # all faa files are merged into fasta_file

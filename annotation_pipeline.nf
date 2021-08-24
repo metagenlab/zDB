@@ -93,21 +93,20 @@ process check_gbk {
 
 	script:
 	"""
-#!/usr/bin/env python
-import annotations
+        #!/usr/bin/env python
+        import annotations
 
-gbk_files = "${prokka_file}".split() 
-annotations.check_organism_uniqueness(gbk_files)
-annotations.filter_out_unannotated(gbk_files)
+        gbk_files = "${prokka_file}".split() 
+        annotations.check_organism_uniqueness(gbk_files)
+        annotations.filter_out_unannotated(gbk_files)
 	"""
 }
 
-checked_gbks.into { to_load_gbk_into_db;  to_convert_gbk_to_faa; to_convert_gbk_to_faa_SEQ; to_convert_gbk_to_fna_SEQ ; to_convert_gbk_to_ffn_SEQ}
-
+checked_gbks.into { to_load_gbk_into_db
+    to_convert_gbk
+    to_convert_gbk_to_faa_SEQ }
+ 
 process check_locus_tag_uniqueness {
-  
-  container "$params.annotation_container"
-
   input:
    file prokka_file from check_locus_tag_uniqueness.collect()
 
@@ -126,9 +125,6 @@ process check_locus_tag_uniqueness {
 
 
 process check_LOCUS_uniqueness {
-
-  container "$params.annotation_container"
-
   input:
    file prokka_file from check_LOCUS_uniqueness.collect()
 
@@ -147,41 +143,14 @@ process check_LOCUS_uniqueness {
 }
 
 
-
-
-
-/*
-process gbk_check {
-  publishDir 'data/gbk_edited', mode: 'copy', overwrite: true
-
-  container "$params.annotation_container"
-
+process convert_gbk {
   input:
-  file all_gbff from gbk_prokka_filtered.collect()
+      each file(edited_gbk) from to_convert_gbk_to_faa
 
   output:
-  file "*merged.gbk" into edited_gbks
-
-  script:
-  """
-  #!/usr/bin/env python
-  
-  import annotations
-  annotations.check_gbk("$all_gbff".split())
-  """
-} */
-
-
-process convert_gbk_to_faa {
-
-
-  echo false
-
-  input:
-  each file(edited_gbk) from to_convert_gbk_to_faa
-
-  output:
-  file "*.faa" into faa_files
+      file "*.faa" into faa_files
+      file "*.ffn" into ffn_files_seq
+      file "*.fna" into fna_files_SEQ
 
   script:
   """
@@ -189,24 +158,25 @@ process convert_gbk_to_faa {
 	import annotations
 
 	annotations.convert_gbk_to_faa("${edited_gbk}", "${edited_gbk.baseName}.faa")
+    annotations.convert_gbk_to_ffn_seq("${edited_gbk}", "${edited_gbk.baseName}.ffn")
+    annotations.convert_gbk_to_fna_SEQ("${edited_gbk}", "${edited_gbk.baseName}.fna",
+        output_fmt="fna", keep_pseudo=True)
   """
 }
 
-faa_files.into{ faa_locus1; faa_locus2 }
+
+faa_files.into{ faa_locus1; faa_locus2; faa_files_SEQ }
 
 
 faa_locus1.into { faa_genomes1
                   faa_genomes2
                   faa_genomes3
                   faa_genomes4
-                  to_checkm
-                  to_macsysfinder 
-                  inc_effectors_prediction
-		  }
-
+                  to_checkm }
 
 faa_locus2.collectFile(name: 'merged.faa', newLine: true)
     .set { merged_faa0 }
+
 
 process get_nr_sequences {
   publishDir 'data/', mode: 'copy', overwrite: true
@@ -257,74 +227,11 @@ if(params.pfam_scan) {
 }
 
 
-
-
-
-process convert_gbk_to_fna {
-
-  publishDir 'blast_DB/fna/fna_SEQ', mode: 'copy', overwrite: true
-
-  input:
-   each file(edited_gbk)  from to_convert_gbk_to_fna_SEQ
-
-  output:
-  file "${edited_gbk.baseName}.fna" into fna_files_SEQ
-
-  script:
-  """
-        #!/usr/bin/env python
-        import annotations
-        annotations.convert_gbk_to_fna_SEQ("${edited_gbk}", "${edited_gbk.baseName}.fna")
-  """
-}
 fna_files_SEQ.into {fna_files_SEQ_1; fna_files_SEQ_2}
-
-process convert_gbk_to_faa_seq {
-
-  publishDir 'blast_DB/faa/faa_SEQ', mode: 'copy', overwrite: true
-
-  container "$params.annotation_container"
-
-  echo false
-
-  input:
-  each file(edited_gbk) from  to_convert_gbk_to_faa_SEQ
-
-  output:
-  file "*.faa" into faa_files_SEQ
-
-  script:
-  """
-	#!/usr/bin/env python
-	import annotations
-
-	annotations.convert_gbk_to_faa_SEQ("${edited_gbk}", "${edited_gbk.baseName}.faa")
-  """
-}
 faa_files_SEQ.into {faa_files_SEQ_1; faa_files_SEQ_2}
 faa_files_SEQ_1.collectFile(name: 'merged_SEQ.faa', newLine: true).set { merged_faa_makeblastdb}
-
-process convert_gbk_to_ffn {
-
-  publishDir 'blast_DB/ffn/ffn_seq', mode: 'copy', overwrite: true
-
-  input:
-   each file(edited_gbk)  from to_convert_gbk_to_ffn_SEQ
-
-  output:
-  file "${edited_gbk.baseName}.ffn" into ffn_files_seq
-
-  script:
-  """
-        #!/usr/bin/env python
-        import annotations
-        annotations.convert_gbk_to_ffn_seq("${edited_gbk}", "${edited_gbk.baseName}.ffn")
-  """
-}
 ffn_files_seq.into{ffn_files_seq_1 ; ffn_files_seq_2}
 ffn_files_seq_1.collectFile(name: 'merged_seq.ffn', newLine: true).set { merged_ffn_makeblastdb}
-
-
 
 
 process makeblastdb_each_faa {
@@ -348,6 +255,7 @@ publishDir 'blast_DB/faa', mode: 'copy', overwrite: true
 process makeblastdb_each_fna {
 
 publishDir 'blast_DB/fna/' , mode: 'copy', overwrite: true
+  container "$params.blast_container"
 
   input:
   file fna from fna_files_SEQ_2
@@ -358,13 +266,13 @@ publishDir 'blast_DB/fna/' , mode: 'copy', overwrite: true
   script:
     """
         makeblastdb -in ${fna} -input_type fasta -parse_seqids -dbtype nucl -out  ${fna.baseName}
-
     """
 }
 
 process makeblastdb_each_ffn {
 
 publishDir 'blast_DB/ffn/' , mode: 'copy', overwrite: true
+  container "$params.blast_container"
 
   input:
   file ffn from ffn_files_seq_2
