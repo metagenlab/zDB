@@ -488,3 +488,7 @@ def load_KO(params, ko_files, db_name):
     db.set_status_in_config_table("KEGG", 1)
     db.commit()
 
+def load_blastDBs(params, db_name): #added function to interact with the SQL database, change to '1' (so active) the BLAST_database in config_table and send this request (this function will be call in annoation_pipeline.nf when the SQL db will be generated)
+    db = db_utils.DB.load_db(db_name, params)
+    db.set_status_in_config_table("BLAST_database", 1)
+    db.commit()
