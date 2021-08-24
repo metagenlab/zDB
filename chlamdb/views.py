@@ -9931,8 +9931,6 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
     
-    print("reference_taxon", reference_taxon)
-    print("target_taxons", target_taxons)
     #task = run_circos.delay(reference_taxon, target_taxons)
     
     if highlight_og:
@@ -9946,19 +9944,14 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     
     # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
     df_feature_location = db.get_features_location(reference_taxon, ["CDS", "rRNA", "tRNA"]).set_index(["seqfeature_id"])
-    print("df_feature_location", df_feature_location.head())
     
     # retrieve n_orthologs of list of seqids
 
     seq_og   = db.get_og_count(df_feature_location.index.to_list(), search_on="seqid")
-    print("seq_og", seq_og.head())
     count_all_genomes = db.get_og_count(seq_og["orthogroup"].to_list(), search_on="orthogroup")
-    print("count_all_genomes", count_all_genomes.head())
     orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(axis=1)
     homologs_count = df_feature_location.loc[df_feature_location.term_name=='CDS'].join(seq_og).reset_index().set_index("orthogroup").merge(orthogroup2count_all.rename('value'), left_index=True, right_index=True)[["bioentry_id", "start_pos", "end_pos", "value"]]
 
-    print("homologs_count", homologs_count.head())
-    
     df_identity = db.get_identity_closest_homolog(reference_taxon, target_taxons).set_index(["target_taxid"])
     
     c = circosjs.CircosJs()
@@ -9978,7 +9971,6 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     df_feature_location["locus_tag"] = df_feature_location["qualifier_value_locus_tag"].fillna("-")
     
     df_feature_location["color"]  = "grey"
-    print(df_feature_location.head())
     df_feature_location["color"][df_feature_location["term_name"] == 'tRNA']  = "magenta"
     df_feature_location["color"][df_feature_location["term_name"] == 'rRNA']  = "magenta"
     
