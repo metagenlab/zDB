@@ -190,24 +190,22 @@ nr_seqs.splitFasta( by: 300, file: "chunk_" )
         to_kofamscan
         to_pfam_scan }
 
+if(params.pfam_scan) {
+    process pfam_scan {
+        container "$params.pfam_scan_container"
 
-process pfam_scan {
-    container "$params.pfam_scan_container"
+        input:
+            file faa_chunk from to_pfam_scan
 
-    when:
-    params.pfam_scan
+        output:
+            file pfam_result_file into pfam_results
 
-    input:
-        file faa_chunk from to_pfam_scan
-
-    output:
-        file pfam_result_file into pfam_results
-
-    script:
-    pfam_result_file="${faa_chunk}_results"
-    """
-        pfam_scan.pl -f $faa_chunk -d $params.pfam_database > $pfam_result_file
-    """
+        script:
+        pfam_result_file="${faa_chunk}_results"
+        """
+            pfam_scan.pl -f $faa_chunk -d $params.pfam_database > $pfam_result_file
+        """
+    }
 }
 
 
