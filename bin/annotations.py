@@ -354,6 +354,85 @@ def filter_out_unannotated(gbk_files):
         SeqIO.write(itertools.chain([first_rec], to_keep), result_file, "genbank")
 
 
+list_locus_tag_nr=[]
+list_locus_tag=[]
+
+def lt_uniqueness_gbk(gbk_list):
+ for gbk_file in gbk_list:
+  records = SeqIO.parse(gbk_file, 'genbank')  #from BioPython, object of class SeqRecord
+  genome = os.path.basename(gbk_file).split('.')[0]
+
+  for record in records:
+   record_id=record.id
+   for feature in record.features:
+     if (feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers):
+       if "locus_tag" in feature.qualifiers:
+          locus_tag = feature.qualifiers["locus_tag"][0]
+          list_locus_tag.append(locus_tag)
+          count_locus_tag= len(list_locus_tag)
+          if locus_tag not in list_locus_tag_nr:
+                list_locus_tag_nr.append(locus_tag)
+                count_nr_locus_tag= len(list_locus_tag_nr)
+          if locus_tag=="":
+             raise Exception(f"Empty locus_tag in {record_id} of {genome}")
+       else:
+             raise Exception(f"No locus_tag in {record_id} of {genome}")
+
+ if not count_locus_tag==count_nr_locus_tag:
+  raise Exception(f"Non-unique locus_tag")
+
+def checked_unique_lt (gbk_files):
+ for gbk_file in gbk_files:
+  records = SeqIO.parse(gbk_file, 'genbank')
+  new_gbk = gbk_file.replace(".gbk", "_lt_checked.gbk") 
+  string= "list"
+  list= string.join({new_gbk})
+  list=[]
+  for record in records:
+   list.append(record)
+  pass
+  SeqIO.write( list, new_gbk, 'genbank')
+
+
+
+
+
+LOCUS_id_list=[]
+LOCUS_id_list_nr=[]
+
+def LOCUS_uniqueness_gbk(gbk_list):
+ for gbk_file in gbk_list:
+  records = SeqIO.parse(gbk_file, 'genbank')  #from BioPython, object of class SeqRecord
+  count_feature_in_record=0
+
+  for record in records:
+   LOCUS_id=record.name
+   for feature in record.features:
+     if (feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers):
+       count_feature_in_record=count_feature_in_record + 1
+   if count_feature_in_record>=1:
+    LOCUS_id_list.append(LOCUS_id)
+    count_LOCUS_id=len(LOCUS_id_list)
+    if LOCUS_id not in LOCUS_id_list_nr:
+       LOCUS_id_list_nr.append(LOCUS_id)
+       count_nr_LOCUS_id= len(LOCUS_id_list_nr)
+ if not  count_nr_LOCUS_id==count_LOCUS_id:
+   raise Exception(f"Non-unique LOCUS identifier")
+
+
+def checked_unique_L (gbk_files):
+ for gbk_file in gbk_files:
+  records = SeqIO.parse(gbk_file, 'genbank')
+  new_gbk = gbk_file.replace(".gbk", "_lt_L_checked.gbk") 
+  string= "list"
+  list= string.join({new_gbk})
+  list=[]
+  for record in records:
+   list.append(record)
+  pass
+  SeqIO.write( list, new_gbk, 'genbank')
+
+
 def convert_gbk_to_faa(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=False):
     records = SeqIO.parse(gbf_file, 'genbank')
     edited_records = open(edited_gbf, 'w')
@@ -377,6 +456,65 @@ def convert_gbk_to_faa(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=False
 
                 edited_records.write(">%s %s\n%s\n" % (locus_tag,
                                                  record.description, data))
+
+
+def convert_gbk_to_faa_SEQ(gbf_file, edited_gbf):
+    records = SeqIO.parse(gbf_file, 'genbank')  #from BioPython, object of class SeqRecord
+    edited_records = open(edited_gbf, 'w')
+    genome = (gbf_file).split('.')[0]
+
+
+    for record in records:
+        description=record.description
+        record_name=record.name
+        all_trans_seq=""
+
+        for feature in record.features:
+           if "translation" in feature.qualifiers:
+             translation_seq = feature.qualifiers["translation"][0]
+             translation_seq_str=''.join(translation_seq)
+             all_trans_seq= all_trans_seq + translation_seq_str
+        edited_records.write(">%s %s\n%s\n" % (record_name, description, all_trans_seq))
+
+
+
+def convert_gbk_to_fna_SEQ (gbf_file, fna_contigs):
+    records = SeqIO.parse(gbf_file, 'genbank')  #from BioPython, object of class SeqRecord
+    edited_records = open(fna_contigs, 'w')
+
+    for record in records:
+       edited_records.write(">%s %s\n%s\n" % (record.name, record.description, record.seq))
+
+
+
+
+def convert_gbk_to_ffn_seq (gbf_file, edited_gbf):
+    records = SeqIO.parse(gbf_file, 'genbank')  
+    edited_records = open(edited_gbf, 'w')
+
+    for record in records:
+        protein2count = {}
+        record_id = record.id
+        for feature in record.features:
+            if (feature.type == 'CDS'
+                    and 'pseudo' not in feature.qualifiers
+                    and 'pseudogene' not in feature.qualifiers):
+
+                if "locus_tag" in feature.qualifiers:
+                    locus_tag = feature.qualifiers["locus_tag"][0]
+                else:
+                    protein_id = feature.qualifiers["protein_id"][0].split(".")[0]
+                    if protein_id not in protein2count:
+                        protein2count[protein_id] = 1
+                        locus_tag = protein_id
+                    else:
+                        protein2count[protein_id] += 1
+                        locus_tag = "%s_%s" % (protein_id, protein2count[protein_id])
+                try:
+                    edited_records.write(">%s %s\n%s\n" % (locus_tag,
+                                                     record.description, feature.location.extract(record).seq))
+                except KeyError:
+                    print("problem with feature:", feature)
 
 
 # all faa files are merged into fasta_file
@@ -430,6 +568,7 @@ def get_nr_sequences(fasta_file, genomes_list):
                 updated_records.append(record)
 
     SeqIO.write(updated_records, nr_fasta, "fasta")
+
 
 
 # This function parses the result of orthofinder/orthoMCL, 

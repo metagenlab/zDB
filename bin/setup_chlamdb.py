@@ -631,6 +631,13 @@ def load_KO(params, ko_files, db_name):
     db.set_status_in_config_table("KEGG", 1)
     db.commit()
 
+
+def load_blastDBs(params, db_name):
+    db = db_utils.DB.load_db(db_name, params)
+    db.set_status_in_config_table("BLAST_database", 1)
+    db.commit()
+    
+
 def format_cog(cog_n):
     if pd.isna(cog_n):
         return None
