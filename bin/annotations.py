@@ -3,7 +3,6 @@ from Bio.SeqUtils import CheckSum
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation, ExactPosition
-from Bio.Alphabet import IUPAC
 from Bio import AlignIO
 from Bio.Align import MultipleSeqAlignment
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
@@ -1009,12 +1008,43 @@ def convert_gbk_to_faa(gbf_file, edited_gbf):
                     print("problem with feature:", feature)
 
 
-def convert_gbk_to_fna(gbf_file, edited_gbf):
+def convert_gbk_to_faa_SEQ(gbf_file, edited_gbf):
+    records = SeqIO.parse(gbf_file, 'genbank')  #from BioPython, object of class SeqRecord
+    edited_records = open(edited_gbf, 'w')
+    genome = (gbf_file).split('.')[0]
+
+
+    for record in records:
+        description=record.description
+        record_name=record.name
+        all_trans_seq=""
+
+        for feature in record.features:
+           if "translation" in feature.qualifiers:
+             translation_seq = feature.qualifiers["translation"][0]
+             translation_seq_str=''.join(translation_seq)
+             all_trans_seq= all_trans_seq + translation_seq_str
+        edited_records.write(">%s %s\n%s\n" % (record_name, description, all_trans_seq))
+
+
+
+def convert_gbk_to_fna_SEQ (gbf_file, fna_contigs):
+    records = SeqIO.parse(gbf_file, 'genbank')  #from BioPython, object of class SeqRecord
+    edited_records = open(fna_contigs, 'w')
+
+    for record in records:
+       edited_records.write(">%s %s\n%s\n" % (record.name, record.description, record.seq))
+
+
+
+
+def convert_gbk_to_ffn_seq (gbf_file, edited_gbf):
     records = SeqIO.parse(gbf_file, 'genbank')  
     edited_records = open(edited_gbf, 'w')
 
     for record in records:
         protein2count = {}
+        record_id = record.id
         for feature in record.features:
             if (feature.type == 'CDS'
                     and 'pseudo' not in feature.qualifiers
@@ -1032,7 +1062,7 @@ def convert_gbk_to_fna(gbf_file, edited_gbf):
                         locus_tag = "%s_%s" % (protein_id, protein2count[protein_id])
                 try:
                     edited_records.write(">%s %s\n%s\n" % (locus_tag,
-                                                     record.description, record.seq))
+                                                     record.description, feature.location.extract(record).seq))
                 except KeyError:
                     print("problem with feature:", feature)
 
@@ -1101,35 +1131,6 @@ def get_nr_sequences(fasta_file, genomes_list):
                 record.id = checksum + "-" + len(lst_records)
                 record.name = ""
                 updated_records.append(record)
-
-    SeqIO.write(updated_records, nr_fasta, "fasta")
-
-
-def get_nr_sequences_fna(fasta_file, genomes_list):
-    locus2genome = {}
-    for fasta in genomes_list:
-        genome = os.path.basename(fasta).split('.')[0]
-        for seq in SeqIO.parse(fasta, "fasta"):
-            locus2genome[seq.name] = genome
-    nr_fasta = open('nr.fna', 'w')
-    nr_mapping = open('nr_mapping.tab', 'w')
-
-    checksum_nr_list = []
-
-    records = SeqIO.parse(fasta_file, "fasta")
-    updated_records = []
-
-    for record in records:
-
-        checksum = CheckSum.crc64(record.seq)
-        nr_mapping.write("%s\t%s\t%s\n" % (record.id,
-                                          checksum,
-                                          locus2genome[record.id]))
-        if checksum not in checksum_nr_list:
-            checksum_nr_list.append(checksum)
-            record.id = checksum
-            record.name = ""
-            updated_records.append(record)
 
     SeqIO.write(updated_records, nr_fasta, "fasta")
 
