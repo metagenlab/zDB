@@ -76,8 +76,6 @@ gbk_from_local_assembly_f.filter { it[1].extension == "gbk" }
     .map { it[1] }
     .set { gbk_from_local_assembly }
 
-gbk_from_local_assembly.into{check_gbks; check_locus_tag_uniqueness; check_LOCUS_uniqueness }
-
 error_search.filter { it[1].extension!="gbk" }
     .subscribe { error "Unsupported file extension" }
 
@@ -86,62 +84,30 @@ process check_gbk {
 	publishDir 'data/prokka_output_filtered', overwrite: true
 
 	input:
-	    file prokka_file from check_gbks.collect()
+	    file gbk from gbk_from_local_assembly.collect()
 
 	output:
 	    file "*_filtered.gbk" into checked_gbks
 
 	script:
+    // Not the most efficient ways as it requires
+    // to read the same files several times
+    // but left like this for the sake of readability
 	"""
         #!/usr/bin/env python
         import annotations
 
-        gbk_files = "${prokka_file}".split() 
+        gbk_files = "${gbk}".split() 
         annotations.check_organism_uniqueness(gbk_files)
-        annotations.filter_out_unannotated(gbk_files)
+        annotations.check_organism_names(gbk_files)
 	"""
 }
+
 
 checked_gbks.into {
     to_load_gbk_into_db
     to_convert_gbk }
  
-process check_locus_tag_uniqueness {
-  input:
-   file prokka_file from check_locus_tag_uniqueness.collect()
-
-  output:
-  file "*_lt_checked.gbk" into lt_checked_gbk
-
-  script:
-  """
-        #!/usr/bin/env python
-        import annotations
-        gbk_files="${prokka_file}".split()
-        annotations.lt_uniqueness_gbk(gbk_files)
-        annotations.checked_unique_lt(gbk_files)
-  """
-}
-
-
-process check_LOCUS_uniqueness {
-  input:
-   file prokka_file from check_LOCUS_uniqueness.collect()
-
-  output:
-  file "*_lt_L_checked.gbk" into L_checked_gbk
-
-  script:
-  """
-        #!/usr/bin/env python
-        import annotations
-        gbk_files="${prokka_file}".split()
-        annotations.LOCUS_uniqueness_gbk(gbk_files)
-        annotations.checked_unique_L(gbk_files)
-
-  """
-}
-
 
 process convert_gbk {
   input:
@@ -166,7 +132,6 @@ process convert_gbk {
 
 
 faa_files.into{ faa_locus1; faa_locus2; faa_files_SEQ }
-
 faa_locus2.collectFile(name: 'merged.faa', newLine: true)
     .set { to_get_nr_sequences }
 

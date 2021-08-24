@@ -15,85 +15,13 @@ import gzip
 import re
 import os
 
+from collections import defaultdict
+
 
 
 def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i+n]
-
-
-def merge_gbk(gbk_records, filter_size=0, gi=False, plasmids=False):
-    '''
-    merge multiple contigs into a single DNA molecule with 200*N between contigs
-    keep source description from the first record
-    remove contigs smaller than <filter_size>
-
-    For plasmids: keep the first accession, as having several entries with the 
-    same accession would profoundly hurt BioSQL.
-
-    :param gbk_records:
-    :param filter_size:
-    :param gi:
-    :return:
-    '''
-
-    n=0
-    if len(gbk_records) == 1:
-        merged_rec = gbk_records[0]
-    else:
-        for i, rec in enumerate(gbk_records):
-            # remove source feature of all records except the first one
-            if rec.features[0].type == 'source' and i != 0:
-                rec.features.pop(0)
-            # filter small contigs
-            if len(rec) > filter_size:
-                if n == 0:
-                    n+=1
-                    merged_rec = rec
-                else:
-                    merged_rec+=rec
-                # you could insert a spacer if needed
-                # do not add spacer after the last contig
-                if i != len(gbk_records)-1:
-                    merged_rec += "N" * 200
-
-                    my_start_pos = ExactPosition(len(merged_rec)-200)
-                    my_end_pos = ExactPosition(len(merged_rec))
-                    my_feature_location = FeatureLocation(my_start_pos, my_end_pos)
-                    my_feature = SeqFeature(my_feature_location, type="assembly_gap")
-                    merged_rec.features.append(my_feature)
-
-    accession_index = 0 if plasmids else -1
-    try:
-        merged_rec.id = gbk_records[0].annotations["accessions"][accession_index]
-    except KeyError:
-        merged_rec.id = gbk_records[0].id
-
-    if gi:
-        merged_rec.annotations["gi"] = gi
-
-    merged_rec.description = "%s" % gbk_records[0].annotations["organism"]
-    merged_rec.annotations = gbk_records[0].annotations
-    try:
-        merged_rec.name = gbk_records[0].annotations["accessions"][accession_index]
-    except KeyError:
-        merged_rec.name = gbk_records[0].id
-    my_start_pos = ExactPosition(0)
-    my_end_pos = ExactPosition(len(merged_rec))
-    merged_rec.features[0].location = FeatureLocation(my_start_pos, my_end_pos)
-    return merged_rec
-
-
-def filter_plasmid(record_list):
-    plasmid_record_list = []
-    chromosome_record_list = []
-
-    for record in record_list:
-        if setup_chlamdb.is_plasmid(record):
-            plasmid_record_list.append(record)
-        else:
-            chromosome_record_list.append(record)
-    return chromosome_record_list, plasmid_record_list
 
 
 def count_missing_locus_tags(gbk_record):
@@ -110,18 +38,6 @@ def count_missing_locus_tags(gbk_record):
 def is_annotated(gbk_record):
     return not (len(gbk_record.features) == 1
             and gbk_record.features[0].type == 'source')
-
-
-def update_record_taxon_id(record, n):
-    if record.features[0].type == 'source':
-        if 'db_xref' in record.features[0].qualifiers:
-            for item in record.features[0].qualifiers['db_xref']:
-                if 'taxon' in item:
-                    index = record.features[0].qualifiers['db_xref'].index(item)
-                    record.features[0].qualifiers['db_xref'][index] = "taxon:%s" % n
-    else:
-        print('ACHRTUNG\t no source for record \t%s' % record.name)
-    return record
 
 
 def rename_source(record):
@@ -190,104 +106,6 @@ def orthogroups_to_fasta(genomes_list):
                 SeqIO.write(new_fasta, out_handle, "fasta")
 
 
-def check_gbk(gbff_files):
-    reannotation_list = []
-
-    # count the number of identical source names
-    source2count = {}
-    accession2count = {}
-    for genome_number, gbff_file in enumerate(gbff_files):
-
-        records = list(SeqIO.parse(gbff_file, "genbank"))
-        for record in records:
-            n_missing, total = count_missing_locus_tags(record)
-            if n_missing > 0:
-                print ('Warning: %s/%s missing locus tag for record %s' % (n_missing, total, record.name))
-        chromosome, plasmids = filter_plasmid(records)
-        cleaned_records = []
-        plasmid_reannot = False
-        chromosome_reannot = False
-
-        for n_plasmid, plasmid in enumerate(plasmids):
-            annot_check = is_annotated(plasmid)
-            if annot_check:
-
-                plasmid.description = clean_description(plasmid.description)
-
-                plasmid = update_record_taxon_id(plasmid, 1000 + genome_number)
-                strain, new_source = rename_source(plasmid)
-                print("plasmid:", strain, new_source )
-                if new_source:
-                    if not 'plasmid' in new_source:
-                        new_source = "%s plasmid %s" % (new_source, n_plasmid+1)
-                    if strain.lower() not in plasmid.annotations['source'].lower():
-                        plasmid.description = new_source
-                    if strain.lower() not in plasmid.annotations['organism'].lower():
-                        plasmid.annotations['organism'] = new_source
-                    if strain.lower() not in plasmid.annotations['source'].lower():
-                        plasmid.annotations['source'] = new_source
-                else:
-                    print ('ACHTUNG\t no strain name for \t%s\t, SOUCE uniqueness should be checked manually' % merged_record.id)
-                # check if accession is meaningful
-                if 'NODE_' in plasmid.id or 'NODE_' in plasmid.name:
-                    print ('ACHTUNG\t accession probably not unique (%s) for \t%s\t --> should be checked manually' % (merged_record.id))
-                cleaned_records.append(plasmid)
-            else:
-                plasmid_reannot = True
-                print("Warrning: unannotated genome: %s" % plasmid)
-
-        if len(chromosome) > 0:
-            '''
-            Assume single chromosome bacteria.
-            If multiple record founds, consider those as contigs.
-            '''
-
-            annot_check = is_annotated(chromosome[0])
-            if annot_check:
-                if len(chromosome) > 1:
-                    merged_record = merge_gbk(chromosome)
-                else:
-                    merged_record = chromosome[0]
-                merged_record.description = clean_description(merged_record.description)
-                # rename source with strain name
-                merged_record = update_record_taxon_id(merged_record, 1000 + genome_number)
-                strain, new_source = rename_source(merged_record)
-                if new_source:
-                    if strain.lower() not in merged_record.annotations['source'].lower():
-                        merged_record.description = new_source
-                    if strain.lower() not in merged_record.annotations['organism'].lower():
-                        merged_record.annotations['organism'] = new_source
-                    if strain.lower() not in merged_record.annotations['source'].lower():
-                        merged_record.annotations['source'] = new_source
-                else:
-                    print('ACHTUNG\t no strain name for\t%s' % gbff_file)
-                # check if accession is meaningful
-                if 'NODE_' in merged_record.id or 'NODE_' in merged_record.name:
-                    print('ACHTUNG\t accession probably not unique (%s) for\t%s' % (merged_record.id, gbff_file))
-                cleaned_records.append(merged_record)
-            else:
-                chromosome_reannot = True
-                print("Warrning: unannotated genome: %s" % chromosome)
-
-
-        if plasmid_reannot and not chromosome_reannot and len(chromosome) > 0:
-            print("plasmid", plasmid_reannot)
-            print("chr", chromosome_reannot)
-            raise TypeError('Combination of unannotated plasmid(s) and annotated chromosome')
-        elif not plasmid_reannot and chromosome_reannot and len(plasmids) > 0:
-            print("plasmid", plasmid_reannot)
-            print("chr", chromosome_reannot)
-            raise TypeError('Combination of annotated plasmid(s) and unannotated chromosome')
-        elif plasmid_reannot or chromosome_reannot:
-            print("plasmid", plasmid_reannot)
-            print("chr", chromosome_reannot)
-            raise TypeError('Some genomes are not annotated!')
-        else:
-            out_name = gbff_file.split('.')[0] + '_merged.gbk'
-            with open(out_name, 'w') as f:
-                SeqIO.write(cleaned_records, f, 'genbank')
-
-
 def check_organism_uniqueness(gbk_lst):
     """
     As BioSQL uses the organism entry of the records to assign
@@ -299,22 +117,42 @@ def check_organism_uniqueness(gbk_lst):
 
     Display an error message and stop the pipeline if this arises
     """
-    organisms = dict()
+    organisms = defaultdict(list)
+    contigs = defaultdict(list)
+    locuses = defaultdict(list)
 
     for gbk_file in gbk_lst:
         curr_organism = None
         for record in SeqIO.parse(gbk_file, "genbank"):
             if not "organism" in record.annotations:
                 raise Exception(f"No organism for file {gbk_file}")
-            
+
+            for feature in record.features:
+                if feature.type != "CDS":
+                    continue
+                if not "locus_tag" in feature.qualifiers:
+                    raise Exception(f"Missing locus tag in {gbk_file}")
+                locus_tag = feature.qualifiers["locus_tag"][0]
+                locuses[locus_tag].append(record.name)
+            contigs[record.name].append(gbk_file)
             organism = record.annotations["organism"]
             if curr_organism is None:
                 curr_organism = organism
             elif curr_organism != organism:
                 raise Exception(f"Two different organism in {gbk_file}: {curr_organism}/{organism}")
+        organisms[organism].append(gbk_file)
 
-        gbk_lst = organisms.setdefault(organism, [])
-        gbk_lst.append(gbk_file)
+    for locus, contig_list in locuses.items():
+        if len(contig_list)>1:
+            err = ",".join(contig_list)
+            raise Exception(f"Duplicate locus tag {locus} in contigs {err}")
+
+    for contig, file_lst in contigs.items():
+        if len(file_lst)>1:
+            genbanks = ",".join(file_lst)
+            raise Exception(
+                f"Duplicate contig name: {contig} in "
+                f"{genbanks}")
 
     for organism, file_lst in organisms.items():
         if len(file_lst) > 1:
@@ -333,7 +171,7 @@ def check_names(record, common_names):
     return record
 
 
-def filter_out_unannotated(gbk_files):
+def check_organism_names(gbk_files):
     """
     NOTE: assumes that the check_organism_uniqueness has been called before (i.e.
     unique scientific organism name and only one organism per file).
@@ -348,89 +186,10 @@ def filter_out_unannotated(gbk_files):
     for gbk_file in gbk_files:
         records = SeqIO.parse(gbk_file, "genbank")
         result_file = gbk_file.replace(".gbk", "_filtered.gbk")
-        to_keep = (check_names(rec, common_names) for rec in records if is_annotated(rec))
+        to_keep = (check_names(rec, common_names) for rec in records)
         first_rec = next(to_keep)
         common_names.add(first_rec.annotations["source"])
         SeqIO.write(itertools.chain([first_rec], to_keep), result_file, "genbank")
-
-
-list_locus_tag_nr=[]
-list_locus_tag=[]
-
-def lt_uniqueness_gbk(gbk_list):
- for gbk_file in gbk_list:
-  records = SeqIO.parse(gbk_file, 'genbank')  #from BioPython, object of class SeqRecord
-  genome = os.path.basename(gbk_file).split('.')[0]
-
-  for record in records:
-   record_id=record.id
-   for feature in record.features:
-     if (feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers):
-       if "locus_tag" in feature.qualifiers:
-          locus_tag = feature.qualifiers["locus_tag"][0]
-          list_locus_tag.append(locus_tag)
-          count_locus_tag= len(list_locus_tag)
-          if locus_tag not in list_locus_tag_nr:
-                list_locus_tag_nr.append(locus_tag)
-                count_nr_locus_tag= len(list_locus_tag_nr)
-          if locus_tag=="":
-             raise Exception(f"Empty locus_tag in {record_id} of {genome}")
-       else:
-             raise Exception(f"No locus_tag in {record_id} of {genome}")
-
- if not count_locus_tag==count_nr_locus_tag:
-  raise Exception(f"Non-unique locus_tag")
-
-def checked_unique_lt (gbk_files):
- for gbk_file in gbk_files:
-  records = SeqIO.parse(gbk_file, 'genbank')
-  new_gbk = gbk_file.replace(".gbk", "_lt_checked.gbk") 
-  string= "list"
-  list= string.join({new_gbk})
-  list=[]
-  for record in records:
-   list.append(record)
-  pass
-  SeqIO.write( list, new_gbk, 'genbank')
-
-
-
-
-
-LOCUS_id_list=[]
-LOCUS_id_list_nr=[]
-
-def LOCUS_uniqueness_gbk(gbk_list):
- for gbk_file in gbk_list:
-  records = SeqIO.parse(gbk_file, 'genbank')  #from BioPython, object of class SeqRecord
-  count_feature_in_record=0
-
-  for record in records:
-   LOCUS_id=record.name
-   for feature in record.features:
-     if (feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers):
-       count_feature_in_record=count_feature_in_record + 1
-   if count_feature_in_record>=1:
-    LOCUS_id_list.append(LOCUS_id)
-    count_LOCUS_id=len(LOCUS_id_list)
-    if LOCUS_id not in LOCUS_id_list_nr:
-       LOCUS_id_list_nr.append(LOCUS_id)
-       count_nr_LOCUS_id= len(LOCUS_id_list_nr)
- if not  count_nr_LOCUS_id==count_LOCUS_id:
-   raise Exception(f"Non-unique LOCUS identifier")
-
-
-def checked_unique_L (gbk_files):
- for gbk_file in gbk_files:
-  records = SeqIO.parse(gbk_file, 'genbank')
-  new_gbk = gbk_file.replace(".gbk", "_lt_L_checked.gbk") 
-  string= "list"
-  list= string.join({new_gbk})
-  list=[]
-  for record in records:
-   list.append(record)
-  pass
-  SeqIO.write( list, new_gbk, 'genbank')
 
 
 def convert_gbk_to_fasta(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=False):
