@@ -6,7 +6,7 @@
 {% load static %}
 <STYLE TYPE="text/css">
 <!--
-A:link{background:transparent;color:rgb(81, 255, 0)}
+
 A:active{background:transparent;color:red}
 
 -->
@@ -141,16 +141,17 @@ margin-top: 15em;
 {% include "chlamdb/header.html" %}
 </head>
 <body>
-  {% include "chlamdb/menu.html" %}
+
   <div class="container-fluid" id="main_container" onclick="myFunction()" >
     <div class="row">
       <div id="wrapper">
           <div id="page-content-wrapper">
             <div class="row">
                 <div class="col-lg-12">
+                  {% include "chlamdb/menu.html" %}
                 
-                <div style="padding:2em ">
-
+                  <div class="home-title"><b> Blast </b></div>
+                  <hr class="lines-home">
                   <div class="panel panel-success">
                       <div class="panel-heading" style="width:100%">
                           <h3 class="panel-title">Help</h3>
@@ -193,26 +194,26 @@ margin-top: 15em;
                   {% endif %}
 
                   {% if envoi %}
-                      &nbsp   #space 
+                      &nbsp   
 
                       <h2>Blast result</h2>
 
                       {% if js_out %}
                           <div id='snippetDiv'></div>
-                          <div id="blast-multiple-alignments"></div> #centeral for the image and table of blast result # but it controls the first graph
-                          <div id="blast-alignments-table"></div> #central as well for all #but it controls the table
-                          <div id="blast-single-alignment"></div> #central as well for all #but it controls the last alignment graph
+                          <div id="blast-multiple-alignments"></div> 
+                          <div id="blast-alignments-table"></div> 
+                          <div id="blast-single-alignment"></div> 
                       {% endif %}
-                  {% if blast_result %} #this part is in def primer_search (what does it do?)
+                  {% if blast_result %} 
                       <h3>Result</h3>
                        <div id="blast_res">
                       {% autoescape off %}{{blast_result}}{% endautoescape %}</div>
-                  {% elif blast_no_hits %}    #we have this in def blast
+                  {% elif blast_no_hits %}   
                   <h3>No hits</h3>
-                        <pre id="blast_result">  #it displays the failed search in an organized way
+                        <pre id="blast_result">  
                          {% autoescape off %}{{blast_no_hits}}{% endautoescape %}
                         </pre>
-                  {% elif blast_err %}    #we have this in def blast
+                  {% elif blast_err %}
                         <h3>Error</h3>
                         <pre id="blast_result">
                          {% autoescape off %}{{blast_err}}{% endautoescape %}
@@ -221,7 +222,7 @@ margin-top: 15em;
 
                   {% if all_data %}
                       <h2>Best hit region </h2>
-#THIS PART IS FOR THE HELP TABLE WITH tblastn
+
                       <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                           <div class="panel-heading" style="width:100%">
                               <h3 class="panel-title">Help</h3>
@@ -231,7 +232,7 @@ margin-top: 15em;
                           
                       </div>
 
-#FROM HERE WE HAVE SOMEHOW THE DISPAYMENT OF THE LOCUS WITH THE IDENTIFIED GENES AROUND THE INPUT SEQUENCE
+
                       <div style="height:100px;">
                         {% for fig in fig_list%}
                           <h3>{{fig.0}}</h3>
@@ -261,8 +262,6 @@ margin-top: 15em;
 
 
                   </table>
-
-#UNTIL THIS PART (tblastn)
 
 
                   {% endif %}

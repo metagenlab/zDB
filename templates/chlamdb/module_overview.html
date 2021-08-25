@@ -16,15 +16,16 @@
 </head>
 
 <body>
-    {% include "chlamdb/menu.html" %}
+ 
   <div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
           <div id="page-content-wrapper">
             <div class="row">
               <div class="col-lg-12">
-                 
-
+                 {% include "chlamdb/menu.html" %}   
+                 <div class="home-title"><b> Kegg modules </b></div>
+                 <hr class="lines-home">
                    <nav>
                         <ul id="tabs_main" class="nav nav-tabs">
                             <li class="active"><a href="{% url 'kegg_module' %}">Category Heatmap</a></li>

@@ -21,32 +21,41 @@
                                     <div class="col-lg-12 col-md-12 col-sm-12">
                                     
         
-                                    <table class="display" id="genomes_table">
-                                        <thead>
-        
-        
-                                            <tr>
-                            {% for header in data_table_header %}
-                            <th>{{header}}</th>
-                            {% endfor %}
-        
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for entry in data_table %}
-                                            <tr>
-                            {% for val in entry %}
-                                                <td>{{val}}</td>
-                            {% endfor %}
-                                            </tr>
-                                        {% endfor %}
-        
-                                        </tbody>
-                                    </table>
-                                </div>
-                                </div> 
-                            </div>
-                    
+                                        <div class="home-title"><b> Table of content: Genomes </b></div>
+                                        <hr class="lines-home">
+                                
+                                          <div class="tab-pane" id="genomes">
+                                                            
+                                                          <table class="display" id="genomes_table">
+                                                            <thead>
+                                
+                                
+                                                                <tr>
+                                                {% for header in data_table_header %}
+                                                <th>{{header}}</th>
+                                                {% endfor %}
+                                
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                              {% for entry in data_table %}
+                                                                <tr>
+                                                                  <td><a href="{% url 'extract_contigs' entry.0  %}">{{entry.1}}</a></td>
+                                                                  <td>{{entry.2}}</td>
+                                                                  <td>{{entry.3}}</td>
+                                                                  <td>{{entry.4}}</td>
+                                                                  <td>{{entry.5}}</td>
+                                                                  <td>{{entry.6}}</td>
+                                                                  <td>{{entry.7}}</td>
+                                                                  <td><a href="{% static  entry.8 %}"> .faa </a></td>
+                                                                  <td><a href="{% static  entry.9 %}"> .fna </a></td>
+                                                                  <td><a href="{% static  entry.10 %}"> .ffn </a></td>
+                                                                  <td><a href="{% static  entry.11 %}"> .gbk </a></td>
+                                                                </tr>
+                                                              {% endfor %}
+                                                              </tbody>
+                                                        </table>        
+                                           </div>
                 </div>
             </div>
           </div>

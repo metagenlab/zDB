@@ -1,14 +1,19 @@
 <!DOCTYPE html>
+
+
 <html>
+
 <head>
+
 <meta name="description" content="A comparative genomics database of the phylum Chlamydiae and other PVC (Planctomycetes, Verrucomicrobia, Lentisphaerae).">
-
+   <link rel= "stylesheet" href="style_home.css">
     {% load static %}
-    {% load static %}
-    {% include "chlamdb/menu.html" %}
+    {% load custom_tags %}
     {% include "chlamdb/header.html" %}
-
+    {% include "chlamdb/style_menu.html" %}
+ 
 </head>
+
 <body>
     <div class="container-fluid" id="main_container">
       <div class="row">
@@ -16,8 +21,10 @@
             <div id="page-content-wrapper">
               <div class="row">
                 <div class="col-lg-12">
-                  <div class="col-sm-3 col-md-4 col-lg-5">
+                   {% include "chlamdb/menu.html" %}
 
+        <div class="home-title"><b> Phylogeny </b></div>
+        <hr class="lines-home">
                         <div style="padding:2em 10em 0em 10em;">
 
   
