@@ -839,7 +839,7 @@ class BlastProfileForm(forms.Form):
 
 def make_blast_form(biodb):
 
-    accession_choices =  get_accessions_BLAST(biodb, plasmid=True, all=True)
+    accession_choices =  get_accessions_BLAST(biodb, plasmid=False, all=True)
 
     print(accession_choices)
     class BlastForm(forms.Form):
