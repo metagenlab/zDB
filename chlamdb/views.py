@@ -308,6 +308,11 @@ class StackedBarColumn(Column):
 
 
 def home(request):
+
+    INTRO=settings.INTRO
+    TITLE=settings.TITLE
+    SUBTITLE=settings.SUBTITLE
+
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
 
@@ -356,6 +361,16 @@ def home(request):
 
     e_tree.rename_leaves(genomes_descr.description.to_dict())
     e_tree.render(path, dpi=500)
+
+
+    number_of_files=db.count_files()
+    print("number_of_files", number_of_files)
+     
+    orthogroups_freq=db.get_all_orthogroups( min_size=None)
+    df_ort=pd.DataFrame(orthogroups_freq, columns=["Orthogroup", "freq"])
+    number_ort= df_ort.shape[0]
+    print("number_of_orthogroups", number_ort)
+
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 
@@ -2106,9 +2121,6 @@ def pmid(request, seqfeature_id):
 
 
 def extract_region(request):
-    
-    
-    
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
 
@@ -2121,11 +2133,68 @@ def extract_region(request):
     genomes_data.coding_density = genomes_data.coding_density.apply(lambda x: round(100*x))
     genomes_data.length = genomes_data.length.apply(lambda x: round(x/pow(10,6), 2))
 
-    data_table_header = ["taxon_id", "Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding", "N plasmids"]
-    data_table = genomes_data[[ "id", "description", "gc", "n_prot", "n_contigs", "length", "coding_density", "has_plasmid"]].values.tolist()
+    filenames_tax_id= db.get_filenames_to_taxon_id()
+    filenames_tax_id_db= pd.DataFrame.from_dict(list(filenames_tax_id.items()))
+    filenames_tax_id_db.columns = ['filename','taxon_id']
+    filenames_tax_id_db.index= list(filenames_tax_id_db['taxon_id'])
+    filenames_list= list(filenames_tax_id_db["filename"])
+    path_pre="temp/"
+    path_suf_faa=".faa"
+    path_faa=[path_pre + filename + path_suf_faa for filename in filenames_list]
+
+    path_suf_fna=".fna"
+    path_fna=[path_pre + filename + path_suf_fna for filename in filenames_list]
+
+    path_suf_ffn=".ffn"
+    path_ffn=[path_pre + filename + path_suf_ffn for filename in filenames_list]
+
+    path_suf_gbk=".gbk"
+    path_gbk=[path_pre + filename + path_suf_gbk for filename in filenames_list]
+
+    filenames_tax_id_db['path_to_faa']= path_faa
+    filenames_tax_id_db['path_to_fna']= path_fna
+    filenames_tax_id_db['path_to_ffn']= path_ffn
+    filenames_tax_id_db['path_to_gbk']= path_gbk
+    print("path_gbk",path_gbk)
+    filenames_tax_id_db = filenames_tax_id_db[["path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk" ]]
+    genomes_data=genomes_data.join(filenames_tax_id_db, on= "taxon_id")
+    print("genomes_data", genomes_data)
 
 
+    data_table_header = [ "Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding", "N plasmid contigs", "faa seq", "fna seq", "ffn seq", "gbk file"]
+    data_table = genomes_data[[ "id", "description", "gc", "n_prot", "n_contigs", "length", "coding_density", "has_plasmid", "path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk" ]].values.tolist()
 
+    ext_list= [".faa", ".fna", ".ffn"]
+    for i in list(filenames_tax_id.keys()): 
+        fasta_src_faa = settings.FOLDER_PATH + "blast_DB/faa/faa_SEQ/" + i + ".faa"
+        fasta_dst_faa = settings.BASE_DIR + "/assets/temp/" + i + ".faa"
+      
+        fasta_src_fna = settings.FOLDER_PATH + "blast_DB/fna/fna_SEQ/" + i + ".fna"
+        fasta_dst_fna = settings.BASE_DIR + "/assets/temp/" + i + ".fna"
+
+        fasta_src_ffn = settings.FOLDER_PATH + "blast_DB/ffn/ffn_seq/" + i + ".ffn"
+        fasta_dst_ffn = settings.BASE_DIR + "/assets/temp/" + i + ".ffn"
+
+        src_gbk = settings.FOLDER_PATH + "data/prokka_output_filtered/"  + i + ".gbk"
+        dst_gbk = settings.BASE_DIR + "/assets/temp/" + i + ".gbk"
+        try:
+            os.symlink(fasta_src_faa, fasta_dst_faa)
+            os.symlink(fasta_src_fna, fasta_dst_fna)
+            os.symlink(fasta_src_ffn, fasta_dst_ffn)
+            os.symlink(src_gbk, dst_gbk)
+            break
+        except FileExistsError:
+        
+                os.remove(fasta_dst_faa)
+                os.remove(fasta_dst_fna)
+                os.remove(fasta_dst_ffn)
+                os.remove(dst_gbk)
+                os.symlink(fasta_src_faa, fasta_dst_faa)
+                os.symlink(fasta_src_fna, fasta_dst_fna)
+                os.symlink(fasta_src_ffn, fasta_dst_ffn)
+                os.symlink(src_gbk, dst_gbk)
+
+       
     return render(request, 'chlamdb/extract_region.html', my_locals(locals()))
 
 def extract_contigs(request, genome):
@@ -2154,13 +2223,11 @@ def extract_contigs(request, genome):
 
     contigs=db.get_contigs_to_seqid(taxid)
     bar = foo.join(ogs).join(taxid_seqid_db).join(loc_info).join(contigs)
-    
 
     data_table_header = [ "Name", "Gene",   "Product",  "Locus_tag", "Orthogroup", "Contig" ,"Strand", "Start", "Stop", ]
     data_table = bar[["description", "gene",  "product", "locus_tag", "orthogroup", "contig" ,"strand", "start", "stop" ]].values.tolist()
     
     return render(request, 'chlamdb/extract_contigs.html', my_locals(locals()))
-
 
 def format_lst(lst):
     hsh_values = {}
@@ -11419,26 +11486,26 @@ def blast(request):
                        number_blast_hits = 100000                 
                     if blast_type=='blastn_ffn':
                         blastType = 'locus'
-                        blastdb = settings.BLAST_PATH + "ffn/%s" % (key_dict)
+                        blastdb = settings.FOLDER_PATH + "blast_DB/ffn/%s" % (key_dict)
                         blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits, outfmt=0 )
                         print('BLASTDB', blastdb)
                     if blast_type=='blastn_fna':
                         blastType = 'genome'
-                        blastdb = settings.BLAST_PATH  + "fna/%s" % (key_dict)
+                        blastdb = settings.FOLDER_PATH  + "blast_DB/fna/%s" % (key_dict)
                         print(blastdb)
                         blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits,  outfmt=0)
                     if blast_type=='blastp':
                         blastType = 'locus'
-                        blastdb = settings.BLAST_PATH  + "faa/%s" % (key_dict)
+                        blastdb = settings.FOLDER_PATH  + "blast_DB/faa/%s" % (key_dict)
                         blast_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits, outfmt=0)
                     if blast_type=='tblastn':
                         blastType = 'genome'
-                        blastdb = settings.BLAST_PATH  + "fna/%s" % (key_dict)
+                        blastdb = settings.FOLDER_PATH  + "blast_DB/fna/%s" % (key_dict)
                         blast_cline = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits,  outfmt=0)
                         blast_cline2 = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits, outfmt=5)
                     if blast_type=='blastx':
                         blastType = 'locus'
-                        blastdb = settings.BLAST_PATH  + "faa/%s" % (key_dict)
+                        blastdb = settings.FOLDER_PATH  + "blast_DB/faa/%s" % (key_dict)
                         blast_cline = NcbiblastxCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits,  outfmt=0) #max_target_seqs=number_blast_hits
                     
                     

@@ -222,8 +222,34 @@ tr:nth-child(even) {
       padding-top: 0em;
       padding-right: 2em;
       background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%), url("/bin/chlamdb/img/portfolio-5.jpg");*/
-
-
+      
+  /* FAQ */
+ .collapsible {
+        background-color:rgb(238, 202, 40);
+        color: rgb(0, 53, 78);
+        cursor: pointer;
+        padding: 18px;
+        width: 100%;
+        border: none;
+        text-align: left;
+        outline: none;
+        font-size: 1.1em;
+        font-family: "Helvetica", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      }
+      
+ .active, .collapsible:hover {
+        background-color:  rgb(238, 202, 40);
+      border: solid;
+      border-color: #196d87;
+      }
+      
+  .content-FAQ {
+        padding: 1.1em;
+        display: none;
+        overflow: hidden;
+        background-color: #ffffff;
+        font-family: "Helvetica", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      }
  
 
 
@@ -1205,7 +1231,7 @@ tr:nth-child(even) {
 }
 
 .sidebar-dropdown {
-  background-color: #196d87;
+  background-color: #872619;
 }
 
 .sidebar-nav li.sidebar-nav-item ul.panel-collapse  {
@@ -1228,7 +1254,7 @@ tr:nth-child(even) {
   height: 100%;
   transition: all 0.4s ease 0s;
   transform: translateX(250px);
-  background: #1D809F;
+  background: #96b4bd;
   border-left: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 1.7rem;
   margin-top: 0;

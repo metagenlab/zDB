@@ -1,5 +1,7 @@
 
 
+
+
 .sidebar-nav {
   position: absolute;
   top: 0;
@@ -235,8 +237,35 @@ tr:nth-child(even) {
       padding-right: 2em;
       background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%), url("/bin/chlamdb/img/portfolio-5.jpg");*/
 
-
+ /*FAQ page */
  
+
+.collapsible {
+        background-color:rgb(238, 202, 40);
+        color: rgb(0, 53, 78);
+        cursor: pointer;
+        padding: 18px;
+        width: 100%;
+        border: none;
+        text-align: left;
+        outline: none;
+        font-size: 15px;
+        font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      }
+      
+.active, .collapsible:hover {
+        background-color:  rgb(238, 202, 40);
+      border: solid;
+      border-color: #196d87;
+      }
+      
+.content-FAQ {
+        padding: 1em;
+        display: none;
+        overflow: hidden;
+        background-color: #f1f1f1;
+        font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      }
 
 
 
@@ -640,7 +669,7 @@ tr:nth-child(even) {
       height:2px;border-width:0;background-color:#196d87; width: 70%;
     }
   .subtitle-home{
-      font-size: 1.5em; text-align: center; color:#196d87;; margin-top: 1em;
+      font-size: 1.5em; text-align: center; color:#196d87; margin-top: 1em;
     }
     
 
