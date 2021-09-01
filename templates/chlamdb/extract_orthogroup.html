@@ -60,8 +60,9 @@
                 </div>
                 -->
                 {% block content %}
-                <form action="{% url "extract_orthogroup" %}" method="post" id="extract-form">
+                <form action='{% url "extract_orthogroup" %}' method="post" id="extract-form">
                     {% csrf_token %}
+                    
                     {% crispy form %}
                 </form>
                 {% endblock %}

@@ -9,9 +9,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
   <meta name="description" content="" />
   <meta name="author" content="" />
-  <title>Stylish Portfolio - Start Bootstrap Template</title>
-  <!-- Favicon-->
-  <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
   <!-- Font Awesome icons (free version)-->
   <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
 </head>
@@ -33,29 +30,16 @@
          
         </div>
 
-
-
-        <!-- Collect the nav links, forms, and other content for toggling -->
         
       </div> <!-- /.container-fluid -->
     </nav>
 
 
-
-
-
-
-
-
     
-    
-    <div class="sidenav" >      <!-- Sidebar -->
-      <nav id="sidebar-wrapper" >
-          <ul class="sidebar-nav"  >
-              <li class="sidebar-brand" >
-               
-
-                <nav id="sidebar-wrapper" >
+    <div class="sidenav" id="menu_box" >      <!-- Sidebar -->
+          <ul class="sidebar-nav" >
+              <li class="sidebar-brand">
+                <nav id="sidebar-wrapper"   >
                   <li><form class="example" role="search" action='{% url "search_bar" %}' method="GET" >
                     <button type="submit"><i class="fa fa-search"></i></button>
                     <input type="text" placeholder="    Gene, product, orthogroup, COG, KEGG id, ..."  name="search2">
@@ -65,9 +49,9 @@
 
           
       
-                                                  <li class="sidebar-nav-item"><a href="{% url 'home' %}#home"><b>Home</b></a></li>
-                                                  <li class="sidebar-nav-item"><a href="{% url 'extract_region' %}" ><b>Genomes</b></a></li>
-                                                  <li class="sidebar-nav-item"><a href="{% url 'phylogeny_intro' %}" ><b>Phylogeny</b></a></li>
+                                                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'home' %}#home"><b>Home</b></a></li>
+                                                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'extract_region' %}" ><b>Genomes</b></a></li>
+                                                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'phylogeny_intro' %}" ><b>Phylogeny</b></a></li>
                                                   <hr class="line-menu">
                                                   <li class="analyses"><b>Analyses</b></a></li>
                                                   {% if optional2status|keyvalue:"BLAST_database"%}
@@ -147,71 +131,14 @@
 
 $("#menu-toggle").click(function(e) {
   e.preventDefault();
-  $("#wrapper").toggleClass("toggled");
-  
-});
-
-jQuery(function ($) {
-
-
-    $(".sidebar-dropdown > a").click(function() {
-
-  if (
-    $(this)
-      .parent()
-      .hasClass("active")
-  ) {
-    $(this)
-      .parent()
-      .removeClass("active");
-  } else {
-    $(this)
-      .next(".sidebar-submenu")
-      .slideDown(200);
-    $(this)
-      .parent()
-      .addClass("active");
-  }
-});
-
-$("#close-sidebar").click(function() {
-  $(".page-wrapper").removeClass("toggled");
-});
-$("#show-sidebar").click(function() {
-  $(".page-wrapper").addClass("toggled");
-});
+  $("#wrapper").toggleClass("toggled"); 
 
 });
 
-$('[data-toggle=offcanvas]').click(function() {
-$('.row-offcanvas').toggleClass('active');
-$('.collapse').toggleClass('in').toggleClass('hidden-xs').toggleClass('visible-xs');
-});
 
 
-$(function(){
-var myElem = document.getElementById('learn_more');
-if (myElem === null) {
- console.log("No match!");
-}
-else{
-  $("#help_button").hide();
-  console.log("Match:", url);
-}
-});
 
 
-$(function(){
-    // Get current url
-    // Select an a element that has the matching href and apply a class of 'active'. Also prepend a - to the content of the link
-    var url = window.location.href;
-    if (url.includes('home')) {
-     $("#help_button").hide();
-     console.log("match!")
-    }
-    else{console.log("No match:", url)}
-
-});
 
 </script>
 <style>
@@ -254,19 +181,6 @@ ul{
     /* symbol for "collapsed" panels */
     content: "\e080";    /* adjust as needed, taken from bootstrap.css */
 }
-
-.sidebar-title_NO { 
-    background-color: rgb(245, 205, 131);
-}
-.sidebar-submenu_NO {
-    background-color: rgb(245, 205, 131);
-}
-
-.id_lista_A {
-    background-color: rgb(245, 205, 131);
-}
-
-
 * {
   box-sizing: border-box;
 }

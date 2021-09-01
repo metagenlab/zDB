@@ -1,24 +1,24 @@
+<!DOCTYPE html>
+
 
 <html>
 <head>
-{% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-{% include "chlamdb/header.html" %}
+  {% load static %}
+  {% include "chlamdb/header.html" %}
 </head>
-
 <script src="https://d3js.org/d3.v4.js"></script>
+<div class="container-fluid" id="main_container">
+  <div class="row">
+    <div id="wrapper">
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+               {% include "chlamdb/menu.html" %}
+               <div class="home-title" ><b>   {% if type == 'Pfam' %} Pfam domains  {% endif %}  {% if type == 'COG' %} COGs  {% endif %} {% if type == 'orthology' %} Orthogroups  {% endif %} {% if type == 'ko' %} Kegg Orthologs {% endif %} </b></div>
+               <hr class="lines-home">
+                <nav>
+                    <ul id="tabs_main" class="nav nav-tabs">
 
-<body>
-
-  <div class="container-fluid" id="main_container">
-    <div class="row">
-      <div id="wrapper">
-          <div id="page-content-wrapper">
-            <div class="row" style="height:2000px">
-              <div class="col-lg-12">
-                 {% include "chlamdb/menu.html" %}
-                  <nav>
-                  <ul id="tabs" class="nav nav-tabs">
                           {% if type == 'Pfam' %}
 
                               <li><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
@@ -80,6 +80,7 @@
                   <input type="submit" value="Submit" />
 
               </form>
+              </div>
 
             {% if envoi %}
                   <ul id="tabs2" class="nav nav-tabs" data-tabs="tabs">

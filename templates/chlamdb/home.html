@@ -6,12 +6,11 @@
 <head>
 
 <meta name="description" content="A comparative genomics database of the phylum Chlamydiae and other PVC (Planctomycetes, Verrucomicrobia, Lentisphaerae).">
-   <link rel= "stylesheet" href="style_home.css">
+  
     {% load static %}
     {% load custom_tags %}
     {% include "chlamdb/header.html" %}
     {% include "chlamdb/style_menu.html" %}
- 
 </head>
 
 <body>
@@ -41,19 +40,35 @@
                     <!-- Images and boxes menu-->
                 
 
-                         
+                   <div class="container-fluid" id="main_container" style="width: 90%;">      
                     <div class="container" >
-                     <div class="flex-grid-center" >
-                      <div class="col-md-3 col-sm-6">
-                              <div class="serviceBox">
-                                <a  href="{% url 'extract_region'  %}">
-                                  <div class="service-icon">
-                                      <span><i class="fa fa-dna"></i></span>
-                                  </div>
-                                  <h3 class="title"><a style="text-transform: uppercase; text-align: left" href="{% url 'extract_region' %}" >Genomes</a></h3>
-                                  <p class="description">Lorem ipsum dolor sit amet conse ctetur adipisicing elit. Qui quaerat fugit quas veniam perferendis repudiandae sequi, dolore quisquam illum.</p>
-                              </div>
+                      <div class="tab-pane active">
+                         <div class="col-md-4 col-sm-7" >
+                          <div class="serviceBox_2" style="margin-top: 6em;" >
+                              <h3 class="title">The database contains:</a></h3>
+                              <ul  style="list-style-type:none;">
+                                      {% if number_of_files %}
+                                      <li> <h3 class="a" style="float: left; " ><a href="{% url 'extract_region' %}" ><b>{{number_of_files}}  </b></a>genomes</h3></li>
+                                      {% endif %}
+                                      {% if number_ort %}
+                                      <li><h3 class="a" style="float: left;" ><a href="{% url 'extract_orthogroup' %}" ><b>{{number_ort}}  </b></a>orthogroups</h3></li>
+                                      {% endif %}
+                                      {% if number_of_files %}
+                                      <li><h3 class="a" style="float: left;"><b>{{number_of_files}}</b> core genes</h3></li>
+                                      {% endif %}      
+                              </ul>  
+                           </div>
                           </div>
+                        <div class="col-md-3 col-sm-6">
+                              <div class="serviceBox">
+                                <a  href="{% url 'extract_region' %}">
+                                  <div class="service-icon">
+                                      <span><i class="fa fa-tree"></i></span>
+                                  </div>
+                                  <h3 class="title"><a style="text-transform: uppercase; text-align: left" href="{% url 'extract_region' %}" >Genomes</a></h3> 
+                                  <p class="description">Display the summary table of the genomes contained in the database and navigate to the list of proteins for each of them. <br> Fasta files and .gbk files are available for downloading. </p>
+                              </div>
+                      </div>
                           <div class="col-md-3 col-sm-6" >
                             <div class="serviceBox">
                               <a  href="{% url 'phylogeny_intro' %}">
@@ -61,117 +76,164 @@
                                     <span><i class="fa fa-tree"></i></span>
                                 </div>
                                 <h3 class="title"><a style="text-transform: uppercase; text-align: left" href="{% url 'phylogeny_intro' %}" >Phylogeny</a></h3> 
-                                <p class="description">Lorem ipsum dolor sit amet conse ctetur adipisicing elit. Qui quaerat fugit quas veniam perferendis repudiandae sequi, dolore quisquam illum.</p>
+                                <p class="description"> Visualize and download the phylogenetic tree built on concatenated single copy orthologs. The phylogeny is annotated with genomics info such as size of the genomes and GC content, coding density, completness and contamination expressed as percentage.</p>
                             </div>
                         </div>
+                      
                       </div>
                     </div>
                 <br>
-                <div class="container">
-                      <div class="col-md-3 col-sm-6">
-                          <div class="serviceBox">
+                
+                      <div class="col-md-3 col-sm-6"   style=" min-width: 200px;"  >
+                          <div class="serviceBox" style="min-height: 800px;" >
                               <div class="service-icon_2">
-                                  <span><i class="fa fa-dna"></i></span>
+                                  <span><i class="fa fa-shapes"></i></span>
                               </div>
                               <h3 class="title">Comparisons</h3>
-                              <p class="description">Lorem ipsum dolor sit amet conse ctetur adipisicing elit. Qui quaerat fugit quas veniam perferendis repudiandae sequi, dolore quisquam illum.</p>
-                              <div class= "boxes_analyses"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'extract_orthogroup' %}"><span class="link"></span> Orthogroups</a></button></div>
-                              {% if optional2status|keyvalue:"COG" == 1 %}
-                              <div class= "boxes_analyses"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'extract_cog' %}"><span class="link"></span>COGs</a></button></div>
-                              {% endif %}
-                              {% if optional2status|keyvalue:"KEGG" %}
-                              <div class= "boxes_analyses"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none"href="{% url 'extract_ko' %}">  <span class="link"></span>Kegg Orthologs</a></button></div>
-                              {% endif %}
-                              {% if optional2status|keyvalue:"pfam" == 1 %}
-                              <div class= "boxes_analyses"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none"  href="{% url 'extract_pfam' %}">  <span class="link"></span>Pfam domains</a></button></div>
-                              {% endif %}
+                              <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}  {% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}  {% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %} shared by selected genomes and absent in others, display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Compare orthogroups presenting more than one homolog in selected genomes, cog categories, KO categories between selected genomes.   </p>
+                              <br>  
+                              <div class= "col-md-3 col-sm-6">
+                                    <button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'extract_orthogroup' %}"><span class="link"></span> Orthogroups</a></button>
+                                    {% if optional2status|keyvalue:"COG" == 1 %}
+                                    <button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'extract_cog' %}"><span class="link"></span>COGs</a></button>
+                                    {% endif %}
+                                    {% if optional2status|keyvalue:"KEGG" %}
+                                    <button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none"href="{% url 'extract_ko' %}">  <span class="link"></span>Kegg Orthologs</a></button>
+                                    {% endif %}
+                                    {% if optional2status|keyvalue:"pfam" == 1 %}
+                                    <button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none"  href="{% url 'extract_pfam' %}">  <span class="link"></span>Pfam domains</a></button>
+                                    {% endif %}
+                               </div>
                           </div>
                       </div>
                       {% if optional2status|keyvalue:"KEGG" == 1 %}
-                      <div class="col-md-3 col-sm-6">
-                        <div class="serviceBox">
+                      <div class="col-md-3 col-sm-6"    style=" min-width: 200px;" >
+                        <div  class="serviceBox" style="min-height: 800px;" >
                             <div class="service-icon_2">
-                                <span><i class="fa fa-tree"></i></span>
+                                <span><i class="fa fa-cogs"></i></span>
                             </div>
                             <h3 class="title" >Metabolism</h3>
-                            <p class="description">Lorem ipsum dolor sit amet conse ctetur adipisicing elit. Qui quaerat fugit quas veniam perferendis repudiandae sequi, dolore quisquam illum.</p>
-                            <div class= "boxes_analyses"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'priam_kegg' %}">  <span class="link"></span>Kegg maps</a></button></div>
-                            <div class= "boxes_analyses"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'kegg_module' %}">  <span class="link"></span>Kegg modules</a></button></div>
+                            <p class="description"> Discover which metabolic pathways are present in the genomes. KEGG categories can be investigated checking which KEGG entries are present in each KEGG module. Entries can be visualized in lists or used to generate an annotated phylogeny. In addition, you can visualize in the KEGG maps which genes of a specific pathway are carried by a genome of interest. </p>
+                            <br> 
+                            <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'priam_kegg' %}">  <span class="link"></span>Kegg maps</a></button>
+                           <button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'kegg_module' %}">  <span class="link"></span>Kegg modules</a></button></div>
                         </div>
                     </div>
                     {% endif %}
-                    {% if optional2status|keyvalue:"BLAST_database"%}
-                    <div class="col-md-3 col-sm-6">
-                      <div class="serviceBox">
-                          <div class="service-icon_2">
-                              <span><i class="fa fa-dna"></i></span>
-                          </div>
-                          <h3 class="title" >Blast</a></h3>
-                          <p class="description">Lorem ipsum dolor sit amet conse ctetur adipisicing elit. Qui quaerat fugit quas veniam perferendis repudiandae sequi, dolore quisquam illum.</p>
-                          <div class= "boxes_analyses"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'priam_kegg' %}">  <span class="link"></span>Kegg maps</a></button></div>
-                      </div>
-                  </div>
-                   {% endif %}
-                  <div class="col-md-3 col-sm-6">
-                    <div class="serviceBox">
+                  <div class="col-md-3 col-sm-6"  style=" min-width: 200px;">
+                    <div  class="serviceBox" style="min-height: 800px;" >
                         <div class="service-icon_2">
-                            <span><i class="fa fa-dna"></i></span>
+                            <span><i class="fa fa-circle-notch"></i></span>
                         </div>
                         <h3 class="title">Circos</a></h3>
-                        <p class="description">Lorem ipsum dolor sit amet conse ctetur adipisicing elit. Qui quaerat fugit quas veniam perferendis repudiandae sequi, dolore quisquam illum.</p>
-                        <div class= "boxes_analyses"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none"  href="{% url 'circos' %}">  <span class="link"></span>Circos</a></button></div>
+                        <p class="description"> Generate a clickable version of circos plot indicating the presence/absence of homologous proteins in one or multiple genomes. </p>
+                        <br> 
+                        <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none"  href="{% url 'circos' %}">  <span class="link"></span>Circos</a></button></div>
                     </div>
                 </div>
+                {% if optional2status|keyvalue:"BLAST_database"%}
+                <div class="col-md-3 col-sm-6"    style=" min-width: 200px;">
+                  <div class="serviceBox" style="min-height: 800px;" >
+                      <div class="service-icon_2">
+                          <span><i class="fa fa-grip-lines"></i></span>
+                      </div>
+                      <h3 class="title" >Blast</a></h3> 
+                      <p class="description"> Blast a sequence of interest against the genomes of the database. You can select among blastn, blastp, or the six-frame translation-based approaches, blastx and tblastn. </p>
+                      <br> 
+                      <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'blast' %}">  <span class="link"></span> Blast </a></button></div>
+                  </div>
+              </div>
+               {% endif %}
                   </div>
               </div>
             </div>
             <br>
             <br>
             <br>
-            
+            <br>
+            <br>
+     <div class="container-fluid" id="main_container" style="width: 80%;">
                     <!-- Images and boxes end-->
                     <div class="row">
-                      <div class="col-lg-6">
                         <div class="panel panel-default">
-                          
+                          <div id="container_boxes">
+                            <div id="label">  Status of your database  </div>
+                              <div class="panel-body" style="margin: 10px 10px 10px 10px">
+                                <div class="status_box"  >
+                                  <p> Your database has been generated including the following features:</p>
+                                  <ul style="list-style-type:circle; margin-left: 2em;">
+                                      {% if optional2status|keyvalue:"BLAST_database" == 1 %}
+                                      <li> Blast database of the genomes have been created</li>
+                                      {% endif %}
+                                      <li> Orthologous proteins identified with OrthoFinder </li>
+                                        <li> Detailed annotation of proteins based on:
+                                          
+                                            {% if optional2status|keyvalue:"COG" == 1 %}
+                                            <dd> -<a href="https://www.ncbi.nlm.nih.gov/COG/">COG</a> (clusters of orthologous groups)</dd> 
+                                            {% endif %}
+                                            {% if optional2status|keyvalue:"pfam" == 1 %}
+                                            <dd> -<a href="http://pfam.xfam.org" >Pfam</a> (protein families)</dd>
+                                            {% endif %}
+                                            {% if optional2status|keyvalue:"KEGG" == 1 %}
+                                            <dd> - <a href="https://www.genome.jp/kegg/" >KEGG</a> (Kegg orthologs)</dd>
+                                            {% endif %}
+                                            <dd> - <a href="https://www.uniprot.org/">SwissProt</a> (manually annotated proteins)</dd>
+                                          
+                                        <li> Precomputed phylogenetic reconstructions of orthologous groups</dd>
+                                        {% if optional2status|keyvalue:"KEGG" %}
+                                        <li> Kegg maps visualization</li>
+                                        {% endif %}
+                                        <li> Genomes alignments can be visualized with Circos and selected regions can be plotted and compared
+                                    </li>
+                                  </ul>
+                                </div>
+                                <div class="status_box_warning" >
+                                  <div class="warnings" style="color: red;" >
+                                    <p> The following feature has not beed included, if whished please run again the pipeline with the corrected setting:</p>
+                                      <li style="list-style-type:circle; margin-left: 4em;"> Protein annotation with:
+                                        {% if not optional2status|keyvalue:"COG" == 1 %}
+                                                <dd> -<a href="https://www.ncbi.nlm.nih.gov/COG/">COG</a> (clusters of orthologous groups)</dd> 
+                                                {% endif %}
+                                                {% if not optional2status|keyvalue:"pfam" == 1 %}
+                                                <dd> - <a href="http://pfam.xfam.org" >Pfam</a> (protein families)</dd>
+                                                {% endif %}
+                                                {% if not optional2status|keyvalue:"KEGG" == 1 %}
+                                                <dd> - <a href="https://www.genome.jp/kegg/" >KEGG</a> (Kegg orthologs)</dd>
+                                                {% endif %}
+                                                {% if not optional2status|keyvalue:"KEGG" %}
+                                                <li> Kegg maps visualization</li>
+                                                {% endif %}
+                                      </li>
+                                  </div>  
+                                </div>    
+                                </ul>
+                              
+                              </div>
+                            </div>
                           </div>
                  
                               
                                
                                 </div>
-                                <div class="overview_3" style="margin: 10px 10px 10px 10px">
-                                  <p>The database contains:</p>
-                                  {% if number_of_files %}
-                                            <p class="subtitle-home"><b>{{number_of_files}}</b> genomes</p>
-                                          {% endif %}
-                                          {% if number_ort %}
-                                          <p class="subtitle-home"><b>{{number_ort}}</b> orthogroups</p>
-                                          {% endif %}
-                                          {% if number_of_files %}
-                                          <p class="subtitle-home"><b>{{number_of_files}}</b> core genes</p>
-                                          {% endif %}
-                                  
-
-                                  </ul>
-                               
-                     
-
+                    <div class="overview_3" style="margin: 10px 10px 10px 10px">
                     </div>
-                  
-                      <div class="col-lg-12">
-                        <div class="panel panel-default">
-                          <div id="container_boxes">
+                    <br>
+                    <br>
+                    <br>
+                    <div class="row">
+                      <div class="panel panel-default">
+                        <div id="container_boxes">
                             <div id="label">  Citation  </div>
                             <div class="panel-body" style="margin: 10px 10px 10px 10px">
                               <a href="https://academic.oup.com/nar/advance-article-abstract/doi/10.1093/nar/gkz924/5609527"> <strong> ChlamDB: a comparative genomics database of the phylum <i>Chlamydiae</i> and other members of the <i>Planctomycetes-Verrucomicrobiae-Chlamydiae</i> superphylum </strong></br>
                               Trestan Pillonel, Florian Tagini, Claire Bertelli, Gilbert Greub </br>
                               Nucleic Acids Research, 2019, https://doi.org/10.1093/nar/gkz924 </a>
                            </div>
-                        </div>
-                        
+                          </div>
+                         </div>
                         </div>
                       </div>
-                   
+                   </div>
 
                     
                   
@@ -221,158 +283,10 @@
       } );
     $('.dropdown-toggle').dropdown()
 
-
-
-
-    </script>
- <style>
-
     
- 
-   .serviceBox{
-    color: #555;
-    font-family: 'Poppins', sans-serif;
-    text-align: right;
-    padding: 10px 10px 10px 20px;
-    position: relative;
-    z-index: 1;
-}
-.serviceBox:before,
-.serviceBox:after{
-    content: '';
-    width: calc(100% - 121px);
-    height: calc(100% - 60px);
-    border-left: 2px solid #333;
-    border-top: 2px solid #333;
-    position: absolute;
-    bottom: 0;
-    left: 4px;
-   
-}
-.serviceBox:after{
-    background-color:  #256d97;
-    border: none;
-    height: 10px;
-    width: 10px;
-    border-radius: 50%;
-    left: 0;
-}
-.serviceBox .service-icon{
-    color: #fff;
-    background-color: #256d97;
-    font-size: 50px;
-    text-align: center;
-    line-height: 100px;
-    height: 100px;
-    width: 100px;
-    margin: 0 0 30px;
-    border-radius: 50%;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    display: inline-block;
-    position: relative;
-}
-.serviceBox .service-icon:before{
-    content: '';
-    border: 2px solid #333;
-    border-left-color: transparent;
-    border-top-color: transparent;
-    border-radius: inherit;
-    transform: rotate(45deg);
-    position: absolute;
-    right: -8px;
-    top: -8px;
-    bottom: -8px;
-    left: -8px;
-}
-
-.serviceBox .service-icon:hover{
-    
-    background-color: #608aad;
-
-}
-
-.serviceBox .service-icon_2{
-    color: #fff;
-    background-color: #1f1f2e ;
-    font-size: 50px;
-    text-align: center;
-    line-height: 100px;
-    height: 100px;
-    width: 100px;
-    margin: 0 0 30px;
-    border-radius: 50%;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    display: inline-block;
-    position: relative;
-}
-.serviceBox .service-icon_2:before{
-    content: '';
-    border: 2px solid #333;
-    border-left-color: transparent;
-    border-top-color: transparent;
-    border-radius: inherit;
-    transform: rotate(45deg);
-    position: absolute;
-    right: -8px;
-    top: -8px;
-    bottom: -8px;
-    left: -8px;
-}
-
-.serviceBox .title{
-    
-    text-transform: uppercase;
-    text-align: left;
-   
-}
-.serviceBox .description{
-    font-size: 13px;
-    line-height: 20px;
-    text-align: left;
-    letter-spacing: 0.5px;
-    margin: 0;
-}
-.serviceBox.cyan .service-icon{ background-color: #25c6bc; }
-.serviceBox.cyan .title{ color: #25c6bc; }
-.serviceBox.blue .service-icon{ background-color: #2c69ba; }
-.serviceBox.blue .title{ color: #2c69ba; }
-.serviceBox.purple .service-icon{ background-color: #ab37ad; }
-.serviceBox.purple .title{ color: #ab37ad; }
-@media only screen and (max-width: 990px){
-    .serviceBox{ margin: 0 auto 30px; }
-}
-@media only screen and (max-width: 767px){
-    .serviceBox{ width: 250px; }
-}
-
-#container_boxes {
-   
-    border: 2px solid black;
-    position: relative;
- 
-}
-
-#label {
-    position: absolute;
-    top: -10px;
-    left: 20px;
-    height: 30px;
-    background-color:  #256d97;
-    border: 2px solid  #256d97;
-    text-align: center;
-    font-size: 20px;
-    padding: 2px;
-    text-transform: uppercase;
-    color: white;
-}
-
-
-</style>
-
-
+</script>
 
 </body>
 {% include "chlamdb/style_menu.html" %}
-
 
 </html>

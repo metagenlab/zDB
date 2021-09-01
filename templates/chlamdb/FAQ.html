@@ -29,10 +29,6 @@
                
                   <div class="tab-content">
                     <h3>How the pipeline works</h3>
-                    <button type="button" class="collapsible_FAQ">-What is Comparative_db? </button>
-                    <div class="content-FAQ">
-                      <p>The Comparative_db is a customizable comparative genomics database which enables the user to compare and analyse genomes. Comparative_db integrates multiple tools for comparative genomic analyses and facilitates the access to comprehensive annotations from multiple databases including UniProt (curated and automated protein annotations), KEGG (annotation of pathways) and COG (orthology). Next to this, phylogenetic trees and phylogenetic relationships of genes, conservation of gene neighbourhood and taxonomic profiles can be visualized using dynamically generated graphs, available for download.</p>
-                    </div>
                     <button type="button" class="collapsible_FAQ">-How does Comparative_db work? </button>
                     <div class="content-FAQ">
                       <p>Comparative_db  consists of two parts:
@@ -47,13 +43,13 @@
                         <br>(Seemann T. Prokka: rapid prokaryotic genome annotation Bioinformatics 2014 Jul 15;30(14):2068-9. <a href="https://pubmed.ncbi.nlm.nih.gov/24642063/"> PMID:24642063 </a> )
                        </p>
                     </div>
-                    <button type="button" class="collapsible_FAQ">--Which input files do I need to provide? </button>
+                    <button type="button" class="collapsible_FAQ">-Which input files do I need to provide? </button>
                     <div class="content-FAQ">
                         <p>
                         1. STEP 1 – generation of SQL database:
                         <br>-Input tabel (.csv/.tsv ):
                         <br>it contains an identifier for each input file and the local or absolute path of the gbk files. 
-                        <br>Download an example of input table here ( link to an example table)
+                        <br>Download an example of input table here (link to an example table)
                         <br>For a detailed explanation go here (link to the documentation).
                         <br>-Config file
                         <br>it let you control which analyses among those classified as ‘optional’ in question X (How does Comparative_db work?) will be run.
@@ -94,7 +90,7 @@
                                         </div>      
                     <button type="button" class="collapsible_FAQ">-Can I customize the analyses I want to perform?</button>
                     <div class="content-FAQ">
-                      <p>The user can select which analyses she/he wants to perform turning on or off some of the parameters of the configuration file. See the list of ‘optional’ parameters in Q-‘Which analyses does the pipeline include?’and refer to documentation (link)
+                      <p>The user can select which analyses wants to perform turning on or off some of the parameters of the configuration file. See the list of ‘optional’ parameters in Q-‘Which analyses does the pipeline include?’and refer to documentation (link)
                     </div>  
 
                     <h3>How to use the Comparative database web</h3>
@@ -102,24 +98,27 @@
                     <div class="content-FAQ">
                       In the 'analyses menu', in the section called 'Comparison', you can select  'orthologies' and discovering the orthogroups identified in a specific 		genome or those shared by several genomes of interest. Clicking on one of the orthogroup names (example: group_50) it lists the genes that belongs to it, 	the COG and KEG annotations,the organization of Pfam domains and info regarding transmembrane domains.                     
                     </div>  
-                    <button type="button" class="collapsible_FAQ">-Other analyses </button>
+                    <button type="button" class="collapsible_FAQ">- How many sequence can I blast? </button>
                     <div class="content-FAQ">
-                        ...                        
+                        You can blast only one sequence at a time, both protein or nucleotide one, against the genomes of the database.                         
                     </div>  
                     <button type="button" class="collapsible_FAQ">-How do I use the search bar? </button>
                     <div class="content-FAQ">
                       The search bar can be used to search any term into the datbase. For example it is possible to access a cog, a kegg or an accession term directly typing it in the searchbar.                      
                     </div>  
+                    <button type="button" class="collapsible_FAQ">-Are the kegg maps modified according to the selected genome? </button>
+                    <div class="content-FAQ">
+                      Yes, they are. You can visualize which genes of each metabolic map are carried by a genome of interest.
+                    </div> 
                     <button type="button" class="collapsible_FAQ">-How do I extract metabolic information? </button>
                     <div class="content-FAQ">
-                         <br>--Be sure that this type of analysis was turned on when you run the pipeline --
-                         <br>In the 'analyses menu', in the section called 'Metabolism', you can select 'kegg modules' and investigate a specific KEGG category of interest (example: Energy metabolism, lipid metabolism, etc). Within the category,for each gneome you can visualize the KEGG modules and the ko entries that belong to each module. Besides, you can list the proteins, annotated with ko identifiers further linked to the Ko database, that belong to a selected Kegg module and navigate to the protein locus. This analysis let you navigate from a global kegg characterization of your genomes to a more detailed description of each kegg-described protein.  
-                         <br>If you select 'kegg maps' you can visualize which genes of each metabolic map are carried by a selected genome of interest.
+                         <br>In the 'analyses menu', in the section called 'Metabolism', you can select 'kegg modules' and investigate a specific KEGG category of interest (example: Energy metabolism, lipid metabolism, etc). Within the category,for each gneome you can visualize the KEGG modules and the ko entries that belong to each module. Besides, you can list the proteins, annotated with ko identifiers further linked to the Ko database, that belong to a selected Kegg module and navigate to the protein locus. This analysis let you navigate from a global kegg characterization of your genomes to a more detailed description of each kegg-described protein.
                          <br>A phylogenetic tree annotated with the presence/absence and quantification of the genes which belong to each KO entry is available (a single entry or all the entries together can be visualized) (MAPS BOTH FOR CATEOGIRES AND SUBCATEGOIES - I DON'T GET THE DIFFERENCE ABOUT IT - IT DOES NOT SEEM TO DERIVE FROM THE KEGG DATABASE).
                          In addition, you can compare the strains and have an easy-readable table that reports all the ko modules and the number of proteins that belongs to each one. THERE IS ALSO nKO 	nKO+ THAT I DO NOT GET)
-                         <br> Differently, to retrive metabolic information you can use the Kegg Orthologs anlysis in the 'analyses menu', section called 'Comparison', where you can compare two or more genomes and idenfity which KO entries have in common (you can also exclude those which belong to other genome(s)) and visualize the result in a Venn diagram. For each Ko entry you can investigate of which pathway and module it is part, how many proteins are associated with it and of which orthogroup(s) they are part. Discrepencies between orthogroup clustering and ko prediction are higlighted in the phylogentic tree. Similar comparison can be done focusing on COGs and orthologs. 
-                    </div>  
-
+                    </div> 
+                    <button type="button" class="collapsible_FAQ">How can I perform a comparative analysis?</button>
+                    <div class="content-FAQ">
+                      In the section “Comparison” you perform the same analyses but focusing on different aspects, such as orthogroups, COGs, Kegg Orthologs and Pfam domains (options displayed according to your selections). For example, selecting the Kegg Orthologs anlysis you can compare two or more genomes and idenfity which KO entries have in common (you can also exclude those which belong to other genome(s)) and visualize the result in a Venn diagram. For each Ko entry you can investigate  which pathway and module it is part of, how many proteins are associated with it and of which orthogroup(s) they are part. IN this case discrepencies between orthogroup clustering and ko prediction are higlighted in the phylogentic tree.                     </div>  
                     <h3>Biological aspects</h3> 
                     <button type="button" class="collapsible_FAQ"> -Are plasmids identified? </button>
                     <div class="content-FAQ">

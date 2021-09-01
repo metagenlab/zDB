@@ -92,7 +92,7 @@ def make_plot_form(database_name):
         #location_start = forms.CharField(max_length=9, label="sart (bp)", required=False)
         #location_stop = forms.CharField(max_length=9, label="end (bp)", required=False)
         region_size = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
-        genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"8"}), required = False)
+        genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"8", "multiple data-actions-box":"true"}), required = False)
         all_homologs = forms.ChoiceField(choices=choices, initial="no")
 
         def __init__(self, *args, **kwargs):
@@ -159,7 +159,7 @@ def make_metabo_from(db, add_box=False):
 
     class MetaboForm(forms.Form):
         targets = forms.MultipleChoiceField(choices=accession_choices,
-                widget=forms.SelectMultiple(attrs={'size':'%s' % (20), "class":"selectpicker", "data-live-search":"true"}),
+                widget=forms.SelectMultiple(attrs={'size':'%s' % (20), "class":"selectpicker", "data-live-search":"true", "multiple data-actions-box":"true"}),
                 required = False)
 
         if add_box:
@@ -211,9 +211,9 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None):
     class VennForm(forms.Form):
         if limit is None:
             targets = forms.MultipleChoiceField(choices=accession_choices,
-                    widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true"}), required = True)
+                    widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-actions-box":"true"}), required = True)
         else:
-            targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"%s" % limit}), required = True)
+            targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"%s" % limit ,"multiple data-actions-box":"true"}), required = True)
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -225,7 +225,7 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None):
                                         Fieldset("Compare genomes",
                                                  Column(
                                                        Row('targets'),
-                                                       Submit('submit', 'Compare %s' % label),
+                                                       Submit('submit', 'Compare %s' % label,  style="margin-top:15px" ),
                                                        css_class='form-group col-lg-12 col-md-12 col-sm-12'),
                                                 )
                                         )
@@ -279,7 +279,7 @@ def make_blast_form(biodb):
                                            ("all", "all")])
         evalue= forms.CharField(widget=forms.TextInput({'placeholder': '10'}))
 
-        target = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
+        target = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true", }))
         blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
 
 
@@ -376,7 +376,7 @@ def make_circos_form(database_name):
 
     class CircosForm(forms.Form):
         circos_reference = forms.ChoiceField(choices=accession_choices)
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"8"}), required=False)
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"8",}), required=False)
         #get_region = forms.NullBooleanField(widget=forms.CheckboxInput())
         #region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = False)
 
@@ -391,7 +391,7 @@ def make_circos_form(database_name):
                                                 Row("Circos"),
                                                 Row('circos_reference'),
                                                 Row('targets'),
-                                                Submit('submit_circos', 'Submit'),
+                                                Submit('submit_circos', 'Submit',  style="padding-left:15px"),
                                                 css_class="col-lg-5 col-md-6 col-sm-6")
                                         )
 
@@ -520,7 +520,7 @@ def make_extract_form(db, plasmid=False, label="Orthologs"):
                             Row(Column("orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
                                 Column("no_orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
                             Column(Row('frequency'),
-                            Submit('submit', 'Compare %s' % label), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                            Submit('submit', 'Compare %s' % label,   style="margin-top:15px"), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
                             css_class="col-lg-8 col-md-8 col-sm-12")
                             )
                     )
@@ -781,7 +781,7 @@ def make_blastnr_form(biodb):
         rank_choices.append((rank, rank))
 
     class Blastnr_top(forms.Form):
-        accession = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" , 'class':"selectpicker", "data-width":"200px"}), required = False)
+        accession = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" , 'class':"selectpicker", "data-width":"200px",}), required = False)
         rank = forms.ChoiceField(choices=rank_choices)
         CHOICES=[('BBH','BBH'),
          ('Majority','Majority Rule')]
