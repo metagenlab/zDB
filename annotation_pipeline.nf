@@ -69,7 +69,7 @@ str_pythonized_params = gen_python_args()
 // Input processing
 Channel.fromPath(params.local_assemblies)
     .splitCsv(header: true, strip: true)
-    .map { row -> tuple(row.name, file(row.draft_genome)) }
+    .map { row -> tuple(row.name, file(row.file)) }
     .into { gbk_from_local_assembly_f; error_search }
 
 gbk_from_local_assembly_f.filter { it[1].extension == "gbk" }
@@ -187,6 +187,8 @@ if(params.pfam_scan) {
             pfam_scan.pl -f $faa_chunk -d $params.pfam_database > $pfam_result_file
         """
     }
+} else {
+    Channel.value("void").set { pfam_results }
 }
 
 
@@ -515,6 +517,8 @@ if (params.blast_swissprot) {
       blastp -db $params.swissprot_db -query ${n} -outfmt 6 -evalue 0.001 > ${n}.tab
       """
     }
+} else {
+    Channel.value("void").set { swissprot_blast }
 }
 
 if(params.diamond_refseq) {
