@@ -200,6 +200,7 @@ urlpatterns = [
     url(r'^logout/$', logout, {'next_page': '/'},),
     url(r'^about$', views.about, name="about"),
     url(r'^help', views.help, name="help"),
+    url(r'^genomic_locus_tag', views.genomic_locus_tag_infos, name="genomic_locus_tag_infos"),
 
     url(r'^fam_pfam/(PF[0-9]+)$', views.fam_pfam, name="fam_pfam"),
     url(r'^fam_cog/(COG[0-9]+)$', views.fam_cog, name="fam_cog"),

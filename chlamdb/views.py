@@ -27,6 +27,8 @@ import re
 import os
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
+from django.http import JsonResponse
+
 from chlamdb.forms import make_contact_form
 from chlamdb.forms import make_plot_form
 from chlamdb.forms import SearchForm
@@ -2246,9 +2248,11 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
         entry = [index+1, locus_fmt, organism, format_gene(data.gene), data["product"]]
         if ref_seqid!=None:
             if seqid==ref_seqid:
-                ident = "-"
+                ident = "N/A"
             else:
                 ident = round(identities.loc[seqid].identity, 1)
+            if ident==0:
+                ident = "-"
             entry.insert(2, ident)
 
         homologues.append(entry)
@@ -2676,41 +2680,34 @@ def locusx_genomic_region(db, seqid, window):
     if window_start<0:
         window_start=0
     df_seqids = db.get_seqid_in_neighborhood(seqid, window_start, window_stop)
+    bioentry = db.get_bioentry(seqid)
+    contig_size = db.get_contig_size(bioentry)
 
     hsh_organism = db.get_organism([seqid], id_type="seqid")
     infos = db.get_proteins_info(df_seqids.index.tolist(),
             to_return=["gene", "locus_tag"], as_df=True, inc_non_CDS=True, inc_pseudo=True)
     cds_type = db.get_CDS_type(df_seqids.index.tolist())
     all_infos = infos.join(cds_type).join(df_seqids)
-    gd_diagram = GenomeDiagram.Diagram(f"{seqid}")
-    gd_track = gd_diagram.new_track(1, name=hsh_organism[seqid], greytrack=True)
-    gd_features = gd_track.new_set()
+
+    features = []
+    if window_stop > contig_size:
+        window_stop = contig_size
+    genome_range = [window_start, window_stop]
+
     for curr_seqid, data in all_infos.iterrows():
         feature_name = ""
         if "gene" in data and not pd.isna(data.gene):
             feature_name = data.gene
-
-        loc = FeatureLocation(data.start, data.end, data.strand)
-        fet = SeqFeature(location=loc)
-        color = colors.green
-        if seqid==curr_seqid:
-            color = colors.red
-        elif data.is_pseudo:
-            color = colors.black
-        elif data.type=="tRNA":
-            color = colors.orange
-        elif data.type=="rRNA":
-            color = colors.blue
-        gd_features.add_feature(fet, name=feature_name, color=color, label_position="middle",
-                label_size=10, label_strand=1, sigil="ARROW", label=True)
-    
-    asset_dir = "/assets/"
-    filename = f"/temp/{filename}"
-    # the yt parameters allows longer gene names to not be cropped out of the image
-    gd_diagram.draw(format="linear", pagesize=(100, 600), start=all_infos.start.min(),
-            end=all_infos.end.max(), fragments=1, yt=.2)
-    gd_diagram.write(settings.BASE_DIR+asset_dir+filename, "SVG")
-    return {"genomic_region_svg": filename}
+        feature_type = data.type
+        if data.is_pseudo:
+            feature_type = "pseudo"
+        features.append((
+            f"{{start: {data.start}, gene: {to_s(feature_name)}, end: {data.end},"
+            f"strand: {data.strand}, type: {to_s(feature_type)},"
+            f"locus_tag: {to_s(data.locus_tag)}}}"
+        ))
+    return {"genome_range": genome_range, "window_size": 2*window,
+            "features": "[" + ",".join(features)+"]"}
 
 
 def locusx_RNA(db, seqid, is_pseudogene):
@@ -13904,4 +13901,17 @@ def ko_comparison(request):
     n_ko = len(mat_include.index.tolist())
     envoi_comp = True
     return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
+
+
+def genomic_locus_tag_infos(request):
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    locus_tag = request.POST.get("locus_tag", None)
+    
+    if locus_tag is None:
+        return JsonResponse({"error_msg": "no locus_tag"})
+    seqid, is_pseudo = db.get_seqid(locus_tag=locus_tag, feature_type=False)
+    prot_infos = db.get_proteins_info([seqid], as_df=True)
+    entry = prot_infos.loc[seqid]
+    data = {"product": entry["product"]}
+    return JsonResponse(data)
 

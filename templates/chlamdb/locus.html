@@ -444,9 +444,12 @@ function clearBox(elementID)
 							  <div class="panel-heading">
 								<h3 class="panel-title">Genomic region</h3>
 							  </div>
-                            <div class="row" style="height:100px; display:flex; justify-content:center; align-items:center;">
-                                <object type="image/svg+xml"  data="{% static genomic_region_svg %}" id="genomic_region"></object>
+                            <div class="row" style="height:100px; display:flex; justify-content:center; align-items:center; margin-bottom:30px">
+								<div id="test_d3_genomic_region">
+								</div>
                             </div>
+
+
 						  </div>
 						  </div>
 
@@ -1081,13 +1084,13 @@ function clearBox(elementID)
                     <iframe class="locusFrame" name="frame8" id="frame8" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
                   <div class="tab-pane" id="9" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame9" id="frame9" style="height:18000px;overflow:hidden;" height="18800px" width="100%" onload="javascript:resizeIframe(this);" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                    <iframe class="locusFrame" name="frame9" id="frame9" style="height:18000px;overflow:hidden;" height="18800px" width="100%" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
                   <div class="tab-pane" id="10" style="height:2px;" >
                     <iframe class="locusFrame" name="frame10" id="frame10" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
                   <div class="tab-pane" id="11" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame11" id="frame11" style="height:8000px;overflow:hidden;" onload="javascript:resizeIframe(this);" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                    <iframe class="locusFrame" name="frame11" id="frame11" style="height:8000px;overflow:hidden;" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
                   <div class="tab-pane" id="12" style="height:2px;" >
                     <iframe class="locusFrame" name="frame12" id="frame12" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
@@ -1137,6 +1140,8 @@ function clearBox(elementID)
 
 </body>
 
+{% csrf_token %}
+
 <script>
 
 
@@ -1147,7 +1152,6 @@ $(document).ready(function() {
         "pageLength": 200
     } );
 } );
-
 
 
 $(document).ready(function() {
@@ -1191,6 +1195,7 @@ $(document).ready(function(){
 });
 
 
+{% if pfam_def|length > 0 %}
 window.onload = function() {
 	var ft2 = new FeatureViewer("{{translation}}",
 		"#div_features", 
@@ -1210,6 +1215,7 @@ window.onload = function() {
 		ft2.addFeature(curr_fet);
 	}
 }
+{% endif %}
 
 $(document).ready(function() {
 	$('#blast_nr_table').DataTable( {
@@ -1238,6 +1244,198 @@ $('.dropdown-toggle').dropdown()
 
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 
+var genomic_region =  {{genome_range}};
+var features = {{features|safe}};
+
+const TEXT_FIELD_SIZE = 40;
+const DIAGRAM_VERTICAL_SIZE = 60;
+
+const GENOME_DIAGRAM_SIZE = {x: 600*(genomic_region[1]-genomic_region[0])/{{window_size}},
+	y:TEXT_FIELD_SIZE+DIAGRAM_VERTICAL_SIZE};
+
+const margin = {top:5, right: 5, bottom:5, left:5};
+const arrow_height = 40;
+const base_line_width = 1;
+
+// if gene size smaller than this value, 
+// draw a triangle
+const MAX_ARROW_SIZE=350;
+const ARROW_TUBE_SIZE = 17;
+
+const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+
+var Tooltip = d3.select("#test_d3_genomic_region")
+	.append("div")
+	.style("opacity", 0)
+	.attr("class", "tooltip")
+	.style("background-color", "white")
+	.style("border", "solid")
+	.style("border-width", "2px")
+	.style("border-radius", "5px")
+	.style("padding", "5px");
+
+
+var svg = d3.select("#test_d3_genomic_region")
+	.append("svg")
+	.attr("width", GENOME_DIAGRAM_SIZE.x)
+	.attr("height", GENOME_DIAGRAM_SIZE.y)
+	.append("g");
+
+var mouseover_feature = function(d) {
+	$("body").css("cursor", "progress");
+	$.ajax({
+		method: "POST",
+		url: "/genomic_locus_tag",
+		headers: {"X-CSRFToken": csrftoken},
+		data: {locus_tag: d.locus_tag, },
+		dataType: "json",
+		success: function(data) {
+			$("body").css("cursor", "default");
+			Tooltip.style("opacity", 1)
+				.html(data.product)
+				.style("left", (d3.mouse(this)[0]) + "px")
+				.style("top", (d3.mouse(this)[1]) + "px");
+		}
+	});
+	d3.select(this)
+		.style("stroke", "red");
+	d3.select("#"+d.locus_tag)
+		.style("stroke", "red");
+}
+
+var mouseleave_feature = function(d) {
+	Tooltip.style("opacity", 0);
+	d3.select(this)
+		.style("stroke", "none");
+	d3.select("#"+d.locus_tag)
+		.style("stroke", "none");
+	$("body").css("cursor", "default");
+}
+
+var click_feature = function(d) {
+	window.open("/locusx/"+d.locus_tag);
+}
+
+let x_scale = d3.scale.linear()
+	.domain(genomic_region)
+	.range([0, GENOME_DIAGRAM_SIZE.x]);
+
+let y_scale = d3.scale.linear()
+	.domain([0, 2*arrow_height+base_line_width])
+	.range([TEXT_FIELD_SIZE, TEXT_FIELD_SIZE+DIAGRAM_VERTICAL_SIZE]);
+
+// x axis
+svg.append("line")
+	.style("stroke", "black")
+	.style("stroke-width", base_line_width)
+	.attr("x1", x_scale(genomic_region[0]))
+	.attr("y1", y_scale(arrow_height+base_line_width/2))
+	.attr("x2", x_scale(genomic_region[1]))
+	.attr("y2", y_scale(arrow_height+base_line_width/2));
+
+// border lines
+svg.append("line")
+	.style("stroke", "black")
+	.style("stroke-width", 2)
+	.attr("x1", x_scale(genomic_region[0]))
+	.attr("y1", y_scale(0))
+	.attr("x2", x_scale(genomic_region[0]))
+	.attr("y2", y_scale(2*arrow_height+base_line_width));
+
+// border lines
+svg.append("line")
+	.style("stroke", "black")
+	.style("stroke-width", 2)
+	.attr("x1", x_scale(genomic_region[1]))
+	.attr("y1", y_scale(0))
+	.attr("x2", x_scale(genomic_region[1]))
+	.attr("y2", y_scale(2*arrow_height+base_line_width));
+
+// background rectangle
+svg.append("rect")
+	.attr("x", x_scale(genomic_region[0]))
+	.attr("y", y_scale(0))
+	.attr("width", x_scale(genomic_region[1])-x_scale(genomic_region[0]))
+	.attr("height", y_scale(2*arrow_height+base_line_width)-y_scale(0))
+	.attr("opacity", .1)
+	.attr("fill", "gray");
+
+
+var get_feature_points = function(feature) {
+	let start = feature.start;
+	let stop = feature.end;
+	let top_y = 0;
+	let bot_y = arrow_height;
+
+	if(stop-start <= MAX_ARROW_SIZE) {
+		top_left = {x: start , y:top_y};
+		bottom_left = {x:start, y:bot_y};
+		spike = {x:stop, y:(top_y+bot_y)/2};
+		points = [top_left, bottom_left, spike];
+	} else {
+		let diff = (arrow_height-ARROW_TUBE_SIZE)/2;
+		arrow_top = {x: stop-MAX_ARROW_SIZE, y:top_y};
+		arrow_bot = {x: stop-MAX_ARROW_SIZE, y:bot_y};
+		arrow_spike = {x: stop, y:(top_y+bot_y)/2};
+		tube_beg_top = {x:start, y: diff};
+		tube_beg_bot = {x:start, y: diff+ARROW_TUBE_SIZE};
+		tube_end_top = {x: stop-MAX_ARROW_SIZE, y:diff}
+		tube_end_bot = {x: stop-MAX_ARROW_SIZE, y:diff+ARROW_TUBE_SIZE}
+		points = [tube_beg_top, tube_end_top, arrow_top, arrow_spike, arrow_bot, tube_end_bot, tube_beg_bot];
+	}
+
+	if(feature.strand == -1) {
+		let midpoint = (feature.start+feature.end)/2;
+		for(point in points) {
+			let x_coord = points[point].x;
+			points[point].y += arrow_height+base_line_width;
+			points[point].x -= 2*(x_coord-midpoint);
+		}
+	}
+	return points;
+}
+
+svg.selectAll("text")
+	.data(features)
+	.enter()
+	.append("text")
+	.attr("x", d => x_scale((d.start+d.end)/2))
+	.attr("y", TEXT_FIELD_SIZE)
+	.attr("text-anchor", "start")
+	.attr("transform", function(d ) {
+		return "rotate(315,"+x_scale((d.start+d.end)/2)+","+TEXT_FIELD_SIZE+")";
+	})
+	.attr("id", d => d.locus_tag)
+	.text(d => d.gene);
+
+svg.selectAll("polygon")
+	.data(features)
+	.enter()
+	.append("polygon")
+	.attr("points", function(d) {
+		let points  = get_feature_points(d)
+			.map(function(x) {
+				return [x_scale(x.x), y_scale(x.y)].join(" ");
+		});
+		return points.join(",");
+	})
+	.style("stroke-width", 2)
+	.style("opacity", .9)
+	.style("fill", function(d) {
+		if(d.locus_tag == "{{locus_tag}}") {
+			return "red";
+		} else if(d.type=="CDS") {
+			return "green";
+		} else if(d.type=="tmRNA" || d.type=="tRNA" || d.type=="rRNA") {
+			return "orange";
+		} else if(d.type=="pseudo") {
+			return "black";
+		}
+	})
+	.on("mouseover", mouseover_feature)
+	.on("mouseleave", mouseleave_feature)
+	.on("click", click_feature);
 </script>
 
 {% include "chlamdb/style_menu.html" %}
