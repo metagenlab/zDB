@@ -2622,7 +2622,7 @@ class LocusHeatmapColumn(SimpleColorColumn):
 
 def get_sequence(db, seqid, flanking=0):
     loc      = db.get_gene_loc([seqid])
-    bioentry, accession, length, seq= db.get_bioentry_list(seqid, search_on="seqid")
+    bioentry, accession, length, seq = db.get_bioentry_list(seqid, search_on="seqid")
     strand, start, stop = loc[seqid]
     start -= 1
 
@@ -2680,7 +2680,7 @@ def locusx_genomic_region(db, seqid, window):
     if window_start<0:
         window_start=0
     df_seqids = db.get_seqid_in_neighborhood(seqid, window_start, window_stop)
-    bioentry = db.get_bioentry(seqid)
+    bioentry, _, _, _ = db.get_bioentry_list(seqid, search_on="seqid")
     contig_size = db.get_contig_size(bioentry)
 
     hsh_organism = db.get_organism([seqid], id_type="seqid")
