@@ -5,7 +5,6 @@ from Bio import Entrez
 from Bio import SeqIO
 from BioSQL import BioSeqDatabase
 import sys
-from chlamdb.biosqldb import mysqldb_load_mcl_output
 
 # A faire
 # add arthogroup to db_xref, chose an orthogroup prefix (chlam_x)
@@ -916,6 +915,7 @@ def get_column_names(server, table):
   return [i[0] for i in result]
 
 
+"""
 def taxon_id2missing_orthogroups(server, biodatabase_name, taxon_id, conserved_in_n_percent=95):
     '''
     get list of orthogroups present in N% of the genomes and not in taxon X
@@ -944,6 +944,7 @@ def taxon_id2missing_orthogroups(server, biodatabase_name, taxon_id, conserved_i
             ##print locus_list
             #for genome in locus_list:
             #    #print genome[-1], genome[-2]
+            """
 
 def taxon_id2unique_orthogroups(server, biodatabase_name, taxon_id):
     all_taxons_id = get_taxon_id_list(server, biodatabase_name)

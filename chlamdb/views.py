@@ -86,7 +86,6 @@ from django.core.cache import cache
 from tempfile import NamedTemporaryFile
 from Bio import SeqIO
 from chlamdb.biosqldb.gbk2table import Record
-import chlamdb.models
 import simplejson
 import string
 import random
@@ -11044,85 +11043,6 @@ def circos2genomes(request):
 
 def circos2genomes_main(request):
     return render(request, 'chlamdb/circos2genomes_main.html', my_locals(locals()))
-
-
-def update_db(server):
-    biodb_list = manipulate_biosqldb.get_biodatabase_list(server)
-    for biodb in biodb_list:
-        update_genomes_db(server, biodb)
-
-def update_genomes_db(server):
-    from models import Genome
-    from models import Database
-    from models import GenDB
-    biodb = settings.BIODB
-
-    database = Database.objects.get_or_create(db_name=biodb)[0]
-    genome_list = manipulate_biosqldb.get_genome_description_list(server, biodb)
-    for genome_description in genome_list:
-        genome = Genome.objects.get_or_create(genome_name=genome_description, database=database)[0]
-        GenDB.objects.get_or_create(database=database, ref_genome=genome, query_genome=genome, genome_name=genome.genome_name, database_name=database.db_name)
-
-
-
-def crossplot(request):
-
-    cache.clear()
-    bioentry_in_memory = cache.get('biodb')
-
-    if not bioentry_in_memory:
-        cache.set("biodb", {})
-    bioentry_in_memory = cache.get("biodb")
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    update_db(server)
-
-    crossplot_form_class = make_crossplot_form("Chlamydia_11_14")
-    if request.method == 'POST': 
-        form = DBForm(request.POST) #crossplot_form_class(request.POST)
-
-        if form.is_valid():  
-            server, db = manipulate_biosqldb.load_db("Chlamydia_11_14")
-
-            update_genomes_db(server, "Chlamydia_11_14")
-
-            reference_genome = str(form.cleaned_data['ref_genome'])
-            query_genome = str(form.cleaned_data['query_genome'])
-            protein_locus = form.cleaned_data['accession']
-            region_size = form.cleaned_data['region_size']
-
-            #description2accession = manipulate_biosqldb.description2accession(server, "saureus1")
-            #reference_accession = description2accession[reference_genome]
-            #query_accession = description2accession[query_genome]
-
-            orthogroup = manipulate_biosqldb.locus_tag2orthogroup_id(server, protein_locus, "Chlamydia_11_14")
-            ortho_detail = list(manipulate_biosqldb.orthogroup_id2locus_tag_list(server, orthogroup, "Chlamydia_11_14"))
-            locus_tag_list = []
-            for i in range(0, len(ortho_detail)):
-                if reference_genome in ortho_detail[i] or query_genome in ortho_detail[i]:
-                    locus_tag_list.append(ortho_detail[i][2])
-            if "Chlamydia_11_14" not in bioentry_in_memory.keys():
-                bioentry_in_memory["Chlamydia_11_14"] = {}
-
-            home_dir = os.path.dirname(__file__)
-            temp_location = os.path.join(home_dir, "../assets")
-            temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-            name = os.path.basename(temp_file.name)
-            bioentry_dict = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, "Chlamydia_11_14", locus_tag_list,
-                                                                                  temp_file.name, int(region_size),
-                                                                                  bioentry_in_memory["Chlamydia_11_14"])
-
-
-
-
-            envoi = True
-
-    else:  
-        form = DBForm() #crossplot_form_class()
-        form2 = DBForm()
-    return render(request, 'chlamdb/crossplot.html', my_locals(locals()))
-
-
 
 
 def string_page(request, cog_id, genome_accession):

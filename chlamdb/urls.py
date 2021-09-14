@@ -184,7 +184,6 @@ urlpatterns = [
     url(r'^locus_list2orthogroups', views.locus_list2orthogroups, name="locus_list2orthogroups"),
     url(r'^orthogroup_comparison', views.orthogroup_comparison, name="orthogroup_comparison"),
     url(r'^locus2locus/$', views.locus2locus, name="locus2locus"),
-    url(r'^crossplot/$', views.crossplot, name="crossplot"),
     url(r'^login/$', views.chlamdb_login, name='chlamdb_login'),
     #url(r'^chaining/', include('smart_selects.urls')),
     url(r'^logout/$', views.logout_view, name="logout_view"),
