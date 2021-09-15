@@ -10,7 +10,6 @@ from django.shortcuts import render
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 
-# import chlamdb.plots
 
 import seaborn as sns
 import matplotlib.colors as mpl_col
