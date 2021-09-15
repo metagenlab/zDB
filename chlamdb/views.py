@@ -229,37 +229,6 @@ def create_user(username, mail, password, first_name, last_name, staff=True):
     user.save()
 
 
-
-def chlamdb_login(request):
-    error = False
-
-    if request.method == "POST":
-        form = ConnexionForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data["username"]
-            password = form.cleaned_data["password"]
-            user = authenticate(username=username, password=password)  # Nous vérifions si les données sont correctes
-            if user:  # Si l'objet renvoyé n'est pas None
-                login(request, user)  # nous connectons l'utilisateur
-                #return HttpResponseRedirect("/chlamdb/home")
-            else: # sinon une erreur sera affichée
-                error = True
-
-        if form.is_valid():  
-
-            biodb = form.cleaned_data['biodatabase']
-            envoi = True
-    else:
-        form = ConnexionForm()
-
-    return render(request, 'chlamdb/login.html', my_locals(locals()))
-
-def logout_view(request):
-    logout(request)
-    return render(request, 'chlamdb/logout.html', my_locals(locals()))
-    return render(request, 'chlamdb/logout.html', my_locals(locals()))
-
-
 class StackedBarColumn(Column):
     def __init__(self, values, header, colours=None, relative=False,
             face_params=None, header_params=None):
