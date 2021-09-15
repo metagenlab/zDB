@@ -1,10 +1,6 @@
 #-*- coding: utf-8 -*-
 from django import forms
-#import models
-from chlamdb.biosqldb.manipulate_biosqldb import load_db
-#from blah import *
-#from models import GenDB
-#from models import Genome
+
 from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, MultiField, Div, Fieldset
@@ -287,44 +283,6 @@ def make_priam_form(db):
     return PriamForm
 
 
-def make_species_curation_form(database_name, species_id):
-    
-    server, db = load_db(database_name)
-    
-    sql = 'select phylum, `order`, family, genus, species from species_curated_taxonomy where species_id=%s;' % (species_id)
-    print(sql)
-    data = server.adaptor.execute_and_fetchall(sql,)[0]
-    print(data)
-    class TaxonomyCurationForm(forms.Form):
-        phylum = forms.CharField(max_length=600, required = True, initial=data[0])
-        order = forms.CharField(max_length=600, required = True, initial=data[1])
-        family = forms.CharField(max_length=600, required = True, initial=data[2])
-        genus = forms.CharField(max_length=600, required = True, initial=data[3])
-        species = forms.CharField(max_length=600, required = True, initial=data[4])
-
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.helper = FormHelper()
-            self.helper.form_method = 'post'
-            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
-            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
-            self.helper.layout = Layout(
-                                        Fieldset("Taxonomy curation",
-                                                Column(
-                                                    Row('phylum', style="padding-left:15px"),
-                                                    Row('order', style="padding-left:15px"),
-                                                    Row('family', style="padding-left:15px"),
-                                                    Row('genus', style="padding-left:15px"),
-                                                    Row('species', style="padding-left:15px"),
-                                                Submit('submit', 'Save'), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
-                                                css_class="col-lg-8 col-md-8 col-sm-12")
-                                        )
-
-            super(TaxonomyCurationForm, self).__init__(*args, **kwargs)
-
-    return TaxonomyCurationForm
-
-
 
 def make_circos_form(database_name):
 
@@ -402,32 +360,6 @@ def make_genome_selection_form(database_name):
     return GenomeForm
 
 
-def make_kegg_form(database_name):
-    from chlamdb.biosqldb import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db(database_name)
-
-    sql_pathways = 'select description,description from enzyme_locus2ko t1 ' \
-                   ' inner join  enzyme_pathway2ko t2 ' \
-                   ' on t1.ko_id = t2.ko_id ' \
-                   ' inner join  enzyme_kegg_pathway t3 ' \
-                   ' on t3.pathway_id=t2.pathway_id group by description;'
-
-    pathway_choices = server.adaptor.execute_and_fetchall(sql_pathways,)
-
-    sql_modules = 'select description,description from  enzyme_locus2ko t1 ' \
-                  ' inner join  enzyme_module2ko t2 on t1.ko_id = t2.ko_id ' \
-                  ' inner join  enzyme_kegg_module t3 on t3.module_id=t2.module_id group by description;'
-
-    module_choices = server.adaptor.execute_and_fetchall(sql_modules,)
-
-    class KeggForm(forms.Form):
-
-        pathway_choice = forms.MultipleChoiceField(label='', choices=pathway_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False)
-        module_choice = forms.MultipleChoiceField(choices=module_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False, label="")
-
-    return KeggForm
-
-
 def make_extract_form(db, plasmid=False, label="Orthologs"):
     accession_choices, rev_index = get_accessions(db, plasmid=plasmid)
 
@@ -498,28 +430,6 @@ def make_extract_form(db, plasmid=False, label="Orthologs"):
     return ExtractForm
 
 
-def locus_int_form(database_name):
-    from chlamdb.biosqldb import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db(database_name)
-
-    sql = 'select distinct category from custom_tables_annot_table;'
-    categories = server.adaptor.execute_and_fetchall(sql,)
-    CHOICES = [(i[0],i[0]) for i in categories]
-    CHOICES.append(("all","all"))
-
-    show_identity_CHOICES = (
-        ('ientity', 'Show identity percentages'),
-        ('color', 'Show coloured heatmap'),
-    )
-
-
-    class IntCatChoice(forms.Form):
-        category = forms.ChoiceField(choices=CHOICES)
-        #Show_identity_values = forms.ChoiceField(choices=show_identity_CHOICES,
-        #                                        widget=forms.RadioSelect)
-    return IntCatChoice
-
-
 def hmm_sets_form_circos(database_name):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
@@ -557,35 +467,6 @@ def hmm_sets_form(database_name):
         query_coverage_cutoff = forms.CharField(max_length=3, label="Query coverage cutoff", initial = 0.5, required = False)
 
     return HmmSetChoice
-
-
-def transporters_superfam_form(database_name, show_taxon=False):
-
-    from chlamdb.biosqldb import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db(database_name)
-
-    sql = 'select distinct description from transporters.transporter_table t1 ' \
-          'inner join transporters.tc_table t2 on t1.superfamily=t2.tc_id;' #% database_name
-
-    categories = server.adaptor.execute_and_fetchall(sql,)
-    CHOICES = [("all","all")]
-    CHOICES += [(i[0],i[0]) for i in categories]
-    if show_taxon:
-        accession_choices = get_accessions(database_name)
-    class TransporterSuperfamilyChoice(forms.Form):
-
-        if show_taxon:
-            genome = forms.ChoiceField(choices=accession_choices)
-
-        transporter_superfamily = forms.MultipleChoiceField(choices=CHOICES, widget=forms.SelectMultiple(attrs={'size':'20' }), required = False)
-
-        score_cutoff = forms.CharField(max_length=3, label="Bitscore cutoff", initial = 10, required = False)
-        evalue_cutoff = forms.CharField(max_length=10, label="Evalue cutoff", initial = 0.005, required = False)
-        query_coverage_cutoff = forms.CharField(max_length=3, label="Query coverage cutoff", initial = 0.5, required = False)
-        hit_coverage_cutoff = forms.CharField(max_length=3, label="Query coverage cutoff", initial = 0.5, required = False)
-
-    return TransporterSuperfamilyChoice
-
 
 def blast_sets_form(database_name):
     from chlamdb.biosqldb import manipulate_biosqldb
@@ -672,22 +553,6 @@ def make_module_overview_form(db, sub_sub_cat=False):
 
     return ModuleCatChoice
 
-
-def make_pathway_overview_form(database_name):
-    from chlamdb.biosqldb import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db(database_name)
-    sql = 'select distinct pathway_category from enzyme_kegg_pathway where pathway_category_short not in ("drug","disease","organismal") ' \
-          ' order by pathway_category;'
-
-    categories = server.adaptor.execute_and_fetchall(sql,)
-    CHOICES = [(i[0],i[0]) for i in categories]
-
-
-    class PathwayCatChoice(forms.Form):
-        category = forms.ChoiceField(choices=CHOICES)
-    return PathwayCatChoice
-
-
 class SearchForm(forms.Form):
 
     SEARCH_CHOICES = (('gene', 'gene'), ('product','product'), ('locus_tag','locus_tag'))
@@ -704,21 +569,6 @@ def make_circos_orthology_form(biodb):
         accession = forms.CharField(max_length=100)
         targets = forms.ChoiceField(choices=accession_choices)
     return Circos_orthology
-
-
-def make_blastnr_best_non_top_phylum_form(biodb):
-    from chlamdb.biosqldb import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    accession_choices = get_accessions(biodb, all=False)
-
-    class Blastnr_top(forms.Form):
-        accessions = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" }), required = False)
-
-        CHOICES=[('all','all'),
-         ('specific','species specific')]
-        selection = forms.ChoiceField(choices=CHOICES)
-    return Blastnr_top
 
 
 def make_blastnr_form(biodb):
@@ -776,23 +626,6 @@ def make_blastnr_form(biodb):
 
             super(Blastnr_top, self).__init__(*args, **kwargs)
     return Blastnr_top
-
-def make_interpro_taxonomy(biodb):
-    from chlamdb.biosqldb import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    accession_choices = get_accessions(biodb,all=True)
-
-    # p_eukaryote | p_archae | p_virus
-    TAXO_CHOICES = (('p_eukaryote', 'eukaryote'), ('p_archae','archae'), ('p_virus','virus'))
-
-    class Interpro_taxonomy(forms.Form):
-
-        target_taxons = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" }), required = False)
-        percentage_cutoff = forms.CharField(max_length=3, label="Percentage Cutoff", initial=90, required=True)
-        kingdom = forms.ChoiceField(choices=TAXO_CHOICES)
-
-    return Interpro_taxonomy
 
 
 class BlastProfileForm(forms.Form):

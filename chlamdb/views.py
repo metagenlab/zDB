@@ -52,27 +52,19 @@ from chlamdb.forms import hmm_sets_form_circos
 from chlamdb.forms import make_blastnr_form
 from chlamdb.forms import make_genome_selection_form
 from chlamdb.forms import make_comment_from
-from chlamdb.forms import locus_int_form
 from chlamdb.forms import LocusInt
-from chlamdb.forms import make_species_curation_form
 from chlamdb.forms import get_LocusAnnotForm
-from chlamdb.forms import make_pathway_overview_form
-from chlamdb.forms import make_interpro_taxonomy
 from chlamdb.forms import BlastProfileForm
 from chlamdb.forms import make_pairwiseid_form
 from chlamdb.forms import make_locus2network_form
 from chlamdb.forms import heatmap_form
 from chlamdb.forms import blast_sets_form
-from chlamdb.forms import make_kegg_form
-from chlamdb.forms import transporters_superfam_form
 from chlamdb.forms import make_pairwiseCDS_length_form
 from django.contrib.auth import logout
 from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.forms.utils import flatatt
-from chlamdb.forms import make_blastnr_best_non_top_phylum_form
-
 
 
 from django.core.cache import cache
@@ -87,18 +79,6 @@ from celery.result import AsyncResult
 from django.http import HttpResponse
 from django.http import StreamingHttpResponse
 from chlamdb.forms import GenerateRandomUserForm
-from chlamdb.tasks import run_circos
-from chlamdb.tasks import run_circos_main
-from chlamdb.tasks import extract_interpro_task
-from chlamdb.tasks import plot_neighborhood_task
-from chlamdb.tasks import TM_tree_task
-from chlamdb.tasks import pfam_tree_task
-from chlamdb.tasks import phylogeny_task
-from chlamdb.tasks import plot_heatmap_task
-from chlamdb.tasks import KEGG_map_ko_task
-from chlamdb.tasks import KEGG_map_ko_organism_task
-from chlamdb.tasks import basic_tree_task
-from chlamdb.celeryapp import app as celery_app
 
 from metagenlab_libs import db_utils
 from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
@@ -132,11 +112,6 @@ def my_locals(local_dico):
     local_dico["optional2status"] = optional2status
     local_dico["missing_mandatory"] = missing_mandatory
     return local_dico
-
-
-@celery_app.task(bind=True)
-def debug_task(self):
-    print('Request: {0!r}'.format(self.request))
 
 
 def get_task_info(request):
