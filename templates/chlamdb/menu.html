@@ -63,19 +63,12 @@
                     </a>
                     <div class="sidebar-submenu" style="display:block;">
                       <ul id="submenu-2" class="panel-collapse collapse panel-switch" role="menu">
-                          <!--<li class="item"><a href="{% url 'search' %}">Keyword Search</a></li>-->
                           {% if optional2status|keyvalue:"BLAST_database"%}
                               <li class="item"><a href="{% url 'blast' %}">Blast</a></li>
                           {% endif %}
-                          <!--<li class="item6"><a href="{% url 'motif_search' %}">Motif search</a>-->
-                          <!--</li>-->
-                          <!--<li class="item6"><a href="{% url 'interpro' %}">Interpro search</a>-->
-                          <li class="item"><a href="{% url 'extract_region' %}">Retrieve sequence</a></li>
                       </ul>
                     </div>
               </li>
-                <!--<li class="item6"><a href="{% url 'primer_search' %}">Primer search</a>->
-                <!--</li>-->
 
                 <li class="sidebar-dropdown" id="comp">
                     <a id="separator" class="accordion-toggle toggle-switch" data-toggle="collapse" href="#submenu-3" aria-expanded="false">
