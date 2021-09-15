@@ -44,39 +44,43 @@
                     <div class="container" >
                       <div class="tab-pane active">
                          <div class="col-md-4 col-sm-7" >
-                          <div class="serviceBox_2" style="margin-top: 6em;" >
+                          <div class="serviceBox_2"  >
                               <h3 class="title">The database contains:</a></h3>
                               <ul  style="list-style-type:none;">
                                       {% if number_of_files %}
-                                      <li> <h3 class="a" style="float: left; " ><a href="{% url 'extract_region' %}" ><b>{{number_of_files}}  </b></a>genomes</h3></li>
+                                      <br><li class="summary_data" ><a href="{% url 'extract_region' %}" ><b>{{number_of_files}}  </b></a>genomes</h3></li>
                                       {% endif %}
+                                      <br>
                                       {% if number_ort %}
-                                      <li><h3 class="a" style="float: left;" ><a href="{% url 'extract_orthogroup' %}" ><b>{{number_ort}}  </b></a>orthogroups</h3></li>
+                                      <br><li class="summary_data"><a href="{% url 'extract_orthogroup' %}" ><b>{{number_ort}}  </b></a>orthogroups</h3></li>
                                       {% endif %}
+                                      <br>
                                       {% if number_of_files %}
-                                      <li><h3 class="a" style="float: left;"><b>{{number_of_files}}</b> core genes</h3></li>
+                                      <br><li class="summary_data"><a href="{% url 'pan_genome' 'orthology' %}" ><b>{{core}}</b></a> core orthogroups</h3></li>
                                       {% endif %}      
                               </ul>  
                            </div>
                           </div>
-                        <div class="col-md-3 col-sm-6">
+                        <div class="col-lg-3 col-md-3 col-sm-7">
                               <div class="serviceBox">
                                 <a  href="{% url 'extract_region' %}">
                                   <div class="service-icon">
-                                      <span><i class="fa fa-tree"></i></span>
+                                      <span><i class="fa fa-dna"></i></span>
                                   </div>
-                                  <h3 class="title"><a style="text-transform: uppercase; text-align: left" href="{% url 'extract_region' %}" >Genomes</a></h3> 
+                                  <br></a>
+                                  <h3 class="title">Genomes</h3>
                                   <p class="description">Display the summary table of the genomes contained in the database and navigate to the list of proteins for each of them. <br> Fasta files and .gbk files are available for downloading. </p>
                               </div>
                       </div>
-                          <div class="col-md-3 col-sm-6" >
+                          <div class="col-lg-3 col-md-3 col-sm-7" >
                             <div class="serviceBox">
                               <a  href="{% url 'phylogeny_intro' %}">
                                 <div class="service-icon">
                                     <span><i class="fa fa-tree"></i></span>
                                 </div>
-                                <h3 class="title"><a style="text-transform: uppercase; text-align: left" href="{% url 'phylogeny_intro' %}" >Phylogeny</a></h3> 
-                                <p class="description"> Visualize and download the phylogenetic tree built on concatenated single copy orthologs. The phylogeny is annotated with genomics info such as size of the genomes and GC content, coding density, completness and contamination expressed as percentage.</p>
+                                <br></a>
+                                <h3 class="title">Phylogeny</h3> 
+                                <p class="description"> Visualize and download the phylogenetic tree built on concatenated single copy orthologs. The phylogeny is annotated with genomics info, such as genome size,GC content, coding density, completness, and contamination expressed as percentages.</p>
                             </div>
                         </div>
                       
@@ -90,18 +94,18 @@
                                   <span><i class="fa fa-shapes"></i></span>
                               </div>
                               <h3 class="title">Comparisons</h3>
-                              <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}  {% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}  {% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %} shared by selected genomes and absent in others, display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Compare orthogroups presenting more than one homolog in selected genomes, cog categories, KO categories between selected genomes.   </p>
+                              <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}  {% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}  {% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.   </p>
                               <br>  
                               <div class= "col-md-3 col-sm-6">
-                                    <button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'extract_orthogroup' %}"><span class="link"></span> Orthogroups</a></button>
+                                    <button type="button_analyses" class="fill" ><a class="link_boxes" href="{% url 'extract_orthogroup' %}"><span class="link"></span> Orthogroups</a></button>
                                     {% if optional2status|keyvalue:"COG" == 1 %}
-                                    <button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'extract_cog' %}"><span class="link"></span>COGs</a></button>
+                                    <button type="button_analyses" class="fill" ><a class="link_boxes"  href="{% url 'extract_cog' %}"><span class="link"></span>COGs</a></button>
                                     {% endif %}
                                     {% if optional2status|keyvalue:"KEGG" %}
-                                    <button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none"href="{% url 'extract_ko' %}">  <span class="link"></span>Kegg Orthologs</a></button>
+                                    <button type="button_analyses" class="fill" ><a class="link_boxes" href="{% url 'extract_ko' %}">  <span class="link"></span>Kegg Orthologs</a></button>
                                     {% endif %}
                                     {% if optional2status|keyvalue:"pfam" == 1 %}
-                                    <button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none"  href="{% url 'extract_pfam' %}">  <span class="link"></span>Pfam domains</a></button>
+                                    <button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'extract_pfam' %}">  <span class="link"></span>Pfam domains</a></button>
                                     {% endif %}
                                </div>
                           </div>
@@ -115,8 +119,8 @@
                             <h3 class="title" >Metabolism</h3>
                             <p class="description"> Discover which metabolic pathways are present in the genomes. KEGG categories can be investigated checking which KEGG entries are present in each KEGG module. Entries can be visualized in lists or used to generate an annotated phylogeny. In addition, you can visualize in the KEGG maps which genes of a specific pathway are carried by a genome of interest. </p>
                             <br> 
-                            <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'priam_kegg' %}">  <span class="link"></span>Kegg maps</a></button>
-                           <button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'kegg_module' %}">  <span class="link"></span>Kegg modules</a></button></div>
+                            <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a class="link_boxes"  href="{% url 'priam_kegg' %}">  <span class="link"></span>Kegg maps</a></button>
+                           <button type="button_analyses" class="fill" ><a  class="link_boxes"   href="{% url 'kegg_module' %}">  <span class="link"></span>Kegg modules</a></button></div>
                         </div>
                     </div>
                     {% endif %}
@@ -126,9 +130,9 @@
                             <span><i class="fa fa-circle-notch"></i></span>
                         </div>
                         <h3 class="title">Circos</a></h3>
-                        <p class="description"> Generate a clickable version of circos plot indicating the presence/absence of homologous proteins in one or multiple genomes. </p>
+                        <p class="description"> Generate a clickable version of circos plot indicating the presence/absence of homologous proteins in one or multiple genomes, the GC content and navigate to the description of the locus tags of interest. </p>
                         <br> 
-                        <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none"  href="{% url 'circos' %}">  <span class="link"></span>Circos</a></button></div>
+                        <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a  class="link_boxes"   href="{% url 'circos' %}">  <span class="link"></span>Circos</a></button></div>
                     </div>
                 </div>
                 {% if optional2status|keyvalue:"BLAST_database"%}
@@ -138,9 +142,9 @@
                           <span><i class="fa fa-grip-lines"></i></span>
                       </div>
                       <h3 class="title" >Blast</a></h3> 
-                      <p class="description"> Blast a sequence of interest against the genomes of the database. You can select among blastn, blastp, or the six-frame translation-based approaches, blastx and tblastn. </p>
+                      <p class="description"> Blast an input sequence against the genomes of the database. You can select among blastn, blastp, or the six-frame translation-based approaches, blastx and tblastn. </p>
                       <br> 
-                      <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a style="color: rgb(255, 255, 255); text-decoration: none" href="{% url 'blast' %}">  <span class="link"></span> Blast </a></button></div>
+                      <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'blast' %}">  <span class="link"></span> Blast </a></button></div>
                   </div>
               </div>
                {% endif %}
@@ -158,7 +162,7 @@
                         <div class="panel panel-default">
                           <div id="container_boxes">
                             <div id="label">  Status of your database  </div>
-                              <div class="panel-body" style="margin: 10px 10px 10px 10px">
+                              <div class="panel-body" >
                                 <div class="status_box"  >
                                   <p> Your database has been generated including the following features:</p>
                                   <ul style="list-style-type:circle; margin-left: 2em;">
@@ -188,9 +192,9 @@
                                   </ul>
                                 </div>
                                 <div class="status_box_warning" >
-                                  <div class="warnings" style="color: red;" >
-                                    <p> The following feature has not beed included, if whished please run again the pipeline with the corrected setting:</p>
-                                      <li style="list-style-type:circle; margin-left: 4em;"> Protein annotation with:
+                                  <div class="warnings" >
+                                    <p> The following feature(s) has not beed included, if whished please run again the pipeline with the corrected settings.</p>
+                                      <p>  Protein annotation with: </p>
                                         {% if not optional2status|keyvalue:"COG" == 1 %}
                                                 <dd> -<a href="https://www.ncbi.nlm.nih.gov/COG/">COG</a> (clusters of orthologous groups)</dd> 
                                                 {% endif %}
@@ -215,7 +219,7 @@
                               
                                
                                 </div>
-                    <div class="overview_3" style="margin: 10px 10px 10px 10px">
+                    <div class="overview_3" >
                     </div>
                     <br>
                     <br>
@@ -224,7 +228,7 @@
                       <div class="panel panel-default">
                         <div id="container_boxes">
                             <div id="label">  Citation  </div>
-                            <div class="panel-body" style="margin: 10px 10px 10px 10px">
+                            <div class="panel-body">
                               <a href="https://academic.oup.com/nar/advance-article-abstract/doi/10.1093/nar/gkz924/5609527"> <strong> ChlamDB: a comparative genomics database of the phylum <i>Chlamydiae</i> and other members of the <i>Planctomycetes-Verrucomicrobiae-Chlamydiae</i> superphylum </strong></br>
                               Trestan Pillonel, Florian Tagini, Claire Bertelli, Gilbert Greub </br>
                               Nucleic Acids Research, 2019, https://doi.org/10.1093/nar/gkz924 </a>

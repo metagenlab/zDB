@@ -68,7 +68,17 @@
                           {% elif type == 'orthology' %}
                               Orthologous groups (pan/core genome plots)
                           {% endif %}
-
+                          <br> Targets = 'Select all' to get the core
+                          {% if type == 'Pfam' %}
+                              Pfam domains
+                          {% elif type == 'COG' %}
+                              COG
+                          {% elif type == 'ko' %}
+                              Kegg orthologs
+                          {% elif type == 'orthology' %}
+                              Orthologous groups
+                          {% endif %}
+                           of the entire dataset
 
                           <br>
                       </p>
@@ -102,25 +112,32 @@
                             <p style="margin: 10px 10px 10px 10px">
                                 {% if type == 'Pfam' %}
                                     Show the relationship between the total number of Pfam domains and the number of genomes considered (blue). <br>
-                                    Show the relationship between the number of pfam domains conserved in all compared genomes and the number of compared genomes (red).
+                                    Show the relationship between the number of pfam domains conserved in all compared genomes and the number of compared genomes (red).<br>
+                                    CORE -1: Pfam domains present in all but one genome
+
                                 {% elif type == 'COG' %}
                                     Show the relationship between the total number of COGs and the number of genomes considered (blue). <br>
-                                    Show the relationship between the number of COGs conserved in all compared genomes and the number of compared genomes (red).
+                                    Show the relationship between the number of COGs conserved in all compared genomes and the number of compared genomes (red).<br>
+                                    CORE -1:  COGs present in all but one genome
 
                                 {% elif type == 'interpro'%}
                                     Show the relationship between the total number of interpro entries and the number of genomes considered (blue). <br>
-                                    Show the relationship between the number of interpro entries conserved in all compared genomes and the number of compared genomes (red).
+                                    Show the relationship between the number of interpro entries conserved in all compared genomes and the number of compared genomes (red).<br>
+                                    CORE -1:  interpro present in all but one genome
 
                                 {% elif type == 'EC' %}
                                     Show the relationship between the total number of EC and the number of genomes considered (blue). <br>
-                                    Show the relationship between the number of EC conserved in all compared genomes and the number of compared genomes (red).
+                                    Show the relationship between the number of EC conserved in all compared genomes and the number of compared genomes (red).<br>
+                                    CORE -1:  EC present in all but one genome
 
                                 {% elif type == 'ko' %}
                                     Show the relationship between the total number of KO and the number of genomes considered (blue). <br>
-                                    Show the relationship between the number of KO conserved in all compared genomes and the number of compared genomes (red).
+                                    Show the relationship between the number of KO conserved in all compared genomes and the number of compared genomes (red).<br>
+                                    CORE -1:  KO present in all but one genome
 
                                 {% elif type == 'orthology' %}
-                                    Orthologous groups (pan/core genome plots)
+                                    Orthologous groups (pan/core genome plots)<br>
+                                    CORE -1:  Orthologous present in all but one genome
                                 {% endif %}
 
 

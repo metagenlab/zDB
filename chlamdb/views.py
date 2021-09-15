@@ -371,6 +371,16 @@ def home(request):
     number_ort= df_ort.shape[0]
     print("number_of_orthogroups", number_ort)
 
+    description_db = db.get_genomes_description()
+    print("description_db",description_db)
+   
+    taxids = list(description_db.index)
+
+    df_hits = db.get_og_count(taxids, search_on="taxid")
+    missing_entries = df_hits[df_hits == 0].count(axis=1)
+    core = len(missing_entries[missing_entries == 0])
+    print("core",core)
+
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 
@@ -6845,6 +6855,7 @@ def pan_genome(request, type):
     import time
 
     taxids = form.get_taxids()
+    print( "taxids",taxids)
 
     if type == "COG":
         df_hits = db.get_cog_hits(taxids, search_on="taxid", indexing="taxid")
@@ -6862,6 +6873,7 @@ def pan_genome(request, type):
 
     target2description = db.get_genomes_description().description.to_dict()
     df_hits.columns = [target2description[i] for i in df_hits.columns.values]
+    print(" df_hits.columns",  df_hits )
     path2 = settings.BASE_DIR + '/assets/temp/pangenome_barplot.svg'
     asset_path2 = '/temp/pangenome_barplot.svg'
     n_entries_per_genome = df_hits[df_hits>0].count(axis=0).sort_values()

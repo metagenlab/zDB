@@ -38,6 +38,15 @@
 
                       </ul>
                   </nav>
+
+                  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                    <div class="panel-heading" style="width:100%">
+                        <h3 class="panel-title">Help</h3>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px">  Compare Pfam domain found in selected genomes (return detailed table with Ko entry, total count, Ko annotation).
+                      <br>Click on the Ko entry and list the Ko modules and pathways of which it is part.  </p>
+      
+                </div>
                       <form action='{% url "ko_comparison" %}' method="post">
                           {% csrf_token %}
                           {{ form.as_p }}
