@@ -1327,7 +1327,7 @@ def tab_general(seqid, hsh_organism, gene_loc, annot):
     gene = annot.loc[seqid].gene
     if pd.isna(gene):
         gene = "-"
-    length = annot.loc[seqid].length
+    length = annot.loc[seqid].length+1
     product = annot.loc[seqid]["product"]
     locus_tag = annot.loc[seqid].locus_tag
     return {
