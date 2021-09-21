@@ -4888,8 +4888,9 @@ def genomic_locus_tag_infos(request):
     
     if locus_tag is None:
         return JsonResponse({"error_msg": "no locus_tag"})
-    seqid, is_pseudo = db.get_seqid(locus_tag=locus_tag, feature_type=False)
-    prot_infos = db.get_proteins_info([seqid], as_df=True)
+    seqid, fet_type, is_pseudo = db.get_seqid(locus_tag=locus_tag, feature_type=True)
+    prot_infos = db.get_proteins_info([seqid], as_df=True,
+            inc_non_CDS=True, inc_pseudo=True)
     entry = prot_infos.loc[seqid]
     data = {"product": entry["product"]}
     return JsonResponse(data)
