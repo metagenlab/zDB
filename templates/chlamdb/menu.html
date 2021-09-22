@@ -53,10 +53,7 @@
                                                   <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'phylogeny_intro' %}" ><b>Phylogeny</b></a></li>
                                                   <hr class="line-menu">
                                                   <li class="analyses"><b>Analyses</b></a></li>
-                                                  {% if optional2status|keyvalue:"BLAST_database"%}
                                                   <li class="analyses_intra" ><a href="{% url 'blast' %}">Blast</a></li>
-                                                  {% endif %}
-                                                              
                                                   <li class="sidebar-dropdown" ><p> Comparisons</p> 
                                                   <li class="analyses_intra"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a></il>
                                                   {% if optional2status|keyvalue:"COG" == 1 %}
