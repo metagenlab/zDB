@@ -98,7 +98,6 @@ from Bio.Blast import NCBIXML
           
             
 import os
-from chlamdb.biosqldb import shell_command
 import re
 
 from ete3 import Tree
@@ -3072,98 +3071,6 @@ def circos_main(request):
     return render(request, 'chlamdb/circos_main.html', my_locals(locals()))
 
 
-def circos_blastnr(request):
-    biodb = settings.BIODB
-    from chlamdb.plots import gbk2circos
-    circos_form_class = make_genome_selection_form(biodb)
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    if request.method == 'POST':
-
-        form = circos_form_class(request.POST)
-
-        if form.is_valid():
-
-            reference_taxon = form.cleaned_data['genome']
-
-            description2accession_dict = manipulate_biosqldb.description2accession_dict(server, biodb)
-
-            reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb)
-
-            record_list = []
-            for accession in reference_accessions:
-
-                biorecord = cache.get(biodb + "_" + accession)
-
-                if not biorecord:
-                    new_record = db.lookup(accession=accession)
-                    biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
-                                                             id=new_record.id, name=new_record.name,
-                                                             description=new_record.description,
-                                                             dbxrefs =new_record.dbxrefs,
-                                                             features=new_record.features,
-                                                             annotations=new_record.annotations)
-                    record_id = biorecord.id.split(".")[0]
-                    cache.set(biodb + "_" + record_id, biorecord)
-                    record_list.append(biorecord)
-                else:
-                    record_list.append(biorecord)
-
-
-            ref_name = ''
-            for i in reference_accessions:
-                ref_name += i
-            circos_file = "circos/%s.svg" % ref_name
-            from chlamdb.biosqldb import circos
-            from chlamdb.biosqldb import shell_command
-            import ete3
-
-
-
-            outtput_dir = settings.BASE_DIR + "/assets/circos/"
-
-            myplot = circos.CircosAccession2blastnr_plot(server,
-                                                         biodb,
-                                                         record_list,
-                                                         outtput_dir,
-                                                         taxon_list=[],
-                                                         highlight_BBH=True)
-
-            original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % ref_name
-
-            with open(original_map_file, "r") as f:
-                map_string = ''.join([line for line in f.readlines()])
-
-            circos_html = '<!DOCTYPE html>\n' \
-                          ' <html>\n' \
-                          ' <body>\n' \
-                          ' %s\n' \
-                          ' <img src="%s.svg" usemap="#%s">' \
-                          ' </body>\n' \
-                          ' </html>\n' % (map_string, ref_name, ref_name)
-
-            circos_new_file = '/assets/circos/circos_clic_%s.html' % ref_name
-
-            with open(settings.BASE_DIR + circos_new_file, "w") as f:
-                f.write(circos_html)
-
-            #target_map_file = settings.BASE_DIR + "/templates/circos/%s.html" % ref_name
-            circos_svg_file = "circos/%s.svg" % ref_name
-            circos_png_file = "circos/%s.png" % ref_name
-            original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
-            #target_map_file_svg = settings.BASE_DIR + "/templates/circos/%s.svg" % ref_name
-            map_file = "circos/%s.html" % ref_name
-            svg_file = "circos/%s.svg" % ref_name
-            #a, b, c = shell_command.shell_command("mv %s %s" % (original_map_file, target_map_file))
-            #a, b, c = shell_command.shell_command("cp %s %s" % (original_map_file_svg, target_map_file_svg))
-            map_name = ref_name
-            envoi_circos = True
-            envoi_region = True
-    else:
-        form = circos_form_class()
-    return render(request, 'chlamdb/circos_blastnr.html', my_locals(locals()))
-
-
 
 def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
 
@@ -3305,7 +3212,6 @@ def blast(request):
             from Bio.Alphabet import IUPAC
             from Bio.Alphabet import _verify_alphabet
             import os
-            from chlamdb.biosqldb import shell_command
             import re
 
 
@@ -3474,115 +3380,6 @@ def blast(request):
         form = blast_form_class()
 
     return render(request, 'chlamdb/blast.html', my_locals(locals()))
-
-
-def get_record_from_memory(biodb, cache_obj, record_key, accession):
-
-        biorecord = cache_obj.get(record_key)
-        if not biorecord:
-            new_record = biodb.lookup(accession=accession)
-            biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
-                                                             id=new_record.id, name=new_record.name,
-                                                             description=new_record.description,
-                                                             dbxrefs =new_record.dbxrefs,
-                                                             features=new_record.features,
-                                                             annotations=new_record.annotations)
-            cache_obj.set(record_key, biorecord)
-        return biorecord
-
-
-
-def circos2genomes(request):
-    biodb = settings.BIODB
-    from chlamdb.biosqldb import circos
-    from chlamdb.biosqldb import shell_command
-    server, db = manipulate_biosqldb.load_db(biodb)
-    circos2genomes_form_class = make_circos2genomes_form(biodb)
-
-
-
-    if request.method == 'POST': 
-        #make_circos2genomes_form
-
-        form = circos2genomes_form_class(request.POST)
-        if form.is_valid():  
-            valid_id = True
-            server, db = manipulate_biosqldb.load_db(biodb)
-            reference_taxon = form.cleaned_data['reference_genome']
-            query_taxon = form.cleaned_data['query_genome']
-            import re
-            protein_locus_list = re.sub(" ", "", form.cleaned_data['locus_list'])
-            protein_locus_list = list(protein_locus_list.split(","))
-
-            #reference_taxon = manipulate_biosqldb.description2taxon_id(server, reference_genome, biodb)
-            #query_taxon = manipulate_biosqldb.description2taxon_id(server, query_genome, biodb)
-
-            reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb)
-            query_accessions = manipulate_biosqldb.taxon_id2accessions(server, query_taxon, biodb)
-
-            reference_records = []
-            for accession in reference_accessions:
-                reference_records.append(get_record_from_memory(db, cache, biodb + "_" + accession, accession))
-
-            query_records = []
-            for accession in query_accessions:
-
-                query_records.append(get_record_from_memory(db, cache, biodb + "_" + accession, accession))
-
-            orthogroup_list = []
-            if len(protein_locus_list[0]) > 0:
-                for protein in protein_locus_list:
-
-                    sql = 'select orthogroup from orthology_detail where protein_id="%s" or locus_tag="%s"' % (protein, 
-                                                                                                               protein)
-
-                    try:
-                        protein_group = server.adaptor.execute_and_fetchall(sql,)[0][0]
-                        orthogroup_list.append(protein_group)
-                    except IndexError:
-                        valid_id = False
-
-            if valid_id:
-
-                #accession2description = manipulate_biosqldb.accession2description_dict(server, biodb)
-                taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
-                reference_name = taxon_id2description[reference_taxon]
-                query_name = taxon_id2description[query_taxon]
-
-                accession2taxon_id = manipulate_biosqldb.accession2taxon_id(server, biodb)
-                taxon_id_reference = accession2taxon_id[reference_accessions[0]]
-                taxon_id_query = accession2taxon_id[query_accessions[0]]
-
-                reference_n_orthogroups = manipulate_biosqldb.get_genome_number_of_orthogroups(server, biodb, taxon_id_reference)
-                reference_n_proteins = manipulate_biosqldb.get_genome_number_of_proteins(server, biodb, taxon_id_reference)
-
-                query_n_orthogroups = manipulate_biosqldb.get_genome_number_of_orthogroups(server, biodb, taxon_id_query)
-                query_n_proteins = manipulate_biosqldb.get_genome_number_of_proteins(server, biodb, taxon_id_query)
-
-                n_shared_orthogroups = manipulate_biosqldb.get_number_of_shared_orthogroups(server, biodb, taxon_id_reference, taxon_id_query)
-
-                from chlamdb.biosqldb import circos
-
-                path = settings.BASE_DIR + "/assets/circos"
-
-
-
-                biplot = circos.CircosAccession2biplot(server, db, biodb, reference_records, query_records,
-                                                       orthogroup_list, path)
-
-                reference_file = "circos/%s" % biplot.reference_circos
-                query_file = "circos/%s" % biplot.query_circos
-
-            envoi = True
-
-    else:  
-        form = circos2genomes_form_class()
-
-    return render(request, 'chlamdb/circos2genomes.html', my_locals(locals()))
-
-
-def circos2genomes_main(request):
-    return render(request, 'chlamdb/circos2genomes_main.html', my_locals(locals()))
 
 
 def plot_heatmap(request, type):
