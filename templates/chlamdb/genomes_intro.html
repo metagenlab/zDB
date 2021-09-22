@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="description" content="A comparative genomics database of the phylum Chlamydiae and other PVC (Planctomycetes, Verrucomicrobia, Lentisphaerae).">
+
+    {% load static %}
+    {% load static %}
+
+{% include "chlamdb/header.html" %}
+
+</head>
+<body>
+    <div class="container-fluid" id="main_container">
+        <div class="row">
+          <div id="wrapper">
+              <div id="page-content-wrapper">
+                <div class="row">
+                    <div class="col-lg-12">
+                            <div style="padding:2em 10em 0em 10em;">
+                                <div class="tab-pane" id="genomes" style="margin-top: 5em;">
+                                    <div class="col-lg-12 col-md-12 col-sm-12">
+                                    
+        
+                                        <div class="home-title"><b> Table of content: Genomes </b></div>
+                                        <hr class="lines-home">
+                                
+                                          <div class="tab-pane" id="genomes">
+                                                            
+                                                          <table class="display" id="genomes_table">
+                                                            <thead>
+                                
+                                
+                                                                <tr>
+                                                {% for header in data_table_header %}
+                                                <th>{{header}}</th>
+                                                {% endfor %}
+                                
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                              {% for entry in data_table %}
+                                                                <tr>
+                                                                  <td><a href="{% url 'extract_contigs' entry.0  %}">{{entry.1}}</a></td>
+                                                                  <td>{{entry.2}}</td>
+                                                                  <td>{{entry.3}}</td>
+                                                                  <td>{{entry.4}}</td>
+                                                                  <td>{{entry.5}}</td>
+                                                                  <td>{{entry.6}}</td>
+                                                                  <td>{{entry.7}}</td>
+                                                                  <td><a href="{% static  entry.8 %}"> .faa </a></td>
+                                                                  <td><a href="{% static  entry.9 %}"> .fna </a></td>
+                                                                  <td><a href="{% static  entry.10 %}"> .ffn </a></td>
+                                                                  <td><a href="{% static  entry.11 %}"> .gbk </a></td>
+                                                                </tr>
+                                                              {% endfor %}
+                                                              </tbody>
+                                                        </table>        
+                                           </div>
+                </div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <script>
+      $(document).ready(function() {
+
+      // Javascript to enable link to tab
+      var url = document.location.toString();
+      if (url.match('#')) {
+          $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
+      } 
+
+      // Change hash for page-reload
+      $('.nav-tabs a').on('shown.bs.tab', function (e) {
+          window.location.hash = e.target.hash;
+      })
+
+      $('#genomes_table').DataTable( {
+      dom: 'Bfrtip',
+      "paging":   true,
+      "ordering": true,
+      "info":     false,
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'interaction_table'
+        },
+        {
+            extend: 'csv',
+            title: 'interaction_table'
+        }
+      ],
+      } );
+      } );
+    $('.dropdown-toggle').dropdown()
+    </script>
+</body>
+{% include "chlamdb/style_menu.html" %}
+
+</html>
+
+

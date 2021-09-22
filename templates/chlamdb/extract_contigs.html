@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+
+
+<html>
+
+<head>
+
+<meta name="description" content="A comparative genomics database of the phylum Chlamydiae and other PVC (Planctomycetes, Verrucomicrobia, Lentisphaerae).">
+   <link rel= "stylesheet" href="style_home.css">
+    {% load static %}
+    {% load custom_tags %}
+    {% include "chlamdb/header.html" %}
+    {% include "chlamdb/style_menu.html" %}
+ 
+</head>
+
+<body>
+    <div class="container-fluid" id="main_container">
+      <div class="row">
+        <div id="wrapper">
+            <div id="page-content-wrapper">
+              <div class="row">
+                <div class="col-lg-12">
+                   {% include "chlamdb/menu.html" %}
+
+
+        <div class="home-title"><b> Table of content: Proteins </b></div>
+        <hr class="lines-home">
+
+          <div class="tab-pane" id="genomes">
+                            
+            <table class="display" id="proteins_table">
+              <thead>
+
+
+                  <tr>
+  {% for header in data_table_header %}
+  <th>{{header}}</th>
+  {% endfor %}
+
+                  </tr>
+              </thead>
+              <tbody>
+                {% for entry in data_table %}
+                  <tr>
+                    <td>{{entry.0}}</td>
+                    <td>{{entry.1}}</td>
+                    <td>{{entry.2}}</td>
+                    <td><a href="{% url 'locusx' entry.3 %}">{{entry.3}}</a></td>
+                    <td>{{entry.4}}</td>
+                    <td>{{entry.5}}</td>
+                    <td>{{entry.6}}</td>
+                    <td>{{entry.7}}</td>
+                    <td>{{entry.8}}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+          </table>        
+           </div>
+  <script>
+
+    $(document).ready(function() {
+    $("#proteins_table").DataTable();} );
+          
+  </script>
+  
+</html>

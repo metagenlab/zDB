@@ -97,9 +97,16 @@ urlpatterns = [
     url(r'^fam_pfam/(PF[0-9]+)$', views.fam_pfam, name="fam_pfam"),
     url(r'^fam_cog/(COG[0-9]+)$', views.fam_cog, name="fam_cog"),
     url(r'^fam_ko/(K[0-9]+)$', views.fam_ko, name="fam_ko"),
-
+    url(r'^get_record/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', views.get_record, name="get_record"),
     url(r'^get-task-info/', views.get_task_info),
     url(r'^docs/(?P<path>.*)$', static.serve, {'document_root': settings.DOCS_ROOT}),
     url(r'^favicon\.ico$', favicon_view),
+    url(r'^FAQ', views.faq, name='FAQ'),
+    url(r'^phylogeny_intro', views.phylogeny_intro, name='phylogeny_intro'),
+    url(r'^genomes_intro', views.genomes_intro, name='genomes_intro'),
+    url(r'^extract_contigs/([0-9]+)', views.extract_contigs, name='extract_contigs'),
     url(r'^.*$', views.home, name="home"),
+    #url(r'^FAQ',TemplateView.as_view(template_name='FAQ.html')),
 ]
+
+

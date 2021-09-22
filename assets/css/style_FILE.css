@@ -1,0 +1,1104 @@
+.fill .link_boxes {
+    color: rgb(255, 255, 255);
+    text-decoration: none
+}
+
+.summary_data{
+    float: left;
+    font-size: 1.6em;
+}
+
+.warnings{
+    color: red;
+}
+.panel-body{
+    margin: 10px 10px 10px 10px
+}
+
+.title {
+    text-transform: uppercase;
+    text-align: left;
+ 
+}
+
+.status_box {
+
+    float: left;
+    width: 70%;
+    font-size: 1.2em;
+}
+
+.status_box_warning {
+
+    float: right;
+    width: 20%;
+    font-size: 1em;
+}
+
+
+
+.serviceBox_2{
+    color: #555;
+    font-family: 'Poppins', sans-serif;
+    text-align: right;
+    padding: 10px 10px 10px 20px;
+    position: relative;
+    z-index: 1;
+    min-height: 400px;
+    margin-top: 6em;
+}
+
+
+
+.serviceBox_2:before,
+.serviceBox_2:after{
+    content: '';
+    border-left: 2px solid rgb(255, 255, 255);
+    border-top: 2px solid rgb(255, 255, 255);
+    position: absolute;
+    bottom: 0;
+    left: 4px;
+   
+}
+.serviceBox_2:after{
+    background-color:  #ffffff;
+    border: none;
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    left: 0;
+    
+   
+}
+.serviceBox_2 .service-icon{
+    color: #fff;
+    background-color: #ffffff;
+    font-size: 50px;
+    text-align: center;
+    line-height: 100px;
+    height: 100px;
+    width: 100px;
+    margin: 0 0 30px;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+}
+.serviceBox_2 .service-icon:before{
+    content: '';
+    border: 2px solid rgb(255, 255, 255);
+    border-left-color: transparent;
+    border-top-color: transparent;
+    border-radius: inherit;
+    transform: rotate(45deg);
+    position: absolute;
+    right: -8px;
+    top: -8px;
+    bottom: -8px;
+    left: -8px;
+}
+
+
+
+.serviceBox_2 .service-icon_2{
+    color: #fff;
+    background-color: #1f1f2e ;
+    font-size: 50px;
+    text-align: center;
+    line-height: 100px;
+    height: 100px;
+    width: 100px;
+    margin: 0 0 30px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      position: relative;
+}
+.serviceBox_2 .service-icon_2:before{
+    content: '';
+    border: 2px solid #333;
+    border-left-color: transparent;
+    border-top-color: transparent;
+    border-radius: inherit;
+    transform: rotate(45deg);
+    position: absolute;
+    right: -8px;
+    top: -8px;
+    bottom: -8px;
+    left: -8px;
+}
+
+.serviceBox_2 .title{
+    text-align: left;
+    margin-top: -1em;
+}
+
+
+
+   .serviceBox{
+    color: #555;
+    font-family: 'Poppins', sans-serif;
+    text-align: right;
+    padding: 10px 10px 10px 20px;
+    position: relative;
+    z-index: 1;
+    min-height: 400px;
+}
+
+
+
+.serviceBox:before,
+.serviceBox:after{
+    content: '';
+    width: calc(100% - 121px);
+    height: calc(100% - 60px);
+    border-left: 2px solid #333;
+    border-top: 2px solid #333;
+    position: absolute;
+    bottom: 0;
+    left: 4px;
+   
+}
+.serviceBox:after{
+    background-color: #256d97;
+    border: none;
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    left: 0;
+    
+   
+}
+
+
+
+
+
+
+
+.serviceBox .service-icon{
+    color: #fff;
+    background-color: #256d97;
+    font-size: 50px;
+    text-align: center;
+    line-height: 100px;
+    height: 100px;
+    width: 100px;
+    margin: 0 0 30px;
+    border-radius: 50%;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    display: inline-block;
+    position: relative;
+}
+.serviceBox .service-icon:before{
+    content: '';
+    border: 2px solid #333;
+    border-left-color: transparent;
+    border-top-color: transparent;
+    border-radius: inherit;
+    transform: rotate(45deg);
+    position: absolute;
+    right: -8px;
+    top: -8px;
+    bottom: -8px;
+    left: -8px;
+    
+}
+
+.serviceBox .service-icon:hover{
+    
+    background-color: #608aad;
+    transition: 0.2s;
+    transform: rotate(180deg);
+    box-shadow: 0 0 0px rgba(0,0,0,0.5);
+}
+
+.serviceBox .service-icon_2{
+    color: #fff;
+    background-color: #1f1f2e ;
+    font-size: 50px;
+    text-align: center;
+    line-height: 100px;
+    height: 100px;
+    width: 100px;
+    margin: 0 0 30px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    display: inline-block;
+    position: relative;
+}
+.serviceBox .service-icon_2:before{
+    content: '';
+    border: 2px solid #333;
+    border-left-color: transparent;
+    border-top-color: transparent;
+    border-radius: inherit;
+    transform: rotate(45deg);
+    position: absolute;
+    right: -8px;
+    top: -8px;
+    bottom: -8px;
+    left: -8px;
+}
+
+.serviceBox .title{
+    
+    text-transform: uppercase;
+    text-align: left;
+   
+}
+.serviceBox .description{
+    font-size: 13px;
+    line-height: 20px;
+    text-align: left;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+
+#container_boxes {
+   
+    border: 2px solid black;
+    position: relative;
+   
+}
+
+#label {
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    height: 30px;
+    background-color:  #256d97;
+    border: 2px solid  #256d97;
+    text-align: center;
+    font-size: 20px;
+    padding: 2px;
+    text-transform: uppercase;
+    color: white;
+    font-size: 1.2em;
+}
+
+
+
+
+    /* FAQ*/
+
+
+.collapsible_FAQ {
+    background-color:rgb(255, 255, 255);
+    color: rgb(78, 42, 0);
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 1.1em;
+    font-family: "Helvetica", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  }
+  
+.collapsible_FAQ:hover {
+    background-color:  rgb(255, 255, 255);
+  border: solid;
+  border-color: #196d87;
+  }
+  
+.content-FAQ {
+    padding: 1.1em;
+    display: none;
+    overflow: hidden;
+    background-color:rgb(230, 227, 227);
+    font-family: "Helvetica", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  }
+
+.header {
+   background-color: rgb(255, 255, 255); border: rgb(202, 228, 88) ; color:rgb(23, 124, 131); height: 0em; padding:0.5em 1em 0.8em 1em; z-index:5;
+}
+
+
+
+.sidebar-nav li.sidebar-nav-item a {
+        display: block;
+        text-decoration: none;
+        color: #fff;
+       
+}
+
+  /* Buttons and images - intro*/
+
+.flex-grid-center {
+	display: flex;
+	justify-content: center;
+    
+}
+
+.boxes_analyses {
+    display: flex;
+	justify-content: center;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    
+}
+
+.link {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+
+  }  
+
+
+  .fill {
+    font-family: inherit, Arial, Helvetica, sans-serif;
+    font-size: 1.5em;
+    letter-spacing: 1px;
+    padding: 0.7em 1em 0.7em;
+    outline: 0;
+    border: 0.1em  solid black;
+    cursor: pointer;
+    position: relative;
+    background-color: rgba(37, 194, 121, 0);
+    margin-top: 1em;
+    box-sizing: border-box;
+    font-weight:300;
+    text-align:center;
+    transition: all 0.2s;
+
+    
+  }
+  
+  .fill::after {
+    font-family:  inherit, Arial, Helvetica, sans-serif;
+    content: "";
+    background-color:#256d97;
+    width: 100%;
+    z-index: -1;
+    position: absolute;
+    height: 100%;
+    top: 7px;
+    left: 7px;
+    transition: 0.2s;
+    color: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  }
+  
+  .fill:hover::after {
+    top: 0px;
+    left: 0px;
+  }
+
+
+  .img-with-text {
+    text-align: justify;
+    width: 660px;
+}
+
+.img-with-text img {
+    display: block;
+    margin: 0 auto;
+}
+
+.test{
+    width:210px;
+    text-align:center;
+    display:block;
+    background-color: transparent;
+    border: 1px solid transparent;
+    margin-right: 10px;
+    margin-bottom: 1px;
+    float:left;
+    font-size: 1.5em;
+  }
+
+  .test:hover {
+    background-color: rgb(207, 235, 247)
+  }
+  
+  #index-gallery{
+    width:465px;
+  }
+
+  
+ /* End of Fill Button  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+.analyses_intra {
+    margin-left: 1em; margin-bottom: 0.2em; color: #082a3a
+}
+.analyses_intra:hover {
+    margin-left: 1em; margin-bottom: 0.2em; color: #ffffff
+}
+
+
+
+.item {
+    background-color:rgb(178, 212, 218); margin-top: 0.5em; padding-left: 0em;
+}
+
+.menu_top {
+    background-color:rgb(178, 212, 218); margin-top: 0.5em; font-size: 1em; margin-left: 0em
+   
+}
+
+.sidebar-nav-item {
+    margin-left: 1em; padding-top: 0.5em; padding-bottom: 0.5em;
+}
+
+.sidebar-nav-item:hover {
+    margin-left: 1em; background-color: #082a3a; padding-top: 0.5em; padding-bottom: 0.5em;
+}
+
+#sidebar-wrapper {
+    background-color: rgb(178, 212, 218);  z-index:10 ; height: 100%; margin-top: 0; padding-top: 0;
+}
+
+.analyses{
+    margin-left: 1em; color: #fff; margin-bottom: 1em;
+}
+
+.sidebar-dropdown {
+    margin-left: 1em; margin-bottom: 0.5em; color: #fff;
+}
+
+
+
+
+
+
+
+.user_panel{
+   background:#fafafa;
+   color: black;
+   right: 10px;
+    padding-right: 10px;
+    padding-left: 10px;
+    height: 8px;
+    position: absolute;
+
+  }
+
+h2 {
+    text-align: left;
+}
+tr td {
+    height: 15px;
+}
+
+
+h1 {
+    color: rgb(0, 0, 0);
+    text-align: center;
+}
+
+.overview_2 {
+    margin-top:2em;
+    color: rgb(0, 0, 0);
+    text-align: center;
+    font-size: 1.5em;
+}
+.overview_3 {
+    text-align: center;
+    font-size: 1em;
+    margin: 10px 10px 10px 10px
+}
+
+#section_head{
+    background:#E6E6E6;
+    margin-top: 29px;
+    margin-left: 29px;
+    margin-right: 29px;
+}
+
+P.blocktext {
+    text-align: left;
+    margin-left: auto;
+    margin-right: auto;
+    width: 30em
+}
+
+#table_search_section{
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+    top: 480px;
+	color: #444;
+    margin-left: 2px;
+    border: 0px solid blue;
+    padding: 2px;
+    position:absolute;
+}
+
+#table_interpro_section{
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+    top: 560px;
+	color: #444;
+    margin-left: 2px;
+    border: 0px solid blue;
+    padding: 2px;
+    position:absolute;
+}
+
+#homology_section{
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+    top: 780px;
+	color: #444;
+    margin-left: 2px;
+    border: 0px solid blue;
+
+    padding-top: 2px;
+    position:absolute;
+}
+
+
+.plot_region_div {
+  width: 1500px;
+  background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+
+
+#table_plot_section{
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+	color: #444;
+    margin-left: -150px;
+    border: 0px solid blue;
+    padding: 2px;
+    position:relative;
+}
+
+#extract_section{
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+    top: 550px;
+	color: #444;
+    margin-left: 2px;
+    border: 0px solid blue;
+    padding: 2px;
+    position:absolute;
+}
+
+
+#table_help_section{
+    top: 265px;
+	color: #444;
+    margin-left: 146px;
+    position:absolute;
+}
+
+#help_text{
+    position: relative;
+    margin-left: 30px;
+    /*font-size: 16px;*/
+	line-height: 26px;
+}
+#help_text_extract{
+    position: relative;
+    margin-left: 30px;
+    /*font-size: 16px;*/
+	line-height: 26px;
+    float:right;
+    padding-right: 20px;
+    padding-left: 30px;
+}
+
+
+#entete_search{
+ border:1px solid black;
+ width: 100px;
+
+    }
+#entete_classification {
+width: 230px;
+}
+
+#entete_n{
+ width: 25px;
+    }
+
+#entete_meta{
+ width: 210px;
+    }
+#entete_meta2{
+ width: 60px;
+    }
+#entete_meta3{
+ width: 240px;
+    }
+#entete_meta4{
+ white-space: nowrap;
+ width: 40px;
+    }
+#entete_meta5{
+ white-space: nowrap;
+ width: 110px;
+    }
+#entete_meta6{
+ white-space: nowrap;
+ width: 80px;
+    }
+#entete_translation{
+ border:1px solid black;
+ width: 300px;
+    }
+
+#entete_organism{
+ border:1px solid black;
+ width: 230px;
+    }
+
+#entete_locus{
+ width: 140px;
+    }
+#entete_group{
+ width: 90px;
+    }
+#entete_product{
+ width: 260px;
+    }
+#entete_gene{
+ width: 65px;
+    }
+
+#entete_strand{
+ width: 15px;
+    }
+
+#blast_taxonomy {
+    width: 250px;
+}
+#blast_subject_title {
+    width: 250px;
+}
+
+
+#theFrame{
+  background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+  padding-top: 18px;
+  padding-left: 0;
+  border: 0px solid blue;
+  width: 100%;
+  height: 800px;
+}
+
+.locusFrame{
+  padding-top: 18px;
+  padding-left: 0;
+  width: 100%;
+  height: 800px;
+}
+
+#string_complete{
+  width: 100%;
+  height: 1800px;
+
+}
+
+#theFrame2{
+  background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+  padding-top: 2px;
+  padding-left: 0;
+  border: 0px solid blue;
+  width: 100%;
+  height: 5800px;
+}
+
+#file_names_col{
+   width: 45%;
+}
+#head_genomes{
+   width: 200px;
+}
+
+
+
+#entete_features{
+ width: 90%;
+
+}
+
+#entete_sequences{
+    width: 80%;
+
+}
+
+#entete_circos{
+     width: 30%;
+}
+
+
+
+header {
+ font-size: 12px;
+ color: white;
+    background: blue;
+ }
+
+
+.actions tr td:nth-child(2) {
+  word-break: break-all;
+  word-wrap: break-word;
+  width: auto;
+  color: red;
+}
+
+#orthology_plot {
+width:95%
+}
+
+#circos_plot {
+width:95%
+}
+
+#blast_result {
+line-height: 105%;
+padding: 0px 0px;
+text-align: left;
+
+    }
+
+
+#id_orthologs_in {
+    position:relative;
+    width: 25%;
+    float: left;
+    margin-top: 15px;
+}
+#id_no_orthologs_in {
+   position:relative;
+    width: 25%;
+
+}
+
+
+/* form {background:#e6f2ff;} */
+
+
+
+#checkbox_show_groups{
+   	font-size: 10px;
+	line-height: 12px;
+   position:absolute;
+   top:240px;
+   left:828px;
+   margin-left: 174px;
+   padding-right: 20px;
+}
+
+#tblastn {
+font-size: 15px;
+}
+#tblastn_first_col {
+    width: 80px;
+
+}
+#inter_tblastn {
+height: 20px;
+background: #81F7F3;
+}
+
+#id_blast_input {
+    width: 300px;
+    height: 200px;
+    word-wrap: break-word;
+}
+#id_motif_input {
+    width: 300px;
+    height: 20px;
+    word-wrap: break-word;
+}
+#id_primersearch_input {
+    width: 300px;
+    height: 200px;
+    word-wrap: break-word;
+}
+
+
+
+
+#export_bouttons{
+    padding: 0px 30px 0px;
+    font-size: 11px;
+    float: right;
+
+}
+#id_get_groups{
+   position:absolute;
+   top:250px;
+   left:510px;
+   margin-left: 174px;
+   padding-right: 20px;
+
+}
+
+
+#region_extraction_form {
+    height: 500px;
+    width: 500px;
+
+}
+
+#extract_region_radio1 {
+   position:absolute;
+   top:220px;
+   left: 380px;
+
+}
+#extract_region_radio2 {
+   position:absolute;
+   top:250px;
+   left: 380px;
+
+}
+#extract_region_radio3 {
+   position:absolute;
+   top:275px;
+   left: 380px;
+
+}
+
+    input[type=radio] {
+    border: 0px;
+    width: 10px;
+    height: 1em;
+}
+
+#id_extract_0 {
+    margin-left: 174px;
+}
+#id_extract_1 {
+    margin-left: 174px;
+}
+#id_extract_2 {
+    margin-left: 174px;
+}
+#id_single_copy{
+   position:absolute;
+   top:150px;
+   left:510px;
+   margin-left: 174px;
+   padding-right: 20px;
+
+}
+
+#table_input_genome {
+
+    border: 0;
+}
+
+#panel_table th {
+  padding-left: 10px;
+}
+
+body {
+	/*background:#3B3B3B;*/
+  background: #ffffff url(http://jackrugile.com/images/misc/noise-diagonal.png);
+	color: #444;
+	font-size: 13px;
+}
+
+#locus_body {
+	background: #ffffff url(http://jackrugile.com/images/misc/noise-diagonal.png);
+    background-image: ;
+	color: #444;
+	font: 100%/30px 'Helvetica Neue', helvetica, arial, sans-serif;
+    top: 45px;
+    padding-top: 0px;
+}
+
+
+
+
+
+#adress {
+	background: #ffffff;
+    padding-left: 40px;
+    border-left: 1px solid #555;
+	font-size: 13px;
+	line-height: 15px;
+    width: 90%;
+}
+#credits {
+	background: #ffffff;
+	border-collapse: separate;
+	box-shadow: inset 0 1px 0 #fff;
+	font-size: 15px;
+	line-height: 15px;
+    width: 90%;
+}
+
+#credits li{
+    margin: 15px;
+}
+
+
+
+#head_section
+{
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+    top:2px;
+	color: #444;
+    margin-left: 1px;
+    border: 0px solid blue;
+    padding: 2px;
+
+}
+
+#locus_section
+{
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+    top:2px;
+	color: #444;
+    margin-left: 0px;
+    border: 0px solid blue;
+    padding: 2px;
+    padding-top: -10px;
+
+}
+
+/*
+section
+{
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+    top:2px;
+	color: #444;
+    margin-left: 176px;
+    border: 0px solid blue;
+    padding: 2px;
+
+}
+
+*/
+
+
+A{text-decoration:none}
+
+#formatted_blast{
+
+    background-color:silver;
+    font-size:   10pt;
+    line-height: 10pt;
+}
+
+
+
+#container {
+    height: 100%;
+    min-height: 100vh;
+    margin-bottom:0;
+width: 100vw;
+    position:relative;
+    padding:0px 0 0 0px;
+    background-color: #FAFAF5;
+}
+
+#container_no_margin {
+    height: 100%;
+    min-height: 100vh;
+    margin-bottom:0;
+    position:relative;
+    padding:0 0 0 0px;
+    background-color: #FAFAF5;
+}
+iframe {
+    border:none;
+}
+
+#header {
+    border:0px solid #000;
+    width:100%;
+    height:30px;
+    margin:0 0 5px 0;
+}
+
+
+#footer {
+    background-color: orange;
+
+    left: 0;
+    bottom: 0;
+    height: 20px;
+    width: 100%;
+
+    overflow:hidden;
+}
+
+#list_strains { margin: 2px; padding: 8px; height: 15px; left: 15px;}
+
+
+.rotate {
+             filter:  progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083);  /* IE6,IE7 */
+         -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)"; /* IE8 */
+     -moz-transform: rotate(-90.0deg);  /* FF3.5+ */
+      -ms-transform: rotate(-90.0deg);  /* IE9+ */
+       -o-transform: rotate(-90.0deg);  /* Opera 10.5 */
+  -webkit-transform: rotate(-90.0deg);  /* Safari 3.1+, Chrome */
+          transform: rotate(-90.0deg);  /* Standard */
+    padding-left: 15px;
+}
+
+
+/*Table genomes - phylogeny*/
+.home-title {
+    font-size: 2em;
+font-family: Arial, Helvetica, sans-serif;
+}
+
+/*Search bar in menu*/
+form.example input[type=text] {
+
+    font-size: 15px;
+    border: 1px solid #256d97;
+    float: right;
+    width: 70%;
+    background: #f1f1f1;
+    padding: 10px;
+    margin-bottom: 1em;
+   
+  }
+  
+  form.example button {
+    float: right;
+    width: 20%;
+    background: #608aad;
+    border: 1px solid #256d97;
+    font-size: 15px;
+    margin-bottom: 1em;
+    border-left: 4em;
+    cursor: pointer;
+    padding: 10px;
+ 
+  }
+  
+  
+  
+  form.example::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+
+
+@media only screen and (min-width: 990px){
+    .serviceBox{ margin: 0 auto 30px; }
+}
+@media only screen and (max-width: 768px){
+    .serviceBox{ width: 250px; }
+    .container {
+        margin-bottom:0;
+        position:relative;
+        padding:0 0 0 0;
+    }
+
+
+
+}

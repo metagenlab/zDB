@@ -11,32 +11,19 @@
 </head>
 
 <body>
-  <div class="container-fluid" id="main_container">
-    <div class="row">
-      <div id="wrapper">
-          <div id="page-content-wrapper">
-            <div class="row">
-              <div class="col-lg-12">
-                 {% include "chlamdb/menu.html" %}
+
+  <div class="container px-4 px-lg-8 text-center" ></div>
+  <div class="row gx-4 gx-lg-5 justify-content-center">
+    <div class="col-lg-10">
+      <div class="container-fluid" id="main_container">
+        <div class="row">
+          <div id="wrapper">
+              <div id="page-content-wrapper">
+                <div class="row">
+                  <div class="col-lg-12" style="font: central;">
+                   {% include "chlamdb/menu.html" %}
                   <div id="credits">
                       <h2>Chlamydiae Database version 2.0 (June 2019)</h2>
-
-                      <h2>Contact</h2>
-
-                      <div id="adress">
-                      Trestan Pillonel<br>
-                      Microbial genomics & Bioinformatics<br>
-                      University Hospital Center of Lausanne<br>
-                      Bugnon 48<br>
-                      1011 Lausanne<br>
-                      &#116;&#114;&#101;&#115;&#116;&#097;&#110;&#046;&#112;&#105;&#108;&#108;&#111;&#110;&#101;&#108;[&#064;]&#099;&#104;&#117;&#118;&#046;&#099;&#104;<br>
-                      </div>
-
-
-                      <h2>Submit issues</h2>
-
-                      Issues can be reported on the github page of the ChlamDB website: <a href="https://github.com/metagenlab/chlamdb/issues">https://github.com/metagenlab/chlamdb/issues</a> 
-
                       <h2>Credits</h2>
                       <ul>
                           {% for entry in entry_list%}

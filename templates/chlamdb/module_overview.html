@@ -16,14 +16,16 @@
 </head>
 
 <body>
+ 
   <div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
           <div id="page-content-wrapper">
             <div class="row">
               <div class="col-lg-12">
-                 {% include "chlamdb/menu.html" %}
-
+                 {% include "chlamdb/menu.html" %}   
+                 <div class="home-title"><b> Kegg modules </b></div>
+                 <hr class="lines-home">
                    <nav>
                         <ul id="tabs_main" class="nav nav-tabs">
                             <li class="active"><a href="{% url 'kegg_module' %}">Category Heatmap</a></li>
@@ -32,7 +34,18 @@
 
                         </ul>
                     </nav>
-
+                    <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                        <div class="panel-heading" style="width:100%">
+                            <h3 class="panel-title">Help</h3>
+                        </div>
+                        <p style="margin: 10px 10px 10px 10px">  Select a Kegg category and display a table with:
+                            <br>- Kegg module accession number that redirect you to the Kegg entried identified in the genomes
+                            <br>- Kegg module description
+                            <br>- nEC = number of enzymes reported in Kegg database for that Kegg module
+                            <br>- nEC+ = number of enzymes reported in Kegg database for that Kegg module <b>present</b> in the genomes
+                            <br>- Percentage= nEC+ compared to nEC
+                          
+                    </div>
                    <form action='{% url "kegg_module" %}' method="post">
                     {% csrf_token %}
                     {{ form.as_p }}
@@ -42,7 +55,14 @@
 
                     {%if envoi %}
                        <h3>{{ fam }} </h3>
-
+                       <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                        <div class="panel-heading" style="width:100%">
+                            <h3 class="panel-title">Help</h3>
+                        </div>
+                        <p style="margin: 10px 10px 10px 10px">   Visualize the distribution of the enzymes of each Kegg module among the genomes in the annotated phylogenetic tree available in 'profile'.
+                           </p>
+          
+                    </div>
                         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                             <li class="active"><a href="#tab1" data-toggle="tab">Maps</a></li>
                             <li><a href="#tab2" data-toggle="tab">Profile</a></li>

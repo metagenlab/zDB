@@ -1,13 +1,22 @@
-
-
+<!DOCTYPE html>
 {% load static %}
 {% load custom_tags %}
+<html>
+<head>
 
 
-
-
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-      <div class="container-fluid">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+  <!-- Font Awesome icons (free version)-->
+  <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
+</head>
+  <body
+  
+  style=" font-family: Helvetica, Verdana, 'Segoe UI', sans-serif">
+    <nav class="navbar  navbar-fixed-top" role="navigation" style="z-index:5;">
+      <div class="header" >
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
           <button id="toggle_button" type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
@@ -16,184 +25,101 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="{% url 'home' %}">ChlamDB</a>
+          <a href="#menu-toggle"  id="menu-toggle" style="margin-top:0.1em; margin-right: 0em; font-size: 2.5em" > <i class="fa fa-bars "  style="font-size:0.8em !Important;" aria-hidden="true" aria-hidden="true"></i></a>
+          <a class="navbar-brand" style="color:#003c58; font-size: 1.5em;" href="{% url 'home' %}">ChlamDB</a>
+         
         </div>
 
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-
-          <div class="col-sm-3 col-md-4 col-lg-5">
-              <form class="navbar-form" role="search" action='{% url "search_bar" %}' method="GET" class="form-inline pull-xs-right">
-                <div class="input-group" style="width:100%;max-width:500px;">
-                    <input type="text" class="form-control" style="width:100%;max-width:500px;" placeholder="Gene, product, orthogroup, COG, KEGG id, ..." name="accession">
-                    <div class="input-group-btn">
-                        <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
-                    </div>
-                </div>
-              </form>
-          </div>
-
-          <ul class="nav navbar-nav navbar-right" style="padding-right:20px;">
-            <a id="help_button" class="btn btn-success navbar-btn" href="/docs/index.html" target="_top">Documentation</a>
-            <li><a href="{% url 'about' %}">About</a></li>
-          </ul>
-
-        </div><!-- /.navbar-collapse -->
       </div> <!-- /.container-fluid -->
     </nav>
 
 
-
-
-
-
-
-            <!-- Sidebar -->
-      <div id="sidebar-wrapper">
-        <div class="container-fluid">
-          <ul class="sidebar-nav" style="margin-left:0;">
+    
+    <div class="sidenav" id="menu_box" >      <!-- Sidebar -->
+          <ul class="sidebar-nav" >
               <li class="sidebar-brand">
+                <nav id="sidebar-wrapper"   >
+                  <li><form class="example" role="search" action='{% url "search_bar" %}' method="GET" >
+                    <button type="submit"><i class="fa fa-search"></i></button>
+                    <input type="text" placeholder="    Gene, product, orthogroup, COG, KEGG id, ..."  name="search2">
+                  </form></li>
+               
+                 
 
-                      <a href="#menu-toggle"  id="menu-toggle" style="margin-top:-5px;float:right;" > <i class="fa fa-bars " style="font-size:20px !Important;" aria-hidden="true" aria-hidden="true"></i>
+          
+      
+                                                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'home' %}#home"><b>Home</b></a></li>
+                                                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'extract_region' %}" ><b>Genomes</b></a></li>
+                                                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'phylogeny_intro' %}" ><b>Phylogeny</b></a></li>
+                                                  <hr class="line-menu">
+                                                  <li class="analyses"><b>Analyses</b></a></li>
+                                                  {% if optional2status|keyvalue:"BLAST_database"%}
+                                                  <li class="analyses_intra" ><a href="{% url 'blast' %}">Blast</a></li>
+                                                  {% endif %}
+                                                              
+                                                  <li class="sidebar-dropdown" ><p> Comparisons</p> 
+                                                  <li class="analyses_intra"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a></il>
+                                                  {% if optional2status|keyvalue:"COG" == 1 %}
+                                                  <li class="analyses_intra" ><a   href="{% url 'extract_cog' %}">COGs</a></li>
+                                                  {% endif %}
+                                                  {% if optional2status|keyvalue:"pfam" == 1 %}
+                                                  <li class="analyses_intra"><a   href="{% url 'extract_pfam' %}">Pfam domains</a></li>
+                                                  {% endif %}
+                                                  {% if optional2status|keyvalue:"KEGG" == 1 %}
+                                                  <li class="analyses_intra" ><a   href="{% url 'extract_ko' %}">Kegg Orthologs</a></li>
+                                                  {% endif %}
+                                                  
+                                        <li class="sidebar-dropdown" ><p> Genome alignments</p>
+                                              <li class="analyses_intra"><a   href="{% url 'plot_region' %}">Plot region</a></li>
+                                              <li class="analyses_intra"><a   href="{% url 'circos' %}">Circos</a></li>
+                                              {% if optional2status|keyvalue:"KEGG" %}
+                                          <li  class="sidebar-dropdown" ><p>Metabolism</p>
+                                          <li class="analyses_intra"><a    href="{% url 'priam_kegg' %}">Kegg maps</a></li>
+                                          <li class="analyses_intra"><a  href="{% url 'kegg_module' %}">Kegg modules</a></li>
+                                                {% endif %}
 
-              </li>
-              <li>
-                    <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-2" aria-expanded="false">
-                        <span class="sidebar-title">Search</span>
-                    </a>
-                    <div class="sidebar-submenu" style="display:block;">
-                      <ul id="submenu-2" class="panel-collapse collapse panel-switch" role="menu">
-                          {% if optional2status|keyvalue:"BLAST_database"%}
-                              <li class="item"><a href="{% url 'blast' %}">Blast</a></li>
-                          {% endif %}
-                      </ul>
-                    </div>
-              </li>
-
-                <li class="sidebar-dropdown" id="comp">
-                    <a id="separator" class="accordion-toggle toggle-switch" data-toggle="collapse" href="#submenu-3" aria-expanded="false">
-                        <span class="sidebar-title"> Comparisons</span>
-                    </a>
-                    <div class="sidebar-submenu" style="display:block;">
-                      <ul id="submenu-3" class="panel-collapse collapse panel-switch in" role="menu">
-                          <li class="item"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a></li>
-                          {% if optional2status|keyvalue:"COG" == 1 %}
-                              <li class="item"><a href="{% url 'extract_cog' %}">COGs</a></li>
-                          {% endif %}
-                          {% if optional2status|keyvalue:"pfam" == 1 %}
-                              <li class="item"><a href="{% url 'extract_pfam' %}">Pfam domains</a></li>
-                          {% endif %}
-                          {% if optional2status|keyvalue:"KEGG" == 1 %}
-                              <!--<li class="item"><a href="{% url 'extract_EC' %}">EC numbers</a></li>-->
-                              <li class="item"><a href="{% url 'extract_ko' %}">Kegg Orthologs</a></li>
-                          {% endif %}
-                      </ul>
-                    </div>
-                </li>
-
-            
-
-
-            <li class="sidebar-dropdown">
-                <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-6" aria-expanded="false">
-                    <span class="sidebar-title"> Genome alignments</span>
-                </a>
-                <div class="sidebar-submenu" style="display:block;">
-                  <ul id="submenu-6" class="panel-collapse collapse panel-switch" role="menu">
-
-                    <li class="item"><a href="{% url 'plot_region' %}">Plot region</a></li>
-                    <li class="item"><a href="{% url 'circos' %}">Circos</a></li>
-                  </ul>
-                </div>
-            </li>
+                                          <hr class="line-menu">
+                                          <li class="sidebar-nav-item"><a  href="{% url 'FAQ' %}"><b>FAQ</b></a></li>
+                                          <li class="sidebar-nav-item"><a    href="/docs/index.html"><b>Documentation</b></a></li>
+                                          <li class="sidebar-nav-item"><a   href="{% url 'about' %}"><b>References</b></a></li>
+                                          <li class="sidebar-nav-item" style="margin-bottom: 5em"><a href="https://github.com/metagenlab/annotation_pipeline_nextflow"><i class="fab fa-github" ></i><b> Project and contacts</b></a></li>
+                                         
+                                    
+                                            
 
 
-            {% if optional2status|keyvalue:"KEGG" %}
 
-                <li class="sidebar-dropdown">
-                    <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-7" aria-expanded="false">
-                        <span class="sidebar-title"> Metabolism</span>
-                    </a>
-                    <div class="sidebar-submenu" style="display:block;">
-                      <ul id="submenu-7" class="panel-collapse collapse panel-switch" role="menu">
-                        <li class="item"><a href="{% url 'priam_kegg' %}">Kegg maps</a></li>
-                        <!--<li class="item"><a href="{% url 'metabo_overview' %}">Metabo comparisons</a></li>-->
-                        <li class="item"><a href="{% url 'kegg_module' %}">Kegg modules</a></li>
-                      </ul>
-                    </div>
-                </li>
-            {% endif %}
-
-
-	    {% if biodb in 'chlamydia_04_16,2017_06_29b_motile_chlamydiae,2017_06_29_parilichlamydiae'|slice:',' %}
-
-      <li class="sidebar-dropdown">
-          <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-8" aria-expanded="false">
-              <i class="fa fa-list"></i>
-              <span> Blast RefSeq</span>
-          </a>
-          <div class="sidebar-submenu" style="display:block;">
-            <ul id="submenu-8" class="panel-collapse collapse panel-switch" role="menu">
-              <li class="item"><a href="{% url 'blastnr_barchart' %}">BlastNR hits</a></li>
-              <li class="item"><a href="{% url 'circos_blastnr' %}">BlastNR circos</a></li>
-            </ul>
-          </div>
-      </li>
-
-            {% if user.is_authenticated %}
-
-                <li class="sidebar-dropdown">
-                    <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-9" aria-expanded="false">
-                        <i class="fa fa-list"></i>
-                        <span> Effectors</span>
-                    </a>
-                    <div class="sidebar-submenu" style="display:block;">
-                      <ul id="submenu-9" class="panel-collapse collapse panel-switch" role="menu">
-                        <li class="item"><a href="{% url 'interpro_taxonomy' %}">Euk. domains (IP)</a></li>
-                        <li class="item"><a href="{% url 'interpro_taxonomy' %}">Euk. domains (pfam)</a>  </li>
-                        <li class="item"><a href="{% url 'blastnr_euk' %}">Euk. RefSeq hits</a>  </li>
-                        {% if biodb == 'chlamydia_04_16'%}
-                            <li class="item"><a href="{% url 'effector_pred' %}">Predictions</a></li>
-                        {% endif %}
-                      </ul>
-                    </div>
-                </li>
-
-            {% endif %}
-	    {% endif %}
-
-            {% if debug %}
-
-
-            <li class="sidebar-dropdown">
-                <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-10" aria-expanded="false">
-                    <i class="fa fa-list"></i>
-                    <span> Dev</span>
-                </a>
-                <div class="sidebar-submenu" style="display:block;">
-                  <ul id="submenu-10" class="panel-collapse collapse panel-switch" role="menu">
-                    <li class="item"><a href="{% url 'locus_int' %}">Locus Int</a></li>
-                    <li class="item"><a href="{% url 'add_locus_int' %}">ADD Locus Int</a></li>
-                    <li class="item"><a href="{% url 'orthogroup_annotation' True%}">Orthog. annot.</a></li>
-                    <li class="item"><a href="{% url 'locus_annotation' True%}">Locus annot.</a></li>
-                    <li class="item"><a href="{% url 'locus_list2orthogroups' %}">locus2group</a></li>
-                    <li class="item"><a href="{% url 'blast_profile' %}">blast2profile</a></li>
-                    <li class="item"><a href="{% url 'hmm2circos' %}">hmm2circos</a></li>
-                    <li class="item"><a href="{% url 'hmm' %}">hmm sets</a></li>
-                    <li class="item"><a href="{% url 'blast_sets' %}">blast sets</a></li>
-                    <li class="item"><a href="{% url 'interactions_genome' %}">locus2network</a></li>
-                  </ul>
-                </div>
-            </li>
-
-
-            {% endif %}
-
-
-      </ul>
+                                      {% if debug %}
+                                      <li class="sidebar-dropdown">
+                                          <a id="separator" >
+                                              <i class="fa fa-list"></i>
+                                              <span> Dev</span>
+                                          </a>
+                                          <div class="sidebar-submenu" style="display:block;">
+                                            <ul id="submenu" class="panel-collapse collapse panel-switch" role="menu">
+                                              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'locus_int' %}">Locus Int</a></li>
+                                              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'add_locus_int' %}">ADD Locus Int</a></li>
+                                              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'orthogroup_annotation' True%}">Orthog. annot.</a></li>
+                                              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'locus_annotation' True%}">Locus annot.</a></li>
+                                              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'locus_list2orthogroups' %}">locus2group</a></li>
+                                              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'blast_profile' %}">blast2profile</a></li>
+                                              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'hmm2circos' %}">hmm2circos</a></li>
+                                              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'hmm' %}">hmm sets</a></li>
+                                              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'blast_sets' %}">blast sets</a></li>
+                                              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'interactions_genome' %}">locus2network</a></li>
+                                            </ul>
+                                          </div>
+                                      </li>
+                                      {% endif %}
+                                  </ul>
+                          </li>
+                 
+               </nav> 
+        </ul>
     </div> <!-- /.container-fluid -->
   </div> <!-- /#sidebar-wrapper -->
 
+</body>
 
 
 
@@ -204,70 +130,14 @@
 
 $("#menu-toggle").click(function(e) {
   e.preventDefault();
-  $("#wrapper").toggleClass("toggled");
-});
-
-jQuery(function ($) {
-
-
-    $(".sidebar-dropdown > a").click(function() {
-
-  if (
-    $(this)
-      .parent()
-      .hasClass("active")
-  ) {
-    $(this)
-      .parent()
-      .removeClass("active");
-  } else {
-    $(this)
-      .next(".sidebar-submenu")
-      .slideDown(200);
-    $(this)
-      .parent()
-      .addClass("active");
-  }
-});
-
-$("#close-sidebar").click(function() {
-  $(".page-wrapper").removeClass("toggled");
-});
-$("#show-sidebar").click(function() {
-  $(".page-wrapper").addClass("toggled");
-});
+  $("#wrapper").toggleClass("toggled"); 
 
 });
 
-$('[data-toggle=offcanvas]').click(function() {
-$('.row-offcanvas').toggleClass('active');
-$('.collapse').toggleClass('in').toggleClass('hidden-xs').toggleClass('visible-xs');
-});
 
 
-$(function(){
-var myElem = document.getElementById('learn_more');
-if (myElem === null) {
- console.log("No match!");
-}
-else{
-  $("#help_button").hide();
-  console.log("Match:", url);
-}
-});
 
 
-$(function(){
-    // Get current url
-    // Select an a element that has the matching href and apply a class of 'active'. Also prepend a - to the content of the link
-    var url = window.location.href;
-    if (url.includes('home')) {
-     $("#help_button").hide();
-     console.log("match!")
-    }
-    else{console.log("No match:", url)}
-
-});
 
 </script>
 <style>
@@ -275,8 +145,8 @@ $(function(){
 .right-caret {
     border-bottom: 4px solid transparent;
     border-top: 4px solid #FAFAFA;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
+    border-left: 0px solid transparent;
+    border-right: 0px solid transparent;
     display: inline-block;
     height: 0;
     opacity: 1;
@@ -285,8 +155,8 @@ $(function(){
 .bottom-caret {
     border-bottom: 4px solid transparent;
     border-top: 4px solid #FAFAFA;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
+    border-left: 0px solid transparent;
+    border-right: 0px solid transparent;
     display: inline-block;
     height: 0;
     opacity: 1;
@@ -294,7 +164,7 @@ $(function(){
 }
 ul{
   list-style-type: none;
-  padding-left: 5px;
+  padding-left: 0px;
 }
 
 .accordion-toggle:after {
@@ -302,7 +172,7 @@ ul{
     font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
     content: "\e114";    /* adjust as needed, taken from bootstrap.css */
     float: right;        /* adjust as needed */
-    padding-right: 20px;
+    padding-right: 0px;
     color: grey;         /* adjust as needed */
 }
 
@@ -310,6 +180,11 @@ ul{
     /* symbol for "collapsed" panels */
     content: "\e080";    /* adjust as needed, taken from bootstrap.css */
 }
+* {
+  box-sizing: border-box;
+}
+
+
 
 
 </style>

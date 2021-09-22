@@ -6,9 +6,9 @@
 {% load static %}
 <STYLE TYPE="text/css">
 <!--
-A:link{background:transparent;color:blue}
+
 A:active{background:transparent;color:red}
-A:visited{background:transparent;color:purple}
+
 -->
 </STYLE>
 <STYLE TYPE="text/css">
@@ -129,21 +129,30 @@ FONT.S111{background-color:#e903a8;color:#FFFFFF} FONT.T111{color:#e903a8} /* fi
 FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* find-T */
 #container{font-size: 10px; line-height: 12px;}
 #blast_res {font-size: 8px; line-height: 10px;}
+body {
+background-color: rgb(255, 255, 255); 
+margin-top: 15em;
+
+}
+
 </STYLE>
 <script type="text/javascript" src="{% static 'js/html2canvas.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/blaster.min.js' %}"></script>
 {% include "chlamdb/header.html" %}
 </head>
 <body>
-  <div class="container-fluid" id="main_container">
+
+  <div class="container-fluid" id="main_container" onclick="myFunction()" >
     <div class="row">
       <div id="wrapper">
           <div id="page-content-wrapper">
             <div class="row">
-              <div class="col-lg-12">
+                <div class="col-lg-12">
                   {% include "chlamdb/menu.html" %}
-
-                  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                
+                  <div class="home-title"><b> Blast </b></div>
+                  <hr class="lines-home">
+                  <div class="panel panel-success">
                       <div class="panel-heading" style="width:100%">
                           <h3 class="panel-title">Help</h3>
                       </div>
@@ -157,11 +166,10 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
                           <tr><td>tblastn</td><td>protein sequence vs translated nucleotide sequences database</td></tr>
                       </table>
 
-                      </p>
-                      </p>
+                    
                   </div>
                   <form action="{% url "blast" %}" method="post">{% csrf_token %}
-                    {{ form.as_p }}
+                    {{ form.as_p }} 
                     <input type="submit" value="Submit" />
                   </form>
 
@@ -173,8 +181,8 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
                           <h3 class="panel-title">Wrong format combination</h3>
                       </div>
                       The format combination is incorrect: check BLAST version and database.
-                      </p>
-                      </p>
+                      
+                      
                   </div>
 
                   {% endif %}
@@ -186,23 +194,23 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
                   {% endif %}
 
                   {% if envoi %}
-                      &nbsp
+                      &nbsp   
 
                       <h2>Blast result</h2>
 
                       {% if js_out %}
                           <div id='snippetDiv'></div>
-                          <div id="blast-multiple-alignments"></div>
-                          <div id="blast-alignments-table"></div>
-                          <div id="blast-single-alignment"></div>
+                          <div id="blast-multiple-alignments"></div> 
+                          <div id="blast-alignments-table"></div> 
+                          <div id="blast-single-alignment"></div> 
                       {% endif %}
-                  {% if blast_result %}
+                  {% if blast_result %} 
                       <h3>Result</h3>
                        <div id="blast_res">
                       {% autoescape off %}{{blast_result}}{% endautoescape %}</div>
-                  {% elif blast_no_hits %}
+                  {% elif blast_no_hits %}   
                   <h3>No hits</h3>
-                        <pre id="blast_result">
+                        <pre id="blast_result">  
                          {% autoescape off %}{{blast_no_hits}}{% endautoescape %}
                         </pre>
                   {% elif blast_err %}
@@ -220,8 +228,8 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
                               <h3 class="panel-title">Help</h3>
                           </div>
                           The tBLASTn hit is indicated in purple.
-                          </p>
-                          </p>
+                          
+                          
                       </div>
 
 
@@ -256,16 +264,16 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
                   </table>
 
 
-
-
                   {% endif %}
+
+                  
                 </div>
               </div>
             </div>
           </div>
         </div>
     </div>
-
+  </div>
 </body>
 
 
@@ -316,7 +324,53 @@ $(document).ready(function(){
     }, 'text');
 });
 
+
+  function myFunction() {
+    var x = document.getElementById("myLinks");
+    var y = document.getElementById("main_container");
+    if (x.style.display === "block") {
+      x.style.display = "none";
+      y.style.backgroundColor == "blue";
+    } else {
+      x.style.display = "block";
+      $("#wrapper").toggleClass("toggled");
+    }
+  }
+
+  // Hide submenus
+$('#body-row .collapse').collapse('hide'); 
+
+// Collapse/Expand icon
+$('#collapse-icon').addClass('fas fa-bars'); 
+
+// Collapse click
+$('[data-toggle=sidebar-colapse]').click(function() {
+SidebarCollapse();
+});
+
+function SidebarCollapse () {
+$('.menu-collapsed').toggleClass('d-none');
+$('.sidebar-submenu').toggleClass('d-none');
+$('.submenu-icon').toggleClass('d-none');
+$('#sidebar-container').toggleClass('sidebar-expanded sidebar-collapsed');
+
+// Treating d-flex/d-none on separators with title
+var SeparatorTitle = $('.sidebar-separator-title');
+if ( SeparatorTitle.hasClass('d-flex') ) {
+    SeparatorTitle.removeClass('d-flex');
+} else {
+    SeparatorTitle.addClass('d-flex');
+}
+
+// Collapse/Expand icon
+$('#collapse-icon').toggleClass('fas fa-bars fa-angle-double-right');
+}
+
+  </script>
+
+
 </script>
 
 {% include "chlamdb/style_menu.html" %}
 </html>
+

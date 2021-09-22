@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+
+
+<html>
+
+<head>
+
+<meta name="description" content="A comparative genomics database of the phylum Chlamydiae and other PVC (Planctomycetes, Verrucomicrobia, Lentisphaerae).">
+   <link rel= "stylesheet" href="style_home.css">
+    {% load static %}
+    {% load custom_tags %}
+    {% include "chlamdb/header.html" %}
+    {% include "chlamdb/style_menu.html" %}
+ 
+</head>
+
+<body>
+    <div class="container-fluid" id="main_container">
+      <div class="row">
+        <div id="wrapper">
+            <div id="page-content-wrapper">
+                <div class="col-lg-12">
+                   {% include "chlamdb/menu.html" %}
+
+        <div class="home-title"><b> FAQ </b></div>
+        <hr class="lines-home">
+
+               
+                  <div class="tab-content">
+                    <h3>How the pipeline works</h3>
+                    <button type="button" class="collapsible_FAQ">-How does Comparative_db work? </button>
+                    <div class="content-FAQ">
+                      <p>Comparative_db  consists of two parts:
+                        <br>1. generation of a SQL database through a Nextflow–based pipeline applied on two or more input .gbk files. (see question ‘-Which analysis does the pipeline include?’)
+                        <br>2. launch of an overview and interacting webpage that displays the results retrieved in step 1.</p>
+                    </div>
+                    <button type="button" class="collapsible_FAQ">-What is the input format file? </button>
+                    <div class="content-FAQ">
+                      <p> Standard Genbank file that contains genome sequences and annotations.
+                        <br>Only the extention <b>“.gbk”</b> is used, consequently Genbank files downloaded from NCBI, with the extention “.gbff” must be renamed as “.gbk”.
+                        <br>You can annotate a genome and generate the corresponding “.gbk” file using <a href="https://github.com/tseemann/prokka"> Prokka </a> .
+                        <br>(Seemann T. Prokka: rapid prokaryotic genome annotation Bioinformatics 2014 Jul 15;30(14):2068-9. <a href="https://pubmed.ncbi.nlm.nih.gov/24642063/"> PMID:24642063 </a> )
+                       </p>
+                    </div>
+                    <button type="button" class="collapsible_FAQ">-Which input files do I need to provide? </button>
+                    <div class="content-FAQ">
+                        <p>
+                        1. STEP 1 – generation of SQL database:
+                        <br>-Input tabel (.csv/.tsv ):
+                        <br>it contains an identifier for each input file and the local or absolute path of the gbk files. 
+                        <br>Download an example of input table here (link to an example table)
+                        <br>For a detailed explanation go here (link to the documentation).
+                        <br>-Config file
+                        <br>it let you control which analyses among those classified as ‘optional’ in question X (How does Comparative_db work?) will be run.
+                        <br>Download an example of Config file here (link).
+                        <br>Rely on the Documentation to set up this file in the proper way. (link Documentation)
+                        <br>2. STEP 2 – launch of the web app
+                        <br>settings file (not sure if the user will need to modify it or it will be automatically linked to the newly generated db)
+                    </div>
+                    <button type="button" class="collapsible_FAQ">-Which tools do I need to install to run the pipeline? </button>
+                    <div class="content-FAQ">
+                      <p>You need to install <a href="https://www.nextflow.io/docs/latest/getstarted.html#installation"> Nextflow </a> in your environment for running the annotation analysis.
+                        <br>For launching the webapp you need to create an environment based on the chlamdb.yml file provided.
+                        <br>Please see the documentation</p>
+                    </div>
+                    <button type="button" class="collapsible_FAQ">-How many genomes can I compare?</button>
+                    <div class="content-FAQ">
+                      <p> There is no limits on the number of genomes given as input.</p>
+                    </div>
+                    <button type="button" class="collapsible_FAQ">-How long does it take to run the pipeline?</button>
+                    <div class="content-FAQ">
+                      <p> Test with x number of genomes, size of genomes, cpu to run it, etc (to do)</p>
+                    </div>
+                    <button id="button" type="button" class="collapsible_FAQ">-Which analyses does the pipeline include?</button>
+                    <div class="content-FAQ", id="AAA">
+                                            The pipeline performs the following analyses:
+                                            
+                                                <li>Orthologous proteins identified with OrthoFinder (optional)</li>
+                                                <li>Detailed annotation of proteins based on 
+                                                KEGG (Kegg orthologs) - (optional)
+                                                COG (clusters of orthologous groups) - (optional)
+                                                SwissProt (manually annotated proteins) (NOT SURE) </li>
+                                                <li>Precomputed homology searches with RefSeq and SwissProt databases for each protein </li>
+                                                <li>Precomputed phylogenetic reconstructions of orthologous groups</li>
+                                                <li>COG phylogenetic profiles</li>
+                                                <li>Generation of customized databases for blast search (optional)</li>
+                                                <br>For a detailed description link (Bastian’s documentation)
+                                            
+                                        </div>      
+                    <button type="button" class="collapsible_FAQ">-Can I customize the analyses I want to perform?</button>
+                    <div class="content-FAQ">
+                      <p>The user can select which analyses wants to perform turning on or off some of the parameters of the configuration file. See the list of ‘optional’ parameters in Q-‘Which analyses does the pipeline include?’and refer to documentation (link)
+                    </div>  
+
+                    <h3>How to use the Comparative database web</h3>
+                    <button type="button" class="collapsible_FAQ">-How do I identify which proteins are part of a specific orthogroup?</button>
+                    <div class="content-FAQ">
+                      In the 'analyses menu', in the section called 'Comparison', you can select  'orthologies' and discovering the orthogroups identified in a specific 		genome or those shared by several genomes of interest. Clicking on one of the orthogroup names (example: group_50) it lists the genes that belongs to it, 	the COG and KEG annotations,the organization of Pfam domains and info regarding transmembrane domains.                     
+                    </div>  
+                    <button type="button" class="collapsible_FAQ">- How many sequence can I blast? </button>
+                    <div class="content-FAQ">
+                        You can blast only one sequence at a time, both protein or nucleotide one, against the genomes of the database.                         
+                    </div>  
+                    <button type="button" class="collapsible_FAQ">-How do I use the search bar? </button>
+                    <div class="content-FAQ">
+                      The search bar can be used to search any term into the datbase. For example it is possible to access a cog, a kegg or an accession term directly typing it in the searchbar.                      
+                    </div>  
+                    <button type="button" class="collapsible_FAQ">-Are the kegg maps modified according to the selected genome? </button>
+                    <div class="content-FAQ">
+                      Yes, they are. You can visualize which genes of each metabolic map are carried by a genome of interest.
+                    </div> 
+                    <button type="button" class="collapsible_FAQ">-How do I extract metabolic information? </button>
+                    <div class="content-FAQ">
+                         <br>In the 'analyses menu', in the section called 'Metabolism', you can select 'kegg modules' and investigate a specific KEGG category of interest (example: Energy metabolism, lipid metabolism, etc). Within the category,for each gneome you can visualize the KEGG modules and the ko entries that belong to each module. Besides, you can list the proteins, annotated with ko identifiers further linked to the Ko database, that belong to a selected Kegg module and navigate to the protein locus. This analysis let you navigate from a global kegg characterization of your genomes to a more detailed description of each kegg-described protein.
+                         <br>A phylogenetic tree annotated with the presence/absence and quantification of the genes which belong to each KO entry is available (a single entry or all the entries together can be visualized) (MAPS BOTH FOR CATEOGIRES AND SUBCATEGOIES - I DON'T GET THE DIFFERENCE ABOUT IT - IT DOES NOT SEEM TO DERIVE FROM THE KEGG DATABASE).
+                         In addition, you can compare the strains and have an easy-readable table that reports all the ko modules and the number of proteins that belongs to each one. THERE IS ALSO nKO 	nKO+ THAT I DO NOT GET)
+                    </div> 
+                    <button type="button" class="collapsible_FAQ">How can I perform a comparative analysis?</button>
+                    <div class="content-FAQ">
+                      In the section “Comparison” you perform the same analyses but focusing on different aspects, such as orthogroups, COGs, Kegg Orthologs and Pfam domains (options displayed according to your selections). For example, selecting the Kegg Orthologs anlysis you can compare two or more genomes and idenfity which KO entries have in common (you can also exclude those which belong to other genome(s)) and visualize the result in a Venn diagram. For each Ko entry you can investigate  which pathway and module it is part of, how many proteins are associated with it and of which orthogroup(s) they are part. IN this case discrepencies between orthogroup clustering and ko prediction are higlighted in the phylogentic tree.                     </div>  
+                    <h3>Biological aspects</h3> 
+                    <button type="button" class="collapsible_FAQ"> -Are plasmids identified? </button>
+                    <div class="content-FAQ">
+                        The distinction between chromosome and plasmids is done only based on the annoations reported in the input file.                      
+                    </div>  
+                    <button type="button" class="collapsible_FAQ">-How orthogroups have been identified? </button>
+                    <div class="content-FAQ">
+                      Orthogroups (or orthologous groups) were identified with <a href="https://github.com/davidemms/OrthoFinder"> OrthoFinder </a>. This tools identify orthogroups based on BLASTp (parameters: -evalue 0.001) results using the <a href="https://micans.org/mcl/"> MCL </a> clustering software.
+                    </div>  
+  
+
+                      
+              
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <script>
+        var coll = document.getElementsByClassName("collapsible_FAQ");
+        var i;
+        
+        for (i = 0; i < coll.length; i++) {
+          coll[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+              content.style.display = "none";
+            } else {
+              content.style.display = "block";
+            }
+          });
+        }
+        </script>
+
+</body>

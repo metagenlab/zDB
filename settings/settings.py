@@ -97,6 +97,9 @@ CACHES = {
 RUN_NAME = "drunk_franklin"
 BIODB = f"db_{RUN_NAME}"
 BIODB_DB_PATH = "/scratch/hdd/bmarquis/annotation_pipeline_nextflow/db/" + BIODB
+
+FOLDER_PATH= "/scratch/hdd2/acarrara/ChlamDB_pipeline/Comparative_db/annotation_pipeline_3_genomes_MENU/" #useful to have access to all the subfolders of the main one where the Nf pipeline runs
+
 BIODB_CONF = {
         "chlamdb.db_type" : "sqlite",
         "chlamdb.db_name" : "George",
@@ -162,6 +165,8 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.6/howto/static-files/
+
 STATIC_URL = '/assets/'
 
 
@@ -169,16 +174,8 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "assets"),
 )
 
-# STATIC_ROOT = os.path.join(PROJECT_DIR, 'assets')
-
-#STATIC_ROOT = '/static/'
-
-#TEMPLATE_DIRS = (
-#    "/home/trestan/work/dev/django/chlamydia/templates/",
-#)
 
 APPEND_SLASH = True  # Ajoute un slash en fin d'URL
-
 
 GOOGLE_ANALYTICS_DOMAIN = 'chlamdb.ch'
 GOOGLE_ANALYTICS_PROPERTY_ID = 'UA-125948409-1'
@@ -212,3 +209,7 @@ CELERY_CACHE_BACKEND = 'django-cache'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+
+INTRO="Hi,"
+TITLE= "your comparative database is ready"
+SUBTITLE= "A customizable comparative genomic databas (changeable title)"
