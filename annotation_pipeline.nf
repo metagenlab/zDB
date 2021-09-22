@@ -80,6 +80,7 @@ error_search.filter { it.extension!="gbk" }
 
 
 process check_gbk {
+    container "$params.annotation_container"
 	publishDir 'data/prokka_output_filtered', overwrite: true
 
 	input:
@@ -324,7 +325,7 @@ process orthogroups2fasta {
 
 
 process align_with_mafft {
-  container "$params.annotation_container"
+  container "$params.mafft_container"
 
   publishDir 'orthology/orthogroups_alignments', mode: 'copy', overwrite: true
 
@@ -359,8 +360,7 @@ all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.s
 alignement_larger_than_2_seqs.collate(50).set { to_fasttree_orthogroups }
 
 process orthogroups_phylogeny_with_fasttree3 {
-
-  container "$params.annotation_container"
+  container "$params.fasttree_container"
   publishDir 'orthology/orthogroups_phylogenies_fasttree', mode: 'copy', overwrite: true
 
   when:
@@ -428,9 +428,7 @@ process concatenate_core_orthogroups {
 }
 
 process build_core_phylogeny_with_fasttree {
-
-  container "$params.annotation_container"
-
+  container "$params.fasttree_container"
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
   when:
@@ -524,8 +522,7 @@ if(params.diamond_refseq) {
     process diamond_refseq {
 
       publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
-
-      container "$params.annotation_container"
+      container "$params.diamond_container"
 
       when:
       params.diamond_refseq
@@ -575,6 +572,9 @@ if(params.ko) {
 
 
 process setup_db {
+    when:
+        params.chlamdb_setup
+
     input:
         file db_skeleton from Channel.fromPath("$params.chlamdb.chlamdb_base")
 
@@ -664,7 +664,7 @@ if(!params.diamond_refseq) {
 }
 
 process align_refseq_BBH_with_mafft {
-  container "$params.annotation_container"
+  container "$params.mafft_container"
 
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_alignments', mode: 'copy', overwrite: true
 
@@ -687,7 +687,7 @@ process align_refseq_BBH_with_mafft {
 }
 
 process orthogroup_refseq_BBH_phylogeny_with_fasttree {
-  container "$params.annotation_container"
+  container "$params.fasttree_container"
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
 
   input:
