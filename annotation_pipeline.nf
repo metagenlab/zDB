@@ -69,14 +69,13 @@ str_pythonized_params = gen_python_args()
 // Input processing
 Channel.fromPath(params.local_assemblies)
     .splitCsv(header: true, strip: true)
-    .map { row -> tuple(row.name, file(row.file)) }
+    .map { row -> file(row.file) }
     .into { gbk_from_local_assembly_f; error_search }
 
-gbk_from_local_assembly_f.filter { it[1].extension == "gbk" }
-    .map { it[1] }
+gbk_from_local_assembly_f.filter { it.extension == "gbk" }
     .set { gbk_from_local_assembly }
 
-error_search.filter { it[1].extension!="gbk" }
+error_search.filter { it.extension!="gbk" }
     .subscribe { error "Unsupported file extension" }
 
 
