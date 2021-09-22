@@ -1769,7 +1769,7 @@ def search_bar(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     option2status = db.get_config_table()
     index = sb.ChlamdbIndex.use_index(settings.SEARCH_INDEX)
-    user_query = request.GET.get("accession")
+    user_query = request.GET.get("search2")
 
     results = list(index.search(user_query, limit=None))
 
