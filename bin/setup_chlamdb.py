@@ -348,9 +348,11 @@ def load_alignments_results(args, alignment_files, db_file):
     db.commit()
 
 
-def load_cog(params, filelist, db_file):
+def load_cog(params, filelist, db_file, cdd_to_cog):
     db = db_utils.DB.load_db(db_file, params)
-    hsh_cdd_to_cog = db.get_cdd_to_cog()
+    hsh_cdd_to_cog = {}
+    for line in open(cdd_to_cog, "r"):
+        hsh_cdd_to_cog[int(line[1])] = int(line[0])
 
     data = []
     for chunk in filelist:

@@ -110,6 +110,7 @@ checked_gbks.into {
  
 
 process convert_gbk {
+  container "$params.annotation_container"
   input:
       each file(edited_gbk) from to_convert_gbk
 
@@ -142,6 +143,7 @@ faa_locus1.into { faa_genomes1
                   to_checkm }
 
 process get_nr_sequences {
+  container "$params.annotation_container"
   publishDir 'data/', mode: 'copy', overwrite: true
 
   input:
@@ -184,7 +186,7 @@ if(params.pfam_scan) {
         script:
         pfam_result_file="${faa_chunk}_results"
         """
-            pfam_scan.pl -f $faa_chunk -d $params.pfam_database > $pfam_result_file
+            pfam_scan.pl -f $faa_chunk -d $params.pfam_db > $pfam_result_file
         """
     }
 } else {
@@ -307,6 +309,7 @@ orthogroups
         to_load_orthofinder_in_db }
 
 process orthogroups2fasta {
+    container "$params.annotation_container"
   publishDir 'orthology/orthogroups_fasta', mode: 'copy', overwrite: true
 
   input:
@@ -384,6 +387,7 @@ gene_phylogeny.collect().set { all_og_phylogeny }
 
 
 process get_core_orthogroups {
+    container "$params.annotation_container"
   publishDir 'orthology/core_groups', mode: 'copy', overwrite: true
 
   input:
@@ -405,6 +409,7 @@ annotations.get_core_orthogroups(genomes_list, int("${params.core_missing}"))
 }
 
 process concatenate_core_orthogroups {
+    container "$params.annotation_container"
 
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
@@ -486,7 +491,8 @@ if(params.cog) {
       n = seq.name
       result_file = "${n}.tab"
       """
-      rpsblast -db $params.databases_dir/cdd/profiles/Cog -query $seq -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > ${result_file}
+      rpsblast -db $params.cog_db/cog_db -query $seq -outfmt 6 -evalue 0.001 \
+                -num_threads ${task.cpus} > ${result_file}
       """
     }
 } else {
@@ -511,7 +517,8 @@ if (params.blast_swissprot) {
 
       n = seq.name
       """
-      blastp -db $params.swissprot_db -query ${n} -outfmt 6 -evalue 0.001 > ${n}.tab
+      blastp -db $params.swissprot_db -query ${n} \
+                -outfmt 6 -evalue 0.001 > ${n}.tab
       """
     }
 } else {
@@ -576,7 +583,7 @@ process setup_db {
         params.chlamdb_setup
 
     input:
-        file db_skeleton from Channel.fromPath("$params.chlamdb.chlamdb_base")
+        file db_skeleton from Channel.fromPath("$params.base_db/$params.default_db")
 
     output:
         file output_file into db_base
@@ -589,6 +596,7 @@ process setup_db {
 }
 
 process load_base_db {
+    container "$params.annotation_container"
     publishDir "db"
 
     input:
@@ -641,6 +649,7 @@ if(!params.diamond_refseq) {
 } else {
 
     process load_refseq_results {
+        container "$params.annotation_container"
         input:
             file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
             file curr_db from db_gen
@@ -713,6 +722,7 @@ if(!params.refseq_diamond_BBH_phylogeny) {
 }
 
 process load_taxo_stats_into_db {
+    container "$params.annotation_container"
     input:
         file db from to_load_taxonomy
         file BBH_phylogeny_trees from BBH_phylogenies_to_db
@@ -742,6 +752,7 @@ process load_taxo_stats_into_db {
 
 
 process load_COG_into_db {
+    container "$params.annotation_container"
     input:
         file db from to_load_COG
         file cog_file from COG_to_load_db.collect()
@@ -758,7 +769,7 @@ process load_COG_into_db {
         
         kwargs = ${gen_python_args()}
         cog_files = "${cog_file}".split()
-        setup_chlamdb.load_cog(kwargs, cog_files, "$db")
+        setup_chlamdb.load_cog(kwargs, cog_files, "$db", "$params.cog_db")
         """
     else
         """
@@ -768,6 +779,7 @@ process load_COG_into_db {
 
 
 process load_KO_into_db {
+    container "$params.annotation_container"
     input:
         file KO_results from to_load_KO.collect()
         file db from to_load_KO_db
@@ -795,6 +807,7 @@ process load_KO_into_db {
 }
 
 process load_PFAM_info_db {
+    container "$params.annotation_container"
     input:
         file db from to_pfam_db
         file pfam_annot from pfam_results.collect()
@@ -821,6 +834,7 @@ setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$params.pfam_database/Pfam-A
 
 
 process load_swissprot_hits_into_db {
+    container "$params.annotation_container"
     input:
         file db from to_load_swissprot_hits
         file blast_results from swissprot_blast.collect()
@@ -847,6 +861,7 @@ setup_chlamdb.load_swissprot(kwargs, blast_results, "$db", "$params.swissprot_db
 
 
 process create_chlamdb_search_index {
+    container "$params.annotation_container"
     publishDir "search_index/"
 
     input:
@@ -854,6 +869,7 @@ process create_chlamdb_search_index {
 
     output:
         file index_name
+        file db
 
     script:
     index_name = "$workflow.runName"
@@ -865,4 +881,18 @@ process create_chlamdb_search_index {
         setup_chlamdb.setup_chlamdb_search_index(params, "$db", "$index_name")
     """
 }
+
+/*
+process start_chlamdb {
+    container "$params.chlamdb_container"
+
+    input:
+        file index_name
+        file db
+
+    script:
+    """
+    """
+}
+*/
 
