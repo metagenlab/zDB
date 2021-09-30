@@ -401,10 +401,10 @@ process get_core_orthogroups {
   script:
 
   """
-#!/usr/bin/env python
-import annotations
-genomes_list = "$genomes_list".split()
-annotations.get_core_orthogroups(genomes_list, int("${params.core_missing}"))
+    #!/usr/bin/env python
+    import annotations
+    genomes_list = "$genomes_list".split()
+    annotations.get_core_orthogroups(genomes_list, int("${params.core_missing}"))
   """
 }
 
@@ -464,12 +464,10 @@ process checkm_analyse {
   file genome_list from to_checkm.collect()
 
   output:
-  file "checkm_results/*" into checkm_analysis
-  file "checkm_results.tab" into checkm_table
-
+    file "checkm_results.tab" into checkm_table
   """
-  checkm analyze --genes -x faa $params.databases_dir/checkm/bacteria.ms . checkm_results -t 8 --nt
-  checkm qa $params.databases_dir/checkm/bacteria.ms checkm_results -o 2 --tab_table -f checkm_results.tab
+  checkm taxonomy_wf ${params.checkm_args} -x faa . checkm_results --tab_table  \
+        --genes -f checkm_results.tab
   """
 }
 
@@ -617,7 +615,6 @@ process load_base_db {
     db_name="$db_base"
     """
     #!/usr/bin/env python
-    # small modifiction
 
     import setup_chlamdb
     
@@ -769,7 +766,8 @@ process load_COG_into_db {
         
         kwargs = ${gen_python_args()}
         cog_files = "${cog_file}".split()
-        setup_chlamdb.load_cog(kwargs, cog_files, "$db", "$params.cog_db")
+        setup_chlamdb.load_cog(kwargs, cog_files, "$db", \
+            "${params.cog_db}/cdd_to_cog")
         """
     else
         """
@@ -824,7 +822,7 @@ import setup_chlamdb
 kwargs = ${gen_python_args()}
 pfam_files = "$pfam_annot".split()
 
-setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$params.pfam_database/Pfam-A.hmm.dat")
+setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$params.pfam_db/Pfam-A.hmm.dat")
         """
     else
         """

@@ -352,7 +352,8 @@ def load_cog(params, filelist, db_file, cdd_to_cog):
     db = db_utils.DB.load_db(db_file, params)
     hsh_cdd_to_cog = {}
     for line in open(cdd_to_cog, "r"):
-        hsh_cdd_to_cog[int(line[1])] = int(line[0])
+        cog, cdd = line.split()
+        hsh_cdd_to_cog[int(cdd)] = int(cog)
 
     data = []
     for chunk in filelist:

@@ -290,24 +290,20 @@ def get_nr_sequences(fasta_file, genomes_list):
 # Orthofinder output file : Orthogroup_ID: locus1 locus2... locusN
 def orthofinder2core_groups(fasta_list,
                           mcl_file,
-                          n_missing=0,
-                          orthomcl=False):
+                          n_missing=0):
     orthogroup2locus_list = {}
     with open(mcl_file, 'r') as f:
         for line in f:
-            if orthomcl:
-                # not sure this code will work with orthoMCL, to be checked
-                groups = line.rstrip().split('\t')
-                groups = [i.split('|')[1] for i in groups]
-            else:
-                groups = line.rstrip().split(' ')
-                group_id = groups[0][:-1] # remove lagging ':'
-                groups = groups[1:]
+            groups = line.rstrip().split(' ')
+            group_id = groups[0][:-1] # remove lagging ':'
+            groups = groups[1:]
             orthogroup2locus_list[group_id] = groups
 
     locus2genome = {}
     for fasta in fasta_list:
-        genome = os.path.basename(fasta).split('.')[0]
+        tokens = os.path.basename(fasta).split('.')
+        # the filename may contain additional "." that are to be included
+        genome = ".".join(tokens[:-1])
         for seq in SeqIO.parse(fasta, "fasta"):
             locus2genome[seq.name] = genome
 
@@ -336,7 +332,7 @@ def orthofinder2core_groups(fasta_list,
 
 def get_core_orthogroups(genomes_list, int_core_missing):
     core_groups, orthogroup2locus_list, locus2genome = orthofinder2core_groups(genomes_list,
-          'Orthogroups.txt', int_core_missing, False)
+          'Orthogroups.txt', int_core_missing)
 
     for group_id in core_groups:
     # sequence_data = SeqIO.to_dict(SeqIO.parse("OG{0:07d}_mafft.faa".format(int(one_group.split('_')[1])), "fasta"))
@@ -353,6 +349,7 @@ def get_core_orthogroups(genomes_list, int_core_missing):
         out_handle = open(dest, 'w')
         SeqIO.write(new_fasta, out_handle, "fasta")
         out_handle.close()
+
 
 def concatenate_core_orthogroups(fasta_files):
     out_name = 'msa.faa'

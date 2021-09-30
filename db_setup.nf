@@ -36,8 +36,6 @@ process download_cog_defs {
 
     iconv -f cp1252 -t utf-8 cog-20.def.tab > cog_translated.def.tab
     mv cog_translated.def.tab cog-20.def.tab
-    # awk -F "\\t" '{printf("%s\\t%s\\t%s\\t\\n", \$1, \$2, \$3)}' \
-    #    cog-20.def.tab > cog_simp.tab
     """
 }
 
