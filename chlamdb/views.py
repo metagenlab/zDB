@@ -69,7 +69,6 @@ from django.forms.utils import flatatt
 from django.core.cache import cache
 from tempfile import NamedTemporaryFile
 from Bio import SeqIO
-import simplejson
 import string
 import random
 import json
