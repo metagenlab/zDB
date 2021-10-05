@@ -123,81 +123,9 @@
                     </div>
                 </li>
             {% endif %}
-
-
-	    {% if biodb in 'chlamydia_04_16,2017_06_29b_motile_chlamydiae,2017_06_29_parilichlamydiae'|slice:',' %}
-
-      <li class="sidebar-dropdown">
-          <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-8" aria-expanded="false">
-              <i class="fa fa-list"></i>
-              <span> Blast RefSeq</span>
-          </a>
-          <div class="sidebar-submenu" style="display:block;">
-            <ul id="submenu-8" class="panel-collapse collapse panel-switch" role="menu">
-              <li class="item"><a href="{% url 'blastnr_barchart' %}">BlastNR hits</a></li>
-              <li class="item"><a href="{% url 'circos_blastnr' %}">BlastNR circos</a></li>
-            </ul>
-          </div>
-      </li>
-
-            {% if user.is_authenticated %}
-
-                <li class="sidebar-dropdown">
-                    <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-9" aria-expanded="false">
-                        <i class="fa fa-list"></i>
-                        <span> Effectors</span>
-                    </a>
-                    <div class="sidebar-submenu" style="display:block;">
-                      <ul id="submenu-9" class="panel-collapse collapse panel-switch" role="menu">
-                        <li class="item"><a href="{% url 'interpro_taxonomy' %}">Euk. domains (IP)</a></li>
-                        <li class="item"><a href="{% url 'interpro_taxonomy' %}">Euk. domains (pfam)</a>  </li>
-                        <li class="item"><a href="{% url 'blastnr_euk' %}">Euk. RefSeq hits</a>  </li>
-                        {% if biodb == 'chlamydia_04_16'%}
-                            <li class="item"><a href="{% url 'effector_pred' %}">Predictions</a></li>
-                        {% endif %}
-                      </ul>
-                    </div>
-                </li>
-
-            {% endif %}
-	    {% endif %}
-
-            {% if debug %}
-
-
-            <li class="sidebar-dropdown">
-                <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-10" aria-expanded="false">
-                    <i class="fa fa-list"></i>
-                    <span> Dev</span>
-                </a>
-                <div class="sidebar-submenu" style="display:block;">
-                  <ul id="submenu-10" class="panel-collapse collapse panel-switch" role="menu">
-                    <li class="item"><a href="{% url 'locus_int' %}">Locus Int</a></li>
-                    <li class="item"><a href="{% url 'add_locus_int' %}">ADD Locus Int</a></li>
-                    <li class="item"><a href="{% url 'orthogroup_annotation' True%}">Orthog. annot.</a></li>
-                    <li class="item"><a href="{% url 'locus_annotation' True%}">Locus annot.</a></li>
-                    <li class="item"><a href="{% url 'locus_list2orthogroups' %}">locus2group</a></li>
-                    <li class="item"><a href="{% url 'blast_profile' %}">blast2profile</a></li>
-                    <li class="item"><a href="{% url 'hmm2circos' %}">hmm2circos</a></li>
-                    <li class="item"><a href="{% url 'hmm' %}">hmm sets</a></li>
-                    <li class="item"><a href="{% url 'blast_sets' %}">blast sets</a></li>
-                    <li class="item"><a href="{% url 'interactions_genome' %}">locus2network</a></li>
-                  </ul>
-                </div>
-            </li>
-
-
-            {% endif %}
-
-
       </ul>
     </div> <!-- /.container-fluid -->
   </div> <!-- /#sidebar-wrapper -->
-
-
-
-
-
 
 
 <script>
