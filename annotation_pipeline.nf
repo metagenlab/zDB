@@ -281,9 +281,8 @@ process orthofinder_main {
   container "$params.orthofinder_container"
 
   publishDir 'orthology', mode: 'copy', overwrite: true
-  echo true
 
-  cpus 8
+  cpus 2
 
   input:
   file complete_dir from result_dir
@@ -568,7 +567,8 @@ if(params.ko) {
       n = seq.name
 
       """
-      exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list.txt --cpu ${task.cpus} -o ${n}.tab
+      exec_annotation ${n} -p ${params.ko_db}/profiles/prokaryote.hal \
+            -k ${params.ko_db}/ko_list --cpu ${task.cpus} -o ${n}.tab
       """
     }
 } else {
@@ -880,7 +880,7 @@ process create_chlamdb_search_index {
     """
 }
 
-/*
+
 process start_chlamdb {
     container "$params.chlamdb_container"
 
@@ -890,7 +890,11 @@ process start_chlamdb {
 
     script:
     """
+        RUN_NAME="$workflow.runName"
+        NEXTFLOW_DIR="$baseDir"
+        cd /home/chlamdb
+        RUN_NAME="$workflow.runName" NEXTFLOW_DIR="$baseDir" python manage.py \
+                    runserver --nothreading 0.0.0.0:8080
     """
 }
-*/
 
