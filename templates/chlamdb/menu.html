@@ -84,7 +84,6 @@
                               <li class="item"><a href="{% url 'extract_pfam' %}">Pfam domains</a></li>
                           {% endif %}
                           {% if optional2status|keyvalue:"KEGG" == 1 %}
-                              <!--<li class="item"><a href="{% url 'extract_EC' %}">EC numbers</a></li>-->
                               <li class="item"><a href="{% url 'extract_ko' %}">Kegg Orthologs</a></li>
                           {% endif %}
                       </ul>
@@ -117,7 +116,6 @@
                     <div class="sidebar-submenu" style="display:block;">
                       <ul id="submenu-7" class="panel-collapse collapse panel-switch" role="menu">
                         <li class="item"><a href="{% url 'priam_kegg' %}">Kegg maps</a></li>
-                        <!--<li class="item"><a href="{% url 'metabo_overview' %}">Metabo comparisons</a></li>-->
                         <li class="item"><a href="{% url 'kegg_module' %}">Kegg modules</a></li>
                       </ul>
                     </div>
