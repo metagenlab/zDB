@@ -196,7 +196,7 @@ if(params.pfam_scan) {
 
 fna_files_SEQ.into {fna_files_SEQ_1; fna_files_SEQ_2}
 faa_files_SEQ.into {faa_files_SEQ_1; faa_files_SEQ_2}
-ffn_files_seq.into{ffn_files_seq_1 ; ffn_files_seq_2}
+ffn_files_seq.into {ffn_files_seq_1; ffn_files_seq_2}
 
 faa_files_SEQ_1.collectFile(name: 'merged_SEQ.faa', newLine: true).set { merged_faa_makeblastdb }
 fna_files_SEQ_1.collectFile(name: "merged_SEQ.fna", newLine: true).set { merged_fna_makeblastdb }
@@ -215,6 +215,7 @@ process makeblastdb {
 
     output:
         file "${input_file.baseName}*"
+        file input_file
 
     script:
     file_type="${input_file.extension}"
@@ -877,24 +878,6 @@ process create_chlamdb_search_index {
 
         params = ${gen_python_args()}
         setup_chlamdb.setup_chlamdb_search_index(params, "$db", "$index_name")
-    """
-}
-
-
-process start_chlamdb {
-    container "$params.chlamdb_container"
-
-    input:
-        file index_name
-        file db
-
-    script:
-    """
-        RUN_NAME="$workflow.runName"
-        NEXTFLOW_DIR="$baseDir"
-        cd /home/chlamdb
-        RUN_NAME="$workflow.runName" NEXTFLOW_DIR="$baseDir" python manage.py \
-                    runserver --nothreading 0.0.0.0:8080
     """
 }
 
