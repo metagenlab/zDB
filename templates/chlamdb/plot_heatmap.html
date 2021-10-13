@@ -14,7 +14,8 @@
           <div class="row">
             <div class="col-lg-12">
                {% include "chlamdb/menu.html" %}
-
+               <div class="home-title" ><b>   {% if type == 'Pfam' %} Pfam domains   {% endif %}  {% if type == 'COG' %} COGs  {% endif %} {% if type == 'orthology' %} Orthogroups  {% endif %} {% if type == 'ko' %} Kegg Orthologs {% endif %} </b></div>
+               <hr class="lines-home">
                 <nav>
                     <ul id="tabs_main" class="nav nav-tabs">
                     {% if type == 'Pfam' %}

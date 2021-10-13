@@ -6,12 +6,11 @@
 <head>
 
 <meta name="description" content="A comparative genomics database of the phylum Chlamydiae and other PVC (Planctomycetes, Verrucomicrobia, Lentisphaerae).">
-
+  
     {% load static %}
-    {% load static %}
-
-{% include "chlamdb/header.html" %}
-
+    {% load custom_tags %}
+    {% include "chlamdb/header.html" %}
+    {% include "chlamdb/style_menu.html" %}
 </head>
 
 <body>
@@ -22,214 +21,232 @@
               <div class="row">
                 <div class="col-lg-12">
                    {% include "chlamdb/menu.html" %}
-                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                        <li class="active"><a href="#home" data-toggle="tab">Home</a></li>
-                        <li><a href="#genomes" data-toggle="tab">Genomes</a></li>
-                        <li><a href="#phylogeny" data-toggle="tab">Phylogeny</a></li>
-                    </ul>
-
-
+                   <!-- Title -->
                     <div id="my-tab-content" class="tab-content">
                         <div class="tab-pane active" id="home">
 
-
-                            <div style="padding-top:20px;">
+                            <div>
                                 <div class="jumbotron">
-                                <h1>Chlamydiae Database </h1>
+                                <h1>Comparative Database </h1>
                                 <center>
                                   <p>
-                                  A comparative genomics database of the  <i>Planctomycetes</i>-<i>Verrucomicrobia</i>-<i>Chlamydiae</i> superphylum
+                                  A comparative genomics database
                                   </p>
                                 </center>
-
-
-                                <!--<a id="learn_more" class="btn btn-success btn-lg" href="{% url 'help' %}" role="button">Learn more</a>-->
-
                                 </div>
-                            </div>
-
-                            {% if missing_mandatory|length != 0%}
-                                <div class="alert alert-danger" role="alert">
-                                <h4 class="alert-heading">Warning: incomplete setup</h4>
-                                <p>The following data is missing from the database: 
-                                
-                                      <ol>
-                                      {% for item in missing_mandatory %}
-                                          <li>{{item}}</li>
-                                      {% endfor %}
-                                      
-                                      
-                                      </ol>
-                                  This database misght not be fully functionnal
-
-                                </p>
                               </div>
-                            {% endif %}
+                             <!-- Title end -->
+                            
+                    <!-- Images and boxes menu-->
+                
 
-
-                            <div class="row">
-                              <div class="col-lg-6">
-
-
-                                <div class="panel panel-default">
-                                  <div class="panel-heading">
-                                    <h3 class="panel-title">Content of the database & main features</h3>
-                                  </div>
-                                  <div class="panel-body" style="margin: 10px 10px 10px 10px">
-
-                                   <font size="2">
-                                    <ul style="list-style-type:square;">
-
-                                      {% if biodb == "chlamydia_04_16"%}
-
-                                       <li><a href="/home/#genomes">{{n_genomes}} <i>Chlamydiae</i> genomes from 26 different species</a> (see the <a href="/home#phylogeny">phylogeny</a>)</li>
-
-                                      {% elif biodb == "2019_06_PVC"%}
-                                         <li><a href="/home/#genomes">{{n_genomes}} <i>PVC</i> genomes</a> (see the <a href="/home/#phylogeny">phylogeny</a>)</li>
-                                      {% else %}
-                                          <li><a href="/home/#genomes">{{n_genomes}} <i>PVC</i> genomes</a> (see the <a href="/home/#phylogeny">phylogeny</a>)</li>
+                   <div class="container-fluid" id="main_container" style="width: 90%;">      
+                    <div class="container" >
+                      <div class="tab-pane active">
+                         <div class="col-md-4 col-sm-7" >
+                          <div class="serviceBox_2"  >
+                              <h3 class="title">The database contains:</a></h3>
+                              <ul  style="list-style-type:none;">
+                                      {% if number_of_files %}
+                                      <br><li class="summary_data" ><a href="{% url 'extract_region' %}" ><b>{{number_of_files}}  </b></a>genomes</h3></li>
                                       {% endif %}
-
-                                       <li>Orthologous proteins identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a></li>
-                                       <li>Detailed annotation of proteins based on</li>
-                                           <ul style="list-style-type:circle; padding-left:20px;">
-                                             <li><a href="https://www.genome.jp/kegg/">KEGG</a> (Kegg orthologs)</li>
-                                             <li><a href="https://www.ncbi.nlm.nih.gov/COG/">COG</a> (clusters of orthologous groups)</li>
-                                             <li><a href="https://string-db.org/">STRING</a> (protein-protein interactions)</li>
-                                             <li><a href="http://priam.prabi.fr/">PRIAM</a> (enzymes)</li>
-                                             <li><a href="http://www.tcdb.org/">TCDB</a> (curated transporters annotation)</li>
-                                             <li><a href="https://www.uniprot.org/">SwissProt</a> (manually annotated proteins)</li>
-                                             <li><a href="https://www.ebi.ac.uk/interpro/">InterproScan</a> (domains and signatures)</li>
-                                             <li><a href="http://csbl.bmb.uga.edu/DOOR/">DOOR</a> (operons)</li>
-                                           </ul>
-                                        <li>Precomputed homology searches with <a href="">RefSeq</a> and <a href="">SwissProt</a> databases for each protein</li>
-                                        <li>Precomputed phylogenetic reconstructions of orthologous groups including the closest RefSeq homologs</li>
-                                        <li>Pfam and COG phylogenetic profiles allowing to identify chlamydial domains/proteins rarely found in other prokaryotes (see for example <a href="{% url 'fam_pfam' "PF01823" %}">PF01823</a>)</li>
-                                        <li>Identification of conserved gene neighborhood among distantly related <i>Chlamydiae</i> and PVC (see for example the paper from <a href="https://www.ncbi.nlm.nih.gov/pubmed/9787636">Dandekar et al.</a> for the rationale behind this)</li>
-                                        <li>Multiple tools allowing comparative analyses of <i>Chlamydiae</i> genomes</li>
-                                        <li>References to scientific publications collected from multiple sources</li>
-
-                                      </font>
-
-                                    </ul>
+                                      <br>
+                                      {% if number_ort %}
+                                      <br><li class="summary_data"><a href="{% url 'extract_orthogroup' %}" ><b>{{number_ort}}  </b></a>orthogroups</h3></li>
+                                      {% endif %}
+                                      <br>
+                                      {% if number_of_files %}
+                                      <br><li class="summary_data"><a href="{% url 'pan_genome' 'orthology' %}" ><b>{{core}}</b></a> core orthogroups</h3></li>
+                                      {% endif %}      
+                              </ul>  
+                           </div>
+                          </div>
+                        <div class="col-lg-3 col-md-3 col-sm-7">
+                              <div class="serviceBox">
+                                <a  href="{% url 'extract_region' %}">
+                                  <div class="service-icon">
+                                      <span><i class="fa fa-dna"></i></span>
                                   </div>
-                                </div>
+                                  <br></a>
+                                  <h3 class="title">Genomes</h3>
+                                  <p class="description">Display the summary table of the genomes contained in the database and navigate to the list of proteins for each of them. <br> Fasta files and .gbk files are available for downloading. </p>
                               </div>
-
-                              <div class="col-lg-6">
-
-
-                                <div class="panel panel-default">
-                                  <div class="panel-heading">
-                                    <h3 class="panel-title">Latest News</h3>
-                                  </div>
-                                  <div class="panel-body" style="margin: 10px 10px 10px 10px">
-
-                                    <font size="2">
-                                        <p>
-                                            <strong>December 02, 2019</strong>
-                                        </p>
-                                        <p>
-                                            Updated references to litterature (reported in the "Pubmed" tab available on each locus page) using data from <a href="https://string-db.org/">STRING version 11</a>. 
-                                        </p>
-                                      <p>
-                                          <strong>October 22, 2019</strong>
-                                      </p>
-                                      <p>
-                                          Updated references to litterature (reported in the "Pubmed" tab available on each locus page) using the <a href="http://papers.genomics.lbl.gov/cgi-bin/litSearch.cgi">PaperBlast</a> database from September 25 2019. 
-                                      </p>
-                                      <strong>June 2019</strong>
-                                    </p>
-                                    <p>
-                                      Release 2.0 of the database with 277 PVC genomes.
-                                    </p>
-                                    </font>
-
-                                    </ul>
-                                  </div>
+                      </div>
+                          <div class="col-lg-3 col-md-3 col-sm-7" >
+                            <div class="serviceBox">
+                              <a  href="{% url 'phylogeny_intro' %}">
+                                <div class="service-icon">
+                                    <span><i class="fa fa-tree"></i></span>
                                 </div>
-
-
-                              </div>
-
+                                <br></a>
+                                <h3 class="title">Phylogeny</h3> 
+                                <p class="description"> Visualize and download the phylogenetic tree built on concatenated single copy orthologs. The phylogeny is annotated with genomics info, such as genome size,GC content, coding density, completness, and contamination expressed as percentages.</p>
                             </div>
-
-
-                            <div class="row">
-                              <div class="col-lg-12">
-                                <div class="panel panel-default">
-                                  <div class="panel-heading">
-                                    <h3 class="panel-title">Citation</h3>
-                                  </div>
-                                  <div class="panel-body" style="margin: 10px 10px 10px 10px">
-
-                                    <a href="https://academic.oup.com/nar/advance-article-abstract/doi/10.1093/nar/gkz924/5609527"> <strong> ChlamDB: a comparative genomics database of the phylum <i>Chlamydiae</i> and other members of the <i>Planctomycetes-Verrucomicrobiae-Chlamydiae</i> superphylum </strong></br>
-                                    Trestan Pillonel, Florian Tagini, Claire Bertelli, Gilbert Greub </br>
-                                    Nucleic Acids Research, 2019, https://doi.org/10.1093/nar/gkz924 </a>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-
                         </div>
-                        <div class="tab-pane" id="genomes">
-                          <div class="col-lg-12 col-md-12 col-sm-12">
-                           <div class="row">
-
-                            <table class="display" id="genomes_table">
-                                <thead>
-
-
-                                    <tr>
-									{% for header in data_table_header %}
-										<th>{{header}}</th>
-									{% endfor %}
-
-                                    </tr>
-                                 </thead>
-                                 <tbody>
-                                 {% for entry in data_table %}
-                                    <tr>
-										{% for val in entry %}
-                                        <td>{{val}}</td>
-										{% endfor %}
-                                    </tr>
-                                 {% endfor %}
-
-                                </tbody>
-                            </table>
-                        </div><!-- row -->
-                      </div> <!-- col -->
-                    </div> <!-- tab0 -->
-                        <div class="tab-pane" id="phylogeny">
-                          <div class="row">
-                            <div class="col-lg-12">
-                              <div class="row">
-
-                            <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                                <div class="panel-heading" style="width:100%">
-                                    <h3 class="panel-title">Help</h3>
-                                </div>
-                                <p style="margin: 10px 10px 10px 10px; line-height: 160%">The phylogeny was build based on concatenated single copy orthologs with FastTree (default parameters). Nodes with black dots have support values lower than 1. 
-                                The percentage of non-coding DNA of fragmented genomes was calculated based on data from contigs larger than 10 kilo bases. The completeness and contamination of each genome were estimated with <a href="https://ecogenomics.github.io/CheckM/">checkM</a> based on the identification of 104 "universal" marker genes.</p>
-                                </p>
-                            </div>
-
-
-
-
-                                <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
-                                <a onclick='exportPNG("pyhlogeny", "phylogeny");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+                      
+                      </div>
+                    </div>
+                <br>
+                
+                      <div class="col-md-3 col-sm-6"   style=" min-width: 200px;"  >
+                          <div class="serviceBox" style="min-height: 800px;" >
+                              <div class="service-icon_2">
+                                  <span><i class="fa fa-shapes"></i></span>
                               </div>
-                              <div>
-                                <object type="image/svg+xml" data="{% static asset_path %}" id="pyhlogeny" style="width:1200px"></object>
+                              <h3 class="title">Comparisons</h3>
+                              <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}  {% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}  {% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.   </p>
+                              <br>  
+                              <div class= "col-md-3 col-sm-6">
+                                    <button type="button_analyses" class="fill" ><a class="link_boxes" href="{% url 'extract_orthogroup' %}"><span class="link"></span> Orthogroups</a></button>
+                                    {% if optional2status|keyvalue:"COG" == 1 %}
+                                    <button type="button_analyses" class="fill" ><a class="link_boxes"  href="{% url 'extract_cog' %}"><span class="link"></span>COGs</a></button>
+                                    {% endif %}
+                                    {% if optional2status|keyvalue:"KEGG" %}
+                                    <button type="button_analyses" class="fill" ><a class="link_boxes" href="{% url 'extract_ko' %}">  <span class="link"></span>Kegg Orthologs</a></button>
+                                    {% endif %}
+                                    {% if optional2status|keyvalue:"pfam" == 1 %}
+                                    <button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'extract_pfam' %}">  <span class="link"></span>Pfam domains</a></button>
+                                    {% endif %}
+                               </div>
+                          </div>
+                      </div>
+                      {% if optional2status|keyvalue:"KEGG" == 1 %}
+                      <div class="col-md-3 col-sm-6"    style=" min-width: 200px;" >
+                        <div  class="serviceBox" style="min-height: 800px;" >
+                            <div class="service-icon_2">
+                                <span><i class="fa fa-cogs"></i></span>
+                            </div>
+                            <h3 class="title" >Metabolism</h3>
+                            <p class="description"> Discover which metabolic pathways are present in the genomes. KEGG categories can be investigated checking which KEGG entries are present in each KEGG module. Entries can be visualized in lists or used to generate an annotated phylogeny. In addition, you can visualize in the KEGG maps which genes of a specific pathway are carried by a genome of interest. </p>
+                            <br> 
+                            <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a class="link_boxes"  href="{% url 'priam_kegg' %}">  <span class="link"></span>Kegg maps</a></button>
+                           <button type="button_analyses" class="fill" ><a  class="link_boxes"   href="{% url 'kegg_module' %}">  <span class="link"></span>Kegg modules</a></button></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                  <div class="col-md-3 col-sm-6"  style=" min-width: 200px;">
+                    <div  class="serviceBox" style="min-height: 800px;" >
+                        <div class="service-icon_2">
+                            <span><i class="fa fa-circle-notch"></i></span>
+                        </div>
+                        <h3 class="title">Circos</a></h3>
+                        <p class="description"> Generate a clickable version of circos plot indicating the presence/absence of homologous proteins in one or multiple genomes, the GC content and navigate to the description of the locus tags of interest. </p>
+                        <br> 
+                        <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a  class="link_boxes"   href="{% url 'circos' %}">  <span class="link"></span>Circos</a></button></div>
+                    </div>
+                </div>
+                {% if optional2status|keyvalue:"BLAST_database"%}
+                <div class="col-md-3 col-sm-6"    style=" min-width: 200px;">
+                  <div class="serviceBox" style="min-height: 800px;" >
+                      <div class="service-icon_2">
+                          <span><i class="fa fa-grip-lines"></i></span>
+                      </div>
+                      <h3 class="title" >Blast</a></h3> 
+                      <p class="description"> Blast an input sequence against the genomes of the database. You can select among blastn, blastp, or the six-frame translation-based approaches, blastx and tblastn. </p>
+                      <br> 
+                      <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'blast' %}">  <span class="link"></span> Blast </a></button></div>
+                  </div>
+              </div>
+               {% endif %}
+                  </div>
+              </div>
+            </div>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+     <div class="container-fluid" id="main_container" style="width: 80%;">
+                    <!-- Images and boxes end-->
+                    <div class="row">
+                        <div class="panel panel-default">
+                          <div id="container_boxes">
+                            <div id="label">  Status of your database  </div>
+                              <div class="panel-body" >
+                                <div class="status_box"  >
+                                  <p> Your database has been generated including the following features:</p>
+                                  <ul style="list-style-type:circle; margin-left: 2em;">
+                                      {% if optional2status|keyvalue:"BLAST_database" == 1 %}
+                                      <li> Blast database of the genomes have been created</li>
+                                      {% endif %}
+                                      <li> Orthologous proteins identified with OrthoFinder </li>
+                                        <li> Detailed annotation of proteins based on:
+                                          
+                                            {% if optional2status|keyvalue:"COG" == 1 %}
+                                            <dd> -<a href="https://www.ncbi.nlm.nih.gov/COG/">COG</a> (clusters of orthologous groups)</dd> 
+                                            {% endif %}
+                                            {% if optional2status|keyvalue:"pfam" == 1 %}
+                                            <dd> -<a href="http://pfam.xfam.org" >Pfam</a> (protein families)</dd>
+                                            {% endif %}
+                                            {% if optional2status|keyvalue:"KEGG" == 1 %}
+                                            <dd> - <a href="https://www.genome.jp/kegg/" >KEGG</a> (Kegg orthologs)</dd>
+                                            {% endif %}
+                                            <dd> - <a href="https://www.uniprot.org/">SwissProt</a> (manually annotated proteins)</dd>
+                                          
+                                        <li> Precomputed phylogenetic reconstructions of orthologous groups</dd>
+                                        {% if optional2status|keyvalue:"KEGG" %}
+                                        <li> Kegg maps visualization</li>
+                                        {% endif %}
+                                        <li> Genomes alignments can be visualized with Circos and selected regions can be plotted and compared
+                                    </li>
+                                  </ul>
+                                </div>
+                                <div class="status_box_warning" >
+                                  <div class="warnings" >
+                                    <p> The following feature(s) has not beed included, if whished please run again the pipeline with the corrected settings.</p>
+                                      <p>  Protein annotation with: </p>
+                                        {% if not optional2status|keyvalue:"COG" == 1 %}
+                                                <dd> -<a href="https://www.ncbi.nlm.nih.gov/COG/">COG</a> (clusters of orthologous groups)</dd> 
+                                                {% endif %}
+                                                {% if not optional2status|keyvalue:"pfam" == 1 %}
+                                                <dd> - <a href="http://pfam.xfam.org" >Pfam</a> (protein families)</dd>
+                                                {% endif %}
+                                                {% if not optional2status|keyvalue:"KEGG" == 1 %}
+                                                <dd> - <a href="https://www.genome.jp/kegg/" >KEGG</a> (Kegg orthologs)</dd>
+                                                {% endif %}
+                                                {% if not optional2status|keyvalue:"KEGG" %}
+                                                <li> Kegg maps visualization</li>
+                                                {% endif %}
+                                      </li>
+                                  </div>  
+                                </div>    
+                                </ul>
+                              
                               </div>
                             </div>
                           </div>
-                        </div> <!- tab1 -->
-                    </div>  <!--tab content -->
-                    <!--<img src="{% static 'chlam_tree.png' %}" width="80%"-->
+                 
+                              
+                               
+                                </div>
+                    <div class="overview_3" >
+                    </div>
+                    <br>
+                    <br>
+                    <br>
+                    <div class="row">
+                      <div class="panel panel-default">
+                        <div id="container_boxes">
+                            <div id="label">  Citation  </div>
+                            <div class="panel-body">
+                              <a href="https://academic.oup.com/nar/advance-article-abstract/doi/10.1093/nar/gkz924/5609527"> <strong> ChlamDB: a comparative genomics database of the phylum <i>Chlamydiae</i> and other members of the <i>Planctomycetes-Verrucomicrobiae-Chlamydiae</i> superphylum </strong></br>
+                              Trestan Pillonel, Florian Tagini, Claire Bertelli, Gilbert Greub </br>
+                              Nucleic Acids Research, 2019, https://doi.org/10.1093/nar/gkz924 </a>
+                           </div>
+                          </div>
+                         </div>
+                        </div>
+                      </div>
+                   </div>
+
+                    
+                  
+
+                   
+
+                
+                              
+
                 </div> <!--col -->
               </div> <!--row -->
             </div> <!--page-content-wrapper -->
@@ -270,16 +287,10 @@
       } );
     $('.dropdown-toggle').dropdown()
 
-
-
-
-    </script>
-
-
-
+    
+</script>
 
 </body>
 {% include "chlamdb/style_menu.html" %}
-
 
 </html>

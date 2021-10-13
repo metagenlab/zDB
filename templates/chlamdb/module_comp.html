@@ -23,7 +23,8 @@
             <div class="row">
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
-
+                 <div class="home-title"><b> Kegg modules  </b></div>
+                 <hr class="lines-home">
                    <nav>
                         <ul id="tabs_main" class="nav nav-tabs">
                             <li><a href="{% url 'kegg_module' %}">Category Heatmap</a></li>
@@ -31,7 +32,21 @@
                             <li class="active"><a href="{% url 'module_comparison' %}">Compare strains</a></li>
                         </ul>
                     </nav>
-
+                    <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Help</h3>
+                      </div>
+                      <p style="margin: 10px 10px 10px 10px">  Compare the Kegg modules present among selected genomes. Detailed table with:
+                        <br>- Category description  
+                        <br>- SubCategory description
+                        <br>- Kegg module accession number that redirect you to the Kegg entried identified in the genomes
+                          <br>- Kegg module description
+                          <br>- nKO = number of Ko entries reported in Kegg database for that Kegg module
+                          <br>- nKO+ = number of Ko entries reported in Kegg database for that Kegg module <b>present</b> in the genomes
+                          <br>- Percentage= nKO+ compared to nKO
+                          <br>- Number of Ko entries fof each module in each genome of interest
+                        
+                  </div>
                     <form action='{% url "module_comparison" %}' method="post">
                         {% csrf_token %}
                         {{ form.as_p }}

@@ -23,7 +23,8 @@
             <div class="row">
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
-
+                 <div class="home-title"><b> Kegg modules  </b></div>
+                 <hr class="lines-home">
                    <nav>
                         <ul id="tabs_main" class="nav nav-tabs">
                             <li><a href="{% url 'kegg_module' %}">Category Heatmap</a></li>
@@ -32,7 +33,12 @@
                         </ul>
                     </nav>
 
-
+                    <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Help</h3>
+                      </div>
+                      <p style="margin: 10px 10px 10px 10px">  Select a Kegg subcategory and display a phylogenetic tree annotated with a heatmap of the distribution of the corrispong Ko entries. </p>
+                  </div>
 
                    <form action='{% url "kegg_module_subcat" %}' method="post">
                     {% csrf_token %}
