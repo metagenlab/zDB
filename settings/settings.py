@@ -6,18 +6,7 @@ from django.forms.utils import flatatt
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-DOCS_ROOT = "/scratch/hdd/bmarquis/github-reps/chlamdb/docs/_build/html"
-# DOCS_ROOT = '/home/tpillone/work/dev/metagenlab/chlamdb/docs/_build/html'
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-
-import os
-SECRET_KEY = "flurb-o-matic_2000" # os.environ['SECRET_KEY']
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 SECURE_CONTENT_TYPE_NOSNIFF = False
@@ -27,86 +16,28 @@ SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
-ALLOWED_HOSTS = ['0.0.0.0', '155.105.138.104']
+ALLOWED_HOSTS = ['localhost']
 
 LOGIN_URL = '/chlamdb/login/'
 LOGOUT_URL = '/chlamdb/logout/'
 LOGIN_REDIRECT_URL = ''
-#import memcache
-import simplejson
-import dill
 
 
-class SimplejsonWrapper(object):
-    def __init__(self, file, protocol=None):
-        self.file = file
+DOCS_ROOT="/home/chlamdb/docs/_build/"
 
-
-    def dump(self, value):
-        dill.dumps(value, self.file)
-
-    def load(self):
-        dill.loads(value, self.file)
-
-
-
-#CACHES = {
-#    'default': {
-#        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-
-#        'pickler': 'SimplejsonWrapper',
-#        'unpickler': 'SimplejsonWrapper',
-#    }
-#}
-
-#CACHES = {
-#    'default': {
-#        'BACKEND': 'django_pylibmc.memcached.PyLibMCCache',
-#        'LOCATION': '127.0.0.1:1211',
-#        'TIMEOUT': 500,
-#        'BINARY': True,
-#        'OPTIONS': {  # Maps to pylibmc "behaviors"
-#            'tcp_nodelay': True,
-#            'ketama': True
-#        }
-#    }
-#}
-
-#CACHES = {'default':
-#            {'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-#             'LOCATION': '127.0.0.1:11211',
-#             'TIMEOUT': 5000,
-#             'BINARY': True,
-#        }
-#}
-
-
-CACHES = {
-        "default": {
-                    "BACKEND": "django_redis.cache.RedisCache",
-                    "LOCATION": "redis://127.0.0.1:6379/1",
-                    "OPTIONS": {
-                                    "CLIENT_CLASS": "django_redis.client.DefaultClient",
-                                }
-                }
-    }
-
-
-#TEMPLATE_DEBUG
-
-RUN_NAME = "drunk_franklin"
+SECRET_KEY   = os.environ["RUN_NAME"]
+RUN_NAME     = os.environ["RUN_NAME"]
+NEXTFLOW_DIR = os.environ["NEXTFLOW_DIR"]
 BIODB = f"db_{RUN_NAME}"
-BIODB_DB_PATH = "/scratch/hdd/bmarquis/annotation_pipeline_nextflow/db/" + BIODB
-
-FOLDER_PATH= "/scratch/hdd2/acarrara/ChlamDB_pipeline/Comparative_db/annotation_pipeline_3_genomes_MENU/" #useful to have access to all the subfolders of the main one where the Nf pipeline runs
+BIODB_DB_PATH = NEXTFLOW_DIR+"/db/"+BIODB
+SEARCH_INDEX  = NEXTFLOW_DIR+"/search_index/"+RUN_NAME
+BLAST_DB_PATH = NEXTFLOW_DIR + "/blast_DB/"
 
 BIODB_CONF = {
-        "chlamdb.db_type" : "sqlite",
-        "chlamdb.db_name" : "George",
-        "chlamdb.db_psswd" : ""
+    "chlamdb.db_type" : "sqlite",
+    "chlamdb.db_name" : "George",
+    "chlamdb.db_psswd" : ""
 }
-
-SEARCH_INDEX = "/scratch/hdd/bmarquis/annotation_pipeline_nextflow/search_index/" + RUN_NAME
 
 
 # Application definition
@@ -122,9 +53,9 @@ INSTALLED_APPS = (
     'templatetags',
     'django.contrib.admin',
     'django.contrib.sitemaps',
-    'crispy_forms',
-    'django_celery_results',
+    'crispy_forms'
 )
+
 #    'bootstrap3',
 #     'django.middleware.security.SecurityMiddleware',
 #    'django.middleware.csrf.CsrfViewMiddleware',
@@ -209,7 +140,3 @@ CELERY_CACHE_BACKEND = 'django-cache'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-
-INTRO="Hi,"
-TITLE= "your comparative database is ready"
-SUBTITLE= "A customizable comparative genomic databas (changeable title)"
