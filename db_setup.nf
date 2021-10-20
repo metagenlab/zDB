@@ -1,20 +1,7 @@
-// Note: we will probably need to use a fixed version
-// of the different databases to avoid bugs due to 
-// changes in formatting
-
-/*
-process setup_refseq_db {
-    when:
-        params.diamond_refseq
-}
-
-process setup_ko_db {
-    when:
-        params.ko
-} */
-
 
 process download_cog_defs {
+    // Lightweight download
+
     publishDir "$params.cog_db"
     when:
         params.cog
@@ -28,8 +15,8 @@ process download_cog_defs {
     wget https://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.def.tab
     wget https://ftp.ncbi.nih.gov/pub/COG/COG2020/data/fun-20.tab
 
-    iconv -f cp1252 -t utf-8 cog-20.def.tab > cog_translated.def.tab
-    mv cog_translated.def.tab cog-20.def.tab
+    iconv -f cp1252 -t utf-8 cog-20.def.tab > temp
+    mv temp cog-20.def.tab
     """
 }
 
@@ -38,7 +25,6 @@ cog_defs.mix(cog_funcs).set { to_setup_db_cog }
 
 
 if(!params.cog_location && params.cog) {
-
     process download_cog_cdd {
         output:
             file "COG*.smp" into to_make_cdd_profiles
@@ -76,6 +62,41 @@ if(params.cog) {
             -scale 100.0 -dbtype rps -index true
         grep "tag id" COG* | sed 's/.smp:.*tag id//' | \
                             sed 's/COG//' > cdd_to_cog
+        """
+    }
+}
+
+
+if(params.diamond_refseq) {
+    process download_refseq {
+        publishDir "$params.refseq_db", mode: "move"
+
+        output:
+            file "refseq_nr.faa" into to_make_refseq_diamonddb
+
+        script:
+        """
+            $baseDir/bin/download_refseq.py --download_refseq=.
+            cat *.gz > concat_gz_faa
+            gunzip < concat_gz_faa > refseq_nr.faa
+            rm -f *.gz
+            rm concat_gz_faa
+        """
+    }
+
+    process diamond_refseq {
+        publishDir "$params.refseq_db", mode: "move"
+        container "$params.diamond_container"
+
+        input:
+            file to_make_refseq_diamonddb
+
+        output:
+            file "refseq_nr.dmnd"
+            
+        script:
+        """
+            diamond makedb --in $to_make_refseq_diamonddb -d refseq_nr
         """
     }
 }
@@ -194,6 +215,7 @@ process setup_swissprot {
     makeblastdb -dbtype prot -in $swissprot_fasta
     """
 }
+
 
 to_setup_db_cog.mix(to_load_ko).set { to_setup_db }
 

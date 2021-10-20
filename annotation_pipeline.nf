@@ -525,7 +525,6 @@ if (params.blast_swissprot) {
 
 if(params.diamond_refseq) {
     process diamond_refseq {
-
       publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
       container "$params.diamond_container"
 
@@ -543,7 +542,8 @@ if(params.diamond_refseq) {
       n = seq.name
       """
       # new version of the database
-      diamond blastp -p ${task.cpus} -d $params.databases_dir/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
+      diamond blastp -p ${task.cpus} -d $params.refseq_db/refseq_nr.dmnd \
+            -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
       """
     }
 
@@ -880,4 +880,12 @@ process create_chlamdb_search_index {
         setup_chlamdb.setup_chlamdb_search_index(params, "$db", "$index_name")
     """
 }
+
+
+workflow.onComplete {
+    println "Annotation pipeline complete "
+    println "You may now start the web server by running the start_webserver script"
+}
+
+
 
