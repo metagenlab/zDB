@@ -7,9 +7,6 @@
  */
 
 
-/*
-* Helper function for gen_python_args
-*/
 def gen_arg_string_s(String name, String element) {
     return "\"" + name + "\" : " + element
 }
@@ -887,6 +884,4 @@ workflow.onComplete {
     println "Annotation pipeline complete "
     println "You may now start the web server by running the start_webserver script"
 }
-
-
 

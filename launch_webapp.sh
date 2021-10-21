@@ -37,4 +37,5 @@ export RUN_NAME="$run_name"
 export PORT="$port"
 export NEXTFLOW_DIR=`pwd`
 echo "Starting website, it will be accessible through on localhost on port $port"
-singularity run singularity/chlamdb-latest.sif /home/chlamdb/start_webapp
+singularity run --writable-tmpfs --bind tmp/:/home/chlamdb/assets/temp/ \
+	singularity/chlamdb-latest.sif /home/chlamdb/start_webapp
