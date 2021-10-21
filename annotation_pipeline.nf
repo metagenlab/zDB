@@ -367,7 +367,7 @@ process orthogroups_phylogeny_with_fasttree3 {
   publishDir 'orthology/orthogroups_phylogenies_fasttree', mode: 'copy', overwrite: true
 
   when:
-  params.orthogroups_phylogeny_with_fasttree
+    params.orthogroups_phylogeny
 
   input:
     file og from to_fasttree_orthogroups
@@ -645,7 +645,6 @@ if(!params.diamond_refseq) {
     db_gen.set { to_load_taxonomy }
     Channel.empty().set { diamond_best_hits }
 } else {
-
     process load_refseq_results {
         container "$params.annotation_container"
         input:
@@ -657,18 +656,18 @@ if(!params.diamond_refseq) {
             file curr_db into to_load_taxonomy
 
         script:
-        if(params.diamond_refseq)
-            """
-            #!/usr/bin/env python
-            # small modif'
-            import setup_chlamdb
-            
-            kwargs = ${gen_python_args()}
-            diamond_tab_files = "$diamond_tsv_list".split()
-            setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files, "$curr_db")
-            """
+        """
+        #!/usr/bin/env python
+        # small modif'
+        import setup_chlamdb
+        
+        kwargs = ${gen_python_args()}
+        diamond_tab_files = "$diamond_tsv_list".split()
+        setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files, "$curr_db")
+        """
     }
 }
+
 
 process align_refseq_BBH_with_mafft {
   container "$params.mafft_container"
@@ -693,6 +692,7 @@ process align_refseq_BBH_with_mafft {
   """
 }
 
+
 process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   container "$params.fasttree_container"
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
@@ -714,10 +714,11 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 
 BBH_phylogenies.collect().set { BBH_phylogenies_to_db }
 
-// Ugly hack
+
 if(!params.refseq_diamond_BBH_phylogeny) {
     Channel.value("dummy").set { BBH_phylogenies_to_db }
 }
+
 
 process load_taxo_stats_into_db {
     container "$params.annotation_container"

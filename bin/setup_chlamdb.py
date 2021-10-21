@@ -137,13 +137,11 @@ def get_prot(refseq_file, hsh_accession):
     # Brute-force scanning of the whole refseq file.
     # This is however faster than serial SQL queries.
 
-    hsh_results = {}
     for record in SeqIO.parse(refseq_file, "fasta"):
         accession = remove_accession_version(record.name)
         if not accession in hsh_accession:
             continue
-        hsh_results[accession] = record
-    return hsh_results
+        hsh_accession[accession] = record
 
 
 def get_taxids(ncbi_tax_file, hsh_accession_to_taxid):
@@ -168,27 +166,20 @@ def simplify_hash(hsh):
     return hsh_from_s(hsh[len("CRC-"):])
 
 
-def parse_description(description):
+def parse_record(record):
+    description = record.description
     end_accession_index = description.index(' ')
     # NOTE: this assumes that no brackets are found in the
     # name of the protein
     beg_tax_index = description.index('[')
+    end_tax_index = description.index(']')
     # also skip the white spaces
-    return description[end_accession_index+1:beg_tax_index-1]
+
+    prot_descr = description[end_accession_index+1:beg_tax_index-1]
+    organism = description[beg_tax_index+1:end_accession_index-1]
+    return prot_descr, organism
 
 
-# Heavy-duty function, with several things performed to avoid database
-# queries and running too many times acrosse refseq_merged.faa :
-#  * get the mapping between accession to taxid
-#  * get the linear taxonomy for all taxids that were extracted at the previous step
-#  * extract the protein informations for 
-#  * for all protein of all orthogroup, get the non-PVC hits and output them in OG.fasta
-#
-# This function will not scale for big sets of genomes: it will be necessary
-# to run it several time for a given chunk of results.
-#
-# Alternatively, already pre-process the results directly after diamond finishes. This should
-# be possible as the files are accessed as read-only.
 def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     db = db_utils.DB.load_db(db_file, args)
     columns=["str_hsh", "accession", "pident", "length", "mismatch", "gapopen",
@@ -199,63 +190,33 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     for tsv in lst_diamond_files:
         hit_table = pd.read_csv(tsv, sep="\t", names=columns, header=None)
         all_data = all_data.append(hit_table)
-
-    print("Initial size: ", len(all_data.index), flush=True)
     all_data.accession = all_data.accession.map(remove_accession_version)
     all_data.str_hsh = all_data.str_hsh.map(simplify_hash)
-    hsh_accession_to_taxid = {accession:None for index, accession in all_data.accession.iteritems()}
 
-    print("Obtaining accession to taxid", flush=True)
-    get_taxids(args["ncbi_taxonomy"], hsh_accession_to_taxid)
-    all_data["taxid"] = all_data.accession.map(hsh_accession_to_taxid)
+    hsh_accession_to_record = { accesion: None for accesion in all_data.accession.tolist() }
 
-    taxid_set = set(hsh_accession_to_taxid.values())
-    non_pvc_taxids = set()
-    pvc = args.get("refseq_diamond_BBH_phylogeny_phylum_filter", [])
-    to_avoid = set()
-    hsh_taxid_to_name = {}
-    results_only_taxids = []
-
-    print("Getting linear taxonomy", flush=True)
-    for chunk in chunks(list(taxid_set), 5000):
-        query_results = db.get_linear_taxonomy(args, chunk)
-        for result in query_results:
-            # Not necessary to keep those in the database
-            if result.phylum() in pvc:
-                continue
-            non_pvc_taxids.add(result.taxid())
-            results_only_taxids.append(result.get_all_taxids())
-            result.update_hash(hsh_taxid_to_name)
-
-    db.create_refseq_hits_taxonomy()
-    db.load_refseq_hits_taxonomy(results_only_taxids)
-    db.create_taxonomy_mapping(hsh_taxid_to_name)
-    db.create_refseq_hits_taxonomy_indices()
-
-    refseq = args["databases_dir"] + "/refseq/merged.faa"
     print("Extracting records for refseq", flush=True)
-    hsh_accession_to_record = get_prot(refseq, hsh_accession_to_taxid)
+    refseq = args["refseq_db"] + "/refseq_nr.faa"
+    get_prot(refseq, hsh_accession_to_record)
     hsh_accession_to_match_id = {}
 
     db.create_diamond_refseq_match_id()
     refseq_match_id = []
-    print("Loading refseq matches id", flush=True)
 
-    for sseqid, (accession, taxid) in enumerate(hsh_accession_to_taxid.items()):
+    print("Loading refseq matches id", flush=True)
+    for sseqid, (accession, record) in enumerate(hsh_accession_to_record.items()):
         hsh_accession_to_match_id[accession] = sseqid
         record = hsh_accession_to_record[accession]
-        data = [sseqid, accession, taxid, parse_description(record.description), len(record)]
+        descr, organism = parse_record(record)
+        data = [sseqid, accession, organism, descr, len(record)]
         refseq_match_id.append(data)
     db.load_diamond_refseq_match_id(refseq_match_id)
     db.create_diamond_refseq_match_id_indices()
 
     print("Loading refseq matches", flush=True)
     db.create_refseq_hits_table()
-    all_data = all_data[all_data.taxid.isin(non_pvc_taxids)]
     all_data["count"] = all_data.groupby("str_hsh").cumcount()
     all_data["match_id"] = all_data["accession"].map(hsh_accession_to_match_id)
-
-    print("after filtering: ", len(all_data), flush=True)
     to_load = all_data[["count", "str_hsh", "match_id", "pident",
         "length", "mismatch", "gapopen", "qstart", "qend", "sstart",
         "send", "evalue", "bitscore"]]
@@ -288,6 +249,7 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
         f.close()
     db.set_status_in_config_table("BLAST_database", 1)
     db.commit()
+
 
 # This is a hack to be able to store 64bit unsigned values into 
 # sqlite3's 64 signed value. Values higher than 0x7FFFFFFFFFFFFFFF could not

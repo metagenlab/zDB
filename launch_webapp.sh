@@ -27,8 +27,8 @@ for i in "$@"; do
 done
 
 if [ ! -f "singularity/chlamdb-latest.sif" ]; then
-	echo "Preparing the chlamdb container, this may take a while"
-	singularity build singularity/chlamdb-latest.sif docker-daemon://metagenlab/chlamdb:latest &> /dev/null
+	echo "Preparing the chlamdb container, this may take a while."
+	singularity build singularity/chlamdb-latest.sif docker-daemon://metagenlab/chlamdb:latest
 	echo "Done"
 fi
 
