@@ -585,7 +585,7 @@ process setup_db {
         file output_file into db_base
 
     script:
-    output_file = "db_$workflow.runName"
+    output_file = "$workflow.runName"
     """
     cp $db_skeleton $output_file
     """
@@ -865,17 +865,37 @@ process create_chlamdb_search_index {
         file db from to_create_index
 
     output:
-        file index_name
-        file db
+        file index_name into to_index_cleanup
+        file db into to_db_cleanup
 
     script:
-    index_name = "$workflow.runName"
+    // add a prefix to differentiate it from the db
+    index_name = "index_$workflow.runName"
     """
         #!/usr/bin/env python
         import setup_chlamdb
 
         params = ${gen_python_args()}
         setup_chlamdb.setup_chlamdb_search_index(params, "$db", "$index_name")
+    """
+}
+
+
+process cleanup {
+    input:
+        file index from to_index_cleanup
+        file db from to_db_cleanup
+
+    script:
+    custom_run_name=(params.name)?params.name:""
+    """
+    ln -sf $index $baseDir/search_index/latest
+    ln -sf $db $baseDir/db/latest
+
+    if [ ! -z "${custom_run_name}" ]; then
+        ln -sf $index $baseDir/search_index/$custom_run_name
+        ln -sf $db $baseDir/db/$custom_run_name
+    fi
     """
 }
 
