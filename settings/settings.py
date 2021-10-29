@@ -16,7 +16,7 @@ SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
-ALLOWED_HOSTS = ['localhost']
+# ALLOWED_HOSTS = ['localhost']
 
 LOGIN_URL = '/chlamdb/login/'
 LOGOUT_URL = '/chlamdb/logout/'
@@ -28,10 +28,10 @@ DOCS_ROOT="/home/chlamdb/docs/_build/"
 SECRET_KEY   = os.environ["RUN_NAME"]
 RUN_NAME     = os.environ["RUN_NAME"]
 NEXTFLOW_DIR = os.environ["NEXTFLOW_DIR"]
-BIODB = f"db_{RUN_NAME}"
-BIODB_DB_PATH = NEXTFLOW_DIR+"/db/"+BIODB
+
+BIODB_DB_PATH = NEXTFLOW_DIR+"/db/"+RUN_NAME
 SEARCH_INDEX  = NEXTFLOW_DIR+"/search_index/"+RUN_NAME
-BLAST_DB_PATH = NEXTFLOW_DIR + "/blast_DB/"
+BLAST_DB_PATH = NEXTFLOW_DIR + "/blast_DB/"+RUN_NAME
 
 BIODB_CONF = {
     "chlamdb.db_type" : "sqlite",
@@ -40,8 +40,6 @@ BIODB_CONF = {
 }
 
 
-# Application definition
-# 'django.contrib.addn',
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -56,10 +54,7 @@ INSTALLED_APPS = (
     'crispy_forms'
 )
 
-#    'bootstrap3',
-#     'django.middleware.security.SecurityMiddleware',
-#    'django.middleware.csrf.CsrfViewMiddleware',
-#
+
 MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -73,16 +68,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'settings.urls'
 
-#WSGI_APPLICATION = 'test_1.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/1.6/ref/settings/#databases
-
-# TODO : will need to remove this for cleaner solution
-
-# Internationalization
-# https://docs.djangoproject.com/en/1.6/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 

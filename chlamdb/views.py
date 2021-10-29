@@ -1627,18 +1627,10 @@ def tab_get_refseq_homologs(db, seqid):
 
     header = ["Refseq accession", "Evalue", "Score", "ID(%)", "# gaps", "Len", "Description", "Organism"]
     entries = []
-    taxids = db.get_refseq_taxonomy(all_infos.taxid.tolist())
-
     for match_id, data in all_infos.iterrows():
-        if data.taxid not in taxids.index:
-            taxonomic_name = "-"
-        else:
-            taxonomic_name = taxids.loc[data.taxid].taxonomic_name
-
         to_ncbi = f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{data.accession}\">{data.accession}</a>"
-        to_taxo = f"<a href=\"http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={data.taxid}\">{taxonomic_name}</a>"
         entries.append((to_ncbi, data.evalue, data.bitscore,
-            data.pident, data.gaps, data.length, data.description, to_taxo))
+            data.pident, data.gaps, data.length, data.description, data.organism))
     return { "n_refseq_homologs": len(refseq_hits),
             "refseq_headers": header,
             "blast_data": entries }
@@ -2804,31 +2796,42 @@ def blast(request):
                         
                     if number_blast_hits=='all':
                        number_blast_hits = 100000                 
+
+                    # to be refactored to avoid code repetition
                     if blast_type=='blastn_ffn':
                         blastType = 'locus'
-                        blastdb = settings.NEXTFLOW_DIR + "blast_DB/ffn/%s" % (key_dict)
-                        blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits, outfmt=0 )
+                        blastdb = settings.BLAST_DB_PATH + f"/ffn/{key_dict}"
+                        blast_cline = NcbiblastnCommandline(query=query_file.name, \
+                                db=blastdb, evalue=customized_evalue, \
+                                max_target_seqs=number_blast_hits, outfmt=0 )
                     if blast_type=='blastn_fna':
                         blastType = 'genome'
-                        blastdb = settings.NEXTFLOW_DIR + "blast_DB/fna/%s" % (key_dict)
-                        blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits,  outfmt=0)
+                        blastdb = settings.BLAST_DB_PATH + f"/fna/{key_dict}"
+                        blast_cline = NcbiblastnCommandline(query=query_file.name, \
+                                db=blastdb, evalue=customized_evalue, \
+                                max_target_seqs=number_blast_hits,  outfmt=0)
                     if blast_type=='blastp':
                         blastType = 'locus'
-                        blastdb = settings.NEXTFLOW_DIR + "blast_DB/faa/%s" % (key_dict)
-                        blast_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits, outfmt=0)
+                        blastdb = settings.BLAST_DB_PATH + f"blast_DB/faa/{key_dict}"
+                        blast_cline = NcbiblastpCommandline(query=query_file.name, \
+                                db=blastdb, evalue=customized_evalue, \
+                                max_target_seqs=number_blast_hits, outfmt=0)
                     if blast_type=='tblastn':
                         blastType = 'genome'
-                        blastdb = settings.NEXTFLOW_DIR + "blast_DB/fna/%s" % (key_dict)
-                        blast_cline = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits,  outfmt=0)
-                        blast_cline2 = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits, outfmt=5)
+                        blastdb = settings.BLAST_DB_PATH + f"blast_DB/fna/{key_dict}"
+                        blast_cline = NcbitblastnCommandline(query=query_file.name, \
+                                db=blastdb, evalue=customized_evalue, \
+                                max_target_seqs=number_blast_hits,  outfmt=0)
+                        blast_cline2 = NcbitblastnCommandline(query=query_file.name, \
+                                db=blastdb, evalue=customized_evalue, \
+                                max_target_seqs=number_blast_hits, outfmt=5)
                     if blast_type=='blastx':
                         blastType = 'locus'
-                        blastdb = settings.NEXTFLOW_DIR + "blast_DB/faa/%s" % (key_dict)
-                        blast_cline = NcbiblastxCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits,  outfmt=0) #max_target_seqs=number_blast_hits
-                    
-                    
+                        blastdb = settings.BLAST_DB_PATH + f"blast_DB/faa/{key_dict}"
+                        blast_cline = NcbiblastxCommandline(query=query_file.name, \
+                                db=blastdb, evalue=customized_evalue, \
+                                max_target_seqs=number_blast_hits,  outfmt=0)
                     blast_stdout, blast_stderr = blast_cline()
-                                    
 
                     if blast_type=='tblastn':
                         from Bio.SeqUtils import six_frame_translations
