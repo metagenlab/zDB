@@ -3190,7 +3190,9 @@ def alignment(request, input_fasta):
 
 
 def plot_heatmap(request, type):
-    import seaborn as sns
+    import plotly.graph_objects as go
+    import scipy.cluster.hierarchy as shc
+    from scipy.cluster import hierarchy
     from datetime import datetime
 
     biodb = settings.BIODB_DB_PATH
@@ -3210,6 +3212,7 @@ def plot_heatmap(request, type):
         mat = db.get_cog_hits(taxon_ids, indexing="taxid", search_on="taxid")
     elif type=="orthology":
         mat = db.get_og_count(taxon_ids)
+        mat.index = [f"group_{i}" for i in mat.index]
     elif type == "ko":
         mat = db.get_ko_hits(taxon_ids)
     elif type == "Pfam":
@@ -3222,13 +3225,25 @@ def plot_heatmap(request, type):
     mat.columns = (target2description[i] for i in mat.columns.values)
     cur_time = datetime.now().strftime("%H%M%S")
 
-    filename = f"heatmap_{cur_time}.png"
-    path = settings.BASE_DIR + '/assets/temp/' + filename
-    asset_path = '/temp/' + filename
-    cm = sns.clustermap(mat)
-    cm.savefig(path)
+    # reorder row and columns based on clustering
+    Z_rows = shc.linkage(mat, method='ward')
+    order_rows = hierarchy.leaves_list(Z_rows)
+
+    Z_genomes = shc.linkage(mat.T, method='ward')
+    order_genomes = hierarchy.leaves_list(Z_genomes)
+
+    # set number of paralogs >1 as 2 to simplify the color code
+    mat[mat > 1] = 2 
+    colors = ["#ffffff", "#2394d9", "#d923ce"]
+
+    fig = go.Figure(data=go.Heatmap(z=mat.iloc[order_rows,order_genomes].T, colorscale=colors, y = mat.columns, x=mat.index)) # , x = mat.index, y=mat.columns
+    fig.update_traces(showlegend=False, showscale=False)
+
+    html_plot = make_div(fig, div_id="heatmap")
+
     envoi_heatmap = True
     return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
+
 
 
 def format_pathway(path_id, to_url=False, taxid=None):
