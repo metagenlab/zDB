@@ -67,16 +67,10 @@ threads = []
 
 if args.get("download_refseq", False):
     download_dir = args["download_refseq"]
-    thread = threading.Thread(target=download_refseq, args=[download_dir])
-    threads.append(thread)
-    thread.start()
+    download_refseq(download_dir)
 
 
 if args.get("download_ko", False):
     print("Download ko")
     pass
 
-
-# wait until completion
-for thread in threads:
-    thread.join()

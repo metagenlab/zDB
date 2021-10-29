@@ -176,7 +176,7 @@ def parse_record(record):
     # also skip the white spaces
 
     prot_descr = description[end_accession_index+1:beg_tax_index-1]
-    organism = description[beg_tax_index+1:end_accession_index-1]
+    organism = description[beg_tax_index+1:end_tax_index]
     return prot_descr, organism
 
 

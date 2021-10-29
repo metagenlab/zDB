@@ -195,9 +195,9 @@ fna_files_SEQ.into {fna_files_SEQ_1; fna_files_SEQ_2}
 faa_files_SEQ.into {faa_files_SEQ_1; faa_files_SEQ_2}
 ffn_files_seq.into {ffn_files_seq_1; ffn_files_seq_2}
 
-faa_files_SEQ_1.collectFile(name: 'merged_SEQ.faa', newLine: true).set { merged_faa_makeblastdb }
-fna_files_SEQ_1.collectFile(name: "merged_SEQ.fna", newLine: true).set { merged_fna_makeblastdb }
-ffn_files_seq_1.collectFile(name: 'merged_seq.ffn', newLine: true).set { merged_ffn_makeblastdb }
+faa_files_SEQ_1.collectFile(name: 'merged.faa', newLine: true).set { merged_faa_makeblastdb }
+fna_files_SEQ_1.collectFile(name: "merged.fna", newLine: true).set { merged_fna_makeblastdb }
+ffn_files_seq_1.collectFile(name: 'merged.ffn', newLine: true).set { merged_ffn_makeblastdb }
 
 fna_files_SEQ_2.mix(faa_files_SEQ_2, ffn_files_seq_2, merged_ffn_makeblastdb,
                     merged_fna_makeblastdb, merged_faa_makeblastdb).set { to_makeblastdb }
@@ -205,7 +205,7 @@ fna_files_SEQ_2.mix(faa_files_SEQ_2, ffn_files_seq_2, merged_ffn_makeblastdb,
 
 process makeblastdb {
     container "$params.blast_container"
-    publishDir "blast_DB/${file_type}"
+    publishDir "blast_DB/$workflow.runName/${file_type}"
 
     input:
         file(input_file) from to_makeblastdb
@@ -891,10 +891,12 @@ process cleanup {
     """
     ln -sf $index $baseDir/search_index/latest
     ln -sf $db $baseDir/db/latest
+    ln -sf $baseDir/blast_DB/$workflow.runName $baseDir/blast_DB/latest
 
     if [ ! -z "${custom_run_name}" ]; then
         ln -sf $index $baseDir/search_index/$custom_run_name
         ln -sf $db $baseDir/db/$custom_run_name
+        ln -sf $baseDir/blast_DB/$workflow.runName $baseDir/blast_DB/$custom_run_name
     fi
     """
 }
