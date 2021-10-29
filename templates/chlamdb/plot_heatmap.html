@@ -5,7 +5,6 @@
 <head>
   {% load static %}
   {% include "chlamdb/header.html" %}
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.48.1/plotly.min.js"></script>
 </head>
 
 <div class="container-fluid" id="main_container">
@@ -102,9 +101,10 @@
 			{% if envoi_heatmap %}
 
             <h3>Heatmap</h3>
-                <div style="width:80%">
-                    {{html_plot|safe}}
+            <div id="heatmap">
+                <img type="image/png" src="{% static asset_path %}" alt="heatmap" style="width:90%;">
             </div>
+
 			{% endif %}
          </div>
        </div>
