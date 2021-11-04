@@ -33,6 +33,7 @@ BIODB_DB_PATH = NEXTFLOW_DIR+"/db/"+RUN_NAME
 SEARCH_INDEX  = NEXTFLOW_DIR+"/search_index/"+RUN_NAME
 BLAST_DB_PATH = NEXTFLOW_DIR + "/blast_DB/"+RUN_NAME
 
+
 BIODB_CONF = {
     "chlamdb.db_type" : "sqlite",
     "chlamdb.db_name" : "George",

@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+
+debugging=false
+
+custom_port=""
+custom_run_name=""
+custom_nextflow_dir=""
+
+default_port="8080"
+default_run_name="latest"
+
+
+for i in "$@"; do
+	case $i in
+		-d|--debug)
+			debugging=true
+			shift
+			;;
+		-p|--port=*)
+			custom_port="${i#=*}"
+			shift
+			;;
+		--nextflow_dir=*)
+			custom_nextflow_dir="${i#=*}"
+			shift
+			;;
+		--run_name=*)
+			custom_run_name="${i#=*}"
+			shift
+			;;
+		*)
+			echo "Unkown argument '$i'"
+			exit 1
+	esac
+done
+
+
+if [ "$debugging" = false ]; then
+	cd /home/chlamdb
+else
+	export DISPLAY=:1
+fi
+
+
+if [ -z "${custom_nextflow_dir}" ]; then
+	echo "The NEXTFLOW_DIR environment variable is not set. "
+	echo "Please set it to the base directory where the annotation pipeline was run"
+	exit 1
+fi
+
+
+if [ -z "${custom_run_name}" ]; then
+	echo "No run name specified, using '${default_run_name}'"
+	custom_run_name="$default_run_name"
+fi
+
+
+if [ -z "${custom_port}" ]; then
+	echo "No port specified, using '${default_port}'"
+	custom_port="$default_port"
+fi
+
+
+export PORT="$custom_port"
+export NEXTFLOW_DIR="$custom_nextflow_dir"
+export RUN_NAME="$custom_run_name"
+python manage.py runserver --nothreading 0.0.0.0:$custom_port
+unset DISPLAY
+unset PORT
+unset RUN_NAME
+unset NEXTFLOW_DIR
