@@ -7,9 +7,6 @@
  */
 
 
-/*
-* Helper function for gen_python_args
-*/
 def gen_arg_string_s(String name, String element) {
     return "\"" + name + "\" : " + element
 }
@@ -69,18 +66,18 @@ str_pythonized_params = gen_python_args()
 // Input processing
 Channel.fromPath(params.local_assemblies)
     .splitCsv(header: true, strip: true)
-    .map { row -> tuple(row.name, file(row.file)) }
+    .map { row -> file(row.file) }
     .into { gbk_from_local_assembly_f; error_search }
 
-gbk_from_local_assembly_f.filter { it[1].extension == "gbk" }
-    .map { it[1] }
+gbk_from_local_assembly_f.filter { it.extension == "gbk" }
     .set { gbk_from_local_assembly }
 
-error_search.filter { it[1].extension!="gbk" }
+error_search.filter { it.extension!="gbk" }
     .subscribe { error "Unsupported file extension" }
 
 
 process check_gbk {
+    container "$params.annotation_container"
 	publishDir 'data/prokka_output_filtered', overwrite: true
 
 	input:
@@ -110,6 +107,7 @@ checked_gbks.into {
  
 
 process convert_gbk {
+  container "$params.annotation_container"
   input:
       each file(edited_gbk) from to_convert_gbk
 
@@ -142,6 +140,7 @@ faa_locus1.into { faa_genomes1
                   to_checkm }
 
 process get_nr_sequences {
+  container "$params.annotation_container"
   publishDir 'data/', mode: 'copy', overwrite: true
 
   input:
@@ -184,7 +183,7 @@ if(params.pfam_scan) {
         script:
         pfam_result_file="${faa_chunk}_results"
         """
-            pfam_scan.pl -f $faa_chunk -d $params.pfam_database > $pfam_result_file
+            pfam_scan.pl -f $faa_chunk -d $params.pfam_db > $pfam_result_file
         """
     }
 } else {
@@ -194,11 +193,11 @@ if(params.pfam_scan) {
 
 fna_files_SEQ.into {fna_files_SEQ_1; fna_files_SEQ_2}
 faa_files_SEQ.into {faa_files_SEQ_1; faa_files_SEQ_2}
-ffn_files_seq.into{ffn_files_seq_1 ; ffn_files_seq_2}
+ffn_files_seq.into {ffn_files_seq_1; ffn_files_seq_2}
 
-faa_files_SEQ_1.collectFile(name: 'merged_SEQ.faa', newLine: true).set { merged_faa_makeblastdb }
-fna_files_SEQ_1.collectFile(name: "merged_SEQ.fna", newLine: true).set { merged_fna_makeblastdb }
-ffn_files_seq_1.collectFile(name: 'merged_seq.ffn', newLine: true).set { merged_ffn_makeblastdb }
+faa_files_SEQ_1.collectFile(name: 'merged.faa', newLine: true).set { merged_faa_makeblastdb }
+fna_files_SEQ_1.collectFile(name: "merged.fna", newLine: true).set { merged_fna_makeblastdb }
+ffn_files_seq_1.collectFile(name: 'merged.ffn', newLine: true).set { merged_ffn_makeblastdb }
 
 fna_files_SEQ_2.mix(faa_files_SEQ_2, ffn_files_seq_2, merged_ffn_makeblastdb,
                     merged_fna_makeblastdb, merged_faa_makeblastdb).set { to_makeblastdb }
@@ -206,13 +205,14 @@ fna_files_SEQ_2.mix(faa_files_SEQ_2, ffn_files_seq_2, merged_ffn_makeblastdb,
 
 process makeblastdb {
     container "$params.blast_container"
-    publishDir "blast_DB/${file_type}"
+    publishDir "blast_DB/$workflow.runName/${file_type}"
 
     input:
         file(input_file) from to_makeblastdb
 
     output:
         file "${input_file.baseName}*"
+        file input_file
 
     script:
     file_type="${input_file.extension}"
@@ -279,9 +279,8 @@ process orthofinder_main {
   container "$params.orthofinder_container"
 
   publishDir 'orthology', mode: 'copy', overwrite: true
-  echo true
 
-  cpus 8
+  cpus 2
 
   input:
   file complete_dir from result_dir
@@ -307,6 +306,7 @@ orthogroups
         to_load_orthofinder_in_db }
 
 process orthogroups2fasta {
+    container "$params.annotation_container"
   publishDir 'orthology/orthogroups_fasta', mode: 'copy', overwrite: true
 
   input:
@@ -325,7 +325,7 @@ process orthogroups2fasta {
 
 
 process align_with_mafft {
-  container "$params.annotation_container"
+  container "$params.mafft_container"
 
   publishDir 'orthology/orthogroups_alignments', mode: 'copy', overwrite: true
 
@@ -339,7 +339,7 @@ process align_with_mafft {
   """
   unset MAFFT_BINARIES
   for faa in ${og}; do
-  mafft \$faa > \${faa/.faa/_mafft.faa}
+  mafft --anysymbol \$faa > \${faa/.faa/_mafft.faa}
   done
   """
 }
@@ -360,12 +360,11 @@ all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.s
 alignement_larger_than_2_seqs.collate(50).set { to_fasttree_orthogroups }
 
 process orthogroups_phylogeny_with_fasttree3 {
-
-  container "$params.annotation_container"
+  container "$params.fasttree_container"
   publishDir 'orthology/orthogroups_phylogenies_fasttree', mode: 'copy', overwrite: true
 
   when:
-  params.orthogroups_phylogeny_with_fasttree
+    params.orthogroups_phylogeny
 
   input:
     file og from to_fasttree_orthogroups
@@ -385,6 +384,7 @@ gene_phylogeny.collect().set { all_og_phylogeny }
 
 
 process get_core_orthogroups {
+    container "$params.annotation_container"
   publishDir 'orthology/core_groups', mode: 'copy', overwrite: true
 
   input:
@@ -398,14 +398,15 @@ process get_core_orthogroups {
   script:
 
   """
-#!/usr/bin/env python
-import annotations
-genomes_list = "$genomes_list".split()
-annotations.get_core_orthogroups(genomes_list, int("${params.core_missing}"))
+    #!/usr/bin/env python
+    import annotations
+    genomes_list = "$genomes_list".split()
+    annotations.get_core_orthogroups(genomes_list, int("${params.core_missing}"))
   """
 }
 
 process concatenate_core_orthogroups {
+    container "$params.annotation_container"
 
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
@@ -429,9 +430,7 @@ process concatenate_core_orthogroups {
 }
 
 process build_core_phylogeny_with_fasttree {
-
-  container "$params.annotation_container"
-
+  container "$params.fasttree_container"
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
   when:
@@ -462,12 +461,10 @@ process checkm_analyse {
   file genome_list from to_checkm.collect()
 
   output:
-  file "checkm_results/*" into checkm_analysis
-  file "checkm_results.tab" into checkm_table
-
+    file "checkm_results.tab" into checkm_table
   """
-  checkm analyze --genes -x faa $params.databases_dir/checkm/bacteria.ms . checkm_results -t 8 --nt
-  checkm qa $params.databases_dir/checkm/bacteria.ms checkm_results -o 2 --tab_table -f checkm_results.tab
+  checkm taxonomy_wf ${params.checkm_args} -x faa . checkm_results --tab_table  \
+        --genes -f checkm_results.tab
   """
 }
 
@@ -489,7 +486,8 @@ if(params.cog) {
       n = seq.name
       result_file = "${n}.tab"
       """
-      rpsblast -db $params.databases_dir/cdd/profiles/Cog -query $seq -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > ${result_file}
+      rpsblast -db $params.cog_db/cog_db -query $seq -outfmt 6 -evalue 0.001 \
+                -num_threads ${task.cpus} > ${result_file}
       """
     }
 } else {
@@ -514,7 +512,8 @@ if (params.blast_swissprot) {
 
       n = seq.name
       """
-      blastp -db $params.swissprot_db -query ${n} -outfmt 6 -evalue 0.001 > ${n}.tab
+      blastp -db $params.swissprot_db -query ${n} \
+                -outfmt 6 -evalue 0.001 > ${n}.tab
       """
     }
 } else {
@@ -523,10 +522,8 @@ if (params.blast_swissprot) {
 
 if(params.diamond_refseq) {
     process diamond_refseq {
-
       publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
-
-      container "$params.annotation_container"
+      container "$params.diamond_container"
 
       when:
       params.diamond_refseq
@@ -542,7 +539,8 @@ if(params.diamond_refseq) {
       n = seq.name
       """
       # new version of the database
-      diamond blastp -p ${task.cpus} -d $params.databases_dir/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
+      diamond blastp -p ${task.cpus} -d $params.refseq_db/refseq_nr.dmnd \
+            -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
       """
     }
 
@@ -567,7 +565,8 @@ if(params.ko) {
       n = seq.name
 
       """
-      exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list.txt --cpu ${task.cpus} -o ${n}.tab
+      exec_annotation ${n} -p ${params.ko_db}/profiles/prokaryote.hal \
+            -k ${params.ko_db}/ko_list --cpu ${task.cpus} -o ${n}.tab
       """
     }
 } else {
@@ -576,20 +575,24 @@ if(params.ko) {
 
 
 process setup_db {
+    when:
+        params.chlamdb_setup
+
     input:
-        file db_skeleton from Channel.fromPath("$params.chlamdb.chlamdb_base")
+        file db_skeleton from Channel.fromPath("$params.base_db/$params.default_db")
 
     output:
         file output_file into db_base
 
     script:
-    output_file = "db_$workflow.runName"
+    output_file = "$workflow.runName"
     """
     cp $db_skeleton $output_file
     """
 }
 
 process load_base_db {
+    container "$params.annotation_container"
     publishDir "db"
 
     input:
@@ -610,7 +613,6 @@ process load_base_db {
     db_name="$db_base"
     """
     #!/usr/bin/env python
-    # small modifiction
 
     import setup_chlamdb
     
@@ -640,8 +642,8 @@ if(!params.diamond_refseq) {
     db_gen.set { to_load_taxonomy }
     Channel.empty().set { diamond_best_hits }
 } else {
-
     process load_refseq_results {
+        container "$params.annotation_container"
         input:
             file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
             file curr_db from db_gen
@@ -651,21 +653,21 @@ if(!params.diamond_refseq) {
             file curr_db into to_load_taxonomy
 
         script:
-        if(params.diamond_refseq)
-            """
-            #!/usr/bin/env python
-            # small modif'
-            import setup_chlamdb
-            
-            kwargs = ${gen_python_args()}
-            diamond_tab_files = "$diamond_tsv_list".split()
-            setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files, "$curr_db")
-            """
+        """
+        #!/usr/bin/env python
+        # small modif'
+        import setup_chlamdb
+        
+        kwargs = ${gen_python_args()}
+        diamond_tab_files = "$diamond_tsv_list".split()
+        setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files, "$curr_db")
+        """
     }
 }
 
+
 process align_refseq_BBH_with_mafft {
-  container "$params.annotation_container"
+  container "$params.mafft_container"
 
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_alignments', mode: 'copy', overwrite: true
 
@@ -687,8 +689,9 @@ process align_refseq_BBH_with_mafft {
   """
 }
 
+
 process orthogroup_refseq_BBH_phylogeny_with_fasttree {
-  container "$params.annotation_container"
+  container "$params.fasttree_container"
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
 
   input:
@@ -708,12 +711,14 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 
 BBH_phylogenies.collect().set { BBH_phylogenies_to_db }
 
-// Ugly hack
+
 if(!params.refseq_diamond_BBH_phylogeny) {
     Channel.value("dummy").set { BBH_phylogenies_to_db }
 }
 
+
 process load_taxo_stats_into_db {
+    container "$params.annotation_container"
     input:
         file db from to_load_taxonomy
         file BBH_phylogeny_trees from BBH_phylogenies_to_db
@@ -743,6 +748,7 @@ process load_taxo_stats_into_db {
 
 
 process load_COG_into_db {
+    container "$params.annotation_container"
     input:
         file db from to_load_COG
         file cog_file from COG_to_load_db.collect()
@@ -759,7 +765,8 @@ process load_COG_into_db {
         
         kwargs = ${gen_python_args()}
         cog_files = "${cog_file}".split()
-        setup_chlamdb.load_cog(kwargs, cog_files, "$db")
+        setup_chlamdb.load_cog(kwargs, cog_files, "$db", \
+            "${params.cog_db}/cdd_to_cog")
         """
     else
         """
@@ -769,6 +776,7 @@ process load_COG_into_db {
 
 
 process load_KO_into_db {
+    container "$params.annotation_container"
     input:
         file KO_results from to_load_KO.collect()
         file db from to_load_KO_db
@@ -796,6 +804,7 @@ process load_KO_into_db {
 }
 
 process load_PFAM_info_db {
+    container "$params.annotation_container"
     input:
         file db from to_pfam_db
         file pfam_annot from pfam_results.collect()
@@ -812,7 +821,7 @@ import setup_chlamdb
 kwargs = ${gen_python_args()}
 pfam_files = "$pfam_annot".split()
 
-setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$params.pfam_database/Pfam-A.hmm.dat")
+setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$params.pfam_db/Pfam-A.hmm.dat")
         """
     else
         """
@@ -822,6 +831,7 @@ setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$params.pfam_database/Pfam-A
 
 
 process load_swissprot_hits_into_db {
+    container "$params.annotation_container"
     input:
         file db from to_load_swissprot_hits
         file blast_results from swissprot_blast.collect()
@@ -848,16 +858,19 @@ setup_chlamdb.load_swissprot(kwargs, blast_results, "$db", "$params.swissprot_db
 
 
 process create_chlamdb_search_index {
+    container "$params.annotation_container"
     publishDir "search_index/"
 
     input:
         file db from to_create_index
 
     output:
-        file index_name
+        file index_name into to_index_cleanup
+        file db into to_db_cleanup
 
     script:
-    index_name = "$workflow.runName"
+    // add a prefix to differentiate it from the db
+    index_name = "index_$workflow.runName"
     """
         #!/usr/bin/env python
         import setup_chlamdb
@@ -865,5 +878,32 @@ process create_chlamdb_search_index {
         params = ${gen_python_args()}
         setup_chlamdb.setup_chlamdb_search_index(params, "$db", "$index_name")
     """
+}
+
+
+process cleanup {
+    input:
+        file index from to_index_cleanup
+        file db from to_db_cleanup
+
+    script:
+    custom_run_name=(params.name)?params.name:""
+    """
+    ln -sf $index $baseDir/search_index/latest
+    ln -sf $db $baseDir/db/latest
+    ln -sf $baseDir/blast_DB/$workflow.runName $baseDir/blast_DB/latest
+
+    if [ ! -z "${custom_run_name}" ]; then
+        ln -sf $index $baseDir/search_index/$custom_run_name
+        ln -sf $db $baseDir/db/$custom_run_name
+        ln -sf $baseDir/blast_DB/$workflow.runName $baseDir/blast_DB/$custom_run_name
+    fi
+    """
+}
+
+
+workflow.onComplete {
+    println "Annotation pipeline complete "
+    println "You may now start the web server by running the start_webserver script"
 }
 
