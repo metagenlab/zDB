@@ -140,7 +140,7 @@ def check_organism_uniqueness(gbk_lst):
                 curr_organism = organism
             elif curr_organism != organism:
                 raise Exception(f"Two different organism in {gbk_file}: {curr_organism}/{organism}")
-        organisms[organism].append(gbk_file)
+        organisms[curr_organism].append(gbk_file)
 
     for locus, contig_list in locuses.items():
         if len(contig_list)>1:
