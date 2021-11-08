@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+
+
+debugging=false
+custom_port=""
+custom_run_name=""
+custom_nextflow_dir=""
+default_port="8080"
+default_run_name="latest"
+hosts=""
+
+
+for i in "$@"; do
+	case $i in
+		-d|--debug)
+			debugging=true
+			shift
+			;;
+		-p|--port=*)
+			custom_port="${i#*=}"
+			shift
+			;;
+		--nextflow_dir=*)
+			custom_nextflow_dir="${i#*=}"
+			shift
+			;;
+		--run_name=*)
+			custom_run_name="${i#*=}"
+			shift
+			;;
+		-h)
+			echo "Startup script for the web app, will be invoked from within "
+			echo "a container in production, but may also be invoked directly "
+			echo "when in debug mode."
+			echo " --d|--debug\t debug mode. Assumes that the code will be run outside of a container"
+			echo "-p|--port=PORT\t change the port the web server will listen to"
+			echo "--nextflow_dir=DIR\t the directory where the annotation pipeline was run"
+			echo "--run_name=NAME\t the name of the run (or the name passed as argument to the annotation_pipeline)."
+			echo "\t\t The information will be used to choose which database/blast index and seach index to use."
+			;;
+		*)
+			echo "Unkown argument '$i'"
+			exit 1
+	esac
+done
+
+
+if [ "$debugging" = false ]; then
+	cd /home/chlamdb
+	export DISPLAY=:1
+else
+	hosts=`hostname -I`
+fi
+
+
+if [ -z "${custom_nextflow_dir}" ]; then
+	echo "The NEXTFLOW_DIR environment variable is not set. "
+	echo "Please set it to the base directory where the annotation pipeline was run"
+	exit 1
+fi
+
+
+if [ -z "${custom_run_name}" ]; then
+	echo "No run name specified, using '${default_run_name}'"
+	custom_run_name="$default_run_name"
+fi
+
+
+if [ -z "${custom_port}" ]; then
+	echo "No port specified, using '${default_port}'"
+	custom_port="$default_port"
+fi
+
+
+export PORT="$custom_port"
+export NEXTFLOW_DIR="${custom_nextflow_dir}"
+export RUN_NAME="$custom_run_name"
+
+export ALLOWED_HOSTS="${hosts/ /,}, localhost"
+echo "$ALLOWED_HOSTS"
+python manage.py runserver --nothreading 0.0.0.0:$custom_port
+unset DISPLAY
+unset PORT
+unset RUN_NAME
+unset NEXTFLOW_DIR
+unset ALLOWED_HOSTS

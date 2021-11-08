@@ -69,7 +69,6 @@ from django.forms.utils import flatatt
 from django.core.cache import cache
 from tempfile import NamedTemporaryFile
 from Bio import SeqIO
-import simplejson
 import string
 import random
 import json
@@ -112,7 +111,7 @@ from Bio.Graphics import GenomeDiagram
 
 # could also be extended to cache the results of frequent queries
 # (e.g. taxid -> organism name) to avoid db queries
-with db_utils.DB.load_db_from_name(settings.BIODB_DB_PATH) as db:
+with db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
     hsh_config = db.get_config_table(ret_mandatory=True)
     optional2status = { name: value for name, (mandatory, value) in hsh_config.items() if not mandatory}
     missing_mandatory = [name for name, (mandatory, value) in hsh_config.items()
@@ -238,11 +237,6 @@ class StackedBarColumn(Column):
 
 
 def home(request):
-
-    INTRO=settings.INTRO
-    TITLE=settings.TITLE
-    SUBTITLE=settings.SUBTITLE
-
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
 
@@ -294,22 +288,18 @@ def home(request):
 
 
     number_of_files=db.count_files()
-    print("number_of_files", number_of_files)
      
     orthogroups_freq=db.get_all_orthogroups( min_size=None)
     df_ort=pd.DataFrame(orthogroups_freq, columns=["Orthogroup", "freq"])
     number_ort= df_ort.shape[0]
-    print("number_of_orthogroups", number_ort)
 
     description_db = db.get_genomes_description()
-    print("description_db",description_db)
    
     taxids = list(description_db.index)
 
     df_hits = db.get_og_count(taxids, search_on="taxid")
     missing_entries = df_hits[df_hits == 0].count(axis=1)
     core = len(missing_entries[missing_entries == 0])
-    print("core",core)
 
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
@@ -991,6 +981,7 @@ def venn_cog(request, sep_plasmids=False):
     envoi_venn = True
     return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
 
+
 def extract_region(request):
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
@@ -1026,27 +1017,22 @@ def extract_region(request):
     filenames_tax_id_db['path_to_fna']= path_fna
     filenames_tax_id_db['path_to_ffn']= path_ffn
     filenames_tax_id_db['path_to_gbk']= path_gbk
-    print("path_gbk",path_gbk)
     filenames_tax_id_db = filenames_tax_id_db[["path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk" ]]
     genomes_data=genomes_data.join(filenames_tax_id_db, on= "taxon_id")
-    print("genomes_data", genomes_data)
-
-
     data_table_header = [ "Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding", "N plasmid contigs", "faa seq", "fna seq", "ffn seq", "gbk file"]
     data_table = genomes_data[[ "id", "description", "gc", "n_prot", "n_contigs", "length", "coding_density", "has_plasmid", "path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk" ]].values.tolist()
 
-    ext_list= [".faa", ".fna", ".ffn"]
     for i in list(filenames_tax_id.keys()): 
-        fasta_src_faa = settings.FOLDER_PATH + "blast_DB/faa/faa_SEQ/" + i + ".faa"
+        fasta_src_faa = settings.BLAST_DB_PATH + "/faa/" + i + ".faa"
         fasta_dst_faa = settings.BASE_DIR + "/assets/temp/" + i + ".faa"
       
-        fasta_src_fna = settings.FOLDER_PATH + "blast_DB/fna/fna_SEQ/" + i + ".fna"
+        fasta_src_fna = settings.BLAST_DB_PATH + "/fna/" + i + ".fna"
         fasta_dst_fna = settings.BASE_DIR + "/assets/temp/" + i + ".fna"
 
-        fasta_src_ffn = settings.FOLDER_PATH + "blast_DB/ffn/ffn_seq/" + i + ".ffn"
+        fasta_src_ffn = settings.BLAST_DB_PATH + "/ffn/" + i + ".ffn"
         fasta_dst_ffn = settings.BASE_DIR + "/assets/temp/" + i + ".ffn"
 
-        src_gbk = settings.FOLDER_PATH + "data/prokka_output_filtered/"  + i + ".gbk"
+        src_gbk = settings.NEXTFLOW_DIR + "/data/prokka_output_filtered/"  + i + ".gbk"
         dst_gbk = settings.BASE_DIR + "/assets/temp/" + i + ".gbk"
         try:
             os.symlink(fasta_src_faa, fasta_dst_faa)
@@ -1064,9 +1050,8 @@ def extract_region(request):
                 os.symlink(fasta_src_fna, fasta_dst_fna)
                 os.symlink(fasta_src_ffn, fasta_dst_ffn)
                 os.symlink(src_gbk, dst_gbk)
-
-       
     return render(request, 'chlamdb/extract_region.html', my_locals(locals()))
+
 
 def extract_contigs(request, genome):
     
@@ -1097,7 +1082,6 @@ def extract_contigs(request, genome):
 
     data_table_header = [ "Name", "Gene",   "Product",  "Locus_tag", "Orthogroup", "Contig" ,"Strand", "Start", "Stop", ]
     data_table = bar[["description", "gene",  "product", "locus_tag", "orthogroup", "contig" ,"strand", "start", "stop" ]].values.tolist()
-    
     return render(request, 'chlamdb/extract_contigs.html', my_locals(locals()))
 
 
@@ -1643,18 +1627,10 @@ def tab_get_refseq_homologs(db, seqid):
 
     header = ["Refseq accession", "Evalue", "Score", "ID(%)", "# gaps", "Len", "Description", "Organism"]
     entries = []
-    taxids = db.get_refseq_taxonomy(all_infos.taxid.tolist())
-
     for match_id, data in all_infos.iterrows():
-        if data.taxid not in taxids.index:
-            taxonomic_name = "-"
-        else:
-            taxonomic_name = taxids.loc[data.taxid].taxonomic_name
-
         to_ncbi = f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{data.accession}\">{data.accession}</a>"
-        to_taxo = f"<a href=\"http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={data.taxid}\">{taxonomic_name}</a>"
         entries.append((to_ncbi, data.evalue, data.bitscore,
-            data.pident, data.gaps, data.length, data.description, to_taxo))
+            data.pident, data.gaps, data.length, data.description, data.organism))
     return { "n_refseq_homologs": len(refseq_hits),
             "refseq_headers": header,
             "blast_data": entries }
@@ -2759,9 +2735,7 @@ def pan_genome(request, type):
 
 
 def blast(request):
-    biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
-    #server = manipulate_biosqldb.load_db(db)
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     blast_form_class = make_blast_form(db) 
 
     if request.method == 'POST': 
@@ -2772,16 +2746,13 @@ def blast(request):
             input_sequence = form.cleaned_data['blast_input']
             customized_evalue = form.cleaned_data['evalue']
             number_blast_hits = form.cleaned_data['max_number_of_hits']
-            target_accession = form.cleaned_data['target'] #form.cleaned_data returns a dictionary of validated form input fields and their values, where string primary keys are returned as objects 
+            target_accession = form.cleaned_data['target'] 
             blast_type = form.cleaned_data['blast']
-
-          
             unknown_format = False
 
             if '>' in input_sequence:
                 my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
                 seq = my_record[0]
-                                          
             else:
                 input_sequence == input_sequence.rstrip(os.linesep)
                 seq = Seq(input_sequence)
@@ -2791,20 +2762,21 @@ def blast(request):
             check_seq_DNA = set(seq) - dna
             check_seq_prot = set(seq) - prot
             
-            if  not check_seq_DNA:
+            # XXX to be tested:
+            # the logic here seems flawed: TATA can be both DNA and prot.
+            # The current code would force it to be DNA, when the user
+            # could well be wanting to use blastp or tblastn
+            if not check_seq_DNA:
                 try: my_record[0].description = "DNA"
                 except: my_record = [SeqRecord(seq, id="INPUT", description="DNA")]
                 seq_type= my_record[0].description
-                    
-            elif  not check_seq_prot:
+            elif not check_seq_prot:
                 try: my_record[0].description = "Protein"
                 except: my_record = [SeqRecord(seq, id="INPUT", description="Protein")]
                 seq_type= my_record[0].description
-                print('my_record_changed', my_record)
             else:
                 unknown_format = True
-                                                   
-                
+
             if not unknown_format:
                 if seq_type == 'DNA' and blast_type in ["blastp", "tblastn"]:
                     wrong_format = True
@@ -2819,55 +2791,59 @@ def blast(request):
                     if target_accession =='all':
                         key_dict = 'merged'
                     else:
-                        dictionary_acc_names=db.get_taxon_id_to_filenames() #here db replaces 'db_utils.DB' that is used to create the link because it has already been done
+                        dictionary_acc_names=db.get_taxon_id_to_filenames()
                         key_dict=dictionary_acc_names[int(target_accession)]               
                         
                     if number_blast_hits=='all':
                        number_blast_hits = 100000                 
+
+                    # to be refactored to avoid code repetition
                     if blast_type=='blastn_ffn':
                         blastType = 'locus'
-                        blastdb = settings.FOLDER_PATH + "blast_DB/ffn/%s" % (key_dict)
-                        blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits, outfmt=0 )
-                        print('BLASTDB', blastdb)
+                        blastdb = settings.BLAST_DB_PATH + f"/ffn/{key_dict}"
+                        blast_cline = NcbiblastnCommandline(query=query_file.name, \
+                                db=blastdb, evalue=customized_evalue, \
+                                max_target_seqs=number_blast_hits, outfmt=0 )
                     if blast_type=='blastn_fna':
                         blastType = 'genome'
-                        blastdb = settings.FOLDER_PATH  + "blast_DB/fna/%s" % (key_dict)
-                        print(blastdb)
-                        blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits,  outfmt=0)
+                        blastdb = settings.BLAST_DB_PATH + f"/fna/{key_dict}"
+                        blast_cline = NcbiblastnCommandline(query=query_file.name, \
+                                db=blastdb, evalue=customized_evalue, \
+                                max_target_seqs=number_blast_hits,  outfmt=0)
                     if blast_type=='blastp':
                         blastType = 'locus'
-                        blastdb = settings.FOLDER_PATH  + "blast_DB/faa/%s" % (key_dict)
-                        blast_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits, outfmt=0)
+                        blastdb = settings.BLAST_DB_PATH + f"blast_DB/faa/{key_dict}"
+                        blast_cline = NcbiblastpCommandline(query=query_file.name, \
+                                db=blastdb, evalue=customized_evalue, \
+                                max_target_seqs=number_blast_hits, outfmt=0)
                     if blast_type=='tblastn':
                         blastType = 'genome'
-                        blastdb = settings.FOLDER_PATH  + "blast_DB/fna/%s" % (key_dict)
-                        blast_cline = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits,  outfmt=0)
-                        blast_cline2 = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits, outfmt=5)
+                        blastdb = settings.BLAST_DB_PATH + f"blast_DB/fna/{key_dict}"
+                        blast_cline = NcbitblastnCommandline(query=query_file.name, \
+                                db=blastdb, evalue=customized_evalue, \
+                                max_target_seqs=number_blast_hits,  outfmt=0)
+                        blast_cline2 = NcbitblastnCommandline(query=query_file.name, \
+                                db=blastdb, evalue=customized_evalue, \
+                                max_target_seqs=number_blast_hits, outfmt=5)
                     if blast_type=='blastx':
                         blastType = 'locus'
-                        blastdb = settings.FOLDER_PATH  + "blast_DB/faa/%s" % (key_dict)
-                        blast_cline = NcbiblastxCommandline(query=query_file.name, db=blastdb, evalue=customized_evalue, max_target_seqs=number_blast_hits,  outfmt=0) #max_target_seqs=number_blast_hits
-                    
-                    
+                        blastdb = settings.BLAST_DB_PATH + f"blast_DB/faa/{key_dict}"
+                        blast_cline = NcbiblastxCommandline(query=query_file.name, \
+                                db=blastdb, evalue=customized_evalue, \
+                                max_target_seqs=number_blast_hits,  outfmt=0)
                     blast_stdout, blast_stderr = blast_cline()
-                                    
 
                     if blast_type=='tblastn':
                         from Bio.SeqUtils import six_frame_translations
 
                         blast_stdout2, blast_stderr2 = blast_cline2()
-                        print('blast_stdout2', blast_stdout2)
-
                         blast_records = NCBIXML.parse(StringIO(blast_stdout2))
-                        print('blast_records', blast_records)
                         all_data = []
                         best_hit_list = []
                         for record in blast_records:
-                            print(record)
-                            for n, alignment in enumerate(record.alignments): #n is a increasing number given from 0 going on to each allignment considering at n=0 the best hit
-                                accession = alignment.title.split(' ')[0] #before it was 1 but it went to the beginning of the name of the sample, with 0 we take the contig name
-                                description=alignment.title.replace(accession, '') #not sure if this description is what it wanted before
-                                
+                            for n, alignment in enumerate(record.alignments): 
+                                accession = alignment.title.split(' ')[0] 
+                                description=alignment.title.replace(accession, '') 
                                 for n2, hsp in enumerate(alignment.hsps): #all n2 are 0
                                     if n == 0 and n2 == 0:  #select the best hit
                                         best_hit_list.append([alignment.title.split(' ')[0], hsp.sbjct_start, hsp.sbjct_end])
@@ -2889,11 +2865,9 @@ def blast(request):
                                         tmp2 = translate(anti[i:i+fragment_length])[::-1]
                                         frames[-(i+1)] = tmp2
 
-                                    all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq_A])   #all_data is required in the hyml file to display the second graph
-                                    print('all_data', all_data)
+                                    all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq_A])
 
                         if len(best_hit_list) > 0:
-                            print('best_hit_list', best_hit_list)
                             fig_list = []
                             for best_hit in best_hit_list:
                                 accession = best_hit[0]
@@ -2903,41 +2877,27 @@ def blast(request):
                                 temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
                                 name = 'temp/' + os.path.basename(temp_file.name)
                                 fig_list.append([accession, name])
-                                orthogroup_list = db.location2plot(accession, #it wants the contig name, but it should take the locus tag
-                                                                    temp_file.name,
-                                                                    best_hit_start-15000,
-                                                                    best_hit_end+15000,
-                                                                    cache,
-                                                                    color_locus_list = [],
-                                                                    region_highlight=[best_hit_start, best_hit_end])
-                                print('orthogroup_list', orthogroup_list)
-                             
-
-
-                    no_match = re.compile('.* No hits found .*', re.DOTALL) #I still do not know how it knows that there are no hits bit it works properly
-                    
-
+                                orthogroup_list = db.location2plot(accession, 
+                                            temp_file.name,
+                                            best_hit_start-15000,
+                                            best_hit_end+15000,
+                                            cache,
+                                            color_locus_list = [],
+                                            region_highlight=[best_hit_start, best_hit_end])
+                    no_match = re.compile('.* No hits found .*', re.DOTALL)
                     if no_match.match(blast_stdout):
-                        print ("no blast hit")
                         blast_no_hits = blast_stdout
                     elif len(blast_stderr) != 0:
-                        print ("blast error")
                         blast_err = blast_stderr #linked to the html file
                     else:
-
-                        rand_id = id_generator(6) #it generates a random id of 6 character
-                        blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id #this file changes every time you run it and it contians the blast output
+                        rand_id = id_generator(6)
+                        blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
                         f = open(blast_file_l, 'w')
                         f.write(blast_stdout)
-                        #print('stout', blast_stdout)
-                        #print('f', f)
                         f.close()
-                        
                         asset_blast_path = '/assets/temp/%s.xml' % rand_id
-                        js_out = True #it could be for java script
-
-            envoi= True #here the data are passed when it is done correctly
-
+                        js_out = True
+            envoi= True
     else:  
         form = blast_form_class()
 
