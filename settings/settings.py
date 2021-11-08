@@ -16,7 +16,6 @@ SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
-# ALLOWED_HOSTS = ['localhost']
 
 LOGIN_URL = '/chlamdb/login/'
 LOGOUT_URL = '/chlamdb/logout/'
@@ -28,10 +27,13 @@ DOCS_ROOT="/home/chlamdb/docs/_build/"
 SECRET_KEY   = os.environ["RUN_NAME"]
 RUN_NAME     = os.environ["RUN_NAME"]
 NEXTFLOW_DIR = os.environ["NEXTFLOW_DIR"]
+hosts = os.environ.get("ALLOWED_HOSTS", "")
 
 BIODB_DB_PATH = NEXTFLOW_DIR+"/db/"+RUN_NAME
 SEARCH_INDEX  = NEXTFLOW_DIR+"/search_index/"+RUN_NAME
 BLAST_DB_PATH = NEXTFLOW_DIR + "/blast_DB/"+RUN_NAME
+
+ALLOWED_HOSTS = hosts.split(",")
 
 
 BIODB_CONF = {

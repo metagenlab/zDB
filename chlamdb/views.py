@@ -111,7 +111,7 @@ from Bio.Graphics import GenomeDiagram
 
 # could also be extended to cache the results of frequent queries
 # (e.g. taxid -> organism name) to avoid db queries
-with db_utils.DB.load_db_from_name(settings.BIODB_DB_PATH) as db:
+with db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
     hsh_config = db.get_config_table(ret_mandatory=True)
     optional2status = { name: value for name, (mandatory, value) in hsh_config.items() if not mandatory}
     missing_mandatory = [name for name, (mandatory, value) in hsh_config.items()
