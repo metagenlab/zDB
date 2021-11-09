@@ -1675,9 +1675,19 @@ def locusx(request, locus=None, menu=True):
     all_org  = db.get_organism(og_annot.index.tolist(), as_hash=True)
     n_homologues = all_og_c.loc[og_id].sum()
     translation = db.get_translation(seqid)
-    homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
     general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
-    og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
+
+    if n_homologues>1:
+        og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
+        homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
+        try:
+            og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
+        except:
+            og_phylogeny_ctx = {}
+    else:
+        og_conserv_ctx = {}
+        homolog_tab_ctx = {"n_genomes": "1 genome"}
+        og_phylogeny_ctx = {}
 
     kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
     diamond_matches_ctx = {}
@@ -1696,11 +1706,6 @@ def locusx(request, locus=None, menu=True):
 
     if optional2status.get("BLAST_database", False):
         diamond_matches_ctx = tab_get_refseq_homologs(db, seqid)
-
-    try:
-        og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
-    except:
-        og_phylogeny_ctx = {}
 
     context = {
         "valid_id": valid_id,

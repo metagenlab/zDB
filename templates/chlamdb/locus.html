@@ -58,7 +58,7 @@ function clearBox(elementID)
 					<a href="#tab3" data-toggle="tab">Sequences</a>
 				</li>
 
-				{% if feature_type == "CDS" %}
+				{% if feature_type == "CDS" and n_homologues > 1 %}
                 <li>
 					<a href="#homologs_tab" data-toggle="tab">
 				 	Homologs <span class="badge">{{n_homologues}}</span><br>
@@ -92,10 +92,6 @@ function clearBox(elementID)
 
 				{% if optional2status|keyvalue:"GC_statistics"%}
 					<li><a href="#11" data-toggle="tab" onclick="window.open('{% url 'gc_locus' data.1 %}', 'frame11'); return false">GC</a></li>
-				{% endif %}
-
-				{% if paperblast_data or string_data  %}
-					<li><a href="#13" data-toggle="tab" onclick="window.open('{% url 'pmid' seqfeature_id %}', 'frame13'); return false">Pubmed <span class="badge">{{pubmed_count}}</span></a></li>
 				{% endif %}
 
                 {% if n_homologues > 2 and optional2status|keyvalue:"gene_phylogenies"%}
@@ -238,11 +234,11 @@ function clearBox(elementID)
                                        <td>{{n_homologues}}</td>
                                        <td></td>
                                    </tr>
+								   <tr>
                                    <th>N. genomes <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='Number of genomes encoding one or several homologs of this protein. See the tab "homologs" for details'><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td>{{n_genomes}}</td>
                                        <td></td>
                                    </tr>
-
                                 </table>
                              </div>
                            </div>
