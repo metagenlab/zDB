@@ -1054,34 +1054,27 @@ def extract_region(request):
 
 
 def extract_contigs(request, genome):
-    
     taxid = int(genome)
-    biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
 
-    foo = db.get_proteins_info([taxid], search_on="taxid", as_df=True)
-    seqids = foo.index.tolist()
-
+    descr = db.get_genomes_description().description.to_dict()
+    prot_infos = db.get_proteins_info([taxid], search_on="taxid",
+            as_df=True, to_return=["locus_tag", "product", "gene"])
+    seqids = prot_infos.index.tolist()
     ogs = db.get_og_count(seqids, search_on="seqid")
-    taxid_seqid = db.get_taxid_from_seqid(seqids)
-    taxid_seqid_db = pd.DataFrame.from_dict(list(taxid_seqid.items()))
-    taxid_seqid_db.columns = ['seqid','taxon_id']
 
-    loc = db.get_gene_loc(seqids, as_hash=True) 
-    loc_db= pd.DataFrame.from_dict(list(loc.items()))
-    loc_db.columns = ['seqid','all']
-    loc_info= loc_db["all"]
-    loc_info.columns = ['all']
-    loc_info = pd.DataFrame(loc_info.to_list(), columns=['strand','start', 'stop'])
-    loc_info.strand = [format(num).rstrip('0').rstrip('.')for num in loc_info.strand]
-    loc_info.start = [format(num).rstrip('0').rstrip('.')for num in loc_info.start] 
-    loc_info.stop = [format(num).rstrip('0').rstrip('.')for num in loc_info.stop] 
+    loc = db.get_gene_loc(seqids, as_hash=False).set_index("seqid")
+    contigs = db.get_contigs_to_seqid(taxid)
 
-    contigs=db.get_contigs_to_seqid(taxid)
-    bar = foo.join(ogs).join(taxid_seqid_db).join(loc_info).join(contigs)
+    lambda_format_og = lambda og: format_orthogroup(og, to_url=True, from_str=False)
+    all_infos = prot_infos.join(ogs).join(loc).join(contigs)
+    all_infos.gene = all_infos.gene.map(format_gene)
+    all_infos.locus_tag = all_infos.locus_tag.map(format_locus)
+    all_infos.orthogroup = all_infos.orthogroup.map(lambda_format_og)
 
-    data_table_header = [ "Name", "Gene",   "Product",  "Locus_tag", "Orthogroup", "Contig" ,"Strand", "Start", "Stop", ]
-    data_table = bar[["description", "gene",  "product", "locus_tag", "orthogroup", "contig" ,"strand", "start", "stop" ]].values.tolist()
+    organism=descr[taxid]
+    data_table_header = ["Gene", "Product", "Locus_tag", "Orthogroup", "Contig" ,"Strand", "Start", "Stop", ]
+    data_table = all_infos[["gene", "product", "locus_tag", "orthogroup", "contig" ,"strand", "start", "end" ]].values.tolist()
     return render(request, 'chlamdb/extract_contigs.html', my_locals(locals()))
 
 
@@ -1855,7 +1848,7 @@ def format_orthogroup(og, to_url=False, from_str=False):
     return base_str
 
 
-def format_locus(locus, to_url=False):
+def format_locus(locus, to_url=True):
     if to_url:
         return f"<a href=\"/locusx/{locus}\">{locus}</a>"
     return locus
