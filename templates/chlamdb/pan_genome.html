@@ -91,96 +91,13 @@
               </div>
 
             {% if envoi %}
-                  <ul id="tabs2" class="nav nav-tabs" data-tabs="tabs">
-                      <li class="active"><a href="#tab1" data-toggle="tab">Plot</a></li>
-                      <li><a href="#tab2" data-toggle="tab">Barplot</a></li>
-                  </ul>
+			  <div class="tab-pane active" id="tab1">
+				<div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+					<div id="rarefaction_plot">
+					</div>
+				</div>
+			  </div> <!-- tab -->
 
-                  <div id="my-tab-content" class="tab-content">
-
-					  <div id="d3_rarefaction">
-					  </div>
-
-                      <div class="tab-pane active" id="tab1">
-
-                        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-                            <div class="panel-heading" style="width:100%">
-                                <h3 class="panel-title">Help</h3>
-                            </div>
-                            <p style="margin: 10px 10px 10px 10px">
-                                {% if type == 'Pfam' %}
-                                    Show the relationship between the total number of Pfam domains and the number of genomes considered (blue). <br>
-                                    Show the relationship between the number of pfam domains conserved in all compared genomes and the number of compared genomes (red).<br>
-                                    CORE -1: Pfam domains present in all but one genome
-
-                                {% elif type == 'COG' %}
-                                    Show the relationship between the total number of COGs and the number of genomes considered (blue). <br>
-                                    Show the relationship between the number of COGs conserved in all compared genomes and the number of compared genomes (red).<br>
-                                    CORE -1:  COGs present in all but one genome
-
-                                {% elif type == 'interpro'%}
-                                    Show the relationship between the total number of interpro entries and the number of genomes considered (blue). <br>
-                                    Show the relationship between the number of interpro entries conserved in all compared genomes and the number of compared genomes (red).<br>
-                                    CORE -1:  interpro present in all but one genome
-
-                                {% elif type == 'EC' %}
-                                    Show the relationship between the total number of EC and the number of genomes considered (blue). <br>
-                                    Show the relationship between the number of EC conserved in all compared genomes and the number of compared genomes (red).<br>
-                                    CORE -1:  EC present in all but one genome
-
-                                {% elif type == 'ko' %}
-                                    Show the relationship between the total number of KO and the number of genomes considered (blue). <br>
-                                    Show the relationship between the number of KO conserved in all compared genomes and the number of compared genomes (red).<br>
-                                    CORE -1:  KO present in all but one genome
-
-                                {% elif type == 'orthology' %}
-                                    Orthologous groups (pan/core genome plots)<br>
-                                    CORE -1:  Orthologous present in all but one genome
-                                {% endif %}
-
-
-                                <br>
-                            </p>
-                        </div>
-
-                        <table style="width:190px; float: left;">
-                            <tr>
-                                <th style="width:90px">TOTAL</th>
-                                <td>{{total}}</td>
-                            </tr>
-                            <tr>
-                                <th>CORE</th>
-                                <td>{{core}}</td>
-                            </tr>
-                            <tr>
-                                <th>CORE - 1</th>
-                                <td>{{core_minus1}}</td>
-                            </tr>
-                        </table>
-
-                        <embed src="{% static asset_path %}"
-                               width="600px" height="600px"
-                               type="image/svg+xml"
-                               pluginspage="http://www.adobe.com/svg/viewer/install/" />
-
-
-                      </div> <!-- tab -->
-                      <div class="tab-pane" id="tab2">
-                          <table style="width:190px; float: left;">
-
-                              {% for n, count in genome_count_list%}
-
-                                  <tr>
-                                      <th style="width:90px">{{n}}</th>
-                                      <td>{{count}}</td>
-                                  </tr>
-
-
-                              {% endfor %}
-                          </table>
-                          <object type="image/svg+xml" data="{% static asset_path2 %}" id="plot" width="50%"></object>
-                      </div>
-                    </div> <!-- tab-content -->
            {% endif %}
          </div>
        </div>
@@ -192,5 +109,136 @@
 
 {% include "chlamdb/style_menu.html" %}
 </body>
+
+<script>
+
+var image_size_x = 900;
+
+var legend_spacing_x = 20;
+var legend_size_x = 250;
+
+var data_count = {{ js_data_count |safe }};
+var data_acc = {{ js_data_acc|safe }};
+var margins = {top: 10, bottom:80, left:100, right:10};
+var width = image_size_x-margins.left-margins.right-legend_size_x;
+var height = 500-margins.bottom-margins.top;
+
+var min_val = d3.min(data_count);
+var max_val = d3.max(data_acc);
+
+var acc_color="#69b3a2";
+var shared_color="#FF6347";
+
+var x_scale = d3.scaleLinear().
+	domain([1, data_count.length]).
+	range([0, width]);
+
+var y_scale = d3.scaleLinear().
+	domain([0.95*min_val, 1.05*max_val]).
+	range([height, 0]);
+
+var svg = d3.select("#rarefaction_plot").
+	append("svg").
+	attr("width", image_size_x).
+	attr("height", height+margins.bottom+margins.top).
+	append("g").
+	attr("transform",
+		"translate(" + margins.left + "," + margins.top +")");
+
+// var legend_position_x = ;
+var legend_position_y = 15;
+
+// construct the legend
+svg.append("circle").
+	attr("cx", width+legend_spacing_x).
+	attr("cy", height/2-legend_position_y).
+	attr("r", 4).
+	attr("fill", acc_color);
+
+svg.append("text").
+	attr("x", width+legend_spacing_x+10).
+	attr("y", height/2-legend_position_y+10-6).
+	text("pan-genome size");
+
+svg.append("circle").
+	attr("cx", width+legend_spacing_x).
+	attr("cy", height/2+legend_position_y).
+	attr("r", 4).
+	attr("fill", shared_color);
+
+svg.append("text").
+	attr("x", width+legend_spacing_x+10).
+	attr("y", height/2+legend_position_y+10-6).
+	text("{{type_txt}} shared by n genomes");
+
+svg.append("text").
+	attr("text-anchor", "middle").
+	attr("x", width/2).
+	attr("y", height+margins.bottom/2).
+	text("Number of genomes");
+
+svg.append("text").
+	attr("text-anchor", "middle").
+	attr("x", -margins.left/2).
+	attr("y", height/2).
+	attr("transform", "rotate(-90," + -margins.left/2+ ","+height/2+")").
+	text("Number of {{type_txt}}");
+
+svg.append("g").
+	attr("transform", "translate(0,"+ height +")").
+	call(d3.axisBottom(x_scale).ticks(data_count.length-1, "d"));
+
+svg.append("g").
+	call(d3.axisLeft(y_scale));
+
+var enumerate = function(d) { 
+	let arr = [];
+	for(var i=0; i<d.length; i++) {
+		arr.push([i+1, d[i]]);
+	}
+	return arr;
+}
+
+
+svg.append("path").
+	datum(enumerate(data_acc)).
+	attr("fill", "none").
+	attr("stroke", acc_color).
+	attr("stroke-width", 1.5).
+	attr("d", d3.line()
+		.x(function(d) { return x_scale(d[0]); })
+		.y(function(d) { return y_scale(d[1]); })
+	);
+
+svg.append("path").
+	datum(enumerate(data_count)).
+	attr("fill", "none").
+	attr("stroke", shared_color).
+	attr("stroke-width", 1.5).
+	attr("d", d3.line()
+		.x(function(d) { return x_scale(d[0]); })
+		.y(function(d) { return y_scale(d[1]); })
+	);
+
+svg.append("g").
+	selectAll("dot").
+	data(enumerate(data_acc)).
+	enter().
+	append("circle").
+	attr("cx", function(d) { return x_scale(d[0]); }).
+	attr("cy", function(d) { return y_scale(d[1]); }).
+	attr("r", 5).
+	attr("fill", acc_color);
+
+svg.append("g").
+	selectAll("dot").
+	data(enumerate(data_count)).
+	enter().
+	append("circle").
+	attr("cx", function(d) { return x_scale(d[0]); }).
+	attr("cy", function(d) { return y_scale(d[1]); }).
+	attr("r", 5).
+	attr("fill", shared_color);
+</script>
 
 </html>
