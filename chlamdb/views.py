@@ -16,7 +16,7 @@ import matplotlib.colors as mpl_col
 
 import collections
 
-import numpy 
+import numpy as np
 import re
 import os
 
@@ -1054,34 +1054,27 @@ def extract_region(request):
 
 
 def extract_contigs(request, genome):
-    
     taxid = int(genome)
-    biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
 
-    foo = db.get_proteins_info([taxid], search_on="taxid", as_df=True)
-    seqids = foo.index.tolist()
-
+    descr = db.get_genomes_description().description.to_dict()
+    prot_infos = db.get_proteins_info([taxid], search_on="taxid",
+            as_df=True, to_return=["locus_tag", "product", "gene"])
+    seqids = prot_infos.index.tolist()
     ogs = db.get_og_count(seqids, search_on="seqid")
-    taxid_seqid = db.get_taxid_from_seqid(seqids)
-    taxid_seqid_db = pd.DataFrame.from_dict(list(taxid_seqid.items()))
-    taxid_seqid_db.columns = ['seqid','taxon_id']
 
-    loc = db.get_gene_loc(seqids, as_hash=True) 
-    loc_db= pd.DataFrame.from_dict(list(loc.items()))
-    loc_db.columns = ['seqid','all']
-    loc_info= loc_db["all"]
-    loc_info.columns = ['all']
-    loc_info = pd.DataFrame(loc_info.to_list(), columns=['strand','start', 'stop'])
-    loc_info.strand = [format(num).rstrip('0').rstrip('.')for num in loc_info.strand]
-    loc_info.start = [format(num).rstrip('0').rstrip('.')for num in loc_info.start] 
-    loc_info.stop = [format(num).rstrip('0').rstrip('.')for num in loc_info.stop] 
+    loc = db.get_gene_loc(seqids, as_hash=False).set_index("seqid")
+    contigs = db.get_contigs_to_seqid(taxid)
 
-    contigs=db.get_contigs_to_seqid(taxid)
-    bar = foo.join(ogs).join(taxid_seqid_db).join(loc_info).join(contigs)
+    lambda_format_og = lambda og: format_orthogroup(og, to_url=True, from_str=False)
+    all_infos = prot_infos.join(ogs).join(loc).join(contigs)
+    all_infos.gene = all_infos.gene.map(format_gene)
+    all_infos.locus_tag = all_infos.locus_tag.map(format_locus)
+    all_infos.orthogroup = all_infos.orthogroup.map(lambda_format_og)
 
-    data_table_header = [ "Name", "Gene",   "Product",  "Locus_tag", "Orthogroup", "Contig" ,"Strand", "Start", "Stop", ]
-    data_table = bar[["description", "gene",  "product", "locus_tag", "orthogroup", "contig" ,"strand", "start", "stop" ]].values.tolist()
+    organism=descr[taxid]
+    data_table_header = ["Gene", "Product", "Locus_tag", "Orthogroup", "Contig" ,"Strand", "Start", "Stop", ]
+    data_table = all_infos[["gene", "product", "locus_tag", "orthogroup", "contig" ,"strand", "start", "end" ]].values.tolist()
     return render(request, 'chlamdb/extract_contigs.html', my_locals(locals()))
 
 
@@ -1675,9 +1668,19 @@ def locusx(request, locus=None, menu=True):
     all_org  = db.get_organism(og_annot.index.tolist(), as_hash=True)
     n_homologues = all_og_c.loc[og_id].sum()
     translation = db.get_translation(seqid)
-    homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
     general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
-    og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
+
+    if n_homologues>1:
+        og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
+        homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
+        try:
+            og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
+        except:
+            og_phylogeny_ctx = {}
+    else:
+        og_conserv_ctx = {}
+        homolog_tab_ctx = {"n_genomes": "1 genome"}
+        og_phylogeny_ctx = {}
 
     kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
     diamond_matches_ctx = {}
@@ -1696,11 +1699,6 @@ def locusx(request, locus=None, menu=True):
 
     if optional2status.get("BLAST_database", False):
         diamond_matches_ctx = tab_get_refseq_homologs(db, seqid)
-
-    try:
-        og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
-    except:
-        og_phylogeny_ctx = {}
 
     context = {
         "valid_id": valid_id,
@@ -1850,7 +1848,7 @@ def format_orthogroup(og, to_url=False, from_str=False):
     return base_str
 
 
-def format_locus(locus, to_url=False):
+def format_locus(locus, to_url=True):
     if to_url:
         return f"<a href=\"/locusx/{locus}\">{locus}</a>"
     return locus
@@ -2621,9 +2619,6 @@ def cog_barchart(request):
     return render(request, 'chlamdb/cog_barplot.html', my_locals(locals()))
 
 
-
-# TODO: implement with plotly to avoid having to save a picture at 
-# every request + weird errors regarding Qt
 def pan_genome(request, type):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
@@ -2639,97 +2634,42 @@ def pan_genome(request, type):
         # should add an error message
         form = venn_form_class()
         return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
-
-    import seaborn as sn
-    import matplotlib.pyplot as plt
-    import pandas as pd
-    import time
-
     taxids = form.get_taxids()
 
     if type == "COG":
         df_hits = db.get_cog_hits(taxids, search_on="taxid", indexing="taxid")
-        type_txt = "COG"
+        type_txt = "COG orthologs"
     elif type == "orthology":
         df_hits = db.get_og_count(taxids, search_on="taxid")
         type_txt = "orthologs"
     elif type == "ko":
         df_hits = db.get_ko_hits(taxids, search_on="taxid")
-        type_txt = "KO"
+        type_txt = "KEGG orthologs"
     elif type=="Pfam":
         df_hits = db.get_pfam_hits(taxids, search_on="taxid")
-        type_txt = "PFAM"
+        type_txt = "PFAM domains"
     else:
-        # should add an error message
         form = venn_form_class()
         return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
 
-    target2description = db.get_genomes_description().description.to_dict()
-    df_hits.columns = [target2description[i] for i in df_hits.columns.values]
-    path2 = settings.BASE_DIR + '/assets/temp/pangenome_barplot.svg'
-    asset_path2 = '/temp/pangenome_barplot.svg'
-    n_entries_per_genome = df_hits[df_hits>0].count(axis=0).sort_values()
+    unique, counts = np.unique(np.count_nonzero(df_hits, axis=1), return_counts=True)
+    unique_to_count = dict(zip(unique, counts))
 
-    fig, ax = plt.subplots()
-    barplot = ax.bar(list(n_entries_per_genome.index), list(n_entries_per_genome.values))
-    ax.set_ylabel(f"{type} count")
-    ax.set_xticklabels(list(n_entries_per_genome.index), rotation=45, horizontalalignment="right")
-    fig.tight_layout()
-    fig.savefig(path2)
+    data_count = []
+    for i in range(1, len(taxids)+1):
+        count = unique_to_count.get(i, 0)
+        data_count.append(count)
 
-    hsh_shared_count = {}
-    hsh_total_count = {}
-    for entry, pres in df_hits[n_entries_per_genome.index[0]].items():
-        if pres==0:
-            continue
-        hsh_shared_count[entry] = 1
-        hsh_total_count[entry] = 1
+    acc_set = set()
+    sum_og = []
+    for col in df_hits:
+        curr_col = df_hits[col]
+        tmp_set = set(curr_col.index[curr_col!=0].unique())
+        acc_set = acc_set.union(tmp_set)
+        sum_og.append(len(acc_set))
 
-    total_entries = [n_entries_per_genome.values[0]]
-    shared_entries = []
-    for i in range(1, len(n_entries_per_genome)):
-        cur_total = total_entries[-1]
-        cur_shared = 0
-        for entry, pres in df_hits[n_entries_per_genome.index[i]].items():
-            if pres==0:
-                continue
-            v = hsh_shared_count.get(entry, 0)
-            if v==i:
-                cur_shared += 1
-                hsh_shared_count[entry] = i+1
-            if entry not in hsh_total_count:
-                cur_total += 1
-                hsh_total_count[entry] = 1
-        total_entries.append(cur_total)
-        shared_entries.append(cur_shared)
-
-    path = settings.BASE_DIR + '/assets/temp/pangenome.svg'
-    asset_path = '/temp/pangenome.svg'
-    fig, ax = plt.subplots()
-
-    ax.plot(total_entries)
-    ax2 = ax.twinx()
-    ax2.plot([i for i in range(1, len(n_entries_per_genome))], shared_entries, color="red")
-
-    ax.set_xticks([i for i in range(0, len(n_entries_per_genome))])
-    ax.set_xticklabels(n_entries_per_genome.index, rotation=45, horizontalalignment="right")
-    ax2.set_ylabel(f"Number of shared {type_txt}")
-    ax.set_ylabel(f"Number of {type_txt} in pangenome")
-
-    fig.tight_layout()
-    fig.savefig(path)
-
-    # Serie with the number of genomes having a given cog
-    missing_entries = df_hits[df_hits == 0].count(axis=1)
-    core = len(missing_entries[missing_entries == 0])
-
-    # cogs present in all but one genome
-    core_minus1 = len(missing_entries[missing_entries == 1])
-    total = len(df_hits.index)
-
-    genome_count_list = []
-    for i, count in enumerate(n_entries_per_genome):
-        genome_count_list.append([i+1, count])
+    js_data_count = "[" + ",".join(str(i) for i in data_count) + "]"
+    js_data_acc = "[" +",".join(str(i) for i in sum_og) + "]"
     envoi = True
     return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
 
