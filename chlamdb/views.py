@@ -1573,7 +1573,8 @@ def locusx_genomic_region(db, seqid, window):
 
     hsh_organism = db.get_organism([seqid], id_type="seqid")
     infos = db.get_proteins_info(df_seqids.index.tolist(),
-            to_return=["gene", "locus_tag"], as_df=True, inc_non_CDS=True, inc_pseudo=True)
+            to_return=["gene", "locus_tag", "product"], as_df=True,
+            inc_non_CDS=True, inc_pseudo=True)
     cds_type = db.get_CDS_type(df_seqids.index.tolist())
     all_infos = infos.join(cds_type).join(df_seqids)
 
@@ -1589,9 +1590,11 @@ def locusx_genomic_region(db, seqid, window):
         feature_type = data.type
         if data.is_pseudo:
             feature_type = "pseudo"
+
+        prod = to_s(data["product"])
         features.append((
             f"{{start: {data.start}, gene: {to_s(feature_name)}, end: {data.end},"
-            f"strand: {data.strand}, type: {to_s(feature_type)},"
+            f"strand: {data.strand}, type: {to_s(feature_type)}, product: {prod},"
             f"locus_tag: {to_s(data.locus_tag)}}}"
         ))
     return {"genome_range": genome_range, "window_size": 2*window,
@@ -3782,20 +3785,6 @@ def ko_comparison(request):
     n_ko = len(mat_include.index.tolist())
     envoi_comp = True
     return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
-
-
-def genomic_locus_tag_infos(request):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    locus_tag = request.POST.get("locus_tag", None)
-    
-    if locus_tag is None:
-        return JsonResponse({"error_msg": "no locus_tag"})
-    seqid, fet_type, is_pseudo = db.get_seqid(locus_tag=locus_tag, feature_type=True)
-    prot_infos = db.get_proteins_info([seqid], as_df=True,
-            inc_non_CDS=True, inc_pseudo=True)
-    entry = prot_infos.loc[seqid]
-    data = {"product": entry["product"]}
-    return JsonResponse(data)
 
 
 def faq(request):
