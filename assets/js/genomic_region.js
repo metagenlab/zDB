@@ -116,7 +116,7 @@ function createGenomicRegion(div, regions, connections, highlight) {
 		.style("stroke-width", 2)
 		.style("opacity", .9)
 		.style("fill", function(d) {
-			if(d.locus_tag == "{{locus_tag}}") {
+			if(highlight!=null && highlight.find(el => el===d.locus_tag)!==undefined) {
 				return "red";
 			} else if(d.type=="CDS") {
 				return "green";

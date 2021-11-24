@@ -1241,7 +1241,7 @@ var genomic_region =  {{genome_range}};
 var features = {{features|safe}};
 var regions = {start: genomic_region[0], end: genomic_region[1], features: features};
 
-createGenomicRegion(d3.select("#test_d3_genomic_region"), [regions], 0);
+createGenomicRegion(d3.select("#test_d3_genomic_region"), [regions], 0, ["{{locus_tag}}"]);
 
 </script>
 
