@@ -2985,8 +2985,25 @@ def plot_region(request):
         context = {"form":form, "error": True, "errors": ["Too many regions to display"]}
         return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
-    
-    ctx = {"form": form}
+    try:
+        region_size = form.get_region_size()
+        if region_size>20000:
+            context = {"form":form, "error": True, "errors": ["Region size is too big"]}
+            return render(request, 'chlamdb/plot_region.html', my_locals(context))
+    except:
+        context = {"form":form, "error": True, "errors": ["Wrong format for region size"]}
+        return render(request, 'chlamdb/plot_region.html', my_locals(context))
+
+    locus_tags = db.get_proteins_info(seqids, to_return=["locus_tag"], as_df=True)
+    to_highlight = locus_tags["locus_tag"].tolist()
+    all_regions = []
+    for seqid in seqids:
+        region, start, end = locusx_genomic_region(db, int(seqid), region_size/2)
+        js_val = genomic_region_df_to_js(region, start, end)
+        all_regions.append(js_val)
+
+    ctx = {"form": form, "genomic_regions": "[" + "\n,".join(all_regions) + "]",
+            "window_size": region_size, "to_highlight": to_highlight, "envoi": True }
     return render(request, 'chlamdb/plot_region.html', my_locals(ctx))
 
 

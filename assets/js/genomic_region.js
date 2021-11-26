@@ -11,14 +11,13 @@
 //   	locus_tag
 //   highlight: a list of locus tag to highlight in red
 function createGenomicRegion(div, regions, connections, highlight, window_size) {
-
 	const text_field_size = 40;
 	const margin = { top:5, right: 5, bottom:5, left:5 };
 	const max_arrow_size = 350;
 	const arrow_tube_size = 12;
 	const default_width = 600;
 	const base_line_width = 2;
-	const regions_vertical_interval = 100;
+	const regions_vertical_interval = 20;
 	const arrow_height = 30;
 	const diagram_vertical_size = 2*arrow_height + base_line_width;
 	const region_height = text_field_size+diagram_vertical_size;
@@ -102,7 +101,8 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 			}
 		});
 
-		svg.selectAll("polygon")
+		svg.append("g")
+		.selectAll("polygon")
 		.data(filtered_features)
 		.enter()
 		.append("polygon")
@@ -184,7 +184,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 		svg.append("rect")
 			.attr("x", x_scale(start))
 			.attr("y", y_scale(0))
-			.attr("width", x_scale(start)-x_scale(end))
+			.attr("width", x_scale(end)-x_scale(start))
 			.attr("height", y_scale(2*arrow_height+base_line_width)-y_scale(0))
 			.attr("opacity", .1)
 			.attr("fill", "gray");
@@ -194,7 +194,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 	function mouseover_feature(d) {
 		let pos = d3.mouse(this);
 		Tooltip.style("opacity", 1)
-			.html(d.product)
+			.html(d.product + " " + d.locus_tag)
 			.style("left", pos[0] + "px")
 			.style("top", pos[1] + "px");
 		d3.select(this)
@@ -222,8 +222,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 	for(var i=0; i<regions.length; i++) {
 		let current_region = regions[i];
 		let region_size = current_region.end-current_region.start;
-		let features = current_region.features;
-		let y_base_pos = region_height*i;
+		let y_base_pos = region_height*i + i*regions_vertical_interval;
 		let ratio = max_region_size/window_size;
 		let this_region_width = ratio*(region_size/max_region_size)*default_width;
 		let blank_space = default_width-this_region_width;

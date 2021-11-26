@@ -116,6 +116,9 @@ def make_plot_form(db):
         def get_all_homologs(self):
             return self.cleaned_data.get("all_homologs", "") == "yes"
 
+        def get_region_size(self):
+            return int(self.cleaned_data.get("region_size", 8000))
+
     return PlotForm
 
 
