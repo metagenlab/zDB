@@ -10,7 +10,7 @@
 //   	strand: either +1 or -1
 //   	locus_tag
 //   highlight: a list of locus tag to highlight in red
-function createGenomicRegion(div, regions, connections, highlight) {
+function createGenomicRegion(div, regions, connections, highlight, window_size) {
 
 	const text_field_size = 40;
 	const margin = { top:5, right: 5, bottom:5, left:5 };
@@ -224,7 +224,8 @@ function createGenomicRegion(div, regions, connections, highlight) {
 		let region_size = current_region.end-current_region.start;
 		let features = current_region.features;
 		let y_base_pos = region_height*i;
-		let this_region_width = (region_size/max_region_size)*default_width;
+		let ratio = max_region_size/window_size;
+		let this_region_width = ratio*(region_size/max_region_size)*default_width;
 		let blank_space = default_width-this_region_width;
 		let x_scale = d3.scale.linear().
 			domain([current_region.start, current_region.end]).

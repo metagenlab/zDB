@@ -532,11 +532,11 @@ $('.dropdown-toggle').dropdown()
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 
 
-var genomic_region =  {{genome_range}};
-var features = {{features|safe}};
-var regions = {start: genomic_region[0], end: genomic_region[1], features: features};
+var genomic_region = {{genomic_region|safe}} ;
+var window_size = {{window_size}};
 
-createGenomicRegion(d3.select("#test_d3_genomic_region"), [regions], 0, ["{{locus_tag}}"]);
+createGenomicRegion(d3.select("#test_d3_genomic_region"), [genomic_region],
+	0, ["{{locus_tag}}"], window_size);
 
 </script>
 

@@ -1103,7 +1103,7 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
     headers = ["", "Locus tag", "Source", "Gene", "Product"]
     identities = None
     if ref_seqid!=None:
-        identities = db.get_og_identity(og, ref_seqid)
+        identities = db.get_og_identity(og=og, ref_seqid=ref_seqid)
         headers.insert(2 , "Identity")
 
     homologues = []
@@ -1276,7 +1276,7 @@ def tab_og_conservation_tree(db, group, compare_to=None):
 
     e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group], header=format_orthogroup(group)))
     if not compare_to is None:
-        identity_matrix = db.get_og_identity(group, compare_to)
+        identity_matrix = db.get_og_identity(og=group, ref_seqid=compare_to)
         seqids = identity_matrix.index.tolist()
 
         # to get the taxid of the reference seqid, so as to exclude it from 
@@ -1559,31 +1559,9 @@ def tab_get_pfam_annot(db, seqid):
             "pfam_def": pfam_defs}
 
 
-def locusx_genomic_region(db, seqid, window):
-    filename = f"genomic_region_{window}_{seqid}.svg"
-    hsh_loc = db.get_gene_loc([seqid])
-    strand, start, end = hsh_loc[seqid]
-    window_start, window_stop = start-window, end+window
-
-    if window_start<0:
-        window_start=0
-    df_seqids = db.get_seqid_in_neighborhood(seqid, window_start, window_stop)
-    bioentry, _, _, _ = db.get_bioentry_list(seqid, search_on="seqid")
-    contig_size = db.get_contig_size(bioentry)
-
-    hsh_organism = db.get_organism([seqid], id_type="seqid")
-    infos = db.get_proteins_info(df_seqids.index.tolist(),
-            to_return=["gene", "locus_tag", "product"], as_df=True,
-            inc_non_CDS=True, inc_pseudo=True)
-    cds_type = db.get_CDS_type(df_seqids.index.tolist())
-    all_infos = infos.join(cds_type).join(df_seqids)
-
+def genomic_region_df_to_js(df, start, end):
     features = []
-    if window_stop > contig_size:
-        window_stop = contig_size
-    genome_range = [window_start, window_stop]
-
-    for curr_seqid, data in all_infos.iterrows():
+    for curr_seqid, data in df.iterrows():
         feature_name = ""
         if "gene" in data and not pd.isna(data.gene):
             feature_name = data.gene
@@ -1597,8 +1575,31 @@ def locusx_genomic_region(db, seqid, window):
             f"strand: {data.strand}, type: {to_s(feature_type)}, product: {prod},"
             f"locus_tag: {to_s(data.locus_tag)}}}"
         ))
-    return {"genome_range": genome_range, "window_size": 2*window,
-            "features": "[" + ",".join(features)+"]"}
+    features_str = "[" + ",".join(features) + "]"
+    return f"{{start: {start}, end: {end}, features: {features_str} }}"
+
+
+def locusx_genomic_region(db, seqid, window):
+    hsh_loc = db.get_gene_loc([seqid])
+    strand, start, end = hsh_loc[seqid]
+    window_start, window_stop = start-window, start+window
+
+    if window_start<0:
+        window_start=0
+    df_seqids = db.get_seqid_in_neighborhood(seqid, window_start, window_stop)
+    bioentry, _, _, _ = db.get_bioentry_list(seqid, search_on="seqid")
+    contig_size = db.get_contig_size(bioentry)
+
+    hsh_organism = db.get_organism([seqid], id_type="seqid")
+    infos = db.get_proteins_info(df_seqids.index.tolist(),
+            to_return=["gene", "locus_tag", "product"], as_df=True,
+            inc_non_CDS=True, inc_pseudo=True)
+    cds_type = db.get_CDS_type(df_seqids.index.tolist())
+    all_infos = infos.join(cds_type).join(df_seqids)
+    if window_stop > contig_size:
+        window_stop = contig_size
+
+    return all_infos, window_start, window_stop
 
 
 def locusx_RNA(db, seqid, is_pseudogene):
@@ -1654,7 +1655,11 @@ def locusx(request, locus=None, menu=True):
         valid_id = True
 
     sequence = get_sequence(db, seqid, flanking=50)
-    genomic_region_ctx = locusx_genomic_region(db, seqid, window=8000)
+    all_infos, wd_start, wd_end = locusx_genomic_region(db, seqid, window=8000)
+    region_js = genomic_region_df_to_js(all_infos, wd_start, wd_end)
+    genomic_region_ctx = {"genomic_region": region_js,
+            "window_size": 8000*2}
+
     if feature_type!="CDS" or is_pseudogene:
         ctx_RNA = locusx_RNA(db, seqid, is_pseudogene)
         if is_pseudogene:
@@ -1675,7 +1680,7 @@ def locusx(request, locus=None, menu=True):
     og_annot = db.get_genes_from_og(orthogroups=[og_id],
             terms=["locus_tag", "gene", "product", "length"])
     all_og_c = db.get_og_count([og_id], search_on="orthogroup")
-    all_org  = db.get_organism(og_annot.index.tolist(), as_hash=True)
+    all_org  = db.get_organism(og_annot.index.tolist())
     n_homologues = all_og_c.loc[og_id].sum()
     translation = db.get_translation(seqid)
     homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
@@ -1824,7 +1829,7 @@ def hydropathy(request, locus):
 def get_all_prot_infos(db, seqids, orthogroups):
     hsh_gene_locs = db.get_gene_loc(seqids, as_hash=True)
     hsh_prot_infos = db.get_proteins_info(seqids)
-    hsh_organisms = db.get_organism(seqids, as_hash=True)
+    hsh_organisms = db.get_organism(seqids)
     group_count = set()
     all_locus_data = []
 
@@ -2945,7 +2950,44 @@ def blastswissprot(request, locus_tag):
 
 
 def plot_region(request):
-    raise RuntimeException("To be re-implemented in d3.js")
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    form_class = make_plot_form(db)
+
+    if request.method != "POST":
+        form = form_class()
+        return render(request, 'chlamdb/plot_region.html', my_locals({"form": form}))
+
+    form = form_class(request.POST)
+    if not form.is_valid():
+        # add error message
+        return render(request, 'chlamdb/plot_region.html', my_locals({"form": form}))
+
+    accession = form.get_accession()
+    prot_info = db.get_proteins_info(ids=[accession], search_on="locus_tag", as_df=True)
+    if prot_info.empty:
+        context = {"form": form, "errors": ["Accession not found"], "error": True}
+        return render(request, 'chlamdb/plot_region.html', my_locals(context))
+
+    all_homologs = form.get_all_homologs()
+
+    seqid = int(prot_info.index[0])
+    ids = db.get_og_identity(ref_seqid=seqid)
+    organisms = db.get_organism(ids.index.unique().tolist(), as_df=True, as_taxid=True)
+    all_infos = organisms.join(ids)
+
+    if not all_homologs:
+        best_matches = all_infos.groupby(["taxid"]).idxmax()
+        seqids = best_matches["identity"].tolist()
+    else:
+        seqids = all_infos.index.tolist()
+
+    if len(seqids)>20:
+        context = {"form":form, "error": True, "errors": ["Too many regions to display"]}
+        return render(request, 'chlamdb/plot_region.html', my_locals(context))
+
+    
+    ctx = {"form": form}
+    return render(request, 'chlamdb/plot_region.html', my_locals(ctx))
 
 
 def orthogroups(request):
@@ -3894,3 +3936,4 @@ def genomes_intro(request):
     e_tree.rename_leaves(genomes_descr.description.to_dict())
     e_tree.render(path, dpi=500)
     return render(request, 'chlamdb/genomes_intro.html', my_locals(locals()))
+
