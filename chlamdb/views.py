@@ -1598,7 +1598,6 @@ def locusx_genomic_region(db, seqid, window):
     all_infos = infos.join(cds_type).join(df_seqids)
     if window_stop > contig_size:
         window_stop = contig_size
-
     return all_infos, window_start, window_stop
 
 
@@ -2969,17 +2968,19 @@ def plot_region(request):
         return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
     all_homologs = form.get_all_homologs()
-
     seqid = int(prot_info.index[0])
+    hsh_loc = db.get_gene_loc([seqid])
     ids = db.get_og_identity(ref_seqid=seqid)
     organisms = db.get_organism(ids.index.unique().tolist(), as_df=True, as_taxid=True)
     all_infos = organisms.join(ids)
+    ref_strand, _, _ = hsh_loc[seqid]
 
     if not all_homologs:
         best_matches = all_infos.groupby(["taxid"]).idxmax()
         seqids = best_matches["identity"].tolist()
     else:
         seqids = all_infos.index.tolist()
+    seqids.append(seqid)
 
     if len(seqids)>20:
         context = {"form":form, "error": True, "errors": ["Too many regions to display"]}
@@ -2999,6 +3000,14 @@ def plot_region(request):
     all_regions = []
     for seqid in seqids:
         region, start, end = locusx_genomic_region(db, int(seqid), region_size/2)
+        if region["strand"].loc[seqid]*ref_strand == -1:
+            mean_val = (end+start)/2
+            region["strand"] *= -1
+            dist_vector_start = region["start"]-mean_val
+            len_vector = region["end"]-region["start"]
+            region["end"] = region["start"]-2*dist_vector_start
+            region["start"] = region["end"] - len_vector
+
         js_val = genomic_region_df_to_js(region, start, end)
         all_regions.append(js_val)
 

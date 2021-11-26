@@ -138,7 +138,8 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 			let stop = region.end;
 			return (d.start>=start) & (d.end<=stop);
 		});
-		svg.selectAll("text")
+		svg.append("g")
+			.selectAll("text")
 			.data(filtered_features)
 			.enter()
 			.append("text")
