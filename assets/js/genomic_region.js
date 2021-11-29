@@ -154,7 +154,9 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 	}
 
 
-	function load_axis(svg, start, end, x_scale, y_scale) {
+	function load_axis(svg, region, x_scale, y_scale) {
+		start = region.start;
+		end = region.end;
 		svg.append("line")
 			.style("stroke", "black")
 			.style("stroke-width", base_line_width)
@@ -189,6 +191,16 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 			.attr("height", y_scale(2*arrow_height+base_line_width)-y_scale(0))
 			.attr("opacity", .1)
 			.attr("fill", "gray");
+
+		if("name" in region) {
+			svg.append("text").
+				attr("x", x_scale(start)+3).
+				attr("y", y_scale(2*arrow_height+base_line_width)).
+				attr("fill", "gray").
+				attr("opacity", 1).
+				style("font-size", "10px").
+				text(region.name);
+		}
 	}
 
 
@@ -234,7 +246,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 			domain([0, diagram_vertical_size]).
 			range([y_base_pos+text_field_size, y_base_pos+diagram_vertical_size+text_field_size]);
 
-		load_axis(svg, current_region.start, current_region.end, x_scale, y_scale);
+		load_axis(svg, current_region, x_scale, y_scale);
 		draw_genes_arrow(svg, current_region, x_scale, y_scale);
 		add_genes_name(svg, current_region, x_scale, y_base_pos+text_field_size);
 	}
