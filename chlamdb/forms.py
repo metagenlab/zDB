@@ -119,6 +119,14 @@ def make_plot_form(db):
         def get_region_size(self):
             return int(self.cleaned_data.get("region_size", 8000))
 
+        def get_genomes(self):
+            indices = self.cleaned_data["genomes"]
+            taxids  = []
+            for index in indices:
+                taxid, _ = reverse_index[int(index)]
+                taxids.append(taxid)
+            return taxids
+
     return PlotForm
 
 

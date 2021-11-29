@@ -1559,7 +1559,7 @@ def tab_get_pfam_annot(db, seqid):
             "pfam_def": pfam_defs}
 
 
-def genomic_region_df_to_js(df, start, end):
+def genomic_region_df_to_js(df, start, end, name=None):
     features = []
     for curr_seqid, data in df.iterrows():
         feature_name = ""
@@ -1576,7 +1576,10 @@ def genomic_region_df_to_js(df, start, end):
             f"locus_tag: {to_s(data.locus_tag)}}}"
         ))
     features_str = "[" + ",".join(features) + "]"
-    return f"{{start: {start}, end: {end}, features: {features_str} }}"
+    genome_name = ""
+    if not name is None:
+        genome_name = f"name: {to_s(name)},"
+    return f"{{{genome_name} start: {start}, end: {end}, features: {features_str} }}"
 
 
 def locusx_genomic_region(db, seqid, window):
@@ -2949,6 +2952,7 @@ def blastswissprot(request, locus_tag):
 
 
 def plot_region(request):
+    max_region_size = 20000
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     form_class = make_plot_form(db)
 
@@ -2967,19 +2971,28 @@ def plot_region(request):
         context = {"form": form, "errors": ["Accession not found"], "error": True}
         return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
+    genomes = form.get_genomes()
     all_homologs = form.get_all_homologs()
     seqid = int(prot_info.index[0])
     hsh_loc = db.get_gene_loc([seqid])
     ids = db.get_og_identity(ref_seqid=seqid)
-    organisms = db.get_organism(ids.index.unique().tolist(), as_df=True, as_taxid=True)
+    all_seqids = ids.index.unique().tolist()
+    all_seqids.append(seqid)
+    organisms = db.get_organism(all_seqids,
+            as_df=True, as_taxid=True)
     all_infos = organisms.join(ids)
     ref_strand, _, _ = hsh_loc[seqid]
+    hsh_description = db.get_genomes_description().description.to_dict()
 
     if not all_homologs:
         best_matches = all_infos.groupby(["taxid"]).idxmax()
-        seqids = best_matches["identity"].tolist()
+        ref_taxid = organisms.loc[seqid].taxid
+        if ref_taxid in genomes:
+            genomes.remove(ref_taxid)
+        best_matches = best_matches.reindex(genomes)
+        seqids = best_matches["identity"].astype(int).tolist()
     else:
-        seqids = all_infos.index.tolist()
+        seqids = all_infos.index.astype(int).tolist()
     seqids.append(seqid)
 
     if len(seqids)>20:
@@ -2988,10 +3001,11 @@ def plot_region(request):
 
     try:
         region_size = form.get_region_size()
-        if region_size>20000:
-            context = {"form":form, "error": True, "errors": ["Region size is too big"]}
+        if region_size>max_region_size or region_size<5000:
+            context = {"form":form, "error": True,
+                    "errors": [f"Region size should be between 5000 and {max_region_size} bp"]}
             return render(request, 'chlamdb/plot_region.html', my_locals(context))
-    except:
+    except ValueError:
         context = {"form":form, "error": True, "errors": ["Wrong format for region size"]}
         return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
@@ -3008,11 +3022,13 @@ def plot_region(request):
             region["end"] = region["start"]-2*dist_vector_start
             region["start"] = region["end"] - len_vector
 
-        js_val = genomic_region_df_to_js(region, start, end)
+        taxid = organisms.loc[seqid].taxid
+        genome_name = hsh_description[taxid]
+        js_val = genomic_region_df_to_js(region, start, end, genome_name)
         all_regions.append(js_val)
 
     ctx = {"form": form, "genomic_regions": "[" + "\n,".join(all_regions) + "]",
-            "window_size": region_size, "to_highlight": to_highlight, "envoi": True }
+            "window_size": max_region_size, "to_highlight": to_highlight, "envoi": True }
     return render(request, 'chlamdb/plot_region.html', my_locals(ctx))
 
 

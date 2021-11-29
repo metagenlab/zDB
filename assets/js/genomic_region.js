@@ -195,7 +195,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 	function mouseover_feature(d) {
 		let pos = d3.mouse(this);
 		Tooltip.style("opacity", 1)
-			.html(d.product + " " + d.locus_tag)
+			.html(d.product)
 			.style("left", pos[0] + "px")
 			.style("top", pos[1] + "px");
 		d3.select(this)
