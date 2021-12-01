@@ -2991,9 +2991,9 @@ def plot_region(request):
             genomes.remove(ref_taxid)
         best_matches = best_matches.reindex(genomes)
         seqids = best_matches["identity"].astype(int).tolist()
+        seqids.append(seqid)
     else:
         seqids = all_infos.index.astype(int).tolist()
-    seqids.append(seqid)
 
     if len(seqids)>20:
         context = {"form":form, "error": True, "errors": ["Too many regions to display"]}
@@ -3012,6 +3012,8 @@ def plot_region(request):
     locus_tags = db.get_proteins_info(seqids, to_return=["locus_tag"], as_df=True)
     to_highlight = locus_tags["locus_tag"].tolist()
     all_regions = []
+    connections = []
+    prev_infos = None
     for seqid in seqids:
         region, start, end = locusx_genomic_region(db, int(seqid), region_size/2)
         if region["strand"].loc[seqid]*ref_strand == -1:
@@ -3021,14 +3023,25 @@ def plot_region(request):
             len_vector = region["end"]-region["start"]
             region["end"] = region["start"]-2*dist_vector_start
             region["start"] = region["end"] - len_vector
+        ogs = db.get_og_count(region.index.tolist(), search_on="seqid")
+        region = region.join(ogs)
+            
+        if not prev_infos is None:
+            common_og = region.merge(prev_infos, on="orthogroup")[["locus_tag_x", "locus_tag_y"]]
+            related = []
+            for i, v in common_og.iterrows():
+                related.append(f"{to_s(v.locus_tag_x)}: {to_s(v.locus_tag_y)}")
+            connections.append("{"+",".join(related)+"}")
 
         taxid = organisms.loc[seqid].taxid
         genome_name = hsh_description[taxid]
         js_val = genomic_region_df_to_js(region, start, end, genome_name)
         all_regions.append(js_val)
+        prev_infos = region[["orthogroup", "locus_tag"]]
 
     ctx = {"form": form, "genomic_regions": "[" + "\n,".join(all_regions) + "]",
-            "window_size": max_region_size, "to_highlight": to_highlight, "envoi": True }
+            "window_size": max_region_size, "to_highlight": to_highlight, "envoi": True,
+            "connections": "[" + ",".join(connections) + "]"}
     return render(request, 'chlamdb/plot_region.html', my_locals(ctx))
 
 

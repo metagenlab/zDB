@@ -87,19 +87,19 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 		return points;
 	}
 
-	// maybe not needed as a function anymore
 	function draw_genes_arrow(svg, region, x_scale, y_scale) {
 		// if a gene is partly in the region, only draw those
 		// whose arrow can be completely drawn, discard the other ones.
 		let start=region.start;
 		let end=region.end;
-		filtered_features = region.features.filter(function(d) {
+		let filtered_features = region.features.filter(function(d) {
 			if(d.strand==1) {
 				return d.end <= end-max_arrow_size;
 			} else {
 				return d.end >= start+max_arrow_size;
 			}
 		});
+		let locus_to_position = {};
 
 		svg.append("g")
 		.selectAll("polygon")
@@ -107,12 +107,13 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 		.enter()
 		.append("polygon")
 		.attr("points", function(d) {
-			let points  = get_feature_points(d, region.start, region.end)
-				.map(function(x) {
-					return [x_scale(x.x), y_scale(x.y)].join(" ");
-			});
-			return points.join(",");
+			let points = get_feature_points(d, region.start, region.end);
+
+			// ugly
+			locus_to_position[d.locus_tag] = [x_scale(d.start), x_scale(d.end)];
+			return points.map(x => x_scale(x.x)+" "+y_scale(x.y)).join(",");
 		})
+		.attr("id", d => d.locus_tag)
 		.style("stroke-width", 2)
 		.style("opacity", .9)
 		.style("fill", function(d) {
@@ -129,6 +130,23 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 		.on("mouseover", mouseover_feature)
 		.on("mouseleave", mouseleave_feature)
 		.on("click", click_feature);
+
+		return locus_to_position;
+	}
+
+	function mouseover_link(d) {
+		d3.select(this)
+			.style("stroke", "red")
+			.style("stroke-width", 2);
+	}
+
+	function mouseleave_link(d) {
+		d3.select(this)
+			.style("stroke", "none");
+	}
+
+	function mouseclick_link(d) {
+		window.open("/orthogroup/"+d.group);
 	}
 
 
@@ -149,7 +167,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 			.attr("transform", function(d ) {
 				return "rotate(315,"+x_scale((d.start+d.end)/2)+","+y_text_pos+")";
 			})
-			.attr("id", d => d.locus_tag)
+			.attr("id", d => d.locus_tag+"_gene_name")
 			.text(d => d.gene);
 	}
 
@@ -212,7 +230,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 			.style("top", pos[1] + "px");
 		d3.select(this)
 			.style("stroke", "red");
-		d3.select("#"+d.locus_tag)
+		d3.select("#"+d.locus_tag+"_gene_name")
 			.style("stroke", "red");
 	}
 
@@ -226,12 +244,15 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 		Tooltip.style("opacity", 0);
 		d3.select(this)
 			.style("stroke", "none");
-		d3.select("#"+d.locus_tag)
+		d3.select("#"+d.locus_tag+"_gene_name")
 			.style("stroke", "none");
 	}
 
 
 	let max_region_size = d3.max(regions.map(d => d.end-d.start));
+	let prev_gene_pos = null;
+	let prev_region = null;
+	let prev_xscale = null;
 	for(var i=0; i<regions.length; i++) {
 		let current_region = regions[i];
 		let region_size = current_region.end-current_region.start;
@@ -247,7 +268,85 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 			range([y_base_pos+text_field_size, y_base_pos+diagram_vertical_size+text_field_size]);
 
 		load_axis(svg, current_region, x_scale, y_scale);
-		draw_genes_arrow(svg, current_region, x_scale, y_scale);
+		let curr_gene_pos = draw_genes_arrow(svg, current_region, x_scale, y_scale);
+		let this_g = svg.append("g");
+		if(i>=1 && connections != null) {
+			// messy code... I certainly hope to not have to debug it...
+
+			let curr_connections = connections[i-1];
+			let prev_start = prev_xscale(prev_region.start);
+			let this_start = x_scale(current_region.start);
+			let prev_end = prev_xscale(prev_region.end);
+			let this_end = x_scale(current_region.end);
+			for(var locus_tag in curr_gene_pos) {
+				if(!(locus_tag in curr_connections)) {
+					continue;
+				}
+				let connects_to = curr_connections[locus_tag];
+				if(!(connects_to in prev_gene_pos)) {
+					continue;
+				}
+				let top_pos = prev_gene_pos[connects_to];
+				let curr_pos = curr_gene_pos[locus_tag];
+				let top_pos0 = top_pos[0];
+				let top_pos1 = top_pos[1];
+				let curr_pos1 = curr_pos[1];
+				let curr_pos0 = curr_pos[0];
+				let all_points = [];
+				if(top_pos0<prev_start && curr_pos0<this_start) {
+					all_points.push([this_start, y_base_pos+text_field_size]);
+					all_points.push([prev_start, y_base_pos-regions_vertical_interval]);
+				} else if(top_pos0<prev_start) {
+					slope = (regions_vertical_interval+text_field_size)/(curr_pos0-top_pos0);
+					all_points.push([curr_pos0, y_base_pos+text_field_size]);
+					all_points.push([prev_start,
+						y_base_pos-(slope*(curr_pos0-prev_start))]);
+					all_points.push([prev_start,
+						y_base_pos-regions_vertical_interval]);
+				} else if(curr_pos0<this_start) {
+					slope = (regions_vertical_interval+text_field_size)/(curr_pos0-top_pos0);
+					all_points.push([this_start, y_base_pos+text_field_size]);
+					all_points.push([this_start,
+						y_base_pos-regions_vertical_interval+slope*(this_start-top_pos0)]);
+					all_points.push([top_pos0, y_base_pos-regions_vertical_interval]);
+				} else {
+					all_points.push([curr_pos0, y_base_pos+text_field_size]);
+					all_points.push([top_pos0, y_base_pos-regions_vertical_interval]);
+				}
+
+				if(top_pos1>prev_end && curr_pos1>this_end) {
+					all_points.push([prev_end, y_base_pos-regions_vertical_interval]);
+					all_points.push([this_end, y_base_pos+text_field_size]);
+				}else if (curr_pos1>this_end) {
+					slope = (regions_vertical_interval+text_field_size)/(curr_pos1-top_pos1); 
+					all_points.push([top_pos1, y_base_pos-regions_vertical_interval]);
+					all_points.push([this_end, y_base_pos-regions_vertical_interval
+						+slope*(this_end-top_pos1)]);
+					all_points.push([this_end, y_base_pos+text_field_size]);
+				} else if(top_pos1>prev_end) {
+					slope = (regions_vertical_interval+text_field_size)/(curr_pos1-top_pos1);
+					all_points.push([prev_end, y_base_pos-regions_vertical_interval]);
+					all_points.push([prev_end, y_base_pos+text_field_size
+						-slope*(curr_pos1-prev_end)]);
+					all_points.push([curr_pos1, y_base_pos+text_field_size]);
+				} else {
+					all_points.push([top_pos1, y_base_pos-regions_vertical_interval]);
+					all_points.push([curr_pos1, y_base_pos+text_field_size]);
+				}
+
+				this_g.append("polygon")
+					.attr("points",
+						all_points.map(d => d[0]+" "+d[1]).join(",")
+					)
+					.style("opacity", ".5")
+					.style("fill", "gray")
+					.on("mouseover", mouseover_link)
+					.on("mouseleave", mouseleave_link);
+			}
+		}
 		add_genes_name(svg, current_region, x_scale, y_base_pos+text_field_size);
+		prev_gene_pos = curr_gene_pos;
+		prev_region = current_region;
+		prev_xscale = x_scale;
 	}
 }

@@ -15,6 +15,8 @@
 {% include "chlamdb/header.html" %}
 </head>
 
+{% include "chlamdb/menu.html" %}
+
 <body>
   <div class="container-fluid" id="main_container">
     <div class="row">
@@ -22,7 +24,6 @@
           <div id="page-content-wrapper">
             <div class="row">
               <div class="col-lg-12">
-                 {% include "chlamdb/menu.html" %}
                   <div class="panel panel-warning" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
                       <div class="panel-heading" style="width:100%">
                           <h3 class="panel-title">Help</h3>
@@ -90,10 +91,10 @@
 {% if envoi %}
 var regions = {{genomic_regions|safe}};
 var to_highlight = {{to_highlight|safe}};
-// var connections = {{connections}};
+var connections = {{connections | safe}};
 var window_size = {{window_size}};
 
-createGenomicRegion(d3.select("#div_alignment"), regions, 0, to_highlight, window_size);
+createGenomicRegion(d3.select("#div_alignment"), regions, connections, to_highlight, window_size);
 
 {% endif %}
 
