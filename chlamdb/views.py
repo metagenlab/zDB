@@ -3014,6 +3014,7 @@ def plot_region(request):
     all_regions = []
     connections = []
     prev_infos = None
+    all_identities = []
     for seqid in seqids:
         region, start, end = locusx_genomic_region(db, int(seqid), region_size/2)
         if region["strand"].loc[seqid]*ref_strand == -1:
@@ -3027,12 +3028,22 @@ def plot_region(request):
         region = region.join(ogs)
             
         if not prev_infos is None:
-            common_og = region.dropna().merge(prev_infos, on="orthogroup")[["locus_tag_x",
-                "locus_tag_y", "orthogroup"]]
+            common_og = region.dropna(subset=["orthogroup"]).reset_index().merge(
+                    prev_infos.reset_index(), on="orthogroup")[["locus_tag_x",
+                    "locus_tag_y", "seqid_x", "seqid_y", "orthogroup"]]
             related = []
+            ogs = common_og.orthogroup.astype(int).tolist()
+            p1 = common_og.seqid_x.tolist()
+            p2 = common_og.seqid_y.tolist()
+            identities = db.get_og_identity(og=ogs, pairs=zip(p1, p2)).set_index(["seqid_x", "seqid_y"]).identity.to_dict()
             for i, v in common_og.iterrows():
+                if (v.seqid_x, v.seqid_y) in identities:
+                    ident = identities[(v.seqid_x, v.seqid_y)]
+                else:
+                    ident = identities[(v.seqid_y, v.seqid_x)]
+                all_identities.append(ident)
                 og_val = to_s(int(v.orthogroup))
-                related.append(f"{to_s(v.locus_tag_x)}: [{to_s(v.locus_tag_y)}, {og_val}]")
+                related.append(f"{to_s(v.locus_tag_x)}: [{to_s(v.locus_tag_y)}, {og_val}, {ident:.2f}]")
             connections.append("{"+",".join(related)+"}")
 
         taxid = organisms.loc[seqid].taxid
@@ -3043,7 +3054,8 @@ def plot_region(request):
 
     ctx = {"form": form, "genomic_regions": "[" + "\n,".join(all_regions) + "]",
             "window_size": max_region_size, "to_highlight": to_highlight, "envoi": True,
-            "connections": "[" + ",".join(connections) + "]"}
+            "connections": "[" + ",".join(connections) + "]", "min_ident": min(all_identities),
+            "max_ident": max(all_identities)}
     return render(request, 'chlamdb/plot_region.html', my_locals(ctx))
 
 

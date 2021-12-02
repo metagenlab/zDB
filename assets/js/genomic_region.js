@@ -10,7 +10,7 @@
 //   	strand: either +1 or -1
 //   	locus_tag
 //   highlight: a list of locus tag to highlight in red
-function createGenomicRegion(div, regions, connections, highlight, window_size) {
+function createGenomicRegion(div, regions, connections, highlight, window_size, ident_range) {
 	const text_field_size = 40;
 	const margin = { top:5, right: 5, bottom:5, left:5 };
 	const max_arrow_size = 350;
@@ -142,21 +142,29 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 		let bot_locus_tag = d3.select("#"+d.bottom_feature);
 		top_locus_tag.style("stroke", "blue");
 		bot_locus_tag.style("stroke", "blue");
+		let pos = d3.mouse(this);
+		Tooltip.style("opacity", 1)
+			.html(d.ident)
+			.style("left", pos[0] + "px")
+			.style("top", pos[1] + "px");
 	}
 
 	function mouseleave_link(d) {
+		Tooltip.style("opacity", 0).
+			style("left", "-1px").
+			style("top", "-1px");
 		d3.select(this)
 			.style("stroke", "none");
 		let top_locus_tag = d3.select("#"+d.top_feature);
 		let bot_locus_tag = d3.select("#"+d.bottom_feature);
 		top_locus_tag.style("stroke", "none");
 		bot_locus_tag.style("stroke", "none");
+		Tooltip.style("opacity", 0);
 	}
 
 	function mouseclick_link(d) {
 		window.open("/orthogroup/group_"+d.group);
 	}
-
 
 	function add_genes_name(svg, region, x_scale, y_text_pos) {
 		let filtered_features = region.features.filter(function(d) {
@@ -249,7 +257,9 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 
 
 	function mouseleave_feature(d) {
-		Tooltip.style("opacity", 0);
+		Tooltip.style("opacity", 0).
+			style("left", "-1px").
+			style("top", "-1px");
 		d3.select(this)
 			.style("stroke", "none");
 		d3.select("#"+d.locus_tag+"_gene_name")
@@ -281,6 +291,9 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 		if(i>=1 && connections != null) {
 			// messy code... I certainly hope to not have to debug it...
 
+			let ident_scale = d3.scale.linear().
+				domain(ident_range).
+				range([.1, .9]);
 			let curr_connections = connections[i-1];
 			let prev_start = prev_xscale(prev_region.start);
 			let this_start = x_scale(current_region.start);
@@ -293,6 +306,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 				let connection_data = curr_connections[locus_tag];
 				let connects_to = connection_data[0];
 				let orthogroup = connection_data[1];
+				let identity = connection_data[2];
 				if(!(connects_to in prev_gene_pos)) {
 					continue;
 				}
@@ -345,11 +359,12 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 				}
 
 				this_g.append("polygon")
-					.datum({group: orthogroup, top_feature: connects_to, bottom_feature: locus_tag})
+					.datum({group: orthogroup, top_feature: connects_to,
+						bottom_feature: locus_tag, ident: identity})
 					.attr("points",
 						all_points.map(d => d[0]+" "+d[1]).join(",")
 					)
-					.style("opacity", ".5")
+					.style("opacity", ident_scale(identity))
 					.style("fill", "gray")
 					.on("mouseover", mouseover_link)
 					.on("mouseleave", mouseleave_link)
