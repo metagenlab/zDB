@@ -136,17 +136,25 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 
 	function mouseover_link(d) {
 		d3.select(this)
-			.style("stroke", "red")
+			.style("stroke", "blue")
 			.style("stroke-width", 2);
+		let top_locus_tag = d3.select("#"+d.top_feature);
+		let bot_locus_tag = d3.select("#"+d.bottom_feature);
+		top_locus_tag.style("stroke", "blue");
+		bot_locus_tag.style("stroke", "blue");
 	}
 
 	function mouseleave_link(d) {
 		d3.select(this)
 			.style("stroke", "none");
+		let top_locus_tag = d3.select("#"+d.top_feature);
+		let bot_locus_tag = d3.select("#"+d.bottom_feature);
+		top_locus_tag.style("stroke", "none");
+		bot_locus_tag.style("stroke", "none");
 	}
 
 	function mouseclick_link(d) {
-		window.open("/orthogroup/"+d.group);
+		window.open("/orthogroup/group_"+d.group);
 	}
 
 
@@ -282,7 +290,9 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 				if(!(locus_tag in curr_connections)) {
 					continue;
 				}
-				let connects_to = curr_connections[locus_tag];
+				let connection_data = curr_connections[locus_tag];
+				let connects_to = connection_data[0];
+				let orthogroup = connection_data[1];
 				if(!(connects_to in prev_gene_pos)) {
 					continue;
 				}
@@ -335,13 +345,15 @@ function createGenomicRegion(div, regions, connections, highlight, window_size) 
 				}
 
 				this_g.append("polygon")
+					.datum({group: orthogroup, top_feature: connects_to, bottom_feature: locus_tag})
 					.attr("points",
 						all_points.map(d => d[0]+" "+d[1]).join(",")
 					)
 					.style("opacity", ".5")
 					.style("fill", "gray")
 					.on("mouseover", mouseover_link)
-					.on("mouseleave", mouseleave_link);
+					.on("mouseleave", mouseleave_link)
+					.on("click", mouseclick_link);
 			}
 		}
 		add_genes_name(svg, current_region, x_scale, y_base_pos+text_field_size);

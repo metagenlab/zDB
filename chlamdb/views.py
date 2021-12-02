@@ -3027,10 +3027,12 @@ def plot_region(request):
         region = region.join(ogs)
             
         if not prev_infos is None:
-            common_og = region.merge(prev_infos, on="orthogroup")[["locus_tag_x", "locus_tag_y"]]
+            common_og = region.dropna().merge(prev_infos, on="orthogroup")[["locus_tag_x",
+                "locus_tag_y", "orthogroup"]]
             related = []
             for i, v in common_og.iterrows():
-                related.append(f"{to_s(v.locus_tag_x)}: {to_s(v.locus_tag_y)}")
+                og_val = to_s(int(v.orthogroup))
+                related.append(f"{to_s(v.locus_tag_x)}: [{to_s(v.locus_tag_y)}, {og_val}]")
             connections.append("{"+",".join(related)+"}")
 
         taxid = organisms.loc[seqid].taxid
