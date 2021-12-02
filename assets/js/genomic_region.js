@@ -144,7 +144,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 		bot_locus_tag.style("stroke", "blue");
 		let pos = d3.mouse(this);
 		Tooltip.style("opacity", 1)
-			.html(d.ident)
+			.html(d.ident + "% identity")
 			.style("left", pos[0] + "px")
 			.style("top", pos[1] + "px");
 	}
@@ -293,7 +293,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 
 			let ident_scale = d3.scale.linear().
 				domain(ident_range).
-				range([.1, .9]);
+				range([.2, .9]);
 			let curr_connections = connections[i-1];
 			let prev_start = prev_xscale(prev_region.start);
 			let this_start = x_scale(current_region.start);
@@ -364,8 +364,9 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 					.attr("points",
 						all_points.map(d => d[0]+" "+d[1]).join(",")
 					)
-					.style("opacity", ident_scale(identity))
+					.style("fill-opacity", ident_scale(identity))
 					.style("fill", "gray")
+					.style("stroke-opacity", .5)
 					.on("mouseover", mouseover_link)
 					.on("mouseleave", mouseleave_link)
 					.on("click", mouseclick_link);
