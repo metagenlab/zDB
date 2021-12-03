@@ -164,7 +164,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 
 	function text_enter(d) {
 		let pos = d3.mouse(this);
-		let genome = d3.select(this).text();
+		let genome = d.genome;
 		Tooltip.style("opacity", 1)
 			.html(genome)
 			.style("left", pos[0] + "px")
@@ -244,6 +244,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 
 		if("name" in region) {
 			svg.append("text").
+				datum({genome: region.name}).
 				attr("x", x_scale(start)+3).
 				attr("y", y_scale(2*arrow_height+base_line_width)).
 				attr("fill", "gray").
@@ -263,7 +264,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 			textLength = obj.node().getComputedTextLength(),
 			text = obj.text(),
 			width = obj.attr("width");
-		while(textLength > width) {
+		while(textLength > (width)) {
 			text = text.slice(0, -1);
 			obj.text(text + "...");
 			textLength = obj.node().getComputedTextLength();
