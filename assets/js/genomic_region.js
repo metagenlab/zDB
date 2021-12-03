@@ -162,6 +162,22 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 		Tooltip.style("opacity", 0);
 	}
 
+	function text_enter(d) {
+		let pos = d3.mouse(this);
+		let genome = d3.select(this).text();
+		Tooltip.style("opacity", 1)
+			.html(genome)
+			.style("left", pos[0] + "px")
+			.style("top", pos[1] + "px");
+	}
+
+	function text_leave(d) {
+		Tooltip.style("opacity", 0).
+			style("left", "-1px").
+			style("top", "-1px");
+	}
+
+
 	function mouseclick_link(d) {
 		window.open("/orthogroup/group_"+d.group);
 	}
@@ -232,8 +248,25 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 				attr("y", y_scale(2*arrow_height+base_line_width)).
 				attr("fill", "gray").
 				attr("opacity", 1).
-				style("font-size", "10px").
-				text(region.name);
+				style("font-size", "10px").append("tspan").
+				attr("width", x_scale(end)-x_scale(start)).
+				text(region.name).
+				on("mouseover", text_enter).
+				on("mouseleave", text_leave).
+				each(wrap_text);
+		}
+	}
+
+
+	function wrap_text() {
+		var obj = d3.select(this),
+			textLength = obj.node().getComputedTextLength(),
+			text = obj.text(),
+			width = obj.attr("width");
+		while(textLength > width) {
+			text = text.slice(0, -1);
+			obj.text(text + "...");
+			textLength = obj.node().getComputedTextLength();
 		}
 	}
 
@@ -324,7 +357,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 					slope = (regions_vertical_interval+text_field_size)/(curr_pos0-top_pos0);
 					all_points.push([curr_pos0, y_base_pos+text_field_size]);
 					all_points.push([prev_start,
-						y_base_pos-(slope*(curr_pos0-prev_start))]);
+						y_base_pos+text_field_size-(slope*(curr_pos0-prev_start))]);
 					all_points.push([prev_start,
 						y_base_pos-regions_vertical_interval]);
 				} else if(curr_pos0<this_start) {
