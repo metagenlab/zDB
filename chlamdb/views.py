@@ -2990,7 +2990,10 @@ def plot_region(request):
         if ref_taxid in genomes:
             genomes.remove(ref_taxid)
         best_matches = best_matches.reindex(genomes)
-        seqids = best_matches["identity"].astype(int).tolist()
+        if not best_matches.empty:
+            seqids = best_matches["identity"].astype(int).tolist()
+        else:
+            seqids = []
         seqids.append(seqid)
     else:
         seqids = all_infos.index.astype(int).tolist()
@@ -3054,8 +3057,10 @@ def plot_region(request):
 
     ctx = {"form": form, "genomic_regions": "[" + "\n,".join(all_regions) + "]",
             "window_size": max_region_size, "to_highlight": to_highlight, "envoi": True,
-            "connections": "[" + ",".join(connections) + "]", "min_ident": min(all_identities),
-            "max_ident": max(all_identities)}
+            "connections": "[" + ",".join(connections) + "]"}
+    if len(all_identities) > 0:
+        ctx["max_ident"] = max(all_identities)
+        ctx["min_ident"] = min(all_identities)
     return render(request, 'chlamdb/plot_region.html', my_locals(ctx))
 
 

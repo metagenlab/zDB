@@ -134,6 +134,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 		return locus_to_position;
 	}
 
+
 	function mouseover_link(d) {
 		d3.select(this)
 			.style("stroke", "blue")
@@ -148,6 +149,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 			.style("left", pos[0] + "px")
 			.style("top", pos[1] + "px");
 	}
+
 
 	function mouseleave_link(d) {
 		Tooltip.style("opacity", 0).
@@ -264,7 +266,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 			textLength = obj.node().getComputedTextLength(),
 			text = obj.text(),
 			width = obj.attr("width");
-		while(textLength > (width)) {
+		while(textLength > (width-2*base_line_width)) {
 			text = text.slice(0, -1);
 			obj.text(text + "...");
 			textLength = obj.node().getComputedTextLength();
