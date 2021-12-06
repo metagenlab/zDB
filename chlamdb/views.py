@@ -2980,16 +2980,19 @@ def plot_region(request):
     all_seqids.append(seqid)
     organisms = db.get_organism(all_seqids,
             as_df=True, as_taxid=True)
-    all_infos = organisms.join(ids)
+    all_infos = organisms.join(ids, how="inner")
     ref_strand, _, _ = hsh_loc[seqid]
     hsh_description = db.get_genomes_description().description.to_dict()
 
     if not all_homologs:
         best_matches = all_infos.groupby(["taxid"]).idxmax()
         ref_taxid = organisms.loc[seqid].taxid
+
+        # redundant: do not include the genome of the locus tag, even if listed
+        # by the user. The locus tag is its best match.
         if ref_taxid in genomes:
             genomes.remove(ref_taxid)
-        best_matches = best_matches.reindex(genomes)
+        best_matches = best_matches.reindex(genomes).dropna()
         if not best_matches.empty:
             seqids = best_matches["identity"].astype(int).tolist()
         else:
@@ -3031,6 +3034,8 @@ def plot_region(request):
         region = region.join(ogs)
             
         if not prev_infos is None:
+            # BM: horrible code (I wrote it, I should know).
+            # would be nice to refactor it in a more efficient and clean way.
             common_og = region.dropna(subset=["orthogroup"]).reset_index().merge(
                     prev_infos.reset_index(), on="orthogroup")[["locus_tag_x",
                     "locus_tag_y", "seqid_x", "seqid_y", "orthogroup"]]
