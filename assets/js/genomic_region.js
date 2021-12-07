@@ -340,72 +340,71 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 					continue;
 				}
 				let connection_data = curr_connections[locus_tag];
-				let connects_to = connection_data[0];
-				let orthogroup = connection_data[1];
-				let identity = connection_data[2];
-				if(!(connects_to in prev_gene_pos)) {
-					continue;
-				}
-				let top_pos = prev_gene_pos[connects_to];
-				let curr_pos = curr_gene_pos[locus_tag];
-				let top_pos0 = top_pos[0];
-				let top_pos1 = top_pos[1];
-				let curr_pos1 = curr_pos[1];
-				let curr_pos0 = curr_pos[0];
-				let all_points = [];
-				if(top_pos0<prev_start && curr_pos0<this_start) {
-					all_points.push([this_start, y_base_pos+text_field_size]);
-					all_points.push([prev_start, y_base_pos-regions_vertical_interval]);
-				} else if(top_pos0<prev_start) {
-					slope = (regions_vertical_interval+text_field_size)/(curr_pos0-top_pos0);
-					all_points.push([curr_pos0, y_base_pos+text_field_size]);
-					all_points.push([prev_start,
-						y_base_pos+text_field_size-(slope*(curr_pos0-prev_start))]);
-					all_points.push([prev_start,
-						y_base_pos-regions_vertical_interval]);
-				} else if(curr_pos0<this_start) {
-					slope = (regions_vertical_interval+text_field_size)/(curr_pos0-top_pos0);
-					all_points.push([this_start, y_base_pos+text_field_size]);
-					all_points.push([this_start,
-						y_base_pos-regions_vertical_interval+slope*(this_start-top_pos0)]);
-					all_points.push([top_pos0, y_base_pos-regions_vertical_interval]);
-				} else {
-					all_points.push([curr_pos0, y_base_pos+text_field_size]);
-					all_points.push([top_pos0, y_base_pos-regions_vertical_interval]);
-				}
+				for(const this_connection_data of connection_data) {
+					let connects_to = this_connection_data[0];
+					let orthogroup = this_connection_data[1];
+					let identity = this_connection_data[2];
+					let top_pos = prev_gene_pos[connects_to];
+					let curr_pos = curr_gene_pos[locus_tag];
+					let top_pos0 = top_pos[0];
+					let top_pos1 = top_pos[1];
+					let curr_pos1 = curr_pos[1];
+					let curr_pos0 = curr_pos[0];
+					let all_points = [];
+					if(top_pos0<prev_start && curr_pos0<this_start) {
+						all_points.push([this_start, y_base_pos+text_field_size]);
+						all_points.push([prev_start, y_base_pos-regions_vertical_interval]);
+					} else if(top_pos0<prev_start) {
+						slope = (regions_vertical_interval+text_field_size)/(curr_pos0-top_pos0);
+						all_points.push([curr_pos0, y_base_pos+text_field_size]);
+						all_points.push([prev_start,
+							y_base_pos+text_field_size-(slope*(curr_pos0-prev_start))]);
+						all_points.push([prev_start,
+							y_base_pos-regions_vertical_interval]);
+					} else if(curr_pos0<this_start) {
+						slope = (regions_vertical_interval+text_field_size)/(curr_pos0-top_pos0);
+						all_points.push([this_start, y_base_pos+text_field_size]);
+						all_points.push([this_start,
+							y_base_pos-regions_vertical_interval+slope*(this_start-top_pos0)]);
+						all_points.push([top_pos0, y_base_pos-regions_vertical_interval]);
+					} else {
+						all_points.push([curr_pos0, y_base_pos+text_field_size]);
+						all_points.push([top_pos0, y_base_pos-regions_vertical_interval]);
+					}
 
-				if(top_pos1>prev_end && curr_pos1>this_end) {
-					all_points.push([prev_end, y_base_pos-regions_vertical_interval]);
-					all_points.push([this_end, y_base_pos+text_field_size]);
-				}else if (curr_pos1>this_end) {
-					slope = (regions_vertical_interval+text_field_size)/(curr_pos1-top_pos1); 
-					all_points.push([top_pos1, y_base_pos-regions_vertical_interval]);
-					all_points.push([this_end, y_base_pos-regions_vertical_interval
-						+slope*(this_end-top_pos1)]);
-					all_points.push([this_end, y_base_pos+text_field_size]);
-				} else if(top_pos1>prev_end) {
-					slope = (regions_vertical_interval+text_field_size)/(curr_pos1-top_pos1);
-					all_points.push([prev_end, y_base_pos-regions_vertical_interval]);
-					all_points.push([prev_end, y_base_pos+text_field_size
-						-slope*(curr_pos1-prev_end)]);
-					all_points.push([curr_pos1, y_base_pos+text_field_size]);
-				} else {
-					all_points.push([top_pos1, y_base_pos-regions_vertical_interval]);
-					all_points.push([curr_pos1, y_base_pos+text_field_size]);
-				}
+					if(top_pos1>prev_end && curr_pos1>this_end) {
+						all_points.push([prev_end, y_base_pos-regions_vertical_interval]);
+						all_points.push([this_end, y_base_pos+text_field_size]);
+					}else if (curr_pos1>this_end) {
+						slope = (regions_vertical_interval+text_field_size)/(curr_pos1-top_pos1); 
+						all_points.push([top_pos1, y_base_pos-regions_vertical_interval]);
+						all_points.push([this_end, y_base_pos-regions_vertical_interval
+							+slope*(this_end-top_pos1)]);
+						all_points.push([this_end, y_base_pos+text_field_size]);
+					} else if(top_pos1>prev_end) {
+						slope = (regions_vertical_interval+text_field_size)/(curr_pos1-top_pos1);
+						all_points.push([prev_end, y_base_pos-regions_vertical_interval]);
+						all_points.push([prev_end, y_base_pos+text_field_size
+							-slope*(curr_pos1-prev_end)]);
+						all_points.push([curr_pos1, y_base_pos+text_field_size]);
+					} else {
+						all_points.push([top_pos1, y_base_pos-regions_vertical_interval]);
+						all_points.push([curr_pos1, y_base_pos+text_field_size]);
+					}
 
-				this_g.append("polygon")
-					.datum({group: orthogroup, top_feature: connects_to,
-						bottom_feature: locus_tag, ident: identity})
-					.attr("points",
-						all_points.map(d => d[0]+" "+d[1]).join(",")
-					)
-					.style("fill-opacity", ident_scale(identity))
-					.style("fill", "gray")
-					.style("stroke-opacity", .5)
-					.on("mouseover", mouseover_link)
-					.on("mouseleave", mouseleave_link)
-					.on("click", mouseclick_link);
+					this_g.append("polygon")
+						.datum({group: orthogroup, top_feature: connects_to,
+							bottom_feature: locus_tag, ident: identity})
+						.attr("points",
+							all_points.map(d => d[0]+" "+d[1]).join(",")
+						)
+						.style("fill-opacity", ident_scale(identity))
+						.style("fill", "gray")
+						.style("stroke-opacity", .5)
+						.on("mouseover", mouseover_link)
+						.on("mouseleave", mouseleave_link)
+						.on("click", mouseclick_link);
+				}
 			}
 		}
 		add_genes_name(svg, current_region, x_scale, y_base_pos+text_field_size);

@@ -2951,6 +2951,10 @@ def blastswissprot(request, locus_tag):
     return render(request, 'chlamdb/blastswiss.html', my_locals(ctx))
 
 
+def coalesce_regions():
+    pass
+
+
 def plot_region(request):
     max_region_size = 20000
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
@@ -2978,8 +2982,7 @@ def plot_region(request):
     ids = db.get_og_identity(ref_seqid=seqid)
     all_seqids = ids.index.unique().tolist()
     all_seqids.append(seqid)
-    organisms = db.get_organism(all_seqids,
-            as_df=True, as_taxid=True)
+    organisms = db.get_organism(all_seqids, as_df=True, as_taxid=True)
     all_infos = organisms.join(ids, how="inner")
     ref_strand, _, _ = hsh_loc[seqid]
     hsh_description = db.get_genomes_description().description.to_dict()
@@ -2999,7 +3002,9 @@ def plot_region(request):
             seqids = []
         seqids.append(seqid)
     else:
-        seqids = all_infos.index.astype(int).tolist()
+        selection = all_infos[all_infos.taxid.isin(genomes)]
+        seqids = selection.index.astype(int).tolist()
+        seqids.append(seqid)
 
     if len(seqids)>20:
         context = {"form":form, "error": True, "errors": ["Too many regions to display"]}
@@ -3044,14 +3049,20 @@ def plot_region(request):
             p1 = common_og.seqid_x.tolist()
             p2 = common_og.seqid_y.tolist()
             identities = db.get_og_identity(og=ogs, pairs=zip(p1, p2)).set_index(["seqid_x", "seqid_y"]).identity.to_dict()
+            hsh_agg = {}
             for i, v in common_og.iterrows():
-                if (v.seqid_x, v.seqid_y) in identities:
+                if v.seqid_x==v.seqid_y:
+                    ident = 100
+                elif (v.seqid_x, v.seqid_y) in identities:
                     ident = identities[(v.seqid_x, v.seqid_y)]
                 else:
                     ident = identities[(v.seqid_y, v.seqid_x)]
                 all_identities.append(ident)
                 og_val = to_s(int(v.orthogroup))
-                related.append(f"{to_s(v.locus_tag_x)}: [{to_s(v.locus_tag_y)}, {og_val}, {ident:.2f}]")
+                arr = hsh_agg.get(v.locus_tag_x, [])
+                arr.append(f"[{to_s(v.locus_tag_y)}, {og_val}, {ident:.2f}]")
+                hsh_agg[v.locus_tag_x] = arr
+            related = (f"{to_s(loc)}: ["+ ",".join(values) +"]" for loc, values in hsh_agg.items())
             connections.append("{"+",".join(related)+"}")
 
         taxid = organisms.loc[seqid].taxid
