@@ -51,7 +51,6 @@ urlpatterns = [
     url(r'^locusx$', views.locusx, name="locusx"),
     url(r'^blastswissprot/([a-zA-Z0-9_\.\-]+)$', views.blastswissprot, name="blastswissprot"),
     url(r'^plot_region/$', views.plot_region, name="plot_region"),
-    url(r'^orthogroups/$', views.orthogroups, name="orthogroups"),
     url(r'^circos/$', views.circos, name="circos"),
     url(r'^circos_main/$', views.circos_main, name="circos_main"),
     url(r'^orthogroup_list_cog_barchart/$', views.orthogroup_list_cog_barchart, name="orthogroup_list_cog_barchart"),

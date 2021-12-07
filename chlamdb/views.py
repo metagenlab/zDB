@@ -3084,19 +3084,6 @@ def plot_region(request):
     return render(request, 'chlamdb/plot_region.html', my_locals(ctx))
 
 
-def orthogroups(request):
-    if request.method == 'POST':
-        form = BiodatabaseForm(request.POST)
-        if form.is_valid():
-            biodb = form.cleaned_data['biodatabase']
-            groups = "orthogroup_size_distrib_%s.svg" % biodb
-            envoi = True
-    else:
-        form = BiodatabaseForm()
-
-    return render(request, 'chlamdb/orthogroups.html', my_locals(locals()))
-
-
 def sitemap(request):
     from io import StringIO
     map = '''<?xml version="1.0" encoding="UTF-8"?>
