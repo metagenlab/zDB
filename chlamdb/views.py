@@ -3,13 +3,9 @@
 # todo circos gc file curently written in home directory, move it to other place
 # todo save temp files in temp folder
 
-
-
-
 from django.shortcuts import render
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
-
 
 import seaborn as sns
 import matplotlib.colors as mpl_col
@@ -1100,32 +1096,40 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
     else:
         n_genomes = f"{n_genomes} genomes"
 
+    if ref_seqid is None:
+        orthogroup_title = f"Homologs in group_{og}"
+    else:
+        locus_tag = infos.loc[ref_seqid].locus_tag
+        orthogroup_title = f"Homologs of {locus_tag}"
+
     headers = ["", "Locus tag", "Source", "Gene", "Product"]
     identities = None
-    if ref_seqid!=None:
+    if not ref_seqid is None:
         identities = db.get_og_identity(og=og, ref_seqid=ref_seqid)
         headers.insert(2 , "Identity")
 
     homologues = []
     index = 0
+    orga_set = set()
     for seqid, data in infos.iterrows():
         organism = hsh_organism[seqid]
         locus_fmt = format_locus(data.locus_tag, to_url=True)
         entry = [index+1, locus_fmt, organism, format_gene(data.gene), data["product"]]
-        if ref_seqid!=None:
+        if not ref_seqid is None:
             if seqid==ref_seqid:
-                ident = "N/A"
+                continue
             else:
+                orga_set.add(organism)
                 ident = round(identities.loc[seqid].identity, 1)
             if ident==0:
                 ident = "-"
             entry.insert(2, ident)
-
         homologues.append(entry)
         index += 1
 
-    return {"orthogroup": orthogroup,
-            "n_genomes": n_genomes,
+    n_genomes = len(orga_set) if not ref_seqid is None else len(set(hsh_organism.values()))
+    return {"orthogroup": orthogroup_title,
+            "n_genomes": "1 genome" if n_genomes==1 else f"{n_genomes} genomes",
             "headers": headers,
             "homologues": homologues }
 
@@ -1433,7 +1437,7 @@ def orthogroup(request, og):
 
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
-    homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms)
+    homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms, og=og_id)
     context = {
         "valid_id": valid_id,
         "n_homologues": n_homologues,
@@ -1683,7 +1687,7 @@ def locusx(request, locus=None, menu=True):
             terms=["locus_tag", "gene", "product", "length"])
     all_og_c = db.get_og_count([og_id], search_on="orthogroup")
     all_org  = db.get_organism(og_annot.index.tolist())
-    n_homologues = all_og_c.loc[og_id].sum()
+    n_homologues = all_og_c.loc[og_id].sum()-1
     translation = db.get_translation(seqid)
     homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
     general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
