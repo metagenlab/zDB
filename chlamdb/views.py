@@ -1691,7 +1691,7 @@ def locusx(request, locus=None, menu=True):
     translation = db.get_translation(seqid)
     homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
     general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
-    og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
+    og_conserv_ctx  = tab_og_conservation_tree(db, og_id)# , compare_to=seqid)
 
     kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
     diamond_matches_ctx = {}
@@ -2955,8 +2955,26 @@ def blastswissprot(request, locus_tag):
     return render(request, 'chlamdb/blastswiss.html', my_locals(ctx))
 
 
-def coalesce_regions():
-    pass
+# Greedy approach to choose regions: 
+# choose the regions that have the higher number of seqids first
+def coalesce_regions(genomic_regions, seqids):
+    seqids_set = set(seqids)
+
+    index = []
+    for idx, (seqid, region, start, end) in enumerate(genomic_regions):
+        region_seqids = set(region.index.unique())
+        intersect = seqids_set & region_seqids
+        index.append((idx, len(intersect), intersect))
+
+    index.sort(key=lambda x: x[1], reverse=True)
+    filtered_results = []
+    for idx, _, intersect in index:
+        seqid, region, start, end = genomic_regions[idx]
+        if len(intersect & seqids_set) == 0:
+            continue
+        filtered_results.append(genomic_regions[idx])
+        seqids_set = seqids_set-intersect
+    return filtered_results
 
 
 def plot_region(request):
@@ -3030,8 +3048,18 @@ def plot_region(request):
     connections = []
     prev_infos = None
     all_identities = []
+
+    genomic_regions = []
     for seqid in seqids:
         region, start, end = locusx_genomic_region(db, int(seqid), region_size/2)
+        genomic_regions.append([seqid, region, start, end])
+
+    # remove overlapping regions (e.g. if two matches are on the same
+    # region, avoid displaying this region twice).
+    filtered_regions = coalesce_regions(genomic_regions, seqids)
+
+    for genomic_region in filtered_regions:
+        seqid, region, start, end = genomic_region
         if region["strand"].loc[seqid]*ref_strand == -1:
             mean_val = (end+start)/2
             region["strand"] *= -1
@@ -3052,7 +3080,8 @@ def plot_region(request):
             ogs = common_og.orthogroup.astype(int).tolist()
             p1 = common_og.seqid_x.tolist()
             p2 = common_og.seqid_y.tolist()
-            identities = db.get_og_identity(og=ogs, pairs=zip(p1, p2)).set_index(["seqid_x", "seqid_y"]).identity.to_dict()
+            identities = db.get_og_identity(og=ogs, pairs=zip(p1, p2))
+            identities = identities.set_index(["seqid_x", "seqid_y"]).identity.to_dict()
             hsh_agg = {}
             for i, v in common_og.iterrows():
                 if v.seqid_x==v.seqid_y:
