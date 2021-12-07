@@ -486,7 +486,7 @@ if(params.cog) {
       n = seq.name
       result_file = "${n}.tab"
       """
-      rpsblast -db $params.cog_db/cog_db -query $seq -outfmt 6 -evalue 0.001 \
+      rpsblast -db $params.cog_db -query $seq -outfmt 6 -evalue 0.001 \
                 -num_threads ${task.cpus} > ${result_file}
       """
     }
@@ -719,6 +719,7 @@ if(!params.refseq_diamond_BBH_phylogeny) {
 
 process load_taxo_stats_into_db {
     container "$params.annotation_container"
+
     input:
         file db from to_load_taxonomy
         file BBH_phylogeny_trees from BBH_phylogenies_to_db
