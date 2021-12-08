@@ -10,6 +10,7 @@ metagenlab_folder=""
 for i in "$@"; do
 	case $i in
 		--port=*)
+			port="${i#*=}"
 			shift
 			;;
 		--run_name=*)
@@ -43,9 +44,9 @@ for i in "$@"; do
 done
 
 
-if [ ! -f "singularity/chlamdb-latest.sif" ]; then
+if [ ! -f "singularity/zdb-1.0.sif" ]; then
 	echo "Preparing the chlamdb container, this may take a while."
-	singularity build singularity/chlamdb-latest.sif docker-daemon://metagenlab/chlamdb:latest
+	singularity build singularity/zdb-1.0.sif docker://registry.hub.docker.com/metagenlab/zdb:1.0
 	echo "Done"
 fi
 
@@ -54,6 +55,7 @@ nextflow_dir=`pwd`
 chlamdb_home="/home/chlamdb/"
 chlamdb_home_debug=""
 debugging_mode=""
+bind_path="tmp/:/home/chlamdb/assets/temp/"
 if [ "$debug" = true ]; then
 	debugging_mode="-d"
 	if [ ! -z "${metagenlab_folder}" ]; then
@@ -61,12 +63,13 @@ if [ "$debug" = true ]; then
 	fi
 
 	if [ ! -z "${chlamdb_folder}" ]; then
-		chlamdb_home_debug=",${chlamdb_folder}"
 		chlamdb_home="${chlamdb_folder}"
+		bind_path="${chlamdb_folder}"
 	fi
 fi
 
+
 echo "Starting website, it will be accessible through on localhost on port $port"
-singularity run --writable-tmpfs --bind tmp/:/home/chlamdb/assets/temp/${chlamdb_home_debug} \
-	singularity/chlamdb-latest.sif ${chlamdb_home}/start_webapp --nextflow_dir="${nextflow_dir}" \
+singularity run --writable-tmpfs --bind ${bind_path} \
+	singularity/zdb-1.0.sif ${chlamdb_home}/start_webapp --nextflow_dir="${nextflow_dir}" \
 	--run_name=${run_name} --port=${port} ${debugging_mode}
