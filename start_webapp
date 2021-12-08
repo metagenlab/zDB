@@ -49,6 +49,8 @@ if [ "$debugging" = false ]; then
 	cd /home/chlamdb
 	export DISPLAY=:1
 else
+	scriptpath=`realpath $0`
+	cd `dirname $scriptpath`
 	hosts=`hostname -I`
 fi
 
