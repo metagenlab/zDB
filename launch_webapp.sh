@@ -3,6 +3,9 @@
 # default value for the run name
 run_name="latest"
 port="8080"
+debug=false
+chlamdb_folder=""
+metagenlab_folder=""
 
 for i in "$@"; do
 	case $i in
@@ -11,6 +14,19 @@ for i in "$@"; do
 			;;
 		--run_name=*)
 			run_name="${i#*=}"
+			shift
+			;;
+		-d|--debug)
+			debug=true
+			shift
+			;;
+		--chlamdb_folder=*)
+			chlamdb_folder="${i#*=}"
+			echo "$chlamdb_folder"
+			shift
+			;;
+		--metagenlab_folder=*)
+			metagenlab_folder="${i#*=}"
 			shift
 			;;
 		-h|--help)
@@ -33,9 +49,23 @@ if [ ! -f "singularity/chlamdb-latest.sif" ]; then
 fi
 
 
-export RUN_NAME="$run_name"
-export PORT="$port"
-export NEXTFLOW_DIR=`pwd`
+nextflow_dir=`pwd`
+chlamdb_home="/home/chlamdb/"
+chlamdb_home_debug=""
+debugging_mode=""
+if [ "$debug" = true ]; then
+	debugging_mode="-d"
+	if [ ! -z "${metagenlab_folder}" ]; then
+		export PYTHONPATH="$metagenlab_folder"
+	fi
+
+	if [ ! -z "${chlamdb_folder}" ]; then
+		chlamdb_home_debug=",${chlamdb_folder}"
+		chlamdb_home="${chlamdb_folder}"
+	fi
+fi
+
 echo "Starting website, it will be accessible through on localhost on port $port"
-singularity run --writable-tmpfs --bind tmp/:/home/chlamdb/assets/temp/ \
-	singularity/chlamdb-latest.sif /home/chlamdb/start_webapp
+singularity run --writable-tmpfs --bind tmp/:/home/chlamdb/assets/temp/${chlamdb_home_debug} \
+	singularity/chlamdb-latest.sif ${chlamdb_home}/start_webapp --nextflow_dir="${nextflow_dir}" \
+	--run_name=${run_name} --port=${port} ${debugging_mode}
