@@ -46,7 +46,13 @@ done
 
 if [ ! -f "singularity/zdb-1.0.sif" ]; then
 	echo "Preparing the chlamdb container, this may take a while."
-	singularity build singularity/zdb-1.0.sif docker://registry.hub.docker.com/metagenlab/zdb:1.0
+	singularity build singularity/zdb-1.0.sif docker://registry.hub.docker.com/metagenlab/zdb:1.0 &> singularity_log
+	if [ ! $? -eq 0 ]; then
+		echo "Failed to download singularity, more information in the singularity_log file"
+		exit 1
+	else
+		rm singularity_log
+	fi
 	echo "Done"
 fi
 
