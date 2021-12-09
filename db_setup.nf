@@ -242,4 +242,3 @@ process setup_base_db {
             ${command_line_params}
     """
 }
-
