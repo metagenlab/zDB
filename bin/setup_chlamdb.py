@@ -98,34 +98,6 @@ def load_orthofinder_results(orthofinder_output, args, db_file):
     db.commit()
 
 
-# Note: as this is an alignment, the lengths are the same
-# to be replaced by zip and to be tested
-def get_identity(seq1, seq2):
-    if len(seq1)!=len(seq2):
-        raise RuntimeException("The lengths of two aligned sequences should be identical")
-
-    identity = 0
-    aligned = 0
-    identical = 0
-    gaps_1 = 0
-    gaps_2 = 0
-
-    for i in range(len(seq1)):
-        if seq1[i]=="-":
-            gaps_1 += 1
-        if seq2[i]=="-":
-            gaps_2 += 1
-        if seq1[i]=="-" or seq2[i]=="-":
-            continue
-        if seq1[i]==seq2[i]:
-            identical += 1
-        aligned += 1
-
-    if aligned/(len(seq1)-gaps_1) < 0.3 or aligned/(len(seq2)-gaps_2) < 0.3:
-        return 0
-    return 100*(identical/float(aligned))
-
-
 # will need to rewrite it using iterators instead of 
 # copying the whole list
 def chunks(lst, n):
@@ -285,26 +257,22 @@ def load_seq_hashes(args, nr_mapping, db_file):
     db.commit()
 
 
-def load_alignments_results(args, alignment_files, db_file):
+def load_alignments_results(args, identity_csvs, db_file):
     db = db_utils.DB.load_db(db_file, args)
     db.create_new_og_matrix()
     locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id(only_CDS=True)
 
     # assumes filename of the format OG00N_mafft.faa, with the orthogroup
     # being the integer following the OG string
-    matrix = []
-    for alignment in alignment_files:
-        align = AlignIO.read(alignment, "fasta")
-        orthogroup = get_og_id(alignment.split("_")[0])
-        for i in range(len(align)):
-            for j in range(i+1, len(align)):
-                alignment_1 = align[i]
-                alignment_2 = align[j]
-                id_1 = locus_to_feature_id[alignment_1.name]
-                id_2 = locus_to_feature_id[alignment_2.name]
-                identity = get_identity(alignment_1, alignment_2)
-                matrix.append( (orthogroup, id_1, id_2, identity) )
-    db.load_og_matrix(matrix)
+    for identity_csv in identity_csvs:
+        orthogroup = get_og_id(identity_csv.split("_")[0])
+        matrix = []
+        for line in open(identity_csv, "r"):
+            lt1, lt2, ident, le = line.split(",")
+            id1 = locus_to_feature_id[lt1]
+            id2 = locus_to_feature_id[lt2]
+            matrix.append((orthogroup, id1, id2, float(ident)))
+        db.load_og_matrix(matrix)
     db.create_og_matrix_indices()
     db.set_status_in_config_table("orthogroup_alignments", 1)
     db.commit()

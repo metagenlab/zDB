@@ -344,16 +344,41 @@ process align_with_mafft {
   """
 }
 
-/* Get only alignments with more than than two sequences */
-mafft_alignments.collect().into { all_alignments_1
-                                 all_alignments_2
-                                 all_alignments_3
-                                 all_alignments_4
-                                 to_load_alignment }
 
-all_alignments_1.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 3 }.set { alignments_larget_tah_3_seqs }
-all_alignments_2.flatten().map { it }.filter { (it.text =~ /(>)/).size() == 3 }.set { alignments_3_seqs }
+mafft_alignments.into { to_identity_calculation; to_phylogeny }
+to_phylogeny.collect().into { all_alignments_3; all_alignments_4 }
+
+to_identity_calculation.flatten().collate(20).set { to_identity_calculation_split }
+
+
+// will need to introduce load balancing to spread the number of 
+// comparisons more evenly across processes
+
+process identity_calculation {
+    container "$params.annotation_container"
+    
+    input:
+        file input_fasta from to_identity_calculation_split
+
+    output:
+        file "*${suffix}" into to_load_alignment
+
+    script:
+    suffix = "_ident.csv"
+    """
+    #!/usr/bin/env python
+    import annotations
+    
+    input_fasta = "${input_fasta}".split()
+    for file in input_fasta:
+        output_filename = file+"${suffix}"
+        annotations.calculate_og_identities(file, output_filename)
+    """
+}
+
+
 all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.set { alignement_larger_than_2_seqs }
+
 
 // This should be improved: as the order is non-deterministic, it isn't very resume
 // friendly
@@ -421,11 +446,9 @@ process concatenate_core_orthogroups {
   """
   #!/usr/bin/env python
 
-  # bugfix
   import annotations
   fasta_files = "${core_groups}".split(" ")
   annotations.concatenate_core_orthogroups(fasta_files)
-
   """
 }
 
@@ -599,7 +622,7 @@ process load_base_db {
         file db_base
 		file gbks from to_load_gbk_into_db
         file orthofinder from to_load_orthofinder_in_db
-        file alignments from to_load_alignment
+        file alignments from to_load_alignment.collect()
         file nr_mapping_file from nr_mapping_to_db_setup
         file checkm_results from checkm_table
 

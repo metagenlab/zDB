@@ -11,7 +11,6 @@ import setup_chlamdb
 import pandas as pd
 import itertools
 import sys
-import gzip
 import re
 import os
 
@@ -330,12 +329,12 @@ def orthofinder2core_groups(fasta_list,
     core_groups = df[(df == 1).sum(axis=1) >= limit].index.tolist()
     return core_groups, orthogroup2locus_list, locus2genome
 
+
 def get_core_orthogroups(genomes_list, int_core_missing):
     core_groups, orthogroup2locus_list, locus2genome = orthofinder2core_groups(genomes_list,
           'Orthogroups.txt', int_core_missing)
 
     for group_id in core_groups:
-    # sequence_data = SeqIO.to_dict(SeqIO.parse("OG{0:07d}_mafft.faa".format(int(one_group.split('_')[1])), "fasta"))
         sequence_data = SeqIO.to_dict(SeqIO.parse(group_id + "_mafft.faa", "fasta"))
         dest = group_id + '_taxon_ids.faa'
         new_fasta = []
@@ -351,32 +350,60 @@ def get_core_orthogroups(genomes_list, int_core_missing):
         out_handle.close()
 
 
+def calculate_og_identities(input_fasta, output_file):
+    alignment = AlignIO.read(input_fasta, "fasta")
+    values = []
+    for i in range(len(alignment)):
+        for j in range(i+1, len(alignment)):
+            alignment_1 = alignment[i]
+            alignment_2 = alignment[j]
+            locus_tag_1 = alignment_1.name
+            locus_tag_2 = alignment_2.name
+            alignment_length = 0
+            identical = 0
+            for ch1, ch2 in zip(alignment_1, alignment_2):
+                if ch1=="-" or ch2=="-":
+                    continue
+                if ch1==ch2:
+                    identical += 1
+                alignment_length += 1
+
+            if alignment_length>0:
+                per_identity = 100*(identical/float(alignment_length))
+            else:
+                per_identity = 0
+            values.append((locus_tag_1, locus_tag_2, per_identity, alignment_length))
+    output_fh = open(output_file, "w")
+    for lt1, lt2, ident, le in values:
+        print(lt1, lt2, ident, le, sep=",", file=output_fh)
+    output_fh.close()
+
+
 def concatenate_core_orthogroups(fasta_files):
     out_name = 'msa.faa'
 
-    # identification of all distinct fasta headers id (all unique taxons ids) in all fasta
-    # storing records in all_seq_data (dico)
     taxons = []
     all_seq_data = {}
+    fasta_to_algn_length = {}
     for one_fasta in fasta_files:
         all_seq_data[one_fasta] = {}
         for record in AlignIO.read(one_fasta, "fasta"):
+            if one_fasta not in fasta_to_algn_length:
+                fasta_to_algn_length[one_fasta] = len(record)
+
             if record.id not in taxons:
                 taxons.append(record.id)
             all_seq_data[one_fasta][record.id] = record
 
-    # building dictionnary of the form: dico[one_fasta][one_taxon] = sequence
-    concat_data = {}
+    concat_data = defaultdict(str)
     for one_fasta in fasta_files:
         for taxon in taxons:
-            # since core orthogroups, all taxids should be present everywhere
-            assert(taxon in all_seq_data[one_fasta])
-            if taxon not in concat_data:
-                concat_data[taxon] = all_seq_data[one_fasta][taxon]
+            if taxon not in all_seq_data[one_fasta]:
+                seq = "-"*fasta_to_algn_length[one_fasta]
             else:
-                concat_data[taxon] += all_seq_data[one_fasta][taxon]
+                seq = all_seq_data[one_fasta][taxon]
+            concat_data[taxon] += seq
 
-    # concatenating the alignments, writing to fasta file
     MSA = MultipleSeqAlignment([concat_data[i] for i in concat_data])
     with open(out_name, "w") as handle:
         AlignIO.write(MSA, handle, "fasta")
