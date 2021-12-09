@@ -350,6 +350,35 @@ def get_core_orthogroups(genomes_list, int_core_missing):
         out_handle.close()
 
 
+def calculate_og_identities(input_fasta, output_file):
+    alignment = AlignIO.read(input_fasta, "fasta")
+    values = []
+    for i in range(len(alignment)):
+        for j in range(i+1, len(alignment)):
+            alignment_1 = alignment[i]
+            alignment_2 = alignment[j]
+            locus_tag_1 = alignment_1.name
+            locus_tag_2 = alignment_2.name
+            alignment_length = 0
+            identical = 0
+            for ch1, ch2 in zip(alignment_1, alignment_2):
+                if ch1=="-" or ch2=="-":
+                    continue
+                if ch1==ch2:
+                    identical += 1
+                alignment_length += 1
+
+            if alignment_length>0:
+                per_identity = 100*(identical/float(alignment_length))
+            else:
+                per_identity = 0
+            values.append((locus_tag_1, locus_tag_2, per_identity, alignment_length))
+    output_fh = open(output_file, "w")
+    for lt1, lt2, ident, le in values:
+        print(lt1, lt2, ident, le, sep=",", file=output_fh)
+    output_fh.close()
+
+
 def concatenate_core_orthogroups(fasta_files):
     out_name = 'msa.faa'
 
