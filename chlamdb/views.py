@@ -1819,7 +1819,7 @@ def hydropathy(request, locus):
 def get_all_prot_infos(db, seqids, orthogroups):
     hsh_gene_locs = db.get_gene_loc(seqids, as_hash=True)
     hsh_prot_infos = db.get_proteins_info(seqids)
-    hsh_organisms = db.get_organism(seqids)
+    hsh_organisms = db.get_organism(seqids, as_hash=True)
     group_count = set()
     all_locus_data = []
 
