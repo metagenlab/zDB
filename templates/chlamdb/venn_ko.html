@@ -58,14 +58,14 @@
                   </ul>
                   </nav>
 
-
-                          <div id="extract_form">
-                              <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                                    <div class="panel-heading" style="width:100%">
-                                      <h3 class="panel-title">Help</h3>
-                                      </div>
-                              <p style="margin: 10px 10px 10px 10px">Venn diagramm: draw a diagramm based on the presence/absence of KOs in selected genomes. Max 6 genomes.</p>
-                              </div>
+                  <div id="extract_form">
+                    <div class="panel panel-info" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                          <div class="panel-heading" style="width:100%">
+                            <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
+                            </div>
+                    <p style="margin: 10px 10px 10px 10px">Generate a Venn diagramm of KEGG orthologs shared between genomes of interest (targets).
+                      <br>A maximum of 6 genomes can be compared.</p>
+                    </div>
 
 
 
@@ -79,8 +79,24 @@
                           </div>
               {% endif %}
                {% if envoi_venn %}
+               <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em;">
+                <div class="col-lg-8">
+               <center><h3 style="padding:0; color: rgb(0, 66, 97);">Visual representation of unique and shared COG categories among selected genomes</h2></center>
+                <br>
+              <div class="panel panel-success">
+                <div class="panel-heading" style="width:100%">
+                  <h5 class="panel-title">Help to interpret the results</h5>
+                </div>
+                <p style="margin: 10px 10px 10px 10px">
+                  The interactive Venn diagram let you visualize how many Kegg orthologs are shared among the selected genomes or a subset of genomes of interest, and how many are unique to each genome.
+                  <br>Additionally, the size of each list can be visualized in the barplot and finally, the number of unique or shared Kegg orthologs can be appreciated in the last plot.
+                  <br> Clicking on the reported numbers you will be redirected to the list of identified Ko entries and definitions.
+                </p>
+              </div>
+
                   {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=ko2description %}
               {% endif %}
+
 
               </div>
           </div>

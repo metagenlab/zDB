@@ -34,9 +34,33 @@
                 
                                 </ul>
                             </nav>
+                            <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em">
+                                <div class="col-lg-8">
+                               <center><h3 style="padding:0; color: rgb(0, 66, 97);">
+                                {% if freq == "False"%}
+                                Heatmap of genes identifed in each COG category
+                                {% elif freq == "True" %}
+                                Heatmap of frequency of genes identifed in each COG category
+                                {% endif %}
+                            </h3></center>
+                                <br>
+                              <div class="panel panel-success">
+                                <div class="panel-heading" style="width:100%">
+                                  <h5 class="panel-title">Help to interpret the results
+                                  <a href="/docs/index.html" id="show-option" title="See a detailed explanation of this heatmap"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h5>
+                                </div>
+                                <p style="margin: 10px 10px 10px 10px">
+                                    {% if freq == "False"%}
+                                    Phylogenetic tree annotated with the number of genes distributed in each COG category. For each of the COG cateogries displayed on the x axis, the number of genes that fit in each category is reported for each genome. Colors are used to easily interpret the increment or decrement of members in each category within the whole collections.
+                                    {% elif freq == "True" %}
+                                    Phylogenetic tree annotated with the frequency of genes distributed in each COG category over the total amount of genes of each genome. Colors are used to easily interpret the increment or decrement of members in each category within the whole collections.
+                                    {% endif %}
+                                </p>
+                              </div>
+                            </div>
 
                             <div class="tab-pane" id="tab2">
-                                <object style="max-width:90%;" type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
+                                <object style="max-width:90%; padding-top: 2em;" type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
                             </div>
                         </div>
                     </div>

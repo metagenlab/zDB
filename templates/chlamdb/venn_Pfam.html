@@ -1,8 +1,7 @@
-<!DOCTYPE html>
-
-
-<html>
-<head>
+<!DOCTYPE html> <html>  <head>
+  {% include "chlamdb/header.html" %}
+  {% load crispy_forms_tags %}
+    
     <script type="text/javascript" id="js">
         $(document).ready(function() {
         // call the tablesorter plugin
@@ -20,49 +19,63 @@
             $('#tabs1').tab();
         });
     </script>
-    {% include "chlamdb/header.html" %}
-    <div class="home-title"><b> Pfam domains  </b></div>
-    <hr class="lines-home">
-<head>
+</head>
 
-
-  <div class="container-fluid" id="main_container">
+<div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
-          <div id="page-content-wrapper">
-            <div class="row">
-              <div class="col-lg-12">
-                 {% include "chlamdb/menu.html" %}
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+             {% include "chlamdb/menu.html" %}
+             <div class="home-title"><b> Pfam domains </b></div>
+             <hr class="lines-home">
 
-                  <nav>
-                  <ul id="tabs" class="nav nav-tabs">
-                      <li ><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
-                      <li class="active"><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
-                      <li><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
-                      <li><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
-                      <li><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
-                  </ul>
-                  </nav>
+             <nav>
+                <ul id="tabs_main" class="nav nav-tabs">
+                    <li><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
+                    <li class="active"><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
+                    <li><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
+                    <li><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
+                    <li><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
 
-                  <div id="extract_form">
-                      <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                            <div class="panel-heading" style="width:100%">
-                              <h3 class="panel-title">Help</h3>
-                              </div>
-                      <p style="margin: 10px 10px 10px 10px">Venn diagramm of Pfam domains, max 6 genomes</p>
-                      </div>
+                </ul>
+            </nav>
+            <div class="panel panel-info" style="width:90% ; top: 200px; margin: 10px 10px 10px 10px">
+                <div class="panel-heading" style="width:100%; ">
+                        <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
 
-                      <form action="{% url "venn_pfam" %}" method="post">
-                          {% csrf_token %}
-                          {{ form_venn.as_p }}
-                          <input type="submit" name="venn" value="Compare Pfam" id="venn_button" />
-                      </form>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 180%">Generate a Venn diagramm of Pfam domains shared between genomes of interest (targets).
+                      <br>A maximum of 6 genomes can be compared.</p>
+                    </div>
+
+                    {% block content %}
+                    <form action='{% url "venn_pfam" %}' method="post">
+                        {% csrf_token %}
+                        {{ form_venn.as_p }}
+                        <input type="submit" name="venn" value="Compare Pfam" id="venn_button" />
+                    </form>
+                    {% endblock %}
+                
                   </div>
-
-               {% if envoi_venn %}
-                  {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=pfam2description %}
-              {% endif %}
-
+             {% if envoi_venn %}
+             <div class="row" style="padding-top:30px ; background-color: rgba(245, 245, 245, 0.986) ; margin-top: 2em;">
+              <div class="col-lg-8">
+             <center><h3 style="padding:0; color: rgb(0, 66, 97);">Visual representation of unique and shared Pfam domains among selected genomes</h2></center>
+              <br>
+              <div class="panel panel-success">
+                <div class="panel-heading" style="width:100%">
+                    <h5 class="panel-title">Help to interpret the results</h5>
+              </div>
+              <p style="margin: 10px 10px 10px 10px">
+                The interactive Venn diagram let you visualize how many Pfam domains are shared among the selected genomes or a subset of genomes of interest, and how many are unique to each genome.
+                <br> Clicking on the reported numbers the list of identified Pfam domains is displayed below. The table contains a list of the Pfam entries and their description.
+                <br> Additionally, the total number of Pfam domains identified in each genome can be visualized in the barplot, while the number of unique or shared ones can be appreciated in the last plot.
+              </p>
+            </div>
+                {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=pfam2description %}
+            {% endif %}
               </div>
           </div>
         </div>
@@ -99,11 +112,12 @@
        $('#export_bouttons_groups').show();
     }
   };
-  $(update_fields);
-  $("#id_get_groups").change(update_fields);
+
+
 
 </script>
 
+<p id="jqtest"></p>
 
 </body>
 {% include "chlamdb/style_menu.html" %}

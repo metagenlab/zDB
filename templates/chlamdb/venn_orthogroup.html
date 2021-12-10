@@ -28,11 +28,12 @@
                 </nav>
 
                 <div id="extract_form">
-                    <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                    <div class="panel panel-info" style="width:90% ; top: 200px; margin: 10px 10px 10px 10px">
                           <div class="panel-heading" style="width:100%">
-                              <h3 class="panel-title">Help</h3>
+                            <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
                           </div>
-                        <p style="margin: 10px 10px 10px 10px">Venn diagramm of orthologous groups constructed based on BLAST using OrthoFinder, max 6 genomes</p>
+                        <p style="margin: 10px 10px 10px 10px"> Generate a Venn diagramm of the orthologous groups shared between genomes of interest (targets).
+                            <br>A maximum of 6 genomes can be compared.</p>
                     </div>
 
                         {% block content %}
@@ -46,9 +47,22 @@
 
                 </div>
 
-             {% if envoi_venn %}
-                <div class="row" style="padding-top:30px">
+
+                {% if envoi_venn %}
+                <div class="row" style="padding-top:30px ;background-color: rgba(245, 245, 245, 0.986)" >
                    <div class="col-lg-8">
+                    <center><h3 style="padding:0; color: rgb(0, 66, 97);">Visual representation of unique and shared orthogroups among selected genomes</h2></center>
+                    <br>
+                    <div class="panel panel-success">
+                        <div class="panel-heading" style="width:100%">
+                            <h5 class="panel-title">Help to interpret the results</h5>
+                        </div>
+                        <p style="margin: 10px 10px 10px 10px">
+                            The interactive Venn diagram let you visualize how many orthologous groups are shared among the selected genomes or a subset of genomes of interest, and how many are unique to each genome.
+                            <br> Clicking on the reported numbers the list of identified orthologous groups is displayed below. The table contains a list of the genes annotated in each Orthogroup and their description.
+                            <br> Additionally, the total number of Orthologous identified in each genome can be visualized in the barplot, while the number of unique or shared ones can be appreciated in the last plot.
+                        </p>
+                    </div>
                     {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=orthogroup2description %}
                     </div>
                 </div>

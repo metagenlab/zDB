@@ -36,11 +36,11 @@
                       </ul>
                   </nav>
 
-                      <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                          <div class="panel-heading" style="width:100%">
-                              <h3 class="panel-title">Help</h3>
-                          </div>
-                          <p style="margin: 10px 10px 10px 10px; line-height: 160%">Compare orthogroup presenting more than one homolog in one of the selected genomes.</p>
+                  <div class="panel panel-info" style="width:90% ; top: 200px; margin: 10px 10px 10px 10px">
+                    <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 180%">Compare the size of the orthogroup shared by the selected genomes (targets).</p>
                       </p>
                       </div>
 
@@ -55,18 +55,26 @@
 
                       {% if envoi_comp %}
 
-                      <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                          <div class="panel-heading" style="width:100%">
-                              <h3 class="panel-title">Help</h3>
-                          </div>
-                          <p style="margin: 10px 10px 10px 10px; line-height: 160%">Homolog counts can be reordrered by clicking on column headers.<br>
-                          <strong>Total count:</strong> number of homologs in the whole database </p>
-                      </p>
-                      </div>
+                      <div class="row" style="padding-top:30px ;background-color: rgba(245, 245, 245, 0.986); margin-top: 1em;" >
+                        <div class="col-lg-8" style="margin-bottom: 2em;">
+                         <center><h3 style="padding:0; color: rgb(0, 66, 97);">Size of shared Orthologous groups</h2></center>
+                             <br>
+                            
+                  <h4> Number of shared orthogroups exhiniting more than 1 copy (in one ore multiple genomes) in at least 1 out of x selected genomes: {{n_orthogroups}} </h4>
+                         <div class="panel panel-success">
+                             <div class="panel-heading" style="width:100%">
+                                 <h5 class="panel-title">Help to interpret the results</h5>
+                             </div>
+                             <p style="margin: 10px 10px 10px 10px">
+                                The ouput table contains the number of homologs in the shared orthogroups of the selected genomes. Interesting for comparing the size of orthogroups within genomes.
+                                <br> Homolog counts can be reordrered by clicking on column headers.<br>
+                                <br>Click on Orthologous group to get all the homologs identified in the database and the phylogenetic profile. 
+                             </p>
+                         </div>
+                        </div>
+                     
 
-                              Number of orthogroups exhiniting more than 1 copy (in one ore multiple genomes) in at least 1 out of {{bioentries|length}} selected genomes: {{n_orthogroups}}
-
-                              <table class="sortable" id="mytable">
+                              <table class="sortable" id="mytable" style="width: 90%; margin-left: 1em; padding-top: 30em;">
                                   <style>
                                   table {
                                   width:100%;
@@ -75,12 +83,13 @@
                                   td {
                                   overflow: hidden;
                                   white-space: nowrap;
+                                
                                   }
                                   </style>
                                   <thead>
 
 
-                                    <tr style="height:200px;">
+                                    <tr>
                                         <th valign="bottom">Orthogroup</th>
                                         {% for genome in genomes_list %}
                                             <th id="entete_meta4" valign="bottom"><div class="rotate">{{genome}}</div></th>
@@ -155,11 +164,14 @@ $(document).ready(function() {
             title: 'plast_refseq'
         }
     ],
-    "paging":   false,
+   
     "ordering": true,
     "info":     false,
     } );
 } );
+
+$(document).ready(function() {
+$("#mytable").DataTable();} );
 
 </script>
 

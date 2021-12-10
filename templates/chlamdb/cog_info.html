@@ -20,16 +20,17 @@
                 <div class="col-lg-12">
                    {% include "chlamdb/menu.html" %}
 
+                    <h3>   Category: {{ description }} (n={{data|length}})</h3>
+
 
                     <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                         <div class="panel-heading" style="width:100%">
                             <h3 class="panel-title">Help</h3>
                         </div>
-                        <p style="margin: 10px 10px 10px 10px">Selected subset list.
+                        <p style="margin: 10px 10px 10px 10px">  Summary table of all the genomic loci ({{data|length}}) of the genomes present in the database annotated with the Cog category "{{ description }}".
+                          <br>Click on the accession number of a COG entry to discover its description and frequency.  
                         </p>
                     </div>
-
-                    <h3>   Category: {{ description }} (n={{data|length}})</h3>
 
                     <table id="cog_table" class="display">
                         <thead>

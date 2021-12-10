@@ -1,64 +1,41 @@
-<!DOCTYPE html>
+<!DOCTYPE html> <html>  <head> {% load custom_tags %}
+  {% load static %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+  {% include "chlamdb/header.html" %}
 
 
-<html>
-
-
-
-<head>
-    {% load static %}
-    {% load static %}
-    {% get_static_prefix as STATIC_PREFIX %}
-    {% load custom_tags %}
-
-    <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
-    <!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
-    <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-
-    <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
-    {% include "chlamdb/header.html" %}
-    <div class="home-title"><b> Pfam domains  </b></div>
-    <hr class="lines-home">
+   
 </head>
 
 
-<body height="5000px">
-  <div class="container-fluid" id="main_container">
-    <div class="row">
-      <div id="wrapper">
-          <div id="page-content-wrapper">
-            <div class="row">
-              <div class="col-lg-12">
-                 {% include "chlamdb/menu.html" %}
-                  <nav>
-                      <ul id="tabs_main" class="nav nav-tabs">
-                          <li><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
-                          <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
-                          <li class="active"><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
-                          <li><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
-                          <li><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
+<div class="container-fluid" id="main_container">
+  <div class="row">
+    <div id="wrapper">
+      <div id="page-content-wrapper">
+        <div class="row">
+          <div class="col-lg-12">
+           {% include "chlamdb/menu.html" %}
+           <div class="home-title"><b> Pfam domains </b></div>
+           <hr class="lines-home">
 
-                      </ul>
-                  </nav>
+           <nav>
+              <ul id="tabs_main" class="nav nav-tabs">
+                  <li><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
+                  <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
+                  <li class="active"><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
+                  <li><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
+                  <li><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
 
-                  <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                      <div class="panel-heading" style="width:100%">
-                          <h3 class="panel-title">Help</h3>
-                      </div>
-                      <p style="margin: 10px 10px 10px 10px; line-height: 160%">
-                      Compare Pfam domain found in selected genomes (return detailed table)<br></p>
+              </ul>
+          </nav>
+          <div class="panel panel-info" style="width:90% ; top: 200px; margin: 10px 10px 10px 10px">
+              <div class="panel-heading" style="width:100%; ">
+                      <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
+
+                  </div>
+                  <p style="margin: 10px 10px 10px 10px; line-height: 180%">
+                    Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified.<br></p>
                   </p>
                   </div>
 
@@ -72,45 +49,45 @@
                       </form>
 
                       {% if envoi_comp %}
-
-                      <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                          <div class="panel-heading" style="width:100%">
-                              <h3 class="panel-title">Help</h3>
-                          </div>
-                          <div style="margin: 10px 10px 10px 20px;">
-                            <ul style="list-style-type:square;">
-                              <li>
-                                Number of domains at least present 1 time in 1 of the {{taxon_list|length}} selected genomes: <strong>{{pfam2data|length}}</strong> . <br>
-                              </li>
-                              <li>
-                                Click on Pfam accession to get detailed phylogenetic profile of the corresponding Pfam entry. <br>
-                              </li>
-                              <li>
-                                nDomain: total number of occurence of this domain in the complete database <br>
-                              </li>
-                            </ul>
-
+                      <div class="row" style="padding-top:30px ;background-color: rgba(245, 245, 245, 0.986); margin-top: 1em;" >
+                        <div class="col-lg-8">
+                         <center><h3 style="padding:0; color: rgb(0, 66, 97);">Compare the distribution of shared Pfam domains</h2></center>
+                             <br>
+                            
+                  <h4>  Number of domains at least present 1 time in 1 of the {{taxon_list|length}} selected genomes: <strong>{{pfam2data|length}}</strong>  </h4>
+                         <div class="panel panel-success">
+                             <div class="panel-heading" style="width:100%">
+                                 <h5 class="panel-title">Help to interpret the results</h5>
+                             </div>
+                             <p style="margin: 10px 10px 10px 10px">
+                              The ouput table contains the list of shared Pfam domains and the number of times each of them was identified in the selected gneomes. <br>nDomain: total number of occurence of this domain in the complete database. 
+                              <br>Click on Pfam accession to get detailed phylogenetic profile of the corresponding Pfam entry. 
+                             </p>
+                         </div>
                         </div>
-                      </div>
 
-                              <table class="sortable table" id="table_pfam">
+
+
+                     
+                        <table class="sortable table" id="table_pfam" style="width: 90%; margin-left: 1em; padding-top: 30em;">
                                   <style>
                                     table {
                                         width:100%;
                                         table-layout:fixed;
+                                        
                                     }
                                     td {
                                         overflow: hidden;
                                         white-space: nowrap;
                                     }
                                     </style>
-                                  <thead>
-                                  <tr style="height:200px;">
-                                    <th>Domain ID</th>
-                                    <th>Description</th>
-                                    <th>nDomain</th>
+                                     <thead>
+                                      <tr >
+                                      <th valign="bottom">Domain ID</th>
+                                      <th valign="bottom">Description</th>
+                                      <th valign="bottom">nDomain</th>
                                     {% for taxon in taxon_list %}
-                                        <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
+                                          <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
                                     {% endfor %}
                                   </tr>
                                 </thead>
@@ -135,6 +112,7 @@
 
     <script src="{% static 'js/jquery.hottie.js' %}"></script>
     <script>
+
       $(function(){
         $("#table_pfam td").hottie({
           readValue : function(e) {
@@ -149,7 +127,8 @@
         });
 
       });
-
+</script>
+<script>
       $(document).ready(function() {
         $('#table_pfam').DataTable( {
           dom: 'lBfrtip',
@@ -171,11 +150,13 @@
           "ordering": true,
           "info":     false,
           } );
-      } );
+        } );
+</script>
 
-
-
-    </script>
+<script>
+$(document).ready(function() {
+$('#table_pfam').DataTable();} )
+</script>
 </body>
 {% include "chlamdb/style_menu.html" %}
 </html>
