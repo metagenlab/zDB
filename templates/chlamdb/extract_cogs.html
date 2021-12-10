@@ -117,7 +117,6 @@
                     <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                         <li class="active"><a href="#red" data-toggle="tab">COGs</a></li>
 						<li><a data-toggle="tab" href="#tab66">COG categories barchart</a></li>
-                        <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
                     </ul>
 
                     <div id="my-tab-content" class="tab-content">
@@ -399,113 +398,6 @@
 
 
 						</div>
-
-                        <div class="tab-pane" id="tab2">
-
-                            <h3> Locus annotation </h3>
-                            <div id="export_bouttons_groups">
-                                <a href="{% url 'get_fasta' %}{{fasta_url_ref}}" class="btn btn-success">Download fasta</a>
-                                <form name="circos_form" id="circos_form" action="{% url 'circos_main' %}" method="post">
-                                    <input type="hidden" name="reference_taxon" value="{{ reference_taxon }}">
-                                    <input type="hidden" name="target_list" value="{{ target_circos_taxons }}">
-                                    <input type="hidden" name="highlight" value="{{ locus_list }}">
-                                    <button class="btn btn-success">Show on circular map</button>
-                                </form>
-                                <br/>
-                            </div>
-                            <div style="padding-top:20px">
-                                <table id="table_reference_genome" class="display">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th>Orthogroup</th>
-                                            <th>Locus</th>
-                                            <th>C</th>
-                                            <th>COGn</th>
-                                            <th>KO</th>
-                                            <th>Pathways</th>
-                                            <th>Modules</th>
-                                            <th>Interpro</th>
-                                            <th>Gene</th>
-                                            <th>nH</th>
-                                            <th>nG</th>
-                                            <th>TM</th>
-                                            <th>SP</th>
-                                            <th>Product</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-
-                                        {%for values in locus2annot%}
-                                        <tr>
-                                            <td>{{values.0}}</td>
-                                            <td>{{values.1}}</td>
-                                            <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
-                                            <td><a href="{% url 'fam' values.2 'cog' %}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
-                                            {% with locus_tag2cog_name|keyvalue:values.2 as name %}
-                                                {% if name == '-' %}
-                                                    <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
-                                                {% else %}
-                                                    <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
-                                                {% endif %}
-                                            {%endwith%}
-                                            {% with locus_tag2ko|keyvalue:values.2 as oneko %}
-                                                {% if oneko == '-' %}
-                                                    <td>{{locus_tag2ko|keyvalue:values.2}}</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
-                                                {% else %}
-                                                    <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
-                                                    {% with ko2ko_pathways|keyvalue:oneko as name %}
-                                                        {% if name == '-' %}
-                                                            <td>-</td>
-                                                        {% else %}
-                                                            <td>{{name|safe}}</td>
-                                                        {% endif %}
-                                                    {%endwith%}
-                                                    {% with ko2ko_modules|keyvalue:oneko as name %}
-                                                        {% if name == '-' %}
-                                                            <td>-</td>
-                                                        {% else %}
-                                                            <td>{{name|safe}}</td>
-                                                        {% endif %}
-                                                    {%endwith%}
-                                                {% endif %}
-
-
-                                            {%endwith%}
-                                            {% with locus2interpro|keyvalue:values.2 as interpro_data %}
-                                            <td>
-                                                {% for one_interpro in interpro_data %}
-                                                {% if one_interpro.0 != '-' %}
-                                                    <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
-                                                {%else%}
-                                                    {{one_interpro.0}}
-                                                {%endif%}
-                                                    {{one_interpro.1}} </br>
-                                                {% endfor %}
-                                                {%endwith%}
-                                            </td>
-                                            <td>{{values.7}}</td>
-                                            <td>{{values.8}}</td>
-                                            <td>{{values.9}}</td>
-                                            <td>{{values.10}}</td>
-                                            <td>{{values.11}}</td>
-                                            <td>{{values.12}}</td>
-
-                                        </tr>
-
-                                        {%endfor%}
-                                    </tbody>
-                                </table>
-                            </div>
-
-
-                        </div>
-
-
-
-
                     </div>
                 {% endif %}
             </div>
