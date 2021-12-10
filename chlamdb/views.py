@@ -534,7 +534,7 @@ def extract_pfam(request, classification="taxon_id"):
 
     if request.method != "POST":
         form = extract_form_class()
-        return render(request, 'chlamdb/extract_Pfam.html', my_locals(locals()))
+        return render(request, 'chlamdb/extract_Pfam.html', my_locals({"form": form}))
 
     form = extract_form_class(request.POST)
     if not form.is_valid():
@@ -553,7 +553,7 @@ def extract_pfam(request, classification="taxon_id"):
         sum_exclude_length += len(exclude_plasmids)
 
     if n_missing>=sum_include_length:
-        ctx = {"wrong_n_missing" : True}
+        ctx = {"wrong_n_missing" : True, "form": form}
         return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
 
     pfam_include = db.get_pfam_hits(include, plasmids=include_plasmids, 
@@ -574,7 +574,7 @@ def extract_pfam(request, classification="taxon_id"):
     pfam_defs = db.get_pfam_def(selection)
 
     if len(selection) == 0:
-        ctx = {no_match: True}
+        ctx = {no_match: True, "form": form}
         return render(request, 'chlamdb/extract_ko.html', my_locals(ctx))
 
     all_database = db.get_pfam_hits(pfam_include.index.tolist(), search_on="pfam", indexing="taxid")
