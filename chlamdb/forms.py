@@ -384,7 +384,7 @@ def make_circos_form(database_name):
             return taxids
 
         def get_ref_taxid(self):
-            indice = self.cleaned_data["circos_reference"][0]
+            indice = self.cleaned_data["circos_reference"]
             taxid, _ = reverse_index[int(indice)]
             return taxid
 
