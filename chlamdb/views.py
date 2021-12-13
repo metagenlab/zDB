@@ -1693,7 +1693,7 @@ def locusx(request, locus=None, menu=True):
 
     kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
     diamond_matches_ctx = {}
-    n_swissprot_hits = 0
+    swissprot_ctx = {}
     if optional2status.get("KEGG", False):
         kegg_ctx = og_tab_get_kegg_annot(db, [seqid])
 
@@ -1704,7 +1704,7 @@ def locusx(request, locus=None, menu=True):
         pfam_ctx = tab_get_pfam_annot(db, [seqid])
 
     if optional2status.get("BLAST_swissprot", False):
-        n_swissprot_hits = db.get_n_swissprot_homologs(seqid)
+        swissprot_ctx = locus_tab_swissprot_hits(db, seqid)
 
     if optional2status.get("BLAST_database", False):
         diamond_matches_ctx = tab_get_refseq_homologs(db, seqid)
@@ -1719,7 +1719,6 @@ def locusx(request, locus=None, menu=True):
         "translation": translation,
         "seq": sequence,
         "sequence_type": feature_type,
-        "n_swissprot_hits": n_swissprot_hits,
         "locus": locus,
         "feature_type" : "CDS",
         **cog_ctx,
@@ -1730,7 +1729,8 @@ def locusx(request, locus=None, menu=True):
         **og_phylogeny_ctx,
         **pfam_ctx,
         **genomic_region_ctx,
-        **diamond_matches_ctx
+        **diamond_matches_ctx,
+        **swissprot_ctx
     }
     return render(request, 'chlamdb/locus.html', my_locals(context))
 
@@ -2862,34 +2862,34 @@ def format_gene(gene):
         return gene
 
 
-def blastswissprot(request, locus_tag):
-    biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+def format_taxid_to_ncbi(organism,taxid):
+    val = (
+        """<a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={taxid}" target="_top">"""
+        f"""{organism}</a>"""
+        )
+    return val
 
-    if locus_tag is None:
-        return render(request, 'chlamdb/blastswiss.html', my_locals({"valid_id": False}))
-    try:
-        seqid, _ = db.get_seqid(locus_tag=locus_tag)
-    except:
-        return render(request, 'chlamdb/blastswiss.html', my_locals({"valid_id": False}))
 
+def locus_tab_swissprot_hits(db, seqid):
     swissprot_homologs = db.get_swissprot_homologs([seqid])
     transl = db.get_translation(seqid)
 
-    # NOTE: to fix, some queries have a > 100% coverage. Need to use query start and query end.
-    swissprot_homologs["perc_cover"] = (swissprot_homologs.match_len*100/len(transl)).round(2)
     blast_data = []
+    header = ["Swissprot accession", "Eval", "Score", "ID (%)", "N gaps",
+            "Alignment length", "Annot score", "Gene", "Description", "Organism"]
+
     for num, data in swissprot_homologs.iterrows():
-        line = [num+1, data.accession, data.evalue, data.bitscore, data.perc_id,
-                data.gaps, data.perc_cover, data.pe, data.gene, data.definition,
-                data.organism, data.taxid]
+        line = [data.accession, data.evalue, data.bitscore, data.perc_id,
+                data.gaps, data.match_len, data.pe, data.gene, data.definition,
+                format_taxid_to_ncbi(data.organism, data.taxid)]
         blast_data.append(line)
+
     ctx = {
-        "valid_id": not swissprot_homologs.empty,
-        "locus_tag": locus_tag,
-        "blast_data": blast_data
+        "n_swissprot_hits": len(swissprot_homologs),
+        "swissprot_blast_data": blast_data,
+        "swissprot_headers": header
     }
-    return render(request, 'chlamdb/blastswiss.html', my_locals(ctx))
+    return ctx
 
 
 # Greedy approach to choose regions: 

@@ -49,7 +49,6 @@ urlpatterns = [
     re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)', views.locusx, name="locusx"),
     re_path(r'^orthogroup/([a-zA-Z0-9_\.\-]+)', views.orthogroup, name="orthogroup"),
     re_path(r'^locusx$', views.locusx, name="locusx"),
-    re_path(r'^blastswissprot/([a-zA-Z0-9_\.\-]+)$', views.blastswissprot, name="blastswissprot"),
     re_path(r'^plot_region/$', views.plot_region, name="plot_region"),
     re_path(r'^circos/$', views.circos, name="circos"),
     re_path(r'^circos_main/$', views.circos_main, name="circos_main"),
