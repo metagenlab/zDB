@@ -93,11 +93,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 		let start=region.start;
 		let end=region.end;
 		let filtered_features = region.features.filter(function(d) {
-			if(d.strand==1) {
-				return d.end <= end-max_arrow_size;
-			} else {
-				return d.end >= start+max_arrow_size;
-			}
+			return (d.start<=end-max_arrow_size)&&(d.end>=start+max_arrow_size);
 		});
 		let locus_to_position = {};
 
@@ -344,6 +340,12 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 					let connects_to = this_connection_data[0];
 					let orthogroup = this_connection_data[1];
 					let identity = this_connection_data[2];
+					if (!(connects_to in prev_gene_pos)) {
+						// this may happen for genes that are returned
+						// by the server but are not display (e.g. 
+						// genes that are not entirely contained in the region).
+						continue;
+					}
 					let top_pos = prev_gene_pos[connects_to];
 					let curr_pos = curr_gene_pos[locus_tag];
 					let top_pos0 = top_pos[0];
