@@ -2864,7 +2864,7 @@ def format_gene(gene):
 
 def format_taxid_to_ncbi(organism,taxid):
     val = (
-        """<a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={taxid}" target="_top">"""
+        f"""<a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={taxid}" target="_top">"""
         f"""{organism}</a>"""
         )
     return val
