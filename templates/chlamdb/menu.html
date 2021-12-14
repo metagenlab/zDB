@@ -1,9 +1,6 @@
-<!DOCTYPE html>
+
 {% load static %}
 {% load custom_tags %}
-<html>
-<head>
-
 
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -11,10 +8,8 @@
   <meta name="author" content="" />
   <!-- Font Awesome icons (free version)-->
   <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
-</head>
-  <body
-  
-  style=" font-family: Helvetica, Verdana, 'Segoe UI', sans-serif">
+
+  <div style=" font-family: Helvetica, Verdana, 'Segoe UI', sans-serif">
     <nav class="navbar  navbar-fixed-top" role="navigation" style="z-index:5;">
       <div class="header" >
         <!-- Brand and toggle get grouped for better mobile display -->
@@ -38,7 +33,7 @@
     <div class="sidenav" id="menu_box" >      <!-- Sidebar -->
           <ul class="sidebar-nav" >
               <li class="sidebar-brand">
-                <nav id="sidebar-wrapper"   >
+                <nav id="sidebar-wrapper">
                   <li><form class="example" role="search" action='{% url "search_bar" %}' method="GET" >
                     <button type="submit"><i class="fa fa-search"></i></button>
                     <input type="text" placeholder="    Gene, product, orthogroup, COG, KEGG id, ..."  name="search2">
@@ -48,7 +43,7 @@
 				  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'extract_region' %}" ><b>Genomes</b></a></li>
 				  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'phylogeny_intro' %}" ><b>Phylogeny</b></a></li>
 				  <hr class="line-menu">
-				  <li class="analyses"><b>Analyses</b></a></li>
+				  <li class="analyses"><b>Analyses</b></li>
 				  <li class="analyses_intra" ><a href="{% url 'blast' %}">Blast</a></li>
 				  <li class="sidebar-dropdown" ><p> Comparisons</p> 
 				  <li class="analyses_intra"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a></il>
@@ -76,15 +71,12 @@
 				  <li class="sidebar-nav-item"><a    href="/docs/index.html"><b>Documentation</b></a></li>
 				  <li class="sidebar-nav-item"><a   href="{% url 'about' %}"><b>References</b></a></li>
 				  <li class="sidebar-nav-item" style="margin-bottom: 5em"><a href="https://github.com/metagenlab/annotation_pipeline_nextflow"><i class="fab fa-github" ></i><b> Project and contacts</b></a></li>
-
-			   </ul>
-			  </li>
-		   </nav> 
+				</nav>
         </ul>
     </div> <!-- /.container-fluid -->
   </div> <!-- /#sidebar-wrapper -->
 
-</body>
+</div>
 
 <script>
 
