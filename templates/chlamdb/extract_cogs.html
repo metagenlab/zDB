@@ -84,10 +84,8 @@
                   </div>
 
                   {% block content %}
-                  <form action="{% url "extract_cog" %}" method="post">
-                      {% csrf_token %}
-                      {% crispy form %}
-                  </form>
+				  {% csrf_token %}
+				  {% crispy form %}
                   {% endblock %}
               </div>
 
@@ -424,27 +422,6 @@ $('#cog_table').DataTable( {
 	buttons: [{ extend: 'excel', title: 'cog_table'},
 			  {extend: 'csv', title: 'cog_table'}]});
 });
-
-$(document).ready(function() {
-$('#table_reference_genome').DataTable( {
- dom: 'Bfrtip',   
-"paging":   true,
-"ordering": true,
-"info":     false,
-buttons: [
-{
-    extend: 'excel',
-    title: 'reference_genome_locus_list'
-},
-{
-    extend: 'csv',
-    title: 'reference_genome_locus_list'
-}
-],
-} );
-} );
-
-
 
 </script>
 </html>

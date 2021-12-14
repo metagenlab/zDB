@@ -364,7 +364,7 @@ def extract_orthogroup(request):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
-    extract_form_class = make_extract_form(db, plasmid=True)
+    extract_form_class = make_extract_form(db, "extract_orthogroup", plasmid=True)
     if request.method != "POST":
         form = extract_form_class()
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
@@ -530,8 +530,8 @@ def format_pfam(pfam_id, base=None, to_url=False):
 
 def extract_pfam(request, classification="taxon_id"):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    extract_form_class = make_extract_form(db, plasmid=True, label="Pfam domains")
 
+    extract_form_class = make_extract_form(db, "extract_pfam", plasmid=True, label="Pfam domains")
     if request.method != "POST":
         form = extract_form_class()
         return render(request, 'chlamdb/extract_Pfam.html', my_locals({"form": form}))
@@ -574,8 +574,8 @@ def extract_pfam(request, classification="taxon_id"):
     pfam_defs = db.get_pfam_def(selection)
 
     if len(selection) == 0:
-        ctx = {no_match: True, "form": form}
-        return render(request, 'chlamdb/extract_ko.html', my_locals(ctx))
+        ctx = {"no_match": True, "form": form}
+        return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
 
     all_database = db.get_pfam_hits(pfam_include.index.tolist(), search_on="pfam", indexing="taxid")
     sums = all_database.sum(axis=1)
@@ -638,7 +638,7 @@ def format_ko_modules(hsh_modules, ko):
 
 def extract_ko(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    extract_form_class = make_extract_form(db, plasmid=True, label="Kegg Orthologs")
+    extract_form_class = make_extract_form(db, "extract_ko", plasmid=True, label="Kegg Orthologs")
 
     if request.method != "POST":
         form = extract_form_class()
@@ -696,27 +696,8 @@ def extract_ko(request):
         data = [kof, kod, kop, kom, mat_include.sum_pos.loc[ko], kot]
         match_groups_data.append(data)
 
-    # should contain the loci of the KO in the reference genome
     max_n = ko_total_count.max()
-    locus_list = [] # [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-    target_circos_taxons = include + exclude
-
-    # url to get the barchart of selected KO
-    taxons_in_url = "?i="+("&i=").join(map(str, include)) + '&m=%s' % str(n_missing)
-    taxon_out_url = "&o="+("&o=").join(map(str, exclude))
     envoi_extract = True
-    mm = 'module'
-    pp = 'pathway'
-
-    locus2annot = {}
-    locus_tag2cog_catego = {}
-    locus_tag2cog_name = {}
-    locus_tag2ko = {}
-    pathway2category = {}
-    module2category = {}
-    ko2ko_pathways = {}
-    ko2ko_modules = {}
-    locus2interpro = {}
     return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
 
 
@@ -762,7 +743,7 @@ def venn_pfam(request):
 
 def extract_cog(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    extract_form_class = make_extract_form(db, plasmid=True, label="COG")
+    extract_form_class = make_extract_form(db, "extract_cog", plasmid=True, label="COG")
 
     if request.method != "POST":
         form = extract_form_class()
@@ -805,7 +786,7 @@ def extract_cog(request):
     selection = pos_index.difference(neg_index).tolist()
     if len(selection) == 0:
         no_match = True
-        return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
+        return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 
     all_database = db.get_cog_hits(cog_include.index.tolist(), search_on="cog", indexing="taxid")
     sums = all_database.sum(axis=1)
@@ -858,16 +839,6 @@ def extract_cog(request):
     series = f"[ {series_str} ]"
     labels_str = ",".join([f"\"{funct}\"" for funct in cat_count.keys()])
     labels = f"[ {labels_str} ]"
-
-    locus2annot = {}
-    locus_tag2cog_catego = {}
-    locus_tag2cog_name = {}
-    locus_tag2ko = {}
-    pathway2category = {}
-    module2category = {}
-    ko2ko_pathways = {}
-    ko2ko_modules = {}
-    locus2interpro = {} #  get_locus_annotations(biodb, locus_list)
     envoi_extract = True
     return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 

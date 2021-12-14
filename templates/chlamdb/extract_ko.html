@@ -43,10 +43,8 @@
                         </div>
 
                         {% block content %}
-                        <form action="{% url "extract_ko" %}" method="post">
-                            {% csrf_token %}
-                            {% crispy form %}
-                        </form>
+						{% csrf_token %}
+						{% crispy form %}
                         {% endblock %}
                     </div>
 

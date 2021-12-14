@@ -418,7 +418,7 @@ def make_genome_selection_form(database_name):
     return GenomeForm
 
 
-def make_extract_form(db, plasmid=False, label="Orthologs"):
+def make_extract_form(db, action, plasmid=False, label="Orthologs"):
     accession_choices, rev_index = get_accessions(db, plasmid=plasmid)
 
     class ExtractForm(forms.Form):
@@ -469,7 +469,7 @@ def make_extract_form(db, plasmid=False, label="Orthologs"):
             super().__init__(*args, **kwargs)
             self.helper = FormHelper()
             self.helper.form_method = 'post'
-            self.helper.form_action = "extract_orthogroup"
+            self.helper.form_action = action
             self.helper.layout = Layout(
                     Fieldset("Compare genomes",
                             Column(
