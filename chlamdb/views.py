@@ -296,7 +296,6 @@ def home(request):
     df_hits = db.get_og_count(taxids, search_on="taxid")
     missing_entries = df_hits[df_hits == 0].count(axis=1)
     core = len(missing_entries[missing_entries == 0])
-
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 
@@ -2734,13 +2733,13 @@ def blast(request):
                                 max_target_seqs=number_blast_hits,  outfmt=0)
                     if blast_type=='blastp':
                         blastType = 'locus'
-                        blastdb = settings.BLAST_DB_PATH + f"blast_DB/faa/{key_dict}"
+                        blastdb = settings.BLAST_DB_PATH + f"/faa/{key_dict}"
                         blast_cline = NcbiblastpCommandline(query=query_file.name, \
                                 db=blastdb, evalue=customized_evalue, \
                                 max_target_seqs=number_blast_hits, outfmt=0)
                     if blast_type=='tblastn':
                         blastType = 'genome'
-                        blastdb = settings.BLAST_DB_PATH + f"blast_DB/fna/{key_dict}"
+                        blastdb = settings.BLAST_DB_PATH + f"/fna/{key_dict}"
                         blast_cline = NcbitblastnCommandline(query=query_file.name, \
                                 db=blastdb, evalue=customized_evalue, \
                                 max_target_seqs=number_blast_hits,  outfmt=0)
@@ -2749,7 +2748,7 @@ def blast(request):
                                 max_target_seqs=number_blast_hits, outfmt=5)
                     if blast_type=='blastx':
                         blastType = 'locus'
-                        blastdb = settings.BLAST_DB_PATH + f"blast_DB/faa/{key_dict}"
+                        blastdb = settings.BLAST_DB_PATH + f"/faa/{key_dict}"
                         blast_cline = NcbiblastxCommandline(query=query_file.name, \
                                 db=blastdb, evalue=customized_evalue, \
                                 max_target_seqs=number_blast_hits,  outfmt=0)
