@@ -2995,7 +2995,7 @@ def plot_region(request):
     # region, avoid displaying this region twice).
     filtered_regions = coalesce_regions(genomic_regions, seqids)
 
-    for genomic_region in filtered_regions:
+    for genomic_region in genomic_regions:
         seqid, region, start, end = genomic_region
         if region["strand"].loc[seqid]*ref_strand == -1:
             mean_val = (end+start)/2

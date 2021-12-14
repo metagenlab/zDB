@@ -24,6 +24,9 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 
 	var total_height = region_height*regions.length+regions_vertical_interval*(regions.length-1);
 
+	var locus_tags = {};
+	var n_doublons = 0;
+
 	var svg = div
 		.append("svg")
 		.attr("width",  default_width+margin.right+margin.left)
@@ -102,14 +105,28 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 		.data(filtered_features)
 		.enter()
 		.append("polygon")
+		.attr("id", function(d)  {
+			// As the genomic regions may overlap, it is necessary
+			// to detect repeated locus_tags and to assign new_ones
+
+			let curr_locus_tag = d.locus_tag;
+			if (d.locus_tag in locus_tags) {
+				curr_locus_tag = d.locus_tag + "_" + n_doublons;
+				n_doublons += 1;
+			} else {
+				locus_tags[d.locus_tag] = [];
+			}
+			locus_tags[d.locus_tag].push(curr_locus_tag);
+			d.d3_locus_tag = curr_locus_tag;
+			return d.d3_locus_tag;
+		})
 		.attr("points", function(d) {
 			let points = get_feature_points(d, region.start, region.end);
 
 			// ugly
-			locus_to_position[d.locus_tag] = [x_scale(d.start), x_scale(d.end)];
+			locus_to_position[d.locus_tag] = [x_scale(d.start), x_scale(d.end), d.d3_locus_tag];
 			return points.map(x => x_scale(x.x)+" "+y_scale(x.y)).join(",");
 		})
-		.attr("id", d => d.locus_tag)
 		.style("stroke-width", 2)
 		.style("opacity", .9)
 		.style("fill", function(d) {
@@ -137,6 +154,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 			.style("stroke-width", 2);
 		let top_locus_tag = d3.select("#"+d.top_feature);
 		let bot_locus_tag = d3.select("#"+d.bottom_feature);
+
 		top_locus_tag.style("stroke", "blue");
 		bot_locus_tag.style("stroke", "blue");
 		let pos = d3.mouse(this);
@@ -159,6 +177,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 		bot_locus_tag.style("stroke", "none");
 		Tooltip.style("opacity", 0);
 	}
+
 
 	function text_enter(d) {
 		let pos = d3.mouse(this);
@@ -197,7 +216,7 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 			.attr("transform", function(d ) {
 				return "rotate(315,"+x_scale((d.start+d.end)/2)+","+y_text_pos+")";
 			})
-			.attr("id", d => d.locus_tag+"_gene_name")
+			.attr("id", d => d.d3_locus_tag+"_gene_name")
 			.text(d => d.gene);
 	}
 
@@ -276,9 +295,12 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 			.html(d.product)
 			.style("left", pos[0] + "px")
 			.style("top", pos[1] + "px");
-		d3.select(this)
-			.style("stroke", "red");
-		d3.select("#"+d.locus_tag+"_gene_name")
+
+		all_d3_locus_tags = locus_tags[d.locus_tag];
+		for(const lt of all_d3_locus_tags) {
+			d3.select("#" + lt).style("stroke", "red");
+		}
+		d3.select("#"+d.d3_locus_tag+"_gene_name")
 			.style("stroke", "red");
 	}
 
@@ -292,9 +314,11 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 		Tooltip.style("opacity", 0).
 			style("left", "-1px").
 			style("top", "-1px");
-		d3.select(this)
-			.style("stroke", "none");
-		d3.select("#"+d.locus_tag+"_gene_name")
+		all_d3_locus_tags = locus_tags[d.locus_tag];
+		for(const lt of all_d3_locus_tags) {
+			d3.select("#" + lt).style("stroke", "none");
+		}
+		d3.select("#"+d.d3_locus_tag+"_gene_name")
 			.style("stroke", "none");
 	}
 
@@ -350,8 +374,10 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 					let curr_pos = curr_gene_pos[locus_tag];
 					let top_pos0 = top_pos[0];
 					let top_pos1 = top_pos[1];
+					let top_locus = top_pos[2];
 					let curr_pos1 = curr_pos[1];
 					let curr_pos0 = curr_pos[0];
+					let bot_locus = curr_pos[2];
 					let all_points = [];
 					if(top_pos0<prev_start && curr_pos0<this_start) {
 						all_points.push([this_start, y_base_pos+text_field_size]);
@@ -395,8 +421,8 @@ function createGenomicRegion(div, regions, connections, highlight, window_size, 
 					}
 
 					this_g.append("polygon")
-						.datum({group: orthogroup, top_feature: connects_to,
-							bottom_feature: locus_tag, ident: identity})
+						.datum({group: orthogroup, top_feature: top_locus,
+							bottom_feature: bot_locus, ident: identity})
 						.attr("points",
 							all_points.map(d => d[0]+" "+d[1]).join(",")
 						)
