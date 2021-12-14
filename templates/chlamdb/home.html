@@ -173,10 +173,10 @@
                                         <li> Detailed annotation of proteins based on:
                                           
                                             {% if optional2status|keyvalue:"COG" == 1 %}
-                                            <dd> -<a href="https://www.ncbi.nlm.nih.gov/COG/">COG</a> (clusters of orthologous groups)</dd> 
+                                            <dd> - <a href="https://www.ncbi.nlm.nih.gov/COG/">COG</a> (clusters of orthologous groups)</dd> 
                                             {% endif %}
                                             {% if optional2status|keyvalue:"pfam" == 1 %}
-                                            <dd> -<a href="http://pfam.xfam.org" >Pfam</a> (protein families)</dd>
+                                            <dd> - <a href="http://pfam.xfam.org" >Pfam</a> (protein families)</dd>
                                             {% endif %}
                                             {% if optional2status|keyvalue:"KEGG" == 1 %}
                                             <dd> - <a href="https://www.genome.jp/kegg/" >KEGG</a> (Kegg orthologs)</dd>
@@ -191,25 +191,6 @@
                                     </li>
                                   </ul>
                                 </div>
-                                <div class="status_box_warning" >
-                                  <div class="warnings" >
-                                    <p> The following feature(s) has not beed included, if whished please run again the pipeline with the corrected settings.</p>
-                                      <p>  Protein annotation with: </p>
-                                        {% if not optional2status|keyvalue:"COG" == 1 %}
-                                                <dd> -<a href="https://www.ncbi.nlm.nih.gov/COG/">COG</a> (clusters of orthologous groups)</dd> 
-                                                {% endif %}
-                                                {% if not optional2status|keyvalue:"pfam" == 1 %}
-                                                <dd> - <a href="http://pfam.xfam.org" >Pfam</a> (protein families)</dd>
-                                                {% endif %}
-                                                {% if not optional2status|keyvalue:"KEGG" == 1 %}
-                                                <dd> - <a href="https://www.genome.jp/kegg/" >KEGG</a> (Kegg orthologs)</dd>
-                                                {% endif %}
-                                                {% if not optional2status|keyvalue:"KEGG" %}
-                                                <li> Kegg maps visualization</li>
-                                                {% endif %}
-                                      </li>
-                                  </div>  
-                                </div>    
                                 </ul>
                               
                               </div>
