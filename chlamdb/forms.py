@@ -83,7 +83,7 @@ def make_plot_form(db):
     accession_choices, reverse_index = get_accessions(db)
 
     class PlotForm(forms.Form):
-        choices = (("yes","yes"),("no", "best hit only"))
+        choices = (("yes", "all homologs"),("no", "best hits only"))
         accession = forms.CharField(max_length=100,
                 label="Protein accession (e.g. CT_015)", required=True)
         region_size = forms.CharField(max_length=5,
@@ -93,7 +93,7 @@ def make_plot_form(db):
                     "data-live-search":"true", "multiple data-max-options":"8",
                     "multiple data-actions-box":"true"}),
                 required = False)
-        all_homologs = forms.ChoiceField(choices=choices, initial="no")
+        all_homologs = forms.ChoiceField(choices=choices, initial="no", label="Homologs")
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -469,8 +469,7 @@ def make_extract_form(db, plasmid=False, label="Orthologs"):
             super().__init__(*args, **kwargs)
             self.helper = FormHelper()
             self.helper.form_method = 'post'
-            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
-            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.form_action = "extract_orthogroup"
             self.helper.layout = Layout(
                     Fieldset("Compare genomes",
                             Column(

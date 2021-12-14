@@ -39,32 +39,10 @@
                     Reference: one of the genome in panel A can be chosen as reference for display the result orthogroup list on a circular map of the genome. Click on "show on circular map" to generate the circos map. Corresponding locus are highlighted in pink. <br>
                     Missing data: if more than one panel A genome (include) is selected, possibility to tolerate missing data in 1 up to 10 genomes (in order to get orthogroup present in at least x out of the y genomes selected in panel A).</p>
                 </div>
-                <!--
-                <div style="position: absolute;margin-top:10%; margin-left: 33%;">
-                    <div style="height:40px;margin-left: 180px;width:280px;border: 2px solid #8AC007; border-radius: 15px;">
-                        <div style="width: 100%; float: left; margin-left: 10px;margin-top:3px">
-                            <p>Consider single copy groups only</p>
-                        </div >
 
-                        <div style="height: 40px; margin-left: 180px;margin-top:3px;">
-                            <label class="switch-light well" onclick="" style="margin: 5px 0px 0px 0px; padding: 0 0 0 0; position: absolute">
-                                <input type="checkbox" style="padding: 0 0px 0 0" id="button_single_copy" name="button_single_copy">
-                                <span>
-                                <span>Off</span>
-                                <span>On</span>
-                                </span>
-                                <a class="btn btn-success btn-xs"></a>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                -->
                 {% block content %}
-                <form action='{% url "extract_orthogroup" %}' method="post" id="extract-form">
-                    {% csrf_token %}
-                    
-                    {% crispy form %}
-                </form>
+				{% csrf_token %}
+				{% crispy form %}
                 {% endblock %}
             </div>
 
