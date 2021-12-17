@@ -60,29 +60,6 @@ def rename_source(record):
     else:
         return (False, False)
 
-def clean_description(description):
-    import re
-    description = re.sub(", complete genome\.", "", description)
-    description = re.sub(", complete genome", "", description)
-    description = re.sub(", complete sequence\.", "", description)
-    description = re.sub("strain ", "", description)
-    description = re.sub("str\. ", "", description)
-    description = re.sub(" complete genome sequence\.", "", description)
-    description = re.sub(" complete genome\.", "", description)
-    description = re.sub(" chromosome", "", description)
-    description = re.sub(" DNA", "", description)
-    description = re.sub("Merged record from ", "", description)
-    description = re.sub(", wgs", "", description)
-    description = re.sub("Candidatus ", "", description)
-    description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
-    description = re.sub("complete genome, isolate", "", description)
-    description = re.sub(" complete", "", description)
-    description = re.sub(" genome assembly.*", "", description)
-    description = re.sub("Chlamydophila", "Chlamydia", description)
-    description = re.sub(", whole genome shotgun sequence", "", description)
-
-    return description
-
 
 def orthogroups_to_fasta(genomes_list):
     fasta_list = genomes_list.split(' ')
@@ -105,7 +82,28 @@ def orthogroups_to_fasta(genomes_list):
                 SeqIO.write(new_fasta, out_handle, "fasta")
 
 
-def check_organism_uniqueness(gbk_lst):
+def gen_new_locus_tag(hsh_prev_values):
+    curr_value = len(hsh_prev_values)
+    prefix = "ZDB_"
+    locus_tag = f"{prefix}{curr_value}"
+    while locus_tag in hsh_prev_values:
+        curr_value += 1
+        locus_tag = f"{prefix}{curr_value}"
+    hsh_prev_values[locus_tag] += 1
+    return locus_tag
+
+def gen_new_organism(organism, hsh_prev_values):
+    cnt = 1
+    prefix = organism+"_"
+    new_name = f"{prefix}{cnt}"
+    while new_name in hsh_prev_values:
+        cnt+=1
+        new_name = f"{prefix}{cnt}"
+    hsh_prev_values[new_name] += 1
+    return new_name
+
+
+def check_gbk(gbk_lst):
     """
     As BioSQL uses the organism entry of the records to assign
     a taxid when it is not allowed to access the ncbi online,
@@ -116,58 +114,98 @@ def check_organism_uniqueness(gbk_lst):
 
     Display an error message and stop the pipeline if this arises
     """
-    organisms = defaultdict(list)
-    contigs = defaultdict(list)
-    locuses = defaultdict(list)
+    organisms = defaultdict(lambda : 0)
+    locuses = defaultdict(lambda : 0)
+    contigs = defaultdict(lambda : 0)
 
+    gbk_passed = []
+    gbk_to_revise = []
+    
+    # initial checks: 
+    #  * ensures the presence of at least one CDS per file
+    #  * lists all duplicated locus_tags/organism
+    #  * does a first pass to collect all locus tags
     for gbk_file in gbk_lst:
         curr_organism = None
+        n_cds = 0
+        failed = False
         for record in SeqIO.parse(gbk_file, "genbank"):
             if not "organism" in record.annotations:
-                raise Exception(f"No organism for file {gbk_file}")
-
-            for feature in record.features:
-                if feature.type != "CDS":
-                    continue
-                if not "locus_tag" in feature.qualifiers:
-                    raise Exception(f"Missing locus tag in {gbk_file}")
-                locus_tag = feature.qualifiers["locus_tag"][0]
-                locuses[locus_tag].append(record.name)
-            contigs[record.name].append(gbk_file)
+                raise Exception(f"Missing organism in {gbk_file}")
             organism = record.annotations["organism"]
+            print(organism)
+
+            if record.name in contigs:
+                print("Record name already exists")
+                failed = True
+            contigs[record.name] += 1
+
             if curr_organism is None:
                 curr_organism = organism
+                organisms[curr_organism] += 1
             elif curr_organism != organism:
-                raise Exception(f"Two different organism in {gbk_file}: {curr_organism}/{organism}")
-        organisms[curr_organism].append(gbk_file)
+                raise Exception(f"Two different organisms in {gbk_file}: {curr_organism}/{organism}")
 
-    for locus, contig_list in locuses.items():
-        if len(contig_list)>1:
-            err = ",".join(contig_list)
-            raise Exception(f"Duplicate locus tag {locus} in contigs {err}")
+            for feature in record.features:
+                if feature.type == "CDS":
+                    n_cds += 1
+                elif not feature.type in ["tmRNA", "rRNA", "ncRNA", "tRNA"]:
+                    continue
 
-    for contig, file_lst in contigs.items():
-        if len(file_lst)>1:
-            genbanks = ",".join(file_lst)
-            raise Exception(
-                f"Duplicate contig name: {contig} in "
-                f"{genbanks}")
+                if not "locus_tag" in feature.qualifiers:
+                    print("No locus tag")
+                    failed = True
+                    continue
+                
+                locus_tag = feature.qualifiers["locus_tag"][0]
+                if locus_tag in locuses:
+                    print("Locus tag already exists")
+                    failed = True
+                locuses[locus_tag] += 1
 
-    for organism, file_lst in organisms.items():
-        if len(file_lst) > 1:
-            genbanks = ",".join(file_lst)
-            raise Exception(f"Genbank files {genbanks} have the same organism: {organism}")
+        if n_cds == 0:
+            raise Exception(f"No CDS in {gbk_file}, has it been correctly annotated?")
 
+        if organisms[curr_organism]>1:
+            print("Organism already exists")
+            gbk_to_revise.append(gbk_file)
+        elif failed:
+            gbk_to_revise.append(gbk_file)
+        else:
+            organisms[curr_organism] += 1
+            gbk_passed.append(gbk_file)
 
-def check_names(record, common_names):
-    common_name = record.annotations.get("source", None)
-    if (common_name is None) or (common_name in common_names):
-        # such a common name has already been 
-        # encountered: change it to the unique scientific
-        # name
-        # NOTE: We know that record.annotations contains "organism"
-        record.annotations["source"] = record.annotations["organism"]
-    return record
+    for failed_gbk in gbk_to_revise:
+        records = []
+        new_organism = None
+        for record in SeqIO.parse(failed_gbk, "genbank"):
+            organism = record.annotations["organism"]
+            if new_organism is None:
+                if organisms[organism] > 1:
+                    new_organism = gen_new_organism(organism, organisms)
+                    organisms[organism] -= 1
+                else:
+                    new_organism = organism
+            record.annotations["organism"] = new_organism
+
+            if contigs[record.name] > 1:
+                record.name = gen_new_locus_tag(contigs)
+                contigs[record.name] -= 1
+
+            for feature in record.features:
+                if feature.type not in ["CDS", "tmRNA", "rRNA", "ncRNA", "tRNA"]:
+                    continue
+                curr_locus = feature.qualifiers.get("locus_tag", None)
+                if curr_locus is None:
+                    feature.qualifiers["locus_tag"] = gen_new_locus_tag(locuses)
+                elif locuses[curr_locus[0]] > 1:
+                    feature.qualifiers["locus_tag"] = gen_new_locus_tag(locuses)
+                    locus_tags[curr_locus[0]] -= 1
+            records.append(record)
+        SeqIO.write(records, failed_gbk.replace(".gbk", "_filtered.gbk"), "genbank")
+
+    for passed in gbk_passed:
+        os.symlink(passed, passed.replace(".gbk", "_filtered.gbk"))
 
 
 def check_organism_names(gbk_files):

@@ -39,8 +39,7 @@ def parse_orthofinder_output_file(output_file):
 
 
 def is_plasmid(record):
-    # XXX: after discussion with Trestan, chose to keep it
-    # as it allows to catch malformated genbanks that do not
+    # it allows to catch malformated genbanks that do not
     # specify plasmids correctly. An alternative way would be 
     # to just ignore it.
     if "plasmid" in record.description:
@@ -602,7 +601,7 @@ def setup_chlamdb_search_index(params, db_name, index_name):
             product, locus_tag, gene = data[["product", "locus_tag", "gene"]]
             if pd.isna(gene):
                 gene = None
-            if product=="hypothetical protein":
+            if pd.isna(product) or product=="hypothetical protein":
                 product = None
 
             organism = genomes.loc[taxid].description

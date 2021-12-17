@@ -1,9 +1,10 @@
 #!/usr/bin/env nextflow
 
 /*
- * Author:
+ * Authors:
  * - Trestan Pillonel <trestan.pillonel@gmail.com>
- *
+ * - Alessia Carrara
+ * - Bastian Marquis
  */
 
 
@@ -87,16 +88,12 @@ process check_gbk {
 	    file "*_filtered.gbk" into checked_gbks
 
 	script:
-    // Not the most efficient ways as it requires
-    // to read the same files several times
-    // but left like this for the sake of readability
 	"""
         #!/usr/bin/env python
         import annotations
 
         gbk_files = "${gbk}".split() 
-        annotations.check_organism_uniqueness(gbk_files)
-        annotations.check_organism_names(gbk_files)
+        annotations.check_gbk(gbk_files)
 	"""
 }
 
