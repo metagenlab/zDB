@@ -114,37 +114,47 @@ def check_gbk(gbk_lst):
 
     Display an error message and stop the pipeline if this arises
     """
+
+    # NOTE: biosql uses source to assign taxid. One must ensure
+    # that the source are unique to each gbk file to avoid conflicts
+    # with taxids.
     organisms = defaultdict(lambda : 0)
     locuses = defaultdict(lambda : 0)
+    accessions = defaultdict(lambda : 0)
+
+    # contig name also need to be unique as they are used by blast
     contigs = defaultdict(lambda : 0)
 
     gbk_passed = []
     gbk_to_revise = []
     
-    # initial checks: 
-    #  * ensures the presence of at least one CDS per file
-    #  * lists all duplicated locus_tags/organism
-    #  * does a first pass to collect all locus tags
     for gbk_file in gbk_lst:
         curr_organism = None
         n_cds = 0
         failed = False
         for record in SeqIO.parse(gbk_file, "genbank"):
-            if not "organism" in record.annotations:
-                raise Exception(f"Missing organism in {gbk_file}")
-            organism = record.annotations["organism"]
-            print(organism)
+            sci_name = record.annotations["organism"]
 
             if record.name in contigs:
-                print("Record name already exists")
                 failed = True
             contigs[record.name] += 1
 
+            if not "accession" in record.annotations:
+                failed = True
+            else:
+                acc = record.annotations["accession"][0]
+                if acc in accessions:
+                    failed = True
+                accessions[acc] += 1
+
             if curr_organism is None:
-                curr_organism = organism
-                organisms[curr_organism] += 1
-            elif curr_organism != organism:
-                raise Exception(f"Two different organisms in {gbk_file}: {curr_organism}/{organism}")
+                curr_organism = sci_name
+                organisms[sci_name] += 1
+                if organisms[sci_name] > 1:
+                    failed = True
+            elif curr_organism != sci_name:
+                raise Exception(f"Two different organisms in {gbk_file}: {curr_organism}/{sci_name}")
+
 
             for feature in record.features:
                 if feature.type == "CDS":
@@ -153,46 +163,51 @@ def check_gbk(gbk_lst):
                     continue
 
                 if not "locus_tag" in feature.qualifiers:
-                    print("No locus tag")
                     failed = True
                     continue
                 
                 locus_tag = feature.qualifiers["locus_tag"][0]
                 if locus_tag in locuses:
-                    print("Locus tag already exists")
                     failed = True
                 locuses[locus_tag] += 1
 
         if n_cds == 0:
             raise Exception(f"No CDS in {gbk_file}, has it been correctly annotated?")
 
-        if organisms[curr_organism]>1:
-            print("Organism already exists")
-            gbk_to_revise.append(gbk_file)
-        elif failed:
+        if failed:
             gbk_to_revise.append(gbk_file)
         else:
-            organisms[curr_organism] += 1
             gbk_passed.append(gbk_file)
 
     for failed_gbk in gbk_to_revise:
         records = []
-        new_organism = None
+        sci_name = None
         for record in SeqIO.parse(failed_gbk, "genbank"):
-            organism = record.annotations["organism"]
-            if new_organism is None:
-                if organisms[organism] > 1:
-                    new_organism = gen_new_organism(organism, organisms)
-                    organisms[organism] -= 1
-                else:
-                    new_organism = organism
-            record.annotations["organism"] = new_organism
+            if sci_name is None:
+                sci_name = record.annotations["organism"]
+                if organisms[sci_name] > 1:
+                    sci_name = gen_new_organism(sci_name, organisms)
+                    organisms[sci_name] -= 1
+            record.annotations["source"] = sci_name
+            record.annotations["organism"] = sci_name
 
             if contigs[record.name] > 1:
                 record.name = gen_new_locus_tag(contigs)
                 contigs[record.name] -= 1
 
+            if not "accession" in record.annotations:
+                record.annotations["accession"] = [gen_new_locus_tag(accessions)]
+            elif accessions[record.annotations["accession"][0]] > 1:
+                record.annotations["accession"][0] = gen_new_locus_tag(accessions)
+                record.annotations["accession"][0] -= 1
+
             for feature in record.features:
+                if feature.type == "source":
+                    if "db_xref" in feature.qualifiers:
+                        # need to remove this as BioSQL uses it to assign
+                        # taxids and this messes with the rest of the DB
+                        # XXX Ugly hack, will have to go
+                        del feature.qualifiers["db_xref"]
                 if feature.type not in ["CDS", "tmRNA", "rRNA", "ncRNA", "tRNA"]:
                     continue
                 curr_locus = feature.qualifiers.get("locus_tag", None)
@@ -200,33 +215,13 @@ def check_gbk(gbk_lst):
                     feature.qualifiers["locus_tag"] = gen_new_locus_tag(locuses)
                 elif locuses[curr_locus[0]] > 1:
                     feature.qualifiers["locus_tag"] = gen_new_locus_tag(locuses)
-                    locus_tags[curr_locus[0]] -= 1
+                    locuses[curr_locus[0]] -= 1
             records.append(record)
         SeqIO.write(records, failed_gbk.replace(".gbk", "_filtered.gbk"), "genbank")
 
     for passed in gbk_passed:
         os.symlink(passed, passed.replace(".gbk", "_filtered.gbk"))
 
-
-def check_organism_names(gbk_files):
-    """
-    NOTE: assumes that the check_organism_uniqueness has been called before (i.e.
-    unique scientific organism name and only one organism per file).
-
-    This function does two things:
-    ** filter out unannotated contigs (TODO: check if this is really necessary)
-    ** for genbank files that have the same organism common name, change it to their
-       scientific name (BioSQL would ortherwise assign them the same taxon_id,
-       I know, this is stupid)
-    """
-    common_names = set()
-    for gbk_file in gbk_files:
-        records = SeqIO.parse(gbk_file, "genbank")
-        result_file = gbk_file.replace(".gbk", "_filtered.gbk")
-        to_keep = (check_names(rec, common_names) for rec in records)
-        first_rec = next(to_keep)
-        common_names.add(first_rec.annotations["source"])
-        SeqIO.write(itertools.chain([first_rec], to_keep), result_file, "genbank")
 
 
 def convert_gbk_to_fasta(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=False):
