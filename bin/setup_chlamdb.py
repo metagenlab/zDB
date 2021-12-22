@@ -52,36 +52,30 @@ def is_plasmid(record):
 
 
 def load_gbk(gbks, args, db_file):
-    """
-    NOTE:
-
-    This function assumes that only one organism is present in each 
-    genbank file. An arbitraty taxon_id is assigned to each genbank file
-    to differentiate the organisms in chlamdb. It has nothing to do
-    with the taxon id from NCBI. It just is an identifier to group
-    all the bioentries from a bacteria together (its chromosomes and plasmids).
-    """
     db = db_utils.DB.load_db(db_file, args)
     data = []
      
     bioentry_plasmids = []
-    bioentry_to_taxid = []
-    for taxon_id, gbk in enumerate(gbks):
+    for gbk in gbks:
         records = [i for i in SeqIO.parse(gbk, 'genbank')]
+        taxon_id = None
 
         for record in records:
             db.load_gbk_wrapper([record])
             bioentry_id = db.server.adaptor.last_id("bioentry")
+
+            # this assumes that the taxon was not already in the database
+            # as long as we enforce the "unique organism per file" in check_gbk, 
+            # this should work
+            taxon_id = db.server.adaptor.last_id("taxon")
             bioentry_plasmids.append( (bioentry_id, is_plasmid(record)))
-            bioentry_to_taxid.append( (bioentry_id, taxon_id+1) )
 
         # hack to link the bioentry to the filename, useful later for parsing and
         # storing checkM results in the dtb.
-        data.append( (taxon_id+1, gbk.replace(".gbk", "")) )
+        data.append((taxon_id, gbk.replace(".gbk", "")))
 
     db.load_filenames(data)
     db.commit()
-    db.update_taxon_ids(bioentry_to_taxid)
     db.update_plasmid_status(bioentry_plasmids)
     db.set_status_in_config_table("gbk_files", 1)
     db.commit()
