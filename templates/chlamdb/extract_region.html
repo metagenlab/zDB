@@ -62,12 +62,6 @@
 <script>
 
 $(document).ready(function() {
-	genome_table_editor = new $.fn.dataTable.Editor( {
-		"table": "#genomes_table",
-		"fields": [
-		]
-	});
-
 	$("#genomes_table").DataTable({
 		columns: [
 			{ data: "genome", className: "editable" },

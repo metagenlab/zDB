@@ -1106,7 +1106,6 @@ def make_div(figure_or_data, include_plotlyjs=False, show_link=False, div_id=Non
 
         try:
             existing_id = re.findall(r'id="(.*?)"|$', div)[0]
-            print(existing_id, div_id)
             div = div.replace(existing_id, div_id)
         except IndexError:
             pass
@@ -2282,7 +2281,6 @@ def get_cog(request, taxon_id, category):
     for seqid, cog_hit_data in cog_hits.iterrows():
         cog_id = cog_hit_data.cog
         if cog_id not in cog_summaries:
-            print("Cog id unknown: ", cog_id)
             continue
         cog_func, cog_desc = cog_summaries[cog_id]
         if category not in cog_func:
@@ -3048,9 +3046,6 @@ def circos_main(request):
         
         target_taxons = include_taxids + exclude_taxids
         
-        
-        print("reference_taxon", reference_taxon)
-        print("target_taxons", target_taxons)
         target_taxons.pop(target_taxons.index(int(reference_taxon)))
         
         js_code = get_circos_data(int(reference_taxon), [int(i) for i in target_taxons], highlight_og=og_list)

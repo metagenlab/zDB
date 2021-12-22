@@ -272,11 +272,10 @@ class BiodatabaseForm(forms.Form):
     def save(self):
         self.biodatabase = self.cleaned_data["biodatabase"]
 
+
 def make_blast_form(biodb):
 
     accession_choices =  get_accessions_BLAST(biodb, plasmid=True, all=True)
-
-    print(accession_choices)
     class BlastForm(forms.Form):
         blast = forms.ChoiceField(choices=[("blastn_ffn", "blastn_ffn"),
                                            ("blastn_fna", "blastn_fna"),
