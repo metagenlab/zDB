@@ -203,28 +203,6 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None):
     return VennForm
 
 
-def make_blast_form(biodb):
-
-    accession_choices =  get_accessions_BLAST(biodb, plasmid=True, all=True)
-    class BlastForm(forms.Form):
-        blast = forms.ChoiceField(choices=[("blastn_ffn", "blastn_ffn"),
-                                           ("blastn_fna", "blastn_fna"),
-                                           ("blastp", "blastp"),
-                                           ("blastx", "blastx"),
-                                           ("tblastn", "tblastn")])
-
-        max_number_of_hits = forms.ChoiceField(choices=[("10", "10"),
-                                           ("5", "5"),
-                                           ("20", "20"),
-                                           ("30", "30"),
-                                           ("all", "all")])
-        evalue= forms.CharField(widget=forms.TextInput({'placeholder': '10'}))
-
-        target = forms.ChoiceField(choices=accession_choices,
-                widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true", }))
-        blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
-
-
 def make_circos_form(database_name):
 
     accession_choices, reverse_index = get_accessions(database_name)
@@ -362,8 +340,8 @@ def make_blast_form(biodb):
 
     accession_choices =  get_accessions_BLAST(biodb, plasmid=False, all=True)
 
-    print(accession_choices)
     class BlastForm(forms.Form):
+        DEFAULT_E_VALUE = 10
         blast = forms.ChoiceField(choices=[("blastn_ffn", "blastn_ffn"),
                                            ("blastn_fna", "blastn_fna"),
                                            ("blastp", "blastp"),
@@ -375,7 +353,8 @@ def make_blast_form(biodb):
                                            ("20", "20"),
                                            ("30", "30"),
                                            ("all", "all")])
-        evalue= forms.CharField(widget=forms.TextInput({'placeholder': '10'}))
+        evalue= forms.CharField(widget=forms.TextInput({'placeholder': str(DEFAULT_E_VALUE)}),
+                required=False)
 
         target = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
         blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
