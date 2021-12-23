@@ -4,57 +4,25 @@
 # todo save temp files in temp folder
 
 from django.shortcuts import render
-from Bio.SeqRecord import SeqRecord
-from Bio.Seq import Seq
-
 import seaborn as sns
 import matplotlib.colors as mpl_col
 
 import collections
 
 import numpy as np
-import re
-import os
 
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.http import JsonResponse
 
-from chlamdb.forms import make_contact_form
 from chlamdb.forms import make_plot_form
-from chlamdb.forms import SearchForm
-from chlamdb.forms import BiodatabaseForm
 from chlamdb.forms import make_circos_form
-from chlamdb.forms import make_circos2genomes_form
-from chlamdb.forms import make_mummer_form
 from chlamdb.forms import make_blast_form
-from chlamdb.forms import make_crossplot_form
-from chlamdb.forms import ConnexionForm
-from chlamdb.forms import DBForm
-from chlamdb.forms import make_motif_form
-from chlamdb.forms import PCRForm
 from chlamdb.forms import make_extract_form
-from chlamdb.forms import make_circos_orthology_form
-from chlamdb.forms import make_interpro_from
 from chlamdb.forms import make_metabo_from
 from chlamdb.forms import make_module_overview_form
-from chlamdb.forms import make_extract_region_form
 from chlamdb.forms import make_venn_from
-from chlamdb.forms import make_priam_form
-from chlamdb.forms import AnnotForm
-from chlamdb.forms import hmm_sets_form
-from chlamdb.forms import hmm_sets_form_circos
-from chlamdb.forms import make_blastnr_form
-from chlamdb.forms import make_genome_selection_form
-from chlamdb.forms import make_comment_from
-from chlamdb.forms import LocusInt
-from chlamdb.forms import get_LocusAnnotForm
-from chlamdb.forms import BlastProfileForm
-from chlamdb.forms import make_pairwiseid_form
-from chlamdb.forms import make_locus2network_form
-from chlamdb.forms import heatmap_form
-from chlamdb.forms import blast_sets_form
-from chlamdb.forms import make_pairwiseCDS_length_form
+
 from django.contrib.auth import logout
 from django.conf import settings
 from django.contrib.auth import authenticate, login
@@ -72,7 +40,6 @@ from django.shortcuts import render
 from celery.result import AsyncResult
 from django.http import HttpResponse
 from django.http import StreamingHttpResponse
-from chlamdb.forms import GenerateRandomUserForm
 
 from metagenlab_libs import db_utils
 from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
@@ -86,14 +53,16 @@ from Bio.Blast.Applications import NcbiblastpCommandline
 from Bio.Blast.Applications import NcbiblastnCommandline
 from Bio.Blast.Applications import NcbitblastnCommandline
 from Bio.Blast.Applications import NcbiblastxCommandline
+from Bio.Blast import NCBIXML
+from Bio.SeqRecord import SeqRecord
 from Bio.Seq import reverse_complement, translate
+from Bio.Seq import Seq
+
 from tempfile import NamedTemporaryFile
 from io import StringIO
-from Bio.Blast import NCBIXML
           
             
 import os
-import re
 
 from ete3 import Tree
 from reportlab.lib import colors
@@ -3305,262 +3274,6 @@ def priam_kegg(request):
 
     ctx = {"envoi":True, "data":data, "header": header}
     return render(request, 'chlamdb/priam_kegg.html', my_locals(ctx))
-
-
-def locus_list2circos(request, target_taxon):
-    biodb = settings.BIODB
-    from chlamdb.plots import gbk2circos
-    from chlamdb.biosqldb import circos
-    import re
-
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    locus_list = [i for i in request.GET.getlist('l')]
-
-    # 1. check if locus_list is part of the target genome
-    # 2. if not part of the target genome, get orthogroup id
-
-    locus_filter = '"'+'","'.join(locus_list)+'"'
-    sql = 'select locus_tag, product from orthology_detail where taxon_id=%s and locus_tag in (%s)' % (target_taxon,
-                                                                                                       locus_filter)
-    data = server.adaptor.execute_and_fetchall(sql,)
-    locus_target_genome = [i[0] for i in data]
-
-    locus2label = {}
-    for row in data:
-        locus2label[row[0]] = row[0] #+ "-%s" % re.sub(" ","-",row[1])
-
-    locus_other_genomes = []
-    for locus in locus_list:
-        if locus not in locus_target_genome:
-            locus_other_genomes.append(locus)
-    locus_other_genomes_filter = '"' + '","'.join(locus_other_genomes) + '"'
-    sql2 = 'select B.locus_tag, A.orthogroup, B.product from (select orthogroup from orthology_detail where locus_tag in (%s) group by orthogroup) A' \
-           ' inner join orthology_detail B on A.orthogroup=B.orthogroup where taxon_id=%s' % (locus_other_genomes_filter,
-                                                                                              target_taxon)
-
-    data = server.adaptor.execute_and_fetchall(sql2,)
-
-    for row in data:
-        locus2label[row[0]] = row[1] #+ "-%s" % re.sub(" ","-",row[2])
-
-    reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, target_taxon, biodb) # ["NC_009648"] NZ_CP009208 NC_016845
-
-    record_list = []
-    for accession in reference_accessions:
-
-        biorecord = cache.get(biodb + "_" + accession)
-
-        if not biorecord:
-            new_record = db.lookup(accession=accession)
-            biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
-                                                     id=new_record.id, name=new_record.name,
-                                                     description=new_record.description,
-                                                     dbxrefs =new_record.dbxrefs,
-                                                     features=new_record.features,
-                                                     annotations=new_record.annotations)
-            record_id = biorecord.id.split(".")[0]
-            cache.set(biodb + "_" + record_id, biorecord)
-            record_list.append(biorecord)
-        else:
-            record_list.append(biorecord)
-
-    ref_name = ('').join(reference_accessions)
-
-    circos_file = "circos/%s.svg" % ref_name
-
-    draft_data = []
-    for biorecord in record_list:
-        draft_data.append(gbk2circos.circos_fasta_draft_misc_features(biorecord))
-
-    home_dir = os.path.dirname(__file__)
-
-    temp_location = os.path.join(home_dir, "../assets/circos/")
-
-    myplot = circos.CircosAccession2multiplot(server,
-                                              db,
-                                              biodb,
-                                              record_list,
-                                              [],
-                                              locus_highlight=locus2label.keys(),
-                                              out_directory=temp_location,
-                                              draft_fasta=draft_data,
-                                              href="/chlamdb/locusx/",
-                                              ordered_taxons=[],
-                                              locus2label=locus2label,
-                                              show_homologs=False,
-                                              radius=0.3)
-
-    original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % ref_name
-    with open(original_map_file, "r") as f:
-        map_string = ''.join([line for line in f.readlines()])
-
-    circos_html = '<!DOCTYPE html>\n' \
-                  ' <html>\n' \
-                  ' <body>\n' \
-                  ' %s\n' \
-                  ' <img src="%s.svg" usemap="#%s">' \
-                  ' </body>\n' \
-                  ' </html>\n' % (map_string, ref_name, ref_name)
-
-
-    circos_new_file = '/assets/circos/circos_clic.html'
-
-    with open(settings.BASE_DIR + circos_new_file, "w") as f:
-        f.write(circos_html)
-
-    original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
-    map_file = "circos/%s.html" % ref_name
-    svg_file = "circos/%s.svg" % ref_name
-    map_name = ref_name
-
-    envoi_circos = True
-
-
-    return render(request, 'chlamdb/locus2circos.html', my_locals(locals()))
-
-
-def hmm2circos(request):
-    from chlamdb.phylo_tree_display import ete_motifs
-    biodb = settings.BIODB
-    server, db = manipulate_biosqldb.load_db(biodb)
-    hmm_form = hmm_sets_form_circos(biodb)
-
-    if request.method == 'POST': 
-        form = hmm_form(request.POST)
-        if form.is_valid():
-            from chlamdb.plots import hmm_heatmap
-            from chlamdb.plots import gbk2circos
-            from chlamdb.biosqldb import circos
-
-            sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
-
-            database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
-
-            hmm_set = form.cleaned_data['hmm_set']
-            reference_taxon = form.cleaned_data['genome']
-            score_cutoff = form.cleaned_data['score_cutoff']
-            query_coverage_cutoff = form.cleaned_data['query_coverage_cutoff']
-
-
-            sql = 'select locus_tag from hmm.hmm_sets t1 ' \
-                  ' inner join hmm.hmm_sets_entry t2 on t1.set_id=t2.set_id ' \
-                  ' inner join hmm_hmm_hits_annotated_genome t3 on t2.hmm_id=t3.hmm_id' \
-                  ' inner join custom_tables_locus2seqfeature_id t4 on t3.seqfeature_id=t4.seqfeature_id ' \
-                  ' where t1.name="%s" and t3.taxon_id=%s and bitscore>=%s ' \
-                  ' and query_coverage>=%s order by bitscore;' % (hmm_set,
-                                                                  reference_taxon,
-                                                                  score_cutoff,
-                                                                  query_coverage_cutoff)
-
-            target_locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-
-
-            sql2 = 'select locus_tag,t5.name  from hmm.hmm_sets t1 ' \
-                  ' inner join hmm.hmm_sets_entry t2 on t1.set_id=t2.set_id ' \
-                  ' inner join hmm_hmm_hits_annotated_genome t3 on t2.hmm_id=t3.hmm_id' \
-                  ' inner join custom_tables_locus2seqfeature_id t4 on t3.seqfeature_id=t4.seqfeature_id ' \
-                  ' inner join hmm.hmm_profiles t5 on t2.hmm_id=t5.hmm_id' \
-                  ' where t1.name="%s" and t3.taxon_id=%s and bitscore>=%s ' \
-                   ' and query_coverage>=%s order by bitscore;' % (hmm_set, 
-                                                                    reference_taxon, 
-                                                                    score_cutoff, 
-                                                                    query_coverage_cutoff)
-
-            locus2label = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
-
-            description2accession_dict = manipulate_biosqldb.description2accession_dict(server, biodb)
-
-            reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb) # ["NC_009648"] NZ_CP009208 NC_016845
-
-
-            record_list = []
-            for accession in reference_accessions:
-                biorecord = cache.get(biodb + "_" + accession)
-
-                if not biorecord:
-                    new_record = db.lookup(accession=accession)
-                    biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
-                                                             id=new_record.id, name=new_record.name,
-                                                             description=new_record.description,
-                                                             dbxrefs =new_record.dbxrefs,
-                                                             features=new_record.features,
-                                                             annotations=new_record.annotations)
-                    record_id = biorecord.id.split(".")[0]
-                    cache.set(biodb + "_" + record_id, biorecord)
-                    record_list.append(biorecord)
-                else:
-                    record_list.append(biorecord)
-
-            ref_name = ('').join(reference_accessions)
-
-            circos_file = "circos/%s.svg" % ref_name
-
-            draft_data = []
-            for biorecord in record_list:
-                draft_data.append(gbk2circos.circos_fasta_draft_misc_features(biorecord))
-
-            home_dir = os.path.dirname(__file__)
-
-            temp_location = os.path.join(home_dir, "../assets/circos/")
-
-            #sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
-
-            sql_order1 = 'select A.taxon_1 from (select taxon_1,median_identity from comparative_tables_shared_og_av_id where taxon_2=%s ' \
-                        ' union select taxon_2,median_identity from comparative_tables_shared_og_av_id ' \
-                        ' where taxon_1=%s order by median_identity DESC) A;' % (reference_taxon, 
-                                                                                 reference_taxon)
-            try:
-                sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (reference_taxon)
-
-                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-            except:
-                sql_order2 = 'select taxon_2 from comparative_tables_shared_og_av_id where taxon_1=%s order by median_identity desc;' % (reference_taxon)
-
-                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order1)]
-
-            myplot = circos.CircosAccession2multiplot(server,
-                                                      db,
-                                                      biodb,
-                                                      record_list,
-                                                      [],
-                                                      locus_highlight=target_locus_list,
-                                                      out_directory=temp_location,
-                                                      draft_fasta=draft_data,
-                                                      href="/chlamdb/locusx/",
-                                                      ordered_taxons = ordered_taxons,
-                                                      locus2label=locus2label,
-                                                      show_homologs=False)
-
-            original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % ref_name
-            with open(original_map_file, "r") as f:
-                map_string = ''.join([line for line in f.readlines()])
-
-            circos_html = '<!DOCTYPE html>\n' \
-                          ' <html>\n' \
-                          ' <body>\n' \
-                          ' %s\n' \
-                          ' <img src="%s.svg" usemap="#%s">' \
-                          ' </body>\n' \
-                          ' </html>\n' % (map_string, ref_name, ref_name)
-
-
-            circos_new_file = '/assets/circos/circos_clic.html'
-
-            with open(settings.BASE_DIR + circos_new_file, "w") as f:
-                f.write(circos_html)
-
-            original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
-            map_file = "circos/%s.html" % ref_name
-            svg_file = "circos/%s.svg" % ref_name
-            map_name = ref_name
-
-            envoi_circos = True
-
-    else:  
-        form = hmm_form()
-
-    return render(request, 'chlamdb/hmm2circos.html', my_locals(locals()))
 
 
 def kegg_module_subcat(request):

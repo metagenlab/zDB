@@ -1,19 +1,11 @@
 #-*- coding: utf-8 -*-
+
 from django import forms
 
-from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Row, Column, MultiField, Div, Fieldset
-from crispy_forms.bootstrap import AppendedText
-from django.conf import settings
+from crispy_forms.layout import Layout, Submit, Row, Column, Fieldset
 
 choices = []
-
-class GenerateRandomUserForm(forms.Form):
-    total_user = forms.IntegerField(
-        label='Number of users',
-        required=True,
-    )
 
 
 def get_accessions(db, all=False, plasmid=False):
@@ -62,21 +54,6 @@ def get_accessions_BLAST(db, all=False, plasmid=False):
     if all:
         accession_choices = [["all", "all"]] + accession_choices
     return accession_choices #, reverse_index  #understand why there is this 'reverse_index' in the original def (error in def blast)
-
-
-def make_contact_form(server, database_name):
-
-    #accession_choices = get_accessions(database_name)
-
-
-    class ContactForm(forms.Form):
-
-        accession = forms.CharField(max_length=100)
-        #biodatabase = forms.ChoiceField(choices=choices)
-        #plot_region = forms.NullBooleanField(widget=forms.CheckboxInput())
-        #region_size = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
-        #genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "30" }), required = False)
-    return ContactForm
 
 
 def make_plot_form(db):
@@ -128,41 +105,6 @@ def make_plot_form(db):
             return taxids
 
     return PlotForm
-
-
-
-def make_interpro_from(database_name):
-
-    accession_choices = get_accessions(database_name)
-
-    '''
-    database_choices =  [["Coils", "Coils"],
-                        ["Gene3D", "Gene3D"],
-                        ["Hamap", "Hamap"],
-                        ["Pfam", "Pfam"],
-                        ["Phobius", "Phobius"],
-                        ["PIRSF", "PIRSF"],
-                        ["PRINTS", "PRINTS"],
-                        ["ProDom", "ProDom"],
-                        ["ProSitePatterns", "ProSitePatterns"],
-                        ["ProSiteProfiles", "ProSiteProfiles"],
-                        ["SignalP_EUK", "SignalP_EUK"],
-                        ["SignalP_GRAM_NEGATIVE", "SignalP_GRAM_NEGATIVE"],
-                        ["SignalP_GRAM_POSITIVE", "SignalP_GRAM_POSITIVE"],
-                        ["SMART", "SMART"],
-                        ["SUPERFAMILY", "SUPERFAMILY"],
-                        ["TIGRFAM", "TIGRFAM"]]
-    '''
-    class InterproForm(forms.Form):
-        SEARCH_CHOICES = (('description', 'Description'), ('GO','GO Number'), ('EC','EC Number'), ('interpro_accession','Interpro Accession'))
-
-
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (20) }), required = False)
-        search_type = forms.ChoiceField(choices=SEARCH_CHOICES)
-        search_term = forms.CharField(max_length=100)
-
-
-    return InterproForm
 
 
 def make_metabo_from(db, add_box=False):
@@ -261,18 +203,6 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None):
     return VennForm
 
 
-
-
-
-
-
-class BiodatabaseForm(forms.Form):
-    biodatabase = forms.ChoiceField(choices=choices, required = False)
-
-    def save(self):
-        self.biodatabase = self.cleaned_data["biodatabase"]
-
-
 def make_blast_form(biodb):
 
     accession_choices =  get_accessions_BLAST(biodb, plasmid=True, all=True)
@@ -290,55 +220,9 @@ def make_blast_form(biodb):
                                            ("all", "all")])
         evalue= forms.CharField(widget=forms.TextInput({'placeholder': '10'}))
 
-        target = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true", }))
+        target = forms.ChoiceField(choices=accession_choices,
+                widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true", }))
         blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
-
-
-
-def make_extract_region_form(database_name):
-
-    accession_choices = get_accessions(database_name, plasmid=True)
-
-    extraction_choices = [['annotation', 'annotation'],['sequence', 'sequence'],['sequence_trans', 'translation']]
-
-    class ExtractRegionForm(forms.Form):
-
-        genome = forms.ChoiceField(choices=accession_choices, required = True)
-        region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = True)
-        extract = forms.ChoiceField(choices=extraction_choices, required = True)
-        #get_annotation = forms.NullBooleanField(widget=forms.CheckboxInput())
-        #get_sequence = forms.NullBooleanField(widget=forms.CheckboxInput())
-
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.helper = FormHelper()
-            self.helper.form_method = 'post'
-            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
-            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
-            self.helper.layout = Layout(
-                                        Fieldset(
-                                                Row('Extract region'),
-                                                Row('genome'),
-                                                Row('region'),
-                                                Row('extract'),
-                                                Submit('submit', 'Submit'),
-                                                css_class="col-lg-5 col-md-6 col-sm-6")
-                                        )
-            super(ExtractRegionForm, self).__init__(*args, **kwargs)
-    return ExtractRegionForm
-
-
-def make_priam_form(db):
-    accession_choices, rev_index = get_accessions(db)
-
-    class PriamForm(forms.Form):
-        genome = forms.ChoiceField(choices=accession_choices)
-
-        def get_genome(self):
-            target = self.cleaned_data["genome"]
-            return rev_index[int(target)]
-    return PriamForm
-
 
 
 def make_circos_form(database_name):
@@ -388,33 +272,6 @@ def make_circos_form(database_name):
             return taxid
 
     return CircosForm
-
-
-def make_genome_selection_form(database_name):
-
-    accession_choices = get_accessions(database_name)
-
-    class GenomeForm(forms.Form):
-        genome = forms.ChoiceField(choices=accession_choices)
-
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.helper = FormHelper()
-            self.helper.form_method = 'post'
-            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
-            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
-            self.helper.layout = Layout(
-                                        Fieldset(
-                                                Row("Genome"),
-                                                Row('genome'),
-                                                Submit('submit', 'Submit'),
-                                                css_class="col-lg-5 col-md-6 col-sm-6")
-                                        )
-
-            super(GenomeForm, self).__init__(*args, **kwargs)
-
-
-    return GenomeForm
 
 
 def make_extract_form(db, action, plasmid=False, label="Orthologs"):
@@ -486,116 +343,6 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
     return ExtractForm
 
 
-def hmm_sets_form_circos(database_name):
-    from chlamdb.biosqldb import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db(database_name)
-
-    sql = 'select distinct name from hmm.hmm_sets;' #% database_name
-    categories = server.adaptor.execute_and_fetchall(sql,)
-    CHOICES = [(i[0],i[0]) for i in categories]
-    CHOICES.append(("all","all"))
-
-    accession_choices = get_accessions(database_name)
-
-    class HmmSetChoice(forms.Form):
-        hmm_set = forms.ChoiceField(choices=CHOICES)
-        genome = forms.ChoiceField(choices=accession_choices)
-        score_cutoff = forms.CharField(max_length=3, label="Bitscoire cutoff", initial = 10, required = False)
-        query_coverage_cutoff = forms.CharField(max_length=3, label="Query coverage cutoff", initial = 0.5, required = False)
-
-    return HmmSetChoice
-
-
-
-def hmm_sets_form(database_name):
-    from chlamdb.biosqldb import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db(database_name)
-
-    sql = 'select distinct name from hmm.hmm_sets;' #% database_name
-    categories = server.adaptor.execute_and_fetchall(sql,)
-    CHOICES = [(i[0],i[0]) for i in categories]
-    CHOICES.append(("all","all"))
-
-    class HmmSetChoice(forms.Form):
-        hmm_set = forms.ChoiceField(choices=CHOICES)
-
-        score_cutoff = forms.CharField(max_length=3, label="Bitscoire cutoff", initial = 10, required = False)
-        query_coverage_cutoff = forms.CharField(max_length=3, label="Query coverage cutoff", initial = 0.5, required = False)
-
-    return HmmSetChoice
-
-def blast_sets_form(database_name):
-    from chlamdb.biosqldb import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db(database_name)
-
-    sql = 'select distinct name from blast.blast_sets;' #% database_name
-    categories = server.adaptor.execute_and_fetchall(sql,)
-    CHOICES = [(i[0],i[0]) for i in categories]
-    CHOICES.append(("all","all"))
-
-    class BlastSetChoice(forms.Form):
-        blast_set = forms.MultipleChoiceField(choices=CHOICES, widget=forms.SelectMultiple(attrs={'size':'20' }), required = False)
-
-        score_cutoff = forms.CharField(max_length=3, label="Bitscore cutoff", initial = 10, required = False)
-        query_coverage_cutoff = forms.CharField(max_length=3, label="Query coverage cutoff", initial = 0.5, required = False)
-        hit_coverage_cutoff = forms.CharField(max_length=3, label="Query coverage cutoff", initial = 0.5, required = False)
-
-    return BlastSetChoice
-
-def make_locus2network_form(database_name):
-    accessions = get_accessions(database_name)
-
-    class Network(forms.Form):
-        genome = forms.ChoiceField(choices=accessions)
-        locus_list = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}), required = False)
-
-    return Network
-
-def make_pairwiseid_form(database_name):
-
-    plot_CHOICES = (('blast_identity', 'blast_identity'), ('msa_identity','msa_identity'), ('score','score'))
-
-    accessions = get_accessions(database_name)
-    accessions2 = [['None', 'None']] + accessions
-
-    class PairwiseID(forms.Form):
-        plot = forms.ChoiceField(choices=plot_CHOICES)
-        genome_1 = forms.ChoiceField(choices=accessions)
-        genome_2 = forms.ChoiceField(choices=accessions)
-        genome_3 = forms.ChoiceField(choices=accessions2)
-        genome_4 = forms.ChoiceField(choices=accessions2)
-        genome_5 = forms.ChoiceField(choices=accessions2)
-        genome_6 = forms.ChoiceField(choices=accessions2)
-
-    return PairwiseID
-
-
-def make_pairwiseCDS_length_form(database_name):
-
-    accessions = get_accessions(database_name)
-    accessions2 = [['None', 'None']] + accessions
-
-    class PairwiseID(forms.Form):
-        genome_1 = forms.ChoiceField(choices=accessions)
-        genome_2 = forms.ChoiceField(choices=accessions)
-        genome_3 = forms.ChoiceField(choices=accessions2)
-        genome_4 = forms.ChoiceField(choices=accessions2)
-
-    return PairwiseID
-
-def heatmap_form(database_name):
-
-    plot_CHOICES = (('blast_identity', 'blast_identity'), ('core_msa_identity','core_msa_identity'),
-                    ('n_RBBH','n_RBBH'), ('n_shared_orthogroups','n_shared_orthogroups'))
-
-    accessions = get_accessions(database_name)
-
-    class Heatmap(forms.Form):
-        plot = forms.ChoiceField(choices=plot_CHOICES)
-        targets = forms.MultipleChoiceField(choices=accessions, widget=forms.SelectMultiple(attrs={'size':'20' }), required = False)
-
-    return Heatmap
-
 def make_module_overview_form(db, sub_sub_cat=False):
 
     if sub_sub_cat:
@@ -608,90 +355,6 @@ def make_module_overview_form(db, sub_sub_cat=False):
         category = forms.ChoiceField(choices=CHOICES)
 
     return ModuleCatChoice
-
-class SearchForm(forms.Form):
-
-    SEARCH_CHOICES = (('gene', 'gene'), ('product','product'), ('locus_tag','locus_tag'))
-
-    search_type = forms.ChoiceField(choices=SEARCH_CHOICES)
-    search_term = forms.CharField(max_length=100)
-    #biodatabase = forms.ChoiceField(choices=choices)
-
-def make_circos_orthology_form(biodb):
-
-    accession_choices =  get_accessions(biodb, plasmid=True, all=True)
-
-    class Circos_orthology(forms.Form):
-        accession = forms.CharField(max_length=100)
-        targets = forms.ChoiceField(choices=accession_choices)
-    return Circos_orthology
-
-
-def make_blastnr_form(biodb):
-    from chlamdb.biosqldb import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-
-
-    sql ='SELECT bioentry.bioentry_id, bioentry.description FROM bioentry ' \
-             'inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id ' \
-             'where biodatabase.name ="%s"' \
-             'order by bioentry.description' % biodb
-    result = server.adaptor.execute_and_fetchall(sql, )
-    accession_list = [i for i in result]
-    accession_choices = []
-
-    for accession in accession_list:
-        accession_choices.append((accession[0], accession[1]))
-
-    sql = 'show columns from blastnr_blastnr_taxonomy;'
-    ranks = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-    rank_choices = []
-
-    sql2 = 'select max(hit_number) from blastnr_blastnr ;' % biodb
-
-    max_nr_hits = server.adaptor.execute_and_fetchall(sql2,)[0][0]
-
-    for rank in ranks:
-        rank_choices.append((rank, rank))
-
-    class Blastnr_top(forms.Form):
-        accession = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" , 'class':"selectpicker", "data-width":"200px",}), required = False)
-        rank = forms.ChoiceField(choices=rank_choices)
-        CHOICES=[('BBH','BBH'),
-         ('Majority','Majority Rule')]
-        type = forms.ChoiceField(choices=CHOICES)
-        top_number = forms.CharField(max_length=3, label="Majority over top n hits", initial = max_nr_hits, required = False)
-
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.helper = FormHelper()
-            self.helper.form_method = 'post'
-            self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
-            self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
-            self.helper.layout = Layout(
-                                        Fieldset(
-                                                Row("BLAST taxonomy"),
-                                                Row('accession'),
-                                                Row('rank'),
-                                                Row('type'),
-                                                Row('top_number'),
-                                                Submit('submit', 'Submit'),
-                                                css_class="col-lg-5 col-md-6 col-sm-6")
-                                        )
-
-            super(Blastnr_top, self).__init__(*args, **kwargs)
-    return Blastnr_top
-
-
-class BlastProfileForm(forms.Form):
-
-    fasta_file = forms.FileField(label='Select a file')
-
-    blast = forms.ChoiceField(choices=[("blastn_fna", "blastn_fna"),
-                                       ("blastp", "blastp"),
-                                       ("tblastn", "tblastn")], required = False)
-
 
 
 
@@ -735,149 +398,3 @@ def make_blast_form(biodb):
             super(BlastForm, self).__init__(*args, **kwargs)
 
     return BlastForm
-
-def make_comment_from(biodb, locus_tag):
-    import chlamdb.manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    sql = 'select * from manual_annotation where locus_tag="%s"' % locus_tag
-    data = server.adaptor.execute_and_fetchall(sql,)
-    if len(data) == 0:
-        description = '-'
-    else:
-        description = data[0][1]
-
-    class CommentForm(forms.Form):
-
-        locus = forms.CharField(max_length=200, initial="%s" % locus_tag, required = True)
-        comment = forms.CharField(widget=forms.Textarea(attrs={'cols': 80, 'rows': 3}), initial="%s" % description, required = True)
-
-
-    return CommentForm
-
-
-class LocusInt(forms.Form):
-    category = forms.CharField(max_length=600, required = True)
-    gene = forms.CharField(max_length=200, required = True)
-    locus_tag = forms.CharField(max_length=400, required = True)
-    description = forms.CharField(widget=forms.Textarea(attrs={'cols': 60, 'rows': 2,'style': 'float:left;position:relative;left:25px;font-size: 10px;width:400px;'}) , required = True)
-    reference = forms.CharField(widget=forms.Textarea(attrs={'cols': 60, 'rows': 2, 'style': 'float:left;position:relative;left:-5px;font-size: 10px;width:400px;'}), required = True)
-
-
-
-class AnnotForm(forms.Form):
-    orthogroups = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
-
-def get_LocusAnnotForm(database_name):
-
-    accession_choices = get_accessions(database_name)
-
-    class LocusAnnotForm(forms.Form):
-        locus_list = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
-        circos_target = forms.ChoiceField(choices=accession_choices, label='Reference genome')
-    return LocusAnnotForm
-
-def make_motif_form(database_name):
-
-    accession_choices = get_accessions(database_name, all=True)
-
-    class MotifForm(forms.Form):
-        '''
-
-         choix fuzznuc / fuzzpro
-        '''
-        DATA_CHOICES = (('nucleotide', 'nucleotide'), ('protein','protein'))
-        #search = forms.ChoiceField(choices=DATA_CHOICES)
-        n_missmatch = forms.CharField(max_length=3, label="N. mismatches", required=False, initial=0)
-        #input_file = forms.FileField(
-        #    label='Select a file',
-        #    help_text='max. 42 megabytes', required=False
-        #)
-        motif_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 20}),
-                                      help_text="ex: Y-G-G-[LIV]-T-{I}-{N}-x(2)-N (PROSITE style patterns)",
-                                      required=False)
-
-        search_in = forms.ChoiceField(choices=accession_choices)
-    return MotifForm
-
-
-class PCRForm(forms.Form):
-    '''
-     primersearch
-    '''
-
-    input_file = forms.FileField(
-        label='Select a file',
-        help_text='max. 42 megabytes'
-    )
-    primersearch_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 20}))
-
-def make_circos2genomes_form(database_name):
-
-    accession_choices = get_accessions(database_name)
-
-    class Circos2genomesForm(forms.Form):
-
-        locus_list = forms.CharField(max_length=1000, required = False)
-        reference_genome = forms.ChoiceField(choices=accession_choices)
-        query_genome = forms.ChoiceField(choices=accession_choices)
-
-        def save(self):
-            self.reference_genome = self.cleaned_data["reference_genome"]
-            self.query_genome = self.cleaned_data["query_genome"]
-
-    return Circos2genomesForm
-
-
-def make_mummer_form(database_name):
-
-    accession_choices = get_accessions(database_name)
-
-    class Circos2genomesForm(forms.Form):
-
-        reference_genome = forms.ChoiceField(choices=accession_choices)
-        query_genome = forms.ChoiceField(choices=accession_choices)
-
-        def save(self):
-            self.reference_genome = self.cleaned_data["reference_genome"]
-            self.query_genome = self.cleaned_data["query_genome"]
-
-    return Circos2genomesForm
-
-
-
-def make_crossplot_form(database_name):
-
-
-    accession_choices = get_accessions(database_name)
-
-    class CrossplotForm(forms.Form):
-
-        accession = forms.CharField(max_length=100)
-        region_size = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
-        reference_genome = forms.ChoiceField(choices=accession_choices)
-        query_genome = forms.ChoiceField(choices=accession_choices)
-
-        def save(self):
-            self.reference_genome = self.cleaned_data["reference_genome"]
-            self.query_genome = self.cleaned_data["query_genome"]
-
-    return CrossplotForm
-
-
-class ConnexionForm(forms.Form):
-    username = forms.CharField(label="User Name", max_length=30)
-    password = forms.CharField(label="Password", widget=forms.PasswordInput)
-    biodatabase = forms.ChoiceField(choices=choices, required = False)
-
-
-class DBForm(ModelForm):
-
-    accession = forms.CharField(max_length=100)
-    region_size = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
-    #target_region = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
-    '''
-    class Meta:
-        model=GenDB
-        fields = ["ref_genome", "query_genome"]
-    '''

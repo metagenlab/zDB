@@ -41,7 +41,6 @@ urlpatterns = [
     re_path(r'^module_cat_info/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\+-]+)$', views.module_cat_info, name="module_cat_info"),
     re_path(r'^ko_venn_subset/([a-zA-Z0-9_\.\+-]+)$', views.ko_venn_subset, name="ko_venn_subset"),
     re_path(r'^hydropathy/([a-zA-Z0-9_\.\+-]+)$', views.hydropathy, name="hydropathy"),
-    re_path(r'^hmm2circos/$', views.hmm2circos, name="hmm2circos"),
     re_path(r'^priam_kegg/$', views.priam_kegg, name="priam_kegg"),
     re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)', views.locusx, name="locusx"),
     re_path(r'^search_bar$', views.search_bar, name="search_bar"),
