@@ -32,13 +32,13 @@
 
                      <div id="extract_form">
 
-                        <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                        <div class="panel panel-info" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
                             <div class="panel-heading" style="width:100%">
-                                <h3 class="panel-title">Help</h3>
+                                <h3 class="panel-title">Info about the analysis</h3>
                             </div>
-                            <p style="margin: 10px 10px 10px 10px; line-height: 160%">Get list of Kegg Orthologs shared between genomes selected in panel A and absent in genomes of panel B. Based on <a href="http://www.kegg.jp/ghostkoala/">GhostKOALA</a>.<br>
-                            Reference: one of the genome in panel A can be chosen as reference for display the result KO list on a circular map of the genome. Click on "show on circular map" to generate the circos map. Corresponding locus are highlighted in pink. <br>
-                            Missing data: if more than one panel A genome (include) is selected, possibility to tolerate missing data in 1 up to 10 genomes (in order to get KO present in at least x out of the y genomes selected in panel A).</p>
+                            <p style="margin: 10px 10px 10px 10px; line-height: 160%">Get the list of Kegg Orthogroups shared between genomes (selected in panel A) and absent in others (selected in panel B). <br>
+                                It is possible to distinguish between plasmids and chromosomes by clicking on the dedicated checkbox.
+                                <br>Missing data: if more than one genome is selected in panel A, it is possible to tolerate missing data in 1 up to 10 genomes. In this way Kegg Orthogroups present in at least x out of y genomes selected are kept.</p>
                             </p>
                         </div>
 
@@ -54,9 +54,9 @@
 
             {% if wrong_n_missing%}
 
-            <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
                 <div class="panel-heading" style="width:100%">
-                    <h3 class="panel-title">Help</h3>
+                    <h3 class="panel-title">Help to interpret the results</h3>
                 </div>
                 <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
             </div>
@@ -74,11 +74,25 @@
 
             {% if envoi_extract %}
 
-                <div id="my-tab-content" class="tab-content">
+            <div class="row"  style="background-color: rgba(245, 245, 245, 0.986)">
+                <div class="col-lg-12">
+                  <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                    <br>
+                    <center><h3 style="padding:0; color: rgb(0, 0, 0);">Kegg Orthologs shared by the selected genomes </h3></center>
+                    <br>
+                    <h3>Number of Kegg Orthologs: {{ sum_group }} </h3>
+                    <div class="panel panel-success" style="width:60%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
+                      <div class="panel-heading" style="width:100%">
+                        <h3 class="panel-title">Help to interpret the results</h3>
+                      </div>
+                      <p style="margin: 10px 10px 10px 10px; line-height: 180%"> The output consists of a table containing the KO accession number of the Kegg Orthologs shared among the selected genomes. For each entry its description, the corresponding EC numbers used in Enzyme nomenclature, the Kegg Pathways and Kegg modules to whihch it belongs are reported. Additionally the frequency of the Ko entry in the selected genomes and in the whole database is computed.                           
+                      </p>
+                    </div>
 
-                    <div class="tab-pane active" id="red">
+                    <ul style="list-style-type:square">
+                        <div style="padding-top:10px">
 
-                        <h3>Number of Kegg Orthologs: {{ sum_group }} </h3>
+                      
 
                         <table class="display" id="extract_ko">
 

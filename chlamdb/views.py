@@ -2718,10 +2718,9 @@ def blast(request):
                 unknown_format = True
 
             if not unknown_format:
-                if seq_type == 'DNA' and blast_type in ["blastp", "tblastn"]:
+                if seq_type == 'Protein' and blast_type in ["blastn_ffn", "blastn_fna", "blastx"]:
                     wrong_format = True
-                elif seq_type =='Protein' and blast_type in ["blastn_ffn", "blastn_fna", "blastx"]:
-                    wrong_format = True
+                
                 else:
                     query_file = NamedTemporaryFile(mode='w')
                     SeqIO.write(my_record, query_file, "fasta")
@@ -2752,13 +2751,13 @@ def blast(request):
                                 max_target_seqs=number_blast_hits,  outfmt=0)
                     if blast_type=='blastp':
                         blastType = 'locus'
-                        blastdb = settings.BLAST_DB_PATH + f"blast_DB/faa/{key_dict}"
+                        blastdb = settings.BLAST_DB_PATH + f"/faa/{key_dict}"
                         blast_cline = NcbiblastpCommandline(query=query_file.name, \
                                 db=blastdb, evalue=customized_evalue, \
                                 max_target_seqs=number_blast_hits, outfmt=0)
                     if blast_type=='tblastn':
                         blastType = 'genome'
-                        blastdb = settings.BLAST_DB_PATH + f"blast_DB/fna/{key_dict}"
+                        blastdb = settings.BLAST_DB_PATH + f"/fna/{key_dict}"
                         blast_cline = NcbitblastnCommandline(query=query_file.name, \
                                 db=blastdb, evalue=customized_evalue, \
                                 max_target_seqs=number_blast_hits,  outfmt=0)
@@ -2767,7 +2766,7 @@ def blast(request):
                                 max_target_seqs=number_blast_hits, outfmt=5)
                     if blast_type=='blastx':
                         blastType = 'locus'
-                        blastdb = settings.BLAST_DB_PATH + f"blast_DB/faa/{key_dict}"
+                        blastdb = settings.BLAST_DB_PATH + f"/faa/{key_dict}"
                         blast_cline = NcbiblastxCommandline(query=query_file.name, \
                                 db=blastdb, evalue=customized_evalue, \
                                 max_target_seqs=number_blast_hits,  outfmt=0)
@@ -2915,7 +2914,8 @@ def sitemap(request):
 
 
 def circos_main(request):
-    biodb = settings.BIODB
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
 
     if request.method == 'POST':
         

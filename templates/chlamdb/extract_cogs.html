@@ -73,15 +73,15 @@
 
                <div id="extract_form">
 
-                  <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                      <div class="panel-heading" style="width:100%">
-                          <h3 class="panel-title">Help</h3>
-                      </div>
-                      <p style="margin: 10px 10px 10px 10px; line-height: 160%">Get list of COGs shared between genomes selected in panel A and absent in genomes of panel B. COG annotation based on the annotation of the best blast hit against the COG 2014 database. <br>
-                      Reference: one of the genome in panel A can be chosen as refence for display the result COG list on a circular map of the genome. Click on "show on circular map" to generate the circos map. <br>
-                      Missing data: if more than one panel A genome (include) is selected, possibility to tolerate missing data in 1 up to 10 genomes (in order to get COG present in at least x out of the y genomes selected in panel A).
-                      </p>
-                  </div>
+                <div class="panel panel-info" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                    <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 160%">Get the list of COG categories shared between genomes (selected in panel A) and absent in others (selected in panel B). <br>
+                        It is possible to distinguish between plasmids and chromosomes by clicking on the dedicated checkbox.
+                        <br>Missing data: if more than one genome is selected in panel A, it is possible to tolerate missing data in 1 up to 10 genomes. In this way COG present in at least x out of y genomes selected are kept.</p>
+                    </p>
+                </div>
 
                   {% block content %}
                   <form action="{% url "extract_cog" %}" method="post">
@@ -114,11 +114,59 @@
 
                 {% if envoi_extract %}
 
+                <div class="row" style="background-color: rgba(245, 245, 245, 0.986)">
+                    <div class="col-lg-12">
+                      <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                  <br>
+                  <center><h3 style="padding:0; color: rgb(0, 66, 97);">COGs shared by the selected genomes </h3></center>
+                  <br>
+                  <div class="panel panel-success" style="width:60%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
+                    <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Help to interpret the results</h3>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 180%">Three outputs have been generated:
+                      <br> <b>COGs</b> table:  it contains the list of COG categories shared among the selected genomes.
+                      For each category the most frequent annotations and the number of occurences in the whole set database and in the selected genomes are reported.
+                    <br><b> COG categories barchart</b>: this plot displays for each COG category in <span style="color: rgb(135, 186, 245)"><b>light-blue</b></span> the number of genes shared by the selected genomes, while in <span style="color: rgb(16, 76, 145)"><b>blue</b></span> , the total number of genes annotated with that COG in the selected genomes (shared and unique to each selected genome). Next to the light-blue barcharts there is a percentage value as the result of the number of reported COGs for each category divided by the number of shared COG in all categories, while next to the blue barcharts the value represents COGs count are divided by the total COGs unique and shared in the selected genomes.
+                    <br>A longer light-blue bar can be interpreted as an enrichment of that shared COG category in the selected genomes compared to their complete COG profiles.
+                    <br> <b>Locus list reference</b>            
+                    </p>
+                  </div>
+                  <ul style="list-style-type:square">
+                    <div style="padding-top:10px">
+
+                       <table class="table" style="width:600px">
+                           <tr>
+                               <th>Number of included genomes</th>
+                               <td> {{ include|length }} </td>
+                           </tr>
+
+                           <tr>
+                               <th>Number of excluded genomes</th>
+                               <td> {{ exclude|length }} </td>
+                           </tr>
+
+                            <tr>
+                               <th>Number of accepted missing data</th>
+                               <td> {{ n_missing }} </td>
+                           </tr>
+                             <tr>
+                               <th>Number of COGs identified</th>
+                               <td> {{ sum_group }}  </td>
+                           </tr>
+
+                       </table>
+               
+        
+            
+                <div class="col-lg-12">
+
                     <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                         <li class="active"><a href="#red" data-toggle="tab">COGs</a></li>
 						<li><a data-toggle="tab" href="#tab66">COG categories barchart</a></li>
                         <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
                     </ul>
+
 
                     <div id="my-tab-content" class="tab-content">
 
@@ -128,27 +176,7 @@
                             <ul style="list-style-type:square">
                              <div style="padding-top:10px">
 
-                                <table class="table" style="width:600px">
-                                    <tr>
-                                        <th>Number of included genomes</th>
-                                        <td> {{ include|length }} </td>
-                                    </tr>
-
-                                    <tr>
-                                        <th>Number of excluded genomes</th>
-                                        <td> {{ exclude|length }} </td>
-                                    </tr>
-
-                                     <tr>
-                                        <th>Number of accepted missing data</th>
-                                        <td> {{ n_missing }} </td>
-                                    </tr>
-                                      <tr>
-                                        <th>Number of COGs identified</th>
-                                        <td> {{ sum_group }}  </td>
-                                    </tr>
- 
-                                </table>
+                              
 
 
                                 <table class="display" id="cog_table">
@@ -181,22 +209,9 @@
                             <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
                         </div>
 
-						<div class="tab-pane" id="tab66">
+						<div class="tab-pane" id="tab66" style="margin-top: 2em;"> 
 						<div id="content">
-
-							<div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-								<div class="panel-heading" style="width:100%">
-									<h3 class="panel-title">Help</h3>
-								</div>
-								<p style="margin: 10px 10px 10px 10px">COGs selection versus all COGs in all selected genomes<br>
-								</p>
-							</div>
-
-							<ol>
-								<li> number of cog selected: {{match_groups_subset|length}} => counts in categories: {{total_subset}}</li>
-								<li> number of COGs in all selected genomes: {{match_groups|length}} => counts in categories: {{total_all_include}} </li>
-								<li> number of allowed missing data: {{n_missing}} out of a total of {{include|length}} genomes </li>
-							</ol>
+                           
 
 
 							<style>
@@ -404,7 +419,7 @@
 
                             <h3> Locus annotation </h3>
                             <div id="export_bouttons_groups">
-                                <a href="{% url 'get_fasta' %}{{fasta_url_ref}}" class="btn btn-success">Download fasta</a>
+                              
                                 <form name="circos_form" id="circos_form" action="{% url 'circos_main' %}" method="post">
                                     <input type="hidden" name="reference_taxon" value="{{ reference_taxon }}">
                                     <input type="hidden" name="target_list" value="{{ target_circos_taxons }}">

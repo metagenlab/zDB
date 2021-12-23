@@ -1,54 +1,37 @@
 <!DOCTYPE html>
-
-
 <html>
-
 <head>
-<script src="https://cdn.jsdelivr.net/gh/calipho-sib/feature-viewer@v1.0.6/dist/feature-viewer.bundle.js"></script>
-
-{% load static %}
-{% load static %}
-{% load custom_tags %}
-{% get_static_prefix as STATIC_PREFIX %}
-{% include "chlamdb/header.html" %}
-
-
+	{% load custom_tags %}
+	{% load static %}
+	{% load static %}
+	{% load crispy_forms_tags %}
+	{% include "chlamdb/header.html" %}
 </head>
 
-<body>
-
-
-<div class="row">
-<div id="wrapper">
-  <div id="page-content-wrapper">
-	<div class="row">
-	  <div class="col-lg-12 col-md-12 col-sm-12">
-
-	  {% include "chlamdb/menu.html" %}
+<div class="container-fluid" id="main_container">
+  <div class="row">
+	<div id="wrapper">
+	  <div id="page-content-wrapper">
+		<div class="row">
+		  <div class="col-lg-12">
+			{% include "chlamdb/menu.html" %}
 
 	  {% if not valid_id %}
 		  <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
 		  <p>
 	  {% else %}
 
-		<ul class="nav nav-tabs">
-			<li class="active">
-				<a data-toggle="tab" href="#overview_tab">Overview</a>
-			</li>
-			<li>
-				<a href="#homologs_tab" data-toggle="tab">Homologs <span class="badge">{{n_homologues}}</span></a>
-			</li>
-			<li>
-				<a href="#og_distribution_tab" data-toggle="tab">Phylogenetic distribution</a>
-			</li>
-
+	  <nav>
+		<ul id="tabs_main" class="nav nav-tabs">
+			<li class="active"><a data-toggle="tab" href="#overview_tab">Overview</a></li>
+			<li><a href="#homologs_tab" data-toggle="tab">Homologs <span class="badge">{{n_homologues}}</span></a></li>
+			<li><a href="#og_distribution_tab" data-toggle="tab">Phylogenetic distribution</a></li>
 			{% if n_homologues > 2 and optional2status|keyvalue:"gene_phylogenies" %}
-				<li>
-					<a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a>
-				</li>
+			<li><a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a></li>
 			{% endif %}
 		</ul>
-
+	</nav>
+		<div id="form" class="col-lg-10 col-md-12 col-sm-12">
 		  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.48.1/plotly.min.js"></script>
 
 	
@@ -72,17 +55,19 @@
 		  </div>
 
 		  <div class="tab-pane active" id="overview_tab">
-			<h3>Orthogroup: {{og}} -- {{n_homologues}} members: overview of the annotation</h3>
+			<h3>Orthogroup: <strong>{{og}}</strong>
+				<br>  <strong>{{n_homologues}} members</strong> -overview of the annotation</h3>
 
 
 			  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
 				  <div class="panel-heading" style="width:100%">
 					  <h3 class="panel-title">Help</h3>
 				  </div>
-				  <p style="margin: 10px 10px 10px 10px">Orthologs were identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. The annotation of orthologous proteins can differ depending the approach used 
-				  to annotate the source genomes. Automated annotations are also subject to errors. Spurious clustering of non-orthologous proteins can also happen. 
-				  This page summarizes the annotation of all members of the orthologous group <strong>{{locus}}</strong>, allowing to check for eventual inconsistencies. <br>
-				  The number of times (occurence) an annotation is observed in the orthogroup is reported for each annotation.<br>
+				  <p style="margin: 10px 10px 10px 10px">
+				  This page summarizes the annotation of all members of the orthologous group <strong>{{og}}</strong>.
+				  <br>Gene name(s), gene product(s), a summary of protein lenght, and annotations (when available) are provided. Additionally, the number of times (occurence) an annotation is observed in the orthogroup is reported for each annotation.
+				  <br><br>Orthologs were identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. The annotation of orthologous proteins can differ depending the approach used 
+				  to annotate the source genomes. Automated annotations are also subject to errors. Spurious clustering of non-orthologous proteins can also happen. This page allows to check for eventual inconsistencies. <br>
 				  </p>
 			  </div>
 

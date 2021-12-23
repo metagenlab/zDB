@@ -30,17 +30,40 @@
                  {% else %}
                      <div id="content">
 
-
-
-                             <h3> {{ fam }}  </h3>
+                             <h3>
+                                {% if type == 'cog'%}
+                                COG entry:
+                                {% elif type == 'ko' %}
+                                Kegg Ortholog:
+                                {% elif type == 'pfam' %}
+                                Pfam domain:
+                                {% endif %} 
+                                {{ fam }}
+                            </h3>
                               <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                                   <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
                                   <li><a href="#tab2" data-toggle="tab">Protein list</a></li>
                                   <li><a href="#tab3" data-toggle="tab">Profile</a></li>
                               </ul>
-
+                              
+                            
                                 <div id="my-tab-content" class="tab-content">
                                     <div class="tab-pane active" id="tab1">
+                                        <h3> {{ fam }}  </h3>
+                                        <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                                            <div class="panel-heading" style="width:100%">
+                                              <h3 class="panel-title">Help</h3>
+                                              </div>
+                                      <p style="margin: 10px 10px 10px 10px">Description and frequency of the selected
+                                        {% if type == 'cog'%}
+                                        COG entry
+                                        {% elif type == 'ko' %}
+                                        Kegg Ortholog
+                                        {% elif type == 'pfam' %}
+                                        Pfam domain
+                                        {% endif %} 
+                                        {{ fam }}.</p>
+                                      </div>
 
                                         <div class="col-md-12 col-lg-10" style="padding-right:30px;padding-top:30px">
                                             <div class="row">
@@ -287,7 +310,7 @@
                                                         <table class="table table-striped" style="width: 100%">
 
                                                             <tr>
-                                                                <td>{{ fam }} is associated to <strong>{{ all_locus_data|length }} different proteins</strong> (see tab "<a href="#tab2" data-toggle="tab">Protein list</a>" and "<a href="#tab3" data-toggle="tab">Profile</a>")</td>
+                                                                <td>{{ fam }} is associated with <strong>{{ all_locus_data|length }} different proteins</strong> (see tab "<a href="#tab2" data-toggle="tab">Protein list</a>" and "<a href="#tab3" data-toggle="tab">Profile</a>")</td>
                                                             </tr>
                                                             <tr>
                                                                 <td> The {{ all_locus_data|length }} proteins are classified into <strong>{{ group_count|length }} different orthogroup(s)</strong></td>
@@ -311,7 +334,23 @@
 
                                   <div class="tab-pane" id="tab2">
 
-                                    <h3>Detail</h3>
+                                    <h3> {{ fam }}  </h3>
+                                        <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                                            <div class="panel-heading" style="width:100%">
+                                              <h3 class="panel-title">Help</h3>
+                                              </div>
+                                      <p style="margin: 10px 10px 10px 10px"> As diplayed in "General" the
+                                        {% if type == 'ko'%}
+                                COG entry
+                                {% elif type == 'ko' %}
+                                Kegg Ortholog
+                                {% elif type == 'pfam' %}
+                                Pfam domain
+                                {% endif %} 
+                                        of interest is associated with {{ all_locus_data|length }} different protein(s).
+                                        In the presented table the orthogroup, the organism in which each protein has been found, and the locus tag enriched by start and stop position, strand, gene name and product are reported.
+                                    <br>Clicking on the Ortohgroup name or locus you will be redirected to further info.</p>
+                                      </div>
 
                                         <table id="fam_table" class="display">
                                             <thead>
@@ -358,8 +397,27 @@
                                               <h3 class="panel-title">Help</h3>
                                           </div>
                                           <p style="margin: 10px 10px 10px 10px; line-height: 180%">
-                                              <strong>Red:</strong> <font size="2" color="red">{{type}}</font> <font size="2" color="red">with</font> positive hit(s) in the corresponding genome. <br>
-                                              <strong>Green:</strong>Highlight discrepencies between orthogroup clustering and <font size="2" color="red">{{type}}</font> prediction. Green homologs (same orthogroup) <font size="2" color="green">are not</font> positive hit(s) for the considered <font size="2" color="red">{{type}}</font>. Variations within orthogroups may be due to the clustering of multi domain proteins or because of erroneous homolog clustering or <font size="2" color="red">{{type}}</font> prediction.
+                                            Phylogenetic tree annotated with
+                                            <br>- the presence of the
+                                {% if type == 'cog'%}
+                                COG entry(ies)
+                                {% elif type == 'ko' %}
+                                Kegg Ortholog(s)
+                                {% elif type == 'pfam' %}
+                                Pfam domain(s)
+                                {% endif %} of interest within all the genomes of the database (first column)
+                                            <br>- the size of the orthogroup(s) in which the reported
+                                {% if type == 'cog'%}
+                                COG entry
+                                {% elif type == 'ko' %}
+                                Ko entry
+                                {% elif type == 'pfam' %}
+                                Pfam domain
+                                {% endif %}  has been clustered.
+                                              <br>In red the <font size="2" color="red">{{type}} with positive hit(s)</font> in the corresponding genome.
+                                              <br>In green <font size="2" color="green">the discrepencies between orthogroup clustering and {{type}} prediction</font>.
+                                              Green homologs (same orthogroup) <strong>are not</strong> positive hit(s) for the considered {{type}}.
+                                              <br><br>Variations within orthogroups may be due to the clustering of multi domain proteins or because of erroneous homolog clustering or {{type}} prediction.
                                           </p>
                                        </div>
                                        <div class="row">

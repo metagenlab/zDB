@@ -20,9 +20,13 @@
                  <div class="home-title"><b> Kegg maps  </b></div>
                  <hr class="lines-home">
 
-
-                  <h3>Kegg maps</h3>
-
+                  <div class="panel panel-info" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                    <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 160%">Through the "Kegg maps" analysis you can search for the Kegg maps and retrieve information about the metabolism of the genome of interest (genome).</p>
+                    </p>
+                </div>
 
 
                   <div id="search_form">
@@ -33,9 +37,24 @@
                   </div>
 
                   {% if envoi %}
-                      <h3>Kegg pathways</h3>
 
-                      <table class="display" id="kegg_maps">
+
+                  <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em;">
+                    <div class="col-lg-8">
+                   <center><h3 style="padding:0; color: rgb(0, 66, 97);"><h2>Overview of the Kegg pathways in the selected genome</h3></center>
+                    <br>
+                  <div class="panel panel-success">
+                    <div class="panel-heading" style="width:100%">
+                      <h5 class="panel-title">Help to interpret the results</h5>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px">
+                      The output table contains a list of Kegg pathways, their description and the number of KO entry they contain.
+                      <br> Click on the accession number of pathway for a detailed description of it.
+                    </p>
+                  </div>
+                </div>
+
+                  <table class="display" id="kegg_maps" style="width: 90%; margin-left: 1em; ">
                           <thead>
                             <tr>
 							{% for element in header %}
