@@ -1,67 +1,40 @@
-<!DOCTYPE html>
-
-
-<html>
-    <head>
-        {% load static %}
-        {% load custom_tags %}
-        {% load crispy_forms_tags %}
-        <script type="text/javascript" id="js">
-            $(document).ready(function() {
-            // call the tablesorter plugin
-            $("table").tablesorter({
-            // change the default sorting order from 'asc' to 'desc'
-            sortInitialOrder: 1
-            });
-            });
-        </script>
-        <script type="text/javascript">
-            jQuery(document).ready(function ($) {
-                $('#tabs_main').tab();
-            });
-        </script>
-        <script type="text/javascript">
-            jQuery(document).ready(function ($) {
-                $('#tabs1').tab();
-            });
-        </script>
+<!DOCTYPE html> <html>  <head> {% load custom_tags %}
+    {% load static %}
+    {% load static %}
+    {% load crispy_forms_tags %}
     {% include "chlamdb/header.html" %}
-    </head>
+</head>
 
+<div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+             {% include "chlamdb/menu.html" %}
+             <div class="home-title"><b> Pfam domains </b></div>
+             <hr class="lines-home">
 
-    <div class="container-fluid" id="main_container">
-      <div class="row">
-        <div id="wrapper">
-            <div id="page-content-wrapper">
-              <div class="row">
-                <div class="col-lg-12">
-                   {% include "chlamdb/menu.html" %}
-					<div class="home-title"><b> Pfam domains  </b></div>
-					 <hr class="lines-home">
+             <nav>
+                <ul id="tabs_main" class="nav nav-tabs">
+                    <li class="active"><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
+                    <li><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
+                    <li><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
+                    <li><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
 
+                </ul>
+            </nav>
+            <div class="panel panel-info" style="width:90% ; top: 200px; margin: 10px 10px 10px 10px">
+                <div class="panel-heading" style="width:100%; ">
+                        <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
 
-                    <nav>
-                        <ul id="tabs_main" class="nav nav-tabs">
-                            <li class="active"><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
-                            <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
-                            <li><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
-                            <li><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
-                            <li><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
-
-                        </ul>
-                    </nav>
-
-                     <div id="extract_form">
-
-                        <div class="panel panel-success" style="top: 200px; margin: 10px 10px 10px 10px">
-                            <div class="panel-heading" style="width:100%">
-                                <h3 class="panel-title">Help</h3>
-                            </div>
-                            <p style="margin: 10px 10px 10px 10px; line-height: 160%">Get list of Pfam domains shared between genomes selected in panel A and absent in genomes of panel B. Based on Interproscan results.<br>
-                            Reference: one of the genome in panel A can be chosen as reference for display the result Pfam entries list on a circular map of the genome. Click on "show on circular map" to generate the circos map. Corresponding locus are highlighted in pink. <br>
-                            Missing data: if more than one panel A genome (include) is selected, possibility to tolerate missing data in 1 up to 10 genomes (in order to get Pfam entries present in at least x out of the y genomes selected in panel A).</p>
-                            </p>
-                        </div>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 180%">Get the list of Pfam domains shared between genomes (selected in panel A) and absent in others (selected in panel B). <br>
+                        It is possible to distinguish between plasmids and chromosomes by clicking on the dedicated checkbox.
+                        <br>Missing data: if more than one genome is selected in panel A, it is possible to tolerate missing data in 1 up to 10 genomes. In this way Pfam domains present in at least x out of y genomes selected are kept.</p></p>
+                </div>
+   
 
                         {% block content %}
 						{% csrf_token %}
@@ -93,17 +66,58 @@
 
                     {% if envoi_extract %}
 
-                        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                            <li class="active"><a href="#red" data-toggle="tab">Pfam</a></li>
+                    <div class="row"  style="background-color: rgba(245, 245, 245, 0.986)">
+                        <div class="col-lg-12">
+                          <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                            <br>
+                            <center><h3 style="padding:0; color: rgb(0, 0, 0);">Pfam domains shared by the selected genomes </h3></center>
+                            <br>
+                            <div class="panel panel-success" style="width:60%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
+                              <div class="panel-heading" style="width:100%">
+                                <h3 class="panel-title">Help to interpret the results</h3>
+                              </div>
+                              <p style="margin: 10px 10px 10px 10px; line-height: 180%">Two tables have been generated:
+                                <br> <b>Pfam</b> table: it contains the list of Pfam domains shared among the selected genomes.Pfam entry, its description, its frequency in the selected genomes and in all genomes is reported. 
+                              <br><b>Locus list reference</b>: a complete list of the members of each Pfam group shared by the selected genome is displayed.                            
+                              </p>
+                            </div>
 
+                            <ul style="list-style-type:square">
+                                <div style="padding-top:10px">
+   
+                                   <table class="table" style="width:600px;">
+                                       <tr>
+                                           <th>Number of included genomes</th>
+                                           <td> {{ include|length }} </td>
+                                       </tr>
+   
+                                       <tr>
+                                           <th>Number of excluded genomes</th>
+                                           <td> {{ exclude|length }} </td>
+                                       </tr>
+   
+                                        <tr>
+                                           <th>Number of accepted missing data</th>
+                                           <td> {{ n_missing }} </td>
+                                       </tr>
+                                         <tr>
+                                           <th>Number of  PFAM domains identified</th>
+                                           <td> {{ sum_group }}  </td>
+                                       </tr>
+    
+                                   </table>
+
+                        <div class="col-lg-12">
+                            <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                              <br>
+                              <li class="active"><a href="#red" data-toggle="tab">Pfam</a></li>
+                              <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
                         </ul>
+                
 
-                        <div id="my-tab-content" class="tab-content">
+                        <div id="my-tab-content" class="tab-content" style="margin-top: 2em;">
 
                             <div class="tab-pane active" id="red">
-
-                                <h3>Number of PFAM domains: {{ sum_group }} </h3>
-
                                 <table class="display" id="PFAM_table">
                                     <thead>
                                         <tr>
@@ -201,6 +215,30 @@ buttons: [
 } );
 } );
 
+
+ type="text/javascript" id="js">
+            $(document).ready(function() {
+            // call the tablesorter plugin
+            $("table").tablesorter({
+            // change the default sorting order from 'asc' to 'desc'
+            sortInitialOrder: 1
+            });
+            });
+        </script>
+        <script type="text/javascript">
+            jQuery(document).ready(function ($) {
+                $('#tabs_main').tab();
+            });
+        </script>
+        <script type="text/javascript">
+            jQuery(document).ready(function ($) {
+                $('#tabs1').tab();
+            });
+       
+$(document).ready(function() {
+$("#PFAM_table").DataTable();} );
+$(document).ready(function() {
+$("#tab2").DataTable();} );
 
 </script>
 </body>

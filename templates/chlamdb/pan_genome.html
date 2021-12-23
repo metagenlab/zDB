@@ -51,36 +51,36 @@
                   </nav>
 
 
-                  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-                      <div class="panel-heading" style="width:100%">
-                          <h3 class="panel-title">Help</h3>
-                      </div>
-                      <p style="margin: 10px 10px 10px 10px">Accumulation/rarefaction plot of
+                  <div class="panel panel-info" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                    <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px"> 
+                        {% if type == 'Pfam' %}
+                        Accumulation/rarefaction plot of Pfam domains
+                        {% elif type == 'COG' %}
+                        Accumulation/rarefaction plot of COG entries.
+                        {% elif type == 'ko' %}
+                        Accumulation/rarefaction plot of Kegg orthologs
+                        {% elif type == 'orthology' %}
+                        Pan/core genome plot of Orthologous groups
+                        {% endif %} of genomes of interest (targets).
+                        <br>
+                        **Targets = 'Select all' to get the core
+                        {% if type == 'Pfam' %}
+                            Pfam domains
+                        {% elif type == 'COG' %}
+                            COG
+                        {% elif type == 'ko' %}
+                            Kegg orthologs
+                        {% elif type == 'orthology' %}
+                            Orthologous groups
+                        {% endif %}
+                         of the entire dataset
 
-                          {% if type == 'Pfam' %}
-                              Pfam domains
-                          {% elif type == 'COG' %}
-                              COG
-                          {% elif type == 'ko' %}
-                              Kegg orthologs
-                          {% elif type == 'orthology' %}
-                              Orthologous groups (pan/core genome plots)
-                          {% endif %}
-                          <br> Targets = 'Select all' to get the core
-                          {% if type == 'Pfam' %}
-                              Pfam domains
-                          {% elif type == 'COG' %}
-                              COG
-                          {% elif type == 'ko' %}
-                              Kegg orthologs
-                          {% elif type == 'orthology' %}
-                              Orthologous groups
-                          {% endif %}
-                           of the entire dataset
-
-                          <br>
-                      </p>
-                  </div>
+                        <br>
+                    </p>
+                </div>
 
               <form action='{% url "pan_genome" type %}' method="post">
                   {% csrf_token %}
@@ -90,9 +90,59 @@
               </form>
               </div>
 
-            {% if envoi %}
-			  <div class="tab-pane active" id="tab1">
-				<div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+              {% if envoi %}
+              <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em">
+                <div class="col-lg-8">
+               <center><h3 style="padding:0; color: rgb(0, 66, 97);"> Accumulation/rarefaction plot of 
+                {% if type == 'Pfam' %}
+                Pfam domains
+                {% elif type == 'COG' %}
+                COG categories
+                {% elif type == 'ko' %}
+                ko categories
+                {% elif type == 'orthology' %}
+                Orthogroups
+                {% endif %}
+            </h3></center>
+                <br>
+              <div class="panel panel-success">
+                <div class="panel-heading" style="width:100%">
+                  <h5 class="panel-title">Help to interpret the results
+                </div>
+                <p style="margin: 10px 10px 10px 10px">
+                    {% if type == 'Pfam' %}
+                    This plot shows the relationship between the total number of Pfam domains and the number of genomes considered.
+                    <br>The <span style="color: rgb(61, 121, 66);"><b>green</b></span> line is representative of the pan-genome size. A flat line means that the genomes contains the same Pfam domains, while an increasing ones means that genomes carry several unique or low frequency Pfam domains.
+                    <br>The (<span style="color: red;"><b>red</b></span> ) lines displays the Pfam domains shared by n genomes.     
+                   
+
+                    {% elif type == 'COG' %}
+                    This plot shows the relationship between the total number of COG orthologs and the number of genomes considered.
+                    <br>The <span style="color: rgb(61, 121, 66);"><b>green</b></span> line is representative of the pan-genome size. A flat line means that the genomes contains the same COG orthologs, while an increasing ones means that genomes carry several unique or low frequency COG orthologs.
+                    <br>The (<span style="color: red;"><b>red</b></span> ) lines displays the COG orthologs shared by n genomes.                  
+              
+                    {% elif type == 'ko' %}
+                    This plot shows the relationship between the total number of KO entries and the number of genomes considered.
+                    <br>The <span style="color: rgb(61, 121, 66);"><b>green</b></span> line is representative of the pan-genome size. A flat line means that the genomes contains the same KO entries, while an increasing ones means that genomes carry several unique or low frequency KO entries.
+                    <br>The (<span style="color: red;"><b>red</b></span> ) lines displays the KO entries shared by n genomes.        
+                       
+
+                    {% elif type == 'orthology' %}
+                    This plot shows the relationship between the total number of Orthologous groups and the number of genomes considered.
+                    <br>The <span style="color: rgb(61, 121, 66);"><b>green</b></span> line is representative of the pan-genome size. A flat line means that the genomes contains similar genes, while an increasing ones means that genomes carry several unique or low frequency genes.
+                    <br>The (<span style="color: red;"><b>red</b></span> ) lines displays the orthologs shared by n genomes.
+                        <br>
+                      
+                    {% endif %}
+
+
+                    <br>
+                </p>
+            </div>
+ 
+
+           <div class="tab-pane active" id="tab1">
+				<div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
 					<div id="rarefaction_plot">
 					</div>
 				</div>
@@ -108,6 +158,7 @@
 
 
 {% include "chlamdb/style_menu.html" %}
+
 </body>
 
 <script>

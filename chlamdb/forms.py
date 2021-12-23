@@ -42,18 +42,12 @@ def get_accessions_BLAST(db, all=False, plasmid=False):
     for taxid, data in result.iterrows():
         accession_choices.append((index, data.description))
         reverse_index.append((taxid, False))
-        try:
-            if plasmid and data.has_plasmid==1:
-                accession_choices.append((str(index) + " plasmid", data.description + " plasmid"))
-                reverse_index.append((taxid, True))
-                is_plasmid = True
-                index += 1
-        except:
-            index += 1
+        index += 1
 
     if all:
         accession_choices = [["all", "all"]] + accession_choices
-    return accession_choices #, reverse_index  #understand why there is this 'reverse_index' in the original def (error in def blast)
+    return accession_choices #, reverse_index  #understand why there is this 'reverse_index' in the original def (error in def blast) / for blast no difference for plasmids
+
 
 
 def make_plot_form(db):
@@ -224,8 +218,8 @@ def make_circos_form(database_name):
                                         Fieldset(
                                                 Row("Circos"),
                                                 Row('circos_reference'),
-                                                Row('targets'),
-                                                Submit('submit_circos', 'Submit',  style="padding-left:15px"),
+                                                Row('targets', style="margin-top:1em"),
+                                                Submit('submit_circos', 'Submit',  style="padding-left:15px; margin-top:15px; margin-bottom:15px "),
                                                 css_class="col-lg-5 col-md-6 col-sm-6")
                                         )
 
@@ -353,8 +347,7 @@ def make_blast_form(biodb):
                                            ("20", "20"),
                                            ("30", "30"),
                                            ("all", "all")])
-        evalue= forms.CharField(widget=forms.TextInput({'placeholder': str(DEFAULT_E_VALUE)}),
-                required=False)
+        evalue= forms.CharField(widget=forms.TextInput({'value': str(DEFAULT_E_VALUE)}))
 
         target = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
         blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))

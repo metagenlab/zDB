@@ -10,7 +10,7 @@
     {% load static %}
     {% load custom_tags %}
     {% include "chlamdb/header.html" %}
-    {% include "chlamdb/style_menu.html" %}
+    
 </head>
 
 <body>
@@ -27,7 +27,7 @@
 
                             <div>
                                 <div class="jumbotron">
-                                <h1>Comparative Database </h1>
+                                <h1>ZDB</h1>
                                 <center>
                                   <p>
                                   A comparative genomics database
@@ -41,7 +41,7 @@
                 
 
                    <div class="container-fluid" id="main_container" style="width: 90%;">      
-                    <div class="container" >
+                   
                       <div class="tab-pane active">
                          <div class="col-md-4 col-sm-7" >
                           <div class="serviceBox_2"  >
@@ -80,7 +80,7 @@
                                 </div>
                                 <br></a>
                                 <h3 class="title">Phylogeny</h3> 
-                                <p class="description"> Visualize and download the phylogenetic tree built on concatenated single copy orthologs. The phylogeny is annotated with genomics info, such as genome size,GC content, coding density, completness, and contamination expressed as percentages.</p>
+                                <p class="description"> Visualize and download the phylogenetic tree built on concatenated single copy orthologs. The phylogeny is annotated with genomics info, such as genome size, GC content, coding density, completness, and contamination expressed as percentages.</p>
                             </div>
                         </div>
                       
@@ -89,7 +89,7 @@
                 <br>
                 
                       <div class="col-md-3 col-sm-6"   style=" min-width: 200px;"  >
-                          <div class="serviceBox" style="min-height: 800px;" >
+                          <div class="serviceBox"  >
                               <div class="service-icon_2">
                                   <span><i class="fa fa-shapes"></i></span>
                               </div>
@@ -112,7 +112,7 @@
                       </div>
                       {% if optional2status|keyvalue:"KEGG" == 1 %}
                       <div class="col-md-3 col-sm-6"    style=" min-width: 200px;" >
-                        <div  class="serviceBox" style="min-height: 800px;" >
+                        <div  class="serviceBox" >
                             <div class="service-icon_2">
                                 <span><i class="fa fa-cogs"></i></span>
                             </div>
@@ -125,23 +125,25 @@
                     </div>
                     {% endif %}
                   <div class="col-md-3 col-sm-6"  style=" min-width: 200px;">
-                    <div  class="serviceBox" style="min-height: 800px;" >
+                    <div  class="serviceBox" >
                         <div class="service-icon_2">
                             <span><i class="fa fa-circle-notch"></i></span>
                         </div>
-                        <h3 class="title">Circos</a></h3>
+                        <h3 class="title">Genome alignments</a></h3>
                         <p class="description"> Generate a clickable version of circos plot indicating the presence/absence of homologous proteins in one or multiple genomes, the GC content and navigate to the description of the locus tags of interest. </p>
                         <br> 
-                        <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a  class="link_boxes"   href="{% url 'circos' %}">  <span class="link"></span>Circos</a></button></div>
+                        <p class="description"> Align target genomic regions of two or more genomes and plot them. </p>
+                        <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a  class="link_boxes"   href="{% url 'circos' %}">  <span class="link"></span>Plot region</a></button>
+                        <button type="button_analyses" class="fill" ><a  class="link_boxes"   href="{% url 'circos' %}">  <span class="link"></span>Circos</a></button></div>
                     </div>
                 </div>
                 {% if optional2status|keyvalue:"BLAST_database"%}
                 <div class="col-md-3 col-sm-6"    style=" min-width: 200px;">
-                  <div class="serviceBox" style="min-height: 800px;" >
+                  <div class="serviceBox" >
                       <div class="service-icon_2">
                           <span><i class="fa fa-grip-lines"></i></span>
                       </div>
-                      <h3 class="title" >Blast</a></h3> 
+                      <h3 class="title" >Homology search</a></h3> 
                       <p class="description"> Blast an input sequence against the genomes of the database. You can select among blastn, blastp, or the six-frame translation-based approaches, blastx and tblastn. </p>
                       <br> 
                       <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'blast' %}">  <span class="link"></span> Blast </a></button></div>

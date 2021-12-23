@@ -63,33 +63,36 @@
                     </ul>
                 </nav>
 
-            <div id="extract_form">
-                <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                      <div class="panel-heading" style="width:100%">
-                          <h3 class="panel-title">Help</h3>
-                      </div>
-                    <p style="margin: 10px 10px 10px 10px">Heatmap showing presence/absence of
+                <div class="panel panel-info" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                    <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 160%">Heatmap showing presence/absence of
 
                     {% if type == 'Pfam' %}
-                        Pfam domains.
+                        Pfam domains
                     {% elif type == 'COG' %}
-                        COG IDs.
+                        COG IDs
                     {% elif type == 'interpro'%}
                         Interpro Entries.
                     {% elif type == 'EC' %}
                         EC numbers. Based on PRIAM data. Partial EC are not considered.
                     {% elif type == 'ko' %}
-                        Kegg orthologous groups (KO).
+                        Kegg orthologous groups (KO)
                     {% elif type == 'orthology' %}
-                        orthologous groups.
+                        orthologous groups
                     {% endif %}
-
+                    within the selected genomes.
+                    {% if type == 'orthology' %}
+                        
+                        <br> Selecting all genomes you can display the heatmap of the whole proteome.
+                    {% endif %}
 
                     </p>
                 </div>
 
 
-                <form action="{% url "plot_heatmap" type %}" method="post" id="heatmap-form">
+                <form action="{% url "plot_heatmap" type %}" method="post" id="heatmap-form" >
 
                     {% csrf_token %}
                     {{ form_venn.as_p }}
@@ -100,12 +103,49 @@
             </div>
 
 			{% if envoi_heatmap %}
+            <div class="row" style="padding-top:30px ;background-color: rgba(245, 245, 245, 0.986); margin-top: 1em;" >
+                <div class="col-lg-8">
+                 <center><h3 style="padding:0; color: rgb(0, 66, 97);">Heatmap of the presence/absence of
+                    {% if type == 'Pfam' %}
+                    Pfam domains
+                {% elif type == 'COG' %}
+                    COG categories
+                {% elif type == 'interpro'%}
+                    Interpro Entries.
+                {% elif type == 'EC' %}
+                    EC numbers. Based on PRIAM data. Partial EC are not considered.
+                {% elif type == 'ko' %}
+                    Kegg orthologous groups (KO)
+                {% elif type == 'orthology' %}
+                    orthologous groups
+                {% endif %}
+             </h2></center>
+                 <div class="panel panel-success" style="width: 100%;">
+                     <div class="panel-heading" style="width:100%">
+                         <h5 class="panel-title">Help to interpret the results</h5>
+                     </div>
+                     <p style="margin: 10px 10px 10px 10px">
+                        The heatmap displays the number of
+                        {% if type == 'Pfam' %}
+                        times a Pfam domain shared by the genomes of interest is found.
+                    {% elif type == 'COG' %}
+                        COG definitions found per each COG category shared by the genomes of interest.
+                    {% elif type == 'ko' %}
+                    Kegg entries found per each Kegg orthologous groups shared by the genomes of interest.
+                    {% elif type == 'orthology' %}
+                       homologs found per each Orthogroups shared by the genomes of interest.
+                    {% endif %}
+                    
+                    Zooming into an area of interest you can visualize the presence/absence profile. In white when absent, in <span style="color: rgb(5, 98, 151)"><b>blue</b></span> present in one copy, and in <span style="color: rgb(200, 41, 248)"><b>pink</b></span> present in two or more copies.
+                     </p>
+                    </div>
+                </div>
+                
 
-            <h3>Heatmap</h3>
-            <div style="width:80%">
+                <table class="sortable table" id="table_pfam" style="width: 90%; margin-left: 1em;"></table> 
                 {{html_plot|safe}}
+               </div>
             </div>
-
 			{% endif %}
          </div>
        </div>
@@ -114,14 +154,8 @@
   </div>
 </div>
 
-<!--
-<script type="text/javascript">$(document).ready( function(){ $("#jqtest").html("JQuery installed successfully!"); } ); </script>
-
--->
-
-
-</body>
 {% include "chlamdb/style_menu.html" %}
+</body>
 </html>
 
 <script>

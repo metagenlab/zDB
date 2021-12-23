@@ -39,39 +39,45 @@
                     <input type="text" placeholder="    Gene, product, orthogroup, COG, KEGG id, ..."  name="search2">
                   </form></li>
                
-				  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'home' %}#home"><b>Home</b></a></li>
-				  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'extract_region' %}" ><b>Genomes</b></a></li>
-				  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'phylogeny_intro' %}" ><b>Phylogeny</b></a></li>
-				  <hr class="line-menu">
-				  <li class="analyses"><b>Analyses</b></li>
-				  <li class="analyses_intra" ><a href="{% url 'blast' %}">Blast</a></li>
-				  <li class="sidebar-dropdown" ><p> Comparisons</p> 
-				  <li class="analyses_intra"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a></il>
-				  {% if optional2status|keyvalue:"COG" == 1 %}
-				  <li class="analyses_intra" ><a   href="{% url 'extract_cog' %}">COGs</a></li>
-				  {% endif %}
-				  {% if optional2status|keyvalue:"pfam" == 1 %}
-				  <li class="analyses_intra"><a   href="{% url 'extract_pfam' %}">Pfam domains</a></li>
-				  {% endif %}
-				  {% if optional2status|keyvalue:"KEGG" == 1 %}
-				  <li class="analyses_intra" ><a   href="{% url 'extract_ko' %}">Kegg Orthologs</a></li>
-				  {% endif %}
-                                                  
-				<li class="sidebar-dropdown" ><p> Genome alignments</p>
-				  <li class="analyses_intra"><a   href="{% url 'plot_region' %}">Plot region</a></li>
-				  <li class="analyses_intra"><a   href="{% url 'circos' %}">Circos</a></li>
-				  {% if optional2status|keyvalue:"KEGG" %}
-				  <li  class="sidebar-dropdown" ><p>Metabolism</p>
-				  <li class="analyses_intra"><a    href="{% url 'priam_kegg' %}">Kegg maps</a></li>
-				  <li class="analyses_intra"><a  href="{% url 'kegg_module' %}">Kegg modules</a></li>
-						{% endif %}
+                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'home' %}#home"><b>Home</b></a></li>
+                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'extract_region' %}" ><b>Genomes</b></a></li>
+                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'phylogeny_intro' %}" ><b>Phylogeny</b></a></li>
+                  <hr class="line-menu">
+                  <li class="analyses"><b>Analyses</b></a></li>
+                  <li class="sidebar-dropdown" ><p> Homology search</p> 
+                  <li class="analyses_intra" ><a href="{% url 'blast' %}">Blast</a></li>
+                  <li class="sidebar-dropdown" ><p> Comparisons</p> 
+                  <li class="analyses_intra"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a></il>
+                  {% if optional2status|keyvalue:"COG" == 1 %}
+                  <li class="analyses_intra" ><a   href="{% url 'extract_cog' %}">COGs</a></li>
+                  {% endif %}
+                  {% if optional2status|keyvalue:"pfam" == 1 %}
+                  <li class="analyses_intra"><a   href="{% url 'extract_pfam' %}">Pfam domains</a></li>
+                  {% endif %}
+                  {% if optional2status|keyvalue:"KEGG" == 1 %}
+                  <li class="analyses_intra" ><a   href="{% url 'extract_ko' %}">Kegg Orthologs</a></li>
+                  {% endif %}
+                  
+        <li class="sidebar-dropdown" ><p> Genome alignments</p>
+              <li class="analyses_intra"><a   href="{% url 'plot_region' %}">Plot region</a></li>
+              <li class="analyses_intra"><a   href="{% url 'circos' %}">Circos</a></li>
+              {% if optional2status|keyvalue:"KEGG" %}
+          <li  class="sidebar-dropdown" ><p>Metabolism</p>
+          <li class="analyses_intra"><a    href="{% url 'priam_kegg' %}">Kegg maps</a></li>
+          <li class="analyses_intra"><a  href="{% url 'kegg_module' %}">Kegg modules</a></li>
+                {% endif %}
 
-				  <hr class="line-menu">
-				  <li class="sidebar-nav-item"><a  href="{% url 'FAQ' %}"><b>FAQ</b></a></li>
-				  <li class="sidebar-nav-item"><a    href="/docs/index.html"><b>Documentation</b></a></li>
-				  <li class="sidebar-nav-item"><a   href="{% url 'about' %}"><b>References</b></a></li>
-				  <li class="sidebar-nav-item" style="margin-bottom: 5em"><a href="https://github.com/metagenlab/annotation_pipeline_nextflow"><i class="fab fa-github" ></i><b> Project and contacts</b></a></li>
-				</nav>
+          <hr class="line-menu">
+          <li class="sidebar-nav-item"><a  href="{% url 'FAQ' %}"><b>FAQ</b></a></li>
+          <li class="sidebar-nav-item"><a    href="/docs/index.html"><b>Documentation</b></a></li>
+          <li class="sidebar-nav-item"><a   href="{% url 'about' %}"><b>References</b></a></li>
+          <li class="sidebar-nav-item" style="margin-bottom: 5em"><a href="https://github.com/metagenlab/annotation_pipeline_nextflow"><i class="fab fa-github" ></i><b> Project and contacts</b></a></li>
+         
+    
+            
+
+
+
         </ul>
     </div> <!-- /.container-fluid -->
   </div> <!-- /#sidebar-wrapper -->

@@ -2671,10 +2671,9 @@ def blast(request):
         unknown_format = True
 
     if not unknown_format:
-        if seq_type == 'DNA' and blast_type in ["blastp", "tblastn"]:
+        if seq_type == 'Protein' and blast_type in ["blastn_ffn", "blastn_fna", "blastx"]:
             wrong_format = True
-        elif seq_type =='Protein' and blast_type in ["blastn_ffn", "blastn_fna", "blastx"]:
-            wrong_format = True
+        
         else:
             query_file = NamedTemporaryFile(mode='w')
             SeqIO.write(my_record, query_file, "fasta")
@@ -2777,7 +2776,8 @@ def blast(request):
                                     cache,
                                     color_locus_list = [],
                                     region_highlight=[best_hit_start, best_hit_end])
-            if blast_stdout.find('No hits found') != -1:
+            no_match = re.compile('.* No hits found .*', re.DOTALL)
+            if no_match.match(blast_stdout):
                 blast_no_hits = blast_stdout
             elif len(blast_stderr) != 0:
                 blast_err = blast_stderr #linked to the html file
@@ -3005,7 +3005,8 @@ def sitemap(request):
 
 
 def circos_main(request):
-    biodb = settings.BIODB
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
 
     if request.method == 'POST':
         

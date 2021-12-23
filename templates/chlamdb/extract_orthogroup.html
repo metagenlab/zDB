@@ -1,12 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head> 
+
+{% load custom_tags %}
+{% load static %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% include "chlamdb/header.html" %}
 
 
+</head>
 
-<!DOCTYPE html> <html>  <head> {% load custom_tags %}
-      {% load static %}
-      {% load static %}
-      {% load crispy_forms_tags %}
-      {% include "chlamdb/header.html" %}
-  </head>
+<body>
  
   <div class="container-fluid" id="main_container">
     <div class="row">
@@ -28,18 +33,17 @@
                   </ul>
               </nav>
 
-             <div id="form" class="col-lg-10 col-md-12 col-sm-12">
+          
 
+              <div class="panel panel-info" style="width:90% ; top: 200px; margin: 10px 10px 10px 10px">
+                <div class="panel-heading" style="width:100%; ">
+                        <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
 
-                <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
-                    <div class="panel-heading" style="width:100%">
-                        <h3 class="panel-title">Help</h3>
                     </div>
-                    <p style="margin: 10px 10px 10px 10px; line-height: 180%">Get list of proteins shared between genomes selected in panel A and absent in genomes of panel B. Clustering based on BLAST usting orthoFinder.
-                    Reference: one of the genome in panel A can be chosen as reference for display the result orthogroup list on a circular map of the genome. Click on "show on circular map" to generate the circos map. Corresponding locus are highlighted in pink. <br>
-                    Missing data: if more than one panel A genome (include) is selected, possibility to tolerate missing data in 1 up to 10 genomes (in order to get orthogroup present in at least x out of the y genomes selected in panel A).</p>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 180%">Get the list of Orthologous groups shared between genomes (selected in panel A) and absent in others (selected in panel B). Clustering based on BLAST usting orthoFinder. <br>
+                    It is possible to distinguish between plasmids and chromosomes by clicking on the dedicated checkbox.
+                    <br>Missing data: if more than one genome is selected in panel A, it is possible to tolerate missing data in 1 up to 10 genomes. In this way COG present in at least x out of y genomes selected are kept.</p>
                 </div>
-
                 {% block content %}
 				{% csrf_token %}
 				{% crispy form %}
@@ -68,106 +72,113 @@
 
 			{% if envoi_extract %}
 
-			<div class="row" style="padding-top:20px">
-			<div class="col-lg-12">
-			  <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-				  <li class="active"><a href="#red" data-toggle="tab">Orthogroups</a></li>
-				  <li><a href="#orange" data-toggle="tab">Table detail</a></li>
-			  </ul>
+			<div class="row" style="background-color: rgba(245, 245, 245, 0.986)">
+        <div class="col-lg-12">
+          <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+            <br>
+            <center><h3 style="padding:0; color: rgb(0, 66, 97);">Orthogroups shared by the selected genomes </h3></center>
+            <br>
+            <div class="panel panel-success" style="width:60%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
+              <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help to interpret the results</h3>
+              </div>
+              <p style="margin: 10px 10px 10px 10px; line-height: 180%">Two tables have been generated:
+                <br> <b>Orthogroups</b> table: it contains the list of orthologous groups shared among the selected genomes. The annotation(s) of orthologous groups is a consensus of the annotation of all members of the group, and only the two most frequent annotations are reported.  For each orthogroup the table displays the gene name, the product and the COG 
+              category. Additionally, the number of occurences of the annotation in the whole set database and in the selected genomes. 
+              <br><b>Table detail</b>: a complete list of the members of each orthologous group shared by the selected genome is displayed. Gene loci are reported and quickly linked to additional details about locus annotations.               
+              </p>
+            </div>
+              <ul style="list-style-type:square">
+                    <div style="padding-top:10px">
 
-			  <div id="my-tab-content" class="tab-content">
-				  <div class="tab-pane active" id="red">
-					<div style="padding-top:10px;">
-
-						<h3>Number of orthogroups: {{ sum_group }} </h3>
-
-
-						  <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
-							  <div class="panel-heading" style="width:100%">
-								  <h3 class="panel-title">Help</h3>
-							  </div>
-							  <p style="margin: 10px 10px 10px 10px; line-height: 180%">The annotation(s) of orthologous groups is a consensus of the annotation of all members of the group. For each annotation (gene name, product, COG,...), 
-							  only the two most frequent annotations are reported. Number in parentheses indicates the number of occurences of the annotation (how many proteins of the orthologous group have this exact annotation). </br>
-							  The second tab reports the complete list of protein of reference genome(s).                               
-							  </p>
-						  </div>
-
-
-              <form action="/circos_main/" method="POST" id="carform">
-                {% csrf_token %}
-                <input type="hidden" name="exclude_taxids" value="{{exclude_taxids}}">
-                <input type="hidden" name="include_taxids" value="{{include_taxids}}">
-                <input type="hidden" name="og_list" value="{{selection}}">
-                    <select name="reference_taxid" id="reference_taxid" class="bootstrap-select" style="height:36px;">
-                      <option disabled selected>Select reference genome</option>
-                      {% for row in ref_genomes.itertuples %}
-                          <option value="{{row.taxon_id}}">{{row.description}}</option>
-                      {% endfor %}
-                    </select>
-              <button type="submit">Show on circular map</button>
-            </form>
-
-            <table class="hover" id="table_groups">
-
-							<thead>
-								<tr>
-								{% for value in table_headers %}
-									<th> {{value|safe}} </th>
-								{% endfor %}
-								</tr>
-							</thead>
-
-							<tbody>
-							{% for value in match_groups_data %}
-								<tr>
-									{% for entry in value %}
-									{% if forloop.first %}
-										<td><a href="{% url 'orthogroup' entry %}">{{entry}}</a></td>
-									{% else %}
-										<td>{{entry|safe}}</td>
-									{% endif %}
-									{% endfor %}
-								</tr>
-							{% endfor %}
-							</tbody>
-						</table>
-					</div>
-				  </div>
-				  <div class="tab-pane" id="orange">
-						  <div id="export_bouttons_groups">
-							  {% if show_reference_annot %}
-							  <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_ref_url|safe}}'">fasta aa</button>
-							  {% endif %}
-								<br/>
-						  </div>
-
-
-						  <h3>Number of orthogroups: {{ sum_group }} </h3>
-
-						  <table class="hover" id="orthogroups_table">
-							  <thead>
-								  <tr>
-								  {% for value in details_header %}
-									<th style="text-align:center; padding: 5px 30px"> {{value|safe}} </th>
-								  {% endfor %}
-								  </tr>
-							  </thead>
-
-							  <tbody>
-
-								  {% for entry in details_data %}
-									  <tr>
-										  {% for values in entry %}
-										  <td style="text-align: center;"> {{ values|safe }} </td>
-										  {% endfor %}
-									  </tr>
-								  {% endfor %}
-							  </tbody>
-						  </table>
-				  </div>
-			  </div>
+            <div class="box" style="width:30%; top: 200px; padding: 10px 10px 10px 10px;">
+            <form action="/circos_main/" method="POST" id="carform" >
+            <h5>Show the comparison on circular map</h5>
+              {% csrf_token %}
+              <input type="hidden" name="exclude_taxids" value="{{exclude_taxids}}">
+              <input type="hidden" name="include_taxids" value="{{include_taxids}}">
+              <input type="hidden" name="og_list" value="{{selection}}">
+                  <select name="reference_taxid" id="reference_taxid" class="bootstrap-select" style="height:36px; margin-bottom: 1em;">
+                    <option disabled selected>Select reference genome</option>
+                    {% for row in ref_genomes.itertuples %}
+                    <option value="{{row.taxon_id}}">{{row.description}}</option>
+                    {% endfor %}
+                  </select>
+            <br><button type="submit">Show</button>
+          </form>
         </div>
-		{% endif %}
+      </div>
+    </div>
+      
+          <div class="col-lg-12">
+              <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                <br>
+            <li class="active"><a href="#red" data-toggle="tab"><b>Orthogroups</b></a></li>
+            <li><a href="#orange" data-toggle="tab"><b>Table detail</b></a></li>
+          </ul>
+  
+          <div id="my-tab-content" class="tab-content">
+            <div class="tab-pane active" id="red">
+              
+            <div style="padding-top:18px;">
+  
+              <table class="hover" id="table_groups">
+  
+                <thead>
+                  <tr>
+                  {% for value in table_headers %}
+                    <th> {{value|safe}} </th>
+                  {% endfor %}
+                  </tr>
+                </thead>
+  
+                <tbody>
+                {% for value in match_groups_data %}
+                  <tr>
+                    {% for entry in value %}
+                    {% if forloop.first %}
+                      <td><a href="{% url 'orthogroup' entry %}">{{entry}}</a></td>
+                    {% else %}
+                      <td>{{entry|safe}}</td>
+                    {% endif %}
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            </div>
+            <div class="tab-pane" id="orange">
+                <div id="export_bouttons_groups">
+                  {% if show_reference_annot %}
+                  <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_ref_url|safe}}'">fasta aa</button>
+                  {% endif %}
+                  <br/>
+                </div>
+                <table class="hover" id="orthogroups_table">
+                  <thead>
+                    <tr>
+                    {% for value in details_header %}
+                    <th style="text-align:center; padding: 5px 30px"> {{value|safe}} </th>
+                    {% endfor %}
+                    </tr>
+                  </thead>
+  
+                  <tbody>
+  
+                    {% for entry in details_data %}
+                      <tr>
+                        {% for values in entry %}
+                        <td style="text-align: center;"> {{ values|safe }} </td>
+                        {% endfor %}
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+            </div>
+          </div>
+          </div>
+      {% endif %}
         
         </div>
 
@@ -186,6 +197,7 @@
   } );
 
 </script>
+
 
 {% include "chlamdb/style_menu.html" %}
 {% include "chlamdb/show_hide_plasmid_accessions.html" %}
