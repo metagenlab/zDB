@@ -2631,6 +2631,9 @@ blast_command = {"blastp": NcbiblastpCommandline,
         "blastn_ffn": NcbiblastnCommandline,
         "blastx": NcbiblastxCommandline}
 
+
+# for now, simplified the tblastn output to the same output as the 
+# other blast versions. May be re-introduced in future versions
 def blast(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     blast_form_class = make_blast_form(db) 
@@ -2668,16 +2671,22 @@ def blast(request):
     check_seq_prot = sequence_set-prot
 
     if check_seq_prot and blast_type in ["blastp", "tblastn"]:
-        error = ", ".join(check_seq_prot)
-        error_message = f"Unexpected characters in query: {error}"
-        context = {"error_message": error_message, "error": True,
-                "envoi": True, "form": form}
+        wrong_chars = ", ".join(check_seq_prot)
+        if len(check_seq_prot) > 1:
+            error_message = f"Unexpected characters in amino-acid query: {wrong_chars}"
+        else:
+            error_message = f"Unexpected character in amino-acid query: {wrong_chars}"
+        context = {"error_message": error_message, "error_title": "Query format error", 
+                "envoi": True, "form": form, "wrong_format": True}
         return render(request, 'chlamdb/blast.html', my_locals(context))
-    elif check_seq_DNA and blast_type in ["blastn", "blastn_ffn", "blast_fna"]:
-        error = ", ".join(check_seq_prot)
-        error_message = f"Unexpected characters in query: {error}"
-        context = {"error_message": error_message, "error": True,
-                "envoi": True, "form": form}
+    elif check_seq_DNA and blast_type in ["blastn", "blastn_ffn", "blast_fna", "blastx"]:
+        wrong_chars = ", ".join(check_seq_DNA)
+        if len(check_seq_DNA) > 1:
+            error_message = f"Unexpected characters in nucleotide query: {wrong_chars}"
+        else:
+            error_message = f"Unexpected character in nucleotide query: {wrong_chars}"
+        context = {"error_message": error_message, "wrong_format": True,
+                "error_title": "Query format error", "envoi": True, "form": form}
         return render(request, 'chlamdb/blast.html', my_locals(context))
 
     my_record = SeqRecord(seq)
@@ -2702,67 +2711,7 @@ def blast(request):
     if blast_type=="tblastn" or blast_type=="blastn_fna":
         blastType = "genome"
 
-    if blast_type=='tblastn':
-        blastdb = settings.BLAST_DB_PATH + f"/fna/{key_dict}"
-        blast_cline = NcbitblastnCommandline(query=query_file.name, \
-                db=blastdb, evalue=customized_evalue, \
-                max_target_seqs=number_blast_hits,  outfmt=0)
-        blast_cline2 = NcbitblastnCommandline(query=query_file.name, \
-                db=blastdb, evalue=customized_evalue, \
-                max_target_seqs=number_blast_hits, outfmt=5)
-
     blast_stdout, blast_stderr = blast_cline()
-
-    if blast_type=='tblastn':
-
-        blast_stdout2, blast_stderr2 = blast_cline2()
-        blast_records = NCBIXML.parse(StringIO(blast_stdout2))
-        all_data = []
-        best_hit_list = []
-        for record in blast_records:
-            for n, alignment in enumerate(record.alignments): 
-                accession = alignment.title.split(' ')[0] 
-                description=alignment.title.replace(accession, '') 
-                for n2, hsp in enumerate(alignment.hsps): #all n2 are 0
-                    if n == 0 and n2 == 0:  #select the best hit
-                        best_hit_list.append([alignment.title.split(' ')[0], hsp.sbjct_start, hsp.sbjct_end])
-                    start = hsp.sbjct_start
-                    end = hsp.sbjct_end
-                    if start > end:
-                        start = hsp.sbjct_end
-                        end = hsp.sbjct_start
-                    length = end-start
-                    seq_A = db.location2sequence(accession, start, end) #replaced biodb wtih db
-                    anti = reverse_complement(seq_A)
-                    comp = anti[::-1]
-                    length = len(seq_A)
-                    frames = {}
-                    for i in range(0, 3):
-                        fragment_length = 3 * ((length-i) // 3)
-                        tem1 = translate(seq_A[i:i+fragment_length])
-                        frames[i+1] = '<span style="color: #181407;">%s</span><span style="color: #bb60d5;">%s</span><span style="color: #181407;">%s</span>' % (tem1[0:100], tem1[100:len(tem1)-99], tem1[len(tem1)-99:])
-                        tmp2 = translate(anti[i:i+fragment_length])[::-1]
-                        frames[-(i+1)] = tmp2
-
-                    all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq_A])
-
-        if len(best_hit_list) > 0:
-            fig_list = []
-            for best_hit in best_hit_list:
-                accession = best_hit[0]
-                best_hit_start = best_hit[1]
-                best_hit_end = best_hit[2]
-                temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
-                temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-                name = 'temp/' + os.path.basename(temp_file.name)
-                fig_list.append([accession, name])
-                orthogroup_list = db.location2plot(accession, 
-                            temp_file.name,
-                            best_hit_start-15000,
-                            best_hit_end+15000,
-                            cache,
-                            color_locus_list = [],
-                            region_highlight=[best_hit_start, best_hit_end])
     if blast_stdout.find("No hits found") != -1:
         blast_no_hits = blast_stdout
     elif len(blast_stderr) != 0:
