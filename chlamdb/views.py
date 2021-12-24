@@ -2692,7 +2692,7 @@ def blast(request):
         dictionary_acc_names = db.get_taxon_id_to_filenames()
         my_db = dictionary_acc_names[target]               
 
-    blast_args = {"query": query_file.name, "outfmt": 0, "evalue": customized_evalue}
+    blast_args = {"query": query_file.name, "outfmt": 5, "evalue": customized_evalue}
     blast_args["db"] = settings.BLAST_DB_PATH+"/"+blast_input_dir[blast_type]+"/"+my_db
     if number_blast_hits != 'all':
         blast_args["max_target_seqs"] = number_blast_hits
