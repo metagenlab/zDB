@@ -3,7 +3,6 @@
 # todo circos gc file curently written in home directory, move it to other place
 # todo save temp files in temp folder
 
-from django.shortcuts import render
 import seaborn as sns
 import matplotlib.colors as mpl_col
 
@@ -14,6 +13,7 @@ import numpy as np
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.http import JsonResponse
+from django.shortcuts import render
 
 from chlamdb.forms import make_plot_form
 from chlamdb.forms import make_circos_form
@@ -23,16 +23,9 @@ from chlamdb.forms import make_metabo_from
 from chlamdb.forms import make_module_overview_form
 from chlamdb.forms import make_venn_from
 
-from django.contrib.auth import logout
 from django.conf import settings
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
-from django.forms.utils import flatatt
 
-
-from django.core.cache import cache
 from tempfile import NamedTemporaryFile
-from Bio import SeqIO
 import string
 import random
 import json
@@ -55,10 +48,11 @@ from Bio.Blast.Applications import NcbitblastnCommandline
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio.Blast import NCBIXML
 from Bio.SeqRecord import SeqRecord
+from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.Seq import reverse_complement, translate
 from Bio.Seq import Seq
+from Bio import SeqIO
 
-from tempfile import NamedTemporaryFile
 from io import StringIO
           
             
@@ -70,8 +64,6 @@ from reportlab.lib import colors
 from ete3 import TextFace, StackedBarFace, SeqMotifFace
 
 import pandas as pd
-from Bio.SeqFeature import SeqFeature, FeatureLocation
-from Bio.Graphics import GenomeDiagram
 
 
 # could also be extended to cache the results of frequent queries
@@ -2649,8 +2641,8 @@ def blast(request):
     input_sequence = form.cleaned_data['blast_input']
     customized_evalue = form.cleaned_data['evalue']
     number_blast_hits = form.cleaned_data['max_number_of_hits']
-    target_accession = form.cleaned_data['target'] 
     blast_type = form.cleaned_data['blast']
+    target = form.get_target()
 
     if '>' in input_sequence:
         my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
@@ -2694,11 +2686,11 @@ def blast(request):
     SeqIO.write(my_record, query_file, "fasta")
     query_file.flush()
     
-    if target_accession=='all':
+    if target=='all':
         my_db = 'merged'
     else:
         dictionary_acc_names = db.get_taxon_id_to_filenames()
-        my_db = dictionary_acc_names[int(target_accession)]               
+        my_db = dictionary_acc_names[target]               
 
     blast_args = {"query": query_file.name, "outfmt": 0, "evalue": customized_evalue}
     blast_args["db"] = settings.BLAST_DB_PATH+"/"+blast_input_dir[blast_type]+"/"+my_db

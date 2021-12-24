@@ -19,7 +19,11 @@ def get_accessions(db, all=False, plasmid=False):
     for taxid, data in result.iterrows():
         accession_choices.append((index, data.description))
         index += 1
-        reverse_index.append((taxid, False))
+
+        if plasmid:
+            reverse_index.append((taxid, False))
+        else:
+            reverse_index.append(taxid)
         if plasmid and data.has_plasmid==1:
             accession_choices.append((index, data.description + " plasmid"))
             reverse_index.append((taxid, True))
@@ -28,26 +32,7 @@ def get_accessions(db, all=False, plasmid=False):
 
     if all:
         accession_choices = [["all", "all"]] + accession_choices
-    return accession_choices , reverse_index
-
-
-def get_accessions_BLAST(db, all=False, plasmid=False):
-    result            = db.get_genomes_description(lst_plasmids=True)
-    accession_choices = []
-    index          = 1
-    reverse_index     = []
-
-    # cannot use taxid because plasmids have the same
-    # taxids as the chromosome
-    for taxid, data in result.iterrows():
-        accession_choices.append((index, data.description))
-        reverse_index.append((taxid, False))
-        index += 1
-
-    if all:
-        accession_choices = [["all", "all"]] + accession_choices
-    return accession_choices #, reverse_index  #understand why there is this 'reverse_index' in the original def (error in def blast) / for blast no difference for plasmids
-
+    return accession_choices, reverse_index
 
 
 def make_plot_form(db):
@@ -332,7 +317,7 @@ def make_module_overview_form(db, sub_sub_cat=False):
 
 def make_blast_form(biodb):
 
-    accession_choices =  get_accessions_BLAST(biodb, plasmid=False, all=True)
+    accession_choices, rev_index =  get_accessions(biodb, all=True)
 
     class BlastForm(forms.Form):
         DEFAULT_E_VALUE = 10
@@ -349,7 +334,8 @@ def make_blast_form(biodb):
                                            ("all", "all")])
         evalue= forms.CharField(widget=forms.TextInput({'value': str(DEFAULT_E_VALUE)}))
 
-        target = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
+        target = forms.ChoiceField(choices=accession_choices,
+                widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
         blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
 
 
@@ -360,13 +346,18 @@ def make_blast_form(biodb):
             self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
             self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
             self.helper.layout = Layout(
-                                        Fieldset(
-                                                Row("BLAST"),
-                                                Row('target'),
-                                                Row('blast_input'),
-                                                css_class="col-lg-5 col-md-6 col-sm-6")
-                                        )
-
+                Fieldset(
+                        Row("BLAST"),
+                        Row('target'),
+                        Row('blast_input'),
+                        css_class="col-lg-5 col-md-6 col-sm-6")
+                )
             super(BlastForm, self).__init__(*args, **kwargs)
+
+        def get_target(self):
+            target = self.cleaned_data["target"]
+            if target=="all":
+                return target
+            return rev_index[int(target)]
 
     return BlastForm
