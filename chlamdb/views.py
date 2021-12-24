@@ -4,16 +4,24 @@
 # todo save temp files in temp folder
 
 import seaborn as sns
+import numpy as np
+import pandas as pd
 import matplotlib.colors as mpl_col
 
 import collections
+import string
+import random
+import os
 
-import numpy as np
+from io import StringIO
+from tempfile import NamedTemporaryFile
+
 
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.conf import settings
 
 from chlamdb.forms import make_plot_form
 from chlamdb.forms import make_circos_form
@@ -23,24 +31,14 @@ from chlamdb.forms import make_metabo_from
 from chlamdb.forms import make_module_overview_form
 from chlamdb.forms import make_venn_from
 
-from django.conf import settings
-
-from tempfile import NamedTemporaryFile
-import string
-import random
-import json
-from django.shortcuts import render
-from celery.result import AsyncResult
-from django.http import HttpResponse
-from django.http import StreamingHttpResponse
 
 from metagenlab_libs import db_utils
 from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
 from metagenlab_libs.ete_phylo import KOAndCompleteness
 from metagenlab_libs.ete_phylo import Column
 from metagenlab_libs.KO_module import ModuleParser
-
 from metagenlab_libs.chlamdb import search_bar as sb
+
 
 from Bio.Blast.Applications import NcbiblastpCommandline
 from Bio.Blast.Applications import NcbiblastnCommandline
@@ -53,17 +51,10 @@ from Bio.Seq import reverse_complement, translate
 from Bio.Seq import Seq
 from Bio import SeqIO
 
-from io import StringIO
-          
-            
-import os
 
 from ete3 import Tree
-from reportlab.lib import colors
-
 from ete3 import TextFace, StackedBarFace, SeqMotifFace
-
-import pandas as pd
+from reportlab.lib import colors
 
 
 # could also be extended to cache the results of frequent queries
@@ -73,36 +64,12 @@ with db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
     optional2status = { name: value for name, (mandatory, value) in hsh_config.items() if not mandatory}
     missing_mandatory = [name for name, (mandatory, value) in hsh_config.items()
             if mandatory and not value]
+
     
 def my_locals(local_dico):
     local_dico["optional2status"] = optional2status
     local_dico["missing_mandatory"] = missing_mandatory
     return local_dico
-
-
-def get_task_info(request):
-    
-    task_id = request.GET.get('task_id', None)
-    
-    if task_id is not None:
-        task = AsyncResult(task_id)
-        data = {
-            'state': task.state,
-            'result': task.result,
-        }
-        
-        return HttpResponse(json.dumps(data), content_type='application/json')
-    else:
-        return HttpResponse('No job id given.')
-
-
-if settings.DEBUG == True:
-    debug_mode = 1
-else:
-    debug_mode = 0
-
-
-
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -158,13 +125,6 @@ def about(request):
         entry_list.append([string, url])
 
     return render(request, 'chlamdb/credits.html', my_locals(locals()))
-
-def create_user(username, mail, password, first_name, last_name, staff=True):
-    from django.contrib.auth.models import User
-    user = User.objects.create_user(username, mail, password)
-    user.first_name, user.last_name = first_name, last_name
-    user.is_staff = staff
-    user.save()
 
 
 class StackedBarColumn(Column):
@@ -2913,22 +2873,6 @@ def plot_region(request):
         ctx["max_ident"] = max(all_identities)
         ctx["min_ident"] = min(all_identities)
     return render(request, 'chlamdb/plot_region.html', my_locals(ctx))
-
-
-def sitemap(request):
-    from io import StringIO
-    map = '''<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>http://chlamdb.ch/</loc></url><url><loc>http://chlamdb.ch/about</loc></url>
-</urlset>'''
-
-    strio = StringIO()
-    strio.write(map)
-    response = HttpResponse(content_type='text/xml')
-    #response.content_type = "text/xml"
-    #response['Content-Disposition'] = 'attachment; filename="sitemap.xml"'
-    response.write(strio.getvalue())
-    return response
 
 
 def circos_main(request):

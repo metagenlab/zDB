@@ -1,36 +1,15 @@
-from django.urls import re_path
+
 from . import views
-from django.contrib.auth import logout
-from django.contrib.sitemaps.views import sitemap
+
 from django.views.generic import TemplateView
-from django.urls import include, path
-from django.conf import settings
-from django.urls import reverse
-from django.contrib.sitemaps import Sitemap
-from django.views import static
 from django.views.generic.base import RedirectView
+from django.urls import re_path
 
 favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
-class ViewSitemap(Sitemap):
-    """Reverse 'static' views for XML sitemap."""
-
-    def items(self):
-        # Return list of url names for views to include in sitemap
-        return ['home', 'about']
-
-    def location(self, item):
-        #site = Site(domain='chlamdb.ch', name='chlamdb.ch')
-        return reverse(item)
-
-
-sitemaps = {'views': ViewSitemap}
-
-# url(r'^sitemap.xml$', sitemap, {'sitemaps': sitemaps}),
 
 urlpatterns = [        
     re_path('^robots.txt$', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
-    re_path(r'^sitemap$', views.sitemap, name="sitemap"),
     re_path(r'^home/$', views.home, name="home"),
     re_path(r'^cog_barchart/$', views.cog_barchart, name="cog_barchart"),
     re_path(r'^pan_genome/([a-zA-Z0-9_]+)', views.pan_genome, name="pan_genome"),
@@ -77,13 +56,11 @@ urlpatterns = [
     re_path(r'^pfam_comparison', views.pfam_comparison, name="pfam_comparison"),
     re_path(r'^ko_comparison', views.ko_comparison, name="ko_comparison"),
     re_path(r'^orthogroup_comparison', views.orthogroup_comparison, name="orthogroup_comparison"),
-    re_path(r'^logout/$', logout, {'next_page': '/'},),
     re_path(r'^about$', views.about, name="about"),
     re_path(r'^help', views.help, name="help"),
     re_path(r'^fam_pfam/(PF[0-9]+)$', views.fam_pfam, name="fam_pfam"),
     re_path(r'^fam_cog/(COG[0-9]+)$', views.fam_cog, name="fam_cog"),
     re_path(r'^fam_ko/(K[0-9]+)$', views.fam_ko, name="fam_ko"),
-    re_path(r'^get-task-info/', views.get_task_info),
     re_path(r'^favicon\.ico$', favicon_view),
     re_path(r'^FAQ', views.faq, name='FAQ'),
     re_path(r'^phylogeny_intro', views.phylogeny_intro, name='phylogeny_intro'),
