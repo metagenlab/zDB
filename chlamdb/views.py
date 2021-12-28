@@ -2574,14 +2574,45 @@ def pan_genome(request, type):
     return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
 
 
-blast_input_dir = {"blastp": "faa", "tblastn": "fna",
-        "blastn_fna": "fna", "blastn_ffn": "ffn", "blastx": "faa"}
+blast_input_dir = {"blastp": "faa",
+        "tblastn": "fna",
+        "blastn_fna": "fna",
+        "blastn_ffn": "ffn",
+        "blastx": "faa"}
 
 blast_command = {"blastp": NcbiblastpCommandline,
         "tblastn": NcbitblastnCommandline,
         "blastn_fna": NcbiblastnCommandline,
         "blastn_ffn": NcbiblastnCommandline,
         "blastx": NcbiblastxCommandline}
+
+
+def gen_blast_heatmap(blast_res, blast_type):
+    parsed_results = NCBIXML.parse(StringIO(blast_res))
+
+    # collects the bitscore and the query accession
+    best_hits = []
+    for record in parsed_results:
+        if len(record.alignments) == 0:
+            continue
+        best_hit = record.alignments[0]
+
+        # extract the accession
+        title = best_hit.title
+        first_space = title.find(' ')
+        best_hits.append((best_hit.score, title[:first_space]))
+
+    file_type = blast_input_dir[blast_type]
+
+    # if faa or fna, the accession refers to CDS locus_tags
+    # if ffn, the accession refers to contigs
+    # need to map those to taxids to generate the heatmap
+    if file_type=="faa" or file_type=="fna":
+        pass
+    elif file_type=="ffn":
+        pass
+
+
 
 
 # for now, simplified the tblastn output to the same output as the 
@@ -2599,21 +2630,21 @@ def blast(request):
         return render(request, 'chlamdb/blast.html', my_locals({"form": form}))
 
     input_sequence = form.cleaned_data['blast_input']
-    customized_evalue = form.cleaned_data['evalue']
     number_blast_hits = form.cleaned_data['max_number_of_hits']
     blast_type = form.cleaned_data['blast']
     target = form.get_target()
 
     if '>' in input_sequence:
-        my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
-
-        # what to do if several records are present?
-        # we should blast 'em all!
-        # or at least display an error message to avoid
-        # a silent unexpected behavior
-        seq = my_record[0]
+        try:
+            my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
+        except:
+            context = {"error_message": "Error while parsing the fasta query",
+                    "error_title": "Query format error", 
+                    "envoi": True, "form": form, "wrong_format": True}
+            return render(request, 'chlamdb/blast.html', my_locals(context))
+        seq = my_record[0].seq
     else:
-        input_sequence == input_sequence.rstrip(os.linesep)
+        input_sequence = input_sequence.replace("\n", '').replace(" ", '').replace("\r", "")
         seq = Seq(input_sequence)
                         
     dna = set("ATGCNRYKMSWBDHV")
@@ -2652,7 +2683,7 @@ def blast(request):
         dictionary_acc_names = db.get_taxon_id_to_filenames()
         my_db = dictionary_acc_names[target]               
 
-    blast_args = {"query": query_file.name, "outfmt": 5, "evalue": customized_evalue}
+    blast_args = {"query": query_file.name, "outfmt": 5}
     blast_args["db"] = settings.BLAST_DB_PATH+"/"+blast_input_dir[blast_type]+"/"+my_db
     if number_blast_hits != 'all':
         blast_args["max_target_seqs"] = number_blast_hits
@@ -2664,11 +2695,15 @@ def blast(request):
         blastType = "genome"
 
     blast_stdout, blast_stderr = blast_cline()
+
     if blast_stdout.find("No hits found") != -1:
         blast_no_hits = blast_stdout
     elif len(blast_stderr) != 0:
         blast_err = blast_stderr
     else:
+        if target == "all":
+            heatmap = gen_blast_heatmap(blast_stdout, blast_type)
+
         rand_id = id_generator(6)
         blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
         f = open(blast_file_l, 'w')

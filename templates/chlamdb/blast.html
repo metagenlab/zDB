@@ -206,9 +206,6 @@ margin-top: 15em;
 						  {% autoescape off %}{{blast_result}}{% endautoescape %}</div>
 					  {% elif blast_no_hits %}   
 						  <h3>No hits</h3>
-							<pre id="blast_result">  
-							 {% autoescape off %}{{blast_no_hits}}{% endautoescape %}
-							</pre>
 					  {% elif blast_err %}
 							<h3>Error</h3>
 							<pre id="blast_result">

@@ -79,7 +79,7 @@ def make_plot_form(db):
             indices = self.cleaned_data["genomes"]
             taxids  = []
             for index in indices:
-                taxid, _ = reverse_index[int(index)]
+                taxid = reverse_index[int(index)]
                 taxids.append(taxid)
             return taxids
 
@@ -106,31 +106,31 @@ def make_metabo_from(db, add_box=False):
             self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
             if not add_box:
                 self.helper.layout = Layout(
-                                            Fieldset("Compare genomes",
-                                                     Column(
-                                                           Row('targets'),
-                                                           Submit('submit', 'Submit'),
-                                                           css_class='form-group col-lg-12 col-md-12 col-sm-12'),
-                                                    )
-                                            )
+                    Fieldset("Compare genomes",
+                             Column(
+                                   Row('targets'),
+                                   Submit('submit', 'Submit'),
+                                   css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                            )
+                    )
 
             else:
                 self.helper.layout = Layout(
-                                            Fieldset("Compare genomes",
-                                                     Column(
-                                                           Row('targets'),
-                                                           Row('input_box'),
-                                                           Submit('submit', 'Submit'),
-                                                           css_class='form-group col-lg-12 col-md-12 col-sm-12'),
-                                                    )
-                                            )
+                    Fieldset("Compare genomes",
+                             Column(
+                                   Row('targets'),
+                                   Row('input_box'),
+                                   Submit('submit', 'Submit'),
+                                   css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                            )
+                    )
             super(MetaboForm, self).__init__(*args, **kwargs)
 
         def get_choices(self):
             targets = self.cleaned_data["targets"]
             taxids = []
             for index in targets:
-                taxid, _ = rev_index[int(index)]
+                taxid = rev_index[int(index)]
                 taxids.append(taxid)
             return taxids
 
@@ -169,7 +169,7 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None):
             indices = self.cleaned_data["targets"]
             taxids  = []
             for index in indices:
-                taxid, _ = rev_index[int(index)]
+                taxid = rev_index[int(index)]
                 taxids.append(taxid)
             return taxids
 
@@ -187,27 +187,25 @@ def make_circos_form(database_name):
     accession_choices, reverse_index = get_accessions(database_name)
 
     class CircosForm(forms.Form):
-        circos_reference = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"10"}), required=False)
-        #get_region = forms.NullBooleanField(widget=forms.CheckboxInput())
-        #region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = False)
+        circos_reference = forms.ChoiceField(choices=accession_choices,
+                widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
+        targets = forms.MultipleChoiceField(choices=accession_choices,
+                widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"10"}), required=False)
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.helper = FormHelper()
             self.helper.form_method = 'post'
-            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
-            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
             
             self.helper.layout = Layout(
-                                        Fieldset(
-                                                Row("Circos"),
-                                                Row('circos_reference'),
-                                                Row('targets', style="margin-top:1em"),
-                                                Submit('submit_circos', 'Submit',  style="padding-left:15px; margin-top:15px; margin-bottom:15px "),
-                                                css_class="col-lg-5 col-md-6 col-sm-6")
-                                        )
-
+                Fieldset(
+                        Row("Circos"),
+                        Row('circos_reference'),
+                        Row('targets', style="margin-top:1em"),
+                        Submit('submit_circos', 'Submit',
+                            style="padding-left:15px; margin-top:15px; margin-bottom:15px "),
+                        css_class="col-lg-5 col-md-6 col-sm-6")
+                )
             super(CircosForm, self).__init__(*args, **kwargs)
 
         def save(self):
@@ -219,13 +217,13 @@ def make_circos_form(database_name):
             indices = self.cleaned_data["targets"]
             taxids  = []
             for index in indices:
-                taxid, _ = reverse_index[int(index)]
+                taxid = reverse_index[int(index)]
                 taxids.append(taxid)
             return taxids
 
         def get_ref_taxid(self):
             indice = self.cleaned_data["circos_reference"]
-            taxid, _ = reverse_index[int(indice)]
+            taxid = reverse_index[int(indice)]
             return taxid
 
     return CircosForm
@@ -316,7 +314,6 @@ def make_module_overview_form(db, sub_sub_cat=False):
 
 
 def make_blast_form(biodb):
-
     accession_choices, rev_index =  get_accessions(biodb, all=True)
 
     class BlastForm(forms.Form):
@@ -332,8 +329,6 @@ def make_blast_form(biodb):
                                            ("20", "20"),
                                            ("30", "30"),
                                            ("all", "all")])
-        evalue= forms.CharField(widget=forms.TextInput({'value': str(DEFAULT_E_VALUE)}))
-
         target = forms.ChoiceField(choices=accession_choices,
                 widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
         blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
