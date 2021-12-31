@@ -376,7 +376,10 @@ def get_gen_stats(gbk_list):
                     if "pseudo" in fet.qualifiers:
                         continue
                     location = fet.location
-                    cds_length += location.end-location.start
+
+                    # allow to take compoundlocation into account
+                    for part in location.parts:
+                        cds_length += part.end-part.start
         gbk_shortened = gbk_file.replace(".gbk", "")
         hsh_gen_stats[gbk_shortened] = (float(gc_cum)/ttl_length,
                 float(cds_length)/ttl_length, ttl_length)
