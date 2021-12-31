@@ -366,11 +366,14 @@ def get_gen_stats(gbk_list):
             ttl_length += len(record)
             gc_cum += SeqUtils.GC(record.seq)*len(record)
             for fet in record.features:
-                if fet.type=="CDS":
+                if fet.type in ["CDS", "tmRNA", "rRNA", "ncRNA", "tRNA"]:
+                    if "pseudo" in fet.qualifiers:
+                        continue
                     location = fet.location
                     cds_length += location.end-location.start
         gbk_shortened = gbk_file.replace(".gbk", "")
-        hsh_gen_stats[gbk_shortened] = (float(gc_cum)/ttl_length, float(cds_length)/ttl_length, ttl_length)
+        hsh_gen_stats[gbk_shortened] = (float(gc_cum)/ttl_length,
+                float(cds_length)/ttl_length, ttl_length)
     return hsh_gen_stats
 
 
@@ -592,11 +595,20 @@ def setup_chlamdb_search_index(params, db_name, index_name):
         all_infos = db.get_proteins_info([taxid], search_on="taxid",
                 as_df=True, inc_non_CDS=True, inc_pseudo=True)
         for seqid, data in all_infos.iterrows():
-            product, locus_tag, gene = data[["product", "locus_tag", "gene"]]
-            if pd.isna(gene):
-                gene = None
-            if pd.isna(product) or product=="hypothetical protein":
-                product = None
+            locus_tag = data.locus_tag
+            gene, product = None, None
+            if "product" in data:
+                product = data["product"]
+                if pd.isna(product):
+                    product = None
+                elif product == "hypothetical protein":
+                    product = None
+
+            gene = None
+            if "gene" in data:
+                gene = data["gene"]
+                if pd.isna(gene):
+                    gene = None
 
             organism = genomes.loc[taxid].description
             index.add(locus_tag=locus_tag,
