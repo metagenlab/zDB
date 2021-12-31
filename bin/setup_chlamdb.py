@@ -356,6 +356,12 @@ def load_reference_phylogeny(kwargs, tree, db_file):
 
 
 def get_gen_stats(gbk_list):
+    # NOTE: for now, the coding density do not take overlapping genes
+    # into account. Depending on how many of them are present in a genome,
+    # this may cause an overestimation of the coding density, as each 
+    # CDS will be accounted for separately (and a same region will be counted
+    # several times).
+
     hsh_gen_stats = {}
 
     for gbk_file in gbk_list:
