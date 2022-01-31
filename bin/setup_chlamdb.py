@@ -161,7 +161,7 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     hsh_accession_to_record = { accesion: None for accesion in all_data.accession.tolist() }
 
     print("Extracting records for refseq", flush=True)
-    refseq = args["refseq_db"] + "/refseq_nr.faa"
+    refseq = args["refseq_db"] + "/merged.faa"
     get_prot(refseq, hsh_accession_to_record)
     hsh_accession_to_match_id = {}
 
@@ -187,31 +187,30 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
         "send", "evalue", "bitscore"]]
     db.load_refseq_hits(to_load.values.tolist())
     db.create_refseq_hits_indices()
+    db.commit()
 
-    if args.get("refseq_diamond_BBH_phylogeny", True):
-        max_hits = args.get("refseq_diamond_BBH_phylogeny_top_n_hits", 4)
-        all_og = db.get_all_orthogroups(min_size=3)
-        for og in all_og:
-            refseq_matches = db.get_diamond_match_for_og(og)
-            to_keep = []
-            cur_accesion, cur_count = None, 0
-            for accession, taxid in refseq_matches:
-                if taxid not in non_pvc_taxids:
-                    continue
-                if accession != cur_accesion:
-                    cur_accesion = accession
-                    cur_count = 0
-                if cur_count == max_hits:
-                    continue
-                to_keep.append(hsh_accession_to_record[accession])
-                cur_count += 1
-            sequences = db.get_all_sequences_for_orthogroup(og)
-            SeqIO.write(to_keep + sequences, f"{og}_nr_hits.faa", "fasta")
-    else:
-        # just create a empty file to avoid a tantrum of nextflow for a missing file
-        f = open("null_nr_hits.faa", "w")
-        f.write("My hovercraft is full of eels")
-        f.close()
+    max_hits = args.get("refseq_diamond_BBH_phylogeny_top_n_hits", 100)
+    all_og = db.get_all_orthogroups()
+    for og, og_size in all_og:
+        if og_size < 3:
+            continue
+
+        refseq_matches = db.get_diamond_match_for_og(og, sort_by_evalue=True)
+        sequences = db.get_all_sequences_for_orthogroup(og)
+        locus_set = {seq.id for seq in sequences}
+        n_hits = 0
+        to_keep = []
+        for idx, data in refseq_matches.iterrows():
+            if data.accession in locus_set:
+                # if the genome was downloaded, it is likely that the same 
+                # protein will be present in both og and refseq hits
+                continue
+            to_keep.append(hsh_accession_to_record[data.accession])
+            n_hits += 1
+            if n_hits == max_hits:
+                break
+
+        SeqIO.write(to_keep + sequences, f"{og}_nr_hits.faa", "fasta")
     db.set_status_in_config_table("BLAST_database", 1)
     db.commit()
 

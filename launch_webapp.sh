@@ -40,6 +40,10 @@ for i in "$@"; do
 			echo "--port=PORT: the web server will listen on a different port (default: 8080)"
 			echo ""
 			exit 0
+			;;
+		*)
+			echo "Unknown option $i"
+			exit 1
 	esac
 done
 

@@ -545,9 +545,6 @@ if(params.diamond_refseq) {
       publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
       container "$params.diamond_container"
 
-      when:
-      params.diamond_refseq
-
       input:
       file(seq) from to_diamond_refseq
 
@@ -559,7 +556,7 @@ if(params.diamond_refseq) {
       n = seq.name
       """
       # new version of the database
-      diamond blastp -p ${task.cpus} -d $params.refseq_db/refseq_nr.dmnd \
+      diamond blastp -p ${task.cpus} -d $params.refseq_db/merged_refseq.dmnd \
             -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
       """
     }
@@ -658,6 +655,7 @@ process load_base_db {
     """
 }
 
+
 if(!params.diamond_refseq) {
     db_gen.set { to_load_taxonomy }
     Channel.empty().set { diamond_best_hits }
@@ -690,9 +688,6 @@ process align_refseq_BBH_with_mafft {
   container "$params.mafft_container"
 
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_alignments', mode: 'copy', overwrite: true
-
-  when:
-    params.refseq_diamond_BBH_phylogeny
 
   input:
     file og from diamond_best_hits.flatten().collate( 20 )
@@ -732,22 +727,20 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 BBH_phylogenies.collect().set { BBH_phylogenies_to_db }
 
 
-if(!params.refseq_diamond_BBH_phylogeny) {
+if(!params.diamond_refseq) {
     Channel.value("dummy").set { BBH_phylogenies_to_db }
 }
-
 
 process load_taxo_stats_into_db {
     container "$params.annotation_container"
 
     input:
         file db from to_load_taxonomy
-        file BBH_phylogeny_trees from BBH_phylogenies_to_db
         file core_phylogeny from core_genome_phylogeny
         file og_phylogenies_list from all_og_phylogeny
 
     output:
-        file db into to_load_COG
+        file db into to_load_BBH_phylo
 
     script:
     """
@@ -757,13 +750,39 @@ process load_taxo_stats_into_db {
 
     kwargs = ${gen_python_args()}
 
-    BBH_list = "$BBH_phylogeny_trees".split(" ")
     gene_list = "$og_phylogenies_list".split(" ")
 
     setup_chlamdb.load_reference_phylogeny(kwargs, "$core_phylogeny", "$db")
     setup_chlamdb.load_gene_phylogenies(kwargs, gene_list, "$db")
-    if kwargs.get("refseq_diamond_BBH_phylogeny", True):
-        setup_chlamdb.load_BBH_phylogenies(kwargs, BBH_list, "$db")
+    """
+}
+
+process load_BBH_phylogenies {
+    container "$params.annotation_container"
+
+    input:
+        file db from to_load_BBH_phylo
+        file BBH_phylogeny_trees from BBH_phylogenies_to_db
+
+    output:
+        file db into to_load_COG
+
+    script:
+
+    if(params.diamond_refseq)
+    """
+    #!/usr/bin/env python
+
+    import setup_chlamdb
+
+    kwargs = ${gen_python_args()}
+
+    BBH_list = "$BBH_phylogeny_trees".split(" ")
+    setup_chlamdb.load_BBH_phylogenies(kwargs, BBH_list, "$db")
+    """
+    else
+    """
+    echo "Nothing to load, continuing"
     """
 }
 
@@ -912,7 +931,7 @@ process cleanup {
     """
     ln -sf $index $baseDir/search_index/latest
     ln -sf $db $baseDir/db/latest
-    ln -sf $baseDir/blast_DB/$workflow.runName $baseDir/blast_DB/latest
+    ln -snf $baseDir/blast_DB/$workflow.runName $baseDir/blast_DB/latest
 
     if [ ! -z "${custom_run_name}" ]; then
         ln -sf $index $baseDir/search_index/$custom_run_name
