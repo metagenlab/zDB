@@ -22,7 +22,7 @@ LOGOUT_URL = '/chlamdb/logout/'
 LOGIN_REDIRECT_URL = ''
 
 
-DOCS_ROOT="/home/chlamdb/docs/_build/"
+# DOCS_ROOT="/home/bmarquis/sda1/bmarquis/test_deployment/chlamdb_recent/chlamdb/docs/_build/"
 
 SECRET_KEY   = os.environ["RUN_NAME"]
 RUN_NAME     = os.environ["RUN_NAME"]
