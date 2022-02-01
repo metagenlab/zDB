@@ -12,6 +12,7 @@ import collections
 import string
 import random
 import os
+import time
 
 from io import StringIO
 from tempfile import NamedTemporaryFile
@@ -204,7 +205,8 @@ def home(request):
     e_tree.render(path, dpi=500)
 
 
-    number_of_files=db.count_files()
+    hsh_files = db.get_filenames_to_taxon_id()
+    number_of_files=len(hsh_files)
      
     orthogroups_freq=db.get_all_orthogroups( min_size=None)
     df_ort=pd.DataFrame(orthogroups_freq, columns=["Orthogroup", "freq"])
@@ -2587,32 +2589,59 @@ blast_command = {"blastp": NcbiblastpCommandline,
         "blastx": NcbiblastxCommandline}
 
 
-def gen_blast_heatmap(blast_res, blast_type):
+def gen_blast_heatmap(db, blast_res, blast_type):
     parsed_results = NCBIXML.parse(StringIO(blast_res))
 
     # collects the bitscore and the query accession
-    best_hits = []
+    hits = defaultdict(list)
+    accessions = set()
     for record in parsed_results:
         if len(record.alignments) == 0:
             continue
-        best_hit = record.alignments[0]
-
-        # extract the accession
-        title = best_hit.title
-        first_space = title.find(' ')
-        best_hits.append((best_hit.score, title[:first_space]))
+        query = hit.header.query
+        for hit in record.alignments:
+            hsp = hit.hsps[0]
+            scores = hits[query]
+            scores.append((hit.accession, hsp.score))
+            accessions.add(hit.accession)
 
     file_type = blast_input_dir[blast_type]
-
     # if faa or fna, the accession refers to CDS locus_tags
     # if ffn, the accession refers to contigs
     # need to map those to taxids to generate the heatmap
     if file_type=="faa" or file_type=="fna":
-        pass
+        acc_to_taxid = db.get_taxid_from_accession(accessions, look_on="locus_tag")
     elif file_type=="ffn":
-        pass
+        acc_to_taxid = db.get_taxid_from_accession(accessions, look_on="contig")
 
+    all_infos = []
+    for query, lst_vals in hits.items():
+        hsh_taxid_to_score = {}
+        for accession, score in lst_vals:
+            taxid = acc_to_taxid.loc[accession].taxid
+            if hsh_taxid_to_score.get(taxid, 0) < score:
+                hsh_taxid_to_score[taxid] = score
+        all_infos.append((query, hsh_taxid_to_score))
 
+    tree = db.get_reference_phylogeny()
+    descr = db.get_genomes_description()
+
+    t1 = Tree(tree)
+    R = t1.get_midpoint_outgroup()
+    t1.set_outgroup(R)
+    t1.ladderize()
+    e_tree = EteTree(t1)
+    e_tree.rename_leaves(descr.description.to_dict())
+
+    for query, hsh_values in all_infos:
+        col = SimpleColorColumn(hsh_values, header=query, color_gradient=True, default="-")
+        e_tree.add_column(col)
+
+    base_file_name = time.strftime("blast_%d_%m_%y_%H_%M.svg" , time.gmtime())
+    path = settings.BASE_DIR + f"/assets/temp/{base_file_name}"
+    asset_path = f"/temp/{base_file_name}"
+    e_tree.render(path, dpi=600)
+    return asset_path
 
 
 # for now, simplified the tblastn output to the same output as the 
@@ -2633,23 +2662,25 @@ def blast(request):
     number_blast_hits = form.cleaned_data['max_number_of_hits']
     blast_type = form.cleaned_data['blast']
     target = form.get_target()
+    has_multiple_seq = False
 
     if '>' in input_sequence:
         try:
-            my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
+            records = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
         except:
             context = {"error_message": "Error while parsing the fasta query",
                     "error_title": "Query format error", 
                     "envoi": True, "form": form, "wrong_format": True}
             return render(request, 'chlamdb/blast.html', my_locals(context))
-        seq = my_record[0].seq
     else:
-        input_sequence = input_sequence.replace("\n", '').replace(" ", '').replace("\r", "")
-        seq = Seq(input_sequence)
+        input_sequence = "".join(input_sequence.split())
+        records = [SeqRecord(Seq(input_sequence))]
                         
     dna = set("ATGCNRYKMSWBDHV")
     prot = set('ACDEFGHIKLMNPQRSTVWYXZJOU')
-    sequence_set = set(seq)
+    sequence_set = set()
+    for rec in records:
+        sequence_set = sequence_set.union(set(rec.seq))
     check_seq_DNA = sequence_set-dna
     check_seq_prot = sequence_set-prot
 
@@ -2672,16 +2703,15 @@ def blast(request):
                 "error_title": "Query format error", "envoi": True, "form": form}
         return render(request, 'chlamdb/blast.html', my_locals(context))
 
-    my_record = SeqRecord(seq)
     query_file = NamedTemporaryFile(mode='w')
-    SeqIO.write(my_record, query_file, "fasta")
+    SeqIO.write(records, query_file, "fasta")
     query_file.flush()
     
     if target=='all':
         my_db = 'merged'
     else:
         dictionary_acc_names = db.get_taxon_id_to_filenames()
-        my_db = dictionary_acc_names[target]               
+        my_db = dictionary_acc_names[target]
 
     blast_args = {"query": query_file.name, "outfmt": 5}
     blast_args["db"] = settings.BLAST_DB_PATH+"/"+blast_input_dir[blast_type]+"/"+my_db
@@ -2702,8 +2732,7 @@ def blast(request):
         blast_err = blast_stderr
     else:
         if target == "all":
-            heatmap = gen_blast_heatmap(blast_stdout, blast_type)
-
+            asset_path = gen_blast_heatmap(db, blast_stdout, blast_type)
         rand_id = id_generator(6)
         blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
         f = open(blast_file_l, 'w')
@@ -2855,7 +2884,7 @@ def plot_region(request):
     # region, avoid displaying this region twice).
     filtered_regions = coalesce_regions(genomic_regions, seqids)
 
-    for genomic_region in genomic_regions:
+    for genomic_region in filtered_regions:
         seqid, region, start, end = genomic_region
         if region["strand"].loc[seqid]*ref_strand == -1:
             mean_val = (end+start)/2
