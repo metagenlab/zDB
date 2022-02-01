@@ -14,8 +14,9 @@
           <div class="row">
             <div class="col-lg-12">
                {% include "chlamdb/menu.html" %}
-               <div class="home-title" ><b>   {% if type == 'Pfam' %} Pfam domains  {% endif %}  {% if type == 'COG' %} COGs  {% endif %} {% if type == 'orthology' %} Orthogroups  {% endif %} {% if type == 'ko' %} Kegg Orthologs {% endif %} </b></div>
-               <hr class="lines-home">
+               <div class="panel-title"><b>Comparisons: {% if type == 'Pfam' %} Pfam domains   {% endif %}  {% if type == 'COG' %} COGs  {% endif %} {% if type == 'orthology' %} Orthogroups  {% endif %} {% if type == 'ko' %} Kegg Orthologs {% endif %}</b></div>
+               <br> 
+        
                 <nav>
                     <ul id="tabs_main" class="nav nav-tabs">
 
@@ -49,38 +50,24 @@
                           {% endif %}
                   </ul>
                   </nav>
+                  <br>
+                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Accumulation/rarefaction plot of 
+                      {% if type == 'Pfam' %}
+                      Pfam domains
+                  {% elif type == 'COG' %}
+                      COG categories
+                  {% elif type == 'interpro'%}
+                      Interpro Entries.
+                  {% elif type == 'EC' %}
+                      EC numbers. Based on PRIAM data. Partial EC are not considered.
+                  {% elif type == 'ko' %}
+                      Kegg orthologous groups (KO)
+                  {% elif type == 'orthology' %}
+                      orthologous groups
+                  {% endif %}</b><a href="/docs/index.html" id="show-option" title="{% if type == 'Pfam' %}Accumulation/rarefaction plot of Pfam domains {% elif type == 'COG' %}Accumulation/rarefaction plot of COG entries.{% elif type == 'ko' %}Accumulation/rarefaction plot of Kegg orthologs {% elif type == 'orthology' %} Pan/core genome plot of Orthologous groups{% endif %} of genomes of interest. **Targets = 'Select all' to get the core{% if type == 'Pfam' %} Pfam domains{% elif type == 'COG' %} COG {% elif type == 'ko' %}Kegg orthologs{% elif type == 'orthology' %} Orthologous groups{% endif %} of the entire dataset"
+                  ><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
 
-
-                  <div class="panel panel-info" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-                    <div class="panel-heading" style="width:100%">
-                      <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
-                    </div>
-                    <p style="margin: 10px 10px 10px 10px"> 
-                        {% if type == 'Pfam' %}
-                        Accumulation/rarefaction plot of Pfam domains
-                        {% elif type == 'COG' %}
-                        Accumulation/rarefaction plot of COG entries.
-                        {% elif type == 'ko' %}
-                        Accumulation/rarefaction plot of Kegg orthologs
-                        {% elif type == 'orthology' %}
-                        Pan/core genome plot of Orthologous groups
-                        {% endif %} of genomes of interest (targets).
-                        <br>
-                        **Targets = 'Select all' to get the core
-                        {% if type == 'Pfam' %}
-                            Pfam domains
-                        {% elif type == 'COG' %}
-                            COG
-                        {% elif type == 'ko' %}
-                            Kegg orthologs
-                        {% elif type == 'orthology' %}
-                            Orthologous groups
-                        {% endif %}
-                         of the entire dataset
-
-                        <br>
-                    </p>
-                </div>
+                  
 
               <form action='{% url "pan_genome" type %}' method="post">
                   {% csrf_token %}
@@ -92,18 +79,7 @@
 
               {% if envoi %}
               <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em">
-                <div class="col-lg-8">
-               <center><h3 style="padding:0; color: rgb(0, 66, 97);"> Accumulation/rarefaction plot of 
-                {% if type == 'Pfam' %}
-                Pfam domains
-                {% elif type == 'COG' %}
-                COG categories
-                {% elif type == 'ko' %}
-                ko categories
-                {% elif type == 'orthology' %}
-                Orthogroups
-                {% endif %}
-            </h3></center>
+               
                 <br>
               <div class="panel panel-success">
                 <div class="panel-heading" style="width:100%">
@@ -142,7 +118,7 @@
  
 
            <div class="tab-pane active" id="tab1">
-				<div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
+				<div class="panel panel-success" style="width:100%; top: 200px">
 					<div id="rarefaction_plot">
 					</div>
 				</div>

@@ -163,7 +163,7 @@ def make_metabo_from(db, add_box=False):
             self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
             if not add_box:
                 self.helper.layout = Layout(
-                                            Fieldset("Compare genomes",
+                                            Fieldset(" ",
                                                      Column(
                                                            Row('targets'),
                                                            Submit('submit', 'Submit'),
@@ -173,7 +173,7 @@ def make_metabo_from(db, add_box=False):
 
             else:
                 self.helper.layout = Layout(
-                                            Fieldset("Compare genomes",
+                                            Fieldset(" ",
                                                      Column(
                                                            Row('targets'),
                                                            Row('input_box'),
@@ -212,7 +212,7 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None):
             self.helper.label_class = 'col-lg-1 col-md-6 col-sm-6'
             self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
             self.helper.layout = Layout(
-                                        Fieldset("Compare genomes",
+                                        Fieldset(" ",
                                                  Column(
                                                        Row('targets'),
                                                        Submit('submit', 'Compare %s' % label,  style="margin-top:15px" ),
@@ -432,9 +432,8 @@ def make_extract_form(db, plasmid=False, label="Orthologs"):
             #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
             #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
             self.helper.layout = Layout(
-                    Fieldset("Compare genomes",
+                    Fieldset(" ",
                             Column(
-                                Row('checkbox_accessions', style="padding-left:15px"),
                                 Row('checkbox_single_copy', style="padding-left:15px"),
                             Row(Column("orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
                                 Column("no_orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12')),

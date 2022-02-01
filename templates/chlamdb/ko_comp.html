@@ -24,9 +24,9 @@
             <div class="row">
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
-                 <div class="home-title"><b> Kegg Orthologs  </b></div>
-                <hr class="lines-home">
-                  <nav>
+                 <div class="panel-title"><b>Comparisons: Kegg Orthologs</b></div>
+                 <br>
+                <nav>
                       <ul id="tabs_main" class="nav nav-tabs">
 
                           <li><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
@@ -38,16 +38,8 @@
 
                       </ul>
                   </nav>
-
-                  <div class="panel panel-info" style="width:90% ; top: 200px; margin: 10px 10px 10px 10px">
-                    <div class="panel-heading" style="width:100%">
-                      <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
-                    </div>
-                    <p style="margin: 10px 10px 10px 10px; line-height: 180%">Compare the size of the Kegg Orthologs shared by the selected genomes (targets).</p>
-                      </p>
-                      </div>
-
-      
+                  <br>
+                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Size of shared Kegg Orthologs </b><a href="/docs/index.html" id="show-option" title="Get the list of Kegg Orthologs shared between genomes (selected in panel A) and absent in others (selected in panel B). It is possible to distinguish between plasmids and chromosomes by clicking on the dedicated checkbox. Missing data: if more than one genome is selected in panel A, it is possible to tolerate missing data in 1 up to 10 genomes. In this way Kegg Orthogroups present in at least x out of y genomes selected are kept."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
                 </div>
                       <form action='{% url "ko_comparison" %}' method="post">
                           {% csrf_token %}
@@ -60,9 +52,6 @@
                          
 
                           <div class="row" style="padding-top:30px ;background-color: rgba(245, 245, 245, 0.986); margin-top: 1em;" >
-                            <div class="col-lg-8" style="margin-bottom: 2em;">
-                             <center><h3 style="padding:0; color: rgb(0, 66, 97);">Size of shared Kegg Orthologs </h2></center>
-                                 <br>
                                 
                       <h4>Number of KO: {{n_ko}} (at least present 1 time in one of the selected genomes).</h4>
                              <div class="panel panel-success">
@@ -78,7 +67,7 @@
                             </div>
 
 
-                              <table class="sortable" id="mytable" style="width: 90%; margin-left: 1em; padding-top: 25em;">
+                              <table class="sortable" id="mytable" style="width: 90%; margin-left: 1em; padding-top: 25em; margin-top: 1em; margin-bottom: 1em;">
                                   <style>
                                   table {
                                   width:100%;

@@ -94,7 +94,7 @@
                                   <span><i class="fa fa-shapes"></i></span>
                               </div>
                               <h3 class="title">Comparisons</h3>
-                              <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}  {% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}  {% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.   </p>
+                              <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}{% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}{% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.   </p>
                               <br>  
                               <div class= "col-md-3 col-sm-6">
                                     <button type="button_analyses" class="fill" ><a class="link_boxes" href="{% url 'extract_orthogroup' %}"><span class="link"></span> Orthogroups</a></button>
@@ -175,15 +175,15 @@
                                         <li> Detailed annotation of proteins based on:
                                           
                                             {% if optional2status|keyvalue:"COG" == 1 %}
-                                            <dd> -<a href="https://www.ncbi.nlm.nih.gov/COG/">COG</a> (clusters of orthologous groups)</dd> 
+                                            <dd> -<a href="https://www.ncbi.nlm.nih.gov/COG/" target="_blank">COG</a> (clusters of orthologous groups)</dd> 
                                             {% endif %}
                                             {% if optional2status|keyvalue:"pfam" == 1 %}
-                                            <dd> -<a href="http://pfam.xfam.org" >Pfam</a> (protein families)</dd>
+                                            <dd> -<a href="http://pfam.xfam.org" target="_blank" >Pfam</a> (protein families)</dd>
                                             {% endif %}
                                             {% if optional2status|keyvalue:"KEGG" == 1 %}
-                                            <dd> - <a href="https://www.genome.jp/kegg/" >KEGG</a> (Kegg orthologs)</dd>
+                                            <dd> - <a href="https://www.genome.jp/kegg/" target="_blank" >KEGG</a> (Kegg orthologs)</dd>
                                             {% endif %}
-                                            <dd> - <a href="https://www.uniprot.org/">SwissProt</a> (manually annotated proteins)</dd>
+                                            <dd> - <a href="https://www.uniprot.org/" target="_blank">SwissProt</a> (manually annotated proteins)</dd>
                                           
                                         <li> Precomputed phylogenetic reconstructions of orthologous groups</dd>
                                         {% if optional2status|keyvalue:"KEGG" %}
@@ -193,18 +193,20 @@
                                     </li>
                                   </ul>
                                 </div>
+
+                                {% if optional2status|keyvalue:"COG" == 0  or optional2status|keyvalue:"KEGG" == 1 or  optional2status|keyvalue:"pfam" == 0 %} 
                                 <div class="status_box_warning" >
                                   <div class="warnings" >
                                     <p> The following feature(s) has not beed included, if whished please run again the pipeline with the corrected settings.</p>
                                       <p>  Protein annotation with: </p>
                                         {% if not optional2status|keyvalue:"COG" == 1 %}
-                                                <dd> -<a href="https://www.ncbi.nlm.nih.gov/COG/">COG</a> (clusters of orthologous groups)</dd> 
+                                                <dd> -<a href="https://www.ncbi.nlm.nih.gov/COG/" target="_blank">COG</a> (clusters of orthologous groups)</dd> 
                                                 {% endif %}
                                                 {% if not optional2status|keyvalue:"pfam" == 1 %}
-                                                <dd> - <a href="http://pfam.xfam.org" >Pfam</a> (protein families)</dd>
+                                                <dd> - <a href="http://pfam.xfam.org" target="_blank">Pfam</a> (protein families)</dd>
                                                 {% endif %}
                                                 {% if not optional2status|keyvalue:"KEGG" == 1 %}
-                                                <dd> - <a href="https://www.genome.jp/kegg/" >KEGG</a> (Kegg orthologs)</dd>
+                                                <dd> - <a href="https://www.genome.jp/kegg/" target="_blank" >KEGG</a> (Kegg orthologs)</dd>
                                                 {% endif %}
                                                 {% if not optional2status|keyvalue:"KEGG" %}
                                                 <li> Kegg maps visualization</li>
@@ -212,6 +214,7 @@
                                       </li>
                                   </div>  
                                 </div>    
+                                {% endif %}
                                 </ul>
                               
                               </div>
@@ -231,7 +234,7 @@
                         <div id="container_boxes">
                             <div id="label">  Citation  </div>
                             <div class="panel-body">
-                              <a href="https://academic.oup.com/nar/advance-article-abstract/doi/10.1093/nar/gkz924/5609527"> <strong> ChlamDB: a comparative genomics database of the phylum <i>Chlamydiae</i> and other members of the <i>Planctomycetes-Verrucomicrobiae-Chlamydiae</i> superphylum </strong></br>
+                              <a href="https://academic.oup.com/nar/advance-article-abstract/doi/10.1093/nar/gkz924/5609527" target="_blank" style="font-size: 1.2em; color:#555;"> <strong> ChlamDB: a comparative genomics database of the phylum <i>Chlamydiae</i> and other members of the <i>Planctomycetes-Verrucomicrobiae-Chlamydiae</i> superphylum </strong></br>
                               Trestan Pillonel, Florian Tagini, Claire Bertelli, Gilbert Greub </br>
                               Nucleic Acids Research, 2019, https://doi.org/10.1093/nar/gkz924 </a>
                            </div>

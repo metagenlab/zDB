@@ -1665,7 +1665,7 @@ def locusx(request, locus=None, menu=True):
     og_annot = db.get_genes_from_og(orthogroups=[og_id],
             terms=["locus_tag", "gene", "product", "length"])
     all_og_c = db.get_og_count([og_id], search_on="orthogroup")
-    all_org  = db.get_organism(og_annot.index.tolist(), as_hash=True)
+    all_org  = db.get_organism(og_annot.index.tolist())
     n_homologues = all_og_c.loc[og_id].sum()
     translation = db.get_translation(seqid)
     general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
@@ -1817,9 +1817,9 @@ def hydropathy(request, locus):
 
 
 def get_all_prot_infos(db, seqids, orthogroups):
-    hsh_gene_locs = db.get_gene_loc(seqids, as_hash=True)
+    hsh_gene_locs = db.get_gene_loc(seqids)
     hsh_prot_infos = db.get_proteins_info(seqids)
-    hsh_organisms = db.get_organism(seqids, as_hash=True)
+    hsh_organisms = db.get_organism(seqids)
     group_count = set()
     all_locus_data = []
 
@@ -2684,6 +2684,7 @@ def blast(request):
 
         if form.is_valid():  
             input_sequence = form.cleaned_data['blast_input']
+            input_sequence= input_sequence.upper()
             customized_evalue = form.cleaned_data['evalue']
             number_blast_hits = form.cleaned_data['max_number_of_hits']
             target_accession = form.cleaned_data['target'] 
@@ -2692,7 +2693,9 @@ def blast(request):
 
             if '>' in input_sequence:
                 my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
-                seq = my_record[0]
+                seq = my_record[0].id
+                my_record[0].seq = Seq(seq)
+                my_record[0].id = "INPUT"
             else:
                 input_sequence == input_sequence.rstrip(os.linesep)
                 seq = Seq(input_sequence)

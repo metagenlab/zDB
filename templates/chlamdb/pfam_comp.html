@@ -16,8 +16,8 @@
         <div class="row">
           <div class="col-lg-12">
            {% include "chlamdb/menu.html" %}
-           <div class="home-title"><b> Pfam domains </b></div>
-           <hr class="lines-home">
+           <div class="panel-title"><b>Comparisons: Pfam domains</b></div>
+           <br>
 
            <nav>
               <ul id="tabs_main" class="nav nav-tabs">
@@ -29,17 +29,9 @@
 
               </ul>
           </nav>
-          <div class="panel panel-info" style="width:90% ; top: 200px; margin: 10px 10px 10px 10px">
-              <div class="panel-heading" style="width:100%; ">
-                      <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
 
-                  </div>
-                  <p style="margin: 10px 10px 10px 10px; line-height: 180%">
-                    Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified.<br></p>
-                  </p>
-                  </div>
-
-
+          <br>
+          <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Compare the distribution of shared Pfam domains </b><a href="/docs/index.html" id="show-option" title="Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
 
                       <form action='{% url "pfam_comparison" %}' method="post">
                           {% csrf_token %}
@@ -50,10 +42,6 @@
 
                       {% if envoi_comp %}
                       <div class="row" style="padding-top:30px ;background-color: rgba(245, 245, 245, 0.986); margin-top: 1em;" >
-                        <div class="col-lg-8">
-                         <center><h3 style="padding:0; color: rgb(0, 66, 97);">Compare the distribution of shared Pfam domains</h2></center>
-                             <br>
-                            
                   <h4>  Number of domains at least present 1 time in 1 of the {{taxon_list|length}} selected genomes: <strong>{{pfam2data|length}}</strong>  </h4>
                          <div class="panel panel-success">
                              <div class="panel-heading" style="width:100%">

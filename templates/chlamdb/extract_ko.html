@@ -17,8 +17,8 @@
               <div class="row">
                 <div class="col-lg-12">
                    {% include "chlamdb/menu.html" %}
-                   <div class="home-title"><b> Kegg Orthologs </b></div>
-                   <hr class="lines-home">
+                   <div class="panel-title"><b>Comparisons: Kegg Orthologs</b></div>
+                   <br>
                     <nav>
                         <ul id="tabs_main" class="nav nav-tabs">
                             <li class="active"><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
@@ -29,20 +29,11 @@
                             <li><a href="{% url 'pan_genome' 'ko' %}">Pan/Core genome plots</a></li>
                         </ul>
                     </nav>
+                    <br>
+                    <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Kegg Orthologs shared by the selected genomes </b><a href="/docs/index.html" id="show-option" title="Get the list of Kegg Orthologs shared between genomes (selected in panel A) and absent in others (selected in panel B). It is possible to distinguish between plasmids and chromosomes by clicking on the dedicated checkbox. Missing data: if more than one genome is selected in panel A, it is possible to tolerate missing data in 1 up to 10 genomes. In this way Kegg Orthogroups present in at least x out of y genomes selected are kept."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                       <div id="extract_form">
 
-                     <div id="extract_form">
-
-                        <div class="panel panel-info" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                            <div class="panel-heading" style="width:100%">
-                                <h3 class="panel-title">Info about the analysis</h3>
-                            </div>
-                            <p style="margin: 10px 10px 10px 10px; line-height: 160%">Get the list of Kegg Orthogroups shared between genomes (selected in panel A) and absent in others (selected in panel B). <br>
-                                It is possible to distinguish between plasmids and chromosomes by clicking on the dedicated checkbox.
-                                <br>Missing data: if more than one genome is selected in panel A, it is possible to tolerate missing data in 1 up to 10 genomes. In this way Kegg Orthogroups present in at least x out of y genomes selected are kept.</p>
-                            </p>
-                        </div>
-
-                        {% block content %}
+                                             {% block content %}
                         <form action="{% url "extract_ko" %}" method="post">
                             {% csrf_token %}
                             {% crispy form %}

@@ -16,8 +16,8 @@
             <div class="row">
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
-                 <div class="home-title"><b> COGs </b></div>
-                 <hr class="lines-home">
+                 <div class="panel-title"><b>Comparisons: COGs</b></div>
+                 <br>
 
                   <nav>
                   <ul id="tabs" class="nav nav-tabs">
@@ -31,28 +31,19 @@
 
                   </ul>
                   </nav>
-
-
-                  <div class="panel panel-info" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-                    <div class="panel-heading" style="width:100%">
-                      <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
-                    </div>
-                    <p style="margin: 10px 10px 10px 10px">Compare Cog categories between genomes of interest (targets) and visualize them in barcharts. <br>
-                    </p>
-                </div>
-
+                  <br>
+                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Distribution of COG definitions within COG categories </b><a href="/docs/index.html" id="show-option" title="Compare Cog categories between genomes of interest (targets) and visualize them in barcharts."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+  
               <form action='{% url "cog_barchart"  %}' method="post">
                   {% csrf_token %}
                   {{ form.as_p }}
                   <input type="submit" value="Submit" />
 
               </form>
+            </div>
 
               {% if envoi %}
               <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em">
-                <div class="col-lg-8">
-               <center><h3 style="padding:0; color: rgb(0, 66, 97);">Distribution of COG definitions within COG categories</h2></center>
-                <br>
               <div class="panel panel-success">
                 <div class="panel-heading" style="width:100%">
                   <h5 class="panel-title">Help to interpret the results</h5>
