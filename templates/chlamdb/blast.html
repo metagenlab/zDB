@@ -5,6 +5,7 @@
 <head>
 {% load static %}
 <STYLE TYPE="text/css">
+
 <!--
 
 A:active{background:transparent;color:red}
@@ -138,11 +139,13 @@ margin-top: 15em;
 </STYLE>
 <script type="text/javascript" src="{% static 'js/html2canvas.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/blaster.min.js' %}"></script>
+
 {% include "chlamdb/header.html" %}
 </head>
+
 <body>
 
-  <div class="container-fluid" id="main_container" onclick="myFunction()" >
+  <div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
           <div id="page-content-wrapper">
@@ -178,23 +181,15 @@ margin-top: 15em;
 
                   <div class="panel panel-danger" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                       <div class="panel-heading" style="width:100%">
-                          <h3 class="panel-title">Wrong format combination</h3>
+						  <h3 class="panel-title">{{ error_title }}</h3>
                       </div>
-                      The format combination is incorrect: check BLAST version and database.
-                      
-                      
+					  {{ error_message }}
                   </div>
 
                   {% endif %}
 
-                  {% if unknown_format %}
-
-                  Unkonwn format!
-
-                  {% endif %}
 
                   {% if envoi %}
-                      &nbsp   
 
                       <h2>Blast result</h2>
 
@@ -204,106 +199,32 @@ margin-top: 15em;
                           <div id="blast-alignments-table"></div> 
                           <div id="blast-single-alignment"></div> 
                       {% endif %}
-                  {% if blast_result %} 
-                      <h3>Result</h3>
-                       <div id="blast_res">
-                      {% autoescape off %}{{blast_result}}{% endautoescape %}</div>
-                  {% elif blast_no_hits %}   
-                  <h3>No hits</h3>
-                        <pre id="blast_result">  
-                         {% autoescape off %}{{blast_no_hits}}{% endautoescape %}
-                        </pre>
-                  {% elif blast_err %}
-                        <h3>Error</h3>
-                        <pre id="blast_result">
-                         {% autoescape off %}{{blast_err}}{% endautoescape %}
-                        </pre>
-                  {% endif %}
 
-                  {% if all_data %}
-                      <h2>Best hit region </h2>
-
-                      <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-                          <div class="panel-heading" style="width:100%">
-                              <h3 class="panel-title">Help</h3>
-                          </div>
-                          The tBLASTn hit is indicated in purple.
-                          
-                          
-                      </div>
-
-
-                      <div style="height:100px;">
-                        {% for fig in fig_list%}
-                          <h3>{{fig.0}}</h3>
-                          <object width="70%"  type="image/svg+xml" style="margin-left: -30px" data="{% static fig.1 %}" id="genomic_region"></object>
-                        {% endfor %}
-                      </div>
-
-                      {% if show_translation %}
-                            <table id="tblastn">
-                            <h2>Hits</h2>
-                            {% for values in all_data %}
-
-                            <tr><th id="tblastn_first_col">Accession</th><td><span style="color: #0000FF;">{{ values.0 }}, {{ values.10 }}</span></td></tr>
-                            <tr><th>SEQ</th><td>{{ values.11 }}</td></tr>
-                            <tr><th></th><td>start: {{ values.1 }}, end: {{ values.2 }}, length: {{ values.3 }}</td></tr>
-                            <tr><th>Frame 1</th><td>{{ values.4 }}</td></tr>
-                            <tr><th>Frame 2</th><td>{{ values.5 }}</td></tr>
-                            <tr><th>Frame 3</th><td>{{ values.6 }}</td></tr>
-                            <tr><th>Frame -1</th><td>{{ values.7 }}</td></tr>
-                            <tr><th>Frame -2</th><td>{{ values.8 }}</td></tr>
-                            <tr><th>Frame -3</th><td>{{ values.9 }}</td></tr>
-                            <tr id="inter_tblastn"></tr>
-                            {% endfor %}
-                            </table>
-                      {% endif %}
+					  {% if blast_result %} 
+						  <h3>Result</h3>
+						   <div id="blast_res">
+						  {% autoescape off %}{{blast_result}}{% endautoescape %}</div>
+					  {% elif blast_no_hits %}   
+						  <h3>No hits</h3>
+					  {% elif blast_err %}
+							<h3>Error</h3>
+							<pre id="blast_result">
+							 {% autoescape off %}{{blast_err}}{% endautoescape %}
+							</pre>
+					  {% endif %}
                   {% endif %}
 
 
-                  </table>
-
-
-                  {% endif %}
-
+                            <div class="tab-pane" id="tab2">
+                                <object style="max-width:90%; padding-top: 2em;" type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
+                            </div>
                   
                 </div>
               </div>
             </div>
           </div>
         </div>
-    </div>
-  </div>
 </body>
-
-
-<script>
-function addColor(domNode, color, letter){
-    if(domNode.nodeType!=1||!domNode.hasAttribute('edited')){
-        if(domNode.nodeType==3){
-            var newText=document.createElement('span');
-            newText.innerHTML=domNode.textContent;
-            newText.setAttribute('edited', true);
-            var text = newText.innerHTML.split('').map(function(el){
-              if(el==letter){
-                return '<i style=\"color:'+color+'\">'+el+'</i>';
-              }
-              else{
-                return el;
-              }
-          }).join('');
-          newText.innerHTML=text;
-          domNode.parentNode.replaceChild(newText,domNode);
-        }
-        for(var i=0; i<domNode.childNodes.length;i++){
-            addColor(domNode.childNodes[i], color, letter);
-        }
-    }
-}
-addColor(document.getElementById('tblastn'), 'red', '*');
-
-</script>
-
 
 <script>
 
@@ -312,7 +233,6 @@ var blasterjs = require("biojs-vis-blasterjs");
 $(document).ready(function(){
     $.get( "{{asset_blast_path}}", function(text, status, xhr) {
         var tmp = String(text);
-        console.log(text)
         var instance = new blasterjs({
              string: tmp,
              multipleAlignments: "blast-multiple-alignments",
@@ -323,51 +243,6 @@ $(document).ready(function(){
 
     }, 'text');
 });
-
-
-  function myFunction() {
-    var x = document.getElementById("myLinks");
-    var y = document.getElementById("main_container");
-    if (x.style.display === "block") {
-      x.style.display = "none";
-      y.style.backgroundColor == "blue";
-    } else {
-      x.style.display = "block";
-      $("#wrapper").toggleClass("toggled");
-    }
-  }
-
-  // Hide submenus
-$('#body-row .collapse').collapse('hide'); 
-
-// Collapse/Expand icon
-$('#collapse-icon').addClass('fas fa-bars'); 
-
-// Collapse click
-$('[data-toggle=sidebar-colapse]').click(function() {
-SidebarCollapse();
-});
-
-function SidebarCollapse () {
-$('.menu-collapsed').toggleClass('d-none');
-$('.sidebar-submenu').toggleClass('d-none');
-$('.submenu-icon').toggleClass('d-none');
-$('#sidebar-container').toggleClass('sidebar-expanded sidebar-collapsed');
-
-// Treating d-flex/d-none on separators with title
-var SeparatorTitle = $('.sidebar-separator-title');
-if ( SeparatorTitle.hasClass('d-flex') ) {
-    SeparatorTitle.removeClass('d-flex');
-} else {
-    SeparatorTitle.addClass('d-flex');
-}
-
-// Collapse/Expand icon
-$('#collapse-icon').toggleClass('fas fa-bars fa-angle-double-right');
-}
-
-  </script>
-
 
 </script>
 

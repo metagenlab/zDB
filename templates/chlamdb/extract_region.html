@@ -28,8 +28,6 @@
         <hr class="lines-home">
 
 
-          <div class="tab-pane" id="genomes">
-                            
                           <table class="display" id="genomes_table">
                             <thead>
 
@@ -74,6 +72,22 @@
 <script>
 
 $(document).ready(function() {
-$("#genomes_table").DataTable();} );
+	$("#genomes_table").DataTable({
+		columns: [
+			{ data: "genome", className: "editable" },
+			{ data: "GC" },
+			{ data: "n_prot"},
+			{ data: "n_contigs"},
+			{ data: "size" },
+			{ data: "perc_coding"},
+			{ data: "has_plasmid"},
+			{ data: "faa_seq"},
+			{ data: "fna_seq"},
+			{ data: "ffn_seq"},
+			{ data: "gbk_file"}
+		]
+	});} 
+);
+
 </script>
 </html>
