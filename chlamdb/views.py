@@ -2589,20 +2589,22 @@ blast_command = {"blastp": NcbiblastpCommandline,
         "blastx": NcbiblastxCommandline}
 
 
-def gen_blast_heatmap(db, blast_res, blast_type):
+def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
     parsed_results = NCBIXML.parse(StringIO(blast_res))
 
     # collects the bitscore and the query accession
-    hits = defaultdict(list)
+    hits = collections.defaultdict(list)
     accessions = set()
     for record in parsed_results:
         if len(record.alignments) == 0:
             continue
-        query = hit.header.query
+        query = record.query
+        if no_query_name:
+            query = "query"
         for hit in record.alignments:
             hsp = hit.hsps[0]
             scores = hits[query]
-            scores.append((hit.accession, hsp.score))
+            scores.append((hit.accession, 100.0*hsp.identities/hsp.align_length))
             accessions.add(hit.accession)
 
     file_type = blast_input_dir[blast_type]
@@ -2610,9 +2612,9 @@ def gen_blast_heatmap(db, blast_res, blast_type):
     # if ffn, the accession refers to contigs
     # need to map those to taxids to generate the heatmap
     if file_type=="faa" or file_type=="fna":
-        acc_to_taxid = db.get_taxid_from_accession(accessions, look_on="locus_tag")
+        acc_to_taxid = db.get_taxid_from_accession(list(accessions), look_on="locus_tag")
     elif file_type=="ffn":
-        acc_to_taxid = db.get_taxid_from_accession(accessions, look_on="contig")
+        acc_to_taxid = db.get_taxid_from_accession(list(accessions), look_on="contig")
 
     all_infos = []
     for query, lst_vals in hits.items():
@@ -2620,7 +2622,7 @@ def gen_blast_heatmap(db, blast_res, blast_type):
         for accession, score in lst_vals:
             taxid = acc_to_taxid.loc[accession].taxid
             if hsh_taxid_to_score.get(taxid, 0) < score:
-                hsh_taxid_to_score[taxid] = score
+                hsh_taxid_to_score[taxid] = int(score)
         all_infos.append((query, hsh_taxid_to_score))
 
     tree = db.get_reference_phylogeny()
@@ -2634,7 +2636,7 @@ def gen_blast_heatmap(db, blast_res, blast_type):
     e_tree.rename_leaves(descr.description.to_dict())
 
     for query, hsh_values in all_infos:
-        col = SimpleColorColumn(hsh_values, header=query, color_gradient=True, default="-")
+        col = SimpleColorColumn(hsh_values, header=query, color_gradient=True, default_val="-")
         e_tree.add_column(col)
 
     base_file_name = time.strftime("blast_%d_%m_%y_%H_%M.svg" , time.gmtime())
@@ -2662,7 +2664,7 @@ def blast(request):
     number_blast_hits = form.cleaned_data['max_number_of_hits']
     blast_type = form.cleaned_data['blast']
     target = form.get_target()
-    has_multiple_seq = False
+    no_query_name = False
 
     if '>' in input_sequence:
         try:
@@ -2673,6 +2675,7 @@ def blast(request):
                     "envoi": True, "form": form, "wrong_format": True}
             return render(request, 'chlamdb/blast.html', my_locals(context))
     else:
+        no_query_name = True
         input_sequence = "".join(input_sequence.split())
         records = [SeqRecord(Seq(input_sequence))]
                         
@@ -2732,7 +2735,7 @@ def blast(request):
         blast_err = blast_stderr
     else:
         if target == "all":
-            asset_path = gen_blast_heatmap(db, blast_stdout, blast_type)
+            asset_path = gen_blast_heatmap(db, blast_stdout, blast_type, no_query_name)
         rand_id = id_generator(6)
         blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
         f = open(blast_file_l, 'w')
@@ -2740,6 +2743,7 @@ def blast(request):
         f.close()
         asset_blast_path = '/assets/temp/%s.xml' % rand_id
         js_out = True
+        phylo_distrib = target=="all"
     envoi= True
     return render(request, 'chlamdb/blast.html', my_locals(locals()))
 
