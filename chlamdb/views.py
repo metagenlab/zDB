@@ -2625,6 +2625,8 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
                 hsh_taxid_to_score[taxid] = int(score)
         all_infos.append((query, hsh_taxid_to_score))
 
+    min_val = min(min(hsh.values()) for _, hsh in all_infos)
+    max_val = max(max(hsh.values()) for _, hsh in all_infos)
     tree = db.get_reference_phylogeny()
     descr = db.get_genomes_description()
 
@@ -2636,7 +2638,8 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
     e_tree.rename_leaves(descr.description.to_dict())
 
     for query, hsh_values in all_infos:
-        col = SimpleColorColumn(hsh_values, header=query, color_gradient=True, default_val="-")
+        col = SimpleColorColumn(hsh_values, header=query, color_gradient=True,
+                default_val="-", gradient_value_range=[min_val, max_val])
         e_tree.add_column(col)
 
     base_file_name = time.strftime("blast_%d_%m_%y_%H_%M.svg" , time.gmtime())
