@@ -64,7 +64,7 @@
                       Kegg orthologous groups (KO)
                   {% elif type == 'orthology' %}
                       orthologous groups
-                  {% endif %}</b><a href="/docs/index.html" id="show-option" title="{% if type == 'Pfam' %}Accumulation/rarefaction plot of Pfam domains {% elif type == 'COG' %}Accumulation/rarefaction plot of COG entries.{% elif type == 'ko' %}Accumulation/rarefaction plot of Kegg orthologs {% elif type == 'orthology' %} Pan/core genome plot of Orthologous groups{% endif %} of genomes of interest. **Targets = 'Select all' to get the core{% if type == 'Pfam' %} Pfam domains{% elif type == 'COG' %} COG {% elif type == 'ko' %}Kegg orthologs{% elif type == 'orthology' %} Orthologous groups{% endif %} of the entire dataset"
+                  {% endif %}</b><a href="/docs/index.html" id="show-option" 
                   ><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
 
                   
@@ -95,7 +95,7 @@
                     {% elif type == 'COG' %}
                     This plot shows the relationship between the total number of COG orthologs and the number of genomes considered.
                     <br>The <span style="color: rgb(61, 121, 66);"><b>green</b></span> line is representative of the pan-genome size. A flat line means that the genomes contains the same COG orthologs, while an increasing ones means that genomes carry several unique or low frequency COG orthologs.
-                    <br>The (<span style="color: red;"><b>red</b></span> ) lines displays the COG orthologs shared by n genomes.                  
+                    <br>The (<span style="color: red;"><b>red</b></span> ) lines displays the COG orthologous shared by n genomes.                  
               
                     {% elif type == 'ko' %}
                     This plot shows the relationship between the total number of KO entries and the number of genomes considered.

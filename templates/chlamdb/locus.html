@@ -111,7 +111,10 @@ function clearBox(elementID)
 				  </div>
 
 				  <div class="tab-pane" id="phylogenetic_distrib">
-						<h3>Distribution of {{orthogroup}} homologs</h3>
+            <br>
+					<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+					Distribution of {{og_id|safe}} homologs
+				   </p></b></center>
 
 
 						<div class="tab-pane active" id="tab1">
@@ -133,7 +136,10 @@ function clearBox(elementID)
 
 
 				  <div class="tab-pane" id="og_phylogeny">
-						<h3>Phylogeny of {{og_id|safe}} </h3>
+						<br>
+					<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+					Phylogeny of {{og_id|safe}}
+				   </p></b></center>
 						<div class="tab-pane active" id="tab1">
 						  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
 						  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
@@ -165,8 +171,11 @@ function clearBox(elementID)
 					  </tbody>
 					</table>
 				</div>
-
                 <div class="tab-pane active" id="main_tab" style="padding-left: 15px;padding-top:20px">
+                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+                    Locus tag: {{locus_tag}}
+                     </p></b></center>
+                     <br>
                         <div class="col-md-12 col-lg-4">
                           <div class="container-fluid">
                             <div class="row">
@@ -847,6 +856,11 @@ function clearBox(elementID)
                 <div class="tab-pane" id="tab3" width="100%" height="100%">
                   <div class="row" style="padding-top:15px;">
                     <div class="col-lg-6">
+                     
+                      <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+                        Locus tag: {{locus_tag}}
+                         </p></b></center>
+                         <br>
 
 					{% if sequence_type == "CDS" %}
                       <div class="row">

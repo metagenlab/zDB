@@ -31,6 +31,8 @@
 			{% endif %}
 		</ul>
 	</nav>
+
+
 		<div id="form" class="col-lg-10 col-md-12 col-sm-12">
 		  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.48.1/plotly.min.js"></script>
 
@@ -46,7 +48,10 @@
 		  </div>
 
 		  <div class="tab-pane" id="og_phylogeny">
-			  <h3>Phylogeny of {{og}} {{root}}</h3>
+			  <br>
+			<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+				Phylogeny of {{og}} {{root}}
+			   </p></b></center>
 				<div class="tab-pane active" id="tab1">
 				  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
 				  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
@@ -54,12 +59,18 @@
 				</div>
 		  </div>
 
+		  <br>
+		 
+	
+
 		  <div class="tab-pane active" id="overview_tab">
-			<h3>Orthogroup: <strong>{{og}}</strong>
-				<br>  <strong>{{n_homologues}} members</strong> -overview of the annotation</h3>
+			<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+				Orthogroup:{{og}}
+			   </p></b></center>
+			<h4>Orthogroup content: <strong>{{n_homologues}} members</strong></h4>
 
 
-			  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+			  <div class="panel panel-success" style=" top: 200px;">
 				  <div class="panel-heading" style="width:100%">
 					  <h3 class="panel-title">Help</h3>
 				  </div>
@@ -71,6 +82,9 @@
 				  </p>
 			  </div>
 
+
+
+			  
 			<div class="col-md-12 col-lg-4">
 			  <div class="container-fluid">
 
@@ -323,7 +337,7 @@
     </div>
   </div>
 </div>
-{% include "chlamdb/style_menu.html" %}
+
 
 <style>
 #description_field{

@@ -24,7 +24,7 @@
                    {% include "chlamdb/menu.html" %}
                    <div class="panel-title"><b>
                     {% if type == 'cog'%}
-                    COGs
+                    COGs 
                     {% elif type == 'ko' %}
                     Kegg Ortholog
                     {% elif type == 'pfam' %}
@@ -36,14 +36,14 @@
                    <br>
                    <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
                     {% if type == 'cog'%}
-                    COGs entry: 
+                    COG:
                     {% elif type == 'ko' %}
                     Kegg Ortholog:
                     {% elif type == 'pfam' %}
                     Pfam domain:
                     {% endif %} 
                     {{ fam }}
-                   </b><a href="/docs/index.html" id="show-option" title="Description and frequency"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                   </p></b></center></center>
                    <hr class="lines-home">
                   
 

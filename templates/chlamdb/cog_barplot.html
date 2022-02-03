@@ -32,7 +32,7 @@
                   </ul>
                   </nav>
                   <br>
-                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Distribution of COG definitions within COG categories </b><a href="/docs/index.html" id="show-option" title="Compare Cog categories between genomes of interest (targets) and visualize them in barcharts."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Distribution of COGs within COG categories </b><a href="/docs/index.html" id="show-option"  ><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
   
               <form action='{% url "cog_barchart"  %}' method="post">
                   {% csrf_token %}
@@ -49,8 +49,9 @@
                   <h5 class="panel-title">Help to interpret the results</h5>
                 </div>
                 <p style="margin: 10px 10px 10px 10px">
-                  This analysis let you compare the distribution of COG definitions for each COG category within genomes of interest.
-                  Each bar represent the numbe of COG definitions identified.Multiples occurences of a single COG definitions/genome are clustered as one. COGs definitions associated with multiple categories are counted as multiple separate entities. <br>
+                  This analysis let you compare the distribution of COGs for each COG category within genomes of interest.
+                  Each bar represent the number of COG identified.
+                  <br>Multiples occurences of a single COG definitions/genome are clustered as one. COGs definitions associated with multiple categories are counted as multiple separate entities. <br>
                   <br>- Click on bars to get a list of the corresponding loci.<br>
                  - Click on labels to get venn diagram of the category (max 6 species will be diplayed).
                   

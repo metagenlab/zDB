@@ -79,10 +79,7 @@
                         Kegg orthologous groups (KO)
                     {% elif type == 'orthology' %}
                         orthologous groups
-                    {% endif %}</b><a href="/docs/index.html" id="show-option" title="Heatmap showing presence/absence of {% if type == 'Pfam' %} Pfam domains {% elif type == 'COG' %} COG IDs
-                    {% elif type == 'interpro'%} Interpro Entries.{% elif type == 'EC' %} EC numbers. Based on PRIAM data. Partial EC are not considered. {% elif type == 'ko' %} Kegg orthologous groups (KO)
-                    {% elif type == 'orthology' %} orthologous groups{% endif %} within the selected genomes. {% if type == 'orthology' %} Selecting all genomes you can display the heatmap of the whole proteome.
-                    {% endif %}"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                    {% endif %}</b><a href="/docs/index.html" id="show-option"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
                 
 
 
@@ -108,7 +105,7 @@
                         {% if type == 'Pfam' %}
                         times a Pfam domain shared by the genomes of interest is found.
                     {% elif type == 'COG' %}
-                        COG definitions found per each COG category shared by the genomes of interest.
+                        COGs found per each COG category shared by the genomes of interest.
                     {% elif type == 'ko' %}
                     Kegg entries found per each Kegg orthologous groups shared by the genomes of interest.
                     {% elif type == 'orthology' %}

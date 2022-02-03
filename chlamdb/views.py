@@ -1926,6 +1926,7 @@ def fam_cog(request, cog_id):
     cog_func = db.get_cog_code_description()
 
     df_cog_count = df_seqid_to_cog.groupby(["taxid"]).count()
+    fam  = format_cog(cog_id)
     e_tree = tab_gen_profile_tree(db, df_cog_count.cog, format_cog(cog_id), orthogroups)
     asset_path = f"/temp/fam_tree_{cog_id}.svg"
     path = settings.BASE_DIR+"/assets/"+asset_path
@@ -1935,6 +1936,7 @@ def fam_cog(request, cog_id):
     info_func = "<br>".join((cog_func[code] for code in func))
     type = "cog"
 
+    
     info = [info_func, cog_description]
     menu = True
     envoi = True
