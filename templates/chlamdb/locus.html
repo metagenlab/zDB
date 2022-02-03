@@ -1,39 +1,30 @@
 <!DOCTYPE html>
 
+{% load static %}
+
 
 <html>
-
-
-
 <head>
 <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/calipho-sib/feature-viewer/v1.0.0/dist/feature-viewer.min.css">
-<script src="https://cdn.jsdelivr.net/gh/calipho-sib/feature-viewer@v1.0.6/dist/feature-viewer.bundle.js"></script>
-
-
-{% load static %}
-{% load static %}
-{% load custom_tags %}
-{% get_static_prefix as STATIC_PREFIX %}
-<script>
-function clearBox(elementID)
-{
-    document.getElementById(elementID).innerHTML = "";
-}
+<script src="https://cdn.jsdelivr.net/gh/calipho-sib/feature-viewer@v1.0.6/dist/feature-viewer.bundle.js">
 </script>
 
+<script type="text/javascript" src={% static 'js/genomic_region.js' %}>
+</script>
+
+{% load custom_tags %}
 {% include "chlamdb/header.html" %}
 
 </head>
 
 
 
-
 {% if not menu %}
-    <div class="container-fluid" id="container_no_margin" height="100%">
-
+	<div class="container-fluid" id="container_no_margin" height="100%">
 {% else %}
-<div class="container-fluid" id="main_container">
+	<div class="container-fluid" id="main_container">
 {% endif %}
+
   <div class="row">
     <div id="wrapper">
       <div id="page-content-wrapper">
@@ -78,21 +69,15 @@ function clearBox(elementID)
 				</li>
 				{% endif %}
 
+
 				{% if optional2status|keyvalue:"BLAST_swissprot" and n_swissprot_hits > 0 %}
 					<li>
-						<a href="#7" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' locus %}', 'frame7'); return false">
+						<a href="#swissprot_homologs_tab" data-toggle="tab">
 							SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span>
 						</a>
 					</li>
 				{% endif %}
 
-				{% if optional2status|keyvalue:"phylogenetic_profile" or optional2status|keyvalue:"gene_clusters" %}
-					<li><a href="#8" data-toggle="tab" onclick="window.open('{% url 'interactions' data.1 %}', 'frame8'); return false">Interactions</a></li>
-				{% endif %}
-
-				{% if optional2status|keyvalue:"GC_statistics"%}
-					<li><a href="#11" data-toggle="tab" onclick="window.open('{% url 'gc_locus' data.1 %}', 'frame11'); return false">GC</a></li>
-				{% endif %}
 
                 {% if n_homologues > 2 and optional2status|keyvalue:"gene_phylogenies"%}
                 <li>
@@ -104,6 +89,7 @@ function clearBox(elementID)
                     <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'frame9'); return false">Best hit phylogeny</a></li>
                 {% endif %}
               </ul>
+
             <div id="my-tab-content" class="tab-content">
 
 				  <div class="tab-pane" id="homologs_tab">
@@ -111,10 +97,12 @@ function clearBox(elementID)
 				  </div>
 
 				  <div class="tab-pane" id="phylogenetic_distrib">
+
             <br>
 					<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
 					Distribution of {{og_id|safe}} homologs
 				   </p></b></center>
+
 
 
 						<div class="tab-pane active" id="tab1">
@@ -142,9 +130,34 @@ function clearBox(elementID)
 				   </p></b></center>
 						<div class="tab-pane active" id="tab1">
 						  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
-						  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
+						  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}">
+							  <i class="fa fa-download"></i> Download SVG</a>
 						</div>
 				  </div>
+
+				<div class="tab-pane" id="swissprot_homologs_tab">
+					<div class="col-md-12 col-lg-8" style="padding-top:20px">
+
+					<table id="blast_swissprot_table" class="table">
+					  <thead>
+						<tr>
+							{% for entry in swissprot_headers %}
+							<th> {{entry}} </th>
+							{% endfor %}
+						</tr>
+					  </thead>
+					  <tbody>
+						  {% for values in swissprot_blast_data %}
+						  <tr>
+							  {% for entry in values %}
+							  <td>{{entry|safe}}</td>
+							  {% endfor %}
+						  </tr>
+						  {%  endfor %}
+					  </tbody>
+					</table>
+					</div>
+				</div>
 
 				
 				<div class="tab-pane" id="refseq_homologs_tab">
@@ -239,206 +252,24 @@ function clearBox(elementID)
                                        <td>{{og_id|safe}}</td>
                                        <td></td>
                                    </tr>
-                                   <th>Orthogroup size <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='Total number of homologs in the whole database'><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
-                                       <td>{{n_homologues}}</td>
+                                   <th>Orthogroup size <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip"
+										   title='Total number of homologs in the whole database'>
+										   <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
+                                       <td>{{og_size}}</td>
                                        <td></td>
                                    </tr>
 								   <tr>
-                                   <th>N. genomes <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='Number of genomes encoding one or several homologs of this protein. See the tab "homologs" for details'><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
-                                       <td>{{n_genomes}}</td>
+                                   <th>N. genomes <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip"
+										   title='Number of genomes encoding one or several homologs of this protein. See the tab "homologs" for details'>
+										   <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+									   </a></th>
+                                       <td>{{og_num_genomes}}</td>
                                        <td></td>
                                    </tr>
                                 </table>
                              </div>
                            </div>
 						 {% endif %}
-                           
-
-                          {% if optional2status|keyvalue:"T3SS_data"%}
-                              <div class="row">
-                                <div class="panel panel-default">
-                                  <div class="panel-heading">
-                                    <h3 class="panel-title">T3SS effectors prediction: {{effector_sum}}/4</h3>
-                                  </div>
-                                  {% if effectors %}
-                                  <div class="panel-body">
-                                    
-                                        <table class="table table-striped" style="width: 100%">
-
-                                          <thead>
-                                          <tr>
-                                            <th>Predictor</th>
-                                            <th>Score</th>
-                                            <th>Effector</th>
-                                          </tr>
-
-                                          </thead>
-                                          <tbody>
-                                            <tr>
-                                                <td>Effective T3</td>
-                                                {% if effectiveT3_data.0 == 1 %}
-                                                  <td>{{effectiveT3_data.1}}</td>
-                                                  <td>YES</td>
-                                                {% else %}
-                                                  <td>-</td>  
-                                                  <td>NO</td>
-                                                {% endif %}
-                                            </tr>
-                                            <tr>
-                                                <td>DeepT3</td>
-                                                {% if DeepT3_data.0 == 1 %}
-                                                  <td>-</td>
-                                                  <td>YES</td>
-                                                {% else %}
-                                                  <td>-</td>  
-                                                  <td>NO</td>
-                                                {% endif %}
-                                            </tr>
-                                            <tr>
-                                                <td>BPBAac</td>
-                                                {% if BPBAac_data.0 == 1 %}
-                                                  <td>{{BPBAac_data.1}}</td>
-                                                  <td>YES</td>
-                                                {% else %}
-                                                  <td>-</td>  
-                                                  <td>NO</td>
-                                                {% endif %}
-                                            </tr>
-                                            <tr>
-                                                <td>T3MM</td>
-                                                {% if T3MM_data.0 == 1 %}
-                                                  <td>{{T3MM_data.1}}</td>
-                                                  <td>YES</td>
-                                                {% else %}
-                                                  <td>-</td>   
-                                                  <td>NO</td>
-                                                {% endif %}
-                                            </tr>
-                                          </tbody>  
-
-                                        </table>
-                                    
-                                  </div>
-                                {% endif %} 
-                                </div>
-                              </div>
-                          {% endif %}
-
-                           
-
-
-
-
-                            {% if protparams_data %}
-
-
-                            <div class="row">
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">ProtParams</h3>
-                                </div>
-                                <div class="panel-body">
-                                  <table class="table table-striped" style="width: 100%">
-                                      <tr>
-                                          <th >Molecular Weight (kDa)</th>
-                                          <td>{{protparams_data.0}}</td>
-                                      </tr>
-                                      <tr>
-                                          <th >Isoelectric Point (pI)</th>
-                                          <td>{{protparams_data.1}}</td>
-                                      </tr>
-                                      <tr>
-                                          <th >Aromaticity</th>
-                                          <td>{{protparams_data.2}}</td>
-                                      </tr>
-                                      <tr>
-                                          <th>Instability Index <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Calculated with the method of Guruprasad et al. (1990, Protein Engineering, 4, 155-161). This method tests a protein for stability. Any value above 40 means the protein is unstable (=has a short half life)."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
-                                          <td>{{protparams_data.3}}</td>
-                                      </tr>
-                                      <tr>
-                                          <th >Fractions helix/turn/sheet</th>
-                                          <td>{{protparams_data.4}}/{{protparams_data.5}}/{{protparams_data.6}}</td>
-                                      </tr>
-
-                                  </table>
-                                </div>
-                              </div>
-                            </div>
-
-
-
-                            {% endif %}
-
-
-                            {%if dbxref_uniprot_data %}
-                              <div class="row">
-
-                                <div class="panel panel-default">
-                                  <div class="panel-heading">
-                                    <h3 class="panel-title">Cross References</h3>
-                                  </div>
-                                  <div style="width: 100%;padding-left:20px">
-
-                                          <table>
-                                              {% for xref in dbxref_uniprot_data%}
-                                              <tr>
-                                                  <td>{{xref.0}}</td>
-                                                  {% if xref.0 == 'Swiss-Prot'%}
-                                                  <td><a href="http://www.uniprot.org/uniprot/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'KEGG'%}
-                                                  <td><a href="http://www.genome.jp/dbget-bin/www_bget?{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'PATRIC'%}
-                                                  <td><a href="http://patricbrc.org/portal/portal/patric/Feature?cType=feature&cId={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'STRING'%}
-                                                  <td><a href="http://string-db.org/newstring_cgi/show_network_section.pl?identifier={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'OrthoDB'%}
-                                                  <td><a href="http://www.orthodb.org/?query={{uniprot_accession}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'eggNOG'%}
-                                                  <td><a href="http://eggnogdb.embl.de/#/app/results?seqid={{uniprot_accession}}&target_nogs={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'CDD'%}
-                                                  <td><a href="https://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'HAMAP'%}
-                                                  <td><a href="http://hamap.expasy.org/profile/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'EMBL'%}
-                                                  <td><a href="https://www.ncbi.nlm.nih.gov/protein/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'ProteinModelPortal'%}
-                                                  <td><a href="http://www.proteinmodelportal.org/query/uniprot/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'PROSITE'%}
-                                                  <td><a href="http://prosite.expasy.org/doc/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'OMA'%}
-                                                  <td><a href="http://omabrowser.org/cgi-bin/gateway.pl?f=DisplayGroup&p1={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'NCBI Taxonomy'%}
-                                                  <td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?lvl=0&id={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'EnsemblBacteria'%}
-                                                  <td><a href="http://ensemblgenomes.org/id/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'HOGENOM'%}
-                                                  <td><a href="http://pbil.univ-lyon1.fr/cgi-bin/acnuc-ac2tree?query={{uniprot_accession}}&db=HOGENOM"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'PubMed'%}
-                                                  <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'Proteomes'%}
-                                                  <td><a href="http://www.uniprot.org/proteomes/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'SUPFAM'%}
-                                                  <td><a href="http://supfam.org/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'TIGRFAMs'%}
-                                                  <td><a href="http://www.jcvi.org/cgi-bin/tigrfams/HmmReportPage.cgi?acc={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                  {% elif xref.0 == 'RefSeq'%}
-                                                  <td><a href="https://www.ncbi.nlm.nih.gov/protein/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-
-
-                                                  {% else %}
-                                                  <td>{{xref.1}}</td>
-                                                  {% endif %}
-                                              </tr>
-                                              {% endfor %}
-
-                                          </table>
-                                  </div>
-                                </div>
-
-
-
-                              </div>
-                            {% endif %}
 
                         </div> <!-- fluid container -->
                       </div> <!-- first column -->
@@ -458,171 +289,43 @@ function clearBox(elementID)
 						  </div>
 						  </div>
 
-                            {% if uniprot_annotation%}
-                              <div class="row">
-                                <div class="panel panel-default">
-                                  <div class="panel-heading">
-                                    <h3 class="panel-title">Uniprot Annotation</h3>
-                                  </div>
-                                  <table id="panel_table" class="table table-striped" style="width: 100%">
-                                          <tr>
-                                              <th >Accession</th>
-                                              <td><a href="https://www.uniprot.org/uniprot/{{ uniprot_annotation.10 }}">{{ uniprot_annotation.10 }} <i class="fa fa-external-link"></i></a></td>
-                                          </tr>
+					{%if ko_pathway_data or ko_module_data %}
+					  <div class="row">
+						<div class="panel panel-default">
+						  <div class="panel-heading">
+							<h3 class="panel-title">Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and KofamScan"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+						  </div>
+						  <table class="table table-striped" style="width: 100%">
 
-                                          <tr>
-                                              <th >Status</th>
-                                              <td><strong>{{ uniprot_annotation.0 }} / Annotation Score: {{ uniprot_annotation.1 }}</strong></td>
-                                          </tr>
+							  {%if ko_pathway_data %}
 
-                                      {%if uniprot_annotation.2 != '-'%}
-                                          <tr>
-                                              <th >gene</th>
-                                              <td>{{ uniprot_annotation.2 }}</td>
-                                          </tr>
-                                      {% endif %}
-                                      {%if uniprot_annotation.3 != '-'%}
-                                          <tr>
-                                              <th >product</th>
-                                              <td>{{ uniprot_annotation.3 }}</td>
-                                          </tr>
-                                      {% endif %}
-                                      {%if uniprot_annotation.4 != '-'%}
-                                          <tr>
-                                              <th >function</th>
-                                              <td>{{ uniprot_annotation.4 }}</td>
-                                          </tr>
-                                      {% endif %}
-                                      {%if uniprot_annotation.5 != '-'%}
-                                          <tr>
-                                              <th >ec_number</th>
-                                              <td>{{ uniprot_annotation.5 }}</td>
-                                          </tr>
-                                      {% endif %}
-
-                                      {%if uniprot_annotation.6 != '-'%}
-                                          <tr>
-                                              <th >similarity</th>
-                                              <td>{{ uniprot_annotation.6 }}</td>
-                                          </tr>
-                                      {% endif %}
-                                      {%if uniprot_annotation.7 != '-'%}
-                                          <tr>
-                                              <th >subunit</th>
-                                              <td>{{ uniprot_annotation.7 }}</td>
-                                          </tr>
-                                      {% endif %}
-                                      {%if uniprot_annotation.8 != '-'%}
-                                          <tr>
-                                              <th >catalytic activity</th>
-                                              <td>{{ uniprot_annotation.8 }}</td>
-                                          </tr>
-                                      {% endif %}
-                                  </table>
-                                </div>
-                              </div>
-                            {%endif%}
+								  {% for pathway in ko_pathway_data %}
+									  <tr>
+										  <td>Pathway</td>
+										  <td><a href="{% url 'KEGG_mapp_ko' pathway.1 %}" target="_top">{{pathway.1}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+										  <td>{{pathway.2}}</td>
+										  <td>{{pathway.3}}</td>
+									  </tr>
+								  {% endfor %}
 
 
-                            {%if ec_priam_data or ec_ko_data %}
-                              <div class="row">
-                                <div class="panel panel-default">
-                                  <div class="panel-heading">
-                                    <h3 class="panel-title">EC annotations <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and KofamScan"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
-                                  </div>
-                                  <table class="table table-striped" style="width: 100%">
-                                      <tr>
-                                        <th>Source</th>
-                                        <th>EC</th>
-                                        <th>Description</th>
-                                      </tr>
+							  {% endif %}
+							  {%if ko_module_data %}
 
-                                      {%if ec_priam_data %}
+								  {% for module in ko_module_data %}
+									  <tr>
+										  <td>Module</td>
+										  <td><a href="{% url 'KEGG_module_map' module.0 %}" target="_top">{{module.0}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
+										  <td>{{module.1}}</td>
+										  <td>{{module.2}}</td>
+									  </tr>
+								  {% endfor %}
+							  {% endif %}
+						  </table>
+						</div>
+					  </div>
 
-                                          {% for ec in ec_priam_data %}
-                                              <tr>
-                                                  <td>PRIAM</td>
-                                                  <td><a href="{% url 'fam' ec.0 "EC" %}" target="_top">{{ec.0}}</a></td>
-                                                  <td>{{ec.1}}</td>
-                                              </tr>
-                                          {% endfor %}
-
-
-                                      {% endif %}
-                                      {%if ec_ko_data %}
-
-                                          {% for ec in ec_ko_data %}
-                                              <tr>
-                                                  <td>KoFamScan</td>
-                                                  <td><a href="{% url 'fam' ec.5 "ko" %}" target="_top">{{ec.0}}</a></td>
-                                                  <td>{{ec.1}}</td>
-                                                  <td><a data-toggle="collapse" href="#multiCollapseEC_{{ec.5}}" role="button" aria-expanded="false" aria-controls="multiCollapseEC_{{ec.5}}"><span class="badge" aria-hidden="true">Score <i class="fa fa-plus"></i></span></a> </td>
-                                                  <tr class="collapse" id="multiCollapseEC_{{ec.5}}">
-                                                      <td colspan="2">
-                                                            <table class="table table" style="width: 100%">
-                                                              <tr bgcolor="#CEFFFE">
-                                                                    <th>Threshold</th>
-                                                                    <td>{{ec.2}}</td>
-                                                              </tr>
-                                                              <tr bgcolor="#CEFFFE">
-                                                                    <th>Score</th>
-                                                                    <td>{{ec.3}}</td>
-                                                              </tr>
-                                                              <tr bgcolor="#CEFFFE">
-                                                                    <th>E-value</th>
-                                                                    <td>{{ec.4}}</td>
-                                                              </tr>
-                                                          </table>
-                                                      <td>
-                                                    </tr>
-                                              </tr>
-                                          {% endfor %}
-                                      {% endif %}
-                                  </table>
-                                </div>
-                              </div>
-
-                            {% endif %}
-
-
-
-                            {%if ko_pathway_data or ko_module_data %}
-                              <div class="row">
-                                <div class="panel panel-default">
-                                  <div class="panel-heading">
-                                    <h3 class="panel-title">Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and KofamScan"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
-                                  </div>
-                                  <table class="table table-striped" style="width: 100%">
-
-                                      {%if ko_pathway_data %}
-
-                                          {% for pathway in ko_pathway_data %}
-                                              <tr>
-                                                  <td>Pathway</td>
-                                                  <td><a href="{% url 'KEGG_mapp_ko' pathway.1 %}" target="_top">{{pathway.1}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                                  <td>{{pathway.2}}</td>
-                                                  <td>{{pathway.3}}</td>
-                                              </tr>
-                                          {% endfor %}
-
-
-                                      {% endif %}
-                                      {%if ko_module_data %}
-
-                                          {% for module in ko_module_data %}
-                                              <tr>
-                                                  <td>Module</td>
-                                                  <td><a href="{% url 'KEGG_module_map' module.0 %}" target="_top">{{module.0}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
-                                                  <td>{{module.1}}</td>
-                                                  <td>{{module.2}}</td>
-                                              </tr>
-                                          {% endfor %}
-                                      {% endif %}
-                                  </table>
-                                </div>
-                              </div>
-
-                            {% endif %}
+					{% endif %}
 
 					 {% if cog_entries|length > 0 %}
 						<div class="row">
@@ -704,151 +407,6 @@ function clearBox(elementID)
 						</div>
 					  {% endif %}
 
-
-
-
-                            {%if operon %}
-                              <div class="row">
-                                <div class="panel panel-default">
-                                  <div class="panel-heading">
-                                    <h3 class="panel-title">Operon <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data from the Door2 database"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
-                                  </div>
-                                  <table class="table table-striped" style="width: 100%">
-                                      <tr>
-                                          <th>DOOR2 id</th>
-                                          <th>locus</th>
-                                          <th>old_locus</th>
-                                          <th>COG </th>
-                                          <th>Product</th>
-                                      </tr>
-                                      {% for locus in operon %}
-
-                                      <tr>
-                                          <td><a href="http://csbl.bmb.uga.edu/DOOR/operon.php?id={{locus.0}}#basic">{{locus.0}}</a></td>
-                                          {%if locus.2 != '-'%}
-                                              <td><a href="{% url 'locusx' locus.2 True %}" target="_top">{{locus.2}}</a></td>
-                                          {% else %}
-                                              <td>{{locus.2}}</td>
-                                          {% endif %}
-                                          {%if locus.3 != '-'%}
-                                              <td><a href="{% url 'locusx' locus.3 True %}" target="_top">{{locus.3}}</a></td>
-                                          {% else %}
-                                              <td>{{locus.3}}</td>
-                                          {% endif %}
-                                          <td>{{locus.4}}</td>
-                                          <td>{{locus.5}}</td>
-                                      </tr>
-                                      {% endfor %}
-                                  </table>
-                                </div>
-                              </div>
-                            {% endif %}
-
-                            {%if operon_ofs %}
-                            <div class="row">
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">Operon <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data predicted based on the method from Westover et al, 2004"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
-                                </div>
-                                <table id="cog_table" class="sortable">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th id="entete_locus">Locus</th>
-                                            <th style="width:10px">C</th>
-                                            <th style="width:160px">Pathways</th>
-                                            <th style="width:260px">Interpro</th>
-                                            <th id="entete_gene">Gene</th>
-                                            <th id="entete_n">nH</th>
-                                            <th id="entete_n">nG</th>
-                                            <th id="entete_n">TM</th>
-                                            <th id="entete_n">SP</th>
-                                            <th id="entete_product">Product</th>
-
-
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-
-                                        {%for values in locus2annot%}
-                                        <tr>
-                                            <td>{{values.0}}</td>
-                                            <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
-                                            <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
-                                            {% with locus_tag2ko|keyvalue:values.2 as oneko %}
-                                                {% if oneko == '-' %}
-                                                    <td>-</td>
-                                                {% else %}
-                                                    {% with ko2ko_pathways|keyvalue:oneko as name %}
-                                                        {% if name == '-' %}
-                                                            <td>-</td>
-                                                        {% else %}
-                                                            <td>{{name|safe}}</td>
-                                                        {% endif %}
-                                                    {%endwith%}
-                                                {% endif %}
-
-                                            {%endwith%}
-                                            {% with locus2interpro|keyvalue:values.2 as interpro_data %}
-                                            <td>
-                                                {% for one_interpro in interpro_data %}
-                                                {% if one_interpro.0 != '-' %}
-                                                    <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
-                                                {%else%}
-                                                    {{one_interpro.0}}
-                                                {%endif%}
-                                                    {{one_interpro.1}} </br>
-                                                {% endfor %}
-                                                {%endwith%}
-                                            </td>
-                                            <td>{{values.7}}</td>
-                                            <td>{{values.8}}</td>
-                                            <td>{{values.9}}</td>
-                                            <td>{{values.10}}</td>
-                                            <td>{{values.11}}</td>
-                                            <td>{{values.12}}</td>
-
-                                        </tr>
-
-                                        {%endfor%}
-                                    </tbody>
-                                </table>
-                              </div>
-                            </div>
-                            {% endif %}
-
-                            {% if uniprot_go_terms or interpro_go_terms%}
-                              <div class="row">
-                                <div class="panel panel-default">
-                                  <div class="panel-heading">
-                                    <h3 class="panel-title">Gene Ontology</h3>
-                                  </div>
-                                  <table class="sortable">
-                                      <tr>
-                                          <th>Accession</th>
-                                          <th>Type</th>
-                                          <th>Description</th>
-                                      </tr>
-                                      {% for go in uniprot_go_terms%}
-                                          <tr>
-                                              <td><a href="" target="_top">{{go.0}}</a> (source: uniprot)</td>
-                                              <td>{{go.1}}</td>
-                                              <td>{{go.2}}</td>
-                                          </tr>
-                                      {% endfor%}
-                                      {% for go in interpro_go_terms%}
-                                          <tr>
-                                              <td><a href="" target="_top">{{go.0}}</a> (source: interpro)</td>
-                                              <td>{{go.1}}</td>
-                                              <td>{{go.2}}</td>
-                                          </tr>
-                                      {% endfor%}
-                                  </table>
-                                </div>
-                              </div>
-                            {% endif %}
-
-
                     </div> <!-- second column -->
                 </div> <!-- first tab -->
 
@@ -889,248 +447,7 @@ function clearBox(elementID)
 
                     </div>
                   </div>
-
                 </div>
-                <div class="tab-pane" id="tab2" width="100%" height="100%">
-
-                   <h3>Interpro</h3>
-
-                   {% static "" as baseUrl %}
-                   {% if interpro_protein %}
-                       <iframe src="{{ baseUrl }}{{biodb}}/interpro/{{interpro_hash}}.html" width="100%" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                   {% else %}
-                       <iframe src="{{ baseUrl }}{{biodb}}/interpro/{{interpro_hash}}.html" width="100%" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                   {% endif %}
-
-
-                    <table class="table">
-                        <tr>
-                            <th id="entete">Analysis</th>
-                            <th>signature_accession</th>
-                            <th>signature_description</th>
-                            <th>start</th>
-                            <th>stop</th>
-                            <th>score</th>
-                            <th>interpro_accession</th>
-                            <th>interpro_description</th>
-                        </tr>
-
-                        {% for values in interpro_data_detail %}
-                        <tr>
-                            <td>{{values.0}}</td>
-
-                            {% if values.0 == 'SUPERFAMILY' %}
-                               <td><a href="http://supfam.cs.bris.ac.uk/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{values.1}}" target="_parent">{{values.1}}</a></td>
-
-                             {% elif values.0 == 'Pfam' %}
-                               <td><a href="http://pfam.xfam.org/family/{{values.1}}" target="_parent">{{values.1}}</a></td>
-
-                             {% elif values.0 == 'SMART' %}
-                               <td><a href="http://smart.embl-heidelberg.de/smart/do_annotation.pl?ACC={{values.1}}&BLAST=DUMMY" target="_parent">{{values.1}}</a></td>
-
-                             {% elif values.0 == 'Gene3D' %}
-                               <td><a href="http://www.cathdb.info/version/latest/superfamily/{{values.1|slice:"6:"}}" target="_parent">{{values.1}}</a></td>
-
-                             {% elif values.0 == 'ProSiteProfiles' %}
-                               <td><a href="http://prosite.expasy.org/{{values.1}}" target="_parent">{{values.1}}</a></td>
-
-                             {% elif values.0 == 'ProSitePatterns' %}
-                               <td><a href="http://prosite.expasy.org/{{values.1}}" target="_parent">{{values.1}}</a></td>
-
-                             {% elif values.0 == 'PRINTS' %}
-                               <td><a href="http://www.bioinf.manchester.ac.uk/cgi-bin/dbbrowser/sprint/searchprintss.cgi?display_opts=Prints&category=None&queryform=false&prints_accn={{values.1}} " target="_parent">{{values.1}}</a></td>
-
-                             {% elif values.0 == 'TIGRFAM' %}
-                               <td><a href="http://www.jcvi.org/cgi-bin/tigrfams/HmmReportPage.cgi?acc={{values.1}}" target="_parent">{{values.1}}</a></td>
-
-                            {% else %}
-                                 <td>{{values.1}}</td>
-
-                            {% endif %}
-                            <td>{{values.2}}</td>
-                            <td>{{values.3}}</td>
-                            <td>{{values.4}}</td>
-                            <td>{{values.5}}</td>
-
-                            {% if values.6 != '0' %}
-
-                               <td><a href="{% url 'fam' values.6 'interpro' %}">{{values.6}}</a></td>
-                               <td>{{values.7}}</td>
-                            {% else %}
-                               <td>-</td>
-                            {% endif %}
-
-                        </tr>
-                        {% endfor %}
-
-                    </table>
-
-                </div>
-
-                  {% if align_path %}
-
-                  <div class="tab-pane" id="tab55">
-                      <h3>Multiple Sequence Alignment</h3>
-                      <table>
-
-                          <tr>
-                              {%if homologues|length < 200 %}
-                              <script src="https://cdn.bio.sh/msa/latest/msa.min.gz.js"></script>
-
-                              <div id="msa">Loading Multiple Alignment...</div>
-
-                              <script>
-                              var getKeys = function(obj){
-                                 var keys = [];
-                                 for(var key in obj){
-                                    keys.push(key);
-                                 }
-                                 return keys;
-                              };
-
-                              var m = msa({
-                                  importURL: "{% static alignment_fasta %}",
-                                  el: document.getElementById("msa"),
-                                  bootstrapMenu: true
-                              });
-
-                              var w = $(window).width();
-                              var h = $(window).height();
-                              m.g.config.set("registerMouseHover", "True");
-                              m.g.zoomer.set("alignmentHeight", h*0.55);
-                              m.g.zoomer.set("alignmentWidth", w*0.73);
-                              m.g.zoomer.set("overviewboxPaddingTop", "10");
-                              m.g.zoomer.set("boxRectHeight", 1);
-                              m.g.zoomer.set("boxRectWidth", 1);
-                              m.g.zoomer.set("labelFontsize", 11);
-                              m.g.zoomer.set("rowHeight", 11);
-                              m.g.zoomer.set("columnWidth", 11);
-                              m.g.vis.set("overviewbox", "True");
-
-                              m.g.on("row:click", function(data){
-                                  window.open("{% url 'locusx' %}" + m.seqs.at(data.seqId).attributes['name'] + "/True")
-                              });
-                              msa.g.on("row:hover", function(data){
-                                  console.log(data.seqId)
-
-                              });
-
-                              m.render();
-                              </script>
-
-
-
-                              {%else%}
-                              <script src="https://cdn.bio.sh/msa/latest/msa.min.gz.js"></script>
-                                  Alignment larger than 200 sequences, only overview.
-                                  <div id="msa">Loading Multiple Alignment...</div>
-                              <script>
-                              var getKeys = function(obj){
-                                 var keys = [];
-                                 for(var key in obj){
-                                    keys.push(key);
-                                 }
-                                 return keys;
-                              };
-
-                              var m = msa({
-                                  importURL: "{% static alignment_fasta %}",
-                                  el: document.getElementById("msa"),
-                                  bootstrapMenu: true
-                              });
-
-                              var w = $(window).width();
-                              var h = $(window).height();
-                              m.g.config.set("registerMouseHover", false);
-                              m.g.zoomer.set("alignmentHeight", h*0.45);
-                              m.g.zoomer.set("alignmentWidth", w*0.73);
-                              m.g.zoomer.set("boxRectHeight", 1);
-                              m.g.zoomer.set("boxRectWidth", 1);
-                              m.g.zoomer.set("rowHeight", 1);
-                              m.g.zoomer.set("columnWidth", 1);
-                              m.g.vis.set("overviewbox", false);
-                              m.g.vis.set("sequences", true);
-                              m.g.vis.set("leftHeader", false);
-                              m.g.vis.set("labels", false);
-                              m.g.vis.set("labelName", false);
-                              m.g.vis.set("labelId", false);
-                              m.render();
-                              </script>
-
-                              {%endif%}
-                          </tr>
-                      </table>
-                  </div>
-                  {% endif %}
-
-                  <div class="tab-pane" id="1" style="height:2px;" >
-                    <div class="col-lg-12">
-                      <div class="row ">
-                        <iframe class="locusFrame" name="frame1" id="frame1" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  <div class="tab-pane" id="2" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame2" id="frame2" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                  </div>
-                  <div class="tab-pane" id="3" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame3" id="frame3" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                  </div>
-                  <div class="tab-pane" id="4" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame4" id="frame4" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                  </div>
-                  <div class="tab-pane" id="5" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame5" id="frame5" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                  </div>
-                  <div class="tab-pane" id="6" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame6" id="frame6" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                  </div>
-                  <div class="tab-pane" id="7" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame7" id="frame7" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                  </div>
-                  <div class="tab-pane" id="8" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame8" id="frame8" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                  </div>
-                  <div class="tab-pane" id="9" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame9" id="frame9" style="height:18000px;overflow:hidden;" height="18800px" width="100%" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                  </div>
-                  <div class="tab-pane" id="10" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame10" id="frame10" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                  </div>
-                  <div class="tab-pane" id="11" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame11" id="frame11" style="height:8000px;overflow:hidden;" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                  </div>
-                  <div class="tab-pane" id="12" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame12" id="frame12" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                  </div>
-                  <div class="tab-pane" id="13" style="height:2px;" >
-                      <iframe class="locusFrame" name="frame13" id="frame13" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                    </div>
-
-                  {% if pubmed_data  %}
-                      <div class="tab-pane" id="tab22" style="height:2px;" >
-
-                          <table class="table" id="pmid_table">
-
-                              {% for row in pubmed_data%}
-                                  <tr>
-                                      <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{row.0}}"><font size="2">{{row.2}}</font>
-                                          <br>
-                                          {{row.4}}
-                                          </font></a></td>
-                                      <td>{{row.1}}</td>
-                                  </tr>
-                                  <tr>
-                                      <td colspan="3">{{row.3}}</td>
-                                  </tr>
-
-                              {%endfor%}
-                          </table>
-
-                      </div>
-                  {% endif %}
               </div>
               {% endif %}
           </div>
@@ -1200,9 +517,35 @@ $(document).ready(function() {
     } );
 } );
 
+
 $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();
 });
+
+{% if n_swissprot_hits > 0 %}
+$(document).ready(function() {
+	$('#blast_swissprot_table').DataTable( {
+	  dom: 'lBfrtip',
+	  buttons: [
+		  {
+			  extend: 'colvis',
+			  columns: ':not(.noVis)',
+		  },
+		  {
+			  extend: 'excel',
+			  title: 'blast_swissprot'
+		  },
+		  {
+			  extend: 'csv',
+			  title: 'blast_swissprot'
+		  }
+	  ],
+	  "paging":   true,
+	  "ordering": true,
+	  "info":     false,
+	  } );
+});
+{% endif %}
 
 
 {% if pfam_def|length > 0 %}
@@ -1254,214 +597,15 @@ $('.dropdown-toggle').dropdown()
 
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 
-var genomic_region =  {{genome_range}};
-var features = {{features|safe}};
 
-const TEXT_FIELD_SIZE = 40;
-const DIAGRAM_VERTICAL_SIZE = 60;
+var genomic_region = {{genomic_region|safe}} ;
+var window_size = {{window_size}};
 
-const GENOME_DIAGRAM_SIZE = {x: 600*(genomic_region[1]-genomic_region[0])/{{window_size}},
-	y:TEXT_FIELD_SIZE+DIAGRAM_VERTICAL_SIZE};
+createGenomicRegion(d3.select("#test_d3_genomic_region"), [genomic_region],
+	0, ["{{locus_tag}}"], window_size);
 
-const margin = {top:5, right: 5, bottom:5, left:5};
-const arrow_height = 40;
-const base_line_width = 1;
-
-// if gene size smaller than this value, 
-// draw a triangle
-const MAX_ARROW_SIZE=350;
-const ARROW_TUBE_SIZE = 17;
-
-const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
-
-
-var Tooltip = d3.select("#test_d3_genomic_region")
-	.append("div")
-	.style("opacity", 0)
-	.attr("class", "tooltip")
-	.style("background-color", "white")
-	.style("border", "solid")
-	.style("border-width", "2px")
-	.style("border-radius", "5px")
-	.style("padding", "5px");
-
-
-var svg = d3.select("#test_d3_genomic_region")
-	.append("svg")
-	.attr("width", GENOME_DIAGRAM_SIZE.x)
-	.attr("height", GENOME_DIAGRAM_SIZE.y)
-	.append("g");
-
-var mouseover_feature = function(d) {
-	$("body").css("cursor", "progress");
-	$.ajax({
-		method: "POST",
-		url: "/genomic_locus_tag",
-		headers: {"X-CSRFToken": csrftoken},
-		data: {locus_tag: d.locus_tag, },
-		dataType: "json",
-		success: function(data) {
-			$("body").css("cursor", "default");
-			Tooltip.style("opacity", 1)
-				.html(data.product)
-				.style("left", (d3.mouse(this)[0]) + "px")
-				.style("top", (d3.mouse(this)[1]) + "px");
-		}
-	});
-	d3.select(this)
-		.style("stroke", "red");
-	d3.select("#"+d.locus_tag)
-		.style("stroke", "red");
-}
-
-var mouseleave_feature = function(d) {
-	Tooltip.style("opacity", 0);
-	d3.select(this)
-		.style("stroke", "none");
-	d3.select("#"+d.locus_tag)
-		.style("stroke", "none");
-	$("body").css("cursor", "default");
-}
-
-var click_feature = function(d) {
-	window.open("/locusx/"+d.locus_tag);
-}
-
-let x_scale = d3.scale.linear()
-	.domain(genomic_region)
-	.range([0, GENOME_DIAGRAM_SIZE.x]);
-
-let y_scale = d3.scale.linear()
-	.domain([0, 2*arrow_height+base_line_width])
-	.range([TEXT_FIELD_SIZE, TEXT_FIELD_SIZE+DIAGRAM_VERTICAL_SIZE]);
-
-// x axis
-svg.append("line")
-	.style("stroke", "black")
-	.style("stroke-width", base_line_width)
-	.attr("x1", x_scale(genomic_region[0]))
-	.attr("y1", y_scale(arrow_height+base_line_width/2))
-	.attr("x2", x_scale(genomic_region[1]))
-	.attr("y2", y_scale(arrow_height+base_line_width/2));
-
-// border lines
-svg.append("line")
-	.style("stroke", "black")
-	.style("stroke-width", 2)
-	.attr("x1", x_scale(genomic_region[0]))
-	.attr("y1", y_scale(0))
-	.attr("x2", x_scale(genomic_region[0]))
-	.attr("y2", y_scale(2*arrow_height+base_line_width));
-
-// border lines
-svg.append("line")
-	.style("stroke", "black")
-	.style("stroke-width", 2)
-	.attr("x1", x_scale(genomic_region[1]))
-	.attr("y1", y_scale(0))
-	.attr("x2", x_scale(genomic_region[1]))
-	.attr("y2", y_scale(2*arrow_height+base_line_width));
-
-// background rectangle
-svg.append("rect")
-	.attr("x", x_scale(genomic_region[0]))
-	.attr("y", y_scale(0))
-	.attr("width", x_scale(genomic_region[1])-x_scale(genomic_region[0]))
-	.attr("height", y_scale(2*arrow_height+base_line_width)-y_scale(0))
-	.attr("opacity", .1)
-	.attr("fill", "gray");
-
-
-var get_feature_points = function(feature) {
-	let start = feature.start;
-	let stop = feature.end;
-	let top_y = 0;
-	let bot_y = arrow_height;
-
-	if(stop-start <= MAX_ARROW_SIZE) {
-		top_left = {x: start , y:top_y};
-		bottom_left = {x:start, y:bot_y};
-		spike = {x:stop, y:(top_y+bot_y)/2};
-		points = [top_left, bottom_left, spike];
-	} else {
-		let diff = (arrow_height-ARROW_TUBE_SIZE)/2;
-		arrow_top = {x: stop-MAX_ARROW_SIZE, y:top_y};
-		arrow_bot = {x: stop-MAX_ARROW_SIZE, y:bot_y};
-		arrow_spike = {x: stop, y:(top_y+bot_y)/2};
-		tube_beg_top = {x:start, y: diff};
-		tube_beg_bot = {x:start, y: diff+ARROW_TUBE_SIZE};
-		tube_end_top = {x: stop-MAX_ARROW_SIZE, y:diff}
-		tube_end_bot = {x: stop-MAX_ARROW_SIZE, y:diff+ARROW_TUBE_SIZE}
-		points = [tube_beg_top, tube_end_top, arrow_top, arrow_spike, arrow_bot, tube_end_bot, tube_beg_bot];
-	}
-
-	if(feature.strand == -1) {
-		let midpoint = (feature.start+feature.end)/2;
-		for(point in points) {
-			let x_coord = points[point].x;
-			points[point].y += arrow_height+base_line_width;
-			points[point].x -= 2*(x_coord-midpoint);
-		}
-	}
-	return points;
-}
-
-svg.selectAll("text")
-	.data(features)
-	.enter()
-	.append("text")
-	.attr("x", d => x_scale((d.start+d.end)/2))
-	.attr("y", TEXT_FIELD_SIZE)
-	.attr("text-anchor", "start")
-	.attr("transform", function(d ) {
-		return "rotate(315,"+x_scale((d.start+d.end)/2)+","+TEXT_FIELD_SIZE+")";
-	})
-	.attr("id", d => d.locus_tag)
-	.text(d => d.gene);
-
-svg.selectAll("polygon")
-	.data(features)
-	.enter()
-	.append("polygon")
-	.attr("points", function(d) {
-		let points  = get_feature_points(d)
-			.map(function(x) {
-				return [x_scale(x.x), y_scale(x.y)].join(" ");
-		});
-		return points.join(",");
-	})
-	.style("stroke-width", 2)
-	.style("opacity", .9)
-	.style("fill", function(d) {
-		if(d.locus_tag == "{{locus_tag}}") {
-			return "red";
-		} else if(d.type=="CDS") {
-			return "green";
-		} else if(d.type=="tmRNA" || d.type=="tRNA" || d.type=="rRNA") {
-			return "orange";
-		} else if(d.type=="pseudo") {
-			return "black";
-		}
-	})
-	.on("mouseover", mouseover_feature)
-	.on("mouseleave", mouseleave_feature)
-	.on("click", click_feature);
 </script>
 
 {% include "chlamdb/style_menu.html" %}
 
 </html>
-<style>
-.pfam_domain {
-  background-color: #4CAF50; /* Green */
-  border: none;
-  color: white;
-  padding: 8px 10px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  border-radius: 8px;
-}
-
-</style>

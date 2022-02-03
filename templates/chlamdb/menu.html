@@ -1,9 +1,6 @@
-<!DOCTYPE html>
+
 {% load static %}
 {% load custom_tags %}
-<html>
-<head>
-
 
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -11,10 +8,8 @@
   <meta name="author" content="" />
   <!-- Font Awesome icons (free version)-->
   <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
-</head>
-  <body
-  
-  style=" font-family: Helvetica, Verdana, 'Segoe UI', sans-serif">
+
+  <div style=" font-family: Helvetica, Verdana, 'Segoe UI', sans-serif">
     <nav class="navbar  navbar-fixed-top" role="navigation" style="z-index:5;">
       <div class="header" >
         <!-- Brand and toggle get grouped for better mobile display -->
@@ -38,7 +33,7 @@
     <div class="sidenav" id="menu_box" >      <!-- Sidebar -->
           <ul class="sidebar-nav" >
               <li class="sidebar-brand">
-                <nav id="sidebar-wrapper"   >
+                <nav id="sidebar-wrapper">
                   <li><form class="example" role="search" action='{% url "search_bar" %}' method="GET" >
                     <button type="submit"><i class="fa fa-search"></i></button>
                     <input type="text" placeholder="    Gene, product, orthogroup, COG, KEGG id, ..."  name="search2">
@@ -83,36 +78,11 @@
 
 
 
-      {% if debug %}
-      <li class="sidebar-dropdown">
-          <a id="separator" >
-              <i class="fa fa-list"></i>
-              <span> Dev</span>
-          </a>
-          <div class="sidebar-submenu" style="display:block;">
-            <ul id="submenu" class="panel-collapse collapse panel-switch" role="menu">
-              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'locus_int' %}">Locus Int</a></li>
-              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'add_locus_int' %}">ADD Locus Int</a></li>
-              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'orthogroup_annotation' True%}">Orthog. annot.</a></li>
-              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'locus_annotation' True%}">Locus annot.</a></li>
-              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'locus_list2orthogroups' %}">locus2group</a></li>
-              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'blast_profile' %}">blast2profile</a></li>
-              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'hmm2circos' %}">hmm2circos</a></li>
-              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'hmm' %}">hmm sets</a></li>
-              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'blast_sets' %}">blast sets</a></li>
-              <li class="item"><a style="background-color: rgb(245, 205, 131);"href="{% url 'interactions_genome' %}">locus2network</a></li>
-            </ul>
-          </div>
-      </li>
-      {% endif %}
-			   </ul>
-			  </li>
-		   </nav> 
         </ul>
     </div> <!-- /.container-fluid -->
   </div> <!-- /#sidebar-wrapper -->
 
-</body>
+</div>
 
 <script>
 

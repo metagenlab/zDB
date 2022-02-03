@@ -33,11 +33,13 @@
                     <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Kegg Orthologs shared by the selected genomes </b><a href="/docs/index.html" id="show-option" title="Get the list of Kegg Orthologs shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
                        <div id="extract_form">
 
+
                                              {% block content %}
                         <form action="{% url "extract_ko" %}" method="post">
                             {% csrf_token %}
                             {% crispy form %}
                         </form>
+
                         {% endblock %}
                     </div>
 

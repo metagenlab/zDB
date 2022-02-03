@@ -175,10 +175,12 @@
                                         <li> Detailed annotation of proteins based on:
                                           
                                             {% if optional2status|keyvalue:"COG" == 1 %}
+
                                             <dd> -<a href="https://www.ncbi.nlm.nih.gov/COG/" target="_blank">COG</a> (clusters of orthologous groups)</dd> 
                                             {% endif %}
                                             {% if optional2status|keyvalue:"pfam" == 1 %}
                                             <dd> -<a href="http://pfam.xfam.org" target="_blank" >Pfam</a> (protein families)</dd>
+
                                             {% endif %}
                                             {% if optional2status|keyvalue:"KEGG" == 1 %}
                                             <dd> - <a href="https://www.genome.jp/kegg/" target="_blank" >KEGG</a> (Kegg orthologs)</dd>
@@ -194,7 +196,8 @@
                                   </ul>
                                 </div>
 
-                                {% if optional2status|keyvalue:"COG" == 0  or optional2status|keyvalue:"KEGG" == 1 or  optional2status|keyvalue:"pfam" == 0 %} 
+
+                                {% if optional2status|keyvalue:"COG" == 0  or optional2status|keyvalue:"KEGG" == 0 or  optional2status|keyvalue:"pfam" == 0 %} 
                                 <div class="status_box_warning" >
                                   <div class="warnings" >
                                     <p> The following feature(s) has not beed included, if whished please run again the pipeline with the corrected settings.</p>
@@ -215,6 +218,8 @@
                                   </div>  
                                 </div>    
                                 {% endif %}
+
+
                                 </ul>
                               
                               </div>

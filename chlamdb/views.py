@@ -3,110 +3,59 @@
 # todo circos gc file curently written in home directory, move it to other place
 # todo save temp files in temp folder
 
-
-
-
-from django.shortcuts import render
-from Bio.SeqRecord import SeqRecord
-from Bio.Seq import Seq
-
-
 import seaborn as sns
+import numpy as np
+import pandas as pd
 import matplotlib.colors as mpl_col
 
 import collections
-
-import numpy as np
-import re
+import string
+import random
 import os
+import time
+
+from io import StringIO
+from tempfile import NamedTemporaryFile
+
 
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.http import JsonResponse
+from django.shortcuts import render
+from django.conf import settings
 
-from chlamdb.forms import make_contact_form
 from chlamdb.forms import make_plot_form
-from chlamdb.forms import SearchForm
-from chlamdb.forms import BiodatabaseForm
 from chlamdb.forms import make_circos_form
-from chlamdb.forms import make_circos2genomes_form
-from chlamdb.forms import make_mummer_form
 from chlamdb.forms import make_blast_form
-from chlamdb.forms import make_crossplot_form
-from chlamdb.forms import ConnexionForm
-from chlamdb.forms import DBForm
-from chlamdb.forms import make_motif_form
-from chlamdb.forms import PCRForm
 from chlamdb.forms import make_extract_form
-from chlamdb.forms import make_circos_orthology_form
-from chlamdb.forms import make_interpro_from
 from chlamdb.forms import make_metabo_from
 from chlamdb.forms import make_module_overview_form
-from chlamdb.forms import make_extract_region_form
 from chlamdb.forms import make_venn_from
-from chlamdb.forms import make_priam_form
-from chlamdb.forms import AnnotForm
-from chlamdb.forms import hmm_sets_form
-from chlamdb.forms import hmm_sets_form_circos
-from chlamdb.forms import make_blastnr_form
-from chlamdb.forms import make_genome_selection_form
-from chlamdb.forms import make_comment_from
-from chlamdb.forms import LocusInt
-from chlamdb.forms import get_LocusAnnotForm
-from chlamdb.forms import BlastProfileForm
-from chlamdb.forms import make_pairwiseid_form
-from chlamdb.forms import make_locus2network_form
-from chlamdb.forms import heatmap_form
-from chlamdb.forms import blast_sets_form
-from chlamdb.forms import make_pairwiseCDS_length_form
-from django.contrib.auth import logout
-from django.conf import settings
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
-from django.forms.utils import flatatt
 
-
-from django.core.cache import cache
-from tempfile import NamedTemporaryFile
-from Bio import SeqIO
-import string
-import random
-import json
-from django.shortcuts import render
-from celery.result import AsyncResult
-from django.http import HttpResponse
-from django.http import StreamingHttpResponse
-from chlamdb.forms import GenerateRandomUserForm
 
 from metagenlab_libs import db_utils
 from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
 from metagenlab_libs.ete_phylo import KOAndCompleteness
 from metagenlab_libs.ete_phylo import Column
 from metagenlab_libs.KO_module import ModuleParser
-
 from metagenlab_libs.chlamdb import search_bar as sb
+
 
 from Bio.Blast.Applications import NcbiblastpCommandline
 from Bio.Blast.Applications import NcbiblastnCommandline
 from Bio.Blast.Applications import NcbitblastnCommandline
 from Bio.Blast.Applications import NcbiblastxCommandline
-from Bio.Seq import reverse_complement, translate
-from tempfile import NamedTemporaryFile
-from io import StringIO
 from Bio.Blast import NCBIXML
-          
-            
-import os
-import re
+from Bio.SeqRecord import SeqRecord
+from Bio.SeqFeature import SeqFeature, FeatureLocation
+from Bio.Seq import reverse_complement, translate
+from Bio.Seq import Seq
+from Bio import SeqIO
+
 
 from ete3 import Tree
-from reportlab.lib import colors
-
 from ete3 import TextFace, StackedBarFace, SeqMotifFace
-
-import pandas as pd
-from Bio.SeqFeature import SeqFeature, FeatureLocation
-from Bio.Graphics import GenomeDiagram
+from reportlab.lib import colors
 
 
 # could also be extended to cache the results of frequent queries
@@ -116,36 +65,12 @@ with db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
     optional2status = { name: value for name, (mandatory, value) in hsh_config.items() if not mandatory}
     missing_mandatory = [name for name, (mandatory, value) in hsh_config.items()
             if mandatory and not value]
+
     
 def my_locals(local_dico):
     local_dico["optional2status"] = optional2status
     local_dico["missing_mandatory"] = missing_mandatory
     return local_dico
-
-
-def get_task_info(request):
-    
-    task_id = request.GET.get('task_id', None)
-    
-    if task_id is not None:
-        task = AsyncResult(task_id)
-        data = {
-            'state': task.state,
-            'result': task.result,
-        }
-        
-        return HttpResponse(json.dumps(data), content_type='application/json')
-    else:
-        return HttpResponse('No job id given.')
-
-
-if settings.DEBUG == True:
-    debug_mode = 1
-else:
-    debug_mode = 0
-
-
-
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -201,13 +126,6 @@ def about(request):
         entry_list.append([string, url])
 
     return render(request, 'chlamdb/credits.html', my_locals(locals()))
-
-def create_user(username, mail, password, first_name, last_name, staff=True):
-    from django.contrib.auth.models import User
-    user = User.objects.create_user(username, mail, password)
-    user.first_name, user.last_name = first_name, last_name
-    user.is_staff = staff
-    user.save()
 
 
 class StackedBarColumn(Column):
@@ -287,7 +205,8 @@ def home(request):
     e_tree.render(path, dpi=500)
 
 
-    number_of_files=db.count_files()
+    hsh_files = db.get_filenames_to_taxon_id()
+    number_of_files=len(hsh_files)
      
     orthogroups_freq=db.get_all_orthogroups( min_size=None)
     df_ort=pd.DataFrame(orthogroups_freq, columns=["Orthogroup", "freq"])
@@ -300,7 +219,6 @@ def home(request):
     df_hits = db.get_og_count(taxids, search_on="taxid")
     missing_entries = df_hits[df_hits == 0].count(axis=1)
     core = len(missing_entries[missing_entries == 0])
-
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 
@@ -368,7 +286,7 @@ def extract_orthogroup(request):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
-    extract_form_class = make_extract_form(db, plasmid=True)
+    extract_form_class = make_extract_form(db, "extract_orthogroup", plasmid=True)
     if request.method != "POST":
         form = extract_form_class()
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
@@ -534,11 +452,11 @@ def format_pfam(pfam_id, base=None, to_url=False):
 
 def extract_pfam(request, classification="taxon_id"):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    extract_form_class = make_extract_form(db, plasmid=True, label="Pfam domains")
 
+    extract_form_class = make_extract_form(db, "extract_pfam", plasmid=True, label="Pfam domains")
     if request.method != "POST":
         form = extract_form_class()
-        return render(request, 'chlamdb/extract_Pfam.html', my_locals(locals()))
+        return render(request, 'chlamdb/extract_Pfam.html', my_locals({"form": form}))
 
     form = extract_form_class(request.POST)
     if not form.is_valid():
@@ -557,7 +475,7 @@ def extract_pfam(request, classification="taxon_id"):
         sum_exclude_length += len(exclude_plasmids)
 
     if n_missing>=sum_include_length:
-        ctx = {"wrong_n_missing" : True}
+        ctx = {"wrong_n_missing" : True, "form": form}
         return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
 
     pfam_include = db.get_pfam_hits(include, plasmids=include_plasmids, 
@@ -578,8 +496,8 @@ def extract_pfam(request, classification="taxon_id"):
     pfam_defs = db.get_pfam_def(selection)
 
     if len(selection) == 0:
-        ctx = {no_match: True}
-        return render(request, 'chlamdb/extract_ko.html', my_locals(ctx))
+        ctx = {"no_match": True, "form": form}
+        return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
 
     all_database = db.get_pfam_hits(pfam_include.index.tolist(), search_on="pfam", indexing="taxid")
     sums = all_database.sum(axis=1)
@@ -642,7 +560,7 @@ def format_ko_modules(hsh_modules, ko):
 
 def extract_ko(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    extract_form_class = make_extract_form(db, plasmid=True, label="Kegg Orthologs")
+    extract_form_class = make_extract_form(db, "extract_ko", plasmid=True, label="Kegg Orthologs")
 
     if request.method != "POST":
         form = extract_form_class()
@@ -700,27 +618,8 @@ def extract_ko(request):
         data = [kof, kod, kop, kom, mat_include.sum_pos.loc[ko], kot]
         match_groups_data.append(data)
 
-    # should contain the loci of the KO in the reference genome
     max_n = ko_total_count.max()
-    locus_list = [] # [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-    target_circos_taxons = include + exclude
-
-    # url to get the barchart of selected KO
-    taxons_in_url = "?i="+("&i=").join(map(str, include)) + '&m=%s' % str(n_missing)
-    taxon_out_url = "&o="+("&o=").join(map(str, exclude))
     envoi_extract = True
-    mm = 'module'
-    pp = 'pathway'
-
-    locus2annot = {}
-    locus_tag2cog_catego = {}
-    locus_tag2cog_name = {}
-    locus_tag2ko = {}
-    pathway2category = {}
-    module2category = {}
-    ko2ko_pathways = {}
-    ko2ko_modules = {}
-    locus2interpro = {}
     return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
 
 
@@ -766,7 +665,7 @@ def venn_pfam(request):
 
 def extract_cog(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    extract_form_class = make_extract_form(db, plasmid=True, label="COG")
+    extract_form_class = make_extract_form(db, "extract_cog", plasmid=True, label="COG")
 
     if request.method != "POST":
         form = extract_form_class()
@@ -809,7 +708,7 @@ def extract_cog(request):
     selection = pos_index.difference(neg_index).tolist()
     if len(selection) == 0:
         no_match = True
-        return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
+        return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 
     all_database = db.get_cog_hits(cog_include.index.tolist(), search_on="cog", indexing="taxid")
     sums = all_database.sum(axis=1)
@@ -862,16 +761,6 @@ def extract_cog(request):
     series = f"[ {series_str} ]"
     labels_str = ",".join([f"\"{funct}\"" for funct in cat_count.keys()])
     labels = f"[ {labels_str} ]"
-
-    locus2annot = {}
-    locus_tag2cog_catego = {}
-    locus_tag2cog_name = {}
-    locus_tag2ko = {}
-    pathway2category = {}
-    module2category = {}
-    ko2ko_pathways = {}
-    ko2ko_modules = {}
-    locus2interpro = {} #  get_locus_annotations(biodb, locus_list)
     envoi_extract = True
     return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 
@@ -1087,38 +976,40 @@ def format_lst(lst):
 
 
 def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
-    n_genomes = len(set(hsh_organism.values()))
-    if n_genomes==1:
-        n_genomes = "1 genome"
+    if ref_seqid is None:
+        orthogroup_title = f"Homologs in group_{og}"
     else:
-        n_genomes = f"{n_genomes} genomes"
+        locus_tag = infos.loc[ref_seqid].locus_tag
+        orthogroup_title = f"Homologs of {locus_tag}"
 
     headers = ["", "Locus tag", "Source", "Gene", "Product"]
     identities = None
-    if ref_seqid!=None:
-        identities = db.get_og_identity(og, ref_seqid)
+    if not ref_seqid is None:
+        identities = db.get_og_identity(og=og, ref_seqid=ref_seqid)
         headers.insert(2 , "Identity")
 
     homologues = []
     index = 0
+    orga_set = set()
     for seqid, data in infos.iterrows():
         organism = hsh_organism[seqid]
         locus_fmt = format_locus(data.locus_tag, to_url=True)
         entry = [index+1, locus_fmt, organism, format_gene(data.gene), data["product"]]
-        if ref_seqid!=None:
+        if not ref_seqid is None:
             if seqid==ref_seqid:
-                ident = "N/A"
+                continue
             else:
+                orga_set.add(organism)
                 ident = round(identities.loc[seqid].identity, 1)
             if ident==0:
                 ident = "-"
             entry.insert(2, ident)
-
         homologues.append(entry)
         index += 1
 
-    return {"orthogroup": orthogroup,
-            "n_genomes": n_genomes,
+    n_genomes = len(orga_set) if not ref_seqid is None else len(set(hsh_organism.values()))
+    return {"orthogroup": orthogroup_title,
+            "n_genomes": "1 genome" if n_genomes==1 else f"{n_genomes} genomes",
             "headers": headers,
             "homologues": homologues }
 
@@ -1138,7 +1029,6 @@ def make_div(figure_or_data, include_plotlyjs=False, show_link=False, div_id=Non
 
         try:
             existing_id = re.findall(r'id="(.*?)"|$', div)[0]
-            print(existing_id, div_id)
             div = div.replace(existing_id, div_id)
         except IndexError:
             pass
@@ -1269,7 +1159,7 @@ def tab_og_conservation_tree(db, group, compare_to=None):
 
     e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group], header=format_orthogroup(group)))
     if not compare_to is None:
-        identity_matrix = db.get_og_identity(group, compare_to)
+        identity_matrix = db.get_og_identity(og=group, ref_seqid=compare_to)
         seqids = identity_matrix.index.tolist()
 
         # to get the taxid of the reference seqid, so as to exclude it from 
@@ -1426,7 +1316,7 @@ def orthogroup(request, og):
 
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
-    homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms)
+    homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms, og=og_id)
     context = {
         "valid_id": valid_id,
         "n_homologues": n_homologues,
@@ -1448,7 +1338,7 @@ def tab_general(seqid, hsh_organism, gene_loc, annot):
     gene = annot.loc[seqid].gene
     if pd.isna(gene):
         gene = "-"
-    length = annot.loc[seqid].length+1
+    length = annot.loc[seqid].length
     product = annot.loc[seqid]["product"]
     locus_tag = annot.loc[seqid].locus_tag
     return {
@@ -1458,7 +1348,7 @@ def tab_general(seqid, hsh_organism, gene_loc, annot):
         "gene": gene,
         "start": beg,
         "end": end,
-        "nucl_length": end-beg,
+        "nucl_length": end-beg+1,
         "length": length,
         "prot": product
     }
@@ -1552,11 +1442,33 @@ def tab_get_pfam_annot(db, seqid):
             "pfam_def": pfam_defs}
 
 
+def genomic_region_df_to_js(df, start, end, name=None):
+    features = []
+    for curr_seqid, data in df.iterrows():
+        feature_name = ""
+        if "gene" in data and not pd.isna(data.gene):
+            feature_name = data.gene
+        feature_type = data.type
+        if data.is_pseudo:
+            feature_type = "pseudo"
+
+        prod = to_s(data["product"])
+        features.append((
+            f"{{start: {data.start}, gene: {to_s(feature_name)}, end: {data.end},"
+            f"strand: {data.strand}, type: {to_s(feature_type)}, product: {prod},"
+            f"locus_tag: {to_s(data.locus_tag)}}}"
+        ))
+    features_str = "[" + ",".join(features) + "]"
+    genome_name = ""
+    if not name is None:
+        genome_name = f"name: {to_s(name)},"
+    return f"{{{genome_name} start: {start}, end: {end}, features: {features_str} }}"
+
+
 def locusx_genomic_region(db, seqid, window):
-    filename = f"genomic_region_{window}_{seqid}.svg"
     hsh_loc = db.get_gene_loc([seqid])
     strand, start, end = hsh_loc[seqid]
-    window_start, window_stop = start-window, end+window
+    window_start, window_stop = start-window, start+window
 
     if window_start<0:
         window_start=0
@@ -1566,29 +1478,13 @@ def locusx_genomic_region(db, seqid, window):
 
     hsh_organism = db.get_organism([seqid], id_type="seqid")
     infos = db.get_proteins_info(df_seqids.index.tolist(),
-            to_return=["gene", "locus_tag"], as_df=True, inc_non_CDS=True, inc_pseudo=True)
+            to_return=["gene", "locus_tag", "product"], as_df=True,
+            inc_non_CDS=True, inc_pseudo=True)
     cds_type = db.get_CDS_type(df_seqids.index.tolist())
     all_infos = infos.join(cds_type).join(df_seqids)
-
-    features = []
     if window_stop > contig_size:
         window_stop = contig_size
-    genome_range = [window_start, window_stop]
-
-    for curr_seqid, data in all_infos.iterrows():
-        feature_name = ""
-        if "gene" in data and not pd.isna(data.gene):
-            feature_name = data.gene
-        feature_type = data.type
-        if data.is_pseudo:
-            feature_type = "pseudo"
-        features.append((
-            f"{{start: {data.start}, gene: {to_s(feature_name)}, end: {data.end},"
-            f"strand: {data.strand}, type: {to_s(feature_type)},"
-            f"locus_tag: {to_s(data.locus_tag)}}}"
-        ))
-    return {"genome_range": genome_range, "window_size": 2*window,
-            "features": "[" + ",".join(features)+"]"}
+    return all_infos, window_start, window_stop
 
 
 def locusx_RNA(db, seqid, is_pseudogene):
@@ -1644,7 +1540,11 @@ def locusx(request, locus=None, menu=True):
         valid_id = True
 
     sequence = get_sequence(db, seqid, flanking=50)
-    genomic_region_ctx = locusx_genomic_region(db, seqid, window=8000)
+    all_infos, wd_start, wd_end = locusx_genomic_region(db, seqid, window=8000)
+    region_js = genomic_region_df_to_js(all_infos, wd_start, wd_end)
+    genomic_region_ctx = {"genomic_region": region_js,
+            "window_size": 8000*2}
+
     if feature_type!="CDS" or is_pseudogene:
         ctx_RNA = locusx_RNA(db, seqid, is_pseudogene)
         if is_pseudogene:
@@ -1666,12 +1566,15 @@ def locusx(request, locus=None, menu=True):
             terms=["locus_tag", "gene", "product", "length"])
     all_og_c = db.get_og_count([og_id], search_on="orthogroup")
     all_org  = db.get_organism(og_annot.index.tolist())
-    n_homologues = all_og_c.loc[og_id].sum()
+
+    n_homologues = all_og_c.loc[og_id].sum()-1
+    og_size = n_homologues+1
+    og_num_genomes = len(set(all_org.values()))
+
     translation = db.get_translation(seqid)
     general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
-
     if n_homologues>1:
-        og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
+        og_conserv_ctx  = tab_og_conservation_tree(db, og_id) #, compare_to=seqid)
         homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
         try:
             og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
@@ -1684,7 +1587,7 @@ def locusx(request, locus=None, menu=True):
 
     kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
     diamond_matches_ctx = {}
-    n_swissprot_hits = 0
+    swissprot_ctx = {}
     if optional2status.get("KEGG", False):
         kegg_ctx = og_tab_get_kegg_annot(db, [seqid])
 
@@ -1695,7 +1598,7 @@ def locusx(request, locus=None, menu=True):
         pfam_ctx = tab_get_pfam_annot(db, [seqid])
 
     if optional2status.get("BLAST_swissprot", False):
-        n_swissprot_hits = db.get_n_swissprot_homologs(seqid)
+        swissprot_ctx = locus_tab_swissprot_hits(db, seqid)
 
     if optional2status.get("BLAST_database", False):
         diamond_matches_ctx = tab_get_refseq_homologs(db, seqid)
@@ -1705,10 +1608,11 @@ def locusx(request, locus=None, menu=True):
         "menu": True,
         "n_homologues": n_homologues,
         "og_id": format_orthogroup(og_id, to_url=True),
+        "og_size": og_size,
+        "og_num_genomes": og_num_genomes,
         "translation": translation,
         "seq": sequence,
         "sequence_type": feature_type,
-        "n_swissprot_hits": n_swissprot_hits,
         "locus": locus,
         "feature_type" : "CDS",
         **cog_ctx,
@@ -1719,7 +1623,8 @@ def locusx(request, locus=None, menu=True):
         **og_phylogeny_ctx,
         **pfam_ctx,
         **genomic_region_ctx,
-        **diamond_matches_ctx
+        **diamond_matches_ctx,
+        **swissprot_ctx
     }
     return render(request, 'chlamdb/locus.html', my_locals(context))
 
@@ -2303,7 +2208,6 @@ def get_cog(request, taxon_id, category):
     for seqid, cog_hit_data in cog_hits.iterrows():
         cog_id = cog_hit_data.cog
         if cog_id not in cog_summaries:
-            print("Cog id unknown: ", cog_id)
             continue
         cog_func, cog_desc = cog_summaries[cog_id]
         if category not in cog_func:
@@ -2676,175 +2580,173 @@ def pan_genome(request, type):
     return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
 
 
+blast_input_dir = {"blastp": "faa",
+        "tblastn": "fna",
+        "blastn_fna": "fna",
+        "blastn_ffn": "ffn",
+        "blastx": "faa"}
+
+blast_command = {"blastp": NcbiblastpCommandline,
+        "tblastn": NcbitblastnCommandline,
+        "blastn_fna": NcbiblastnCommandline,
+        "blastn_ffn": NcbiblastnCommandline,
+        "blastx": NcbiblastxCommandline}
+
+
+def gen_blast_heatmap(db, blast_res, blast_type):
+    parsed_results = NCBIXML.parse(StringIO(blast_res))
+
+    # collects the bitscore and the query accession
+    hits = defaultdict(list)
+    accessions = set()
+    for record in parsed_results:
+        if len(record.alignments) == 0:
+            continue
+        query = hit.header.query
+        for hit in record.alignments:
+            hsp = hit.hsps[0]
+            scores = hits[query]
+            scores.append((hit.accession, hsp.score))
+            accessions.add(hit.accession)
+
+    file_type = blast_input_dir[blast_type]
+    # if faa or fna, the accession refers to CDS locus_tags
+    # if ffn, the accession refers to contigs
+    # need to map those to taxids to generate the heatmap
+    if file_type=="faa" or file_type=="fna":
+        acc_to_taxid = db.get_taxid_from_accession(accessions, look_on="locus_tag")
+    elif file_type=="ffn":
+        acc_to_taxid = db.get_taxid_from_accession(accessions, look_on="contig")
+
+    all_infos = []
+    for query, lst_vals in hits.items():
+        hsh_taxid_to_score = {}
+        for accession, score in lst_vals:
+            taxid = acc_to_taxid.loc[accession].taxid
+            if hsh_taxid_to_score.get(taxid, 0) < score:
+                hsh_taxid_to_score[taxid] = score
+        all_infos.append((query, hsh_taxid_to_score))
+
+    tree = db.get_reference_phylogeny()
+    descr = db.get_genomes_description()
+
+    t1 = Tree(tree)
+    R = t1.get_midpoint_outgroup()
+    t1.set_outgroup(R)
+    t1.ladderize()
+    e_tree = EteTree(t1)
+    e_tree.rename_leaves(descr.description.to_dict())
+
+    for query, hsh_values in all_infos:
+        col = SimpleColorColumn(hsh_values, header=query, color_gradient=True, default="-")
+        e_tree.add_column(col)
+
+    base_file_name = time.strftime("blast_%d_%m_%y_%H_%M.svg" , time.gmtime())
+    path = settings.BASE_DIR + f"/assets/temp/{base_file_name}"
+    asset_path = f"/temp/{base_file_name}"
+    e_tree.render(path, dpi=600)
+    return asset_path
+
+
+# for now, simplified the tblastn output to the same output as the 
+# other blast versions. May be re-introduced in future versions
 def blast(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     blast_form_class = make_blast_form(db) 
 
-    if request.method == 'POST': 
-
-        form = blast_form_class(request.POST)
-
-        if form.is_valid():  
-            input_sequence = form.cleaned_data['blast_input']
-            input_sequence= input_sequence.upper()
-            customized_evalue = form.cleaned_data['evalue']
-            number_blast_hits = form.cleaned_data['max_number_of_hits']
-            target_accession = form.cleaned_data['target'] 
-            blast_type = form.cleaned_data['blast']
-            unknown_format = False
-
-            if '>' in input_sequence:
-                my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
-                seq = my_record[0].id
-                my_record[0].seq = Seq(seq)
-                my_record[0].id = "INPUT"
-            else:
-                input_sequence == input_sequence.rstrip(os.linesep)
-                seq = Seq(input_sequence)
-                                
-            dna = set("ATGCNRYKMSWBDHV") #added ambiguous nucleotides from CoGePEDIA
-            prot = set('ACDEFGHIKLMNPQRSTVWYXZJOU') #added ambiguous aa 
-            check_seq_DNA = set(seq) - dna
-            check_seq_prot = set(seq) - prot
-            
-            # XXX to be tested:
-            # the logic here seems flawed: TATA can be both DNA and prot.
-            # The current code would force it to be DNA, when the user
-            # could well be wanting to use blastp or tblastn
-            if not check_seq_DNA:
-                try: my_record[0].description = "DNA"
-                except: my_record = [SeqRecord(seq, id="INPUT", description="DNA")]
-                seq_type= my_record[0].description
-            elif not check_seq_prot:
-                try: my_record[0].description = "Protein"
-                except: my_record = [SeqRecord(seq, id="INPUT", description="Protein")]
-                seq_type= my_record[0].description
-            else:
-                unknown_format = True
-
-            if not unknown_format:
-                if seq_type == 'Protein' and blast_type in ["blastn_ffn", "blastn_fna", "blastx"]:
-                    wrong_format = True
-                
-                else:
-                    query_file = NamedTemporaryFile(mode='w')
-                    SeqIO.write(my_record, query_file, "fasta")
-                    query_file.flush()
-                    
-                    
-                    if target_accession =='all':
-                        key_dict = 'merged'
-                    else:
-                        dictionary_acc_names=db.get_taxon_id_to_filenames()
-                        key_dict=dictionary_acc_names[int(target_accession)]               
-                        
-                    if number_blast_hits=='all':
-                       number_blast_hits = 100000                 
-
-                    # to be refactored to avoid code repetition
-                    if blast_type=='blastn_ffn':
-                        blastType = 'locus'
-                        blastdb = settings.BLAST_DB_PATH + f"/ffn/{key_dict}"
-                        blast_cline = NcbiblastnCommandline(query=query_file.name, \
-                                db=blastdb, evalue=customized_evalue, \
-                                max_target_seqs=number_blast_hits, outfmt=0 )
-                    if blast_type=='blastn_fna':
-                        blastType = 'genome'
-                        blastdb = settings.BLAST_DB_PATH + f"/fna/{key_dict}"
-                        blast_cline = NcbiblastnCommandline(query=query_file.name, \
-                                db=blastdb, evalue=customized_evalue, \
-                                max_target_seqs=number_blast_hits,  outfmt=0)
-                    if blast_type=='blastp':
-                        blastType = 'locus'
-                        blastdb = settings.BLAST_DB_PATH + f"/faa/{key_dict}"
-                        blast_cline = NcbiblastpCommandline(query=query_file.name, \
-                                db=blastdb, evalue=customized_evalue, \
-                                max_target_seqs=number_blast_hits, outfmt=0)
-                    if blast_type=='tblastn':
-                        blastType = 'genome'
-                        blastdb = settings.BLAST_DB_PATH + f"/fna/{key_dict}"
-                        blast_cline = NcbitblastnCommandline(query=query_file.name, \
-                                db=blastdb, evalue=customized_evalue, \
-                                max_target_seqs=number_blast_hits,  outfmt=0)
-                        blast_cline2 = NcbitblastnCommandline(query=query_file.name, \
-                                db=blastdb, evalue=customized_evalue, \
-                                max_target_seqs=number_blast_hits, outfmt=5)
-                    if blast_type=='blastx':
-                        blastType = 'locus'
-                        blastdb = settings.BLAST_DB_PATH + f"/faa/{key_dict}"
-                        blast_cline = NcbiblastxCommandline(query=query_file.name, \
-                                db=blastdb, evalue=customized_evalue, \
-                                max_target_seqs=number_blast_hits,  outfmt=0)
-                    blast_stdout, blast_stderr = blast_cline()
-
-                    if blast_type=='tblastn':
-                        from Bio.SeqUtils import six_frame_translations
-
-                        blast_stdout2, blast_stderr2 = blast_cline2()
-                        blast_records = NCBIXML.parse(StringIO(blast_stdout2))
-                        all_data = []
-                        best_hit_list = []
-                        for record in blast_records:
-                            for n, alignment in enumerate(record.alignments): 
-                                accession = alignment.title.split(' ')[0] 
-                                description=alignment.title.replace(accession, '') 
-                                for n2, hsp in enumerate(alignment.hsps): #all n2 are 0
-                                    if n == 0 and n2 == 0:  #select the best hit
-                                        best_hit_list.append([alignment.title.split(' ')[0], hsp.sbjct_start, hsp.sbjct_end])
-                                    start = hsp.sbjct_start
-                                    end = hsp.sbjct_end
-                                    if start > end:
-                                        start = hsp.sbjct_end
-                                        end = hsp.sbjct_start
-                                    length = end-start
-                                    seq_A = db.location2sequence(accession, start, end) #replaced biodb wtih db
-                                    anti = reverse_complement(seq_A)
-                                    comp = anti[::-1]
-                                    length = len(seq_A)
-                                    frames = {}
-                                    for i in range(0, 3):
-                                        fragment_length = 3 * ((length-i) // 3)
-                                        tem1 = translate(seq_A[i:i+fragment_length])
-                                        frames[i+1] = '<span style="color: #181407;">%s</span><span style="color: #bb60d5;">%s</span><span style="color: #181407;">%s</span>' % (tem1[0:100], tem1[100:len(tem1)-99], tem1[len(tem1)-99:])
-                                        tmp2 = translate(anti[i:i+fragment_length])[::-1]
-                                        frames[-(i+1)] = tmp2
-
-                                    all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq_A])
-
-                        if len(best_hit_list) > 0:
-                            fig_list = []
-                            for best_hit in best_hit_list:
-                                accession = best_hit[0]
-                                best_hit_start = best_hit[1]
-                                best_hit_end = best_hit[2]
-                                temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
-                                temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-                                name = 'temp/' + os.path.basename(temp_file.name)
-                                fig_list.append([accession, name])
-                                orthogroup_list = db.location2plot(accession, 
-                                            temp_file.name,
-                                            best_hit_start-15000,
-                                            best_hit_end+15000,
-                                            cache,
-                                            color_locus_list = [],
-                                            region_highlight=[best_hit_start, best_hit_end])
-                    no_match = re.compile('.* No hits found .*', re.DOTALL)
-                    if no_match.match(blast_stdout):
-                        blast_no_hits = blast_stdout
-                    elif len(blast_stderr) != 0:
-                        blast_err = blast_stderr #linked to the html file
-                    else:
-                        rand_id = id_generator(6)
-                        blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
-                        f = open(blast_file_l, 'w')
-                        f.write(blast_stdout)
-                        f.close()
-                        asset_blast_path = '/assets/temp/%s.xml' % rand_id
-                        js_out = True
-            envoi= True
-    else:  
+    if request.method != "POST":
         form = blast_form_class()
+        return render(request, 'chlamdb/blast.html', my_locals({"form": form}))
 
+
+    form = blast_form_class(request.POST)
+    if not form.is_valid():
+        return render(request, 'chlamdb/blast.html', my_locals({"form": form}))
+
+    input_sequence = form.cleaned_data['blast_input']
+    number_blast_hits = form.cleaned_data['max_number_of_hits']
+    blast_type = form.cleaned_data['blast']
+    target = form.get_target()
+    has_multiple_seq = False
+
+
+    if '>' in input_sequence:
+        try:
+            records = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
+        except:
+            context = {"error_message": "Error while parsing the fasta query",
+                    "error_title": "Query format error", 
+                    "envoi": True, "form": form, "wrong_format": True}
+            return render(request, 'chlamdb/blast.html', my_locals(context))
+    else:
+        input_sequence = "".join(input_sequence.split())
+        records = [SeqRecord(Seq(input_sequence))]
+                        
+    dna = set("ATGCNRYKMSWBDHV")
+    prot = set('ACDEFGHIKLMNPQRSTVWYXZJOU')
+    sequence_set = set()
+    for rec in records:
+        sequence_set = sequence_set.union(set(rec.seq))
+    check_seq_DNA = sequence_set-dna
+    check_seq_prot = sequence_set-prot
+
+    if check_seq_prot and blast_type in ["blastp", "tblastn"]:
+        wrong_chars = ", ".join(check_seq_prot)
+        if len(check_seq_prot) > 1:
+            error_message = f"Unexpected characters in amino-acid query: {wrong_chars}"
+        else:
+            error_message = f"Unexpected character in amino-acid query: {wrong_chars}"
+        context = {"error_message": error_message, "error_title": "Query format error", 
+                "envoi": True, "form": form, "wrong_format": True}
+        return render(request, 'chlamdb/blast.html', my_locals(context))
+    elif check_seq_DNA and blast_type in ["blastn", "blastn_ffn", "blast_fna", "blastx"]:
+        wrong_chars = ", ".join(check_seq_DNA)
+        if len(check_seq_DNA) > 1:
+            error_message = f"Unexpected characters in nucleotide query: {wrong_chars}"
+        else:
+            error_message = f"Unexpected character in nucleotide query: {wrong_chars}"
+        context = {"error_message": error_message, "wrong_format": True,
+                "error_title": "Query format error", "envoi": True, "form": form}
+        return render(request, 'chlamdb/blast.html', my_locals(context))
+
+    query_file = NamedTemporaryFile(mode='w')
+    SeqIO.write(records, query_file, "fasta")
+    query_file.flush()
+    
+    if target=='all':
+        my_db = 'merged'
+    else:
+        dictionary_acc_names = db.get_taxon_id_to_filenames()
+        my_db = dictionary_acc_names[target]
+
+    blast_args = {"query": query_file.name, "outfmt": 5}
+    blast_args["db"] = settings.BLAST_DB_PATH+"/"+blast_input_dir[blast_type]+"/"+my_db
+    if number_blast_hits != 'all':
+        blast_args["max_target_seqs"] = number_blast_hits
+
+    blast_cline = blast_command[blast_type](**blast_args)
+
+    blastType = "locus"
+    if blast_type=="tblastn" or blast_type=="blastn_fna":
+        blastType = "genome"
+
+    blast_stdout, blast_stderr = blast_cline()
+
+    if blast_stdout.find("No hits found") != -1:
+        blast_no_hits = blast_stdout
+    elif len(blast_stderr) != 0:
+        blast_err = blast_stderr
+    else:
+        if target == "all":
+            asset_path = gen_blast_heatmap(db, blast_stdout, blast_type)
+        rand_id = id_generator(6)
+        blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
+        f = open(blast_file_l, 'w')
+        f.write(blast_stdout)
+        f.close()
+        asset_blast_path = '/assets/temp/%s.xml' % rand_id
+        js_out = True
+    envoi= True
     return render(request, 'chlamdb/blast.html', my_locals(locals()))
 
 
@@ -2855,67 +2757,192 @@ def format_gene(gene):
         return gene
 
 
-def blastswissprot(request, locus_tag):
-    biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+def format_taxid_to_ncbi(organism,taxid):
+    val = (
+        f"""<a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={taxid}" target="_top">"""
+        f"""{organism}</a>"""
+        )
+    return val
 
-    if locus_tag is None:
-        return render(request, 'chlamdb/blastswiss.html', my_locals({"valid_id": False}))
-    try:
-        seqid, _ = db.get_seqid(locus_tag=locus_tag)
-    except:
-        return render(request, 'chlamdb/blastswiss.html', my_locals({"valid_id": False}))
 
+def locus_tab_swissprot_hits(db, seqid):
     swissprot_homologs = db.get_swissprot_homologs([seqid])
     transl = db.get_translation(seqid)
 
-    # NOTE: to fix, some queries have a > 100% coverage. Need to use query start and query end.
-    swissprot_homologs["perc_cover"] = (swissprot_homologs.match_len*100/len(transl)).round(2)
     blast_data = []
+    header = ["Swissprot accession", "Eval", "Score", "ID (%)", "N gaps",
+            "Alignment length", "Annot score", "Gene", "Description", "Organism"]
+
     for num, data in swissprot_homologs.iterrows():
-        line = [num+1, data.accession, data.evalue, data.bitscore, data.perc_id,
-                data.gaps, data.perc_cover, data.pe, data.gene, data.definition,
-                data.organism, data.taxid]
+        line = [data.accession, data.evalue, data.bitscore, data.perc_id,
+                data.gaps, data.match_len, data.pe, data.gene, data.definition,
+                format_taxid_to_ncbi(data.organism, data.taxid)]
         blast_data.append(line)
+
     ctx = {
-        "valid_id": not swissprot_homologs.empty,
-        "locus_tag": locus_tag,
-        "blast_data": blast_data
+        "n_swissprot_hits": len(swissprot_homologs),
+        "swissprot_blast_data": blast_data,
+        "swissprot_headers": header
     }
-    return render(request, 'chlamdb/blastswiss.html', my_locals(ctx))
+    return ctx
+
+
+# Greedy approach to choose regions: 
+# choose the regions that have the higher number of seqids first
+def coalesce_regions(genomic_regions, seqids):
+    seqids_set = set(seqids)
+
+    index = []
+    for idx, (seqid, region, start, end) in enumerate(genomic_regions):
+        region_seqids = set(region.index.unique())
+        intersect = seqids_set & region_seqids
+        index.append((idx, len(intersect), intersect))
+
+    index.sort(key=lambda x: x[1], reverse=True)
+    filtered_results = []
+    for idx, _, intersect in index:
+        seqid, region, start, end = genomic_regions[idx]
+        if len(intersect & seqids_set) == 0:
+            continue
+        filtered_results.append(genomic_regions[idx])
+        seqids_set = seqids_set-intersect
+    return filtered_results
 
 
 def plot_region(request):
-    raise RuntimeException("To be re-implemented in d3.js")
+    max_region_size = 20000
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    form_class = make_plot_form(db)
 
+    if request.method != "POST":
+        form = form_class()
+        return render(request, 'chlamdb/plot_region.html', my_locals({"form": form}))
 
-def orthogroups(request):
-    if request.method == 'POST':
-        form = BiodatabaseForm(request.POST)
-        if form.is_valid():
-            biodb = form.cleaned_data['biodatabase']
-            groups = "orthogroup_size_distrib_%s.svg" % biodb
-            envoi = True
+    form = form_class(request.POST)
+    if not form.is_valid():
+        # add error message
+        return render(request, 'chlamdb/plot_region.html', my_locals({"form": form}))
+
+    accession = form.get_accession()
+    prot_info = db.get_proteins_info(ids=[accession], search_on="locus_tag", as_df=True)
+    if prot_info.empty:
+        context = {"form": form, "errors": ["Accession not found"], "error": True}
+        return render(request, 'chlamdb/plot_region.html', my_locals(context))
+
+    genomes = form.get_genomes()
+    all_homologs = form.get_all_homologs()
+    seqid = int(prot_info.index[0])
+    hsh_loc = db.get_gene_loc([seqid])
+    ids = db.get_og_identity(ref_seqid=seqid)
+    all_seqids = ids.index.unique().tolist()
+    all_seqids.append(seqid)
+    organisms = db.get_organism(all_seqids, as_df=True, as_taxid=True)
+    all_infos = organisms.join(ids, how="inner")
+    ref_strand, _, _ = hsh_loc[seqid]
+    hsh_description = db.get_genomes_description().description.to_dict()
+
+    if not all_homologs:
+        best_matches = all_infos.groupby(["taxid"]).idxmax()
+        ref_taxid = organisms.loc[seqid].taxid
+
+        # redundant: do not include the genome of the locus tag, even if listed
+        # by the user. The locus tag is its best match.
+        if ref_taxid in genomes:
+            genomes.remove(ref_taxid)
+        best_matches = best_matches.reindex(genomes).dropna()
+        if not best_matches.empty:
+            seqids = best_matches["identity"].astype(int).tolist()
+        else:
+            seqids = []
+        seqids.append(seqid)
     else:
-        form = BiodatabaseForm()
+        selection = all_infos[all_infos.taxid.isin(genomes)]
+        seqids = selection.index.astype(int).tolist()
+        seqids.append(seqid)
 
-    return render(request, 'chlamdb/orthogroups.html', my_locals(locals()))
+    if len(seqids)>20:
+        context = {"form":form, "error": True, "errors": ["Too many regions to display"]}
+        return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
+    try:
+        region_size = form.get_region_size()
+        if region_size>max_region_size or region_size<5000:
+            context = {"form":form, "error": True,
+                    "errors": [f"Region size should be between 5000 and {max_region_size} bp"]}
+            return render(request, 'chlamdb/plot_region.html', my_locals(context))
+    except ValueError:
+        context = {"form":form, "error": True, "errors": ["Wrong format for region size"]}
+        return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
-def sitemap(request):
-    from io import StringIO
-    map = '''<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>http://chlamdb.ch/</loc></url><url><loc>http://chlamdb.ch/about</loc></url>
-</urlset>'''
+    locus_tags = db.get_proteins_info(seqids, to_return=["locus_tag"], as_df=True)
+    to_highlight = locus_tags["locus_tag"].tolist()
+    all_regions = []
+    connections = []
+    prev_infos = None
+    all_identities = []
 
-    strio = StringIO()
-    strio.write(map)
-    response = HttpResponse(content_type='text/xml')
-    #response.content_type = "text/xml"
-    #response['Content-Disposition'] = 'attachment; filename="sitemap.xml"'
-    response.write(strio.getvalue())
-    return response
+    genomic_regions = []
+    for seqid in seqids:
+        region, start, end = locusx_genomic_region(db, int(seqid), region_size/2)
+        genomic_regions.append([seqid, region, start, end])
+
+    # remove overlapping regions (e.g. if two matches are on the same
+    # region, avoid displaying this region twice).
+    filtered_regions = coalesce_regions(genomic_regions, seqids)
+
+    for genomic_region in filtered_regions:
+        seqid, region, start, end = genomic_region
+        if region["strand"].loc[seqid]*ref_strand == -1:
+            mean_val = (end+start)/2
+            region["strand"] *= -1
+            dist_vector_start = region["start"]-mean_val
+            len_vector = region["end"]-region["start"]
+            region["end"] = region["start"]-2*dist_vector_start
+            region["start"] = region["end"] - len_vector
+        ogs = db.get_og_count(region.index.tolist(), search_on="seqid")
+        region = region.join(ogs)
+            
+        if not prev_infos is None:
+            # BM: horrible code (I wrote it, I should know).
+            # would be nice to refactor it in a more efficient and clean way.
+            common_og = region.dropna(subset=["orthogroup"]).reset_index().merge(
+                    prev_infos.reset_index(), on="orthogroup")[["locus_tag_x",
+                    "locus_tag_y", "seqid_x", "seqid_y", "orthogroup"]]
+            related = []
+            ogs = common_og.orthogroup.astype(int).tolist()
+            p1 = common_og.seqid_x.tolist()
+            p2 = common_og.seqid_y.tolist()
+            identities = db.get_og_identity(og=ogs, pairs=zip(p1, p2))
+            identities = identities.set_index(["seqid_x", "seqid_y"]).identity.to_dict()
+            hsh_agg = {}
+            for i, v in common_og.iterrows():
+                if v.seqid_x==v.seqid_y:
+                    ident = 100
+                elif (v.seqid_x, v.seqid_y) in identities:
+                    ident = identities[(v.seqid_x, v.seqid_y)]
+                else:
+                    ident = identities[(v.seqid_y, v.seqid_x)]
+                all_identities.append(ident)
+                og_val = to_s(int(v.orthogroup))
+                arr = hsh_agg.get(v.locus_tag_x, [])
+                arr.append(f"[{to_s(v.locus_tag_y)}, {og_val}, {ident:.2f}]")
+                hsh_agg[v.locus_tag_x] = arr
+            related = (f"{to_s(loc)}: ["+ ",".join(values) +"]" for loc, values in hsh_agg.items())
+            connections.append("{"+",".join(related)+"}")
+
+        taxid = organisms.loc[seqid].taxid
+        genome_name = hsh_description[taxid]
+        js_val = genomic_region_df_to_js(region, start, end, genome_name)
+        all_regions.append(js_val)
+        prev_infos = region[["orthogroup", "locus_tag"]]
+
+    ctx = {"form": form, "genomic_regions": "[" + "\n,".join(all_regions) + "]",
+            "window_size": max_region_size, "to_highlight": to_highlight, "envoi": True,
+            "connections": "[" + ",".join(connections) + "]"}
+    if len(all_identities) > 0:
+        ctx["max_ident"] = max(all_identities)
+        ctx["min_ident"] = min(all_identities)
+    return render(request, 'chlamdb/plot_region.html', my_locals(ctx))
 
 
 def circos_main(request):
@@ -2931,9 +2958,6 @@ def circos_main(request):
         
         target_taxons = include_taxids + exclude_taxids
         
-        
-        print("reference_taxon", reference_taxon)
-        print("target_taxons", target_taxons)
         target_taxons.pop(target_taxons.index(int(reference_taxon)))
         
         js_code = get_circos_data(int(reference_taxon), [int(i) for i in target_taxons], highlight_og=og_list)
@@ -3193,262 +3217,6 @@ def priam_kegg(request):
 
     ctx = {"envoi":True, "data":data, "header": header}
     return render(request, 'chlamdb/priam_kegg.html', my_locals(ctx))
-
-
-def locus_list2circos(request, target_taxon):
-    biodb = settings.BIODB
-    from chlamdb.plots import gbk2circos
-    from chlamdb.biosqldb import circos
-    import re
-
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    locus_list = [i for i in request.GET.getlist('l')]
-
-    # 1. check if locus_list is part of the target genome
-    # 2. if not part of the target genome, get orthogroup id
-
-    locus_filter = '"'+'","'.join(locus_list)+'"'
-    sql = 'select locus_tag, product from orthology_detail where taxon_id=%s and locus_tag in (%s)' % (target_taxon,
-                                                                                                       locus_filter)
-    data = server.adaptor.execute_and_fetchall(sql,)
-    locus_target_genome = [i[0] for i in data]
-
-    locus2label = {}
-    for row in data:
-        locus2label[row[0]] = row[0] #+ "-%s" % re.sub(" ","-",row[1])
-
-    locus_other_genomes = []
-    for locus in locus_list:
-        if locus not in locus_target_genome:
-            locus_other_genomes.append(locus)
-    locus_other_genomes_filter = '"' + '","'.join(locus_other_genomes) + '"'
-    sql2 = 'select B.locus_tag, A.orthogroup, B.product from (select orthogroup from orthology_detail where locus_tag in (%s) group by orthogroup) A' \
-           ' inner join orthology_detail B on A.orthogroup=B.orthogroup where taxon_id=%s' % (locus_other_genomes_filter,
-                                                                                              target_taxon)
-
-    data = server.adaptor.execute_and_fetchall(sql2,)
-
-    for row in data:
-        locus2label[row[0]] = row[1] #+ "-%s" % re.sub(" ","-",row[2])
-
-    reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, target_taxon, biodb) # ["NC_009648"] NZ_CP009208 NC_016845
-
-    record_list = []
-    for accession in reference_accessions:
-
-        biorecord = cache.get(biodb + "_" + accession)
-
-        if not biorecord:
-            new_record = db.lookup(accession=accession)
-            biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
-                                                     id=new_record.id, name=new_record.name,
-                                                     description=new_record.description,
-                                                     dbxrefs =new_record.dbxrefs,
-                                                     features=new_record.features,
-                                                     annotations=new_record.annotations)
-            record_id = biorecord.id.split(".")[0]
-            cache.set(biodb + "_" + record_id, biorecord)
-            record_list.append(biorecord)
-        else:
-            record_list.append(biorecord)
-
-    ref_name = ('').join(reference_accessions)
-
-    circos_file = "circos/%s.svg" % ref_name
-
-    draft_data = []
-    for biorecord in record_list:
-        draft_data.append(gbk2circos.circos_fasta_draft_misc_features(biorecord))
-
-    home_dir = os.path.dirname(__file__)
-
-    temp_location = os.path.join(home_dir, "../assets/circos/")
-
-    myplot = circos.CircosAccession2multiplot(server,
-                                              db,
-                                              biodb,
-                                              record_list,
-                                              [],
-                                              locus_highlight=locus2label.keys(),
-                                              out_directory=temp_location,
-                                              draft_fasta=draft_data,
-                                              href="/chlamdb/locusx/",
-                                              ordered_taxons=[],
-                                              locus2label=locus2label,
-                                              show_homologs=False,
-                                              radius=0.3)
-
-    original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % ref_name
-    with open(original_map_file, "r") as f:
-        map_string = ''.join([line for line in f.readlines()])
-
-    circos_html = '<!DOCTYPE html>\n' \
-                  ' <html>\n' \
-                  ' <body>\n' \
-                  ' %s\n' \
-                  ' <img src="%s.svg" usemap="#%s">' \
-                  ' </body>\n' \
-                  ' </html>\n' % (map_string, ref_name, ref_name)
-
-
-    circos_new_file = '/assets/circos/circos_clic.html'
-
-    with open(settings.BASE_DIR + circos_new_file, "w") as f:
-        f.write(circos_html)
-
-    original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
-    map_file = "circos/%s.html" % ref_name
-    svg_file = "circos/%s.svg" % ref_name
-    map_name = ref_name
-
-    envoi_circos = True
-
-
-    return render(request, 'chlamdb/locus2circos.html', my_locals(locals()))
-
-
-def hmm2circos(request):
-    from chlamdb.phylo_tree_display import ete_motifs
-    biodb = settings.BIODB
-    server, db = manipulate_biosqldb.load_db(biodb)
-    hmm_form = hmm_sets_form_circos(biodb)
-
-    if request.method == 'POST': 
-        form = hmm_form(request.POST)
-        if form.is_valid():
-            from chlamdb.plots import hmm_heatmap
-            from chlamdb.plots import gbk2circos
-            from chlamdb.biosqldb import circos
-
-            sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
-
-            database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
-
-            hmm_set = form.cleaned_data['hmm_set']
-            reference_taxon = form.cleaned_data['genome']
-            score_cutoff = form.cleaned_data['score_cutoff']
-            query_coverage_cutoff = form.cleaned_data['query_coverage_cutoff']
-
-
-            sql = 'select locus_tag from hmm.hmm_sets t1 ' \
-                  ' inner join hmm.hmm_sets_entry t2 on t1.set_id=t2.set_id ' \
-                  ' inner join hmm_hmm_hits_annotated_genome t3 on t2.hmm_id=t3.hmm_id' \
-                  ' inner join custom_tables_locus2seqfeature_id t4 on t3.seqfeature_id=t4.seqfeature_id ' \
-                  ' where t1.name="%s" and t3.taxon_id=%s and bitscore>=%s ' \
-                  ' and query_coverage>=%s order by bitscore;' % (hmm_set,
-                                                                  reference_taxon,
-                                                                  score_cutoff,
-                                                                  query_coverage_cutoff)
-
-            target_locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-
-
-            sql2 = 'select locus_tag,t5.name  from hmm.hmm_sets t1 ' \
-                  ' inner join hmm.hmm_sets_entry t2 on t1.set_id=t2.set_id ' \
-                  ' inner join hmm_hmm_hits_annotated_genome t3 on t2.hmm_id=t3.hmm_id' \
-                  ' inner join custom_tables_locus2seqfeature_id t4 on t3.seqfeature_id=t4.seqfeature_id ' \
-                  ' inner join hmm.hmm_profiles t5 on t2.hmm_id=t5.hmm_id' \
-                  ' where t1.name="%s" and t3.taxon_id=%s and bitscore>=%s ' \
-                   ' and query_coverage>=%s order by bitscore;' % (hmm_set, 
-                                                                    reference_taxon, 
-                                                                    score_cutoff, 
-                                                                    query_coverage_cutoff)
-
-            locus2label = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
-
-            description2accession_dict = manipulate_biosqldb.description2accession_dict(server, biodb)
-
-            reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb) # ["NC_009648"] NZ_CP009208 NC_016845
-
-
-            record_list = []
-            for accession in reference_accessions:
-                biorecord = cache.get(biodb + "_" + accession)
-
-                if not biorecord:
-                    new_record = db.lookup(accession=accession)
-                    biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
-                                                             id=new_record.id, name=new_record.name,
-                                                             description=new_record.description,
-                                                             dbxrefs =new_record.dbxrefs,
-                                                             features=new_record.features,
-                                                             annotations=new_record.annotations)
-                    record_id = biorecord.id.split(".")[0]
-                    cache.set(biodb + "_" + record_id, biorecord)
-                    record_list.append(biorecord)
-                else:
-                    record_list.append(biorecord)
-
-            ref_name = ('').join(reference_accessions)
-
-            circos_file = "circos/%s.svg" % ref_name
-
-            draft_data = []
-            for biorecord in record_list:
-                draft_data.append(gbk2circos.circos_fasta_draft_misc_features(biorecord))
-
-            home_dir = os.path.dirname(__file__)
-
-            temp_location = os.path.join(home_dir, "../assets/circos/")
-
-            #sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
-
-            sql_order1 = 'select A.taxon_1 from (select taxon_1,median_identity from comparative_tables_shared_og_av_id where taxon_2=%s ' \
-                        ' union select taxon_2,median_identity from comparative_tables_shared_og_av_id ' \
-                        ' where taxon_1=%s order by median_identity DESC) A;' % (reference_taxon, 
-                                                                                 reference_taxon)
-            try:
-                sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (reference_taxon)
-
-                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-            except:
-                sql_order2 = 'select taxon_2 from comparative_tables_shared_og_av_id where taxon_1=%s order by median_identity desc;' % (reference_taxon)
-
-                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order1)]
-
-            myplot = circos.CircosAccession2multiplot(server,
-                                                      db,
-                                                      biodb,
-                                                      record_list,
-                                                      [],
-                                                      locus_highlight=target_locus_list,
-                                                      out_directory=temp_location,
-                                                      draft_fasta=draft_data,
-                                                      href="/chlamdb/locusx/",
-                                                      ordered_taxons = ordered_taxons,
-                                                      locus2label=locus2label,
-                                                      show_homologs=False)
-
-            original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % ref_name
-            with open(original_map_file, "r") as f:
-                map_string = ''.join([line for line in f.readlines()])
-
-            circos_html = '<!DOCTYPE html>\n' \
-                          ' <html>\n' \
-                          ' <body>\n' \
-                          ' %s\n' \
-                          ' <img src="%s.svg" usemap="#%s">' \
-                          ' </body>\n' \
-                          ' </html>\n' % (map_string, ref_name, ref_name)
-
-
-            circos_new_file = '/assets/circos/circos_clic.html'
-
-            with open(settings.BASE_DIR + circos_new_file, "w") as f:
-                f.write(circos_html)
-
-            original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
-            map_file = "circos/%s.html" % ref_name
-            svg_file = "circos/%s.svg" % ref_name
-            map_name = ref_name
-
-            envoi_circos = True
-
-    else:  
-        form = hmm_form()
-
-    return render(request, 'chlamdb/hmm2circos.html', my_locals(locals()))
 
 
 def kegg_module_subcat(request):
@@ -3729,20 +3497,6 @@ def ko_comparison(request):
     return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
 
 
-def genomic_locus_tag_infos(request):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    locus_tag = request.POST.get("locus_tag", None)
-    
-    if locus_tag is None:
-        return JsonResponse({"error_msg": "no locus_tag"})
-    seqid, fet_type, is_pseudo = db.get_seqid(locus_tag=locus_tag, feature_type=True)
-    prot_infos = db.get_proteins_info([seqid], as_df=True,
-            inc_non_CDS=True, inc_pseudo=True)
-    entry = prot_infos.loc[seqid]
-    data = {"product": entry["product"]}
-    return JsonResponse(data)
-
-
 def faq(request):
     a =2
     return render(request, 'chlamdb/FAQ.html', my_locals(locals()))
@@ -3850,3 +3604,4 @@ def genomes_intro(request):
     e_tree.rename_leaves(genomes_descr.description.to_dict())
     e_tree.render(path, dpi=500)
     return render(request, 'chlamdb/genomes_intro.html', my_locals(locals()))
+
