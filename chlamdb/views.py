@@ -483,7 +483,7 @@ def extract_pfam(request, classification="taxon_id"):
     if sum_exclude_length > 0:
         pfam_exclude = db.get_pfam_hits(exclude, plasmids=exclude_plasmids,
                 search_on="taxid", indexing="taxid")
-        pfam_exclude["sum_pos"] = pfam_exclude[cog_exclude > 0].count(axis=1)
+        pfam_exclude["sum_pos"] = pfam_exclude[pfam_exclude > 0].count(axis=1)
         pfam_exclude["exclude"] = pfam_exclude.sum_pos > 0
         neg_index = pfam_exclude[pfam_exclude.exclude].index
     else:
