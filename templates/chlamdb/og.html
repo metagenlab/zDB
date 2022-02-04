@@ -8,6 +8,7 @@
 	{% include "chlamdb/header.html" %}
 </head>
 
+<body>
 <div class="container-fluid" id="main_container">
   <div class="row">
 	<div id="wrapper">
@@ -278,6 +279,7 @@
                   	{% endif %}
 
 
+					{% if optional2status|keyvalue:"BLAST_swissprot" %}
 					<div class="row">
 					  <div class="panel panel-default">
 
@@ -310,6 +312,7 @@
 						{% endif %}
 					  </div>
 					</div>
+					{% endif %}
 
 				  </div>
 				  </div>
@@ -323,6 +326,8 @@
     </div>
   </div>
 </div>
+</div>
+
 {% include "chlamdb/style_menu.html" %}
 
 <style>

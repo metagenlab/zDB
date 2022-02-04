@@ -1,9 +1,17 @@
-<!DOCTYPE html> <html>  <head> {% load custom_tags %}
-      {% load static %}
-      {% load static %}
-      {% load crispy_forms_tags %}
-      {% include "chlamdb/header.html" %}
-  </head>
+<!DOCTYPE html>
+<html>
+<head> 
+
+{% load custom_tags %}
+{% load static %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% include "chlamdb/header.html" %}
+
+
+</head>
+
+<body>
  
   <div class="container-fluid" id="main_container">
     <div class="row">
@@ -26,6 +34,7 @@
               </nav>
 
           
+
               <div class="panel panel-info" style="width:90% ; top: 200px; margin: 10px 10px 10px 10px">
                 <div class="panel-heading" style="width:100%; ">
                         <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
@@ -35,33 +44,9 @@
                     It is possible to distinguish between plasmids and chromosomes by clicking on the dedicated checkbox.
                     <br>Missing data: if more than one genome is selected in panel A, it is possible to tolerate missing data in 1 up to 10 genomes. In this way COG present in at least x out of y genomes selected are kept.</p>
                 </div>
-                <!--
-                <div style="position: absolute;margin-top:10%; margin-left: 33%;">
-                    <div style="height:40px;margin-left: 180px;width:280px;border: 2px solid #8AC007; border-radius: 15px;">
-                        <div style="width: 100%; float: left; margin-left: 10px;margin-top:3px">
-                            <p>Consider single copy groups only</p>
-                        </div >
-
-                        <div style="height: 40px; margin-left: 180px;margin-top:3px;">
-                            <label class="switch-light well" onclick="" style="margin: 5px 0px 0px 0px; padding: 0 0 0 0; position: absolute">
-                                <input type="checkbox" style="padding: 0 0px 0 0" id="button_single_copy" name="button_single_copy">
-                                <span>
-                                <span>Off</span>
-                                <span>On</span>
-                                </span>
-                                <a class="btn btn-success btn-xs"></a>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                -->
-               
                 {% block content %}
-                <form action='{% url "extract_orthogroup" %}' method="post" id="extract-form">
-                    {% csrf_token %}
-                    
-                    {% crispy form %}
-                </form>
+				{% csrf_token %}
+				{% crispy form %}
                 {% endblock %}
             </div>
 
@@ -106,27 +91,6 @@
               <ul style="list-style-type:square">
                     <div style="padding-top:10px">
 
-                       <table class="table" style="width:600px">
-                           <tr>
-                               <th>Number of included genomes</th>
-                               <td> {{ include|length }} </td>
-                           </tr>
-
-                           <tr>
-                               <th>Number of excluded genomes</th>
-                               <td> {{ exclude|length }} </td>
-                           </tr>
-
-                            <tr>
-                               <th>Number of accepted missing data</th>
-                               <td> {{ n_missing }} </td>
-                           </tr>
-                             <tr>
-                               <th>Number of COGs identified</th>
-                               <td> {{ sum_group }}  </td>
-                           </tr>
-
-                       </table>
             <div class="box" style="width:30%; top: 200px; padding: 10px 10px 10px 10px;">
             <form action="/circos_main/" method="POST" id="carform" >
             <h5>Show the comparison on circular map</h5>
@@ -235,6 +199,7 @@
 </script>
 
 
+{% include "chlamdb/style_menu.html" %}
 {% include "chlamdb/show_hide_plasmid_accessions.html" %}
 </body>
 </html>

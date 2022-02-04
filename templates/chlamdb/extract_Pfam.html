@@ -36,16 +36,14 @@
                 </div>
    
 
-
                         {% block content %}
-                        <form action='{% url "extract_pfam" %}' method="post">
-                            {% csrf_token %}
-                            {% crispy form %}
-                        </form>
+						{% csrf_token %}
+						{% crispy form %}
                         {% endblock %}
+
                     </div>
 
-                    {% if wrong_n_missing%}
+                    {% if wrong_n_missing %}
 
                     <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
                         <div class="panel-heading" style="width:100%">
@@ -54,7 +52,7 @@
                         <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
                     </div>
 
-                    {% elif no_match%}
+                    {% elif no_match %}
 
                     <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
                         <div class="panel-heading" style="width:100%">
@@ -129,16 +127,18 @@
                                         </tr>
                                     </thead>
 
-                                    {% for value in match_groups_data %}
-                                        <tr>
-                                            <td>{{value.0}}</td>
-                                            <td><a href="{% url 'fam_pfam' value.1 %}">{{value.1}}</a></td>
-                                            <td>{{value.2}}</td>
-                                            <td>{{value.3}}</td>
-                                            <td>{{value.4}}</td>
+									<tbody>
+										{% for value in match_groups_data %}
+											<tr>
+												<td>{{value.0}}</td>
+												<td><a href="{% url 'fam_pfam' value.1 %}">{{value.1}}</a></td>
+												<td>{{value.2}}</td>
+												<td>{{value.3}}</td>
+												<td>{{value.4}}</td>
 
-                                        </tr>
-                                    {% endfor %}
+											</tr>
+										{% endfor %}
+									</tbody>
                                 </table>
                             </div>
                         </div>
