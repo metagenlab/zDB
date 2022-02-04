@@ -80,7 +80,6 @@
                               </div>
                               <p style="margin: 10px 10px 10px 10px; line-height: 180%">Two tables have been generated:
                                 <br> <b>Pfam</b> table: it contains the list of Pfam domains shared among the selected genomes.Pfam entry, its description, its frequency in the selected genomes and in all genomes is reported. 
-                              <br><b>Locus list reference</b>: a complete list of the members of each Pfam group shared by the selected genome is displayed.                            
                               </p>
                             </div>
 
@@ -113,7 +112,6 @@
                             <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                               <br>
                               <li class="active"><a href="#red" data-toggle="tab">Pfam</a></li>
-                              <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
                         </ul>
                 
 
@@ -141,111 +139,8 @@
 
                                         </tr>
                                     {% endfor %}
-
                                 </table>
-
-
                             </div>
-
-                            <div class="tab-pane" id="tab2">
-
-                                <h3> Locus annotation </h3>
-
-                                <table id="reference_genome" class="sortable">
-                                    <thead>
-                                        <tr>
-                                            <th id="entete_n"></th>
-                                            <th id="entete_locus">Orthogroup</th>
-                                            <th id="entete_locus">Locus</th>
-                                            <th style="width:10px">C</th>
-                                            <th style="width:70px">COGn</th>
-                                            <th style="width:55px">KO</th>
-                                            <th style="width:260px">Pathways</th>
-                                            <th style="width:230px">Modules</th>
-                                            <th style="width:230px">Interpro</th>
-                                            <th id="entete_gene">Gene</th>
-                                            <th id="entete_n">nH</th>
-                                            <th id="entete_n">nG</th>
-                                            <th id="entete_n">TM</th>
-                                            <th id="entete_n">SP</th>
-                                            <th id="entete_product">Product</th>
-
-
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-
-                                        {%for values in locus2annot%}
-                                        <tr>
-                                            <td>{{values.0}}</td>
-                                            <td>{{values.1}}</td>
-                                            <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
-                                            <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
-                                            {% with locus_tag2cog_name|keyvalue:values.2 as name %}
-                                                {% if name == '-' %}
-                                                    <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
-                                                {% else %}
-                                                    <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
-                                                {% endif %}
-                                            {%endwith%}
-                                            {% with locus_tag2ko|keyvalue:values.2 as oneko %}
-                                                {% if oneko == '-' %}
-                                                    <td>{{locus_tag2ko|keyvalue:values.2}}</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
-                                                {% else %}
-                                                    <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
-                                                    {% with ko2ko_pathways|keyvalue:oneko as name %}
-                                                        {% if name == '-' %}
-                                                            <td>-</td>
-                                                        {% else %}
-                                                            <td>{{name|safe}}</td>
-                                                        {% endif %}
-                                                    {%endwith%}
-                                                    {% with ko2ko_modules|keyvalue:oneko as name %}
-                                                        {% if name == '-' %}
-                                                            <td>-</td>
-                                                        {% else %}
-                                                            <td>{{name|safe}}</td>
-                                                        {% endif %}
-                                                    {%endwith%}
-                                                {% endif %}
-
-
-                                            {%endwith%}
-                                            {% with locus2interpro|keyvalue:values.2 as interpro_data %}
-                                            <td>
-                                                {% for one_interpro in interpro_data %}
-                                                {% if one_interpro.0 != '-' %}
-                                                    <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
-                                                {%else%}
-                                                    {{one_interpro.0}}
-                                                {%endif%}
-                                                    {{one_interpro.1}} </br>
-                                                {% endfor %}
-                                                {%endwith%}
-                                            </td>
-                                            <td>{{values.7}}</td>
-                                            <td>{{values.8}}</td>
-                                            <td>{{values.9}}</td>
-                                            <td>{{values.10}}</td>
-                                            <td>{{values.11}}</td>
-                                            <td>{{values.12}}</td>
-
-                                        </tr>
-
-                                        {%endfor%}
-                                    </tbody>
-                                </table>
-
-
-
-                            </div>
-
-
-
-
-
                         </div>
 
                     {% endif %}
@@ -257,92 +152,29 @@
   </div>
 
 <script type="text/javascript" id="js2">
-  $(document).ready(function() {
-
-      var x=document.getElementById("id_reference");
-      for (var i = 0; i < x.options.length; i++) {
-          $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
-      }
-
-      $("#id_orthologs_in").change(function() {
-          document.getElementById("id_reference").selectedIndex=0;
-          var x=document.getElementById("id_orthologs_in");
-          for (var i = 0; i < x.options.length; i++) {
-              if(x.options[i].selected ==true){
-
-              $("#id_reference").children("option[value^=" + x.options[i].value + "]").show()
-              }else{
-              $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
-
-              }
-              }
-      })
-
-  })
-
 
 $(document).ready(function() {
-$('#PFAM_table').DataTable( {
-dom: 'Bfrtip',    
-"paging":   true,
-"ordering": true,
-"info":     false,
-buttons: [
-{
-    extend: 'excel',
-    title: 'PFAM_table'
-},
-{
-    extend: 'csv',
-    title: 'PFAM_table'
-}
-],
-} );
+	$('#PFAM_table').DataTable( {
+		dom: 'Bfrtip',
+		"paging": true,
+		"ordering": true,
+		"info": false,
+		buttons: [ 
+			{
+				extend: 'excel',
+				title: 'PFAM_table'
+			},
+			{
+				extend: 'csv',
+				title: 'PFAM_table'
+			}
+		],
+	} );
 } );
 
 $(document).ready(function() {
-$('#reference_genome').DataTable( {
- dom: 'Bfrtip',   
-"paging":   true,
-"ordering": true,
-"info":     false,
-buttons: [
-{
-    extend: 'excel',
-    title: 'reference_genome'
-},
-{
-    extend: 'csv',
-    title: 'reference_genome'
-}
-],
-} );
-} );
-
-
- type="text/javascript" id="js">
-            $(document).ready(function() {
-            // call the tablesorter plugin
-            $("table").tablesorter({
-            // change the default sorting order from 'asc' to 'desc'
-            sortInitialOrder: 1
-            });
-            });
-        </script>
-        <script type="text/javascript">
-            jQuery(document).ready(function ($) {
-                $('#tabs_main').tab();
-            });
-        </script>
-        <script type="text/javascript">
-            jQuery(document).ready(function ($) {
-                $('#tabs1').tab();
-            });
-       
-$(document).ready(function() {
-$("#PFAM_table").DataTable();} );
-$(document).ready(function() {
-$("#tab2").DataTable();} );
+	$("#PFAM_table").DataTable();}
+);
 
 </script>
 </body>
