@@ -631,7 +631,6 @@ def venn_pfam(request):
     venn_form_class = make_venn_from(db, label="PFAM domain", limit=6, action="venn_pfam")
     if request.method != "POST":
         form_venn = venn_form_class()
-        print(form_venn)
         return render(request, 'chlamdb/venn_Pfam.html', my_locals(locals()))
 
     form_venn = venn_form_class(request.POST)
@@ -819,6 +818,7 @@ def format_cog_url(cog_id):
 
 def escape_quotes(unsafe):
     return unsafe.replace("\"", "\\\"")
+
 
 def venn_cog(request, sep_plasmids=False):
     """

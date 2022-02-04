@@ -137,7 +137,8 @@ def make_metabo_from(db, add_box=False):
     return MetaboForm
 
 
-def make_venn_from(db, plasmid=False, label="Orthologs", limit=None, action="venn_orthogroup"):
+def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
+        action="venn_orthogroup"):
 
     accession_choices, rev_index = get_accessions(db, plasmid=plasmid)
 
