@@ -628,10 +628,11 @@ def venn_pfam(request):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
-    venn_form_class = make_venn_from(db, limit=6)
+    venn_form_class = make_venn_from(db, label="PFAM domain", limit=6, action="venn_pfam")
     if request.method != "POST":
         form_venn = venn_form_class()
-        return render(request, 'chlamdb/venn_Pfam.html', my_locals({"form_venn": form_venn}))
+        print(form_venn)
+        return render(request, 'chlamdb/venn_Pfam.html', my_locals(locals()))
 
     form_venn = venn_form_class(request.POST)
     if not form_venn.is_valid():  
@@ -659,7 +660,8 @@ def venn_pfam(request):
 
     ctx = {"envoi_venn": True,
             "series": series,
-            "pfam2description": ";".join(descriptions)}
+            "pfam2description": ";".join(descriptions),
+            "form_venn": form_venn}
     return render(request, 'chlamdb/venn_Pfam.html', my_locals(ctx))
 
 
