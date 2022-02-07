@@ -314,6 +314,17 @@ def make_module_overview_form(db, sub_sub_cat=False):
     return ModuleCatChoice
 
 
+def make_single_genome_form(db):
+    accession_choices, rev_index = get_accessions(db)
+
+    class SingleGenomeForm(forms.Form):
+        genome = forms.ChoiceField(choices=accession_choices)
+        def get_genome(self):
+            target = self.cleaned_data["genome"]
+            return rev_index[int(target)]
+
+    return SingleGenomeForm
+
 
 def make_blast_form(biodb):
     accession_choices, rev_index =  get_accessions(biodb, all=True)

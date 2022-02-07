@@ -31,6 +31,7 @@ from chlamdb.forms import make_extract_form
 from chlamdb.forms import make_metabo_from
 from chlamdb.forms import make_module_overview_form
 from chlamdb.forms import make_venn_from
+from chlamdb.forms import make_single_genome_form
 
 
 from metagenlab_libs import db_utils
@@ -3191,17 +3192,17 @@ def format_pathway(path_id, to_url=False, taxid=None):
 
 def priam_kegg(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    priam_form_class = make_priam_form(db)
+    single_genome_form = make_single_genome_form(db)
     if request.method != "POST":
-        form = priam_form_class()
+        form = single_genome_form()
         return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
 
-    form = priam_form_class(request.POST)
+    form = single_genome_form(request.POST)
     if not form.is_valid():
-        form = priam_form_class()
+        form = single_genome_form()
         return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
 
-    taxid, _ = form.get_genome()
+    taxid = form.get_genome()
     ko_hits = db.get_ko_hits([taxid], search_on="taxid")
     kos = ko_hits.index.tolist()
     ko_pathways = db.get_ko_pathways(kos)
