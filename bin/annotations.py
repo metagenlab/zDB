@@ -353,19 +353,29 @@ def orthofinder2core_groups(fasta_list,
 
     n_genomes = len(set(locus2genome.values()))
     n_minimum_genomes = n_genomes-n_missing
-    freq_missing = (n_genomes-float(n_missing))/n_genomes
-    limit = freq_missing*n_genomes
-
+    
     groups_with_paralogs = df[(df > 1).sum(axis=1) > 0].index
     df = df.drop(groups_with_paralogs)
 
-    core_groups = df[(df == 1).sum(axis=1) >= limit].index.tolist()
+    core_groups = df[(df == 1).sum(axis=1) >= n_genomes-n_missing].index.tolist()
     return core_groups, orthogroup2locus_list, locus2genome
 
 
 def get_core_orthogroups(genomes_list, int_core_missing):
     core_groups, orthogroup2locus_list, locus2genome = orthofinder2core_groups(genomes_list,
           'Orthogroups.txt', int_core_missing)
+
+    og_resume_file = open("orthogroups_summary_info.tsv", "w")
+    core_groups_set = set(core_groups)
+    for og, locus_list in orthogroup2locus_list.items():
+        og_size = len(locus_list)
+        is_core = 1 if og in core_groups_set else 0
+        genome_set = set()
+        for locus in locus_list:
+            genome_set.add(locus2genome[locus])
+        num_genomes = len(genome_set)
+        print(og, is_core, og_size, num_genomes, sep="\t", file=og_resume_file)
+    og_resume_file.close()
 
     for group_id in core_groups:
         sequence_data = SeqIO.to_dict(SeqIO.parse(group_id + "_mafft.faa", "fasta"))
