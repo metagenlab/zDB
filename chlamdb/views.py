@@ -205,21 +205,12 @@ def home(request):
     e_tree.rename_leaves(genomes_descr.description.to_dict())
     e_tree.render(path, dpi=500)
 
-
     hsh_files = db.get_filenames_to_taxon_id()
     number_of_files=len(hsh_files)
      
-    orthogroups_freq=db.get_all_orthogroups( min_size=None)
-    df_ort=pd.DataFrame(orthogroups_freq, columns=["Orthogroup", "freq"])
-    number_ort= df_ort.shape[0]
-
-    description_db = db.get_genomes_description()
-   
-    taxids = list(description_db.index)
-
-    df_hits = db.get_og_count(taxids, search_on="taxid")
-    missing_entries = df_hits[df_hits == 0].count(axis=1)
-    core = len(missing_entries[missing_entries == 0])
+    number_ort = db.get_n_orthogroups()
+    taxids = list(genomes_descr.index)
+    core = db.get_n_orthogroups(only_core=True)
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 
