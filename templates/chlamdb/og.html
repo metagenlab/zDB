@@ -27,9 +27,15 @@
 			<li class="active"><a data-toggle="tab" href="#overview_tab">Overview</a></li>
 			<li><a href="#homologs_tab" data-toggle="tab">Homologs <span class="badge">{{n_homologues}}</span></a></li>
 			<li><a href="#og_distribution_tab" data-toggle="tab">Phylogenetic distribution</a></li>
+
 			{% if n_homologues > 2 and optional2status|keyvalue:"gene_phylogenies" %}
 			<li><a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a></li>
 			{% endif %}
+
+			{% if has_refseq_phylo and optional2status|keyvalue:"BBH_phylogenies" %}
+			<li><a href="#refseq_phylogeny" data-toggle="tab" >RefSeq best hits phylogeny</a></li>
+			{% endif %}
+			
 		</ul>
 	</nav>
 		<div id="form" class="col-lg-10 col-md-12 col-sm-12">
@@ -52,6 +58,14 @@
 				  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
 				  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
 
+				</div>
+		  </div>
+
+		  <div class="tab-pane" id="refseq_phylogeny">
+			  <h3>Phylogeny of the RefSeq best hits of {{og}}</h3>
+				<div class="tab-pane active" id="tab1">
+				  <object type="image/svg+xml" data="{% static best_hits_phylogeny %}"></object>
+				  <a download="profile.svg" class="btn" href="{% static best_hits_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
 				</div>
 		  </div>
 

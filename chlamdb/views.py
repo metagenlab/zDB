@@ -55,7 +55,7 @@ from Bio import SeqIO
 
 
 from ete3 import Tree
-from ete3 import TextFace, StackedBarFace, SeqMotifFace
+from ete3 import TextFace, StackedBarFace, SeqMotifFace, TreeStyle
 from reportlab.lib import colors
 
 
@@ -1258,6 +1258,45 @@ def og_tab_get_pfams(db, annotations):
     }
 
 
+
+def tab_og_best_hits(db, orthogroup):
+    try:
+        refseq_newick = db.get_refseq_phylogeny(orthogroup)
+    except:
+        # no phylogeny for that orthogroup
+        return {"has_refseq_phylo": False}
+    ete_tree = Tree(refseq_newick)
+    loci = list(leaf.name.split(".")[0] for leaf in ete_tree.iter_leaves())
+    match_infos = db.get_refseq_matches_info(loci, search_on="accession")
+    zdb_taxids = db.get_taxid_from_accession(loci)
+    orgas = db.get_genomes_description().description.to_dict()
+    acc_to_orga = match_infos.set_index("accession")["organism"]
+
+    R = ete_tree.get_midpoint_outgroup()
+    if not R is None:
+        ete_tree.set_outgroup(R)
+    ete_tree.ladderize()
+
+    for leaf in ete_tree.iter_leaves():
+        shortened = leaf.name.split(".")[0]
+        if shortened in acc_to_orga.index:
+            orga_name = acc_to_orga.loc[shortened]
+            leaf.add_face(TextFace(f"{leaf.name} | {orga_name}"), 0, "branch-right")
+            continue
+
+        taxid = zdb_taxids.loc[shortened].taxid
+        orga_name = orgas[taxid]
+        leaf.add_face(TextFace(f"{leaf.name} | {orga_name}", fgcolor="red"),
+                0, "branch-right")
+
+    asset_path = f"/temp/og_best_hit_phylogeny_{orthogroup}.svg"
+    path = settings.BASE_DIR + '/assets/' + asset_path
+    ts = TreeStyle()
+    ts.show_leaf_name = False
+    ete_tree.render(path, tree_style=ts, dpi=1200)
+    return {"best_hits_phylogeny": asset_path, "has_refseq_phylo": True}
+
+
 def orthogroup(request, og):
     tokens = og.split("_")
     try:
@@ -1300,6 +1339,7 @@ def orthogroup(request, og):
         product_annotations.append([index+1, product, cnt])
 
     swissprot, cog_ctx, kegg_ctx, pfam_ctx = {}, {}, {}, {}
+    best_hit_phylo = {}
     if optional2status.get("COG", False):
         cog_ctx = og_tab_get_cog_annot(db, annotations.index.tolist())
 
@@ -1317,6 +1357,9 @@ def orthogroup(request, og):
     except:
         og_phylogeny_ctx = {}
 
+    if optional2status.get("BBH_phylogenies", False):
+        best_hit_phylo = tab_og_best_hits(db, og_id)
+
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
     homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms, og=og_id)
@@ -1329,7 +1372,7 @@ def orthogroup(request, og):
         "product_annotations": product_annotations,
         **homolog_tab_ctx,
         **length_tab_ctx,
-        **og_conserv_ctx,
+        **og_conserv_ctx, **best_hit_phylo,
         **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx, **swissprot
     }
     return render(request, "chlamdb/og.html", my_locals(context))
@@ -3176,7 +3219,6 @@ def plot_heatmap(request, type):
 
     envoi_heatmap = True
     return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
-
 
 
 def format_pathway(path_id, to_url=False, taxid=None):
