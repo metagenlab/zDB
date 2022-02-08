@@ -1259,7 +1259,7 @@ def og_tab_get_pfams(db, annotations):
 
 
 
-def tab_og_best_hits(db, orthogroup):
+def tab_og_best_hits(db, orthogroup, locus=None):
     try:
         refseq_newick = db.get_refseq_phylogeny(orthogroup)
     except:
@@ -1284,9 +1284,12 @@ def tab_og_best_hits(db, orthogroup):
             leaf.add_face(TextFace(f"{leaf.name} | {orga_name}"), 0, "branch-right")
             continue
 
+        color = "red"
+        if not locus is None and shortened==locus:
+            color = "green"
         taxid = zdb_taxids.loc[shortened].taxid
         orga_name = orgas[taxid]
-        leaf.add_face(TextFace(f"{leaf.name} | {orga_name}", fgcolor="red"),
+        leaf.add_face(TextFace(f"{leaf.name} | {orga_name}", fgcolor=color),
                 0, "branch-right")
 
     asset_path = f"/temp/og_best_hit_phylogeny_{orthogroup}.svg"
@@ -1632,6 +1635,7 @@ def locusx(request, locus=None, menu=True):
     kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
     diamond_matches_ctx = {}
     swissprot_ctx = {}
+    best_hit_phylo = {}
     if optional2status.get("KEGG", False):
         kegg_ctx = og_tab_get_kegg_annot(db, [seqid])
 
@@ -1646,6 +1650,9 @@ def locusx(request, locus=None, menu=True):
 
     if optional2status.get("BLAST_database", False):
         diamond_matches_ctx = tab_get_refseq_homologs(db, seqid)
+
+    if optional2status.get("BBH_phylogenies", False):
+        best_hit_phylo = tab_og_best_hits(db, og_id, locus=locus)
 
     context = {
         "valid_id": valid_id,
@@ -1668,7 +1675,8 @@ def locusx(request, locus=None, menu=True):
         **pfam_ctx,
         **genomic_region_ctx,
         **diamond_matches_ctx,
-        **swissprot_ctx
+        **swissprot_ctx,
+        **best_hit_phylo
     }
     return render(request, 'chlamdb/locus.html', my_locals(context))
 

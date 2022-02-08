@@ -85,8 +85,8 @@
 				</li>
                 {% endif %}
 
-				{% if homologues > 2 and optional2status|keyvalue:"BBH_phylogenies" %}
-                    <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'frame9'); return false">Best hit phylogeny</a></li>
+				{% if has_refseq_phylo and optional2status|keyvalue:"BBH_phylogenies" %}
+                    <li><a href="#refseq_phylogeny" data-toggle="tab">RefSeq best hits phylogeny</a></li>
                 {% endif %}
               </ul>
 
@@ -123,6 +123,14 @@
 						  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
 						  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}">
 							  <i class="fa fa-download"></i> Download SVG</a>
+						</div>
+				  </div>
+
+				  <div class="tab-pane" id="refseq_phylogeny">
+					  <h3>Phylogeny of the RefSeq best hits of {{og_id|safe}}</h3>
+						<div class="tab-pane active" id="tab1">
+						  <object type="image/svg+xml" data="{% static best_hits_phylogeny %}"></object>
+						  <a download="profile.svg" class="btn" href="{% static best_hits_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
 						</div>
 				  </div>
 
