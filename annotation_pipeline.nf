@@ -225,9 +225,6 @@ process prepare_orthofinder {
 
   container "$params.orthofinder_container"
 
-  when:
-  params.orthofinder
-
   input:
     file genome_list from faa_genomes1.collect()
 
@@ -250,10 +247,6 @@ process blast_orthofinder {
   file complete_dir from result_dir
   each seq from species_fasta
   each blastdb from species_blastdb
-
-
-  when:
-  params.orthofinder
 
   output:
   file "${complete_dir.baseName}/WorkingDirectory/Blast${species_1}_${species_2}.txt" into blast_results
@@ -301,6 +294,7 @@ orthogroups
 .into { orthogroups_1
         orthogroups_2
         to_load_orthofinder_in_db }
+
 
 process orthogroups2fasta {
     container "$params.annotation_container"
@@ -385,9 +379,6 @@ process orthogroups_phylogeny_with_fasttree3 {
   container "$params.fasttree_container"
   publishDir 'orthology/orthogroups_phylogenies_fasttree', mode: 'copy', overwrite: true
 
-  when:
-    params.orthogroups_phylogeny
-
   input:
     file og from to_fasttree_orthogroups
 
@@ -416,6 +407,7 @@ process get_core_orthogroups {
 
   output:
   file '*_taxon_ids.faa' into core_orthogroups
+  file "orthogroups_summary_info.tsv" into og_summary
 
   script:
 
@@ -426,6 +418,7 @@ process get_core_orthogroups {
     annotations.get_core_orthogroups(genomes_list, int("${params.core_missing}"))
   """
 }
+
 
 process concatenate_core_orthogroups {
     container "$params.annotation_container"
@@ -449,12 +442,10 @@ process concatenate_core_orthogroups {
   """
 }
 
+
 process build_core_phylogeny_with_fasttree {
   container "$params.fasttree_container"
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
-
-  when:
-  params.core_genome_phylogeny_with_fasttree
 
   input:
   file 'msa.faa' from core_msa
@@ -473,9 +464,6 @@ process checkm_analyse {
   container "$params.checkm_container"
 
   publishDir 'data/checkm/analysis', mode: 'copy', overwrite: true
-
-  when:
-  params.checkm
 
   input:
   file genome_list from to_checkm.collect()
@@ -738,6 +726,7 @@ process load_taxo_stats_into_db {
         file db from to_load_taxonomy
         file core_phylogeny from core_genome_phylogeny
         file og_phylogenies_list from all_og_phylogeny
+        file og_summary
 
     output:
         file db into to_load_BBH_phylo
@@ -753,9 +742,10 @@ process load_taxo_stats_into_db {
     gene_list = "$og_phylogenies_list".split(" ")
 
     setup_chlamdb.load_reference_phylogeny(kwargs, "$core_phylogeny", "$db")
-    setup_chlamdb.load_gene_phylogenies(kwargs, gene_list, "$db")
+    setup_chlamdb.load_gene_phylogenies(kwargs, "$og_summary", gene_list, "$db")
     """
 }
+
 
 process load_BBH_phylogenies {
     container "$params.annotation_container"
@@ -930,7 +920,10 @@ process cleanup {
     custom_run_name=(params.name)?params.name:""
     """
     ln -sf $index $baseDir/search_index/latest
+    ln -sf $index $baseDir/search_index/$workflow.runName
+
     ln -sf $db $baseDir/db/latest
+
     ln -snf $baseDir/blast_DB/$workflow.runName $baseDir/blast_DB/latest
 
     if [ ! -z "${custom_run_name}" ]; then

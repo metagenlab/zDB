@@ -319,18 +319,26 @@ def load_BBH_phylogenies(kwargs, lst_orthogroups, db_file):
     db.commit()
 
 
-def load_gene_phylogenies(kwargs, lst_orthogroups, db_file):
+def load_gene_phylogenies(kwargs, og_summary, lst_orthogroups, db_file):
     """
     NOTE: the leafs of those tree are locus tags
     """
     import ete3
 
     db = db_utils.DB.load_db(db_file, kwargs)
-    data = []
+    hsh_ogs = {}
     for tree in lst_orthogroups:
         t = ete3.Tree(tree)
         og_id = int(tree.split("_")[0][2:])
-        data.append( (og_id, t.write()) )
+        hsh_ogs[og_id] = t.write()
+
+    data = []
+    for line in open(og_summary, "r"):
+        og, is_core, og_size, num_genomes = line.split("\t")
+        og_id = int(og.split("_")[0][2:])
+        newick = hsh_ogs.get(og_id, "")
+        data.append((og_id, newick, int(is_core), int(og_size), int(num_genomes)))
+
     db.create_gene_phylogeny_table(data)
     db.set_status_in_config_table("gene_phylogenies", 1)
     db.commit()
