@@ -71,7 +71,6 @@
                               </div>
                               <p style="margin: 10px 10px 10px 10px; line-height: 180%">Two tables have been generated:
                                 <br> <b>Pfam</b> table: it contains the list of Pfam domains shared among the selected genomes.Pfam entry, its description, its frequency in the selected genomes and in all genomes is reported. 
-                              <br><b>Locus list reference</b>: a complete list of the members of each Pfam group shared by the selected genome is displayed.                            
                               </p>
                             </div>
 
@@ -104,7 +103,6 @@
                             <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                               <br>
                               <li class="active"><a href="#red" data-toggle="tab">Pfam</a></li>
-                              <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
                         </ul>
                 
 
@@ -122,17 +120,18 @@
                                         </tr>
                                     </thead>
 
-                                    {% for value in match_groups_data %}
-                                        <tr>
-                                            <td>{{value.0}}</td>
-                                            <td><a href="{% url 'fam_pfam' value.1 %}">{{value.1}}</a></td>
-                                            <td>{{value.2}}</td>
-                                            <td>{{value.3}}</td>
-                                            <td>{{value.4}}</td>
+									<tbody>
+										{% for value in match_groups_data %}
+											<tr>
+												<td>{{value.0}}</td>
+												<td><a href="{% url 'fam_pfam' value.1 %}">{{value.1}}</a></td>
+												<td>{{value.2}}</td>
+												<td>{{value.3}}</td>
+												<td>{{value.4}}</td>
 
-                                        </tr>
-                                    {% endfor %}
-
+											</tr>
+										{% endfor %}
+									</tbody>
                                 </table>
                             </div>
                         </div>
@@ -146,92 +145,29 @@
   </div>
 
 <script type="text/javascript" id="js2">
-  $(document).ready(function() {
-
-      var x=document.getElementById("id_reference");
-      for (var i = 0; i < x.options.length; i++) {
-          $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
-      }
-
-      $("#id_orthologs_in").change(function() {
-          document.getElementById("id_reference").selectedIndex=0;
-          var x=document.getElementById("id_orthologs_in");
-          for (var i = 0; i < x.options.length; i++) {
-              if(x.options[i].selected ==true){
-
-              $("#id_reference").children("option[value^=" + x.options[i].value + "]").show()
-              }else{
-              $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
-
-              }
-              }
-      })
-
-  })
-
 
 $(document).ready(function() {
-$('#PFAM_table').DataTable( {
-dom: 'Bfrtip',    
-"paging":   true,
-"ordering": true,
-"info":     false,
-buttons: [
-{
-    extend: 'excel',
-    title: 'PFAM_table'
-},
-{
-    extend: 'csv',
-    title: 'PFAM_table'
-}
-],
-} );
+	$('#PFAM_table').DataTable( {
+		dom: 'Bfrtip',
+		"paging": true,
+		"ordering": true,
+		"info": false,
+		buttons: [ 
+			{
+				extend: 'excel',
+				title: 'PFAM_table'
+			},
+			{
+				extend: 'csv',
+				title: 'PFAM_table'
+			}
+		],
+	} );
 } );
 
 $(document).ready(function() {
-$('#reference_genome').DataTable( {
- dom: 'Bfrtip',   
-"paging":   true,
-"ordering": true,
-"info":     false,
-buttons: [
-{
-    extend: 'excel',
-    title: 'reference_genome'
-},
-{
-    extend: 'csv',
-    title: 'reference_genome'
-}
-],
-} );
-} );
-
-
- type="text/javascript" id="js">
-            $(document).ready(function() {
-            // call the tablesorter plugin
-            $("table").tablesorter({
-            // change the default sorting order from 'asc' to 'desc'
-            sortInitialOrder: 1
-            });
-            });
-        </script>
-        <script type="text/javascript">
-            jQuery(document).ready(function ($) {
-                $('#tabs_main').tab();
-            });
-        </script>
-        <script type="text/javascript">
-            jQuery(document).ready(function ($) {
-                $('#tabs1').tab();
-            });
-       
-$(document).ready(function() {
-$("#PFAM_table").DataTable();} );
-$(document).ready(function() {
-$("#tab2").DataTable();} );
+	$("#PFAM_table").DataTable();}
+);
 
 </script>
 </body>

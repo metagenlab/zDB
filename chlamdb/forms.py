@@ -139,16 +139,19 @@ def make_metabo_from(db, add_box=False):
     return MetaboForm
 
 
-def make_venn_from(db, plasmid=False, label="Orthologs", limit=None):
+def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
+        action="venn_orthogroup"):
 
     accession_choices, rev_index = get_accessions(db, plasmid=plasmid)
 
     class VennForm(forms.Form):
-        if limit is None:
-            targets = forms.MultipleChoiceField(choices=accession_choices,
-                    widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-actions-box":"true"}), required = True)
-        else:
-            targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"%s" % limit ,"multiple data-actions-box":"true"}), required = True)
+        attrs = {'size':'1', "class":"selectpicker",
+                "data-live-search":"true",
+                "data-actions-box":"true"}
+        if not limit is None:
+            attrs["data-max-options"] = f"{limit}"
+        targets = forms.MultipleChoiceField(choices=accession_choices,
+                    widget=forms.SelectMultiple(attrs=attrs), required = True)
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -156,16 +159,17 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None):
             self.helper.form_method = 'post'
             self.helper.label_class = 'col-lg-1 col-md-6 col-sm-6'
             self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
+            self.helper.form_action = action
             self.helper.layout = Layout(
-                                        Fieldset(" ",
-                                                 Column(
-                                                       Row('targets'),
-                                                       Submit('submit', 'Compare %s' % label,  style="margin-top:15px" ),
-                                                       css_class='form-group col-lg-12 col-md-12 col-sm-12'),
-                                                )
-                                        )
 
-            super(VennForm, self).__init__(*args, **kwargs)
+                Fieldset("Compare genomes",
+                     Column(
+                           Row('targets'),
+                           Submit('submit', 'Compare %s' % label,  style="margin-top:15px" ),
+                           css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                    )
+                )
+
 
         def get_taxids(self):
             indices = self.cleaned_data["targets"]
@@ -312,6 +316,17 @@ def make_module_overview_form(db, sub_sub_cat=False):
 
     return ModuleCatChoice
 
+
+def make_single_genome_form(db):
+    accession_choices, rev_index = get_accessions(db)
+
+    class SingleGenomeForm(forms.Form):
+        genome = forms.ChoiceField(choices=accession_choices)
+        def get_genome(self):
+            target = self.cleaned_data["genome"]
+            return rev_index[int(target)]
+
+    return SingleGenomeForm
 
 
 def make_blast_form(biodb):

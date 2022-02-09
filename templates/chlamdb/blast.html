@@ -171,8 +171,9 @@ margin-top: 15em;
                           <tr><td>blastx</td><td>translated dna sequence vs protein sequences database </td></tr>
                           <tr><td>tblastn</td><td>protein sequence vs translated nucleotide sequences database</td></tr>
                       </table>
-
-                    
+					  <p>
+					  The blast input can be either an amino-acid or a nucleotide sequence, or a set (one or more) of fasta sequences.
+					  </p>
                   </div>
                   <form action="{% url "blast" %}" method="post">{% csrf_token %}
                     {{ form.as_p }} 
@@ -182,45 +183,84 @@ margin-top: 15em;
 
                   {% if wrong_format %}
 
-                  <div class="panel panel-danger" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-                      <div class="panel-heading" style="width:100%">
-						  <h3 class="panel-title">{{ error_title }}</h3>
-                      </div>
-					  {{ error_message }}
-                  </div>
+					  <div class="panel panel-danger" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+						  <div class="panel-heading" style="width:100%">
+							  <h3 class="panel-title">{{ error_title }}</h3>
+						  </div>
+						  {{ error_message }}
+					  </div>
 
                   {% endif %}
 
 
                   {% if envoi %}
 
-                      <h2>Blast result</h2>
+                     <h2>Blast result</h2>
 
-                      {% if js_out %}
-                          <div id='snippetDiv'></div>
-                          <div id="blast-multiple-alignments"></div> 
-                          <div id="blast-alignments-table"></div> 
-                          <div id="blast-single-alignment"></div> 
-                      {% endif %}
-
-					  {% if blast_result %} 
-						  <h3>Result</h3>
-						   <div id="blast_res">
-						  {% autoescape off %}{{blast_result}}{% endautoescape %}</div>
-					  {% elif blast_no_hits %}   
-						  <h3>No hits</h3>
-					  {% elif blast_err %}
-							<h3>Error</h3>
-							<pre id="blast_result">
-							 {% autoescape off %}{{blast_err}}{% endautoescape %}
-							</pre>
+				  	 {% if phylo_distrib %}
+				  	  <nav>
+						  <ul id="tabs_blast" class="nav nav-tabs">
+							  <li class="active">
+								  <a href="#blast_details" data-toggle="tab">
+									  Details
+								  </a>
+							  </li>
+							  <li>
+								  <a href="#phylo_distrib" data-toggle="tab">
+									  Phylogenetic distribution
+								  </a>
+							  </li>
+						  </ul>
+					  </nav>
 					  {% endif %}
+
+					  	
+					  <div class="tab-content">
+						  <div class="tab-pane active" id="blast_details">
+
+							  {% if js_out %}
+								  <div id='snippetDiv'></div>
+								  <div id="blast-multiple-alignments"></div> 
+								  <div id="blast-alignments-table"></div> 
+								  <div id="blast-single-alignment"></div> 
+							  {% endif %}
+
+							  {% if blast_result %} 
+								  <h3>Result</h3>
+								   <div id="blast_res">
+								  {% autoescape off %}{{blast_result}}{% endautoescape %}</div>
+							  {% elif blast_no_hits %}   
+								  <h3>No hits</h3>
+							  {% elif blast_err %}
+									<h3>Error</h3>
+									<pre id="blast_result">
+									 {% autoescape off %}{{blast_err}}{% endautoescape %}
+									</pre>
+							  {% endif %}
+						  </div>
+
+						  {% if phylo_distrib %}
+							  <div class="tab-pane" id="phylo_distrib">
+								  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+									  <div class="panel-heading" style="width:100%">
+										  <h3 class="panel-title">Help</h3>
+									  </div>
+									  <p style="margin: 10px 10px 10px 10px; line-height: 180%">
+									  Heatmap of the amino-acid/nucleotide identity of the best hit for each taxa.
+									  </p>
+								  </div>
+
+								  <object type="image/svg+xml" data="{% static asset_path %}">
+								  </object>
+
+								  <a download="profile.svg" class="btn" href="{% static asset_path %}">
+									  <i class="fa fa-download"></i> Download SVG</a>
+							  </div>
+						  {% endif %}
+					  </div>
+
+
                   {% endif %}
-
-
-                            <div class="tab-pane" id="tab2">
-                                <object style="max-width:90%; padding-top: 2em;" type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
-                            </div>
                   
                 </div>
               </div>

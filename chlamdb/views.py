@@ -31,6 +31,7 @@ from chlamdb.forms import make_extract_form
 from chlamdb.forms import make_metabo_from
 from chlamdb.forms import make_module_overview_form
 from chlamdb.forms import make_venn_from
+from chlamdb.forms import make_single_genome_form
 
 from metagenlab_libs import db_utils
 from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
@@ -53,7 +54,7 @@ from Bio import SeqIO
 
 
 from ete3 import Tree
-from ete3 import TextFace, StackedBarFace, SeqMotifFace
+from ete3 import TextFace, StackedBarFace, SeqMotifFace, TreeStyle
 from reportlab.lib import colors
 
 
@@ -203,21 +204,12 @@ def home(request):
     e_tree.rename_leaves(genomes_descr.description.to_dict())
     e_tree.render(path, dpi=500)
 
-
     hsh_files = db.get_filenames_to_taxon_id()
     number_of_files=len(hsh_files)
      
-    orthogroups_freq=db.get_all_orthogroups( min_size=None)
-    df_ort=pd.DataFrame(orthogroups_freq, columns=["Orthogroup", "freq"])
-    number_ort= df_ort.shape[0]
-
-    description_db = db.get_genomes_description()
-   
-    taxids = list(description_db.index)
-
-    df_hits = db.get_og_count(taxids, search_on="taxid")
-    missing_entries = df_hits[df_hits == 0].count(axis=1)
-    core = len(missing_entries[missing_entries == 0])
+    number_ort = db.get_n_orthogroups()
+    taxids = list(genomes_descr.index)
+    core = db.get_n_orthogroups(only_core=True)
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 
@@ -484,7 +476,7 @@ def extract_pfam(request, classification="taxon_id"):
     if sum_exclude_length > 0:
         pfam_exclude = db.get_pfam_hits(exclude, plasmids=exclude_plasmids,
                 search_on="taxid", indexing="taxid")
-        pfam_exclude["sum_pos"] = pfam_exclude[cog_exclude > 0].count(axis=1)
+        pfam_exclude["sum_pos"] = pfam_exclude[pfam_exclude > 0].count(axis=1)
         pfam_exclude["exclude"] = pfam_exclude.sum_pos > 0
         neg_index = pfam_exclude[pfam_exclude.exclude].index
     else:
@@ -629,10 +621,10 @@ def venn_pfam(request):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
-    venn_form_class = make_venn_from(db, limit=6)
+    venn_form_class = make_venn_from(db, label="PFAM domain", limit=6, action="venn_pfam")
     if request.method != "POST":
         form_venn = venn_form_class()
-        return render(request, 'chlamdb/venn_Pfam.html', my_locals({"form_venn": form_venn}))
+        return render(request, 'chlamdb/venn_Pfam.html', my_locals(locals()))
 
     form_venn = venn_form_class(request.POST)
     if not form_venn.is_valid():  
@@ -660,7 +652,8 @@ def venn_pfam(request):
 
     ctx = {"envoi_venn": True,
             "series": series,
-            "pfam2description": ";".join(descriptions)}
+            "pfam2description": ";".join(descriptions),
+            "form_venn": form_venn}
     return render(request, 'chlamdb/venn_Pfam.html', my_locals(ctx))
 
 
@@ -818,6 +811,7 @@ def format_cog_url(cog_id):
 
 def escape_quotes(unsafe):
     return unsafe.replace("\"", "\\\"")
+
 
 def venn_cog(request, sep_plasmids=False):
     """
@@ -1256,6 +1250,48 @@ def og_tab_get_pfams(db, annotations):
     }
 
 
+
+def tab_og_best_hits(db, orthogroup, locus=None):
+    try:
+        refseq_newick = db.get_refseq_phylogeny(orthogroup)
+    except:
+        # no phylogeny for that orthogroup
+        return {"has_refseq_phylo": False}
+    ete_tree = Tree(refseq_newick)
+    loci = list(leaf.name.split(".")[0] for leaf in ete_tree.iter_leaves())
+    match_infos = db.get_refseq_matches_info(loci, search_on="accession")
+    zdb_taxids = db.get_taxid_from_accession(loci)
+    orgas = db.get_genomes_description().description.to_dict()
+    acc_to_orga = match_infos.set_index("accession")["organism"]
+
+    R = ete_tree.get_midpoint_outgroup()
+    if not R is None:
+        ete_tree.set_outgroup(R)
+    ete_tree.ladderize()
+
+    for leaf in ete_tree.iter_leaves():
+        shortened = leaf.name.split(".")[0]
+        if shortened in acc_to_orga.index:
+            orga_name = acc_to_orga.loc[shortened]
+            leaf.add_face(TextFace(f"{leaf.name} | {orga_name}"), 0, "branch-right")
+            continue
+
+        color = "red"
+        if not locus is None and shortened==locus:
+            color = "green"
+        taxid = zdb_taxids.loc[shortened].taxid
+        orga_name = orgas[taxid]
+        leaf.add_face(TextFace(f"{leaf.name} | {orga_name}", fgcolor=color),
+                0, "branch-right")
+
+    asset_path = f"/temp/og_best_hit_phylogeny_{orthogroup}.svg"
+    path = settings.BASE_DIR + '/assets/' + asset_path
+    ts = TreeStyle()
+    ts.show_leaf_name = False
+    ete_tree.render(path, tree_style=ts, dpi=1200)
+    return {"best_hits_phylogeny": asset_path, "has_refseq_phylo": True}
+
+
 def orthogroup(request, og):
     tokens = og.split("_")
     try:
@@ -1298,6 +1334,7 @@ def orthogroup(request, og):
         product_annotations.append([index+1, product, cnt])
 
     swissprot, cog_ctx, kegg_ctx, pfam_ctx = {}, {}, {}, {}
+    best_hit_phylo = {}
     if optional2status.get("COG", False):
         cog_ctx = og_tab_get_cog_annot(db, annotations.index.tolist())
 
@@ -1315,6 +1352,9 @@ def orthogroup(request, og):
     except:
         og_phylogeny_ctx = {}
 
+    if optional2status.get("BBH_phylogenies", False):
+        best_hit_phylo = tab_og_best_hits(db, og_id)
+
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
     homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms, og=og_id)
@@ -1327,7 +1367,7 @@ def orthogroup(request, og):
         "product_annotations": product_annotations,
         **homolog_tab_ctx,
         **length_tab_ctx,
-        **og_conserv_ctx,
+        **og_conserv_ctx, **best_hit_phylo,
         **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx, **swissprot
     }
     return render(request, "chlamdb/og.html", my_locals(context))
@@ -1589,6 +1629,7 @@ def locusx(request, locus=None, menu=True):
     kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
     diamond_matches_ctx = {}
     swissprot_ctx = {}
+    best_hit_phylo = {}
     if optional2status.get("KEGG", False):
         kegg_ctx = og_tab_get_kegg_annot(db, [seqid])
 
@@ -1603,6 +1644,9 @@ def locusx(request, locus=None, menu=True):
 
     if optional2status.get("BLAST_database", False):
         diamond_matches_ctx = tab_get_refseq_homologs(db, seqid)
+
+    if optional2status.get("BBH_phylogenies", False):
+        best_hit_phylo = tab_og_best_hits(db, og_id, locus=locus)
 
     context = {
         "valid_id": valid_id,
@@ -1625,7 +1669,8 @@ def locusx(request, locus=None, menu=True):
         **pfam_ctx,
         **genomic_region_ctx,
         **diamond_matches_ctx,
-        **swissprot_ctx
+        **swissprot_ctx,
+        **best_hit_phylo
     }
     return render(request, 'chlamdb/locus.html', my_locals(context))
 
@@ -2594,20 +2639,22 @@ blast_command = {"blastp": NcbiblastpCommandline,
         "blastx": NcbiblastxCommandline}
 
 
-def gen_blast_heatmap(db, blast_res, blast_type):
+def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
     parsed_results = NCBIXML.parse(StringIO(blast_res))
 
     # collects the bitscore and the query accession
-    hits = defaultdict(list)
+    hits = collections.defaultdict(list)
     accessions = set()
     for record in parsed_results:
         if len(record.alignments) == 0:
             continue
-        query = hit.header.query
+        query = record.query
+        if no_query_name:
+            query = "query"
         for hit in record.alignments:
             hsp = hit.hsps[0]
             scores = hits[query]
-            scores.append((hit.accession, hsp.score))
+            scores.append((hit.accession, 100.0*hsp.identities/hsp.align_length))
             accessions.add(hit.accession)
 
     file_type = blast_input_dir[blast_type]
@@ -2615,9 +2662,9 @@ def gen_blast_heatmap(db, blast_res, blast_type):
     # if ffn, the accession refers to contigs
     # need to map those to taxids to generate the heatmap
     if file_type=="faa" or file_type=="fna":
-        acc_to_taxid = db.get_taxid_from_accession(accessions, look_on="locus_tag")
+        acc_to_taxid = db.get_taxid_from_accession(list(accessions), look_on="locus_tag")
     elif file_type=="ffn":
-        acc_to_taxid = db.get_taxid_from_accession(accessions, look_on="contig")
+        acc_to_taxid = db.get_taxid_from_accession(list(accessions), look_on="contig")
 
     all_infos = []
     for query, lst_vals in hits.items():
@@ -2625,9 +2672,11 @@ def gen_blast_heatmap(db, blast_res, blast_type):
         for accession, score in lst_vals:
             taxid = acc_to_taxid.loc[accession].taxid
             if hsh_taxid_to_score.get(taxid, 0) < score:
-                hsh_taxid_to_score[taxid] = score
+                hsh_taxid_to_score[taxid] = int(score)
         all_infos.append((query, hsh_taxid_to_score))
 
+    min_val = min(min(hsh.values()) for _, hsh in all_infos)
+    max_val = max(max(hsh.values()) for _, hsh in all_infos)
     tree = db.get_reference_phylogeny()
     descr = db.get_genomes_description()
 
@@ -2639,7 +2688,8 @@ def gen_blast_heatmap(db, blast_res, blast_type):
     e_tree.rename_leaves(descr.description.to_dict())
 
     for query, hsh_values in all_infos:
-        col = SimpleColorColumn(hsh_values, header=query, color_gradient=True, default="-")
+        col = SimpleColorColumn(hsh_values, header=query, color_gradient=True,
+                default_val="-", gradient_value_range=[min_val, max_val])
         e_tree.add_column(col)
 
     base_file_name = time.strftime("blast_%d_%m_%y_%H_%M.svg" , time.gmtime())
@@ -2668,7 +2718,7 @@ def blast(request):
     number_blast_hits = form.cleaned_data['max_number_of_hits']
     blast_type = form.cleaned_data['blast']
     target = form.get_target()
-    has_multiple_seq = False
+    no_query_name = False
 
 
     if '>' in input_sequence:
@@ -2680,6 +2730,7 @@ def blast(request):
                     "envoi": True, "form": form, "wrong_format": True}
             return render(request, 'chlamdb/blast.html', my_locals(context))
     else:
+        no_query_name = True
         input_sequence = "".join(input_sequence.split())
         records = [SeqRecord(Seq(input_sequence))]
                         
@@ -2739,7 +2790,7 @@ def blast(request):
         blast_err = blast_stderr
     else:
         if target == "all":
-            asset_path = gen_blast_heatmap(db, blast_stdout, blast_type)
+            asset_path = gen_blast_heatmap(db, blast_stdout, blast_type, no_query_name)
         rand_id = id_generator(6)
         blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
         f = open(blast_file_l, 'w')
@@ -2747,6 +2798,7 @@ def blast(request):
         f.close()
         asset_blast_path = '/assets/temp/%s.xml' % rand_id
         js_out = True
+        phylo_distrib = target=="all"
     envoi= True
     return render(request, 'chlamdb/blast.html', my_locals(locals()))
 
@@ -3175,7 +3227,6 @@ def plot_heatmap(request, type):
     return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
 
-
 def format_pathway(path_id, to_url=False, taxid=None):
     base_string = f"map{path_id:05d}"
     if not to_url:
@@ -3189,17 +3240,17 @@ def format_pathway(path_id, to_url=False, taxid=None):
 
 def priam_kegg(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    priam_form_class = make_priam_form(db)
+    single_genome_form = make_single_genome_form(db)
     if request.method != "POST":
-        form = priam_form_class()
+        form = single_genome_form()
         return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
 
-    form = priam_form_class(request.POST)
+    form = single_genome_form(request.POST)
     if not form.is_valid():
-        form = priam_form_class()
+        form = single_genome_form()
         return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
 
-    taxid, _ = form.get_genome()
+    taxid = form.get_genome()
     ko_hits = db.get_ko_hits([taxid], search_on="taxid")
     kos = ko_hits.index.tolist()
     ko_pathways = db.get_ko_pathways(kos)
