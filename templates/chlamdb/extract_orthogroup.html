@@ -103,6 +103,27 @@
             </div>
               <ul style="list-style-type:square">
                     <div style="padding-top:10px">
+ 			<table class="table" style="width:600px">
+                           <tr>
+                               <th>Number of included genomes</th>
+                               <td> {{ include_taxids|length }} </td>
+                           </tr>
+
+                           <tr>
+                               <th>Number of excluded genomes</th>
+                               <td> {{ exclude_taxids|length }} </td>
+                           </tr>
+
+                            <tr>
+                               <th>Number of accepted missing data</th>
+                               <td> {{ n_missing }} </td>
+                           </tr>
+                             <tr>
+                               <th>Number of COGs identified</th>
+                               <td> {{ number_orth }}  </td>
+                           </tr>
+
+                       </table>
 
             <div class="box" style="width:30%; top: 200px; padding: 10px 10px 10px 10px;">
             <form action="/circos_main/" method="POST" id="carform" >

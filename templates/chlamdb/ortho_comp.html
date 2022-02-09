@@ -64,28 +64,26 @@
                          </div>
                         </div>
                      
+                     <br>
 
-                              <table class="sortable" id="mytable" style="width: 90%; margin-left: 1em; padding-top: 30em;">
-                                  <style>
-                                  table {
-                                  width:100%;
-                                  table-layout:fixed;
-                                  }
-                                  td {
-                                  overflow: hidden;
-                                  white-space: nowrap;
-                                
-                                  }
-                                  </style>
+                     
+                   
+                      <div class="col-lg-12">
+                     <table class="hover" id="mytable"  style="padding-top: 30em;">
+                      <style>
+                      table {
+                        table-layout: fixed;
+                      } </style>
+
                                   <thead>
 
 
                                     <tr>
-                                        <th valign="bottom">Orthogroup</th>
+                                        <th>Orthogroup</th>
                                         {% for genome in genomes_list %}
-                                            <th id="entete_meta4" valign="bottom"><div class="rotate">{{genome}}</div></th>
+                                            <th class="rotate">{{genome}}</th>
                                         {% endfor %}
-                                        <th valign="bottom">Annotation</th>
+                                        <th>Annotation</th>
                                     </tr>
                                   </thead>
                                   <tbody>

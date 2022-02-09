@@ -32,7 +32,6 @@ from chlamdb.forms import make_metabo_from
 from chlamdb.forms import make_module_overview_form
 from chlamdb.forms import make_venn_from
 
-
 from metagenlab_libs import db_utils
 from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
 from metagenlab_libs.ete_phylo import KOAndCompleteness
@@ -336,6 +335,8 @@ def extract_orthogroup(request):
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
     count_all_genomes = db.get_og_count(selection, search_on="orthogroup")
+    number_orth = count_all_genomes.index
+    number_orth = len(number_orth)
 
     if not single_copy:
         orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(axis=1)
