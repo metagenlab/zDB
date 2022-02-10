@@ -2016,7 +2016,7 @@ def COG_phylo_heatmap(request, frequency):
             func_count /= ttl_cnt
             func_count *= 100
             func_count = func_count.round(2)
-        col = SimpleColorColumn(func_count, header=detailed_func + "("+func+")", color_gradient=True)
+        col = SimpleColorColumn.fromSeries(func_count, header=detailed_func + "("+func+")", color_gradient=True)
         e_tree.add_column(col)
 
     freq = frequency
