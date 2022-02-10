@@ -207,9 +207,9 @@ def home(request):
     hsh_files = db.get_filenames_to_taxon_id()
     number_of_files=len(hsh_files)
      
-    number_ort = db.get_n_orthogroups()
+    #number_ort = db.get_n_orthogroups()
     taxids = list(genomes_descr.index)
-    core = db.get_n_orthogroups(only_core=True)
+    #core = db.get_n_orthogroups(only_core=True)
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 
