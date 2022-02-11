@@ -2191,6 +2191,7 @@ def KEGG_mapp_ko(request, map_name, taxon_id=None):
 
     header = ["KO", "Description", "All occurrences"]
     data = []
+    all_kos = []
     if not taxon_id is None:
         header.insert(2, "#in this genome")
     for ko_id, descr in ko_desc.items():
@@ -2200,6 +2201,8 @@ def KEGG_mapp_ko(request, map_name, taxon_id=None):
             ttl = 0
         if ko_id in ko_hits.index and not taxon_id is None:
             in_this_genome = ko_hits[taxid].loc[ko_id]
+            if ko_hits[taxid].loc[ko_id]>0:
+                all_kos.append(format_ko(ko_id))
         else:
             in_this_genome = 0
         
@@ -2212,13 +2215,6 @@ def KEGG_mapp_ko(request, map_name, taxon_id=None):
     path = settings.BASE_DIR + f"/assets/temp/{map_name}.svg"
     asset_path = f"/temp/{map_name}.svg"
     e_tree.render(path, dpi=800)
-
-    all_kos = []
-    for col in e_tree.columns:
-        # hack: we should not have access to the inner details
-        # of a class, but I am in an hurry
-        if not taxon_id is None and taxid in col.values:
-            all_kos.append(col.header)
     ctx = {
         "pathway": kos.iloc[0].description,
         "header": header,
