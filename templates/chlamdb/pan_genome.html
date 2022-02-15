@@ -94,17 +94,8 @@
               {% if envoi %}
               <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em">
                 <div class="col-lg-8">
-               <center><h3 style="padding:0; color: rgb(0, 66, 97);"> Accumulation/rarefaction plot of 
-                {% if type == 'Pfam' %}
-                Pfam domains
-                {% elif type == 'COG' %}
-                COG categories
-                {% elif type == 'ko' %}
-                ko categories
-                {% elif type == 'orthology' %}
-                Orthogroups
-                {% endif %}
-            </h3></center>
+               <center><h3 style="padding:0; color: rgb(0, 66, 97);"> Accumulation/rarefaction plot 
+            	</h3></center>
                 <br>
 
               <div class="panel panel-success">
@@ -114,33 +105,13 @@
                 </div>
 
                 <p style="margin: 10px 10px 10px 10px">
-                    {% if type == 'Pfam' %}
-                    This plot shows the relationship between the total number of Pfam domains and the number of genomes considered.
-                    <br>The <span style="color: rgb(61, 121, 66);"><b>green</b></span> line is representative of the pan-genome size. A flat line means that the genomes contains the same Pfam domains, while an increasing ones means that genomes carry several unique or low frequency Pfam domains.
-                    <br>The (<span style="color: red;"><b>red</b></span> ) lines displays the Pfam domains shared by n genomes.     
-                   
+				This plot shows the relationship between the number of {{type_txt}} and the number of genomes considered.
 
-                    {% elif type == 'COG' %}
-                    This plot shows the relationship between the total number of COG orthologs and the number of genomes considered.
-                    <br>The <span style="color: rgb(61, 121, 66);"><b>green</b></span> line is representative of the pan-genome size. A flat line means that the genomes contains the same COG orthologs, while an increasing ones means that genomes carry several unique or low frequency COG orthologs.
-                    <br>The (<span style="color: red;"><b>red</b></span> ) lines displays the COG orthologs shared by n genomes.                  
-              
-                    {% elif type == 'ko' %}
-                    This plot shows the relationship between the total number of KO entries and the number of genomes considered.
-                    <br>The <span style="color: rgb(61, 121, 66);"><b>green</b></span> line is representative of the pan-genome size. A flat line means that the genomes contains the same KO entries, while an increasing ones means that genomes carry several unique or low frequency KO entries.
-                    <br>The (<span style="color: red;"><b>red</b></span> ) lines displays the KO entries shared by n genomes.        
-                       
+				<br>The <span style="color: #69b3a2;"><b>green</b></span> and the <span style="color: #5499c7;"><b>blue</b></span> lines are both based on a single random permutation of the selected genomes. The <span style="color: #69b3a2;"><b>green</b></span> line represent the total number of {{type_txt}} present in the first n genomes of the permutation. The <span style="color: #5499c7;"><b>blue</b></span> represents the number of {{type_txt}} shared by the first n genomes of the permutation.
 
-                    {% elif type == 'orthology' %}
-                    This plot shows the relationship between the total number of Orthologous groups and the number of genomes considered.
-                    <br>The <span style="color: rgb(61, 121, 66);"><b>green</b></span> line is representative of the pan-genome size. A flat line means that the genomes contains similar genes, while an increasing ones means that genomes carry several unique or low frequency genes.
-                    <br>The (<span style="color: red;"><b>red</b></span> ) lines displays the orthologs shared by n genomes.
-                        <br>
-                      
-                    {% endif %}
+				<br>The <span style="color:#FF6347;"><b>red</b></span> line shows the number of {{type_txt}} present in exactly n genomes. This plot do not depend on a permutation and it is possible to click on the points to get more detailed information.
+				<br>
 
-
-                    <br>
                 </p>
             </div>
  
@@ -153,12 +124,12 @@
 					<div id="plot_type" style="display: flex; justify-content: space-around; width: 900px;">
 						<div>
 							<input style="margin-left" value="pangenome" type="radio" id="pangenome" name="plot_type" checked>
-							<label for="pangenome">Pangenome plot</label>
+							<label for="pangenome">Total number of {{type_txt}}</label>
 						</div>
 
 						<div>
 							<input style="center" type="radio" value="coregenome" id="coregenome" name="plot_type">
-							<label for="coregenome">Core genome plot</label>
+							<label for="coregenome">Number of shared {{type_txt}}</label>
 						</div>
 
 						<div>
@@ -334,6 +305,22 @@ svg.append("g").
 	attr("cy", function(d) { return y_scale_count(d[1]); }).
 	attr("r", 3).
 	attr("fill", shared_color);
+
+
+/*
+To be added later
+
+on("click", clicked);
+
+
+function clicked(d) {
+	var checked_val = $("input[name='plot_type']:checked").val();
+	if(checked_val != "ortho_distrib") {
+		return;
+	}
+
+	d3.select(this).attr("fill", "back");
+} */
 
 
 function change_plot() {
