@@ -2604,15 +2604,22 @@ def pan_genome(request, type):
         data_count.append(count)
 
     acc_set = set()
+    core_set = set(df_hits.index.tolist())
     sum_og = []
+    core_og = []
     for col in df_hits:
         curr_col = df_hits[col]
         tmp_set = set(curr_col.index[curr_col!=0].unique())
         acc_set = acc_set.union(tmp_set)
+        core_set = core_set.intersection(tmp_set)
+
         sum_og.append(len(acc_set))
+        core_og.append(len(core_set))
 
     js_data_count = "[" + ",".join(str(i) for i in data_count) + "]"
     js_data_acc = "[" +",".join(str(i) for i in sum_og) + "]"
+    js_data_core = "[" + ",".join(str(i) for i in core_og) + "]"
+
     envoi = True
     return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
 
