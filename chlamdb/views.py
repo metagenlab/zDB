@@ -3171,7 +3171,6 @@ def plot_heatmap(request, type):
     import plotly.graph_objects as go
     import scipy.cluster.hierarchy as shc
     from scipy.cluster import hierarchy
-    from datetime import datetime
 
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
@@ -3201,24 +3200,27 @@ def plot_heatmap(request, type):
 
     target2description = db.get_genomes_description().description.to_dict()
     mat.columns = (target2description[i] for i in mat.columns.values)
-    cur_time = datetime.now().strftime("%H%M%S")
 
     # reorder row and columns based on clustering
-    Z_rows = shc.linkage(mat, method='ward')
+    Z_rows = shc.linkage(mat.T, method='ward')
     order_rows = hierarchy.leaves_list(Z_rows)
+    new_index = [mat.columns.values[i] for i in order_rows]
 
-    Z_genomes = shc.linkage(mat.T, method='ward')
+    Z_genomes = shc.linkage(mat, method='ward')
     order_genomes = hierarchy.leaves_list(Z_genomes)
 
     # set number of paralogs >1 as 2 to simplify the color code
     mat[mat > 1] = 2 
     colors = ["#ffffff", "#2394d9", "#d923ce"]
+    new_cols = [mat.index.tolist()[i] for i in order_genomes]
 
-    fig = go.Figure(data=go.Heatmap(z=mat.iloc[order_rows,order_genomes].T, colorscale=colors, y = mat.columns, x=mat.index)) # , x = mat.index, y=mat.columns
+    new_mat = mat.T.reindex(new_index)[new_cols]
+    fig = go.Figure(data=go.Heatmap(z=new_mat,
+        colorscale=colors, y=new_mat.index, x=new_mat.columns))
     fig.update_traces(showlegend=False, showscale=False)
+    fig.update_xaxes(visible=False)
 
     html_plot = make_div(fig, div_id="heatmap")
-
     envoi_heatmap = True
     return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
