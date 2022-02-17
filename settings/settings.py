@@ -32,6 +32,7 @@ hosts = os.environ.get("ALLOWED_HOSTS", "")
 BIODB_DB_PATH = NEXTFLOW_DIR+"/db/"+RUN_NAME
 SEARCH_INDEX  = NEXTFLOW_DIR+"/search_index/"+RUN_NAME
 BLAST_DB_PATH = NEXTFLOW_DIR + "/blast_DB/"+RUN_NAME
+ALIGNMENTS    = NEXTFLOW_DIR+"/alignments/"+RUN_NAME
 
 ALLOWED_HOSTS = hosts.split(",")
 

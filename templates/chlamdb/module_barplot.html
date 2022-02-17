@@ -113,7 +113,7 @@
 
 
                   <div id="mydiv" style="float: left"></div>
-                  <svg class="chart"></svg>
+                  <svg class="chart" id="svg_graph"></svg>
 
 
 
@@ -259,8 +259,8 @@
                           .attr("class", "btn btn-primary btn-sm")
                           .text("Download SVG")
                           .on("click", function() {
-                              // download the svg
-                              downloadSVG();
+							  var svg = document.querySelector("svg_graph");
+							  svgExport.downloadSvg(svg, "module_barchart.svg");
                           });
 
                   </script>

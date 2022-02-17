@@ -1,8 +1,9 @@
 <!DOCTYPE html>
+
 <html>
+
 <head>
 	{% load custom_tags %}
-	{% load static %}
 	{% load static %}
 	{% load crispy_forms_tags %}
 	{% include "chlamdb/header.html" %}
@@ -52,6 +53,13 @@
 			  {% include "chlamdb/orthogroup_conservation.html" %}
 		  </div>
 
+		  <div class="tab-pane" id="alignment">
+			  <h3>Multiple alignment of {{og}}</h3>
+				<div class="tab-pane active" id="msa_div">
+
+				</div>
+		  </div>
+
 		  <div class="tab-pane" id="og_phylogeny">
 			  <h3>Phylogeny of {{og}} {{root}}</h3>
 				<div class="tab-pane active" id="tab1">
@@ -74,7 +82,7 @@
 				<br>  <strong>{{n_homologues}} members</strong> -overview of the annotation</h3>
 
 
-			  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+			  <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
 				  <div class="panel-heading" style="width:100%">
 					  <h3 class="panel-title">Help</h3>
 				  </div>
@@ -86,7 +94,7 @@
 				  </p>
 			  </div>
 
-			<div class="col-md-12 col-lg-4">
+			<div class="col-md-12 col-lg-4" style="margin-right: 0; margin-left:0">
 			  <div class="container-fluid">
 
 				<div class="row">
@@ -361,6 +369,7 @@ $(document).ready(function() {
   "info":     false
   });
 });
+
 
 </script>
 
