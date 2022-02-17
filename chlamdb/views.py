@@ -2021,7 +2021,7 @@ def COG_phylo_heatmap(request, frequency):
             func_count /= ttl_cnt
             func_count *= 100
             func_count = func_count.round(2)
-        col = SimpleColorColumn(func_count, header=detailed_func + "("+func+")", color_gradient=True)
+        col = SimpleColorColumn.fromSeries(func_count, header=detailed_func + "("+func+")", color_gradient=True)
         e_tree.add_column(col)
 
     freq = frequency
@@ -2196,6 +2196,7 @@ def KEGG_mapp_ko(request, map_name, taxon_id=None):
 
     header = ["KO", "Description", "All occurrences"]
     data = []
+    all_kos = []
     if not taxon_id is None:
         header.insert(2, "#in this genome")
     for ko_id, descr in ko_desc.items():
@@ -2205,6 +2206,8 @@ def KEGG_mapp_ko(request, map_name, taxon_id=None):
             ttl = 0
         if ko_id in ko_hits.index and not taxon_id is None:
             in_this_genome = ko_hits[taxid].loc[ko_id]
+            if ko_hits[taxid].loc[ko_id]>0:
+                all_kos.append(format_ko(ko_id))
         else:
             in_this_genome = 0
         
@@ -2217,13 +2220,6 @@ def KEGG_mapp_ko(request, map_name, taxon_id=None):
     path = settings.BASE_DIR + f"/assets/temp/{map_name}.svg"
     asset_path = f"/temp/{map_name}.svg"
     e_tree.render(path, dpi=800)
-
-    all_kos = []
-    for col in e_tree.columns:
-        # hack: we should not have access to the inner details
-        # of a class, but I am in an hurry
-        if not taxon_id is None and taxid in col.values:
-            all_kos.append(col.header)
     ctx = {
         "pathway": kos.iloc[0].description,
         "header": header,
@@ -2613,15 +2609,22 @@ def pan_genome(request, type):
         data_count.append(count)
 
     acc_set = set()
+    core_set = set(df_hits.index.tolist())
     sum_og = []
+    core_og = []
     for col in df_hits:
         curr_col = df_hits[col]
         tmp_set = set(curr_col.index[curr_col!=0].unique())
         acc_set = acc_set.union(tmp_set)
+        core_set = core_set.intersection(tmp_set)
+
         sum_og.append(len(acc_set))
+        core_og.append(len(core_set))
 
     js_data_count = "[" + ",".join(str(i) for i in data_count) + "]"
     js_data_acc = "[" +",".join(str(i) for i in sum_og) + "]"
+    js_data_core = "[" + ",".join(str(i) for i in core_og) + "]"
+
     envoi = True
     return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
 
@@ -3175,7 +3178,6 @@ def plot_heatmap(request, type):
     import plotly.graph_objects as go
     import scipy.cluster.hierarchy as shc
     from scipy.cluster import hierarchy
-    from datetime import datetime
 
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
@@ -3205,24 +3207,27 @@ def plot_heatmap(request, type):
 
     target2description = db.get_genomes_description().description.to_dict()
     mat.columns = (target2description[i] for i in mat.columns.values)
-    cur_time = datetime.now().strftime("%H%M%S")
 
     # reorder row and columns based on clustering
-    Z_rows = shc.linkage(mat, method='ward')
+    Z_rows = shc.linkage(mat.T, method='ward')
     order_rows = hierarchy.leaves_list(Z_rows)
+    new_index = [mat.columns.values[i] for i in order_rows]
 
-    Z_genomes = shc.linkage(mat.T, method='ward')
+    Z_genomes = shc.linkage(mat, method='ward')
     order_genomes = hierarchy.leaves_list(Z_genomes)
 
     # set number of paralogs >1 as 2 to simplify the color code
     mat[mat > 1] = 2 
     colors = ["#ffffff", "#2394d9", "#d923ce"]
+    new_cols = [mat.index.tolist()[i] for i in order_genomes]
 
-    fig = go.Figure(data=go.Heatmap(z=mat.iloc[order_rows,order_genomes].T, colorscale=colors, y = mat.columns, x=mat.index)) # , x = mat.index, y=mat.columns
+    new_mat = mat.T.reindex(new_index)[new_cols]
+    fig = go.Figure(data=go.Heatmap(z=new_mat,
+        colorscale=colors, y=new_mat.index, x=new_mat.columns))
     fig.update_traces(showlegend=False, showscale=False)
+    fig.update_xaxes(visible=False)
 
     html_plot = make_div(fig, div_id="heatmap")
-
     envoi_heatmap = True
     return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
