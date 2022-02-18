@@ -1093,6 +1093,28 @@ def og_tab_get_swissprot_homologs(db, annotations):
     return {"reviewed": swissprot, "n_swissprot_hits": len(homologs)}
 
 
+class SeqColumn(Column):
+
+    def __init__(self, fasta_dict, header):
+        super().__init__(header)
+        self.values = fasta_dict
+
+    def get_face(self, index):
+        seq = self.values[index]
+        face = SeqMotifFace(str(seq.seq), seq_format="seq")
+        return face
+
+def prepare_default_tree(og_phylogeny):
+    tree = Tree(og_phylogeny)
+    R = tree.get_midpoint_outgroup()
+    if not R is None:
+        root = "(midpoint rooted)"
+        tree.set_outgroup(R)
+    tree.ladderize()
+
+    return tree, root
+
+
 def tab_og_phylogeny(db, og_id):
     og_phylogeny = db.get_og_phylogeny(og_id)
     pfam_col = None
@@ -1111,17 +1133,19 @@ def tab_og_phylogeny(db, og_id):
             hsh_pfam_infos[data.locus_tag] = [data.length, pfam_entries]
         pfam_col = PfamColumn("Pfam domains", hsh_pfam_infos, pfam_cmap)
 
-    tree = Tree(og_phylogeny)
+    tree_alignment, _ = prepare_default_tree(og_phylogeny)
+    tree, root = prepare_default_tree(og_phylogeny)
     locuses = [branch.name for branch in tree.iter_leaves()]
     locus_to_genome = db.get_locus_to_genomes(locuses)
-    R = tree.get_midpoint_outgroup()
-    root = "(unrooted)"
-    if not R is None:
-        root = "(midpoint rooted)"
-        tree.set_outgroup(R)
-    tree.ladderize()
-    e_tree = EteTree(tree)
 
+    e_tree_alignment = EteTree(tree_alignment)
+    e_tree_alignment.add_column(SimpleTextColumn("Locus tag"))
+    e_tree_alignment.rename_leaves(locus_to_genome, leaf_name_type=str)
+    algn_file = settings.ALIGNMENTS + "/" + f"OG{og_id:07d}_mafft.faa"
+    fasta_dict = SeqIO.to_dict(SeqIO.parse(algn_file, "fasta"))
+    e_tree_alignment.add_column(SeqColumn(fasta_dict, "Alignment"))
+
+    e_tree = EteTree(tree)
     e_tree.add_column(SimpleTextColumn("Locus tag"))
     if not pfam_col is None:
         e_tree.add_column(pfam_col)
@@ -1130,7 +1154,11 @@ def tab_og_phylogeny(db, og_id):
     asset_path = f"/temp/og_phylogeny{og_id}.svg"
     path = settings.BASE_DIR + '/assets/' + asset_path
     e_tree.render(path, dpi=1200)
-    return {"og_phylogeny": asset_path, "root": root}
+
+    asset_path_algn = f"/temp/og_phylogeny{og_id}_algn.svg"
+    path_algn = settings.BASE_DIR + '/assets/' + asset_path_algn
+    e_tree_alignment.render(path_algn, dpi=1200)
+    return {"og_phylogeny": asset_path, "root": root, "og_alignment": asset_path_algn}
 
 
 def tab_og_conservation_tree(db, group, compare_to=None):
