@@ -317,8 +317,7 @@ process orthogroups2fasta {
 
 process align_with_mafft {
   container "$params.mafft_container"
-
-  publishDir 'orthology/orthogroups_alignments', mode: 'copy', overwrite: true
+  publishDir "alignments/$workflow.runName"
 
   input:
   file og from orthogroups_fasta.flatten().collate(20)
@@ -336,7 +335,9 @@ process align_with_mafft {
 }
 
 
-mafft_alignments.into { to_identity_calculation; to_phylogeny }
+mafft_alignments.into { to_identity_calculation; to_phylogeny; to_cleanup }
+
+to_cleanup.collect().set { to_alignment_gather }
 to_phylogeny.collect().into { all_alignments_3; all_alignments_4 }
 
 to_identity_calculation.flatten().collate(20).set { to_identity_calculation_split }
@@ -915,10 +916,22 @@ process cleanup {
     input:
         file index from to_index_cleanup
         file db from to_db_cleanup
+        file alignments from to_alignment_gather
 
     script:
     custom_run_name=(params.name)?params.name:""
     """
+    if [ ! -d $baseDir/alignments/latest ]; then
+        mkdir $baseDir/alignments/latest
+    fi
+
+    # remove pre-existing alignments
+    rm -f $baseDir/alignments/latest/*
+    
+    for i in "ls *.faa"; do
+        ln -s `pwd`\$i $baseDir/alignments/latest/
+    done
+
     ln -sf $index $baseDir/search_index/latest
     ln -sf $index $baseDir/search_index/$workflow.runName
 
@@ -930,6 +943,14 @@ process cleanup {
         ln -sf $index $baseDir/search_index/$custom_run_name
         ln -sf $db $baseDir/db/$custom_run_name
         ln -sf $baseDir/blast_DB/$workflow.runName $baseDir/blast_DB/$custom_run_name
+
+        if [ ! -d $baseDir/alignments/$custom_run_name ]; then
+            mkdir $baseDir/alignments/$custom_run_name
+        fi
+        rm -f $baseDir/alignments/$custom_run_name/*
+        for i in "ls *.faa"; do
+            ln -s `pwd`\$i $baseDir/alignments/$custom_run_name/
+        done
     fi
     """
 }
