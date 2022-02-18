@@ -12,6 +12,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
 
 
+<script type="text/javascript" src={% static 'js/genomic_region.js' %}>
+</script>
+<script type="text/javascript" src="{% static 'js/svg-export.min.js' %}"></script>
+
+
 {% include "chlamdb/header.html" %}
 </head>
 <body>
@@ -22,29 +27,55 @@
           <div id="page-content-wrapper">
             <div class="row">
               <div class="col-lg-12">
+
                  {% include "chlamdb/menu.html" %}
                  <div class="panel-title"><b>Genome alignments: Plot region</b></div>
                  
                  <br>
                  <br>
                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Plot genomic features in the neighborhood of a target locus </b><a href="/docs/index.html" id="show-option" title="INPUT: locus tag or protein ID"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
- 			  
+
+
+                  <div class="panel panel-warning" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Help</h3>
+                      </div>
+                      <p style="margin: 0px 0px 0px 10px">Plot genomic features in the neighborhood of a target locus. Coloured links reflect sequence identity:
+                          dark blue features are highly conserved, grey features present less than 50% identity</p>
+                      <p style="margin: 0px 0px 0px 10px">INPUT: locus tag or protein ID.</p>
+                  </div>
+
+				  <div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
+					  <a href="#" class="close" data-dismiss="alert">&times;</a>
+					  <strong>Note!</strong> If the target locus has no homolog in the selected genome(s), the plot cannot be drawn (it will only display the reference locus region).
+				  </div>
+
+				  {% if error %}
+				  <div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
+					  <a href="#" class="close" data-dismiss="alert">&times;</a>
+					  <strong> Error: </strong>
+					  <ul>
+					  {% for error_msg in errors %}
+						  <li> {{error_msg}} </li>
+					  {% endfor %}
+					  </ul>
+				  </div>
+				  {% endif %}
+
+
                   <div style="width: 100%;">
                     <div class="row">
                       <div  class="col-md-12" style="padding-left: 15px">
-
                         {% block content %}
-                        <form action='{% url "plot_region" %}' method="post">
-                            {% csrf_token %}
-                            {% crispy form %}
-                        </form>
+						{% csrf_token %}
+						{% crispy form %}
                         {% endblock %}
-
                       </div>
                     </div>
 
                     <div class="row">
                       <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
+<<<<<<< HEAD
 
             {% if error %}
 				  <div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
@@ -76,6 +107,12 @@
                </div>
 						 
 						  <div id="div_alignment"> 
+=======
+					  {% if envoi %}
+						  <h2>Region</h2> <button id="download_svg_button">Download SVG</button>
+
+						  <div id="div_alignment">
+>>>>>>> d05e33d8648c5d1f1f47b19f3f4b502402d2bed4
 						  </div>
 					  {% endif %}
 					</div>
@@ -92,15 +129,20 @@
 <script>
 
 {% if envoi %}
+
 var regions = {{genomic_regions|safe}};
 var to_highlight = {{to_highlight|safe}};
 var connections = {{connections | safe}};
 var window_size = {{window_size}};
 var ident_range = [{{min_ident}}, {{max_ident}}];
 
-createGenomicRegion(d3.select("#div_alignment"), regions, connections,
+createGenomicRegion(d3.select("#div_alignment"), "genomic_region", regions, connections,
 	to_highlight, window_size, ident_range);
 
+document.querySelector("#download_svg_button").onclick = function() {
+	var svg_elem = document.querySelector("#genomic_region");
+	svgExport.downloadSvg(svg_elem, "Genomic region");
+};
 {% endif %}
 
 </script>
