@@ -1,7 +1,5 @@
 
 process download_cog_defs {
-    // Lightweight download
-
     publishDir "$params.cog_db"
     when:
         params.cog
@@ -21,84 +19,67 @@ process download_cog_defs {
 }
 
 
+process download_cog_cdd {
+    when:
+        params.cog
+        
+    output:
+        file "COG*.smp" into to_make_cdd_profiles
+        file "Cog.pn" into to_make_cdd_profiles_pn
+
+    script:
+    """
+    wget ftp://ftp.ncbi.nih.gov/pub/mmdb/cdd/cdd.tar.gz
+    tar xvf cdd.tar.gz && rm cdd.tar.gz
+    """
+}
+
+
 cog_defs.mix(cog_funcs).set { to_setup_db_cog }
 
 
-if(!params.cog_location && params.cog) {
-    process download_cog_cdd {
-        output:
-            file "COG*.smp" into to_make_cdd_profiles
-            file "Cog.pn" into to_make_cdd_profiles_pn
-            
-        script:
-        """
-        wget ftp://ftp.ncbi.nih.gov/pub/mmdb/cdd/cdd.tar.gz
-        tar xvf cdd.tar.gz && rm cdd.tar.gz
-        """
-    }
-} else if(params.cog) {
-    Channel.fromPath(params.cog_location+"/COG*.smp")
-        .collect().set { to_make_cdd_profiles }
-    Channel.fromPath(params.cog_location+"/Cog.pn").set { to_make_cdd_profiles_pn }
+process setup_cog_cdd {
+    container "$params.blast_container"
+    publishDir "$params.cog_db", mode: "move"
+
+    input:
+        file smps from to_make_cdd_profiles
+        file pn from to_make_cdd_profiles_pn
+
+    output:
+        file "cog_db*"
+        file "cdd_to_cog"
+    
+    script:
+    """
+    makeprofiledb -title COG -in Cog.pn -out cog_db -threshold 9.82 \
+        -scale 100.0 -dbtype rps -index true
+    grep "tag id" COG* | sed 's/.smp:.*tag id//' | \
+                        sed 's/COG//' > cdd_to_cog
+    """
 }
 
 
-if(params.cog) {
-    process setup_cog_cdd {
-        container "$params.blast_container"
-        publishDir "$params.cog_db"
+Channel.fromPath("${params.refseq_db}/refseq_nr.fasta"). set { nr_refseq  }
 
-        input:
-            file smps from to_make_cdd_profiles
-            file pn from to_make_cdd_profiles_pn
 
-        output:
-            file "cog_db*"
-            file "cdd_to_cog"
+process diamond_refseq {
+    publishDir "$params.refseq_db", mode: "move"
+    container "$params.diamond_container"
+
+    when:
+        params.diamond_refseq
+
+    input:
+        file nr_refseq
+
+    output:
+        file "refseq_nr.dmnd"
         
-        script:
-        """
-        makeprofiledb -title COG -in Cog.pn -out cog_db -threshold 9.82 \
-            -scale 100.0 -dbtype rps -index true
-        grep "tag id" COG* | sed 's/.smp:.*tag id//' | \
-                            sed 's/COG//' > cdd_to_cog
-        """
-    }
-}
-
-
-if(params.diamond_refseq) {
-    process download_refseq {
-        publishDir "$params.refseq_db", mode: "move"
-
-        output:
-            file "refseq_nr.faa" into to_make_refseq_diamonddb
-
-        script:
-        """
-            $baseDir/bin/download_refseq.py --download_refseq=.
-            cat *.gz > concat_gz_faa
-            gunzip < concat_gz_faa > refseq_nr.faa
-            rm -f *.gz
-            rm concat_gz_faa
-        """
-    }
-
-    process diamond_refseq {
-        publishDir "$params.refseq_db", mode: "move"
-        container "$params.diamond_container"
-
-        input:
-            file to_make_refseq_diamonddb
-
-        output:
-            file "refseq_nr.dmnd"
-            
-        script:
-        """
-            diamond makedb --in $to_make_refseq_diamonddb -d refseq_nr
-        """
-    }
+    script:
+    """
+        diamond makedb --in $nr_refseq -d refseq_nr
+    """
 }
 
 
@@ -138,70 +119,66 @@ process prepare_hmm {
 }
 
 
-if(!params.ko_location && params.ko) {
-    process download_KO_data {
-        publishDir "$params.ko_data"
-        container "$params.annotation_container"
+process download_KO_data {
+    container "$params.annotation_container"
 
-        output:
-            file "ko*" into to_load_ko
+    when:
+        params.ko
 
-        script:
-        """
-        /home/metagenlab/metagenlab_libs/chlamdb/chlamdb.py \
-            --download_ko_files --ko_dir=${params.ko_db}
-        """
-    }
+    output:
+        file "dummy_file" into to_load_ko
 
-    process download_ko_profiles {
-        publishDir "$params.ko_data", mode: "move"
-
-        output:
-            file "ko_list"
-            file "profiles/*.hmm"
-    
-        script:
-        """
-        wget https://www.genome.jp/ftp/db/kofam/ko_list.gz
-        wget https://www.genome.jp/ftp/db/kofam/profiles.tar.gz
-
-        gunzip < ko_list.gz > ko_list && rm -f ko_list.gz
-        tar xvf profiles.tar.gz
-        """
-    }
-} else if (params.ko) {
-    Channel.fromPath(params.ko_location + "ko:*").collect()
-        .set { to_load_ko }
-} else {
-    Channel.empty().set { to_load_ko }
+    script:
+    """
+    if [ ! -d "${params.ko_db}" ]; then
+        mkdir -p ${params.ko_db}
+    fi
+    touch dummy_file
+    /home/metagenlab/metagenlab_libs/chlamdb/chlamdb.py \
+        --download_ko_files --ko_dir=${params.ko_db}
+    """
 }
 
 
-if(!params.swissprot_location && params.blast_swissprot) {
-    process download_swissprot_db {
-        when:
-            params.blast_swissprot
+process download_ko_profiles {
+    publishDir "$params.ko_profiles", mode: "move"
 
-        output:
-            file "swissprot.fasta" into swissprot_fasta
+    when:
+        params.ko
 
-        script:
-        """
-        wget https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
-        gunzip < uniprot_sprot.fasta.gz > swissprot.fasta && rm -f uniprot_sprot.fasta
-        """
-    }
-} else if(params.blast_swissprot) {
-    Channel.fromPath(params.swissprot_location+"/swissprot.fasta")
-        .set { swissprot_fasta }
-} else {
-    Channel.empty().set { swissprot_fasta }
+    output:
+        file "ko_list"
+        file "profiles/*.hmm"
+
+    script:
+    """
+    wget https://www.genome.jp/ftp/db/kofam/ko_list.gz
+    wget https://www.genome.jp/ftp/db/kofam/profiles.tar.gz
+
+    gunzip < ko_list.gz > ko_list && rm -f ko_list.gz
+    tar xvf profiles.tar.gz
+    """
+}
+
+
+process download_swissprot_db {
+    when:
+        params.blast_swissprot
+
+    output:
+        file "swissprot.fasta" into swissprot_fasta
+
+    script:
+    """
+    wget https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
+    gunzip < uniprot_sprot.fasta.gz > swissprot.fasta && rm -f uniprot_sprot.fasta
+    """
 }
 
 
 process setup_swissprot {
     container "$params.blast_container"
-    publishDir "$params.swissprot_db"
+    publishDir "$params.swissprot_db", mode: "move"
 
     input:
         file swissprot_fasta
@@ -225,6 +202,7 @@ process setup_base_db {
     publishDir "$params.base_db", mode: "move"
 
     input:
+        file ko_from from Channel.fromPath("$params.ko_db/ko:*")
         file setup from to_setup_db.collect()
 
     output:
@@ -235,7 +213,7 @@ process setup_base_db {
     command_line_params += (params.cog)? "--load_cog " : ""
     command_line_params += (params.cog)? "--cog_dir ${params.cog_db} " : ""
     command_line_params += (params.ko)? "--load_kegg " : ""
-    command_line_params += (params.ko)? "--ko_dir=${params.ko_location}" : ""
+    command_line_params += (params.ko)? "--ko_dir=${params.ko_db}" : ""
     """
         /home/metagenlab/metagenlab_libs/chlamdb/chlamdb.py \
             --biosql_schema /home/metagenlab/metagenlab_libs/biosql_schema/biosqldb-sqlite.sql \

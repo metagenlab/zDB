@@ -11,7 +11,7 @@ import argparse
 import gzip
 
 
-def download_refseq(download_dir, n_retry=5):
+def download_refseq(download_dir, n_retry=10):
     ftp = ftplib.FTP("ftp.ncbi.nih.gov")
     ftp.login("anonymous")
     ftp.cwd("/refseq/release/complete")
@@ -41,8 +41,10 @@ def download_refseq(download_dir, n_retry=5):
                 ftp.retrbinary("RETR "+f, output_file.write)
                 output_file.close()
                 complete = True
+                time.sleep(5)
             except:
                 output_file.close()
+                time.sleep(60)
                 failed += 1
                 if failed==n_retry:
                     os.remove(f)
