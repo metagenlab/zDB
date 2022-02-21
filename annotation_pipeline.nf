@@ -608,6 +608,9 @@ process load_base_db {
         file alignments from to_load_alignment.collect()
         file nr_mapping_file from nr_mapping_to_db_setup
         file checkm_results from checkm_table
+        file core_phylogeny from core_genome_phylogeny
+        file og_phylogenies_list from all_og_phylogeny
+        file og_summary
 
     output:
         file db_name into db_gen
@@ -641,12 +644,18 @@ process load_base_db {
 
     print("Loading checkm results", flush=True)
     setup_chlamdb.load_genomes_info(kwargs, gbk_list, "$checkm_results", "$db_base")
+
+    print("Loading phylogenies")
+    gene_list = "$og_phylogenies_list".split(" ")
+
+    setup_chlamdb.load_reference_phylogeny(kwargs, "$core_phylogeny", "$db_base")
+    setup_chlamdb.load_gene_phylogenies(kwargs, "$og_summary", gene_list, "$db_base")
     """
 }
 
 
 if(!params.diamond_refseq) {
-    db_gen.set { to_load_taxonomy }
+    db_gen.set { to_load_BBH_phylo }
     Channel.empty().set { diamond_best_hits }
 } else {
     process load_refseq_results {
@@ -657,7 +666,7 @@ if(!params.diamond_refseq) {
 
         output:
             file "*_nr_hits.faa" into diamond_best_hits
-            file curr_db into to_load_taxonomy
+            file curr_db into to_load_BBH_phylo
 
         script:
         """
@@ -718,33 +727,6 @@ BBH_phylogenies.collect().set { BBH_phylogenies_to_db }
 
 if(!params.diamond_refseq) {
     Channel.value("dummy").set { BBH_phylogenies_to_db }
-}
-
-process load_taxo_stats_into_db {
-    container "$params.annotation_container"
-
-    input:
-        file db from to_load_taxonomy
-        file core_phylogeny from core_genome_phylogeny
-        file og_phylogenies_list from all_og_phylogeny
-        file og_summary
-
-    output:
-        file db into to_load_BBH_phylo
-
-    script:
-    """
-    #!/usr/bin/env python
-
-    import setup_chlamdb
-
-    kwargs = ${gen_python_args()}
-
-    gene_list = "$og_phylogenies_list".split(" ")
-
-    setup_chlamdb.load_reference_phylogeny(kwargs, "$core_phylogeny", "$db")
-    setup_chlamdb.load_gene_phylogenies(kwargs, "$og_summary", gene_list, "$db")
-    """
 }
 
 
@@ -928,8 +910,9 @@ process cleanup {
     # remove pre-existing alignments
     rm -f $baseDir/alignments/latest/*
     
-    for i in "ls *.faa"; do
-        ln -s `pwd`\$i $baseDir/alignments/latest/
+    curr_dir=`pwd`
+    for i in *.faa; do
+        ln -s \$curr_dir/\$i $baseDir/alignments/latest/
     done
 
     ln -sf $index $baseDir/search_index/latest
@@ -948,8 +931,8 @@ process cleanup {
             mkdir $baseDir/alignments/$custom_run_name
         fi
         rm -f $baseDir/alignments/$custom_run_name/*
-        for i in "ls *.faa"; do
-            ln -s `pwd`\$i $baseDir/alignments/$custom_run_name/
+        for i in *.faa; do
+            ln -s \$curr_dir/\$i $baseDir/alignments/$custom_run_name/
         done
     fi
     """
