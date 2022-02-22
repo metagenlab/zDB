@@ -82,6 +82,18 @@
                     {% endif %}</b><a href="/docs/index.html" id="show-option"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
                 
 
+			{% if error %}
+			  <div class="panel panel-danger" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+				  <div class="panel-heading" style="width:100%">
+					  <h3 class="panel-title">{{ error_title }}</h3>
+				  </div>
+
+				  <div style="margin: 10px 10px 10px 10px">
+				  {{ error_message }}
+				  </div>
+			  </div>
+			{% endif %}
+
 
                 <form action="{% url "plot_heatmap" type %}" method="post" id="heatmap-form" >
 
@@ -92,6 +104,7 @@
                 </form>
 
             </div>
+
 
 			{% if envoi_heatmap %}
             <div class="row" style="padding-top:30px ;background-color: rgba(245, 245, 245, 0.986); margin-top: 1em;" >
@@ -124,6 +137,7 @@
                </div>
             </div>
 			{% endif %}
+
          </div>
        </div>
       </div>
@@ -135,36 +149,3 @@
 </body>
 </html>
 
-<script>
-$(document).ready(function() {
-    console.log("hiding plasmids");
-    /* no plasmids by default */
-    var y=document.getElementById("id_targets");
-    for (var i = 0; i < y.options.length; i++) {
-        if (y.options[i].text.includes('plasmid')) {
-            $("#id_targets").children("option[value^=" + y.options[i].value + "]").hide();
-        } else {
-            $("#id_targets").children("option[value^=" + y.options[i].value + "]").show()
-        }
-    }
-
-    $("#id_checkbox_accessions").change(function() {
-            console.log("change plasmid!");
-            var x = document.getElementById("id_targets");
-            for (var i = 0; i < x.options.length; i++) {
-                console.log(i);
-                console.log(y.options[i].text);
-                if (y.options[i].text.includes('plasmid')) {
-                    if (document.getElementById('id_checkbox_accessions').checked) {
-                        $("#id_targets").children("option[value^=" + y.options[i].value + "]").show()
-                    } else {
-                        $("#id_targets").children("option[value^=" + y.options[i].value + "]").hide()
-                    }
-                } else {
-                    $("#id_targets").children("option[value^=" + y.options[i].value + "]").show()
-                }
-            }
-            $('.selectpicker').selectpicker('refresh');
-    })
-})
-</script>
