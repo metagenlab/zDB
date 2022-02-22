@@ -100,7 +100,6 @@
               <input type="hidden" name="include_taxids" value="{{include_taxids}}">
               <input type="hidden" name="og_list" value="{{selection}}">
                   <select name="reference_taxid" id="reference_taxid" class="bootstrap-select" style="height:36px; margin-bottom: 1em;">
-                    <option disabled selected>Select reference genome</option>
                     {% for row in ref_genomes.itertuples %}
                     <option value="{{row.taxon_id}}">{{row.description}}</option>
                     {% endfor %}

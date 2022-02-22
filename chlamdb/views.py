@@ -3028,7 +3028,7 @@ def circos_main(request):
     db = db_utils.DB.load_db_from_name(biodb_path)
 
     if request.method == 'POST':
-        
+
         reference_taxon = request.POST["reference_taxid"]
         include_taxids = eval(request.POST["include_taxids"])
         exclude_taxids = eval(request.POST["exclude_taxids"])
