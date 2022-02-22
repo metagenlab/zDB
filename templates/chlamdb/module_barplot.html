@@ -8,7 +8,9 @@
 
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 {% include "chlamdb/header.html" %}
+
 </head>
+
 <body>
 
   <div class="container-fluid" id="main_container">
@@ -102,11 +104,8 @@
 
 
                   <div id="mydiv" style="float: left"></div>
-                  <svg class="chart" id="svg_graph"></svg>
+                  <svg class="chart" id="ko_barchart"></svg>
 
-
-
-                  <script src="http://d3js.org/d3.v3.min.js"></script>
                   <script>
 
                   var data = {
@@ -248,8 +247,8 @@
                           .attr("class", "btn btn-primary btn-sm")
                           .text("Download SVG")
                           .on("click", function() {
-							  var svg = document.querySelector("svg_graph");
-							  svgExport.downloadSvg(svg, "module_barchart.svg");
+							  var svg_elem = document.querySelector("#ko_barchart");
+							  svgExport.downloadSvg(svg_elem, "ko_cat_chart");
                           });
 
                   </script>

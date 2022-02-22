@@ -1380,7 +1380,7 @@ def orthogroup(request, og):
 
     try:
         og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
-    except:
+    except db_utils.NoPhylogenyException:
         og_phylogeny_ctx = {}
 
     if optional2status.get("BBH_phylogenies", False):
@@ -1650,7 +1650,7 @@ def locusx(request, locus=None, menu=True):
         homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
         try:
             og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
-        except:
+        except db_utils.NoPhylogenyException:
             og_phylogeny_ctx = {}
     else:
         og_conserv_ctx = {}
@@ -2052,7 +2052,8 @@ def COG_phylo_heatmap(request, frequency):
             func_count /= ttl_cnt
             func_count *= 100
             func_count = func_count.round(2)
-        col = SimpleColorColumn.fromSeries(func_count, header=detailed_func + "("+func+")", color_gradient=True)
+        col = SimpleColorColumn.fromSeries(func_count,
+                header=detailed_func + "("+func+")", color_gradient=True)
         e_tree.add_column(col)
 
     freq = frequency
