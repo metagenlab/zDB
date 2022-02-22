@@ -6,6 +6,7 @@
 {% load static %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 {% include "chlamdb/header.html" %}
+<script type="text/javascript" src="{% static 'js/svg-export.min.js' %}"></script>
 </head>
 <body>
 
@@ -113,7 +114,7 @@
 
 
                   <div id="mydiv" style="float: left"></div>
-                  <svg class="chart"></svg>
+                  <svg id="bar_plot_chart" class="chart"></svg>
 
 
 
@@ -258,8 +259,8 @@
                           .attr("class", "btn btn-primary btn-sm")
                           .text("Download SVG")
                           .on("click", function() {
-                              // download the svg
-                              downloadSVG();
+							  var svg_elem = document.querySelector("#bar_plot_chart");
+							  svgExport.downloadSvg(svg_elem, "cog_bar_plot");
                           });
 
                   </script>
