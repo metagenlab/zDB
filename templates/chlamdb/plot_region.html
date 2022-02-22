@@ -50,17 +50,7 @@
 					  <strong>Note!</strong> If the target locus has no homolog in the selected genome(s), the plot cannot be drawn (it will only display the reference locus region).
 				  </div>
 
-				  {% if error %}
-				  <div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
-					  <a href="#" class="close" data-dismiss="alert">&times;</a>
-					  <strong> Error: </strong>
-					  <ul>
-					  {% for error_msg in errors %}
-						  <li> {{error_msg}} </li>
-					  {% endfor %}
-					  </ul>
-				  </div>
-				  {% endif %}
+				 
 
 
                   <div style="width: 100%;">
@@ -75,7 +65,7 @@
 
                     <div class="row">
                       <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
-<<<<<<< HEAD
+
 
             {% if error %}
 				  <div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
@@ -106,13 +96,11 @@
                 </div>
                </div>
 						 
-						  <div id="div_alignment"> 
-=======
-					  {% if envoi %}
+
 						  <h2>Region</h2> <button id="download_svg_button">Download SVG</button>
 
 						  <div id="div_alignment">
->>>>>>> d05e33d8648c5d1f1f47b19f3f4b502402d2bed4
+
 						  </div>
 					  {% endif %}
 					</div>

@@ -155,7 +155,7 @@ margin-top: 15em;
                 
                   <div class="panel-title"><b> Homology search: Blast </b></div>
                   <br>
-                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b></a>Blast a sequence of interest against the genomes of the database </b><a href="/docs/index.html" id="show-option" title="Nucleotide and peptide sequences are accepted"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b></a>Blast a sequence of interest against the genomes of the database </b><a href="/docs/index.html" id="show-option" title=" The blast input can be either an amino-acid or a nucleotide sequence, or a set (one or more) of fasta sequences"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
                   <hr class="lines-home">
          
                   <div class="panel panel-success">
@@ -171,9 +171,7 @@ margin-top: 15em;
                           <tr><td>blastx</td><td>translated dna sequence vs protein sequences database </td></tr>
                           <tr><td>tblastn</td><td>protein sequence vs translated nucleotide sequences database</td></tr>
                       </table>
-					  <p>
-					  The blast input can be either an amino-acid or a nucleotide sequence, or a set (one or more) of fasta sequences.
-					  </p>
+					
                   </div>
                   <form action="{% url "blast" %}" method="post">{% csrf_token %}
                     {{ form.as_p }} 

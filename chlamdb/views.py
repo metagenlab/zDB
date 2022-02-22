@@ -207,7 +207,7 @@ def home(request):
     hsh_files = db.get_filenames_to_taxon_id()
     number_of_files=len(hsh_files)
      
-    #number_ort = db.get_n_orthogroups()
+    number_ort = db.get_n_orthogroups()
     taxids = list(genomes_descr.index)
     #core = db.get_n_orthogroups(only_core=True)
     return render(request, 'chlamdb/home.html', my_locals(locals()))
@@ -494,7 +494,7 @@ def extract_pfam(request, classification="taxon_id"):
 
     all_database = db.get_pfam_hits(pfam_include.index.tolist(), search_on="pfam", indexing="taxid")
     sums = all_database.sum(axis=1)
-    sum_group = len(selection)
+    sum_group= len(selection)
 
     match_groups_data = []
     for no, pfam in enumerate(selection):
@@ -509,7 +509,10 @@ def extract_pfam(request, classification="taxon_id"):
             "n_genomes": sum_include_length,
             "max_n": sums.max(),
             "match_groups_data": match_groups_data,
-            "form": form}
+            "form": form,
+            "sum_include_length": sum_include_length,
+            "sum_exclude_length": sum_exclude_length,
+            "n_missing": n_missing}
     return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
 
 

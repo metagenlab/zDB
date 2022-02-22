@@ -162,7 +162,7 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
             self.helper.form_action = action
             self.helper.layout = Layout(
 
-                Fieldset("Compare genomes",
+                Fieldset("",
                      Column(
                            Row('targets'),
                            Submit('submit', 'Compare %s' % label,  style="margin-top:15px" ),

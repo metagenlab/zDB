@@ -35,15 +35,13 @@
 
 
                                              {% block content %}
-                        <form action="{% url "extract_ko" %}" method="post">
+                      
                             {% csrf_token %}
                             {% crispy form %}
-                        </form>
+         
 
                         {% endblock %}
                     </div>
-
-
 
             {% if wrong_n_missing%}
 
@@ -67,33 +65,50 @@
 
             {% if envoi_extract %}
 
-            <div class="row"  style="background-color: rgba(245, 245, 245, 0.986)">
-                <div class="col-lg-12">
-                  <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                    <br>
-                    <center><h3 style="padding:0; color: rgb(0, 0, 0);">Kegg Orthologs shared by the selected genomes </h3></center>
-                    <br>
-                    <h3>Number of Kegg Orthologs: {{ sum_group }} </h3>
-                    <div class="panel panel-success" style="width:60%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
-                      <div class="panel-heading" style="width:100%">
-                        <h3 class="panel-title">Help to interpret the results</h3>
-                      </div>
+            <div class="row" style="background-color: rgba(245, 245, 245, 0.986)">
+              <div class="col-lg-12">
+                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                  <br>
+                  <div class="panel panel-success" style="width:60%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
+                    <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Help to interpret the results</h3>
+                    </div>
                       <p style="margin: 10px 10px 10px 10px; line-height: 180%"> The output consists of a table containing the KO accession number of the Kegg Orthologs shared among the selected genomes. For each entry its description, the corresponding EC numbers used in Enzyme nomenclature, the Kegg Pathways and Kegg modules to whihch it belongs are reported. Additionally the frequency of the Ko entry in the selected genomes and in the whole database is computed.                           
                       </p>
                     </div>
-
                     <ul style="list-style-type:square">
-                        <div style="padding-top:10px">
+                      <div style="padding-top:10px">
+         <table class="table" style="width:600px">
+                             <tr>
+                                 <th>Number of included genomes</th>
+                                 <td> {{ include |length }} </td>
+                             </tr>
+  
+                             <tr>
+                                 <th>Number of excluded genomes</th>
+                                 <td> {{ sum_exclude_length }} </td>
+                             </tr>
+  
+                              <tr>
+                                 <th>Number of accepted missing data</th>
+                                 <td> {{ n_missing }} </td>
+                             </tr>
+                               <tr>
+                                 <th>Number of Keggs identified</th>
+                                 <td> {{ ko_total_count|length  }}  </td>
+                             </tr>
+  
+                         </table>
+                        </div>
 
-                      
-
-                          <div class="col-lg-12">
-                            <table class="hover" id="mytable"  style="padding-top: 30em;">
-                             <style>
-                             table {
-                               table-layout: fixed;
-                             } </style>
-
+                         <div class="col-lg-12">
+                          <div id="my-tab-content" class="tab-content">
+                            <div class="tab-pane active" id="red">
+                              
+                            <div style="padding-top:18px;">
+                  
+                            <table class="hover" id="extract_ko">
+                  
                             <thead>
                                 <tr>
                                     <th id="entete_locus">KO</th>
@@ -104,7 +119,7 @@
                                     <th>freq complete database {{max_n}}</th>
                                 </tr>
                             </thead>
-
+                            <tbody>
                             {% for value in match_groups_data %}
                                 <tr>
                                     <td><a href="{% url 'fam_ko' value.0 %}">{{value.0}}</a></td>
@@ -115,9 +130,10 @@
                                     <td>{{value.5}}</td>
                                 </tr>
                             {% endfor %}
-
+                              </tbody>
                         </table>
                     </div>
+                  </div>
 				  </div>
 			  {% endif %}
 		  </div>
@@ -127,7 +143,8 @@
     </div>
   </div>
 
-<script type="text/javascript" id="js2">
+<script>
+
 $(document).ready(function() {
 	$('#extract_ko').DataTable( {
 		dom: 'Bfrtip',
@@ -140,6 +157,13 @@ $(document).ready(function() {
 });
 </script>
 
+
+
+
+<script>
+
+
+</script>
 </body>
 {% include "chlamdb/style_menu.html" %}
 {% include "chlamdb/show_hide_plasmid_accessions.html" %}

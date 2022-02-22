@@ -226,9 +226,23 @@
 <script>
 
   $(document).ready(function() {
-	  $('#orthogroups_table').DataTable();
-	  $("#table_groups").DataTable();
+	  $('#orthogroups_table').DataTable({
+		dom: 'Bfrtip',
+		"paging":   true,
+		"ordering": true,
+		"info":     false,
+		buttons: [{extend: 'excel', title: 'ko_table'},
+		{ extend: 'csv', title: 'ko_table'}] }); 
+	  $("#table_groups").DataTable({
+		dom: 'Bfrtip',
+		"paging":   true,
+		"ordering": true,
+		"info":     false,
+		buttons: [{extend: 'excel', title: 'ko_table'},
+		{ extend: 'csv', title: 'ko_table'}] })
   } );
+
+
 
 </script>
 
