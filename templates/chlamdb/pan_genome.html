@@ -140,6 +140,9 @@
 				</div>
 			  </div>
 
+			  <div id="download_svg">
+			  </div>
+
            {% endif %}
          </div>
        </div>
@@ -188,12 +191,12 @@ var y_scale_core = d3.scaleLinear().
 
 var svg = d3.select("#rarefaction_plot").
 	append("svg").
+	attr("id", "current_plot").
 	attr("width", image_size_x).
 	attr("height", height+margins.bottom+margins.top).
 	append("g").
 	attr("transform",
 		"translate(" + margins.left + "," + margins.top +")");
-
 
 svg.append("text").
 	attr("text-anchor", "middle").
@@ -344,6 +347,29 @@ function change_plot() {
 
 d3.select("#plot_type").on("change", change_plot);
 $(document).ready(change_plot);
+
+d3.select("#download_svg").append("button")
+  .attr("type","button")
+  .attr("class", "btn btn-primary btn-sm")
+  .text("Download SVG")
+  .on("click", function() {
+	var svg_elem = document.querySelector("#current_plot");
+	var new_checked = $("input[name='plot_type']:checked").val();
+	var is_pan = new_checked==="pangenome";
+	var is_core = new_checked==="coregenome";
+	var is_distrib = new_checked==="ortho_distrib";
+
+	var filename = "";
+	if(is_pan) {
+		filename="pangenome_plot";
+	} else if(is_core) {
+		filename="core_genome_plot";
+	} else if(is_distrib) {
+		filename="distribution_plot";
+	}
+	svgExport.downloadSvg(svg_elem, filename);
+  });
+
 </script>
 
 </html>
