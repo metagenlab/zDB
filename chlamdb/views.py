@@ -3207,13 +3207,23 @@ def plot_heatmap(request, type):
 
     if request.method != "POST":
         form_venn = form_class()
-        return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
+        ctx = {"form_venn": form_venn, "type": type}
+        return render(request, 'chlamdb/plot_heatmap.html', my_locals(ctx))
 
     form_venn = form_class(request.POST)
     if not form_venn.is_valid():
-        return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
+        ctx = {"form_venn": form_venn, "type": type}
+        return render(request, 'chlamdb/plot_heatmap.html', my_locals(ctx))
 
     taxon_ids = form_venn.get_taxids()
+
+    if len(taxon_ids) <= 1:
+        error_message = "Please select at least two genomes"
+        error_title = "Wrong input"
+        ctx = {"error": True, "type": type, "type": type, "error_title": error_title,
+                "form_venn": form_venn, "error_message": error_message }
+        return render(request, 'chlamdb/plot_heatmap.html', my_locals(ctx))
+        
     if type=="COG":
         mat = db.get_cog_hits(taxon_ids, indexing="taxid", search_on="taxid")
     elif type=="orthology":
