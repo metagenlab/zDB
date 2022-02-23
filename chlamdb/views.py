@@ -791,8 +791,8 @@ def venn_ko(request):
     ko_descriptions = db.get_ko_desc(ko_list)
     ko2description = []
     for ko, ko_desc in ko_descriptions.items():
-        forbidden = "\""
-        ko_item = f"h[{to_s(format_ko(ko))}] = [{forbidden}{ko_desc}{forbidden}];"
+        cleaned_desc = escape_quotes(ko_desc)
+        ko_item = f"h[{to_s(format_ko(ko))}] = [\"{cleaned_desc}\"];"
         ko2description.append(ko_item)
     ko2description = "\n".join(ko2description)
     envoi_venn = True

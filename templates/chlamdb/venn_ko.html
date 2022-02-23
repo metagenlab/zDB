@@ -13,24 +13,6 @@
 			var data = dict[val][0];
 			return [link, data];
 		}
-
-        $(document).ready(function() {
-        // call the tablesorter plugin
-        $("table").tablesorter({
-        // change the default sorting order from 'asc' to 'desc'
-        sortInitialOrder: 1
-        });
-        });
-    </script>
-    <script type="text/javascript">
-        jQuery(document).ready(function ($) {
-            $('#tabs').tab();
-        });
-    </script>
-    <script type="text/javascript">
-        jQuery(document).ready(function ($) {
-            $('#tabs1').tab();
-        });
     </script>
    {% include "chlamdb/header.html" %}
 </head>
@@ -67,17 +49,16 @@
                       <br>A maximum of 6 genomes can be compared.</p>
                     </div>
 
+				  <form action="{% url "venn_ko" %}" method="post">
+					  {% csrf_token %}
+					  {{ form_venn.as_p }}
+					  <input type="submit" name="venn" value="Compare KO" id="venn_button" />
 
+				  </form>
 
-                              <form action="{% url "venn_ko" %}" method="post">
-                                  {% csrf_token %}
-                                  {{ form_venn.as_p }}
-                                  <input type="submit" name="venn" value="Compare KO" id="venn_button" />
-
-                              </form>
-
-                          </div>
+			  </div>
               {% endif %}
+
                {% if envoi_venn %}
                <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em;">
                 <div class="col-lg-8">
@@ -104,38 +85,6 @@
       </div>
     </div>
   </div>
-
-<script>
-  var update_fields = function () {
-    if ($("#id_get_groups").is(":checked")) {
-
-        $('#id_region').prop('disabled', false);
-        $('#search_table').show();
-        $('#export_bouttons_detail').show();
-
-        $('#table_groups').hide();
-        $('#export_bouttons_groups').hide();
-    }
-
-
-
-    else {
-
-       $('#id_get_groups').prop('disabled', false);
-       $('#search_table').hide();
-       $('#export_bouttons_detail').hide();
-       $('#table_groups').show();
-       $('#export_bouttons_groups').show();
-    }
-  };
-  $(update_fields);
-  $("#id_get_groups").change(update_fields);
-
-</script>
-
-
-
-<p id="jqtest"></p>
 
 </body>
 {% include "chlamdb/style_menu.html" %}
