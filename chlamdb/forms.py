@@ -56,13 +56,13 @@ def make_plot_form(db):
             self.helper = FormHelper()
             self.helper.form_method = 'post'
             self.helper.layout = Layout(
-                Fieldset("Compare genomes",
+                Fieldset("",
                     Column(
                     Row(Column("accession", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
                         Column("region_size", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
-                        Row('genomes', style="padding-left: 15px"),
+                        Row('genomes', style="padding: 15px"),
                     Column(Row('all_homologs', css_class='form-group col-lg-6 col-md-6 col-sm-12'),
-                    Submit('submit', 'Compare'), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                    Submit('submit', 'Compare plot regions'), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
                     css_class="col-lg-8 col-md-8 col-sm-12"))
             )
 

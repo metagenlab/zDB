@@ -136,7 +136,10 @@
 				  </div>
 
 				  <div class="tab-pane" id="refseq_phylogeny">
-					  <h3>Phylogeny of the RefSeq best hits of {{og_id|safe}}</h3>
+					<br>
+					<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+						Phylogeny of the RefSeq best hits of {{og_id|safe}}
+				   </p></b></center>
 						<div class="tab-pane active" id="tab1">
 						  <object type="image/svg+xml" data="{% static best_hits_phylogeny %}"></object>
 						  <a download="profile.svg" class="btn" href="{% static best_hits_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
@@ -144,6 +147,10 @@
 				  </div>
 
 				<div class="tab-pane" id="swissprot_homologs_tab">
+					<br>
+					<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+						SwissProt homologs of {{locus_tag}}
+				   </p></b></center>
 					<div class="col-md-12 col-lg-8" style="padding-top:20px">
 
 					<table id="blast_swissprot_table" class="table">
@@ -169,7 +176,10 @@
 
 				
 				<div class="tab-pane" id="refseq_homologs_tab">
-					<h3> RefSeq homologs </h3>
+					<br>
+					<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+						RefSeq homologs of {{locus_tag}}
+				   </p></b></center>
 					<ul>
 					 <li>Number of RefSeq hits (max 100): {{n_refseq_homologs}} </li>
 					</ul>

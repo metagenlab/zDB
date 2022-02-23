@@ -43,7 +43,7 @@
                       {% if envoi_comp %}
                       <div class="row" style="padding-top:30px ;background-color: rgba(245, 245, 245, 0.986); margin-top: 1em;" >
                   <h4>  Number of domains at least present 1 time in 1 of the {{taxon_list|length}} selected genomes: <strong>{{pfam2data|length}}</strong>  </h4>
-                         <div class="panel panel-success">
+                         <div class="panel panel-success"  style="margin: 1em;">
                              <div class="panel-heading" style="width:100%">
                                  <h5 class="panel-title">Help to interpret the results</h5>
                              </div>
@@ -53,21 +53,17 @@
                              </p>
                          </div>
                         </div>
+                        <br>
 
 
-
-                     
-                        <table class="sortable table" id="table_pfam" style="width: 90%; margin-left: 1em; padding-top: 30em;">
+                        <div class="col-lg-12">
+                          <table class="hover" id="mytable"  style="padding-top: 10em;">
                                   <style>
                                     table {
                                         width:100%;
                                         table-layout:fixed;
-                                        
                                     }
-                                    td {
-                                        overflow: hidden;
-                                        white-space: nowrap;
-                                    }
+                                    
                                     </style>
                                      <thead>
                                       <tr >
@@ -75,7 +71,7 @@
                                       <th valign="bottom">Description</th>
                                       <th valign="bottom">nDomain</th>
                                     {% for taxon in taxon_list %}
-                                          <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
+                                          <th class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
                                     {% endfor %}
                                   </tr>
                                 </thead>
@@ -97,28 +93,31 @@
         </div>
       </div>
 
+    </body>
 
-    <script src="{% static 'js/jquery.hottie.js' %}"></script>
-    <script>
-
+      <script src="{% static 'js/jquery.hottie.js' %}"></script>
+      <script>
       $(function(){
-        $("#table_pfam td").hottie({
-          readValue : function(e) {
-            return $(e).attr("data-hist");
-          },
-        colorArray : [
-        "#5858FA",
-            "#FBEFEF",
-            "#FA5858"
-        ]
-
-        });
-
+      $("#mytable td").hottie({
+      readValue : function(e) {
+      return $(e).attr("data-hist");
+      },
+      colorArray : [
+      "#5858FA",
+      "#FBEFEF",
+      "#FA5858"
+      ]
+      
       });
-</script>
-<script>
+      
+      });
+      </script>
+      
+      
+      <script>
+      
       $(document).ready(function() {
-        $('#table_pfam').DataTable( {
+        $('#mytable').DataTable( {
           dom: 'lBfrtip',
           buttons: [
               {
@@ -134,17 +133,16 @@
                   title: 'plast_refseq'
               }
           ],
-          "paging":   false,
+         
           "ordering": true,
           "info":     false,
           } );
-        } );
-</script>
+      } );
+      
+      $(document).ready(function() {
+      $("#mytable").DataTable();} );
+      
+      </script>
 
-<script>
-$(document).ready(function() {
-$('#table_pfam').DataTable();} )
-</script>
 </body>
-{% include "chlamdb/style_menu.html" %}
 </html>
