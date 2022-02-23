@@ -2654,10 +2654,14 @@ def pan_genome(request, type):
     return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
 
 
+# NOTE:
+# Due to a bug in the annotation pipeline
+# the ffn and fna are switched. This should
+# be replaced as soon as the bug will be fixed.
 blast_input_dir = {"blastp": "faa",
-        "tblastn": "fna",
-        "blastn_fna": "fna",
-        "blastn_ffn": "ffn",
+        "tblastn": "ffn",
+        "blastn_fna": "ffn",
+        "blastn_ffn": "fna",
         "blastx": "faa"}
 
 blast_command = {"blastp": NcbiblastpCommandline,
@@ -2685,14 +2689,13 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
             scores.append((hit.accession, 100.0*hsp.identities/hsp.align_length))
             accessions.add(hit.accession)
 
-    file_type = blast_input_dir[blast_type]
-    # if faa or fna, the accession refers to CDS locus_tags
-    # if ffn, the accession refers to contigs
-    # need to map those to taxids to generate the heatmap
-    if file_type=="faa" or file_type=="fna":
+    if blast_type in ["blastp", "blastx", "blastn_ffn"]:
         acc_to_taxid = db.get_taxid_from_accession(list(accessions), look_on="locus_tag")
-    elif file_type=="ffn":
+    elif blast_type in ["tblastn", "blastn_fna"]:
         acc_to_taxid = db.get_taxid_from_accession(list(accessions), look_on="contig")
+        print(acc_to_taxid)
+    else:
+        raise Exception("Unknown blast type: "+blast_type)
 
     all_infos = []
     for query, lst_vals in hits.items():
