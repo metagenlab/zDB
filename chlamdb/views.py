@@ -3230,13 +3230,16 @@ def plot_heatmap(request, type):
         
     if type=="COG":
         mat = db.get_cog_hits(taxon_ids, indexing="taxid", search_on="taxid")
+        mat.index = [format_cog(i) for i in mat.index]
     elif type=="orthology":
         mat = db.get_og_count(taxon_ids)
-        mat.index = [f"group_{i}" for i in mat.index]
+        mat.index = [format_orthogroup(i) for i in mat.index]
     elif type == "ko":
         mat = db.get_ko_hits(taxon_ids)
+        mat.index = [format_ko(i) for i in mat.index]
     elif type == "Pfam":
         mat = db.get_pfam_hits(taxon_ids)
+        mat.index = [format_pfam(i) for i in mat.index]
     else:
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
@@ -3253,7 +3256,7 @@ def plot_heatmap(request, type):
     order_genomes = hierarchy.leaves_list(Z_genomes)
 
     # set number of paralogs >1 as 2 to simplify the color code
-    mat[mat > 1] = 2 
+    mat[mat > 1] = 2
     colors = ["#ffffff", "#2394d9", "#d923ce"]
     new_cols = [mat.index.tolist()[i] for i in order_genomes]
 
