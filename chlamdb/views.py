@@ -647,7 +647,7 @@ def venn_pfam(request):
 
     descriptions = []
     for pfam, pfam_info in data.iterrows():
-        pfam_def = pfam_info["def"]
+        pfam_def = escape_quotes(pfam_info["def"])
         descriptions.append(f"h[\"{format_pfam(pfam)}\"] = \"{pfam_def}\"")
 
     ctx = {"envoi_venn": True,
