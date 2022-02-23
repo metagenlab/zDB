@@ -40,6 +40,7 @@ from metagenlab_libs.ete_phylo import KOAndCompleteness
 from metagenlab_libs.ete_phylo import Column
 from metagenlab_libs.KO_module import ModuleParser
 from metagenlab_libs.chlamdb import search_bar as sb
+from metagenlab_libs import circosjs
 
 
 from Bio.Blast.Applications import NcbiblastpCommandline
@@ -3080,13 +3081,8 @@ def circos_main(request):
 
 
 def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
-
-    from metagenlab_libs import circosjs
-    
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
-    
-    #task = run_circos.delay(reference_taxon, target_taxons)
     
     if highlight_og:
         df_genes = db.get_genes_from_og(highlight_og, taxon_ids=[reference_taxon], terms=["locus_tag"])
@@ -3137,7 +3133,7 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     c.add_gene_track(minus_strand, "minus", sep=0, radius_diff=0.04, highlight_list=locus_list)
     c.add_gene_track(plus_strand, "plus", sep=0, radius_diff=0.04, highlight_list=locus_list)
 
-    # iterate ordered list of target taxids, add track to circos    
+    # iterate ordered list of target taxids, add track to circos
     for n, target_taxon in enumerate(target_taxon_n_homologs.index):
         df_combined = df_feature_location.join(df_identity.loc[target_taxon].reset_index().set_index("seqfeature_id_1")).reset_index()
         df_combined.identity = df_combined.identity.fillna(0).astype(int)
@@ -3145,7 +3141,15 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
         
         # only keep the highest identity for each seqfeature id
         df_combined = df_combined.sort_values('identity', ascending=False).drop_duplicates('index').sort_index()
-        df_combined["locus_tag"] = [seqfeature_id2locus_tag[seqfeature_id] if not pd.isna(seqfeature_id) else None for seqfeature_id in df_combined["seqfeature_id_2"]]
+        loci = []
+        for seqid in df_combined.seqfeature_id_2:
+            # ugly hack... to be fixed
+            if pd.isna(seqid) or int(seqid) not in seqfeature_id2locus_tag:
+                loci.append(None)
+                continue
+            loci.append(seqfeature_id2locus_tag[seqid])
+        df_combined["locus_tag"] = loci
+
         # comp is a custom scale with missing orthologs coloured in light blue
         if n == 0:
             sep = 0.03
