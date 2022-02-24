@@ -25,7 +25,11 @@
 
         <div class="home-title"><b> Phylogeny </b></div>
         <hr class="lines-home">
-                      
+		  <div class="panel panel-success" style="  width:90%">
+			  <div class="panel-heading" style="width:100%;">
+				  <h3 class="panel-title">Help</h3>
+			  </div>
+
 
   
                                   <div class= 'img'>
@@ -51,36 +55,18 @@
     <script>
       $(document).ready(function() {
 
-      // Javascript to enable link to tab
-      var url = document.location.toString();
-      if (url.match('#')) {
-          $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
-      } 
 
-      // Change hash for page-reload
-      $('.nav-tabs a').on('shown.bs.tab', function (e) {
-          window.location.hash = e.target.hash;
-      })
 
-      $('#genomes_table').DataTable( {
-      dom: 'Bfrtip',
-      "paging":   true,
-      "ordering": true,
-      "info":     false,
-      buttons: [
-        {
-            extend: 'excel',
-            title: 'interaction_table'
-        },
-        {
-            extend: 'csv',
-            title: 'interaction_table'
-        }
-      ],
-      } );
-      } );
-    $('.dropdown-toggle').dropdown()
-    </script>
+
+		  <div class= 'img'>
+			<object type="image/svg+xml" data="{% static asset_path %}" id="pyhlogeny" style="width:1200px; padding:2em 4em 0em 4em;"></object>
+		  </div>
+		  <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+		 </div>
+	 </div>
+</div>
+</div>
+
 </body>
 {% include "chlamdb/style_menu.html" %}
 </html>

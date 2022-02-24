@@ -651,7 +651,7 @@ def venn_pfam(request):
 
     descriptions = []
     for pfam, pfam_info in data.iterrows():
-        pfam_def = pfam_info["def"]
+        pfam_def = escape_quotes(pfam_info["def"])
         descriptions.append(f"h[\"{format_pfam(pfam)}\"] = \"{pfam_def}\"")
 
     ctx = {"envoi_venn": True,
@@ -795,8 +795,8 @@ def venn_ko(request):
     ko_descriptions = db.get_ko_desc(ko_list)
     ko2description = []
     for ko, ko_desc in ko_descriptions.items():
-        forbidden = "\""
-        ko_item = f"h[{to_s(format_ko(ko))}] = [{forbidden}{ko_desc}{forbidden}];"
+        cleaned_desc = escape_quotes(ko_desc)
+        ko_item = f"h[{to_s(format_ko(ko))}] = [\"{cleaned_desc}\"];"
         ko2description.append(ko_item)
     ko2description = "\n".join(ko2description)
     envoi_venn = True
@@ -2662,10 +2662,14 @@ def pan_genome(request, type):
     return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
 
 
+# NOTE:
+# Due to a bug in the annotation pipeline
+# the ffn and fna are switched. This should
+# be replaced as soon as the bug will be fixed.
 blast_input_dir = {"blastp": "faa",
-        "tblastn": "fna",
-        "blastn_fna": "fna",
-        "blastn_ffn": "ffn",
+        "tblastn": "ffn",
+        "blastn_fna": "ffn",
+        "blastn_ffn": "fna",
         "blastx": "faa"}
 
 blast_command = {"blastp": NcbiblastpCommandline,
@@ -2693,14 +2697,13 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
             scores.append((hit.accession, 100.0*hsp.identities/hsp.align_length))
             accessions.add(hit.accession)
 
-    file_type = blast_input_dir[blast_type]
-    # if faa or fna, the accession refers to CDS locus_tags
-    # if ffn, the accession refers to contigs
-    # need to map those to taxids to generate the heatmap
-    if file_type=="faa" or file_type=="fna":
+    if blast_type in ["blastp", "blastx", "blastn_ffn"]:
         acc_to_taxid = db.get_taxid_from_accession(list(accessions), look_on="locus_tag")
-    elif file_type=="ffn":
+    elif blast_type in ["tblastn", "blastn_fna"]:
         acc_to_taxid = db.get_taxid_from_accession(list(accessions), look_on="contig")
+        print(acc_to_taxid)
+    else:
+        raise Exception("Unknown blast type: "+blast_type)
 
     all_infos = []
     for query, lst_vals in hits.items():
@@ -3240,13 +3243,16 @@ def plot_heatmap(request, type):
         
     if type=="COG":
         mat = db.get_cog_hits(taxon_ids, indexing="taxid", search_on="taxid")
+        mat.index = [format_cog(i) for i in mat.index]
     elif type=="orthology":
         mat = db.get_og_count(taxon_ids)
-        mat.index = [f"group_{i}" for i in mat.index]
+        mat.index = [format_orthogroup(i) for i in mat.index]
     elif type == "ko":
         mat = db.get_ko_hits(taxon_ids)
+        mat.index = [format_ko(i) for i in mat.index]
     elif type == "Pfam":
         mat = db.get_pfam_hits(taxon_ids)
+        mat.index = [format_pfam(i) for i in mat.index]
     else:
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
@@ -3263,7 +3269,7 @@ def plot_heatmap(request, type):
     order_genomes = hierarchy.leaves_list(Z_genomes)
 
     # set number of paralogs >1 as 2 to simplify the color code
-    mat[mat > 1] = 2 
+    mat[mat > 1] = 2
     colors = ["#ffffff", "#2394d9", "#d923ce"]
     new_cols = [mat.index.tolist()[i] for i in order_genomes]
 
