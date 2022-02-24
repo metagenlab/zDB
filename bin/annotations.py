@@ -39,28 +39,6 @@ def is_annotated(gbk_record):
             and gbk_record.features[0].type == 'source')
 
 
-def rename_source(record):
-    if 'strain' in record.features[0].qualifiers:
-
-        print('--', record.features[0].qualifiers['strain'][0])
-        if ';' in record.features[0].qualifiers['strain'][0]:
-            print('ACHRTUNG: record has 2 strain names! \t%s\t --> check and edit source manually' % record.name)
-            # put everythink lower size
-            strain = record.features[0].qualifiers['strain'][0].split(';')[1]
-        else:
-            strain = record.features[0].qualifiers['strain'][0]
-        if strain == 'strain':
-            return (False, False)
-        if strain.lower() not in record.annotations['source'].lower():
-            msg = '%s' % record.annotations['source']
-            print("ACHTUNG changing source\t%s\t--> %s " % (msg, record.annotations['source'] + strain))
-
-
-        return strain, "%s %s" % (record.annotations['source'], strain)
-    else:
-        return (False, False)
-
-
 def orthogroups_to_fasta(genomes_list):
     fasta_list = genomes_list.split(' ')
 
@@ -139,10 +117,10 @@ def check_gbk(gbk_lst):
                 failed = True
             contigs[record.name] += 1
 
-            if not "accession" in record.annotations:
+            if not "accessions" in record.annotations:
                 failed = True
             else:
-                acc = record.annotations["accession"][0]
+                acc = record.annotations["accessions"][0]
                 if acc in accessions:
                     failed = True
                 accessions[acc] += 1
@@ -195,11 +173,16 @@ def check_gbk(gbk_lst):
                 record.name = gen_new_locus_tag(contigs)
                 contigs[record.name] -= 1
 
-            if not "accession" in record.annotations:
+            # NOTE: for a reason I do not understand, Biopython will 
+            # store the accession into the "accessions" entry of a record when parsing
+            # a genbank file, but won't recognize the "accessions" entry
+            # when writing the same record. It instead recognizes the "accession" entry.
+            if not "accessions" in record.annotations:
                 record.annotations["accession"] = [gen_new_locus_tag(accessions)]
-            elif accessions[record.annotations["accession"][0]] > 1:
-                record.annotations["accession"][0] = gen_new_locus_tag(accessions)
-                record.annotations["accession"][0] -= 1
+            elif accessions[record.annotations["accessions"][0]] > 1:
+                new_acc = gen_new_locus_tag(accessions)
+                record.annotations["accession"][0] = new_acc
+                accessions[new_acc] -= 1
 
             for feature in record.features:
                 if feature.type == "source":
