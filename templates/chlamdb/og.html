@@ -17,6 +17,16 @@
 		<div class="row">
 		  <div class="col-lg-12">
 			{% include "chlamdb/menu.html" %}
+			<div class="panel-title"><b>
+			Orthogroup annotation
+			</b>
+		 </div>
+		 </div>
+			<br>
+			<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+				Orthogroup:{{og}}
+			   </p></b></center></center>
+			   <hr class="lines-home">
 
 	  {% if not valid_id %}
 		  <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
@@ -100,10 +110,7 @@
 
 
 		  <div class="tab-pane active" id="overview_tab">
-			  <br>
-			<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
-				Orthogroup:{{og}}
-			   </p></b></center>
+			
 			<h4>Orthogroup content: <strong>{{n_homologues}} members</strong></h4>
 
 
