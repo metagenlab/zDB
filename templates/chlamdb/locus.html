@@ -58,6 +58,13 @@
                 <li>
 					<a href="#phylogenetic_distrib" data-toggle="tab">Phylogenetic distribution</a>
 				</li>
+
+                {% if n_homologues >= 2 %}
+                <li>
+					<a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a>
+				</li>
+                {% endif %}
+
 				{% endif %}
 
 
@@ -69,7 +76,6 @@
 				</li>
 				{% endif %}
 
-
 				{% if optional2status|keyvalue:"BLAST_swissprot" and n_swissprot_hits > 0 %}
 					<li>
 						<a href="#swissprot_homologs_tab" data-toggle="tab">
@@ -77,13 +83,6 @@
 						</a>
 					</li>
 				{% endif %}
-
-
-                {% if n_homologues > 2 and optional2status|keyvalue:"gene_phylogenies"%}
-                <li>
-					<a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a>
-				</li>
-                {% endif %}
 
 				{% if has_refseq_phylo and optional2status|keyvalue:"BBH_phylogenies" %}
                     <li><a href="#refseq_phylogeny" data-toggle="tab">RefSeq best hits phylogeny</a></li>
@@ -105,7 +104,7 @@
 								  <h3 class="panel-title">Help</h3>
 							  </div>
 							  <p style="margin: 10px 10px 10px 10px; line-height: 180%">
-							  Number of homologs (first column and blue bar chart) in each genome.
+							  Number of homologs in each genome (first column) and amino-acid identity of the closest homolog (second column).
 							  </p>
 						  </div>
 
@@ -118,11 +117,16 @@
 
 
 				  <div class="tab-pane" id="og_phylogeny">
-						<h3>Phylogeny of {{og_id|safe}} </h3>
-						<div class="tab-pane active" id="tab1">
-						  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
+						<h3>Phylogeny of {{og_id|safe}} 
 						  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}">
 							  <i class="fa fa-download"></i> Download SVG</a>
+
+						  <a download="profile.svg" class="btn" href="{% static og_alignment %}">
+							  <i class="fa fa-download"></i> Download alignment file</a>
+						</h3>
+
+						<div class="tab-pane active" id="tab1">
+						  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
 						</div>
 				  </div>
 

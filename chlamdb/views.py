@@ -524,13 +524,16 @@ def format_ko_url(ko_id):
     return format_ko(ko_id, as_url=True)
 
 
-def format_ko_path(hsh_pathways, ko, as_list=False):
+def format_ko_path(hsh_pathways, ko, as_list=False, with_taxid=None):
     pathways = hsh_pathways.get(ko, [])
     if len(pathways) == 0:
         if as_list:
             return []
         return "-"
-    fmt_lst = (f"<a href=\"/KEGG_mapp_ko/map{i:05d}\">{d}</a>" for i, d in pathways)
+    if with_taxid is None:
+        fmt_lst = (f"<a href=\"/KEGG_mapp_ko/map{i:05d}\">{d}</a>" for i, d in pathways)
+    else:
+        fmt_lst = (f"<a href=\"/KEGG_mapp_ko/map{i:05d}/{with_taxid}\">{d}</a>" for i, d in pathways)
     
     if as_list:
         return list(fmt_lst)
@@ -1116,9 +1119,10 @@ def prepare_default_tree(og_phylogeny):
     return tree, root
 
 
-def tab_og_phylogeny(db, og_id):
+def tab_og_phylogeny(db, og_id, compare_to=None):
     og_phylogeny = db.get_og_phylogeny(og_id)
     pfam_col = None
+    ident_col = None
     if optional2status.get("pfam", False):
         annots = db.get_genes_from_og(orthogroups=[og_id], terms=["locus_tag", "length"])
         pfams = db.get_pfam_hits_info(annots.index.tolist())
@@ -1134,20 +1138,28 @@ def tab_og_phylogeny(db, og_id):
             hsh_pfam_infos[data.locus_tag] = [data.length, pfam_entries]
         pfam_col = PfamColumn("Pfam domains", hsh_pfam_infos, pfam_cmap)
 
-    tree_alignment, _ = prepare_default_tree(og_phylogeny)
+    if not compare_to is None:
+        identity_matrix = db.get_og_identity(og=og_id, ref_seqid=compare_to)
+        seqids = identity_matrix.index.tolist()
+        seqids.append(compare_to)
+        seqid_to_locus = db.get_proteins_info(seqids, to_return=["locus_tag"], as_df=True)
+        all_infos = identity_matrix.join(seqid_to_locus).set_index("locus_tag").round(1)
+        all_infos.loc[seqid_to_locus.loc[compare_to].locus_tag] = 100.0
+
+        ident_col = SimpleColorColumn.fromSeries(all_infos.identity, color_gradient=True,
+                header = "Identity", default_val="-", is_str_index=True)
+
     tree, root = prepare_default_tree(og_phylogeny)
     locuses = [branch.name for branch in tree.iter_leaves()]
     locus_to_genome = db.get_locus_to_genomes(locuses)
 
-    e_tree_alignment = EteTree(tree_alignment)
-    e_tree_alignment.add_column(SimpleTextColumn("Locus tag"))
-    e_tree_alignment.rename_leaves(locus_to_genome, leaf_name_type=str)
-    algn_file = settings.ALIGNMENTS + "/" + f"OG{og_id:07d}_mafft.faa"
-    fasta_dict = SeqIO.to_dict(SeqIO.parse(algn_file, "fasta"))
-    e_tree_alignment.add_column(SeqColumn(fasta_dict, "Alignment"))
+    og_filename = f"OG{og_id:07}_mafft.faa"
+    algn_file = settings.ALIGNMENTS + "/" + og_filename
 
     e_tree = EteTree(tree)
     e_tree.add_column(SimpleTextColumn("Locus tag"))
+    if not ident_col is None:
+        e_tree.add_column(ident_col)
     if not pfam_col is None:
         e_tree.add_column(pfam_col)
     e_tree.rename_leaves(locus_to_genome, leaf_name_type=str)
@@ -1156,16 +1168,14 @@ def tab_og_phylogeny(db, og_id):
     path = settings.BASE_DIR + '/assets/' + asset_path
     e_tree.render(path, dpi=1200)
 
-    asset_path_algn = f"/temp/og_phylogeny{og_id}_algn.svg"
-    path_algn = settings.BASE_DIR + '/assets/' + asset_path_algn
-    e_tree_alignment.render(path_algn, dpi=1200)
-    return {"og_phylogeny": asset_path, "root": root, "og_alignment": asset_path_algn}
+    asset_algn_file = f"/temp/{og_filename}"
+    asset_algn_file_path = settings.BASE_DIR + "/assets/" + asset_algn_file
+    if not os.path.exists(asset_algn_file_path):
+        os.symlink(algn_file, asset_algn_file_path)
+    return {"og_phylogeny": asset_path, "root": root, "og_alignment": asset_algn_file}
 
 
 def tab_og_conservation_tree(db, group, compare_to=None):
-    from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
-    from ete3 import Tree
-    
     ref_phylogeny = db.get_reference_phylogeny()
     leaf_to_name = db.get_genomes_description().description.to_dict()
     
@@ -1180,7 +1190,7 @@ def tab_og_conservation_tree(db, group, compare_to=None):
     tree.ladderize()
     e_tree = EteTree(tree)
 
-    e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group], header=format_orthogroup(group)))
+    e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group], header="Number of homologs"))
     if not compare_to is None:
         identity_matrix = db.get_og_identity(og=group, ref_seqid=compare_to)
         seqids = identity_matrix.index.tolist()
@@ -1190,10 +1200,10 @@ def tab_og_conservation_tree(db, group, compare_to=None):
         seqids.append(compare_to)
         seqid_to_taxon  = db.get_taxid_from_seqid(seqids)
         identity_matrix["taxid"] = identity_matrix.index.map(seqid_to_taxon)
-        max_identity = identity_matrix.groupby("taxid").max()
-        col = LocusHeatmapColumn.fromSeries(max_identity["identity"],
-                header="Identity", cls=LocusHeatmapColumn)
-        col.ref_taxon = seqid_to_taxon[compare_to]
+        max_identity = identity_matrix.groupby("taxid").max().round(1)
+        max_identity.loc[seqid_to_taxon[compare_to]] = 100.0
+        col = SimpleColorColumn.fromSeries(max_identity.identity, color_gradient=True,
+                header = "Identity", default_val="-")
         e_tree.add_column(col)
 
     e_tree.rename_leaves(leaf_to_name)
@@ -1205,7 +1215,7 @@ def tab_og_conservation_tree(db, group, compare_to=None):
     return {"asset_path": asset_path}
 
 
-def og_tab_get_kegg_annot(db, seqids):
+def og_tab_get_kegg_annot(db, seqids, from_taxid=None):
     ko_hits = db.get_ko_hits(seqids, search_on="seqid", indexing="seqid")
     if ko_hits.empty:
         return {}
@@ -1221,7 +1231,7 @@ def og_tab_get_kegg_annot(db, seqids):
         entry = [format_ko(ko_id, as_url=True), count]
         descr = ko_descr.get(ko_id, "-")
         entry.append(descr)
-        entry.append(format_ko_path(ko_pathways, ko_id))
+        entry.append(format_ko_path(ko_pathways, ko_id, with_taxid=from_taxid))
         entry.append(format_ko_modules(ko_modules, ko_id))
         ko_entries.append(entry)
 
@@ -1335,6 +1345,7 @@ def orthogroup(request, og):
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
     og_counts = db.get_og_count([og_id], search_on="orthogroup")
+    print(og_counts)
     if len(og_counts.index) == 0:
         valid_id = False
         return render(request, "chlamdb/og.html", my_locals(locals()))
@@ -1641,10 +1652,10 @@ def locusx(request, locus=None, menu=True):
     translation = db.get_translation(seqid)
     general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
     if n_homologues>1:
-        og_conserv_ctx  = tab_og_conservation_tree(db, og_id) #, compare_to=seqid)
+        og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
         homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
         try:
-            og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
+            og_phylogeny_ctx = tab_og_phylogeny(db, og_id, compare_to=seqid)
         except db_utils.NoPhylogenyException:
             og_phylogeny_ctx = {}
     else:
@@ -1657,7 +1668,8 @@ def locusx(request, locus=None, menu=True):
     swissprot_ctx = {}
     best_hit_phylo = {}
     if optional2status.get("KEGG", False):
-        kegg_ctx = og_tab_get_kegg_annot(db, [seqid])
+        taxids = db.get_organism([seqid], as_taxid=True)
+        kegg_ctx = og_tab_get_kegg_annot(db, [seqid], from_taxid=taxids[seqid])
 
     if optional2status.get("COG", False):
         cog_ctx = og_tab_get_cog_annot(db, [seqid])

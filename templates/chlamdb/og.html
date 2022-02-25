@@ -31,7 +31,6 @@
 
 			{% if n_homologues > 2 and optional2status|keyvalue:"gene_phylogenies" %}
 			<li><a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a></li>
-			<li><a href="#og_alignment" data-toggle="tab" >Alignment</a></li>
 			{% endif %}
 
 			{% if has_refseq_phylo and optional2status|keyvalue:"BBH_phylogenies" %}
@@ -63,18 +62,17 @@
 
 		  <div class="tab-pane" id="og_phylogeny">
 			  <h3>Phylogeny of {{og}} {{root}}</h3>
+			    <a download="profile.svg" class="btn" href="{% static og_phylogeny %}">
+				  <i class="fa fa-download"></i> Download SVG</a>
+
+			    <a download="profile.svg" class="btn" href="{% static og_alignment %}">
+				  <i class="fa fa-download"></i> Download alignment file</a>
+
 				<div class="tab-pane active" id="tab1">
 				  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
+
 				  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
 
-				</div>
-		  </div>
-
-		  <div class="tab-pane" id="og_alignment">
-			  <h3>Phylogeny of {{og}} {{root}}</h3>
-				<div class="tab-pane active" id="tab1">
-				  <object type="image/svg+xml" data="{% static og_alignment %}"></object>
-				  <a download="profile.svg" class="btn" href="{% static og_alignment %}"><i class="fa fa-download"></i> Download SVG</a>
 				</div>
 		  </div>
 
