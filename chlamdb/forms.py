@@ -192,23 +192,24 @@ def make_circos_form(database_name):
         circos_reference = forms.ChoiceField(choices=accession_choices,
                 widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
         targets = forms.MultipleChoiceField(choices=accession_choices,
-                widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"10"}), required=False)
+                widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker",
+                    "data-live-search":"true", "data-max-options":"10"}), required=False)
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.helper = FormHelper()
-            self.helper.form_method = 'post'
+            self.helper.form_method = "post"
+            self.helper.form_action = "circos"
             
             self.helper.layout = Layout(
                 Fieldset(
-                        Row("Circos"),
+                        "Circos",
                         Row('circos_reference'),
                         Row('targets', style="margin-top:1em"),
                         Submit('submit_circos', 'Submit',
                             style="padding-left:15px; margin-top:15px; margin-bottom:15px "),
                         css_class="col-lg-5 col-md-6 col-sm-6")
                 )
-            super(CircosForm, self).__init__(*args, **kwargs)
 
         def save(self):
             self.reference = self.cleaned_data["reference"]

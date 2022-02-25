@@ -40,10 +40,8 @@
               </div>
              
                 {% block content %}
-                <form action="{% url "circos" %}" method="post" id="circos-form">
-                    {% csrf_token %}
-                    {% crispy form %}
-                </form>
+				{% csrf_token %}
+				{% crispy form %}
                 {% endblock %}
 
               </div>
@@ -78,16 +76,17 @@
                           </ul>
                         </div>
                       </div>
-                      {% endif %}
-              <div id='download' class='download'style="margin-top: 15px"></div>
+					  </ul>
+					</div>
+				  </div>
+				  {% endif %}
+              <div id='download' class='download' style="margin-top: 15px"></div>
               <div id='heatmapChart' class='chartclass'></div>
 
           </div>
       </div>
     </div>
   </div>
-</div>
-</div>
 </body>
 
 {% include "chlamdb/style_menu.html" %}

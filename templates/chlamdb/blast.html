@@ -171,9 +171,11 @@ margin-top: 15em;
                           <tr><td>blastx</td><td>translated dna sequence vs protein sequences database </td></tr>
                           <tr><td>tblastn</td><td>protein sequence vs translated nucleotide sequences database</td></tr>
                       </table>
-					  <p>
-					  The blast input can be either an amino-acid or a nucleotide sequence, or a set (one or more) of fasta sequences.
-					  </p>
+					  <div style="margin: 10px 10px 10px 10px">
+						  <p>
+						  The blast input can be either an amino-acid or a nucleotide sequence, or a set (one or more) of fasta sequences.
+						  </p>
+					  </div>
                   </div>
                   <form action="{% url "blast" %}" method="post">{% csrf_token %}
                     {{ form.as_p }} 
@@ -281,7 +283,6 @@ $(document).ready(function(){
              singleAlignment: "blast-single-alignment",
              blastType: "{{blastType}}"
         });
-
     }, 'text');
 });
 
