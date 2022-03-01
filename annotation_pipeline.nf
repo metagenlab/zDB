@@ -601,6 +601,10 @@ process load_base_db {
     container "$params.annotation_container"
     publishDir "db"
 
+    // Necessary to prevent segfaults due to the large size
+    // of the stage script
+    beforeScript "ulimit -Ss unlimited"
+
     input:
         file db_base
 		file gbks from to_load_gbk_into_db
@@ -915,9 +919,11 @@ process cleanup {
         ln -s \$curr_dir/\$i $baseDir/alignments/latest/
     done
 
+    rm -f $baseDir/search_index/lastest
     ln -sf $index $baseDir/search_index/latest
     ln -sf $index $baseDir/search_index/$workflow.runName
 
+    rm -f $baseDir/db/latest
     ln -sf $db $baseDir/db/latest
 
     ln -snf $baseDir/blast_DB/$workflow.runName $baseDir/blast_DB/latest
