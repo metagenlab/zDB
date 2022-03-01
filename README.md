@@ -10,9 +10,8 @@ Several analysis are currently supported, with more to come:
 - Swissprot homologs search
 - (RefSeq homologs search): implemented, but significantly slows down the analysis
 
-In addition, zDB performs orthology and phylogeny inference,
-
-The results are stored either in a SQLite database or directly as files and accessed by the web application.
+In addition, zDB performs orthology and phylogeny inference.
+All the results are stored either in a SQLite database or directly as files and displayed in the web application.
 
 ## Installation
 
@@ -57,7 +56,7 @@ nextflow run db_setup.nf
 The script will download the reference databases needed for the analysis set to true in the nextflow config file.
 For instance, if only the swissprot homologs and COG annotation are set to true in the config file, only the swissprot and COG reference databases will be downloaded and prepared.
 
-Be warned that setting up the KEGG orthologs can take a bit of time (read a few hours), as zDB needs to download the definition of all KEGG orthologs and modules.
+Be warned that setting up the KEGG orthologs can take a bit of time (read a few hours), as zDB needs to download the definition of all KEGG orthologs and modules. However, you'll only need to do this once.
 
 ## Running the analysis
 
