@@ -19,7 +19,14 @@ git clone git@github.com:metagenlab/annotation_pipeline_nextflow.git
 
 The ```nextflow.config``` file is separated in several sections:
 
-1. The first section 
+1. The input section. The annotation pipeline expects a simple tsv file as input. The file should list the genbank files to be included in the analysis under the ```file``` header. For example:
+
+```
+file
+foo.gbk
+bar.gbk
+pof/baz.gbk
+```
 
 2. The second section defines where the reference databases will be stored on disk. This is used both during the analysis and when setting up the reference databases. Unless you already have some of the reference databases installed, you won't have to modify this section.
 
