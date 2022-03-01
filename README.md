@@ -27,6 +27,8 @@ foo.gbk
 bar.gbk
 pof/baz.gbk
 ```
+The pipeline is currently picky and will loudly complain if anything else than a genbank file is used as input.
+
 
 2. The second section defines where the reference databases will be stored on disk. This is used both during the analysis and when setting up the reference databases. Unless you already have some of the reference databases installed, you won't have to modify this section.
 
