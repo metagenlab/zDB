@@ -74,3 +74,7 @@ Once the analysis is complete, the web application can be run with the launch_we
 - run_name, to specify which database is to be used
 - port, to specify on which port the web server will be listening to
 Some other options are also available, but are essentially used for debugging purposes.
+
+
+## Bugs and feature requests
+Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/annotation_pipeline_nextflow/issues).
