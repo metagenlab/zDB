@@ -1,10 +1,18 @@
 # zDB: comparative bacterial genomics made easy
 
-zDB is a tool designed to allow 
+zDB is designed to perform comparative genomics analysis and to integrate the results in a Django web-application.
 
-Several annotations can be performed, depending on the settings:
+Several analysis are currently supported, with more to come:
 
+- COG annotation
+- KEGG orthologs annotation
+- PFAM domains annotation
+- Swissprot homologs search
+- (RefSeq homologs search): implemented, but significantly slows down the analysis
 
+In addition, zDB performs orthology and phylogeny inference,
+
+The results are stored either in a SQLite database or directly as files and accessed by the web application.
 
 ## Installation
 
@@ -24,7 +32,7 @@ The ```nextflow.config``` file is separated in several sections:
 ```
 file
 foo.gbk
-bar.gbk
+ponk/bar.gbk
 pof/baz.gbk
 ```
 
@@ -63,4 +71,7 @@ The run name is used by the web server to choose a database, search index and bl
 
 ## Starting the web server
 
-A default config file for nextflow is included in the repository and already sets up the 
+Once the analysis is complete, the web application can be run with the launch_webapp script. The following options can be set:
+- run_name, to specify which database is to be used
+- port, to specify on which port the web server will be listening to
+Some other options are also available, but are essentially used for debugging purposes.
