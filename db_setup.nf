@@ -63,6 +63,11 @@ process setup_cog_cdd {
 Channel.fromPath("${params.refseq_db}/refseq_nr.fasta"). set { nr_refseq  }
 
 
+/**
+ * NOTE: this assumes that the user already downloaded the refseq 
+ * database (nr_refseq) and concatenated all the files into a single
+ * fasta file called "refseq_nr.fasta".
+ */
 process diamond_refseq {
     publishDir "$params.refseq_db", mode: "move"
     container "$params.diamond_container"
@@ -129,6 +134,9 @@ process download_KO_data {
         file "dummy_file" into to_load_ko
 
     script:
+    // trick to make resume work correctly
+    // and avoid downloading the same ko infos
+    // in case of crash
     """
     if [ ! -d "${params.ko_db}" ]; then
         mkdir -p ${params.ko_db}
@@ -141,7 +149,7 @@ process download_KO_data {
 
 
 process download_ko_profiles {
-    publishDir "$params.ko_profiles", mode: "move"
+    publishDir "$params.ko_db", mode: "move"
 
     when:
         params.ko
