@@ -1,15 +1,24 @@
 # zDB: comparative bacterial genomics made easy
 
+zDB is a tool designed to allow 
+
+Several annotations can be performed, depending on the settings:
+
+
+
+
 ## Installation
 
 [Nextflow](https://www.nextflow.io/) and [singularity](https://sylabs.io/guides/3.5/user-guide/introduction.html) will need to be installed before running zDB (and of course, git).
 Once both tools have been installed, checkout zDB with the following command:
 
 ```
-git@github.com:metagenlab/annotation_pipeline_nextflow.git
+git clone git@github.com:metagenlab/annotation_pipeline_nextflow.git
 ```
 
 ## Config file
+
+The ```nextflow.config``` file is separated in several sections.
 
 ## Setting up the reference databases
 
