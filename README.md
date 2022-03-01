@@ -19,7 +19,7 @@ git clone git@github.com:metagenlab/annotation_pipeline_nextflow.git
 
 The ```nextflow.config``` file is separated in several sections:
 
-1. The input section. The annotation pipeline expects a simple tsv file as input (actually, could also be a csv file, as separators are currently not necessary). The file should list the genbank files to be included in the analysis under the ```file``` header. For example:
+1. The input section. The annotation pipeline expects a simple tsv file as input (actually, could also be a csv file, as separators are currently not necessary). The file should list the genbank files to be included in the analysis under the ```file``` header. The pipeline is currently picky and will loudly complain if anything else than a genbank file is used as input. Input file example:
 
 ```
 file
@@ -27,8 +27,6 @@ foo.gbk
 bar.gbk
 pof/baz.gbk
 ```
-The pipeline is currently picky and will loudly complain if anything else than a genbank file is used as input.
-
 
 2. The second section defines where the reference databases will be stored on disk. This is used both during the analysis and when setting up the reference databases. Unless you already have some of the reference databases installed, you won't have to modify this section.
 
@@ -59,7 +57,9 @@ Easy. Once you have the reference databases set up, the genomes ready and are ha
 ```
 nextflow run annotation_pipeline.nf
 ```
-command. You can also name the run with the ```--name=``` parameter, which may be useful in case you plan on running several analysis.
+command. You can also name the run with the ```--name=``` parameter, which may be useful in case you plan on running several analysis. For example: ```nextflow run annotation_pipeline.nf --name=enterobacteriacae_run```.
+
+The run name is used by the web server to choose a database, search index and blast databases.
 
 ## Starting the web server
 
