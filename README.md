@@ -1,27 +1,30 @@
 # zDB: comparative bacterial genomics made easy
 
-# Installation
+## Installation
 
-Only 
+[Nextflow](https://www.nextflow.io/) and [singularity](https://sylabs.io/guides/3.5/user-guide/introduction.html) will need to be installed before running zDB (and of course, git).
+Once both tools have been installed, checkout zDB with the following command:
 
-# Config file
+```
+git@github.com:metagenlab/annotation_pipeline_nextflow.git
+```
 
-# Setting up the reference databases
+## Config file
+
+## Setting up the reference databases
 
 Depending on which analysis are to be run, reference databases will need to be downloaded and set up. 
 This is done by running the db_setup.nf script with nextflow:
 
 ```
-nextflow db_setup.nf
+nextflow run db_setup.nf
 ```
 
 The script will download the reference databases needed for the analysis set to true in the nextflow config file.
 For instance, if only the swissprot homologs and COG annotation are set to true in the config file, only the swissprot and COG reference databases will be downloaded and prepared.
 
+## Running the analysis
 
-# Running the analysis
-
-# Starting the web server
-
+## Starting the web server
 
 A default config file for nextflow is included in the repository and already sets up the 
