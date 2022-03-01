@@ -19,8 +19,16 @@ git clone git@github.com:metagenlab/annotation_pipeline_nextflow.git
 
 The ```nextflow.config``` file is separated in several sections:
 
-1. The first section defines where the reference databases will be stored on disk. This is used both during the analysis and when setting up the reference databases. Unless you already have some of the reference databases installed, you won't have to modify this section.
-2. 
+1. The first section 
+
+2. The second section defines where the reference databases will be stored on disk. This is used both during the analysis and when setting up the reference databases. Unless you already have some of the reference databases installed, you won't have to modify this section.
+
+3. The third section is where you define which analysis to run and the parameters for the tools that need them. By default, all analysis are enabled (set to true), except the search for refseq homologs. All analysis can be set to false in case the results are not relevant or if you don't want to install the reference database.
+
+4. The internals lists all the parameters necessary for pipeline to run. Modify those at your own risk and perils.
+
+5. The last section allows you to specify the resources allocated to the analysis. You can limit CPU or memory usage by setting different values for the cpus or memory options.
+
 
 ## Setting up the reference databases
 
