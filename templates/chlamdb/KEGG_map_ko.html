@@ -27,10 +27,12 @@
 					<div class="panel-heading" style="width:100%">
 					  <h3 class="panel-title">Help to interpret the results</h3>
 					</div>
-					<p style="margin: 10px 10px 10px 10px; line-height: 180%">Two outputs have been generated:
-						<br> <b>General</b>:  this table contains the KO entries, their description and frequency in the genome of interest and in the complete database.
-					  <br><b> Profile + homologs</b>: the annotated phylogenetic tree displays the distribtuion of all Ko entries of the selected pathway. 
-					<br><br><strong><h5>External link to  <a href='http://www.genome.jp/kegg-bin/show_pathway?{{url}}' target="_blank">{{pathway}} pathway <i class="fas fa-external-link-alt"></i></a></h5></strong></p>
+					<p style="margin: 10px 10px 10px 10px; line-height: 180%">
+						Kegg pathway {{ pathway_num }} is descriptive of <b>{{pathway}} Kegg pathway</b>.
+						<br>The page contains two contents:
+						<br> <b>General</b>:  this table lists the KO entries and their description specific to this pathway, and provides their frequencies in {{organism}} and in the whole dataset.
+						<br><b>Profile + homologs</b>: the distribution of the Kegg entries of {{pathway}} Kegg pathway is displayed here. Given a Kegg entry and a genome, a <span style="color: red;"><b>red</b></span> box indicates that one or more loci have been annotated with, while a  <span style="color: green;"><b>green</b></span> box indicates that no locus/loci has(have) been annotated with it, but it/they is/are part of an Orthologous group in which other members have been annotated with that Kegg entry, so it is likely that this copy(ies) also performs this Kegg function.
+					<br><br><strong><h5>Check the <a href='http://www.genome.jp/kegg-bin/show_pathway?{{url}}' target="_blank">composition of the {{pathway}} pathway <i class="fas fa-external-link-alt"></i></a></h5></strong></p>
 				  </div>
 				  <div class="col-lg-12" style="background-color: rgba(245, 245, 245, 0.986)">
 						<ul id="tabs" class="nav nav-tabs" data-tabs="tabs">

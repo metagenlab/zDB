@@ -2253,7 +2253,7 @@ def KEGG_mapp_ko(request, map_name, taxon_id=None):
     path = settings.BASE_DIR + f"/assets/temp/{map_name}.svg"
     asset_path = f"/temp/{map_name}.svg"
     e_tree.render(path, dpi=800)
-    ctx = {
+    ctx = {"pathway_num": kos.iloc[0].pathway,
         "pathway": kos.iloc[0].description,
         "header": header,
         "data": data,
@@ -3298,6 +3298,7 @@ def format_pathway(path_id, to_url=False, taxid=None):
 def priam_kegg(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     single_genome_form = make_single_genome_form(db)
+    hsh_organisms = db.get_genomes_description().description.to_dict()
     if request.method != "POST":
         form = single_genome_form()
         return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
@@ -3324,7 +3325,8 @@ def priam_kegg(request):
         entry = (format_pathway(element, to_url=True, taxid=taxid), descr, count)
         data.append(entry)
 
-    ctx = {"envoi":True, "data":data, "header": header}
+
+    ctx = {"envoi":True, "data":data, "header": header, "organism":hsh_organisms[taxid]}
     return render(request, 'chlamdb/priam_kegg.html', my_locals(ctx))
 
 

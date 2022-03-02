@@ -25,15 +25,10 @@
 
         <div class="home-title"><b> Phylogeny </b></div>
         <hr class="lines-home">
-		  <div class="panel panel-success" style="  width:90%">
-			  <div class="panel-heading" style="width:100%;">
-				  <h3 class="panel-title">Help</h3>
-			  </div>
-
-
+		 
   
                                   <div class= 'img'>
-                                    <object type="image/svg+xml" data="{% static asset_path %}" id="pyhlogeny" style="width:100%; padding:2em 4em 0em 4em;"></object>
+                                    <object type="image/svg+xml" data="{% static asset_path %}" id="pyhlogeny" style="width:80%; padding:2em 4em 0em 4em;"></object>
                                   </div>
                                   <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
                                   <a onclick='exportPNG("pyhlogeny", "phylogeny");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
@@ -42,31 +37,22 @@
                                           <h3 class="panel-title">Help</h3>
                                       </div>
   
-                                      <p style="padding:1em 3em 1em 1em; line-height: 160% ; width:100%" >The phylogeny was build based on concatenated single copy orthologs with FastTree (default parameters). Nodes with black dots have support values lower than 1. 
+                                      <p style="padding:1em 3em 1em 1em; line-height: 160% ; width:100%" >The phylogeny was built based on concatenated single copy orthologs with FastTree (default parameters). Nodes with black dots have support values lower than 1. 
                                       The percentage of non-coding DNA of fragmented genomes was calculated based on data from contigs larger than 10 kilo bases. The completeness and contamination of each genome were estimated with <a href="https://ecogenomics.github.io/CheckM/">checkM</a> based on the identification of 104 "universal" marker genes.</p>
                                       </p>
                                   </div>
                               
-                      
+                                
                  </div>
              </div>
       </div>
      </div>
-    <script>
-      $(document).ready(function() {
 
 
-
-
-		  <div class= 'img'>
-			<object type="image/svg+xml" data="{% static asset_path %}" id="pyhlogeny" style="width:1200px; padding:2em 4em 0em 4em;"></object>
-		  </div>
-		  <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
 		 </div>
 	 </div>
 </div>
 </div>
 
 </body>
-{% include "chlamdb/style_menu.html" %}
 </html>

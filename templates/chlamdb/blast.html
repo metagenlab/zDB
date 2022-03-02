@@ -158,7 +158,7 @@ margin-top: 15em;
                 
                   <div class="panel-title"><b> Homology search: Blast </b></div>
                   <br>
-                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b></a>Blast a sequence of interest against the genomes of the database </b><a href="/docs/index.html" id="show-option" title=" The blast input can be either an amino-acid or a nucleotide sequence, or a set (one or more) of fasta sequences"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b></a>Blast a sequence of interest against the genomes of the database </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#homology-search-blast" id="show-option" target="_blank"  title=" The blast input can be either an amino-acid or a nucleotide sequence, or a set (one or more) of fasta sequences"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
                   <hr class="lines-home">
          
                   <div class="panel panel-success">
@@ -210,7 +210,8 @@ margin-top: 15em;
                     {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=orthogroup2description %}
                     </div>
                 </div>
-				  	 {% if phylo_distrib %}
+             {% if phylo_distrib %}
+             <br>
 				  	  <nav>
 						  <ul id="tabs_blast" class="nav nav-tabs">
 							  <li class="active">

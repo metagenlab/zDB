@@ -34,19 +34,24 @@
                 </div>
                 </div>
                    <br>
-                   <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
-                    {% if type == 'cog'%}
-                    COG:
-                    {% elif type == 'ko' %}
-                    Kegg Ortholog:
-                    {% elif type == 'pfam' %}
-                    Pfam domain:
-                    {% endif %} 
-                    {{ fam }}
-                   </p></b></center></center>
-                   <hr class="lines-home">
-                  
+           
+                            <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+                             {% if type == 'cog'%}
+                             COG: {{ fam }}
+                             {% elif type == 'pfam' %}
+                             Pfam domain: {{ fam }}
+                             
+                             <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#cog-pfam-annotation-summary" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></b></p></center>
 
+                
+                             {% elif type == 'ko' %}
+                             Kegg Ortholog: {{ fam }}
+                             {% endif %}
+                             <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#kegg-module-overview-page" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></b></p></center>
+
+                            <hr class="lines-home">
+
+                  
                   {% if no_match %}
                           <div class="alert alert-warning" role="alert" style="width:50%"><a>{{fam}} not present in the database</a>
                  {% else %}
