@@ -20,6 +20,7 @@ Once both tools have been installed, checkout zDB with the following command:
 
 ```
 git clone git@github.com:metagenlab/annotation_pipeline_nextflow.git
+git checkout feature/chlamdb
 ```
 
 ## Config file
