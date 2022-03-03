@@ -6,9 +6,6 @@ from django.forms.utils import flatatt
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-
-DEBUG = True
-
 SECURE_CONTENT_TYPE_NOSNIFF = False
 SECURE_BROWSER_XSS_FILTER = False
 SECURE_SSL_REDIRECT = False
@@ -17,14 +14,11 @@ CSRF_COOKIE_SECURE = False
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 
-LOGIN_URL = '/chlamdb/login/'
-LOGOUT_URL = '/chlamdb/logout/'
-LOGIN_REDIRECT_URL = ''
-
-
 # DOCS_ROOT="/home/bmarquis/sda1/bmarquis/test_deployment/chlamdb_recent/chlamdb/docs/_build/"
 
-SECRET_KEY   = os.environ["RUN_NAME"]
+
+DEBUG = int(os.environ.get("DEBUG", 0))
+SECRET_KEY   = os.environ["SECRET_KEY"]
 RUN_NAME     = os.environ["RUN_NAME"]
 NEXTFLOW_DIR = os.environ["NEXTFLOW_DIR"]
 hosts = os.environ.get("ALLOWED_HOSTS", "")
@@ -35,7 +29,6 @@ BLAST_DB_PATH = NEXTFLOW_DIR + "/blast_DB/"+RUN_NAME
 ALIGNMENTS    = NEXTFLOW_DIR+"/alignments/"+RUN_NAME
 
 ALLOWED_HOSTS = hosts.split(",")
-
 
 BIODB_CONF = {
     "chlamdb.db_type" : "sqlite",
@@ -71,16 +64,10 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'settings.urls'
-
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'Europe/Paris'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 
@@ -88,18 +75,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/assets/'
-
-
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "assets"),
 )
 
 
 APPEND_SLASH = True  # Ajoute un slash en fin d'URL
-
-GOOGLE_ANALYTICS_DOMAIN = 'chlamdb.ch'
-GOOGLE_ANALYTICS_PROPERTY_ID = 'UA-125948409-1'
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -120,12 +101,3 @@ TEMPLATES = [
 INTERNAL_IPS = (
     '127.0.0.1',
 )
-
-
-BROKER_URL = 'django://'
-CELERY_BROKER_URL = 'amqp://chlamdb:estrella3@localhost:5672/my_vhost'
-CELERYD_STATE_DB = "/home/tpillone/celery_worker_state"
-CELERY_CACHE_BACKEND = 'django-cache'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'

@@ -35,11 +35,7 @@
                         <p style="margin: 10px 10px 10px 10px"> Generate a Venn diagramm of the orthologous groups shared between genomes of interest (targets).
                             <br>A maximum of 6 genomes can be compared.</p>
                     </div>
-
-                        {% block content %}
-						{% csrf_token %}
-						{% crispy form_venn %}
-                        {% endblock %}
+					{% crispy form_venn %}
                 </div>
 
 

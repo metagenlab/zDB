@@ -7,16 +7,20 @@
 
 <head>
 {% load static %}
-{% load static %}
 {% load custom_tags %}
 {% get_static_prefix as STATIC_PREFIX %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 {% include "chlamdb/header.html" %}
 </head>
 
 <body>
-  <div class="container-fluid" id="main_container">
+
+{% if not menu %}
+	<div class="container-fluid" id="container_no_margin" height="100%">
+{% else %}
+	<div class="container-fluid" id="main_container">
+{% endif %}
+
     <div class="row">
       <div id="wrapper">
           <div id="page-content-wrapper">
@@ -452,6 +456,7 @@
 </body>
 {% include "chlamdb/style_menu.html" %}
 <script>
+
 // Javascript to enable link to tab
 var url = document.location.toString();
 if (url.match('#')) {

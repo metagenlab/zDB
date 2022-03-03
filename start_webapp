@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-debugging=false
+debugging=0
 custom_port=""
 custom_run_name=""
 custom_nextflow_dir=""
@@ -13,7 +13,7 @@ hosts=""
 for i in "$@"; do
 	case $i in
 		-d|--debug)
-			debugging=true
+			debugging=1
 			shift
 			;;
 		-p|--port=*)
@@ -23,6 +23,10 @@ for i in "$@"; do
 		--nextflow_dir=*)
 			custom_nextflow_dir="${i#*=}"
 			shift
+			;;
+		--allowed_hosts=*)
+			shift
+			hosts="${i#*=}"
 			;;
 		--run_name=*)
 			custom_run_name="${i#*=}"
@@ -45,13 +49,17 @@ for i in "$@"; do
 done
 
 
-if [ "$debugging" = false ]; then
-	cd /home/chlamdb
+if [ -z "${hosts}" ]; then
+	# if no host was specified, try to guess one
+	hosts=`hostname -I`
+fi
+
+
+if [ $debugging = 0 ]; then
 	export DISPLAY=:1
 else
 	scriptpath=`realpath $0`
 	cd `dirname $scriptpath`
-	hosts=`hostname -I`
 fi
 
 
@@ -77,12 +85,19 @@ fi
 export PORT="$custom_port"
 export NEXTFLOW_DIR="${custom_nextflow_dir}"
 export RUN_NAME="$custom_run_name"
+export DEBUG="$debugging"
+export ALLOWED_HOSTS="${hosts// /,}"
 
-export ALLOWED_HOSTS="${hosts/ /,}, localhost"
-echo "$ALLOWED_HOSTS"
-python manage.py runserver --nothreading 0.0.0.0:$custom_port
+if [ $debugging = 1 ]; then
+	python manage.py runserver --nothreading 0.0.0.0:$custom_port
+else
+	gunicorn -c config/gunicorn.py
+	nginx -c config/nginx.config
+fi
+
 unset DISPLAY
 unset PORT
 unset RUN_NAME
 unset NEXTFLOW_DIR
 unset ALLOWED_HOSTS
+unset DEBUG
