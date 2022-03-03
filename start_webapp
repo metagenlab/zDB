@@ -8,6 +8,7 @@ custom_nextflow_dir=""
 default_port="8080"
 default_run_name="latest"
 hosts=""
+use_dev_server=false
 
 
 for i in "$@"; do
@@ -24,9 +25,13 @@ for i in "$@"; do
 			custom_nextflow_dir="${i#*=}"
 			shift
 			;;
-		--allowed_hosts=*)
-			shift
+		--hosts=*)
 			hosts="${i#*=}"
+			shift
+			;;
+		--use_dev_server)
+			use_dev_server=true
+			shift
 			;;
 		--run_name=*)
 			custom_run_name="${i#*=}"
@@ -36,11 +41,11 @@ for i in "$@"; do
 			echo "Startup script for the web app, will be invoked from within "
 			echo "a container in production, but may also be invoked directly "
 			echo "when in debug mode."
-			echo " --d|--debug\t debug mode. Assumes that the code will be run outside of a container"
-			echo "-p|--port=PORT\t change the port the web server will listen to"
-			echo "--nextflow_dir=DIR\t the directory where the annotation pipeline was run"
-			echo "--run_name=NAME\t the name of the run (or the name passed as argument to the annotation_pipeline)."
-			echo "\t\t The information will be used to choose which database/blast index and seach index to use."
+			echo " --d|--debug:  debug mode. Assumes that the code will be run outside of a container"
+			echo "-p|--port=PORT:  change the port the web server will listen to"
+			echo "--nextflow_dir=DIR:  the directory where the annotation pipeline was run"
+			echo "--run_name=NAME:  the name of the run (or the name passed as argument to the annotation_pipeline)."
+			echo "The information will be used to choose which database/blast index and seach index to use."
 			;;
 		*)
 			echo "Unkown argument '$i'"
@@ -49,17 +54,14 @@ for i in "$@"; do
 done
 
 
+# Xvfb :1 should be running on the container
+# This is unfortunately necessary as ete3 uses Qt, which cannot
+# run without a display
+export DISPLAY=:1
+
 if [ -z "${hosts}" ]; then
 	# if no host was specified, try to guess one
 	hosts=`hostname -I`
-fi
-
-
-if [ $debugging = 0 ]; then
-	export DISPLAY=:1
-else
-	scriptpath=`realpath $0`
-	cd `dirname $scriptpath`
 fi
 
 
@@ -88,11 +90,27 @@ export RUN_NAME="$custom_run_name"
 export DEBUG="$debugging"
 export ALLOWED_HOSTS="${hosts// /,}"
 
-if [ $debugging = 1 ]; then
+
+# go to the chlamdb folder
+scriptpath=`realpath $0`
+zdb_dir=$(dirname $scriptpath)
+cd $zdb_dir
+
+if [ "$use_dev_server" = true ]; then
+	echo "Starting django dev server"
 	python manage.py runserver --nothreading 0.0.0.0:$custom_port
 else
 	gunicorn -c config/gunicorn.py
-	nginx -c config/nginx.config
+
+	sed "s/PORT/${custom_port}/" config/nginx.config > config/nginx_curr.config
+	nginx -c "$zdb_dir/config/nginx_curr.config"
+
+	echo "Nginx server stopped"
+	# kill gunicorn when the user interrupts the nginx server
+	echo "Chasing gunicorn..."
+	cat gunicorn.pid | xargs kill
+	echo "Done"
+	rm config/nginx_curr.config
 fi
 
 unset DISPLAY

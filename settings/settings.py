@@ -2,6 +2,8 @@
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import secrets
+
 from django.forms.utils import flatatt
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -14,14 +16,12 @@ CSRF_COOKIE_SECURE = False
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 
-# DOCS_ROOT="/home/bmarquis/sda1/bmarquis/test_deployment/chlamdb_recent/chlamdb/docs/_build/"
-
+SECRET_KEY  = secrets.token_urlsafe()
 
 DEBUG = int(os.environ.get("DEBUG", 0))
-SECRET_KEY   = os.environ["SECRET_KEY"]
 RUN_NAME     = os.environ["RUN_NAME"]
 NEXTFLOW_DIR = os.environ["NEXTFLOW_DIR"]
-hosts = os.environ.get("ALLOWED_HOSTS", "")
+hosts = os.environ.get("ALLOWED_HOSTS", "localhost")
 
 BIODB_DB_PATH = NEXTFLOW_DIR+"/db/"+RUN_NAME
 SEARCH_INDEX  = NEXTFLOW_DIR+"/search_index/"+RUN_NAME
