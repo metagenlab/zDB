@@ -28,8 +28,8 @@ $(document).ready(function() {
 	}
 
 	function hide_plasmids() {
-		$("#id_no_orthologs_in").selectpicker('refresh');
-		$("#id_orthologs_in").selectpicker('refresh');
+		check_presence_generic("id_no_orthologs_in", "id_orthologs_in");
+		check_presence_generic("id_orthologs_in", "id_no_orthologs_in");
 	}
 
 	$("#id_orthologs_in").change(hide_absent);
