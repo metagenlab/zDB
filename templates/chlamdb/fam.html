@@ -12,64 +12,109 @@
 
 {% include "chlamdb/header.html" %}
 </head>
-
 <body>
 
-{% if not menu %}
-	<div class="container-fluid" id="container_no_margin" height="100%">
-{% else %}
-	<div class="container-fluid" id="main_container">
-{% endif %}
+    <div class="container-fluid" id="main_container">
+      <div class="row">
+        <div id="wrapper">
+            <div id="page-content-wrapper">
+              <div class="row">
+                <div class="col-lg-12">
+                   {% include "chlamdb/menu.html" %}
+                   <div class="panel-title"><b>
+                    {% if type == 'cog'%}
+                    COGs 
+                    {% elif type == 'ko' %}
+                    Kegg Ortholog
+                    {% elif type == 'pfam' %}
+                    Pfam domain
+                    {% endif %} 
+                   </b>
+                </div>
+                </div>
+                   <br>
+           
+                            <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+                             {% if type == 'cog'%}
+                             COG: {{ fam }}
+                             {% elif type == 'pfam' %}
+                             Pfam domain: {{ fam }}
+                             
+                             <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#cog-pfam-annotation-summary" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></b></p></center>
 
-    <div class="row">
-      <div id="wrapper">
-          <div id="page-content-wrapper">
-            <div class="row">
-              <div class="col-lg-12">
-                {%  if menu %}
-                  {% include "chlamdb/menu.html" %}
-                {% endif %}
+                
+                             {% elif type == 'ko' %}
+                             Kegg Ortholog: {{ fam }}
+                             {% endif %}
+                             <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#kegg-module-overview-page" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></b></p></center>
+
+                            <hr class="lines-home">
+
+                  
+
                   {% if no_match %}
                           <div class="alert alert-warning" role="alert" style="width:50%"><a>{{fam}} not present in the database</a>
                  {% else %}
-                     <div id="content">
 
-                             <h3>
-                                {% if type == 'cog'%}
-                                COG entry:
-                                {% elif type == 'ko' %}
-                                Kegg Ortholog:
-                                {% elif type == 'pfam' %}
-                                Pfam domain:
-                                {% endif %} 
-                                {{ fam }}
-                            </h3>
+				 <div class="panel panel-success" style="width:100%; top: 200px; float: left;">
+					<div class="panel-heading" style="width:100%">
+					  <h3 class="panel-title">Help to interpret the results</h3>
+					</div>
+					<p style="margin: 10px 10px 10px 10px; line-height: 180%">Three outputs have been generated:
+						<br> <b>General</b>:  this result contains the description and frequency of the selected
+                        {% if type == 'cog'%}
+                        COG entry
+                        {% elif type == 'ko' %}
+                        Kegg Ortholog
+                        {% elif type == 'pfam' %}
+                        Pfam domain
+                        {% endif %} 
+                        {{ fam }}, of which KO pathways and KO modules it is part. Additionally, its occurence in the database is reported.
+                        <br><b> Proteins list</b>: list of occurences of the
+                        {% if type == 'ko'%}
+                COG entry
+                {% elif type == 'ko' %}
+                Kegg Ortholog
+                {% elif type == 'pfam' %}
+                Pfam domain
+                {% endif %} 
+                        within the database. {{ all_locus_data|length }} occurences are identified.
+                        The table reports the orthogroup, the organism in which each occurrence has been found, and the locus tag enriched by start and stop position, strand, gene name and product.
+                    <br>Clicking on the Ortohgroup name or locus you will be redirected to further info.
+					  <br><b> Profiles</b>: Phylogenetic tree annotated with
+                      <br>- the presence of the
+          {% if type == 'cog'%}
+          COG entry(ies)
+          {% elif type == 'ko' %}
+          Kegg Ortholog(s)
+          {% elif type == 'pfam' %}
+          Pfam domain(s)
+          {% endif %} of interest within all the genomes of the database (first column)
+                      <br>- the size of the orthogroup(s) in which the reported
+          {% if type == 'cog'%}
+          COG entry
+          {% elif type == 'ko' %}
+          Ko entry
+          {% elif type == 'pfam' %}
+          Pfam domain
+          {% endif %}  has been clustered.
+                        <br>In red the <font size="2" color="red">{{type}} with positive hit(s)</font> in the corresponding genome.
+                        <br>In green <font size="2" color="green">the discrepencies between orthogroup clustering and {{type}} prediction</font>.
+                        Green homologs (same orthogroup) <strong>are not</strong> positive hit(s) for the considered {{type}}.
+                        <br><br>Variations within orthogroups may be due to the clustering of multi domain proteins or because of erroneous homolog clustering or {{type}} prediction. </p>
+				  </div>
+             
+
+                                  
                               <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                                   <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
                                   <li><a href="#tab2" data-toggle="tab">Protein list</a></li>
                                   <li><a href="#tab3" data-toggle="tab">Profile</a></li>
                               </ul>
                               
-                            
-                                <div id="my-tab-content" class="tab-content">
+                            <div id="my-tab-content" class="tab-content" style="margin-top: 1em;">
                                     <div class="tab-pane active" id="tab1">
-                                        <h3> {{ fam }}  </h3>
-                                        <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                                            <div class="panel-heading" style="width:100%">
-                                              <h3 class="panel-title">Help</h3>
-                                              </div>
-                                      <p style="margin: 10px 10px 10px 10px">Description and frequency of the selected
-                                        {% if type == 'cog'%}
-                                        COG entry
-                                        {% elif type == 'ko' %}
-                                        Kegg Ortholog
-                                        {% elif type == 'pfam' %}
-                                        Pfam domain
-                                        {% endif %} 
-                                        {{ fam }}.</p>
-                                      </div>
-
-                                        <div class="col-md-12 col-lg-10" style="padding-right:30px;padding-top:30px">
+                                        <div class="col-md-12 col-lg-10" style="padding-right:30px;">
                                             <div class="row">
                                                 <div class="panel panel-default">
                                                     <div class="panel-heading">
@@ -80,25 +125,25 @@
 
                                                             <tr>
                                                                 <th>External link</th>
-                                                                <td><a href="http://pfam.xfam.org/family/{{ fam }}"> {{ fam }} <i class="fa fa-external-link"></i></a></td>
+                                                                <td><a href="http://pfam.xfam.org/family/{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
                                                             </tr>
 
                                                         {% elif type == 'interpro' %}
                                                             <tr>
                                                                 <th>External link</th>
-                                                                <td><a href="http://www.ebi.ac.uk/interpro/entry/{{ fam }}"> {{ fam }} <i class="fa fa-external-link"></i></a></td>
+                                                                <td><a href="http://www.ebi.ac.uk/interpro/entry/{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
                                                             </tr>
 
                                                         {% elif type == 'ko' %}
                                                             <tr>
                                                                 <th>External link</th>
-                                                                <td><a href="http://www.genome.jp/dbget-bin/www_bget?{{ fam }}"> {{ fam }} <i class="fa fa-external-link"></i></a></td>
+                                                                <td><a href="http://www.genome.jp/dbget-bin/www_bget?{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
                                                             </tr>
 
                                                         {% elif type == 'EC' %}
                                                             <tr>
                                                                 <th>External link</th>
-                                                                <td><a href="{{ external_link }}">  {{ fam }} <i class="fa fa-external-link"></i></a></td>
+                                                                <td><a href="{{ external_link }}" target="_blank">  {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
                                                             </tr>
 
                                                         {% endif %}
@@ -337,25 +382,6 @@
                                   </div>
 
                                   <div class="tab-pane" id="tab2">
-
-                                    <h3> {{ fam }}  </h3>
-                                        <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                                            <div class="panel-heading" style="width:100%">
-                                              <h3 class="panel-title">Help</h3>
-                                              </div>
-                                      <p style="margin: 10px 10px 10px 10px"> As diplayed in "General" the
-                                        {% if type == 'ko'%}
-                                COG entry
-                                {% elif type == 'ko' %}
-                                Kegg Ortholog
-                                {% elif type == 'pfam' %}
-                                Pfam domain
-                                {% endif %} 
-                                        of interest is associated with {{ all_locus_data|length }} different protein(s).
-                                        In the presented table the orthogroup, the organism in which each protein has been found, and the locus tag enriched by start and stop position, strand, gene name and product are reported.
-                                    <br>Clicking on the Ortohgroup name or locus you will be redirected to further info.</p>
-                                      </div>
-
                                         <table id="fam_table" class="display">
                                             <thead>
                                                 <tr>
@@ -396,34 +422,7 @@
                                   </div>
 
                                   <div class="tab-pane" id="tab3">
-                                       <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-                                          <div class="panel-heading" style="width:100%">
-                                              <h3 class="panel-title">Help</h3>
-                                          </div>
-                                          <p style="margin: 10px 10px 10px 10px; line-height: 180%">
-                                            Phylogenetic tree annotated with
-                                            <br>- the presence of the
-                                {% if type == 'cog'%}
-                                COG entry(ies)
-                                {% elif type == 'ko' %}
-                                Kegg Ortholog(s)
-                                {% elif type == 'pfam' %}
-                                Pfam domain(s)
-                                {% endif %} of interest within all the genomes of the database (first column)
-                                            <br>- the size of the orthogroup(s) in which the reported
-                                {% if type == 'cog'%}
-                                COG entry
-                                {% elif type == 'ko' %}
-                                Ko entry
-                                {% elif type == 'pfam' %}
-                                Pfam domain
-                                {% endif %}  has been clustered.
-                                              <br>In red the <font size="2" color="red">{{type}} with positive hit(s)</font> in the corresponding genome.
-                                              <br>In green <font size="2" color="green">the discrepencies between orthogroup clustering and {{type}} prediction</font>.
-                                              Green homologs (same orthogroup) <strong>are not</strong> positive hit(s) for the considered {{type}}.
-                                              <br><br>Variations within orthogroups may be due to the clustering of multi domain proteins or because of erroneous homolog clustering or {{type}} prediction.
-                                          </p>
-                                       </div>
+                                  
                                        <div class="row">
                                             {% if not big %}
                                                 <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
@@ -432,8 +431,7 @@
                                                 <!-- if image too large, only png available -->
                                                 <a download="profile.png" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download PNG</a> 
                                             {% endif %}    
-                                       </div>
-                                       <div class="row">
+                                      
                                            {% if not big %}
                                            <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree" style="width:60%"></object>
                                            {% else %}

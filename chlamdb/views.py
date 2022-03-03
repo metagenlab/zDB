@@ -33,7 +33,6 @@ from chlamdb.forms import make_module_overview_form
 from chlamdb.forms import make_venn_from
 from chlamdb.forms import make_single_genome_form
 
-
 from metagenlab_libs import db_utils
 from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
 from metagenlab_libs.ete_phylo import KOAndCompleteness
@@ -329,6 +328,8 @@ def extract_orthogroup(request):
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
     count_all_genomes = db.get_og_count(selection, search_on="orthogroup")
+    number_orth = count_all_genomes.index
+    number_orth = len(number_orth)
 
     if not single_copy:
         orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(axis=1)
@@ -494,7 +495,7 @@ def extract_pfam(request, classification="taxon_id"):
 
     all_database = db.get_pfam_hits(pfam_include.index.tolist(), search_on="pfam", indexing="taxid")
     sums = all_database.sum(axis=1)
-    sum_group = len(selection)
+    sum_group= len(selection)
 
     match_groups_data = []
     for no, pfam in enumerate(selection):
@@ -509,7 +510,10 @@ def extract_pfam(request, classification="taxon_id"):
             "n_genomes": sum_include_length,
             "max_n": sums.max(),
             "match_groups_data": match_groups_data,
-            "form": form}
+            "form": form,
+            "sum_include_length": sum_include_length,
+            "sum_exclude_length": sum_exclude_length,
+            "n_missing": n_missing}
     return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
 
 
@@ -1643,9 +1647,11 @@ def locusx(request, locus=None, menu=True):
             terms=["locus_tag", "gene", "product", "length"])
     all_og_c = db.get_og_count([og_id], search_on="orthogroup")
     all_org  = db.get_organism(og_annot.index.tolist())
+
     n_homologues = all_og_c.loc[og_id].sum()-1
     og_size = n_homologues+1
     og_num_genomes = len(set(all_org.values()))
+
     translation = db.get_translation(seqid)
     general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
     if n_homologues>1:
@@ -1803,7 +1809,7 @@ def hydropathy(request, locus):
 
 
 def get_all_prot_infos(db, seqids, orthogroups):
-    hsh_gene_locs = db.get_gene_loc(seqids, as_hash=True)
+    hsh_gene_locs = db.get_gene_loc(seqids)
     hsh_prot_infos = db.get_proteins_info(seqids)
     hsh_organisms = db.get_organism(seqids)
     group_count = set()
@@ -1912,6 +1918,7 @@ def fam_cog(request, cog_id):
     cog_func = db.get_cog_code_description()
 
     df_cog_count = df_seqid_to_cog.groupby(["taxid"]).count()
+    fam  = format_cog(cog_id)
     e_tree = tab_gen_profile_tree(db, df_cog_count.cog, format_cog(cog_id), orthogroups)
     asset_path = f"/temp/fam_tree_{cog_id}.svg"
     path = settings.BASE_DIR+"/assets/"+asset_path
@@ -1921,6 +1928,7 @@ def fam_cog(request, cog_id):
     info_func = "<br>".join((cog_func[code] for code in func))
     type = "cog"
 
+    
     info = [info_func, cog_description]
     menu = True
     envoi = True
@@ -2254,7 +2262,7 @@ def KEGG_mapp_ko(request, map_name, taxon_id=None):
     path = settings.BASE_DIR + f"/assets/temp/{map_name}.svg"
     asset_path = f"/temp/{map_name}.svg"
     e_tree.render(path, dpi=800)
-    ctx = {
+    ctx = {"pathway_num": kos.iloc[0].pathway,
         "pathway": kos.iloc[0].description,
         "header": header,
         "data": data,
@@ -2749,6 +2757,7 @@ def blast(request):
         form = blast_form_class()
         return render(request, 'chlamdb/blast.html', my_locals({"form": form}))
 
+
     form = blast_form_class(request.POST)
     if not form.is_valid():
         return render(request, 'chlamdb/blast.html', my_locals({"form": form}))
@@ -2758,6 +2767,7 @@ def blast(request):
     blast_type = form.cleaned_data['blast']
     target = form.get_target()
     no_query_name = False
+
 
     if '>' in input_sequence:
         try:
@@ -3297,6 +3307,7 @@ def format_pathway(path_id, to_url=False, taxid=None):
 def priam_kegg(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     single_genome_form = make_single_genome_form(db)
+    hsh_organisms = db.get_genomes_description().description.to_dict()
     if request.method != "POST":
         form = single_genome_form()
         return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
@@ -3323,7 +3334,8 @@ def priam_kegg(request):
         entry = (format_pathway(element, to_url=True, taxid=taxid), descr, count)
         data.append(entry)
 
-    ctx = {"envoi":True, "data":data, "header": header}
+
+    ctx = {"envoi":True, "data":data, "header": header, "organism":hsh_organisms[taxid]}
     return render(request, 'chlamdb/priam_kegg.html', my_locals(ctx))
 
 

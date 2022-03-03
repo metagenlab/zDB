@@ -17,9 +17,7 @@
             <div class="row">
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
-                 <div class="home-title"><b> Kegg modules  </b></div>
-                 <hr class="lines-home">
-
+                 <div class="panel-title"><b>Metabolism: Kegg modules </b></div>
 
                         <ul id="tabs_main" class="nav nav-tabs" style="margin-top: 2em;" >
                             <li class="active"><a href="{% url 'kegg_module' %}">Category Heatmap</a></li>
@@ -27,13 +25,10 @@
                             <li><a href="{% url 'module_comparison' %}">Compare strains</a></li>
 
                         </ul>
-                        <div class="panel panel-info" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-                            <div class="panel-heading" style="width:100%">
-                                <h3 class="panel-title">Info about the analysis</h3>
-                            </div>
-                            <p style="margin: 10px 10px 10px 10px">  Discover the Kegg modules of the Kegg cateogry of interest.
-                              
-                        </div>
+
+                        <br>
+                        <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Occurrences of the Kegg category of interest in the database </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#kegg-modules" id="show-option" target="_blank" title="Select a Kegg category and display the occurences of its Kegg modules within the database and visualize their distribution in a heatmap "><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+
                     
                    <form action='{% url "kegg_module" %}' method="post">
                     {% csrf_token %}
@@ -41,10 +36,10 @@
                     <input type="submit" value="Submit" />
 
                     </form>
-
+                </div>
                     {%if envoi %}
                        <h3>{{ fam }} </h3>
-                       <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                       <div class="panel panel-success" style="width:100%; top: 200px; margin-top: 2em;">
                         <div class="panel-heading" style="width:100%">
                             <h3 class="panel-title">Help</h3>
                         </div>
@@ -61,7 +56,7 @@
                             <li><a href="#tab2" data-toggle="tab">Profile</a></li>
                         </ul>
 
-                        <div id="my-tab-content" class="tab-content">
+                        <div id="my-tab-content" class="tab-content" style="margin-top: 1em;">
                             <div class="tab-pane active" id="tab1">
                                 <table class="display" id="module_category">
                                     <thead>

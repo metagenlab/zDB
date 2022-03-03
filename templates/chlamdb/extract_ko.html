@@ -17,38 +17,31 @@
               <div class="row">
                 <div class="col-lg-12">
                    {% include "chlamdb/menu.html" %}
-                   <div class="home-title"><b> Kegg Orthologs </b></div>
-                   <hr class="lines-home">
+                   <div class="panel-title"><b>Comparisons: Kegg Orthologs</b></div>
+                   <br>
                     <nav>
                         <ul id="tabs_main" class="nav nav-tabs">
                             <li class="active"><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
+                            <li><a href="{% url 'venn_ko' %}">Venn KO</a></li>
                             <li><a href="{% url 'ko_comparison' %}">Compare KO counts</a></li>
                             <li><a href="{% url 'module_barchart' %}">KO categories barchart</a></li>
-                            <li><a href="{% url 'venn_ko' %}">Venn KO</a></li>
                             <li><a href="{% url 'plot_heatmap' 'ko' %}">Whole proteomes heatmaps</a></li>
                             <li><a href="{% url 'pan_genome' 'ko' %}">Pan/Core genome plots</a></li>
                         </ul>
                     </nav>
+                    <br>
+                    <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Kegg Orthologs shared by the selected genomes </b><a href="/docs/index.html" id="show-option" title="Get the list of Kegg Orthologs shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                       <div id="extract_form">
 
-                     <div id="extract_form">
 
-                        <div class="panel panel-info" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                            <div class="panel-heading" style="width:100%">
-                                <h3 class="panel-title">Info about the analysis</h3>
-                            </div>
-                            <p style="margin: 10px 10px 10px 10px; line-height: 160%">Get the list of Kegg Orthogroups shared between genomes (selected in panel A) and absent in others (selected in panel B). <br>
-                                It is possible to distinguish between plasmids and chromosomes by clicking on the dedicated checkbox.
-                                <br>Missing data: if more than one genome is selected in panel A, it is possible to tolerate missing data in 1 up to 10 genomes. In this way Kegg Orthogroups present in at least x out of y genomes selected are kept.</p>
-                            </p>
-                        </div>
+                                             {% block content %}
+                      
+                            {% csrf_token %}
+                            {% crispy form %}
+         
 
-                        {% block content %}
-						{% csrf_token %}
-						{% crispy form %}
                         {% endblock %}
                     </div>
-
-
 
             {% if wrong_n_missing%}
 
@@ -72,28 +65,50 @@
 
             {% if envoi_extract %}
 
-            <div class="row"  style="background-color: rgba(245, 245, 245, 0.986)">
-                <div class="col-lg-12">
-                  <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                    <br>
-                    <center><h3 style="padding:0; color: rgb(0, 0, 0);">Kegg Orthologs shared by the selected genomes </h3></center>
-                    <br>
-                    <h3>Number of Kegg Orthologs: {{ sum_group }} </h3>
-                    <div class="panel panel-success" style="width:60%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
-                      <div class="panel-heading" style="width:100%">
-                        <h3 class="panel-title">Help to interpret the results</h3>
-                      </div>
+            <div class="row" style="background-color: rgba(245, 245, 245, 0.986)">
+              <div class="col-lg-12">
+                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                  <br>
+                  <div class="panel panel-success" style="width:60%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
+                    <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Help to interpret the results</h3>
+                    </div>
                       <p style="margin: 10px 10px 10px 10px; line-height: 180%"> The output consists of a table containing the KO accession number of the Kegg Orthologs shared among the selected genomes. For each entry its description, the corresponding EC numbers used in Enzyme nomenclature, the Kegg Pathways and Kegg modules to whihch it belongs are reported. Additionally the frequency of the Ko entry in the selected genomes and in the whole database is computed.                           
                       </p>
                     </div>
-
                     <ul style="list-style-type:square">
-                        <div style="padding-top:10px">
+                      <div style="padding-top:10px">
+         <table class="table" style="width:600px">
+                             <tr>
+                                 <th>Number of included genomes</th>
+                                 <td> {{ include |length }} </td>
+                             </tr>
+  
+                             <tr>
+                                 <th>Number of excluded genomes</th>
+                                 <td> {{ sum_exclude_length }} </td>
+                             </tr>
+  
+                              <tr>
+                                 <th>Number of accepted missing data</th>
+                                 <td> {{ n_missing }} </td>
+                             </tr>
+                               <tr>
+                                 <th>Number of Keggs identified</th>
+                                 <td> {{ ko_total_count|length  }}  </td>
+                             </tr>
+  
+                         </table>
+                        </div>
 
-                      
-
-                        <table class="display" id="extract_ko">
-
+                         <div class="col-lg-12">
+                          <div id="my-tab-content" class="tab-content">
+                            <div class="tab-pane active" id="red">
+                              
+                            <div style="padding-top:18px;">
+                  
+                            <table class="hover" id="extract_ko">
+                  
                             <thead>
                                 <tr>
                                     <th id="entete_locus">KO</th>
@@ -104,7 +119,7 @@
                                     <th>freq complete database {{max_n}}</th>
                                 </tr>
                             </thead>
-
+                            <tbody>
                             {% for value in match_groups_data %}
                                 <tr>
                                     <td><a href="{% url 'fam_ko' value.0 %}">{{value.0}}</a></td>
@@ -115,9 +130,10 @@
                                     <td>{{value.5}}</td>
                                 </tr>
                             {% endfor %}
-
+                              </tbody>
                         </table>
                     </div>
+                  </div>
 				  </div>
 			  {% endif %}
 		  </div>
@@ -127,7 +143,8 @@
     </div>
   </div>
 
-<script type="text/javascript" id="js2">
+<script>
+
 $(document).ready(function() {
 	$('#extract_ko').DataTable( {
 		dom: 'Bfrtip',
@@ -140,6 +157,13 @@ $(document).ready(function() {
 });
 </script>
 
+
+
+
+<script>
+
+
+</script>
 </body>
 {% include "chlamdb/style_menu.html" %}
 {% include "chlamdb/show_hide_plasmid_accessions.html" %}

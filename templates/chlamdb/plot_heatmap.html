@@ -15,9 +15,12 @@
           <div class="row">
             <div class="col-lg-12">
                {% include "chlamdb/menu.html" %}
-               <div class="home-title" ><b>   {% if type == 'Pfam' %} Pfam domains   {% endif %}  {% if type == 'COG' %} COGs  {% endif %} {% if type == 'orthology' %} Orthogroups  {% endif %} {% if type == 'ko' %} Kegg Orthologs {% endif %} </b></div>
-               <hr class="lines-home">
+               <div class="panel-title"><b>Comparisons: {% if type == 'Pfam' %} Pfam domains   {% endif %}  {% if type == 'COG' %} COGs  {% endif %} {% if type == 'orthology' %} Orthogroups  {% endif %} {% if type == 'ko' %} Kegg Orthologs {% endif %}</b></div>
+               <br> 
                 <nav>
+                   
+    
+
                     <ul id="tabs_main" class="nav nav-tabs">
                     {% if type == 'Pfam' %}
 
@@ -62,17 +65,12 @@
                     {% endif %}
                     </ul>
                 </nav>
-
-                <div class="panel panel-info" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                    <div class="panel-heading" style="width:100%">
-                      <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
-                    </div>
-                    <p style="margin: 10px 10px 10px 10px; line-height: 160%">Heatmap showing presence/absence of
-
-                    {% if type == 'Pfam' %}
+                <br>
+                    <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Heatmap of the presence/absence of
+                        {% if type == 'Pfam' %}
                         Pfam domains
                     {% elif type == 'COG' %}
-                        COG IDs
+                        COG categories
                     {% elif type == 'interpro'%}
                         Interpro Entries.
                     {% elif type == 'EC' %}
@@ -81,15 +79,8 @@
                         Kegg orthologous groups (KO)
                     {% elif type == 'orthology' %}
                         orthologous groups
-                    {% endif %}
-                    within the selected genomes.
-                    {% if type == 'orthology' %}
-                        
-                        <br> Selecting all genomes you can display the heatmap of the whole proteome.
-                    {% endif %}
-
-                    </p>
-                </div>
+                    {% endif %}</b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option"  target="_blank"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                
 
 			{% if error %}
 			  <div class="panel panel-danger" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
@@ -117,23 +108,8 @@
 
 			{% if envoi_heatmap %}
             <div class="row" style="padding-top:30px ;background-color: rgba(245, 245, 245, 0.986); margin-top: 1em;" >
-                <div class="col-lg-8">
-                 <center><h3 style="padding:0; color: rgb(0, 66, 97);">Heatmap of the presence/absence of
-                    {% if type == 'Pfam' %}
-                    Pfam domains
-                {% elif type == 'COG' %}
-                    COG categories
-                {% elif type == 'interpro'%}
-                    Interpro Entries.
-                {% elif type == 'EC' %}
-                    EC numbers. Based on PRIAM data. Partial EC are not considered.
-                {% elif type == 'ko' %}
-                    Kegg orthologous groups (KO)
-                {% elif type == 'orthology' %}
-                    orthologous groups
-                {% endif %}
-             </h2></center>
-                 <div class="panel panel-success" style="width: 100%;">
+               
+                 <div class="panel panel-success" style="margin:1em;">
                      <div class="panel-heading" style="width:100%">
                          <h5 class="panel-title">Help to interpret the results</h5>
                      </div>
@@ -142,14 +118,15 @@
                         {% if type == 'Pfam' %}
                         times a Pfam domain shared by the genomes of interest is found.
                     {% elif type == 'COG' %}
-                        COG definitions found per each COG category shared by the genomes of interest.
+                        COGs found per each COG category shared by the genomes of interest.
                     {% elif type == 'ko' %}
                     Kegg entries found per each Kegg orthologous groups shared by the genomes of interest.
                     {% elif type == 'orthology' %}
                        homologs found per each Orthogroups shared by the genomes of interest.
                     {% endif %}
                     
-                    Zooming into an area of interest you can visualize the presence/absence profile. In white when absent, in <span style="color: rgb(5, 98, 151)"><b>blue</b></span> present in one copy, and in <span style="color: rgb(200, 41, 248)"><b>pink</b></span> present in two or more copies.
+                    Zooming into an area of interest you can visualize the presence/absence profile.
+                    <br>In white when absent, in <span style="color: rgb(5, 98, 151)"><b>blue</b></span> present in one copy, and in <span style="color: rgb(200, 41, 248)"><b>pink</b></span> present in two or more copies.
                      </p>
                     </div>
                 </div>

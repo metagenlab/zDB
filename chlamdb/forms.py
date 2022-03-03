@@ -56,13 +56,13 @@ def make_plot_form(db):
             self.helper = FormHelper()
             self.helper.form_method = 'post'
             self.helper.layout = Layout(
-                Fieldset("Compare genomes",
+                Fieldset("",
                     Column(
                     Row(Column("accession", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
                         Column("region_size", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
-                        Row('genomes', style="padding-left: 15px"),
+                        Row('genomes', style="padding: 15px"),
                     Column(Row('all_homologs', css_class='form-group col-lg-6 col-md-6 col-sm-12'),
-                    Submit('submit', 'Compare'), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                    Submit('submit', 'Compare plot regions'), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
                     css_class="col-lg-8 col-md-8 col-sm-12"))
             )
 
@@ -106,6 +106,7 @@ def make_metabo_from(db, add_box=False):
             self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
             if not add_box:
                 self.helper.layout = Layout(
+
                     Fieldset("Compare genomes",
                              Column(
                                    Row('targets'),
@@ -124,6 +125,7 @@ def make_metabo_from(db, add_box=False):
                                    css_class='form-group col-lg-12 col-md-12 col-sm-12'),
                             )
                     )
+
             super(MetaboForm, self).__init__(*args, **kwargs)
 
         def get_choices(self):
@@ -159,13 +161,15 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
             self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
             self.helper.form_action = action
             self.helper.layout = Layout(
-                Fieldset("Compare genomes",
+
+                Fieldset("",
                      Column(
                            Row('targets'),
                            Submit('submit', 'Compare %s' % label,  style="margin-top:15px" ),
                            css_class='form-group col-lg-12 col-md-12 col-sm-12'),
                     )
                 )
+
 
         def get_taxids(self):
             indices = self.cleaned_data["targets"]
@@ -203,7 +207,7 @@ def make_circos_form(database_name):
             
             self.helper.layout = Layout(
                 Fieldset(
-                        "Circos",
+                        " ",
                         Row('circos_reference'),
                         Row('targets', style="margin-top:1em"),
                         Submit('submit_circos', 'Submit',
@@ -286,7 +290,7 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
             self.helper.form_method = 'post'
             self.helper.form_action = action
             self.helper.layout = Layout(
-                    Fieldset("Compare genomes",
+                    Fieldset(" ",
                             Column(
                                 Row('checkbox_accessions', style="padding-left:15px"),
                                 Row('checkbox_single_copy', style="padding-left:15px"),

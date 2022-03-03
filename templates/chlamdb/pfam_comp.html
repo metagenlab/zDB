@@ -16,8 +16,8 @@
         <div class="row">
           <div class="col-lg-12">
            {% include "chlamdb/menu.html" %}
-           <div class="home-title"><b> Pfam domains </b></div>
-           <hr class="lines-home">
+           <div class="panel-title"><b>Comparisons: Pfam domains</b></div>
+           <br>
 
            <nav>
               <ul id="tabs_main" class="nav nav-tabs">
@@ -29,17 +29,9 @@
 
               </ul>
           </nav>
-          <div class="panel panel-info" style="width:90% ; top: 200px; margin: 10px 10px 10px 10px">
-              <div class="panel-heading" style="width:100%; ">
-                      <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
 
-                  </div>
-                  <p style="margin: 10px 10px 10px 10px; line-height: 180%">
-                    Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified.<br></p>
-                  </p>
-                  </div>
-
-
+          <br>
+          <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Compare the distribution of shared Pfam domains </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
 
                       <form action='{% url "pfam_comparison" %}' method="post">
                           {% csrf_token %}
@@ -50,12 +42,8 @@
 
                       {% if envoi_comp %}
                       <div class="row" style="padding-top:30px ;background-color: rgba(245, 245, 245, 0.986); margin-top: 1em;" >
-                        <div class="col-lg-8">
-                         <center><h3 style="padding:0; color: rgb(0, 66, 97);">Compare the distribution of shared Pfam domains</h2></center>
-                             <br>
-                            
                   <h4>  Number of domains at least present 1 time in 1 of the {{taxon_list|length}} selected genomes: <strong>{{pfam2data|length}}</strong>  </h4>
-                         <div class="panel panel-success">
+                         <div class="panel panel-success"  style="margin: 1em;">
                              <div class="panel-heading" style="width:100%">
                                  <h5 class="panel-title">Help to interpret the results</h5>
                              </div>
@@ -65,21 +53,17 @@
                              </p>
                          </div>
                         </div>
+                        <br>
 
 
-
-                     
-                        <table class="sortable table" id="table_pfam" style="width: 90%; margin-left: 1em; padding-top: 30em;">
+                        <div class="col-lg-12">
+                          <table class="hover" id="mytable"  style="padding-top: 10em;">
                                   <style>
                                     table {
                                         width:100%;
                                         table-layout:fixed;
-                                        
                                     }
-                                    td {
-                                        overflow: hidden;
-                                        white-space: nowrap;
-                                    }
+                                    
                                     </style>
                                      <thead>
                                       <tr >
@@ -87,7 +71,7 @@
                                       <th valign="bottom">Description</th>
                                       <th valign="bottom">nDomain</th>
                                     {% for taxon in taxon_list %}
-                                          <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
+                                          <th class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
                                     {% endfor %}
                                   </tr>
                                 </thead>
@@ -109,28 +93,31 @@
         </div>
       </div>
 
+    </body>
 
-    <script src="{% static 'js/jquery.hottie.js' %}"></script>
-    <script>
-
+      <script src="{% static 'js/jquery.hottie.js' %}"></script>
+      <script>
       $(function(){
-        $("#table_pfam td").hottie({
-          readValue : function(e) {
-            return $(e).attr("data-hist");
-          },
-        colorArray : [
-        "#5858FA",
-            "#FBEFEF",
-            "#FA5858"
-        ]
-
-        });
-
+      $("#mytable td").hottie({
+      readValue : function(e) {
+      return $(e).attr("data-hist");
+      },
+      colorArray : [
+      "#5858FA",
+      "#FBEFEF",
+      "#FA5858"
+      ]
+      
       });
-</script>
-<script>
+      
+      });
+      </script>
+      
+      
+      <script>
+      
       $(document).ready(function() {
-        $('#table_pfam').DataTable( {
+        $('#mytable').DataTable( {
           dom: 'lBfrtip',
           buttons: [
               {
@@ -146,17 +133,16 @@
                   title: 'plast_refseq'
               }
           ],
-          "paging":   false,
+         
           "ordering": true,
           "info":     false,
           } );
-        } );
-</script>
+      } );
+      
+      $(document).ready(function() {
+      $("#mytable").DataTable();} );
+      
+      </script>
 
-<script>
-$(document).ready(function() {
-$('#table_pfam').DataTable();} )
-</script>
 </body>
-{% include "chlamdb/style_menu.html" %}
 </html>

@@ -14,51 +14,46 @@
 </head>
 
 <body>
-  <div class="container-fluid" id="main_container">
-    <div class="row">
-      <div id="wrapper">
-          <div id="page-content-wrapper">
-            <div class="row">
-              <div class="col-lg-12">
-
-
-
-                {% if not valid_id %}
+    <div class="container-fluid" id="main_container">
+        <div class="row">
+          <div id="wrapper">
+              <div id="page-content-wrapper">
+                <div class="row">
+                  <div class="col-lg-12">
+                     {% include "chlamdb/menu.html" %}
+                     <div class="panel-title"><b>Metabolism: Kegg modules </b></div>
+                    </div>
+                     <br>
+                     <center><p class="home-title" style="color: rgb(0, 86, 121);"><b> Kegg module: {{ module_name }} </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#kegg-module-overview-page" id="show-option" target="_blank" title="Discover the distribution of the Kegg entries of this Kegg module within the database "><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+             <hr class="lines-home">
+             {% if not valid_id %}
+            
 
                     <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
 
                 {% else %}
 
-                   {%  if menu %}
-
-                   {% include "chlamdb/menu.html" %}
-                   <div class="home-title"><b> Kegg modules  </b></div>
-                <hr class="lines-home">
-                   
-                   {% endif %}
-
-                       <h3> {{ module_name }} </h3>
-                         <div class="panel panel-success" style="width:80%; top: 400px; margin: 10px 10px 10px 10px">
+                         <div class="panel panel-success" style="width:100%; top: 400px; ">
                             <div class="panel-heading" style="width:100%">
                                 <h3 class="panel-title">Help</h3>
                             </div>
-                            <p style="margin: 10px 10px 10px 10px; line-height: 180%">
-                                Informations about Kegg Module: {{ module_name }} <br>
-                                KO list, phylogenetic profile of each KO, interactive KEGG map and external informations.
-								The Missing tab gives the number of kegg orthologs that are missing for the module to be complete, based on the module definition formula.
-								Only the KO present at least once are included in the profile.
+                            <p style="margin: 10px 10px 10px 10px; line-height: 180%; ">
+                                Kegg module {{ module_name }} is descriptive of <b>{{ module_descr }}</b> module, which is part of the <b>{{ cat }}</b> category and <b>{{ sub_cat }}</b> subcategory.
+                                <br>
+                                <br>In <b> General</b> the list of Ko entries of {{ module_name }} Kegg module is reported. Each Ko entry is clickable and redirects the user to the specifc Kegg Ortholog page with further info about its identification within the genomes in association with the Orthogroups classification.
+                                <br>In <b>Profile + homologs</b> the distribution of the Kegg entries of {{ module_descr }} module is displayed. Given a Kegg entry and a genome, a <span style="color: red;"><b>red</b></span> box indicates that one or more loci have been annotated with, while a  <span style="color: green;"><b>green</b></span> box indicates that no locus/loci has(have) been annotated with it, but it/they is/are part of an Orthologous group in which other members have been annotated with that Kegg entry, so it is likely that this copy(ies) also performs this Kegg function.
+                                <br>If all the Kegg entries required by the model to be funcitonal are present, the letter '<b>C</b>'' is reported, otherwise '<b>I</b>' singals an incomplet module.
+                                <br> Note that a Kegg module may accept alternative Ko or set of Kegg orthologs to be functional. This means that some missing Ko do not impact the module completeness.
+                                <strong><h5>Check the <a href="https://www.genome.jp/dbget-bin/www_bget?{{ module_name }}" target="_blank"> composition of {{ module_name }} Kegg module  <i class="fas fa-external-link-alt"></i></a></h5></strong>
                             </p>
                         </div>
                         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                             <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
-                            <li><a href="#tab2" data-toggle="tab">Profile</a></li>
+                            <li><a href="#tab2" data-toggle="tab">Profile + homologs</a></li>
                         </ul>
 
-                        <div id="my-tab-content" class="tab-content">
+                        <div id="my-tab-content" class="tab-content" style="margin-top: 1em;">
                             <div class="tab-pane active" id="tab1">
-                                <ol>
-                                    <li>KEGG {{ cat }} :: {{ module_descr }} :: ({{ sub_cat }})
-                                </ol>
                                 <table class="display" id="ko_list">
                                     <thead>
                                             <tr>
