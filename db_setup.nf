@@ -149,6 +149,7 @@ process download_ko_profiles {
     output:
         file "ko_list"
         file "profiles/*.hmm"
+        file "profiles/prokaryote.hal"
 
     script:
     """
@@ -157,6 +158,7 @@ process download_ko_profiles {
 
     gunzip < ko_list.gz > ko_list && rm -f ko_list.gz
     tar xvf profiles.tar.gz
+    rm profiles.tar.gz
     """
 }
 
