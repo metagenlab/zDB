@@ -97,7 +97,6 @@ zdb_dir=$(dirname $scriptpath)
 cd $zdb_dir
 
 if [ "$use_dev_server" = true ]; then
-	echo "Starting django dev server"
 	python manage.py runserver --nothreading 0.0.0.0:$custom_port
 else
 	gunicorn -c config/gunicorn.py

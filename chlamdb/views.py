@@ -1154,7 +1154,6 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
     locus_to_genome = db.get_locus_to_genomes(locuses)
 
     og_filename = f"OG{og_id:07}_mafft.faa"
-    algn_file = settings.ALIGNMENTS + "/" + og_filename
 
     e_tree = EteTree(tree)
     e_tree.add_column(SimpleTextColumn("Locus tag"))
@@ -1170,8 +1169,6 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
 
     asset_algn_file = f"/alignments/{og_filename}"
     asset_algn_file_path = settings.BASE_DIR + "/assets/" + asset_algn_file
-    if not os.path.exists(asset_algn_file_path):
-        os.symlink(algn_file, asset_algn_file_path)
     return {"og_phylogeny": asset_path, "root": root, "og_alignment": asset_algn_file}
 
 
