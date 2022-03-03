@@ -33,10 +33,17 @@
       <div id="page-content-wrapper">
         <div class="row">
           <div class="col-lg-12 col-md-12 col-sm-12">
-
-          {% if menu %}
-              {% include "chlamdb/menu.html" %}
-          {% endif %}
+			{% include "chlamdb/menu.html" %}
+			<div class="panel-title"><b>
+			Locus tag annotation
+			</b>
+		 </div>
+		 </div>
+			<br>
+			<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+				Locus tag: {{locus_tag}}
+			   </p></b></center></center>
+			   <hr class="lines-home">
           {% if not valid_id %}
               <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
               <p>
@@ -99,7 +106,13 @@
 				  </div>
 
 				  <div class="tab-pane" id="phylogenetic_distrib">
-					  <h3>Distribution of the homologs in the orthogroup {{og_id|safe}} </h3>
+
+            <br>
+					<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+					Distribution of {{og_id|safe}} homologs
+				   </p></b></center>
+
+
 
 						<div class="tab-pane active" id="tab1">
 						  <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
@@ -120,7 +133,14 @@
 
 
 				  <div class="tab-pane" id="og_phylogeny">
-						<h3>Phylogeny of {{og_id|safe}} 
+
+						<br>
+					<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+					Phylogeny of {{og_id|safe}}
+				   </p></b></center>
+						<div class="tab-pane active" id="tab1">
+						  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
+
 						  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}">
 							  <i class="fa fa-download"></i> Download SVG</a>
 
@@ -134,7 +154,10 @@
 				  </div>
 
 				  <div class="tab-pane" id="refseq_phylogeny">
-					  <h3>Phylogeny of the RefSeq best hits of {{og_id|safe}}</h3>
+					<br>
+					<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+						Phylogeny of the RefSeq best hits of {{og_id|safe}}
+				   </p></b></center>
 						<div class="tab-pane active" id="tab1">
 						  <object type="image/svg+xml" data="{% static best_hits_phylogeny %}"></object>
 						  <a download="profile.svg" class="btn" href="{% static best_hits_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
@@ -142,6 +165,10 @@
 				  </div>
 
 				<div class="tab-pane" id="swissprot_homologs_tab">
+					<br>
+					<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+						SwissProt homologs of {{locus_tag}}
+				   </p></b></center>
 					<div class="col-md-12 col-lg-8" style="padding-top:20px">
 
 					<table id="blast_swissprot_table" class="table">
@@ -167,7 +194,10 @@
 
 				
 				<div class="tab-pane" id="refseq_homologs_tab">
-					<h3> RefSeq homologs </h3>
+					<br>
+					<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+						RefSeq homologs of {{locus_tag}}
+				   </p></b></center>
 					<ul>
 					 <li>Number of RefSeq hits (max 100): {{n_refseq_homologs}} </li>
 					</ul>
@@ -190,8 +220,8 @@
 					  </tbody>
 					</table>
 				</div>
-
                 <div class="tab-pane active" id="main_tab" style="padding-left: 15px;padding-top:20px">
+                 
                         <div class="col-md-12 col-lg-4">
                           <div class="container-fluid">
                             <div class="row">
@@ -417,6 +447,11 @@
                 <div class="tab-pane" id="tab3" width="100%" height="100%">
                   <div class="row" style="padding-top:15px;">
                     <div class="col-lg-6">
+                     
+                      <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+                        Locus tag: {{locus_tag}}
+                         </p></b></center>
+                         <br>
 
 					{% if sequence_type == "CDS" %}
                       <div class="row">

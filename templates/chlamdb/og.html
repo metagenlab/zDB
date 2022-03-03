@@ -17,6 +17,17 @@
 		<div class="row">
 		  <div class="col-lg-12">
 			{% include "chlamdb/menu.html" %}
+			<div class="panel-title"><b>
+			Orthogroup annotation
+			</b>
+		 </div>
+		 </div>
+			<br>
+
+			<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+				Orthogroup:{{og}}
+				<a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#orthogroup-annotation-summary" id="show-option" target="_blank" title="Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></b></p></center>
+			   <hr class="lines-home">
 
 	  {% if not valid_id %}
 		  <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
@@ -39,7 +50,9 @@
 			
 		</ul>
 	</nav>
-		<div id="form" class="col-lg-10 col-md-12 col-sm-12">
+
+
+		<div id="form" class="col-lg-12 col-md-12 col-sm-12">
 		  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.48.1/plotly.min.js"></script>
 
 	
@@ -61,12 +74,27 @@
 		  </div>
 
 		  <div class="tab-pane" id="og_phylogeny">
-			  <h3>Phylogeny of {{og}} {{root}}</h3>
-			    <a download="profile.svg" class="btn" href="{% static og_phylogeny %}">
-				  <i class="fa fa-download"></i> Download SVG</a>
+
+			  <br>
+			<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+				Phylogeny of {{og}} {{root}}
+			   </p></b></center>
+				<div class="tab-pane active" id="tab1">
+				  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
+				  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
+
 
 				<a download="{{og}}.faa" class="btn" href="{% static og_alignment %}">
 				  <i class="fa fa-download"></i> Download alignment file</a>
+
+
+
+
+		  <div class="tab-pane" id="og_alignment">
+			<br>
+			<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+				Phylogeny of {{og}} {{root}} - protein alignment
+			   </p></b></center>
 
 				<div class="tab-pane active" id="tab1">
 				  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
@@ -75,19 +103,24 @@
 		  </div>
 
 		  <div class="tab-pane" id="refseq_phylogeny">
-			  <h3>Phylogeny of the RefSeq best hits of {{og}}</h3>
+			<br>
+			<center><p class="home-title" style="color: rgb(0, 86, 121);"><b>
+				Phylogeny of the RefSeq best hits of {{og}}
+			   </p></b></center>
 				<div class="tab-pane active" id="tab1">
 				  <object type="image/svg+xml" data="{% static best_hits_phylogeny %}"></object>
 				  <a download="profile.svg" class="btn" href="{% static best_hits_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
 				</div>
 		  </div>
 
+
 		  <div class="tab-pane active" id="overview_tab">
-			<h3>Orthogroup: <strong>{{og}}</strong>
-				<br>  <strong>{{n_homologues}} members</strong> -overview of the annotation</h3>
+			
+			<h4>Orthogroup content: <strong>{{n_homologues}} members</strong></h4>
 
 
-			  <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
+				
+			  <div class="panel panel-success" style="width:100%; top: 200px">
 				  <div class="panel-heading" style="width:100%">
 					  <h3 class="panel-title">Help</h3>
 				  </div>
@@ -99,7 +132,9 @@
 				  </p>
 			  </div>
 
-			<div class="col-md-12 col-lg-4" style="margin-right: 0; margin-left:0">
+
+			  <div class="col-md-12 col-lg-4" style="margin-right: 0; margin-left:0">
+
 			  <div class="container-fluid">
 
 				<div class="row">
@@ -353,9 +388,10 @@
     </div>
   </div>
 </div>
+
 </div>
 
-{% include "chlamdb/style_menu.html" %}
+
 
 <style>
 #description_field{

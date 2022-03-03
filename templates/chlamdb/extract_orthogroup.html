@@ -20,9 +20,8 @@
           <div class="row">
             <div class="col-lg-12">
              {% include "chlamdb/menu.html" %}
-             <div class="home-title"><b> Orthogroups </b></div>
-             <hr class="lines-home">
-
+             <div class="panel-title"><b>Comparisons: Orthogroups</b></div>
+<br>
               <nav>
                   <ul id="tabs_main" class="nav nav-tabs">
                       <li class="active"><a href="{% url 'extract_orthogroup' %}">Detailed comparison</a></li>
@@ -35,15 +34,31 @@
 
           
 
-              <div class="panel panel-info" style="width:90% ; top: 200px; margin: 10px 10px 10px 10px">
-                <div class="panel-heading" style="width:100%; ">
-                        <h3 class="panel-title">Info about the analysis    <a href="/docs/index.html" id="show-option" title="See an axample of the analysis you can perform"><i class="fab fa-info-circle fa-2x" style="size: 5em;" ></i></a></h3>
+             <br>
+                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Orthogroups shared by selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Get the list of Orthologous groups identified with Ortohfinder shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                    
+                <!--
+                <div style="position: absolute;margin-top:10%; margin-left: 33%;">
+                    <div style="height:40px;margin-left: 180px;width:280px;border: 2px solid #8AC007; border-radius: 15px;">
+                        <div style="width: 100%; float: left; margin-left: 10px;margin-top:3px">
+                            <p>Consider single copy groups only</p>
+                        </div >
 
+                        <div style="height: 40px; margin-left: 180px;margin-top:3px;">
+                            <label class="switch-light well" onclick="" style="margin: 5px 0px 0px 0px; padding: 0 0 0 0; position: absolute">
+                                <input type="checkbox" style="padding: 0 0px 0 0" id="button_single_copy" name="button_single_copy">
+                                <span>
+                                <span>Off</span>
+                                <span>On</span>
+                                </span>
+                                <a class="btn btn-success btn-xs"></a>
+                            </label>
+                        </div>
                     </div>
-                    <p style="margin: 10px 10px 10px 10px; line-height: 180%">Get the list of Orthologous groups shared between genomes (selected in panel A) and absent in others (selected in panel B). Clustering based on BLAST usting orthoFinder. <br>
-                    It is possible to distinguish between plasmids and chromosomes by clicking on the dedicated checkbox.
-                    <br>Missing data: if more than one genome is selected in panel A, it is possible to tolerate missing data in 1 up to 10 genomes. In this way COG present in at least x out of y genomes selected are kept.</p>
                 </div>
+                -->
+               
+
                 {% block content %}
 				{% csrf_token %}
 				{% crispy form %}
@@ -76,8 +91,6 @@
         <div class="col-lg-12">
           <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
             <br>
-            <center><h3 style="padding:0; color: rgb(0, 66, 97);">Orthogroups shared by the selected genomes </h3></center>
-            <br>
             <div class="panel panel-success" style="width:60%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
               <div class="panel-heading" style="width:100%">
                 <h3 class="panel-title">Help to interpret the results</h3>
@@ -90,11 +103,32 @@
             </div>
               <ul style="list-style-type:square">
                     <div style="padding-top:10px">
+ 			<table class="table" style="width:600px">
+                           <tr>
+                               <th>Number of included genomes</th>
+                               <td> {{ include_taxids|length }} </td>
+                           </tr>
+
+                           <tr>
+                               <th>Number of excluded genomes</th>
+                               <td> {{ exclude_taxids|length }} </td>
+                           </tr>
+
+                            <tr>
+                               <th>Number of accepted missing data</th>
+                               <td> {{ n_missing }} </td>
+                           </tr>
+                             <tr>
+                               <th>Number of COGs identified</th>
+                               <td> {{ number_orth }}  </td>
+                           </tr>
+
+                       </table>
 
             <div class="box" style="width:30%; top: 200px; padding: 10px 10px 10px 10px;">
 
             <form action="/circos_main/" method="POST" id="carform" >
-            <h5>Show the comparison on circular map</h5>
+            <h5><b>Show the comparison on circular map</b></h5>
               {% csrf_token %}
               <input type="hidden" name="exclude_taxids" value="{{exclude_taxids}}">
               <input type="hidden" name="include_taxids" value="{{include_taxids}}">
@@ -193,9 +227,23 @@
 <script>
 
   $(document).ready(function() {
-	  $('#orthogroups_table').DataTable();
-	  $("#table_groups").DataTable();
+	  $('#orthogroups_table').DataTable({
+		dom: 'Bfrtip',
+		"paging":   true,
+		"ordering": true,
+		"info":     false,
+		buttons: [{extend: 'excel', title: 'ko_table'},
+		{ extend: 'csv', title: 'ko_table'}] }); 
+	  $("#table_groups").DataTable({
+		dom: 'Bfrtip',
+		"paging":   true,
+		"ordering": true,
+		"info":     false,
+		buttons: [{extend: 'excel', title: 'ko_table'},
+		{ extend: 'csv', title: 'ko_table'}] })
   } );
+
+
 
 </script>
 
