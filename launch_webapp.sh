@@ -86,7 +86,7 @@ fi
 
 if [ ! -z "${zdb_folder}" ]; then
 	zdb_home="${zdb_folder}"
-	bind_path="tmp/:${zdb_folder}/assets/temp/"
+	bind_path="tmp/:${zdb_folder}/assets/temp/,${zdb_folder}"
 fi
 
 if [ ! -z "${metagenlab_folder}" ]; then
@@ -102,8 +102,13 @@ dev_server=""
 echo $use_dev_server
 if [ "$use_dev_server" = true ]; then
 	dev_server="--use_dev_server"
+	debugging_mode="-d"
 fi
 
+# NOTE: we rely on singularity binding the current directory to make
+# the alignment accessible, as some of them may be symbolic links
+# (particularly if using latest)
+bind_path="${bind_path},alignments/${run_name}:${zdb_folder}/assets/alignments/"
 
 echo "Starting website, it will be accessible through on localhost on port $port"
 singularity run --writable-tmpfs --bind ${bind_path} \

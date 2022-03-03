@@ -317,7 +317,7 @@ process orthogroups2fasta {
 
 process align_with_mafft {
   container "$params.mafft_container"
-  publishDir "alignments/$workflow.runName"
+  publishDir "alignments/$workflow.runName", mode: "move"
 
   input:
   file og from orthogroups_fasta.flatten().collate(20)
