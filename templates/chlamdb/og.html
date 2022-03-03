@@ -65,14 +65,12 @@
 			    <a download="profile.svg" class="btn" href="{% static og_phylogeny %}">
 				  <i class="fa fa-download"></i> Download SVG</a>
 
-			    <a download="profile.svg" class="btn" href="{% static og_alignment %}">
+				<a download="{{og}}.faa" class="btn" href="{% static og_alignment %}">
 				  <i class="fa fa-download"></i> Download alignment file</a>
 
 				<div class="tab-pane active" id="tab1">
 				  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
-
 				  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
-
 				</div>
 		  </div>
 

@@ -1168,7 +1168,7 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
     path = settings.BASE_DIR + '/assets/' + asset_path
     e_tree.render(path, dpi=1200)
 
-    asset_algn_file = f"/temp/{og_filename}"
+    asset_algn_file = f"/alignments/{og_filename}"
     asset_algn_file_path = settings.BASE_DIR + "/assets/" + asset_algn_file
     if not os.path.exists(asset_algn_file_path):
         os.symlink(algn_file, asset_algn_file_path)
