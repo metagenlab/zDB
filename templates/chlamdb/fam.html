@@ -422,23 +422,10 @@
                                   </div>
 
                                   <div class="tab-pane" id="tab3">
-                                  
                                        <div class="row">
-                                            {% if not big %}
-                                                <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
-                                                <a onclick='exportPNG("cog_tree", "profile");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
-                                            {% else %}
-                                                <!-- if image too large, only png available -->
-                                                <a download="profile.png" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download PNG</a> 
-                                            {% endif %}    
-                                      
-                                           {% if not big %}
+										   <a download="profile_{{fam}}.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
                                            <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree" style="width:60%"></object>
-                                           {% else %}
-                                           <img src="{% static asset_path %}" alt="profile" style="width:60%">
-                                           {% endif %}
                                        </div>
-
                                   </div>
                                 </div> <!--tabs-->
                      </div>
