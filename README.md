@@ -71,11 +71,16 @@ The run name is used by the web server to choose a database, search index and bl
 
 ## Starting the web server
 
-Once the analysis is complete, the web application can be run with the launch_webapp script. The following options can be set:
-- run_name, to specify which database is to be used
-- port, to specify on which port the web server will be listening to
-Some other options are also available, but are essentially used for debugging purposes.
+Once the analysis is complete, the web application can be run with the launch_webapp script. The following options can be used:
+```
+--port=PORT_NUMBER      the port the application will be listening to, 8080 by default.
+--run_name=RUN_NAME     when nextflow runs. If not specified, will default to the latest run.
+--allowed_hosts=HOSTS   the name of the host or the ip address of the server. If not specified, will default to the ip addresses of the current host.
+```
 
+Some other options are also available, but are essentially here for debugging purposes.
+
+Once the webserver has started, you'll be able to access the webpages with a web-browser.
 
 ## Bugs and feature requests
 Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/annotation_pipeline_nextflow/issues).
