@@ -4,21 +4,21 @@
 <html>
 <head>
 {% load static %}
-{% load static %}
 {% load crispy_forms_tags %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.js'></script>
-<script src="{% static 'js/circos.js' %}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
 
 
 <script type="text/javascript" src={% static 'js/genomic_region.js' %}>
 </script>
-<script type="text/javascript" src="{% static 'js/svg-export.min.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'js/svg-export.min.js' %}">
+</script>
 
 
 {% include "chlamdb/header.html" %}
+
 </head>
+
+
 <body>
 
   <div class="container-fluid" id="main_container">

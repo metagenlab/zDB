@@ -1101,17 +1101,6 @@ def og_tab_get_swissprot_homologs(db, annotations):
     return {"reviewed": swissprot, "n_swissprot_hits": len(homologs)}
 
 
-class SeqColumn(Column):
-
-    def __init__(self, fasta_dict, header):
-        super().__init__(header)
-        self.values = fasta_dict
-
-    def get_face(self, index):
-        seq = self.values[index]
-        face = SeqMotifFace(str(seq.seq), seq_format="seq")
-        return face
-
 def prepare_default_tree(og_phylogeny):
     tree = Tree(og_phylogeny)
     R = tree.get_midpoint_outgroup()
