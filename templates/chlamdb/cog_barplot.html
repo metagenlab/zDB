@@ -3,14 +3,17 @@
 
 <html>
 <head>
+
+{% load custom_tags %}
 {% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+{% load crispy_forms_tags %}
 {% include "chlamdb/header.html" %}
 
 </head>
 <body>
 
-  <div class="container-fluid" id="main_container">
+
+<div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
           <div id="page-content-wrapper">
@@ -266,5 +269,4 @@
     </div>
   </div>
 </body>
-{% include "chlamdb/style_menu.html" %}
 </html>
