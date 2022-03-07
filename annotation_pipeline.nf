@@ -320,7 +320,7 @@ process align_with_mafft {
   publishDir "alignments/$workflow.runName"
 
   input:
-      file og from orthogroups_fasta.flatten().collate(20)
+      file og from orthogroups_fasta.toSortedList().flatten().collate(20)
 
   output:
       file "*_mafft.faa" into mafft_alignments
@@ -340,11 +340,10 @@ mafft_alignments.into { to_identity_calculation; to_phylogeny; to_cleanup }
 to_cleanup.collect().set { to_alignment_gather }
 to_phylogeny.collect().into { all_alignments_3; all_alignments_4 }
 
-to_identity_calculation.flatten().collate(20).set { to_identity_calculation_split }
 
+to_identity_calculation.toSortedList().flatten().collate(50).
+    set { to_identity_calculation_split }
 
-// will need to introduce load balancing to spread the number of 
-// comparisons more evenly across processes
 
 process identity_calculation {
     container "$params.annotation_container"
