@@ -1711,15 +1711,7 @@ def str_if_none(s):
     return s
 
 
-def search_bar_helper(fam_name, fam_url, results):
-    val = getattr(results, fam_name)
-    if val is None:
-        val = "-"
-    else:
-        val = f"<a href=\"/{fam_url}/{val}\">{val}</a>"
-    return val
-
-
+# NOTE: should refactor this code to avoid duplicated code
 def search_bar(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     option2status = db.get_config_table()
@@ -1737,7 +1729,7 @@ def search_bar(request):
     has_cog = option2status.get("COG", False)
     has_pfam = option2status.get("pfam", False)
 
-    genes, cog, ko, pfam = [], [], [], []
+    genes, cog, ko, pfam, pat, mod = [], [], [], [], [], []
     for result in results:
         if result.entry_type == sb.EntryTypes.Gene:
             locus_tag = format_locus(result.locus_tag, to_url=True)
@@ -1750,8 +1742,14 @@ def search_bar(request):
             ko.append([format_ko(None, base=result.name, as_url=True), result.description])
         elif result.entry_type == sb.EntryTypes.PFAM and has_pfam:
             pfam.append([format_pfam(None, base=result.name, to_url=True), result.description])
+        elif result.entry_type == sb.EntryTypes.Module and has_ko:
+            mod.append([format_module(None, base=result.name, to_url=True), result.description])
+            print(result)
+        elif result.entry_type == sb.EntryTypes.Pathway and has_ko:
+            pat.append([format_pathway(None, base=result.name, to_url=True), result.description])
+            print(result)
 
-    gene_active, cogs_active, ko_active, pfam_active = "active", "", "", ""
+    gene_active, cogs_active, ko_active, pfam_active, pat_active, mod_active = "active", "", "", "", "", ""
     if len(genes)==0:
         gene_active = ""
         if len(cog)>0:
@@ -1760,25 +1758,39 @@ def search_bar(request):
             ko_active = "active"
         elif len(pfam)>0:
             pfam_active = "active"
+        elif len(pat)>0:
+            pat_active = "active"
+        elif len(mod)>0:
+            mod_active = "active"
 
     genes_headers = ["Accession", "Gene", "Product", "Organism"]
     cog_headers = ["COG", "Description"]
     ko_headers = ["KO", "Description"]
     pfam_headers = ["PFAM domain", "Description"]
+    pat_headers = ["KEGG Pathway", "Description"]
+    mod_headers = ["KEGG Module", "Description"]
     insert_index = 4
     ctx = {"search_term": user_query,
             "gene_active": gene_active,
             "cogs_active": cogs_active,
             "ko_active": ko_active, 
             "pfam_active": pfam_active,
+            "pat_active": pat_active,
+            "mod_active": mod_active,
             "genes_headers": genes_headers,
             "genes": genes,
             "cog_headers": cog_headers,
             "pfam_headers": pfam_headers, 
             "ko_headers": ko_headers,
+            "pat_headers": pat_headers,
+            "mod_headers": mod_headers,
+            "modules": mod,
+            "pathways": pat,
             "cogs": cog,
             "pfam": pfam,
-            "ko": ko}
+            "ko": ko,
+            "pat": pat,
+            "mod": mod}
     return render(request, "chlamdb/search.html", my_locals(ctx))
 
 
@@ -1928,8 +1940,12 @@ def format_pathway(pat_id):
     return f"map{pat_id:05d}"
 
 
-def format_module(mod_id, to_url=False):
-    formated = f"M{mod_id:05d}"
+def format_module(mod_id, base=None, to_url=False):
+    if base is None:
+        formated = f"M{mod_id:05d}"
+    else:
+        formated = base
+
     if to_url:
         return f"<a href=/KEGG_module_map/{formated}>{formated}</a>"
     return formated
@@ -3282,12 +3298,16 @@ def plot_heatmap(request, type):
     return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
 
-def format_pathway(path_id, to_url=False, taxid=None):
-    base_string = f"map{path_id:05d}"
+def format_pathway(path_id, base=None, to_url=False, taxid=None):
+    if base is None:
+        base_string = f"map{path_id:05d}"
+    else:
+        base_string = base
+
     if not to_url:
         return base_string
     if taxid is None:
-        to_page = f"/KEGG_map_ko/{base_string}"
+        to_page = f"/KEGG_mapp_ko/{base_string}"
     else:
         to_page = f"/KEGG_mapp_ko/{base_string}/{taxid}"
     return f"<a href=\"{to_page}\">{base_string}</a>"
