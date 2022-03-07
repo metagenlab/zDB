@@ -297,7 +297,7 @@ orthogroups
 
 
 process orthogroups2fasta {
-    container "$params.annotation_container"
+  container "$params.annotation_container"
   publishDir 'orthology/orthogroups_fasta', mode: 'copy', overwrite: true
 
   input:
@@ -317,19 +317,19 @@ process orthogroups2fasta {
 
 process align_with_mafft {
   container "$params.mafft_container"
-  publishDir "alignments/$workflow.runName", mode: "move"
+  publishDir "alignments/$workflow.runName"
 
   input:
-  file og from orthogroups_fasta.flatten().collate(20)
+      file og from orthogroups_fasta.flatten().collate(20)
 
   output:
-  file "*_mafft.faa" into mafft_alignments
+      file "*_mafft.faa" into mafft_alignments
 
   script:
   """
   unset MAFFT_BINARIES
   for faa in ${og}; do
-  mafft --anysymbol \$faa > \${faa/.faa/_mafft.faa}
+      mafft --anysymbol \$faa > \${faa/.faa/_mafft.faa}
   done
   """
 }
@@ -372,13 +372,11 @@ process identity_calculation {
 all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.set { alignement_larger_than_2_seqs }
 
 
-// This should be improved: as the order is non-deterministic, it isn't very resume
-// friendly
-alignement_larger_than_2_seqs.collate(50).set { to_fasttree_orthogroups }
+alignement_larger_than_2_seqs.toSortedList().flatten().collate(50).set { to_fasttree_orthogroups }
 
 process orthogroups_phylogeny_with_fasttree3 {
   container "$params.fasttree_container"
-  publishDir 'orthology/orthogroups_phylogenies_fasttree', mode: 'copy', overwrite: true
+  publishDir "gene_phylogenies/$workflow.runName"
 
   input:
     file og from to_fasttree_orthogroups
@@ -393,6 +391,7 @@ process orthogroups_phylogeny_with_fasttree3 {
     done
   """
 }
+
 
 gene_phylogeny.collect().set { all_og_phylogeny }
 
@@ -581,9 +580,6 @@ if(params.ko) {
 
 
 process setup_db {
-    when:
-        params.chlamdb_setup
-
     input:
         file db_skeleton from Channel.fromPath("$params.base_db/$params.default_db")
 
@@ -618,9 +614,6 @@ process load_base_db {
 
     output:
         file db_name into db_gen
-
-    when:
-        params.chlamdb_setup
 
     script:
     db_name="$db_base"
