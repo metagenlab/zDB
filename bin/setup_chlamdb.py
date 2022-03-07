@@ -596,6 +596,14 @@ def format_pfam(pfam_n):
     return f"PF{int(pfam_n):05}"
 
 
+def  format_module(mod):
+    return f"M{mod:05d}"
+
+
+def format_pathway(pat):
+    return f"map{pat:05d}"
+
+
 def setup_chlamdb_search_index(params, db_name, index_name):
     db = db_utils.DB.load_db(db_name, params)
     os.mkdir(index_name)
@@ -610,6 +618,8 @@ def setup_chlamdb_search_index(params, db_name, index_name):
     for taxid, data in genomes.iterrows():
         all_infos = db.get_proteins_info([taxid], search_on="taxid",
                 as_df=True, inc_non_CDS=True, inc_pseudo=True)
+        ogs = db.get_og_count(all_infos.index.tolist(), search_on="seqid")
+        all_infos = all_infos.join(ogs)
         for seqid, data in all_infos.iterrows():
             locus_tag = data.locus_tag
             gene, product = None, None
@@ -626,10 +636,14 @@ def setup_chlamdb_search_index(params, db_name, index_name):
                 if pd.isna(gene):
                     gene = None
 
+            og = None
+            if not pd.isna(data.orthogroup):
+                og = format_og(data.orthogroup)
+
             organism = genomes.loc[taxid].description
             index.add(locus_tag=locus_tag,
                     name=gene, description=product, organism=organism, 
-                    entry_type = search_bar.EntryTypes.Gene)
+                    entry_type = search_bar.EntryTypes.Gene, og = og)
 
     if has_cog:
         cog_data = db.get_cog_summaries(cog_ids=None, only_cog_desc=True)
@@ -642,6 +656,14 @@ def setup_chlamdb_search_index(params, db_name, index_name):
         for ko, descr in ko_data.items():
             index.add(name=format_ko(ko), description=descr,
                     entry_type=search_bar.EntryTypes.KO)
+        mod_data = db.get_modules_info(ids=None, search_on=None)
+        for mod_id, mod_desc, _, _, _ in mod_data:
+            index.add(name=format_module(mod_id), description=mod_desc,
+                    entry_type=search_bar.EntryTypes.Module)
+        pat_data = db.get_pathways()
+        for pat_id, path_desc in pat_data:
+            index.add(name=format_pathway(pat_id), description=path_desc,
+                    entry_type=search_bar.EntryTypes.Pathway)
 
     if has_pfam:
         pfam_data = db.get_pfam_def(pfam_ids=None)
