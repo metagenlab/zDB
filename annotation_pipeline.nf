@@ -912,7 +912,7 @@ process cleanup {
         ln -s \$curr_dir/\$i $baseDir/alignments/latest/
     done
 
-    rm -f $baseDir/search_index/lastest
+    rm -f $baseDir/search_index/latest
     ln -sf $index $baseDir/search_index/latest
     ln -sf $index $baseDir/search_index/$workflow.runName
 

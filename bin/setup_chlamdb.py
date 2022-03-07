@@ -601,7 +601,7 @@ def  format_module(mod):
 
 
 def format_pathway(pat):
-    return f"map{pat_id:05d}"
+    return f"map{pat:05d}"
 
 
 def setup_chlamdb_search_index(params, db_name, index_name):
@@ -636,11 +636,14 @@ def setup_chlamdb_search_index(params, db_name, index_name):
                 if pd.isna(gene):
                     gene = None
 
+            og = None
+            if not pd.isna(data.orthogroup):
+                og = format_og(data.orthogroup)
+
             organism = genomes.loc[taxid].description
             index.add(locus_tag=locus_tag,
                     name=gene, description=product, organism=organism, 
-                    entry_type = search_bar.EntryTypes.Gene, 
-                    og = format_og(data.orthogroup))
+                    entry_type = search_bar.EntryTypes.Gene, og = og)
 
     if has_cog:
         cog_data = db.get_cog_summaries(cog_ids=None, only_cog_desc=True)
@@ -653,8 +656,8 @@ def setup_chlamdb_search_index(params, db_name, index_name):
         for ko, descr in ko_data.items():
             index.add(name=format_ko(ko), description=descr,
                     entry_type=search_bar.EntryTypes.KO)
-        mod_data = db.get_modules_infos(ids=None)
-        for mod_id, mod_desc, _ in mod_data:
+        mod_data = db.get_modules_info(ids=None, search_on=None)
+        for mod_id, mod_desc, _, _, _ in mod_data:
             index.add(name=format_module(mod_id), description=mod_desc,
                     entry_type=search_bar.EntryTypes.Module)
         pat_data = db.get_pathways()
