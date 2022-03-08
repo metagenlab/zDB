@@ -1,4 +1,3 @@
-
 wsgi_app = "chlamdb.wsgi:application"
 
 # The granularity of Error log outputs
@@ -11,13 +10,13 @@ workers = 2
 bind = "0.0.0.0:8000"
 
 # Write access and error info to /var/log
-accesslog = errorlog = "gunicorn.log"
+accesslog = errorlog = "/var/log/gunicorn/gunicorn.log"
 
 # Redirect stdout/stderr to log file
 capture_output = True
 
 # PID file so you can easily fetch process ID
-pidfile = "gunicorn.pid"
+pidfile = "/var/log/gunicorn/gunicorn.pid"
 
 # Daemonize the Gunicorn process (detach & enter background)
 daemon = True
