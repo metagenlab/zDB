@@ -1,23 +1,4 @@
 
-process download_cog_defs {
-    publishDir "$params.cog_db"
-    when:
-        params.cog
-
-    output:
-        file "cog-20.def.tab" into cog_defs
-        file "fun-20.tab" into cog_funcs
-    
-    script:
-    """
-    wget https://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.def.tab
-    wget https://ftp.ncbi.nih.gov/pub/COG/COG2020/data/fun-20.tab
-
-    iconv -f cp1252 -t utf-8 cog-20.def.tab > temp
-    mv temp cog-20.def.tab
-    """
-}
-
 
 process download_cog_cdd {
     when:
@@ -33,9 +14,6 @@ process download_cog_cdd {
     tar xvf cdd.tar.gz && rm cdd.tar.gz
     """
 }
-
-
-cog_defs.mix(cog_funcs).set { to_setup_db_cog }
 
 
 process setup_cog_cdd {
@@ -124,30 +102,6 @@ process prepare_hmm {
 }
 
 
-process download_KO_data {
-    container "$params.annotation_container"
-
-    when:
-        params.ko
-
-    output:
-        file "dummy_file" into to_load_ko
-
-    script:
-    // trick to make resume work correctly
-    // and avoid downloading the same ko infos
-    // in case of crash
-    """
-    if [ ! -d "${params.ko_db}" ]; then
-        mkdir -p ${params.ko_db}
-    fi
-    touch dummy_file
-    /home/metagenlab/metagenlab_libs/chlamdb/chlamdb.py \
-        --download_ko_files --ko_dir=${params.ko_db}
-    """
-}
-
-
 process download_ko_profiles {
     publishDir "$params.ko_db", mode: "move"
 
@@ -200,33 +154,5 @@ process setup_swissprot {
     script:
     """
     makeblastdb -dbtype prot -in $swissprot_fasta
-    """
-}
-
-
-to_setup_db_cog.mix(to_load_ko).set { to_setup_db }
-
-
-process setup_base_db {
-    container "$params.annotation_container"
-    publishDir "$params.base_db", mode: "move"
-
-    input:
-        file ko_from from Channel.fromPath("$params.ko_db/ko:*")
-        file setup from to_setup_db.collect()
-
-    output:
-        file "George"
-
-    script:
-    command_line_params = ""
-    command_line_params += (params.cog)? "--load_cog " : ""
-    command_line_params += (params.cog)? "--cog_dir ${params.cog_db} " : ""
-    command_line_params += (params.ko)? "--load_kegg " : ""
-    command_line_params += (params.ko)? "--ko_dir=${params.ko_db}" : ""
-    """
-        /home/metagenlab/metagenlab_libs/chlamdb/chlamdb.py \
-            --biosql_schema /home/metagenlab/metagenlab_libs/biosql_schema/biosqldb-sqlite.sql \
-            ${command_line_params}
     """
 }
