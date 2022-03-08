@@ -493,7 +493,7 @@ if(params.cog) {
       n = seq.name
       result_file = "${n}.tab"
       """
-      rpsblast -db $params.cog_db -query $seq -outfmt 6 -evalue 0.001 \
+      rpsblast -db $params.cog_db/cog_db -query $seq -outfmt 6 -evalue 0.001 \
                 -num_threads ${task.cpus} > ${result_file}
       """
     }
@@ -519,7 +519,7 @@ if (params.blast_swissprot) {
 
       n = seq.name
       """
-      blastp -db $params.swissprot_db -query ${n} \
+      blastp -db $params.swissprot_db/swissprot.fasta -query ${n} \
                 -outfmt 6 -evalue 0.001 > ${n}.tab
       """
     }
@@ -577,10 +577,13 @@ if(params.ko) {
     Channel.value("void").set { to_load_KO }
 }
 
+Channel.fromPath("${params.zdb.file}").set { db_skeleton }
+
 
 process setup_db {
+    container "$params.annotation_container"
     input:
-        file db_skeleton from Channel.fromPath("$params.base_db/$params.default_db")
+        file db_skeleton
 
     output:
         file output_file into db_base
@@ -850,19 +853,19 @@ process load_swissprot_hits_into_db {
 
     script:
     if(params.blast_swissprot)
-        """
-#!/usr/bin/env python
-import setup_chlamdb
+    """
+        #!/usr/bin/env python
+        import setup_chlamdb
 
-kwargs = ${gen_python_args()}
-blast_results = "$blast_results".split()
+        kwargs = ${gen_python_args()}
+        blast_results = "$blast_results".split()
 
-setup_chlamdb.load_swissprot(kwargs, blast_results, "$db", "$params.swissprot_db")
-        """
+        setup_chlamdb.load_swissprot(kwargs, blast_results, "$db", "$params.swissprot_db/swissprot.fasta")
+    """
     else
-        """
+    """
         echo \"Not supposed to load swissprot hits, passing\"
-        """
+    """
 }
 
 
