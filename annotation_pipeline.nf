@@ -882,21 +882,16 @@ process cleanup {
     results_dir="$baseDir/${params.results_dir}"
     """
     ln -sf $index ${results_dir}/search_index/$workflow.runName
-    echo $workflow.runName > ${results_dir}/latest
+
+    if [ ! -d "${results_dir}/.completed_runs" ]; then
+        mkdir ${results_dir}/.completed_runs
+    fi
 
     if [ ! -z "${custom_run_name}" ]; then
-        ln -sf $index ${results_dir}/search_index/$custom_run_name
-        ln -sf $db ${results_dir}/db/$custom_run_name
-        ln -sf ${results_dir}/blast_DB/$workflow.runName ${results_dir}/blast_DB/$custom_run_name
-
-        if [ ! -d ${results_dir}/alignments/$custom_run_name ]; then
-            mkdir ${results_dir}/alignments/$custom_run_name
-        fi
-        rm -f ${results_dir}/alignments/$custom_run_name/*
-        for i in *.faa; do
-            ln -s \$curr_dir/\$i ${results_dir}/alignments/$custom_run_name/
-        done
+        echo $workflow.runName > ${results_dir}/.completed_runs/$custom_run_name
     fi
+    echo $workflow.runName > ${results_dir}/.completed_runs/$workflow.runName
+    echo $workflow.runName > ${results_dir}/.completed_runs/latest
     """
 }
 

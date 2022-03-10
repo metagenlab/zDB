@@ -114,9 +114,23 @@ if [ "$use_dev_server" = true ]; then
 	debugging_mode="-d"
 fi
 
-if [ "$run_name" = "latest" ]; then
-	run_name=$(cat zdb/results/latest)
+
+# De-alias the run_name
+if [ -f "zdb/results/.completed_runs/${run_name}" ]; then
+	run_name=$(cat zdb/results/.completed_runs/${run_name})
+else
+	echo "I found the following successful runs"
+	for i in $(ls zdb/results/.completed_runs); do
+		if [ "$(cat zdb/results/.completed_runs/$i)" = "$i" ]; then
+			echo $i
+		else
+			echo "$i -> $(cat zdb/results/.completed_runs/$i)"
+		fi
+	done
+	echo "... but no run with name : ${run_name}"
+	exit 1
 fi
+
 
 # NOTE: as some of these files may be symbolic links (particularly if using latest)
 # zdb relies on this script being run from the nextflow directory so that singularity
