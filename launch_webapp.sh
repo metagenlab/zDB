@@ -91,6 +91,14 @@ if [ "$debug" = true ]; then
 	debugging_mode="-d"
 fi
 
+if [ ! -d "zdb/nginx/var" ]; then
+	mkdir zdb/nginx/var
+fi
+
+if [ ! -d "zdb/assets" ]; then
+	mkdir zdb/assets
+fi
+
 if [ ! -z "${metagenlab_folder}" ]; then
 	bind_path="${bind_path},${metagenlab_folder}"
 	export PYTHONPATH="$metagenlab_folder"
