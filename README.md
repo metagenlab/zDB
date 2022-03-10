@@ -76,6 +76,7 @@ Once the analysis is complete, the web application can be run with the launch_we
 --run_name=RUN_NAME     when nextflow runs. If not specified, will default to the last successful run.
 --allowed_hosts=HOSTS   the name of the host or the ip address of the server. If not specified, will default to the ip addresses of the current host.
 ```
+Simply put, if the port 8080 is not in use, that you want to access the results of your latest run and will run the web app locally, you can simply run the launch_webapp script without any parameters.
 
 Some other options are also available, but are essentially here for debugging purposes.
 
