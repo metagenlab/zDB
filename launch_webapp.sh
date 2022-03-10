@@ -28,7 +28,7 @@ for i in "$@"; do
 			allowed_host="${i#*=}"
 			shift
 			;;
-		--run_name=*)
+		--name=*)
 			run_name="${i#*=}"
 			shift
 			;;
