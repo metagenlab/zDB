@@ -1,5 +1,9 @@
 #/usr/bin/env bash
 
+# TODO:
+#  make the script runnable from other diretories than the root
+#  nextflow directory.
+
 # default value for the run name
 run_name="latest"
 port="8080"
@@ -8,7 +12,7 @@ allowed_host=""
 zdb_container="zdb:1.1"
 
 # those parameters are mostly here for debugging purposes
-zdb_folder=""
+zdb_folder="/home/chlamdb/"
 metagenlab_folder=""
 debug=false
 use_dev_server=false
@@ -75,18 +79,16 @@ if [ ! -f "singularity/${zdb_container}.sif" ]; then
 	echo "Done"
 fi
 
-nextflow_dir=`pwd`
-zdb_home="/home/chlamdb/"
+gunicorn_dir="zdb/gunicorn/"
+nginx_dir="zdb/nginx"
+
 debugging_mode=""
-bind_path="tmp/:/home/chlamdb/assets/temp/"
+bind_path="zdb/assets/:${zdb_folder}/assets/temp/,${gunicorn_dir}:/usr/local/gunicorn/"
+bind_path="$bind_path,${nginx_dir}:/usr/local/nginx"
+
 
 if [ "$debug" = true ]; then
 	debugging_mode="-d"
-fi
-
-if [ ! -z "${zdb_folder}" ]; then
-	zdb_home="${zdb_folder}"
-	bind_path="tmp/:${zdb_folder}/assets/temp/,${zdb_folder}"
 fi
 
 if [ ! -z "${metagenlab_folder}" ]; then
@@ -99,18 +101,34 @@ if [ ! -z "${allowed_host}" ]; then
 fi
 
 dev_server=""
-echo $use_dev_server
 if [ "$use_dev_server" = true ]; then
 	dev_server="--use_dev_server"
 	debugging_mode="-d"
 fi
 
-# NOTE: we rely on singularity binding the current directory to make
-# the alignment accessible, as some of them may be symbolic links
-# (particularly if using latest)
-bind_path="${bind_path},alignments/${run_name}:${zdb_folder}/assets/alignments/"
+if [ "$run_name" = "latest" ]; then
+	run_name=$(cat zdb/results/latest)
+fi
 
-echo "Starting website, it will be accessible through on localhost on port $port"
+# NOTE: as some of these files may be symbolic links (particularly if using latest)
+# zdb relies on this script being run from the nextflow directory so that singularity
+# mounts the whole results dir in the container and keep the symbolic links valid
+
+bind_path="${bind_path},zdb/results/db/${run_name}:${zdb_folder}/assets/db/${run_name}"
+bind_path="${bind_path},zdb/results/search_index/${run_name}:${zdb_folder}/assets/search_index/${run_name}"
+bind_path="${bind_path},zdb/results/blast_DB/${run_name}:${zdb_folder}/assets/blast_DB/${run_name}"
+bind_path="${bind_path},zdb/results/alignments/${run_name}:${zdb_folder}/assets/alignments/"
+
+# annoying part to avoid error messages from nginx attempting to write
+# into an hard-coded /var/log/nginx/error.log -> the zdb/nginx/var directory is mounted
+# on /var/log/nginx in the container so that nginx can write in the file and be happy.
+
+bind_path="${bind_path},zdb/nginx/var:/var/log/nginx"
+
+
+# To be added later, to allow users to download the newick trees
+# bind_path="${bind_path},zdb/results/gene_phylogenies/${run_name}:${zdb_folder}/assets/phylogenies/"
+
 singularity run --writable-tmpfs --bind ${bind_path} \
-	singularity/${zdb_container}.sif ${zdb_home}/start_webapp --nextflow_dir="${nextflow_dir}" \
+	singularity/${zdb_container}.sif ${zdb_folder}/start_webapp \
 	--run_name=${run_name} --port=${port} ${debugging_mode} ${allowed_host} ${dev_server}

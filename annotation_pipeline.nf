@@ -79,7 +79,6 @@ error_search.filter { it.extension!="gbk" }
 
 process check_gbk {
     container "$params.annotation_container"
-	publishDir 'data/prokka_output_filtered', overwrite: true
 
 	input:
 	    file gbk from gbk_from_local_assembly.collect()
@@ -138,7 +137,6 @@ faa_locus1.into { faa_genomes1
 
 process get_nr_sequences {
   container "$params.annotation_container"
-  publishDir 'data/', mode: 'copy', overwrite: true
 
   input:
     file(seq) from to_get_nr_sequences
@@ -202,7 +200,7 @@ fna_files_SEQ_2.mix(faa_files_SEQ_2, ffn_files_seq_2, merged_ffn_makeblastdb,
 
 process makeblastdb {
     container "$params.blast_container"
-    publishDir "blast_DB/$workflow.runName/${file_type}"
+    publishDir "${params.results_dir}/blast_DB/$workflow.runName/${file_type}"
 
     input:
         file(input_file) from to_makeblastdb
@@ -222,7 +220,6 @@ process makeblastdb {
 
 
 process prepare_orthofinder {
-
   container "$params.orthofinder_container"
 
   input:
@@ -265,10 +262,7 @@ process blast_orthofinder {
 }
 
 process orthofinder_main {
-
   container "$params.orthofinder_container"
-
-  publishDir 'orthology', mode: 'copy', overwrite: true
 
   cpus 2
 
@@ -298,7 +292,6 @@ orthogroups
 
 process orthogroups2fasta {
   container "$params.annotation_container"
-  publishDir 'orthology/orthogroups_fasta', mode: 'copy', overwrite: true
 
   input:
   file 'Orthogroups.txt' from orthogroups_1
@@ -317,7 +310,7 @@ process orthogroups2fasta {
 
 process align_with_mafft {
   container "$params.mafft_container"
-  publishDir "alignments/$workflow.runName"
+  publishDir "${params.results_dir}/alignments/$workflow.runName"
 
   input:
       file og from orthogroups_fasta.toSortedList().flatten().collate(20)
@@ -373,9 +366,10 @@ all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.s
 
 alignement_larger_than_2_seqs.toSortedList().flatten().collate(50).set { to_fasttree_orthogroups }
 
+
 process orthogroups_phylogeny_with_fasttree3 {
   container "$params.fasttree_container"
-  publishDir "gene_phylogenies/$workflow.runName"
+  publishDir "${params.results_dir}/gene_phylogenies/$workflow.runName"
 
   input:
     file og from to_fasttree_orthogroups
@@ -397,7 +391,6 @@ gene_phylogeny.collect().set { all_og_phylogeny }
 
 process get_core_orthogroups {
     container "$params.annotation_container"
-  publishDir 'orthology/core_groups', mode: 'copy', overwrite: true
 
   input:
   file 'Orthogroups.txt' from orthogroups
@@ -422,8 +415,6 @@ process get_core_orthogroups {
 process concatenate_core_orthogroups {
     container "$params.annotation_container"
 
-  publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
-
   input:
   file core_groups from core_orthogroups.collect()
 
@@ -444,7 +435,7 @@ process concatenate_core_orthogroups {
 
 process build_core_phylogeny_with_fasttree {
   container "$params.fasttree_container"
-  publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
+  publishDir "${params.results_dir}/gene_phylogenies/$workflow.runName"
 
   input:
   file 'msa.faa' from core_msa
@@ -462,8 +453,6 @@ process build_core_phylogeny_with_fasttree {
 process checkm_analyse {
   container "$params.checkm_container"
 
-  publishDir 'data/checkm/analysis', mode: 'copy', overwrite: true
-
   input:
   file genome_list from to_checkm.collect()
 
@@ -478,8 +467,6 @@ process checkm_analyse {
 
 if(params.cog) {
     process rpsblast_COG {
-      
-      publishDir 'annotation/COG', overwrite: true
       container "$params.blast_container"
 
 
@@ -507,8 +494,6 @@ if (params.blast_swissprot) {
 
       container "$params.blast_container"
 
-      publishDir 'annotation/blast_swissprot', mode: 'copy', overwrite: true
-
       input:
       file(seq) from to_blast_swissprot
 
@@ -529,7 +514,6 @@ if (params.blast_swissprot) {
 
 if(params.diamond_refseq) {
     process diamond_refseq {
-      publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
       container "$params.diamond_container"
 
       input:
@@ -554,9 +538,6 @@ if(params.diamond_refseq) {
 
 if(params.ko) {
     process execute_kofamscan {
-
-      publishDir 'annotation/KO', mode: 'copy', overwrite: true
-
       container "$params.kegg_container"
 
       input:
@@ -597,7 +578,7 @@ process setup_db {
 
 process load_base_db {
     container "$params.annotation_container"
-    publishDir "db"
+    publishDir "${params.results_dir}/db"
 
     // Necessary to prevent segfaults due to the large size
     // of the stage script
@@ -684,8 +665,6 @@ if(!params.diamond_refseq) {
 process align_refseq_BBH_with_mafft {
   container "$params.mafft_container"
 
-  publishDir 'orthology/orthogroups_refseq_diamond_BBH_alignments', mode: 'copy', overwrite: true
-
   input:
     file og from diamond_best_hits.flatten().collate( 20 )
 
@@ -704,7 +683,6 @@ process align_refseq_BBH_with_mafft {
 
 process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   container "$params.fasttree_container"
-  publishDir 'orthology/orthogroups_refseq_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
 
   input:
     file og from mafft_alignments_refseq_BBH
@@ -871,7 +849,7 @@ process load_swissprot_hits_into_db {
 
 process create_chlamdb_search_index {
     container "$params.annotation_container"
-    publishDir "search_index/"
+    publishDir "${params.results_dir}/search_index/"
 
     input:
         file db from to_create_index
@@ -901,39 +879,22 @@ process cleanup {
 
     script:
     custom_run_name=(params.name)?params.name:""
+    results_dir="$baseDir/${params.results_dir}"
     """
-    if [ ! -d $baseDir/alignments/latest ]; then
-        mkdir $baseDir/alignments/latest
-    fi
-
-    # remove pre-existing alignments
-    rm -f $baseDir/alignments/latest/*
-    
-    curr_dir=`pwd`
-    for i in *.faa; do
-        ln -s \$curr_dir/\$i $baseDir/alignments/latest/
-    done
-
-    rm -f $baseDir/search_index/latest
-    ln -sf $index $baseDir/search_index/latest
-    ln -sf $index $baseDir/search_index/$workflow.runName
-
-    rm -f $baseDir/db/latest
-    ln -sf $db $baseDir/db/latest
-
-    ln -snf $baseDir/blast_DB/$workflow.runName $baseDir/blast_DB/latest
+    ln -sf $index ${results_dir}/search_index/$workflow.runName
+    echo $workflow.runName > ${results_dir}/latest
 
     if [ ! -z "${custom_run_name}" ]; then
-        ln -sf $index $baseDir/search_index/$custom_run_name
-        ln -sf $db $baseDir/db/$custom_run_name
-        ln -sf $baseDir/blast_DB/$workflow.runName $baseDir/blast_DB/$custom_run_name
+        ln -sf $index ${results_dir}/search_index/$custom_run_name
+        ln -sf $db ${results_dir}/db/$custom_run_name
+        ln -sf ${results_dir}/blast_DB/$workflow.runName ${results_dir}/blast_DB/$custom_run_name
 
-        if [ ! -d $baseDir/alignments/$custom_run_name ]; then
-            mkdir $baseDir/alignments/$custom_run_name
+        if [ ! -d ${results_dir}/alignments/$custom_run_name ]; then
+            mkdir ${results_dir}/alignments/$custom_run_name
         fi
-        rm -f $baseDir/alignments/$custom_run_name/*
+        rm -f ${results_dir}/alignments/$custom_run_name/*
         for i in *.faa; do
-            ln -s \$curr_dir/\$i $baseDir/alignments/$custom_run_name/
+            ln -s \$curr_dir/\$i ${results_dir}/alignments/$custom_run_name/
         done
     fi
     """
@@ -941,7 +902,6 @@ process cleanup {
 
 
 workflow.onComplete {
-    println "Annotation pipeline complete "
+    println "Annotation pipeline completed"
     println "You may now start the web server by running the start_webserver script"
 }
-
