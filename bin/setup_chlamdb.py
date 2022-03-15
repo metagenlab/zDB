@@ -4,6 +4,7 @@ import re
 
 from metagenlab_libs import db_utils
 from metagenlab_libs.chlamdb import search_bar
+from metagenlab_libs import KO_module
 
 import pandas as pd
 
@@ -574,6 +575,33 @@ def load_KO(params, ko_files, db_name):
             data.append(entry)
     db.load_ko_hits(data)
     db.set_status_in_config_table("KEGG", 1)
+    db.commit()
+
+
+def load_module_completeness(params, db_name):
+    db = db_utils.DB.load_db(db_name, params)
+    all_genomes = db.get_genomes_description().description.to_dict()
+
+    db.create_module_completeness_table()
+
+    for taxid,  _ in all_genomes.items():
+        complete_modules = []
+        ko_count = db.get_ko_hits([taxid])
+
+        ko_list = ko_count.index.unique().tolist()
+        if len(ko_list)==0:
+            continue
+
+        modules = db.get_ko_modules(ko_list, as_pandas=True)
+        module_def = db.get_modules_info(modules.module_id.unique().tolist())
+
+        for module_id, descr, definit, _, _ in module_def:
+            parser = KO_module.ModuleParser(definit)
+            ko_set = {ko:1 for ko in ko_list}
+            expr_tree = parser.parse()
+            if expr_tree.get_n_missing(ko_set) == 0:
+                complete_modules.append((module_id, taxid))
+        db.load_module_completeness(complete_modules)
     db.commit()
 
 

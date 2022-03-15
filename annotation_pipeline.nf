@@ -786,6 +786,7 @@ process load_KO_into_db {
         # this last function should be exported in a separate script to generate
         # the scaffold of a database
         setup_chlamdb.load_KO(kwargs, ko_files, "$db")
+        setup_chlamdb.load_module_completeness(kwargs, "$db")
         """
     else
         """
