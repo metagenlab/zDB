@@ -20,19 +20,8 @@
             <div class="row">
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
-                 <div class="panel-title"><b>Comparisons: Kegg Orthologs</b></div>
-                 <br>
-                  
-                  <nav>
-                  <ul id="tabs" class="nav nav-tabs">
-                              <li><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
-                              <li><a href="{% url 'ko_comparison' %}">Compare KO counts</a></li>
-                              <li class="active"><a href="{% url 'module_barchart' %}">KO categories barchart</a></li>
-                              <li><a href="{% url 'venn_ko' %}">Venn KO</a></li>
-                              <li><a href="{% url 'plot_heatmap' 'ko' %}">Whole proteomes heatmaps</a></li>
-                              <li><a href="{% url 'pan_genome' 'ko' %}">Pan/Core genome plots</a></li>
-                  </ul>
-                  </nav>
+                 {% include "chlamdb/extract_nav_tabs_template.html" with type="KO" active_tab="bar" %}
+
                   <br>
                   <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Distribution of Kegg Orthologs within KO categories </b><a href="/docs/index.html" id="show-option" title="Compare Kegg Orthologs between genomes of interest (targets) and visualize them in barcharts."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
 

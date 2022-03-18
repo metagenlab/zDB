@@ -15,25 +15,13 @@
                     <div class="row">
                         <div class="col-lg-12">
                             {% include "chlamdb/menu.html" %}
-                            <div class="panel-title"><b>Comparisons: COGs</b></div>
-                            <br>
-                                       <nav>
-                                <ul id="tabs" class="nav nav-tabs">
-                                    <li ><a href="{% url 'extract_cog'  %}">Detailed comparison</a></li>
-                                    <li><a href="{% url 'venn_cog'  %}">Venn diagram</a></li>
-                                    <li><a href="{% url 'cog_barchart'  %}">COG categories barchart</a></li>
-                                    {% if freq == "True" %}
-                                        <li class="active"><a href="{% url 'COG_phylo_heatmap'  True %}">COG heatmap freq.</a></li>
-                                        <li><a href="{% url 'COG_phylo_heatmap'  False %}">COG heatmap counts</a></li>
-                                    {% else %}
-                                        <li><a href="{% url 'COG_phylo_heatmap'  True %}">COG heatmap freq.</a></li>
-                                        <li class="active"><a href="{% url 'COG_phylo_heatmap'  False %}">COG heatmap counts</a></li>                                
-                                    {% endif %}
-                                    <li><a href="{% url 'plot_heatmap'  'COG' %}">Whole proteomes heatmaps</a></li>
-                                    <li><a href="{% url 'pan_genome'  'COG' %}">Pan/Core genome plots</a></li>
-                
-                                </ul>
-                            </nav>
+                            {% if freq == "True" %}
+                                {% include "chlamdb/extract_nav_tabs_template.html" with type="COG" active_tab="COG_freq" %}
+                            {% else %}
+                                {% include "chlamdb/extract_nav_tabs_template.html" with type="COG" active_tab="COG_counts" %}
+                            {% endif %}
+                        
+
                             <br>
                             <center><p class="home-title" style="color: rgb(0, 86, 121);"><b> {% if freq == "False"%}
                                 Heatmap of genes identifed in each COG category

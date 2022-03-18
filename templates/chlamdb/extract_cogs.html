@@ -22,19 +22,8 @@
               <div class="col-lg-12">
 
                 {% include "chlamdb/menu.html" %}
-             <div class="panel-title"><b>Comparisons: COGs</b></div>
-<br>
-                <nav>
-                    <ul id="tabs_main" class="nav nav-tabs">
-                        <li class="active"><a href="{% url 'extract_cog' %}">Detailed comparison</a></li>
-                        <li><a href="{% url 'venn_cog' %}">Venn diagram</a></li>
-                        <li><a href="{% url 'cog_barchart' %}">COG categories barchart</a></li>
-                        <li><a href="{% url 'COG_phylo_heatmap' True %}">COG heatmap freq.</a></li>
-                        <li><a href="{% url 'COG_phylo_heatmap' False %}">COG heatmap counts</a></li>
-                        <li><a href="{% url 'plot_heatmap' 'COG' %}">Whole proteomes heatmaps</a></li>
-                        <li><a href="{% url 'pan_genome' 'COG' %}">Pan/Core genome plots</a></li>
-                    </ul>
-                </nav>
+				{% include "chlamdb/extract_nav_tabs_template.html" with type="COG" active_tab="det" %}
+
                 <br>
                 <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>COGs shared by the selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank"  title="Get the list of COG categories shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
 

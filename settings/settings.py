@@ -31,9 +31,9 @@ ALIGNMENTS    = NEXTFLOW_DIR+"/alignments/"+RUN_NAME
 ALLOWED_HOSTS = hosts.split(",")
 
 BIODB_CONF = {
-    "chlamdb.db_type" : "sqlite",
-    "chlamdb.db_name" : "George",
-    "chlamdb.db_psswd" : ""
+    "zdb.db_type" : "sqlite",
+    "zdb.db_name" : "George",
+    "zdb.db_psswd" : ""
 }
 
 

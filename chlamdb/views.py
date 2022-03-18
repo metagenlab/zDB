@@ -67,6 +67,31 @@ with db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
     missing_mandatory = [name for name, (mandatory, value) in hsh_config.items()
             if mandatory and not value]
 
+page2title = {
+    'extract_orthogroup': 'Comparisons: orthologous groups',
+    'extract_pfam': 'Comparisons: PFAM domains',
+    'extract_ko': 'Comparisons: Kegg Orthologs (KO)',
+    'extract_COG': 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'venn_orthogroup': 'Comparisons: orthologous groups',
+    'venn_ko': 'Comparisons: Kegg Orthologs (KO)',
+    'venn_pfam': 'Comparisons: Pfam domains',
+    'venn_cog': 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'heatmap_orthogroup': 'Comparisons: orthologous groups',
+    'heatmap_pfam': 'Comparisons: PFAM domains',
+    'heatmap_ko': 'Comparisons: Kegg Orthologs (KO)',
+    'heatmap_COG': 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'pan_genome_orthogroup': 'Comparisons: orthologous groups',
+    'pan_genome_Pfam': 'Comparisons: PFAM domains',
+    'pan_genome_ko': 'Comparisons: Kegg Orthologs (KO)',
+    'pan_genome_COG': 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'orthogroup_comparison' : 'Comparisons: orthologous groups',
+    'plot_heatmap_orthology': 'Comparisons: orthologous groups',
+    'plot_heatmap_ko': 'Comparisons: KEGG orthologs', 
+    'plot_heatmap_pfam' : 'Comparisons: Pfam domains ',
+    'plot_heatmap_COG' : 'Comparisons: Pfam domains ',
+    'pan_genome_orthology': 'Comparisons: orthologous groups',
+}
+
     
 def my_locals(local_dico):
     local_dico["optional2status"] = optional2status
@@ -277,6 +302,8 @@ def get_table_details(db, annotations):
 def extract_orthogroup(request):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    
+    page_title = page2title["extract_orthogroup"]
 
     extract_form_class = make_extract_form(db, "extract_orthogroup", plasmid=True)
     if request.method != "POST":
@@ -382,12 +409,13 @@ def extract_orthogroup(request):
     ref_genomes = db.get_genomes_description().loc[include_taxids].reset_index()
 
     envoi_extract = True
-    return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
+    return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals(), "extract_orthogroup"))
 
 
 def venn_orthogroup(request):
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
+    page_title = page2title["venn_orthogroup"]
 
     venn_form_class = make_venn_from(db, limit=6)
     if request.method != "POST":
@@ -443,9 +471,32 @@ def format_pfam(pfam_id, base=None, to_url=False):
         return f"<a href=/fam_pfam/{fmt_entry}>{fmt_entry}</a>"
     return fmt_entry
 
+def entry_list_pfam(request,):
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    # retrieve taxid list
+    genomes_data = db.get_genomes_infos()
+    taxids = [str(i) for i in genomes_data.index.to_list()]
 
+    # retrieve entry list
+    pfam_all = db.get_pfam_hits(taxids, 
+                                search_on="taxid", 
+                                indexing="taxid")
+    # retrieve annotations
+    pfam_annot = db.get_pfam_def(pfam_all.index.to_list())
+    
+    # count frequency and n genomes
+    pfam_count = pfam_all.sum(axis=1)
+    pfam_freq = pfam_all[pfam_all > 0].count(axis=1)
+    pfam_annot["accession"] = [format_pfam(pfam) for pfam in pfam_annot.index]
+    
+    # combine into df
+    combined_df = pfam_annot.merge(pfam_count.rename('count'), left_index=True, right_index=True).merge(pfam_freq.rename('freq'), left_index=True, right_index=True).sort_values(["count"], ascending=False)
+    
+    return render(request, 'chlamdb/entry_list_pfam.html', my_locals(locals()))
+    
 def extract_pfam(request, classification="taxon_id"):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    page_title = page2title["extract_pfam"]
 
     extract_form_class = make_extract_form(db, "extract_pfam", plasmid=True, label="Pfam domains")
     if request.method != "POST":
@@ -1710,13 +1761,24 @@ def str_if_none(s):
         return "-"
     return s
 
+def search_suggest(request,):
+    print("suggest")
+    index = sb.ChlamdbIndex.use_index(settings.SEARCH_INDEX)
+    params = request.GET
+    user_query = params["term"]
+    results = list(index.search(user_query, limit=None))
+    data = [{"label":f"{i.name}: {i.description} ({i.entry_type})", "value":f"{i.name}: {i.description}"} for i in results]
+    #data = [f"{i.name} ({i.entry_type})" for i in results]
+    print("AUTOCOMPLETE", data)
+    mimetype = "application/json"
+    return JsonResponse(data,safe=False)
 
 # NOTE: should refactor this code to avoid duplicated code
 def search_bar(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     option2status = db.get_config_table()
     index = sb.ChlamdbIndex.use_index(settings.SEARCH_INDEX)
-    user_query = request.GET.get("search2")
+    user_query = request.GET.get("search2") 
 
     results = list(index.search(user_query, limit=None))
 
@@ -2617,7 +2679,7 @@ def cog_barchart(request):
 def pan_genome(request, type):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
-
+    page_title = page2title[f"pan_genome_{type}"]
     venn_form_class = make_venn_from(db, plasmid=False)
 
     if request.method != "POST":
@@ -3232,10 +3294,13 @@ def plot_heatmap(request, type):
     import scipy.cluster.hierarchy as shc
     from scipy.cluster import hierarchy
 
+    page_title = page2title[f"plot_heatmap_{type}"]
+
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
     form_class = make_venn_from(db)
-
+    page_title = page2title[f"plot_heatmap_{type}"]
+    
     if request.method != "POST":
         form_venn = form_class()
         ctx = {"form_venn": form_venn, "type": type}
@@ -3551,6 +3616,7 @@ def pfam_comparison(request):
 def orthogroup_comparison(request):
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
+    page_title = page2title[f"orthogroup_comparison"]
 
     comp_metabo_form = make_metabo_from(db)
     if request.method != 'POST': 

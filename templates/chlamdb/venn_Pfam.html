@@ -15,19 +15,7 @@
           <div class="row">
             <div class="col-lg-12">
              {% include "chlamdb/menu.html" %}
-             <div class="panel-title"><b>Comparisons: Pfam domains</b></div>
-             <br>
-  
-             <nav>
-                <ul id="tabs_main" class="nav nav-tabs">
-                    <li><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
-                    <li class="active"><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
-                    <li><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
-                    <li><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
-
-                </ul>
-            </nav>
+             {% include "chlamdb/extract_nav_tabs_template.html" with type="pfam" active_tab="venn" %}
 
             <br>
             <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Visual representation of unique and shared Pfam domains among selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
