@@ -17,7 +17,7 @@
                {% include "chlamdb/extract_nav_tabs_template.html" with type="orthology" active_tab="venn" %}
 
              <br>
-                <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Visual representation of unique and shared orthogroups among selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank"  title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                <p class="page-title"><b>Visual representation of unique and shared orthogroups among selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank"  title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
 
                         {% block content %}
 						{% csrf_token %}

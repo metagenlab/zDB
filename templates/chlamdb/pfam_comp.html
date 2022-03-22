@@ -19,7 +19,7 @@
            {% include "chlamdb/extract_nav_tabs_template.html" with type="Pfam" active_tab="comp" %} 
 
           <br>
-          <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Compare the distribution of shared Pfam domains </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+          <p class="page-title"><b>Compare the distribution of shared Pfam domains </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
 
                       <form action='{% url "pfam_comparison" %}' method="post">
                           {% csrf_token %}

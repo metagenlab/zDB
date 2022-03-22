@@ -1036,8 +1036,15 @@ iframe {
 
 /*Table genomes - phylogeny*/
 .home-title {
-    font-size: 2em;
-font-family: Arial, Helvetica, sans-serif;
+    font-size: 25px;
+    font-weight: 800;
+    font-family: Arial, Helvetica, sans-serif;
+    color: rgb(0, 86, 121);
+}
+.page-title {
+    font-size: 18px;
+    font-weight: 600;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 /*Search bar in menu*/
