@@ -23,6 +23,7 @@ urlpatterns = [
     re_path(r'^priam_kegg/$', views.priam_kegg, name="priam_kegg"),
     re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)', views.locusx, name="locusx"),
     re_path(r'^search_bar$', views.search_bar, name="search_bar"),
+    re_path(r'^index_comp/([a-zA-Z0-9_\.\-]+)', views.index_comp, name="index_comp"),
     re_path(r'^search_suggest/.*$', views.search_suggest, name="search_suggest"),
     re_path(r'^search_bar/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)', views.search_bar, name="search_bar"),
     re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)', views.locusx, name="locusx"),

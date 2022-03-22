@@ -80,16 +80,19 @@ page2title = {
     'heatmap_pfam': 'Comparisons: PFAM domains',
     'heatmap_ko': 'Comparisons: Kegg Orthologs (KO)',
     'heatmap_COG': 'Comparisons: Clusters of Orthologous groups (COGs)',
-    'pan_genome_orthogroup': 'Comparisons: orthologous groups',
+    'pan_genome_orthology': 'Comparisons: orthologous groups',
     'pan_genome_Pfam': 'Comparisons: PFAM domains',
     'pan_genome_ko': 'Comparisons: Kegg Orthologs (KO)',
     'pan_genome_COG': 'Comparisons: Clusters of Orthologous groups (COGs)',
     'orthogroup_comparison' : 'Comparisons: orthologous groups',
     'plot_heatmap_orthology': 'Comparisons: orthologous groups',
     'plot_heatmap_ko': 'Comparisons: KEGG orthologs', 
-    'plot_heatmap_pfam' : 'Comparisons: Pfam domains ',
+    'plot_heatmap_Pfam' : 'Comparisons: Pfam domains ',
     'plot_heatmap_COG' : 'Comparisons: Pfam domains ',
-    'pan_genome_orthology': 'Comparisons: orthologous groups',
+    'index_comp_ko': 'Comparisons: KEGG orthologs', 
+    'index_comp_Pfam' : 'Comparisons: Pfam domains ',
+    'index_comp_COG' : 'Comparisons: Clusters of Orthologous groups (COGs) ',
+    'index_comp_orthology': 'Comparisons: orthologous groups',
 }
 
     
@@ -471,6 +474,18 @@ def format_pfam(pfam_id, base=None, to_url=False):
         return f"<a href=/fam_pfam/{fmt_entry}>{fmt_entry}</a>"
     return fmt_entry
 
+
+def index_comp(request, type):
+    page_title = page2title[f"index_comp_{type}"]
+    if type == 'Pfam':
+        return render(request, 'chlamdb/index_pfam.html', my_locals(locals()))
+    if type == 'COG': 
+        return render(request, 'chlamdb/index_cog.html', my_locals(locals()))
+    if type == 'ko': 
+        return render(request, 'chlamdb/index_ko.html', my_locals(locals()))
+    if type == 'orthology': 
+        return render(request, 'chlamdb/index_orthology.html', my_locals(locals()))
+    
 def entry_list_ko(request,):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     # retrieve taxid list

@@ -45,16 +45,16 @@
                   <li class="sidebar-dropdown" ><p> Homology search</p> 
                   <li class="analyses_intra" ><a href="{% url 'blast' %}">Blast</a></li>
                   <li class="sidebar-dropdown" ><p> Orthology</p> 
-                  <li class="analyses_intra"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a></il>
+                  <li class="analyses_intra"><a href="{% url 'index_comp' 'orthology' %}">Orthogroups</a></il>
                    <li class="sidebar-dropdown" ><p> Annotations</p> 
                   {% if optional2status|keyvalue:"COG" == 1 %}
-                  <li class="analyses_intra" ><a   href="{% url 'extract_cog' %}">COGs</a></li>
+                  <li class="analyses_intra" ><a   href="{% url 'index_comp' 'COG' %}">COGs</a></li>
                   {% endif %}
                   {% if optional2status|keyvalue:"pfam" == 1 %}
-                  <li class="analyses_intra"><a   href="{% url 'extract_pfam' %}">Pfam domains</a></li>
+                  <li class="analyses_intra"><a   href="{% url 'index_comp' 'Pfam' %}">Pfam domains</a></li>
                   {% endif %}
                   {% if optional2status|keyvalue:"KEGG" == 1 %}
-                  <li class="analyses_intra" ><a   href="{% url 'extract_ko' %}">Kegg Orthologs</a></li>
+                  <li class="analyses_intra" ><a   href="{% url 'index_comp' 'ko' %}">Kegg Orthologs</a></li>
                   {% endif %}
                   
         <li class="sidebar-dropdown" ><p> Genome alignments</p>
