@@ -16,7 +16,7 @@
         <div class="row">
           <div class="col-lg-12">
            {% include "chlamdb/menu.html" %}
-           {% include "chlamdb/extract_nav_tabs_template.html" with type="pfam" active_tab="index" %} 
+           {% include "chlamdb/extract_nav_tabs_template.html" with type="ko" active_tab="index" %} 
           </br></br></br>
            <table id="pfam_table">
              <thead>
@@ -24,6 +24,8 @@
                     <td></td>
                     <td>Accession</td>
                     <td>Description</td>
+                    <td>Modules</td>
+                    <td>Pathways</td>
                     <td>Count</td>
                     <td>Frequency (n genomes)</td>
                 </tr>
@@ -32,8 +34,10 @@
                 {% for index, row in combined_df.iterrows %}
                   <tr>
                       <td>{{forloop.counter}}</td>
-                      <td><a href="{% url 'fam_pfam' row.accession%}">{{row.accession}}</a></td>
-                      <td>{{row.def}}</td>
+                      <td><a href="{% url 'fam_ko' row.accession%}">{{row.accession}}</a></td>
+                      <td>{{row.description}}</td>
+                      <td>{{row.modules|safe}}</td>
+                      <td>{{row.pathways|safe}}</td>
                       <td>{{row.count}}</td>
                       <td>{{row.freq}}</td>
                   </tr>

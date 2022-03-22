@@ -471,6 +471,66 @@ def format_pfam(pfam_id, base=None, to_url=False):
         return f"<a href=/fam_pfam/{fmt_entry}>{fmt_entry}</a>"
     return fmt_entry
 
+def entry_list_ko(request,):
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    # retrieve taxid list
+    genomes_data = db.get_genomes_infos()
+    taxids = [str(i) for i in genomes_data.index.to_list()]
+
+    # retrieve entry list
+    ko_all = db.get_ko_hits(taxids, 
+                            search_on="taxid", 
+                            indexing="taxid")
+    # retrieve annotations
+    ko_desc = db.get_ko_desc(ko_all.index.to_list())
+    ko_mod = db.get_ko_modules(ko_all.index.to_list())
+    ko_path = db.get_ko_pathways(ko_all.index.to_list())
+    
+    # count frequency and n genomes
+    combined_df = pd.DataFrame(ko_all.sum(axis=1).rename('count'))
+    ko_freq = ko_all[ko_all > 0].count(axis=1).to_dict()
+
+    combined_df["accession"] = [format_ko(ko) for ko in combined_df.index]
+    combined_df["modules"] = [format_ko_modules(ko_mod, ko) if ko in ko_mod else '-' for ko in combined_df.index]
+    combined_df["description"] = [ko_desc[ko] for ko in combined_df.index]
+    combined_df["pathways"] = [format_ko_path(ko_path, ko) if ko in ko_path else '-' for ko in combined_df.index]
+    combined_df["freq"] = [ko_freq[ko] for ko in combined_df.index]
+    
+    combined_df = combined_df.sort_values(["count","freq"], ascending=False)
+    
+    # combine into df
+    return render(request, 'chlamdb/entry_list_ko.html', my_locals(locals()))
+
+
+
+def entry_list_cog(request,):
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    # retrieve taxid list
+    genomes_data = db.get_genomes_infos()
+    taxids = [str(i) for i in genomes_data.index.to_list()]
+
+    # retrieve entry list
+    cog_all = db.get_cog_hits(taxids, 
+                              search_on="taxid", 
+                              indexing="taxid")
+    # retrieve annotations
+    cogs_summaries = db.get_cog_summaries(cog_all.index.tolist(), as_df=True, only_cog_desc=True)
+    print(cogs_summaries.head())
+    # count frequency and n genomes
+    cog_count = cog_all.sum(axis=1)
+    cog_freq = cog_all[cog_all > 0].count(axis=1)
+    cogs_summaries["accession"] = [format_cog(cog) for cog in cogs_summaries.index]
+        
+    # combine into df
+    combined_df = cogs_summaries.merge(cog_count.rename('count'), 
+                                       left_index=True, 
+                                       right_index=True).merge(cog_freq.rename('freq'), 
+                                                               left_index=True, 
+                                                               right_index=True).sort_values(["count"], ascending=False)
+    print(combined_df.head())
+    return render(request, 'chlamdb/entry_list_cog.html', my_locals(locals()))
+
+
 def entry_list_pfam(request,):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     # retrieve taxid list
