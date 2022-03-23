@@ -10,21 +10,16 @@
   <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
 
   <div style=" font-family: Helvetica, Verdana, 'Segoe UI', sans-serif">
-    <nav class="navbar  navbar-fixed-top" role="navigation" style="z-index:5;">
+    <nav class="navbar navbar-fixed-top" role="navigation" style="z-index:5;">
       <div class="header" >
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
-          <button id="toggle_button" type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-
-          <a href="#menu-toggle"  id="menu-toggle" style="margin-top:0.1em; margin-right: 0em; font-size: 2.5em" > <i class="fa fa-bars "  style="font-size:0.8em !Important;" aria-hidden="true" aria-hidden="true"></i></a>
-          <a class="navbar-brand" style="color:#003c58; font-size: 1.5em;" href="{% url 'home' %}">zDB</a>
+            <a class="navbar-brand" style="color:#003c58; font-size: 1.5em;" href="{% url 'home' %}">zDB</a>
+            <a href="#menu-toggle"  id="menu-toggle" style="margin-top:0.1em; margin-right: 0em; font-size: 2.5em" > <i class="fa fa-bars "  style="font-size:0.8em !Important;" aria-hidden="true" aria-hidden="true"></i></a>
         </div>
-
+        <div style="padding-left:250px">
+          <div id="page_title" class="navbar-brand"><p class="home-title">{{page_title}}</p></div>
+        </div>
       </div> <!-- /.container-fluid -->
     </nav>
 
@@ -36,7 +31,10 @@
                 <nav id="sidebar-wrapper">
                   <li><form class="example" role="search" action='{% url "search_bar" %}' method="GET" >
                     <button type="submit"><i class="fa fa-search"></i></button>
-                    <input type="text" placeholder="    Gene, product, orthogroup, COG, KEGG id, ..."  name="search2">
+                    <div class="ui-widget">
+                      <input type="text" placeholder="Gene, product, orthogroup, COG, KEGG id, ..."  name="search2" id="searchbar">
+                    </div>
+                    
                   </form></li>
                
                   <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'home' %}#home"><b>Home</b></a></li>
@@ -46,16 +44,17 @@
                   <li class="analyses"><b>Analyses</b></a></li>
                   <li class="sidebar-dropdown" ><p> Homology search</p> 
                   <li class="analyses_intra" ><a href="{% url 'blast' %}">Blast</a></li>
-                  <li class="sidebar-dropdown" ><p> Comparisons</p> 
-                  <li class="analyses_intra"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a></il>
+                  <li class="sidebar-dropdown" ><p> Orthology</p> 
+                  <li class="analyses_intra"><a href="{% url 'index_comp' 'orthology' %}">Orthogroups</a></il>
+                   <li class="sidebar-dropdown" ><p> Annotations</p> 
                   {% if optional2status|keyvalue:"COG" == 1 %}
-                  <li class="analyses_intra" ><a   href="{% url 'extract_cog' %}">COGs</a></li>
+                  <li class="analyses_intra" ><a   href="{% url 'index_comp' 'COG' %}">COGs</a></li>
                   {% endif %}
                   {% if optional2status|keyvalue:"pfam" == 1 %}
-                  <li class="analyses_intra"><a   href="{% url 'extract_pfam' %}">Pfam domains</a></li>
+                  <li class="analyses_intra"><a   href="{% url 'index_comp' 'Pfam' %}">Pfam domains</a></li>
                   {% endif %}
                   {% if optional2status|keyvalue:"KEGG" == 1 %}
-                  <li class="analyses_intra" ><a   href="{% url 'extract_ko' %}">Kegg Orthologs</a></li>
+                  <li class="analyses_intra" ><a   href="{% url 'index_comp' 'ko' %}">Kegg Orthologs</a></li>
                   {% endif %}
                   
         <li class="sidebar-dropdown" ><p> Genome alignments</p>
@@ -86,14 +85,32 @@
 
 <script>
 
+$(document).ready(function(){ 
+    $("#searchbar").autocomplete({
+        source: "/search_suggest/",
+        minLength: 3,
+        position: {
+        offset: '20 4' // Shift 20px to the left, 4px down.
+    }
+      });        
+});
+
 $("#menu-toggle").click(function(e) {
   e.preventDefault();
   $("#wrapper").toggleClass("toggled"); 
 
 });
+
+$(window).scroll(function() {
+  if ($(this).scrollTop() > 0) {
+    $('#page_title').fadeOut();
+  } else {
+    $('#page_title').fadeIn();
+  }
+});
 </script>
 <style>
-
+.ui-autocomplete { position: absolute; cursor: default;z-index:3000 !important; background: #29a0e6}  
 .right-caret {
     border-bottom: 4px solid transparent;
     border-top: 4px solid #FAFAFA;

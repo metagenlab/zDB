@@ -35,33 +35,21 @@
             <div class="row">
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
-                 <div class="panel-title"><b>Comparisons: COGs</b></div>
-                 <br>
-                   {% if display_form %}
-                  <nav>
-                  <ul id="tabs" class="nav nav-tabs">
-                      <li><a href="{% url 'extract_cog'  %}">Detailed comparison</a></li>
-                      <li class="active"><a href="{% url 'venn_cog'  %}">Venn diagram</a></li>
-                      <li><a href="{% url 'cog_barchart' %}">COG categories barchart</a></li>
-                      <li><a href="{% url 'COG_phylo_heatmap' True %}">COG heatmap freq.</a></li>
-                      <li><a href="{% url 'COG_phylo_heatmap' False %}">COG heatmap counts</a></li>
-                      <li><a href="{% url 'plot_heatmap' 'COG' %}">Whole proteomes heatmaps</a></li>
-                      <li><a href="{% url 'pan_genome' 'COG' %}">Pan/Core genome plots</a></li>
-                  </ul>
-                  </nav>
-                  <br>
-                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Visual representation of unique and shared COGs among selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank"  title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle"  style="size: 5em;" ></i></a></p></center>
-  
+                 {% if display_form %}
+                    {% include "chlamdb/extract_nav_tabs_template.html" with type="COG" active_tab="venn" %}
+                    <br>
+                    <p class="page-title"><b>Visual representation of unique and shared COGs among selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank"  title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle"  style="size: 5em;" ></i></a></p></center>
+    
 
-                    {% block content %}
-                    <form action="{% url "venn_cog" %}" method="post">
-                        {% csrf_token %}
-                        {% crispy form_venn %}
-                    </form>
-                    {% endblock %}
+                      {% block content %}
+                      <form action="{% url "venn_cog" %}" method="post">
+                          {% csrf_token %}
+                          {% crispy form_venn %}
+                      </form>
+                      {% endblock %}
 
-                </div>
-               {% endif %}
+                    </div>
+                 {% endif %}
 
                {% if envoi_venn %}
                <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986)">

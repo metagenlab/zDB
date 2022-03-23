@@ -136,10 +136,10 @@
     color: #555;
     font-family: 'Poppins', sans-serif;
     text-align: right;
-    padding: 10px 10px 10px 20px;
+    padding: 10px 10px 30px 20px;
     position: relative;
     z-index: 1;
-    min-height: 400px;
+    min-height: 250px;
 }
 
 
@@ -148,11 +148,11 @@
 .serviceBox:after{
     content: '';
     width: calc(100% - 121px);
-    height: calc(100% - 60px);
+    height: calc(100% - 80px);
     border-left: 2px solid #333;
     border-top: 2px solid #333;
     position: absolute;
-    bottom: 0;
+    bottom: 20px;
     left: 4px;
    
 }
@@ -1036,8 +1036,15 @@ iframe {
 
 /*Table genomes - phylogeny*/
 .home-title {
-    font-size: 2em;
-font-family: Arial, Helvetica, sans-serif;
+    font-size: 25px;
+    font-weight: 800;
+    font-family: Arial, Helvetica, sans-serif;
+    color: rgb(0, 86, 121);
+}
+.page-title {
+    font-size: 18px;
+    font-weight: 600;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 /*Search bar in menu*/

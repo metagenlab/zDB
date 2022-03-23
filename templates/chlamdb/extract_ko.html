@@ -17,24 +17,17 @@
               <div class="row">
                 <div class="col-lg-12">
                    {% include "chlamdb/menu.html" %}
-                   <div class="panel-title"><b>Comparisons: Kegg Orthologs</b></div>
-                   <br>
-                    <nav>
-                        <ul id="tabs_main" class="nav nav-tabs">
-                            <li class="active"><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
-                            <li><a href="{% url 'venn_ko' %}">Venn KO</a></li>
-                            <li><a href="{% url 'ko_comparison' %}">Compare KO counts</a></li>
-                            <li><a href="{% url 'module_barchart' %}">KO categories barchart</a></li>
-                            <li><a href="{% url 'plot_heatmap' 'ko' %}">Whole proteomes heatmaps</a></li>
-                            <li><a href="{% url 'pan_genome' 'ko' %}">Pan/Core genome plots</a></li>
-                        </ul>
-                    </nav>
+                   {% include "chlamdb/extract_nav_tabs_template.html" with type="ko" active_tab="det" %}
+
                     <br>
-                    <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Kegg Orthologs shared by the selected genomes </b><a href="/docs/index.html" id="show-option" title="Get the list of Kegg Orthologs shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                    <p class="page-title">
+                      <b>Kegg Orthologs shared by the selected genomes </b>
+                      <a href="/docs/index.html" id="show-option" title="Get the list of Kegg Orthologs shared between genomes (selected in panel A) and absent in others (selected in panel B)">
+                       <i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
                        <div id="extract_form">
 
 
-                                             {% block content %}
+                            {% block content %}
                       
                             {% csrf_token %}
                             {% crispy form %}

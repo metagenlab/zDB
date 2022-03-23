@@ -1,0 +1,134 @@
+<!DOCTYPE html> <html>  <head> {% load custom_tags %}
+  {% load static %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+  {% include "chlamdb/header.html" %}
+
+
+   
+</head>
+
+
+<div class="container-fluid" id="main_container">
+  <div class="row">
+    <div id="wrapper">
+      <div id="page-content-wrapper">
+        <div class="row">
+          <div class="col-lg-12">
+           {% include "chlamdb/menu.html" %}
+
+
+          <div class="row" style="padding-top:40px">
+                <div class="col-md-4 col-sm-7" >
+                  <div class="serviceBox linkdiv" onclick='location.href="/entry_list_pfam";' style="cursor: pointer;">
+                      <div class="service-icon">
+                          <span><img src="{% static '/img/icons8-index-50.png' %}"/></span>
+                      </div>
+                      <h3 class="title">Index</h3>
+                      <p class="description">
+                        Index of all Pfam domains identified in all genomes
+                      </p>
+                  </div>
+                </div>
+
+                <div class="col-md-4 col-sm-7" >
+                  <div class="serviceBox linkdiv" onclick='location.href="/extract_pfam/";' style="cursor: pointer;">
+                      <div class="service-icon">
+                          <span><img src="{% static '/img/icons8-compare-64.png' %}"/></span>
+                      </div>
+                      <h3 class="title">Extraction form</h3>
+                      <p class="description">
+                        Extract lists of Pfam domains present/absents in a set of genomes
+                      </p>
+                  </div>
+                </div>
+
+                <div class="col-md-4 col-sm-7" >
+                  <div class="serviceBox linkdiv" onclick='location.href="/venn_pfam/";' style="cursor: pointer;">
+                      <div class="service-icon">
+                          <span><img src="https://img.icons8.com/plasticine/100/000000/venn-diagram.png"/></span>
+                      </div>
+                      <h3 class="title">Venn diagrams</h3>
+                      <p class="description">
+                        Compare Pfam domains between genomes with venn diagrams
+                      </p>
+                  </div>
+                </div>
+
+
+
+
+
+
+
+        </div>
+        <div class="row">
+
+          <div class="col-md-4 col-sm-7" >
+            <div class="serviceBox linkdiv" onclick='location.href="/pfam_comparison";' style="cursor: pointer;">
+                <div class="service-icon">
+                    <span><img src="{% static '/img/icons8-spreadsheet-80.png' %}"/></span>
+                </div>
+                <h3 class="title">Comparison of domain presence/absence</h3>
+                <p class="description">
+                  Extract matrix of domain presence/absence in a set of genomes
+                </p>
+            </div>
+          </div>
+
+
+          <div class="col-md-4 col-sm-7" >
+            <div class="serviceBox linkdiv" onclick='location.href="/plot_heatmap/Pfam";' style="cursor: pointer;">
+                <div class="service-icon">
+                    <span><img src="https://img.icons8.com/plasticine/100/000000/heat-map.png"/></span>
+                </div>
+                <h3 class="title">Heatmaps</h3>
+                <p class="description">
+                  Heatmap of domain presence/absence in a set of genomes
+                </p>
+            </div>
+          </div>
+
+
+          <div class="col-md-4 col-sm-7" >
+            <div class="serviceBox linkdiv" onclick='location.href="/pan_genome/Pfam";' style="cursor: pointer;">
+                <div class="service-icon">
+                    <span><img src="https://img.icons8.com/plasticine/100/000000/line-chart.png"/></span>
+                </div>
+                <h3 class="title">Accumulation & rarefaction plot</h3>
+                <p class="description">
+                  Index of all Pfam domains identified in all genomes
+                </p>
+            </div>
+          </div>
+
+
+        </div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+      
+      <script>
+      
+      
+      </script>
+<style>
+
+.linkdiv {
+    background-color: rgb(218, 216, 214);
+    max-width: 350px;
+    max-width: 350px;
+    border-radius: 25px;
+}
+
+</style>
+
+</body>
+</html>
