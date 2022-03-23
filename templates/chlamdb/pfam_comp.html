@@ -16,22 +16,10 @@
         <div class="row">
           <div class="col-lg-12">
            {% include "chlamdb/menu.html" %}
-           <div class="panel-title"><b>Comparisons: Pfam domains</b></div>
-           <br>
-
-           <nav>
-              <ul id="tabs_main" class="nav nav-tabs">
-                  <li><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
-                  <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
-                  <li class="active"><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
-                  <li><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
-                  <li><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
-
-              </ul>
-          </nav>
+           {% include "chlamdb/extract_nav_tabs_template.html" with type="Pfam" active_tab="comp" %} 
 
           <br>
-          <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Compare the distribution of shared Pfam domains </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+          <p class="page-title"><b>Compare the distribution of shared Pfam domains </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
 
                       <form action='{% url "pfam_comparison" %}' method="post">
                           {% csrf_token %}
@@ -48,7 +36,7 @@
                                  <h5 class="panel-title">Help to interpret the results</h5>
                              </div>
                              <p style="margin: 10px 10px 10px 10px">
-                              The ouput table contains the list of shared Pfam domains and the number of times each of them was identified in the selected gneomes. <br>nDomain: total number of occurence of this domain in the complete database. 
+                              The ouput table contains the list of shared Pfam domains and the number of times each of them was identified in the selected genomes. <br>nDomain: total number of occurence of this domain in the complete database. 
                               <br>Click on Pfam accession to get detailed phylogenetic profile of the corresponding Pfam entry. 
                              </p>
                          </div>

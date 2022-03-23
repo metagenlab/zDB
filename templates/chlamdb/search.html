@@ -55,6 +55,22 @@
 									</li>
 								{% endif %}
 
+								{% if pat|length > 0 %}
+									<li>
+										<a href="#KO_path" data-toggle="tab">
+										KEGG Pathways<span class="badge">{{pat|length}}</span><br>
+										</a>
+									</li>
+								{% endif %}
+
+								{% if mod|length > 0 %}
+									<li>
+										<a href="#KO_mod" data-toggle="tab">
+										KEGG Modules<span class="badge">{{mod|length}}</span><br>
+										</a>
+									</li>
+								{% endif %}
+
 								{% if pfam|length > 0 %}
 									<li>
 										<a href="#PFAM" data-toggle="tab">
@@ -134,7 +150,53 @@
 												{% endfor %}
 											</tbody>
 										</table>
-									</div> <!-- panel -->
+									</div>
+
+
+									<div class="tab-pane {{pat_active}}" id="KO_path">
+										<table class="table table-striped" id="search_table1" name="search">
+											<thead>
+												<tr>
+													{% for col in pat_headers %}
+													<th> {{col}} </th>
+													{% endfor %}
+												</tr>
+											</thead>
+											<tbody>
+												{% load static %}
+												{% for values in pat %}
+													<tr>
+													{% for val in values %}
+														<td>{{val|safe}} </td>
+													{% endfor %}
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div>
+
+
+									<div class="tab-pane {{mod_active}}" id="KO_mod">
+										<table class="table table-striped" id="search_table1" name="search">
+											<thead>
+												<tr>
+													{% for col in mod_headers %}
+													<th> {{col}} </th>
+													{% endfor %}
+												</tr>
+											</thead>
+											<tbody>
+												{% load static %}
+												{% for values in mod %}
+													<tr>
+													{% for val in values %}
+														<td>{{val|safe}} </td>
+													{% endfor %}
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div>
 
 									<div class="tab-pane {{pfam_active}}" id="PFAM">
 										<table class="table table-striped" id="search_table1" name="search">

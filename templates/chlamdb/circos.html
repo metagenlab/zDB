@@ -3,17 +3,18 @@
 
 <html>
 <head>
-{% load static %}
+
+{% load custom_tags %}
 {% load static %}
 {% load crispy_forms_tags %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.js'></script>
-<script src="{% static 'js/circos.js' %}"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
 
-
+<script src="{% static 'js/circos.js' %}"></script>
 {% include "chlamdb/header.html" %}
+
 </head>
+
 <body>
 
   <div class="container-fluid" id="main_container">
@@ -23,11 +24,7 @@
             <div class="row">
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
-                 <div class="panel-title"><b>Genome alignments: Circos plot</b></div>
-                 <br>
-                 
-                 <br>
-                 <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Circos plots indicating the presence/absence of homologous proteins in one or multiple other genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#genome-alignments" id="show-option" target="_blank"  title="Get a Circos plot to compare genomes (Targets) and visualize the presence/absence of homologous proteins according to the selected reference one (Circos reference)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                 <p class="page-title"><b>Circos plots indicating the presence/absence of homologous proteins in one or multiple other genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#genome-alignments" id="show-option" target="_blank"  title="Get a Circos plot to compare genomes (Targets) and visualize the presence/absence of homologous proteins according to the selected reference one (Circos reference)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
  
                 {% block content %}
 				{% csrf_token %}

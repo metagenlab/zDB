@@ -68,6 +68,45 @@ with db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
     missing_mandatory = [name for name, (mandatory, value) in hsh_config.items()
             if mandatory and not value]
 
+page2title = {
+    'extract_orthogroup': 'Comparisons: orthologous groups',
+    'extract_pfam': 'Comparisons: PFAM domains',
+    'extract_ko': 'Comparisons: Kegg Orthologs (KO)',
+    'extract_COG': 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'venn_orthogroup': 'Comparisons: orthologous groups',
+    'venn_ko': 'Comparisons: Kegg Orthologs (KO)',
+    'venn_pfam': 'Comparisons: Pfam domains',
+    'venn_cog': 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'heatmap_orthogroup': 'Comparisons: orthologous groups',
+    'heatmap_pfam': 'Comparisons: PFAM domains',
+    'heatmap_ko': 'Comparisons: Kegg Orthologs (KO)',
+    'heatmap_COG': 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'pan_genome_orthology': 'Comparisons: orthologous groups',
+    'pan_genome_Pfam': 'Comparisons: PFAM domains',
+    'pan_genome_ko': 'Comparisons: Kegg Orthologs (KO)',
+    'pan_genome_COG': 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'orthogroup_comparison' : 'Comparisons: orthologous groups',
+    'plot_heatmap_orthology': 'Comparisons: orthologous groups',
+    'plot_heatmap_ko': 'Comparisons: KEGG orthologs', 
+    'plot_heatmap_Pfam' : 'Comparisons: Pfam domains ',
+    'plot_heatmap_COG' : 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'index_comp_ko': 'Comparisons: KEGG orthologs', 
+    'index_comp_Pfam' : 'Comparisons: Pfam domains ',
+    'index_comp_COG' : 'Comparisons: Clusters of Orthologous groups (COGs) ',
+    'index_comp_orthology': 'Comparisons: orthologous groups',
+    'cog_barchart': 'Comparisons: Clusters of Orthologous groups (COGs) ',
+    'pan_genome_orthology': 'Comparisons: orthologous groups',
+    'entry_list_pfam': 'Comparisons: PFAM domains',
+    'entry_list_ko': 'Comparisons: Kegg Orthologs (KO)',
+    'entry_list_cog': 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'ko_comparison':'Comparisons: Kegg Orthologs (KO)',
+    'module_barchart': 'Comparisons: Kegg Orthologs (KO)',
+    'blast': 'Homology search: Blast',
+    'plot_region':'Genome alignments: Plot region',
+    'circos': 'Genome alignments: Circos plot',
+    'cog_comparison': 'Comparisons: Clusters of Orthologous groups (COGs)',
+}
+
     
 def my_locals(local_dico):
     local_dico["optional2status"] = optional2status
@@ -278,6 +317,8 @@ def get_table_details(db, annotations):
 def extract_orthogroup(request):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    
+    page_title = page2title["extract_orthogroup"]
 
     extract_form_class = make_extract_form(db, "extract_orthogroup", plasmid=True)
     if request.method != "POST":
@@ -383,12 +424,13 @@ def extract_orthogroup(request):
     ref_genomes = db.get_genomes_description().loc[include_taxids].reset_index()
 
     envoi_extract = True
-    return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
+    return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals(), "extract_orthogroup"))
 
 
 def venn_orthogroup(request):
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
+    page_title = page2title["venn_orthogroup"]
 
     venn_form_class = make_venn_from(db, limit=6)
     if request.method != "POST":
@@ -445,13 +487,112 @@ def format_pfam(pfam_id, base=None, to_url=False):
     return fmt_entry
 
 
+def index_comp(request, type):
+    page_title = page2title[f"index_comp_{type}"]
+    if type == 'Pfam':
+        return render(request, 'chlamdb/index_pfam.html', my_locals(locals()))
+    if type == 'COG': 
+        return render(request, 'chlamdb/index_cog.html', my_locals(locals()))
+    if type == 'ko': 
+        return render(request, 'chlamdb/index_ko.html', my_locals(locals()))
+    if type == 'orthology': 
+        return render(request, 'chlamdb/index_orthology.html', my_locals(locals()))
+    
+def entry_list_ko(request,):
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    page_title = page2title["entry_list_ko"]
+    
+    # retrieve taxid list
+    genomes_data = db.get_genomes_infos()
+    taxids = [str(i) for i in genomes_data.index.to_list()]
+
+    # retrieve entry list
+    ko_all = db.get_ko_hits(taxids, 
+                            search_on="taxid", 
+                            indexing="taxid")
+    # retrieve annotations
+    ko_desc = db.get_ko_desc(ko_all.index.to_list())
+    ko_mod = db.get_ko_modules(ko_all.index.to_list())
+    ko_path = db.get_ko_pathways(ko_all.index.to_list())
+    
+    # count frequency and n genomes
+    combined_df = pd.DataFrame(ko_all.sum(axis=1).rename('count'))
+    ko_freq = ko_all[ko_all > 0].count(axis=1).to_dict()
+
+    combined_df["accession"] = [format_ko(ko) for ko in combined_df.index]
+    combined_df["modules"] = [format_ko_modules(ko_mod, ko) if ko in ko_mod else '-' for ko in combined_df.index]
+    combined_df["description"] = [ko_desc[ko] for ko in combined_df.index]
+    combined_df["pathways"] = [format_ko_path(ko_path, ko) if ko in ko_path else '-' for ko in combined_df.index]
+    combined_df["freq"] = [ko_freq[ko] for ko in combined_df.index]
+    
+    combined_df = combined_df.sort_values(["count","freq"], ascending=False)
+    
+    # combine into df
+    return render(request, 'chlamdb/entry_list_ko.html', my_locals(locals()))
+
+
+
+def entry_list_cog(request,):
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    page_title = page2title["entry_list_cog"]
+    # retrieve taxid list
+    genomes_data = db.get_genomes_infos()
+    taxids = [str(i) for i in genomes_data.index.to_list()]
+
+    # retrieve entry list
+    cog_all = db.get_cog_hits(taxids, 
+                              search_on="taxid", 
+                              indexing="taxid")
+    # retrieve annotations
+    cogs_summaries = db.get_cog_summaries(cog_all.index.tolist(), as_df=True, only_cog_desc=True)
+
+    # count frequency and n genomes
+    cog_count = cog_all.sum(axis=1)
+    cog_freq = cog_all[cog_all > 0].count(axis=1)
+    cogs_summaries["accession"] = [format_cog(cog) for cog in cogs_summaries.index]
+        
+    # combine into df
+    combined_df = cogs_summaries.merge(cog_count.rename('count'), 
+                                       left_index=True, 
+                                       right_index=True).merge(cog_freq.rename('freq'), 
+                                                               left_index=True, 
+                                                               right_index=True).sort_values(["count"], ascending=False)
+
+    return render(request, 'chlamdb/entry_list_cog.html', my_locals(locals()))
+
+
+def entry_list_pfam(request,):
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    page_title = page2title["entry_list_pfam"]
+    # retrieve taxid list
+    genomes_data = db.get_genomes_infos()
+    taxids = [str(i) for i in genomes_data.index.to_list()]
+
+    # retrieve entry list
+    pfam_all = db.get_pfam_hits(taxids, 
+                                search_on="taxid", 
+                                indexing="taxid")
+    # retrieve annotations
+    pfam_annot = db.get_pfam_def(pfam_all.index.to_list())
+    
+    # count frequency and n genomes
+    pfam_count = pfam_all.sum(axis=1)
+    pfam_freq = pfam_all[pfam_all > 0].count(axis=1)
+    pfam_annot["accession"] = [format_pfam(pfam) for pfam in pfam_annot.index]
+    
+    # combine into df
+    combined_df = pfam_annot.merge(pfam_count.rename('count'), left_index=True, right_index=True).merge(pfam_freq.rename('freq'), left_index=True, right_index=True).sort_values(["count"], ascending=False)
+    
+    return render(request, 'chlamdb/entry_list_pfam.html', my_locals(locals()))
+    
 def extract_pfam(request, classification="taxon_id"):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    page_title = page2title["extract_pfam"]
 
     extract_form_class = make_extract_form(db, "extract_pfam", plasmid=True, label="Pfam domains")
     if request.method != "POST":
         form = extract_form_class()
-        return render(request, 'chlamdb/extract_Pfam.html', my_locals({"form": form}))
+        return render(request, 'chlamdb/extract_Pfam.html', my_locals({"form": form, "page_title":page_title}))
 
     form = extract_form_class(request.POST)
     if not form.is_valid():
@@ -470,7 +611,7 @@ def extract_pfam(request, classification="taxon_id"):
         sum_exclude_length += len(exclude_plasmids)
 
     if n_missing>=sum_include_length:
-        ctx = {"wrong_n_missing" : True, "form": form}
+        ctx = {"wrong_n_missing" : True, "form": form, "page_title":page_title}
         return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
 
     pfam_include = db.get_pfam_hits(include, plasmids=include_plasmids, 
@@ -491,7 +632,7 @@ def extract_pfam(request, classification="taxon_id"):
     pfam_defs = db.get_pfam_def(selection)
 
     if len(selection) == 0:
-        ctx = {"no_match": True, "form": form}
+        ctx = {"no_match": True, "form": form, "page_title":page_title}
         return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
 
     all_database = db.get_pfam_hits(pfam_include.index.tolist(), search_on="pfam", indexing="taxid")
@@ -514,7 +655,8 @@ def extract_pfam(request, classification="taxon_id"):
             "form": form,
             "sum_include_length": sum_include_length,
             "sum_exclude_length": sum_exclude_length,
-            "n_missing": n_missing}
+            "n_missing": n_missing, 
+            "page_title":page_title}
     return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
 
 
@@ -561,6 +703,8 @@ def format_ko_modules(hsh_modules, ko):
 
 def extract_ko(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    page_title = page2title["extract_ko"]
+    
     extract_form_class = make_extract_form(db, "extract_ko", plasmid=True, label="Kegg Orthologs")
 
     if request.method != "POST":
@@ -628,6 +772,7 @@ def extract_ko(request):
 def venn_pfam(request):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    page_title = page2title["venn_pfam"]
 
     venn_form_class = make_venn_from(db, label="PFAM domain", limit=6, action="venn_pfam")
     if request.method != "POST":
@@ -770,7 +915,8 @@ def extract_cog(request):
 def venn_ko(request):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
-
+    page_title = page2title["venn_ko"]
+    
     venn_form_class = make_venn_from(db, limit=6)
     display_form = True
     if request.method != "POST":
@@ -1102,17 +1248,6 @@ def og_tab_get_swissprot_homologs(db, annotations):
     return {"reviewed": swissprot, "n_swissprot_hits": len(homologs)}
 
 
-class SeqColumn(Column):
-
-    def __init__(self, fasta_dict, header):
-        super().__init__(header)
-        self.values = fasta_dict
-
-    def get_face(self, index):
-        seq = self.values[index]
-        face = SeqMotifFace(str(seq.seq), seq_format="seq")
-        return face
-
 def prepare_default_tree(og_phylogeny):
     tree = Tree(og_phylogeny)
     R = tree.get_midpoint_outgroup()
@@ -1172,9 +1307,8 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
     path = settings.BASE_DIR + '/assets/' + asset_path
     e_tree.render(path, dpi=1200)
 
-    asset_algn_file = f"/alignments/{og_filename}"
-    asset_algn_file_path = settings.BASE_DIR + "/assets/" + asset_algn_file
-    return {"og_phylogeny": asset_path, "root": root, "og_alignment": asset_algn_file}
+    algn_file = f"/alignments/{og_filename}"
+    return {"og_phylogeny": asset_path, "root": root, "og_alignment": algn_file}
 
 
 def tab_og_conservation_tree(db, group, compare_to=None):
@@ -1722,21 +1856,24 @@ def str_if_none(s):
         return "-"
     return s
 
+def search_suggest(request,):
+    print("suggest")
+    index = sb.ChlamdbIndex.use_index(settings.SEARCH_INDEX)
+    params = request.GET
+    user_query = params["term"]
+    results = list(index.search(user_query, limit=None))
+    data = [{"label":f"{i.name}: {i.description} ({i.entry_type})", "value":f"{i.name}: {i.description}"} for i in results]
+    #data = [f"{i.name} ({i.entry_type})" for i in results]
+    print("AUTOCOMPLETE", data)
+    mimetype = "application/json"
+    return JsonResponse(data,safe=False)
 
-def search_bar_helper(fam_name, fam_url, results):
-    val = getattr(results, fam_name)
-    if val is None:
-        val = "-"
-    else:
-        val = f"<a href=\"/{fam_url}/{val}\">{val}</a>"
-    return val
-
-
+# NOTE: should refactor this code to avoid duplicated code
 def search_bar(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     option2status = db.get_config_table()
     index = sb.ChlamdbIndex.use_index(settings.SEARCH_INDEX)
-    user_query = request.GET.get("search2")
+    user_query = request.GET.get("search2") 
 
     results = list(index.search(user_query, limit=None))
 
@@ -1749,7 +1886,7 @@ def search_bar(request):
     has_cog = option2status.get("COG", False)
     has_pfam = option2status.get("pfam", False)
 
-    genes, cog, ko, pfam = [], [], [], []
+    genes, cog, ko, pfam, pat, mod = [], [], [], [], [], []
     for result in results:
         if result.entry_type == sb.EntryTypes.Gene:
             locus_tag = format_locus(result.locus_tag, to_url=True)
@@ -1762,8 +1899,14 @@ def search_bar(request):
             ko.append([format_ko(None, base=result.name, as_url=True), result.description])
         elif result.entry_type == sb.EntryTypes.PFAM and has_pfam:
             pfam.append([format_pfam(None, base=result.name, to_url=True), result.description])
+        elif result.entry_type == sb.EntryTypes.Module and has_ko:
+            mod.append([format_module(None, base=result.name, to_url=True), result.description])
+            print(result)
+        elif result.entry_type == sb.EntryTypes.Pathway and has_ko:
+            pat.append([format_pathway(None, base=result.name, to_url=True), result.description])
+            print(result)
 
-    gene_active, cogs_active, ko_active, pfam_active = "active", "", "", ""
+    gene_active, cogs_active, ko_active, pfam_active, pat_active, mod_active = "active", "", "", "", "", ""
     if len(genes)==0:
         gene_active = ""
         if len(cog)>0:
@@ -1772,25 +1915,39 @@ def search_bar(request):
             ko_active = "active"
         elif len(pfam)>0:
             pfam_active = "active"
+        elif len(pat)>0:
+            pat_active = "active"
+        elif len(mod)>0:
+            mod_active = "active"
 
     genes_headers = ["Accession", "Gene", "Product", "Organism"]
     cog_headers = ["COG", "Description"]
     ko_headers = ["KO", "Description"]
     pfam_headers = ["PFAM domain", "Description"]
+    pat_headers = ["KEGG Pathway", "Description"]
+    mod_headers = ["KEGG Module", "Description"]
     insert_index = 4
     ctx = {"search_term": user_query,
             "gene_active": gene_active,
             "cogs_active": cogs_active,
             "ko_active": ko_active, 
             "pfam_active": pfam_active,
+            "pat_active": pat_active,
+            "mod_active": mod_active,
             "genes_headers": genes_headers,
             "genes": genes,
             "cog_headers": cog_headers,
             "pfam_headers": pfam_headers, 
             "ko_headers": ko_headers,
+            "pat_headers": pat_headers,
+            "mod_headers": mod_headers,
+            "modules": mod,
+            "pathways": pat,
             "cogs": cog,
             "pfam": pfam,
-            "ko": ko}
+            "ko": ko,
+            "pat": pat,
+            "mod": mod}
     return render(request, "chlamdb/search.html", my_locals(ctx))
 
 
@@ -1940,8 +2097,12 @@ def format_pathway(pat_id):
     return f"map{pat_id:05d}"
 
 
-def format_module(mod_id, to_url=False):
-    formated = f"M{mod_id:05d}"
+def format_module(mod_id, base=None, to_url=False):
+    if base is None:
+        formated = f"M{mod_id:05d}"
+    else:
+        formated = base
+
     if to_url:
         return f"<a href=/KEGG_module_map/{formated}>{formated}</a>"
     return formated
@@ -2474,6 +2635,7 @@ def js_bioentries_to_description(hsh):
 def module_barchart(request):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    page_title = page2title["module_barchart"]
 
     venn_form_class = make_venn_from(db)
     if request.method != "POST":
@@ -2557,6 +2719,7 @@ def cog_barchart(request):
     # Not too happy with this code
     # should be reviewed and the old hashes replaced by pandas
     # operations
+    page_title = page2title["cog_barchart"]
 
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
@@ -2641,7 +2804,7 @@ def cog_barchart(request):
 def pan_genome(request, type):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
-
+    page_title = page2title[f"pan_genome_{type}"]
     venn_form_class = make_venn_from(db, plasmid=False)
 
     if request.method != "POST":
@@ -2780,11 +2943,12 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
 # other blast versions. May be re-introduced in future versions
 def blast(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    page_title = page2title["blast"]
     blast_form_class = make_blast_form(db) 
 
     if request.method != "POST":
         form = blast_form_class()
-        return render(request, 'chlamdb/blast.html', my_locals({"form": form}))
+        return render(request, 'chlamdb/blast.html', my_locals({"form": form, "page_title": page_title}))
 
 
     form = blast_form_class(request.POST)
@@ -2942,21 +3106,22 @@ def coalesce_regions(genomic_regions, seqids):
 def plot_region(request):
     max_region_size = 20000
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    page_title = page2title["plot_region"]
     form_class = make_plot_form(db)
 
     if request.method != "POST":
         form = form_class()
-        return render(request, 'chlamdb/plot_region.html', my_locals({"form": form}))
+        return render(request, 'chlamdb/plot_region.html', my_locals({"form": form, "page_title": page_title}))
 
     form = form_class(request.POST)
     if not form.is_valid():
         # add error message
-        return render(request, 'chlamdb/plot_region.html', my_locals({"form": form}))
+        return render(request, 'chlamdb/plot_region.html', my_locals({"form": form, "page_title": page_title}))
 
     accession = form.get_accession()
     prot_info = db.get_proteins_info(ids=[accession], search_on="locus_tag", as_df=True)
     if prot_info.empty:
-        context = {"form": form, "errors": ["Accession not found"], "error": True}
+        context = {"form": form, "errors": ["Accession not found"], "error": True, "page_title": page_title}
         return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
     genomes = form.get_genomes()
@@ -2991,17 +3156,17 @@ def plot_region(request):
         seqids.append(seqid)
 
     if len(seqids)>20:
-        context = {"form":form, "error": True, "errors": ["Too many regions to display"]}
+        context = {"form":form, "error": True, "errors": ["Too many regions to display"], "page_title": page_title}
         return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
     try:
         region_size = form.get_region_size()
         if region_size>max_region_size or region_size<5000:
             context = {"form":form, "error": True,
-                    "errors": [f"Region size should be between 5000 and {max_region_size} bp"]}
+                    "errors": [f"Region size should be between 5000 and {max_region_size} bp"], "page_title": page_title}
             return render(request, 'chlamdb/plot_region.html', my_locals(context))
     except ValueError:
-        context = {"form":form, "error": True, "errors": ["Wrong format for region size"]}
+        context = {"form":form, "error": True, "errors": ["Wrong format for region size"], "page_title": page_title}
         return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
     locus_tags = db.get_proteins_info(seqids, to_return=["locus_tag"], as_df=True)
@@ -3068,7 +3233,8 @@ def plot_region(request):
 
     ctx = {"form": form, "genomic_regions": "[" + "\n,".join(all_regions) + "]",
             "window_size": max_region_size, "to_highlight": to_highlight, "envoi": True,
-            "connections": "[" + ",".join(connections) + "]"}
+            "connections": "[" + ",".join(connections) + "]", 
+            "page_title": page_title}
     if len(all_identities) > 0:
         ctx["max_ident"] = max(all_identities)
         ctx["min_ident"] = min(all_identities)
@@ -3218,6 +3384,7 @@ def circos(request):
     
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
+    page_title = page2title["circos"]
 
     circos_form_class = make_circos_form(db)
 
@@ -3256,18 +3423,20 @@ def plot_heatmap(request, type):
     import scipy.cluster.hierarchy as shc
     from scipy.cluster import hierarchy
 
+    page_title = page2title[f"plot_heatmap_{type}"]
+
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
     form_class = make_venn_from(db)
 
     if request.method != "POST":
         form_venn = form_class()
-        ctx = {"form_venn": form_venn, "type": type}
+        ctx = {"form_venn": form_venn, "type": type, "page_title": page_title}
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(ctx))
 
     form_venn = form_class(request.POST)
     if not form_venn.is_valid():
-        ctx = {"form_venn": form_venn, "type": type}
+        ctx = {"form_venn": form_venn, "type": type, "page_title": page_title}
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(ctx))
 
     taxon_ids = form_venn.get_taxids()
@@ -3276,7 +3445,7 @@ def plot_heatmap(request, type):
         error_message = "Please select at least two genomes"
         error_title = "Wrong input"
         ctx = {"error": True, "type": type, "type": type, "error_title": error_title,
-                "form_venn": form_venn, "error_message": error_message }
+                "form_venn": form_venn, "error_message": error_message, "page_title": page_title }
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(ctx))
         
     if type=="COG":
@@ -3322,12 +3491,16 @@ def plot_heatmap(request, type):
     return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
 
-def format_pathway(path_id, to_url=False, taxid=None):
-    base_string = f"map{path_id:05d}"
+def format_pathway(path_id, base=None, to_url=False, taxid=None):
+    if base is None:
+        base_string = f"map{path_id:05d}"
+    else:
+        base_string = base
+
     if not to_url:
         return base_string
     if taxid is None:
-        to_page = f"/KEGG_map_ko/{base_string}"
+        to_page = f"/KEGG_mapp_ko/{base_string}"
     else:
         to_page = f"/KEGG_mapp_ko/{base_string}/{taxid}"
     return f"<a href=\"{to_page}\">{base_string}</a>"
@@ -3624,6 +3797,8 @@ def module_comparison(request):
 
 def pfam_comparison(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    page_title = page2title["cog_barchart"]
+    
     comp_metabo_form = make_metabo_from(db)
     if request.method != 'POST': 
         form = comp_metabo_form(request.POST)
@@ -3657,9 +3832,71 @@ def pfam_comparison(request):
     return render(request, 'chlamdb/pfam_comp.html', my_locals(ctx))
 
 
+def cog_comparison(request):
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    page_title = page2title["cog_comparison"]
+    
+    comp_metabo_form = make_metabo_from(db)
+    if request.method != 'POST': 
+        form = comp_metabo_form(request.POST)
+        return render(request, 'chlamdb/cog_comp.html', my_locals(locals()))
+
+    form = comp_metabo_form(request.POST)
+    if not form.is_valid():
+        return render(request, 'chlamdb/cog_comp.html', my_locals(locals()))
+
+    try:
+        all_targets = form.get_choices()
+    except:
+        # TODO: add error message
+        return render(request, 'chlamdb/cog_comp.html', my_locals(locals()))
+
+    genomes = db.get_genomes_description().description.to_dict()
+    cog_hits = db.get_cog_hits(ids=all_targets, search_on="taxid", indexing="taxid")
+    print(genomes)
+    # retrieve entry list
+    cog_all = db.get_cog_hits(list(genomes.keys()), 
+                              search_on="taxid", 
+                              indexing="taxid")
+
+    # count frequency and n genomes
+    cog_count = cog_all.sum(axis=1)
+    cog_freq = cog_all[cog_all > 0].count(axis=1)
+    cog_freq = cog_freq.loc[cog_hits.index]
+    cog_count = cog_count.loc[cog_hits.index]
+    # retrieve annotations
+    cogs_summaries = db.get_cog_summaries(cog_hits.index.tolist(), as_df=True, only_cog_desc=True)
+    
+    cog2description = cogs_summaries.description.to_dict()
+    cog_hits["accession"] = [format_cog(cog) for cog in cog_hits.index]
+    cog_hits["description"] = [cog2description[cog] if cog in cog2description else '-' for cog in cog_hits.index]
+    
+    # combine into df
+    combined_df = cog_hits.merge(cog_count.rename('count'), 
+                                       left_index=True, 
+                                       right_index=True).merge(cog_freq.rename('freq'), 
+                                                               left_index=True, 
+                                                               right_index=True).sort_values(["count"], ascending=False)
+    
+    # reorder columns
+    combined_df = combined_df[["accession", "description", "count", "freq"] + all_targets]  
+    
+    print("combined_df")
+    print(combined_df.head())
+    
+    ctx = {
+        "envoi_comp": True,
+        "taxon_list": all_targets,
+        "combined_df" : combined_df.reset_index(drop=True),
+        "taxon_id2description": genomes
+    }
+    return render(request, 'chlamdb/cog_comp.html', my_locals(ctx))
+
+
 def orthogroup_comparison(request):
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
+    page_title = page2title[f"orthogroup_comparison"]
 
     comp_metabo_form = make_metabo_from(db)
     if request.method != 'POST': 
@@ -3703,6 +3940,7 @@ def orthogroup_comparison(request):
 def ko_comparison(request):
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
+    page_title = page2title["ko_comparison"]
 
     comp_metabo_form = make_metabo_from(db)
 

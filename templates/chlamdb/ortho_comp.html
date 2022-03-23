@@ -23,21 +23,10 @@
             <div class="row">
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
-                 <div class="panel-title"><b>Comparisons: Orthogroups</b></div>
-                <br>
-                  <nav>
-                      <ul id="tabs_main" class="nav nav-tabs">
-                          <li><a href="{% url 'extract_orthogroup'  %}">Detailed comparison</a></li>
-                          <li><a href="{% url 'venn_orthogroup'  %}">Venn diagram</a></li>
-                          <li class="active"><a href="{% url 'orthogroup_comparison'  %}">Compare Orthogroups size</a></li>
-                          <li><a href="{% url 'plot_heatmap'  'orthology' %}">Whole proteomes heatmaps</a></li>
-                          <li><a href="{% url 'pan_genome'  'orthology' %}">Pan/Core genome plots</a></li>
-
-                      </ul>
-                  </nav>
+                 {% include "chlamdb/extract_nav_tabs_template.html" with type="orthology" active_tab="comp" %}
 
                   <br>
-                  <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Size of shared Orthologous groups </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option"  target="_blank" title="Compare the size of the orthogroup shared by selected genomes (targets)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                  <p class="page-title"><b>Size of shared Orthologous groups </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option"  target="_blank" title="Compare the size of the orthogroup shared by selected genomes (targets)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
 
                       <form action='{% url "orthogroup_comparison"  %}' method="post">
                           {% csrf_token %}
