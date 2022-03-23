@@ -97,13 +97,13 @@ page2title = {
     'pan_genome_orthology': 'Comparisons: orthologous groups',
     'entry_list_pfam': 'Comparisons: PFAM domains',
     'entry_list_ko': 'Comparisons: Kegg Orthologs (KO)',
-    'entry_list_COG': 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'entry_list_cog': 'Comparisons: Clusters of Orthologous groups (COGs)',
     'ko_comparison':'Comparisons: Kegg Orthologs (KO)',
     'module_barchart': 'Comparisons: Kegg Orthologs (KO)',
     'blast': 'Homology search: Blast',
     'plot_region':'Genome alignments: Plot region',
     'circos': 'Genome alignments: Circos plot',
-    
+    'cog_comparison': 'Comparisons: Clusters of Orthologous groups (COGs)',
 }
 
     
@@ -544,7 +544,7 @@ def entry_list_cog(request,):
                               indexing="taxid")
     # retrieve annotations
     cogs_summaries = db.get_cog_summaries(cog_all.index.tolist(), as_df=True, only_cog_desc=True)
-    print(cogs_summaries.head())
+
     # count frequency and n genomes
     cog_count = cog_all.sum(axis=1)
     cog_freq = cog_all[cog_all > 0].count(axis=1)
@@ -556,7 +556,7 @@ def entry_list_cog(request,):
                                        right_index=True).merge(cog_freq.rename('freq'), 
                                                                left_index=True, 
                                                                right_index=True).sort_values(["count"], ascending=False)
-    print(combined_df.head())
+
     return render(request, 'chlamdb/entry_list_cog.html', my_locals(locals()))
 
 
@@ -3717,6 +3717,8 @@ def pfam_comparison(request):
 
 def cog_comparison(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    page_title = page2title["cog_comparison"]
+    
     comp_metabo_form = make_metabo_from(db)
     if request.method != 'POST': 
         form = comp_metabo_form(request.POST)
@@ -3733,18 +3735,42 @@ def cog_comparison(request):
         return render(request, 'chlamdb/cog_comp.html', my_locals(locals()))
 
     genomes = db.get_genomes_description().description.to_dict()
+    cog_hits = db.get_cog_hits(ids=all_targets, search_on="taxid", indexing="taxid")
+    print(genomes)
+    # retrieve entry list
+    cog_all = db.get_cog_hits(list(genomes.keys()), 
+                              search_on="taxid", 
+                              indexing="taxid")
 
-    cog_hits = db.get_cog_hits(ids=all_targets)
-    pfam_defs = db.get_pfam_def(cog_hits.index.tolist(), add_ttl_count=True)
-    data = []
-    for pfam, entry_data in pfam_hits.iterrows():
-        entry_infos = pfam_defs.loc[pfam]
-        base_infos = [format_pfam(pfam, to_url=True), entry_infos["def"], entry_infos.ttl_cnt]
-        data.append(base_infos+entry_data.values.tolist())
+    # count frequency and n genomes
+    cog_count = cog_all.sum(axis=1)
+    cog_freq = cog_all[cog_all > 0].count(axis=1)
+    cog_freq = cog_freq.loc[cog_hits.index]
+    cog_count = cog_count.loc[cog_hits.index]
+    # retrieve annotations
+    cogs_summaries = db.get_cog_summaries(cog_hits.index.tolist(), as_df=True, only_cog_desc=True)
+    
+    cog2description = cogs_summaries.description.to_dict()
+    cog_hits["accession"] = [format_cog(cog) for cog in cog_hits.index]
+    cog_hits["description"] = [cog2description[cog] if cog in cog2description else '-' for cog in cog_hits.index]
+    
+    # combine into df
+    combined_df = cog_hits.merge(cog_count.rename('count'), 
+                                       left_index=True, 
+                                       right_index=True).merge(cog_freq.rename('freq'), 
+                                                               left_index=True, 
+                                                               right_index=True).sort_values(["count"], ascending=False)
+    
+    # reorder columns
+    combined_df = combined_df[["accession", "description", "count", "freq"] + all_targets]  
+    
+    print("combined_df")
+    print(combined_df.head())
+    
     ctx = {
         "envoi_comp": True,
-        "taxon_list": pfam_hits.columns.tolist(),
-        "pfam2data" : data,
+        "taxon_list": all_targets,
+        "combined_df" : combined_df.reset_index(drop=True),
         "taxon_id2description": genomes
     }
     return render(request, 'chlamdb/cog_comp.html', my_locals(ctx))
