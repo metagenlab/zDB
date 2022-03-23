@@ -83,7 +83,7 @@ def gen_new_organism(organism, hsh_prev_values):
 
 def check_gbk(gbk_lst):
     """
-    As BioSQL uses the organism entry of the records to assign
+    As BioSQL uses the organism/source entries of the records to assign
     a taxid when it is not allowed to access the ncbi online,
     we need to ensure that the same organism name is not used
     twice in the genomes to prevent bioentries from different genbank
@@ -111,7 +111,12 @@ def check_gbk(gbk_lst):
         n_cds = 0
         failed = False
         for record in SeqIO.parse(gbk_file, "genbank"):
-            sci_name = record.annotations["organism"]
+            sci_name = record.annotations.get("organism", None)
+            common_name = record.annotations.get("source", None)
+
+            if sci_name is None:
+                raise Exception(f"No scientific for record {record.id} " \
+                        f"in {gbk_file}.")
 
             if record.name in contigs:
                 failed = True
@@ -133,6 +138,12 @@ def check_gbk(gbk_lst):
             elif curr_organism != sci_name:
                 raise Exception(f"Two different organisms in {gbk_file}: {curr_organism}/{sci_name}")
 
+            # necessary, as BioSQL will use whatever matches in the
+            # common or scientific names to assign taxid. So if the common name
+            # of two assemblies is foo, but the scientific are different, BioSQL
+            # will still assign them the same taxid.
+            if common_name!=sci_name:
+                failed = True
 
             for feature in record.features:
                 if feature.type == "CDS":
@@ -181,7 +192,10 @@ def check_gbk(gbk_lst):
                 record.annotations["accession"] = [gen_new_locus_tag(accessions)]
             elif accessions[record.annotations["accessions"][0]] > 1:
                 new_acc = gen_new_locus_tag(accessions)
-                record.annotations["accession"][0] = new_acc
+                if "accession" not in record.annotations:
+                    record.annotations["accession"] = [new_acc]
+                else:
+                    record.annotations["accession"][0] = new_acc
                 accessions[new_acc] -= 1
 
             for feature in record.features:

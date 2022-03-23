@@ -16,6 +16,7 @@ zdb_folder="/home/chlamdb/"
 metagenlab_folder=""
 debug=false
 use_dev_server=false
+use_custom_zdb=false
 
 
 for i in "$@"; do
@@ -42,6 +43,7 @@ for i in "$@"; do
 			;;
 		--zdb_folder=*)
 			zdb_folder="${i#*=}"
+			use_custom_zdb=true
 			shift
 			;;
 		--metagenlab_folder=*)
@@ -83,7 +85,13 @@ gunicorn_dir="zdb/gunicorn/"
 nginx_dir="zdb/nginx"
 
 debugging_mode=""
-bind_path="zdb/assets/:${zdb_folder}/assets/temp/,${gunicorn_dir}:/usr/local/gunicorn/"
+
+bind_path=""
+if [ "$use_custom_zdb" = true ]; then
+	bind_path="$zdb_folder"
+fi
+
+bind_path="$bind_path,zdb/assets/:${zdb_folder}/assets/temp/,${gunicorn_dir}:/usr/local/gunicorn/"
 bind_path="$bind_path,${nginx_dir}:/usr/local/nginx"
 
 
