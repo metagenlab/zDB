@@ -271,7 +271,8 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
                     plasmids.append(taxid)
                 elif is_plasmid:
                     continue
-                taxids.append(taxid)
+                else:
+                    taxids.append(taxid)
             return taxids, plasmids
 
 
