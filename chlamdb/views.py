@@ -1038,18 +1038,12 @@ def extract_region(request):
     filenames_tax_id_db.columns = ['filename','taxon_id']
     filenames_tax_id_db.index= list(filenames_tax_id_db['taxon_id'])
     filenames_list= list(filenames_tax_id_db["filename"])
-    path_pre="temp/"
-    path_suf_faa=".faa"
-    path_faa=[path_pre + filename + path_suf_faa for filename in filenames_list]
 
-    path_suf_fna=".fna"
-    path_fna=[path_pre + filename + path_suf_fna for filename in filenames_list]
-
-    path_suf_ffn=".ffn"
-    path_ffn=[path_pre + filename + path_suf_ffn for filename in filenames_list]
-
+    path_faa=[settings.BLAST_DB_PATH+"/faa/"+filename+".faa" for filename in filenames_list]
+    path_fna=[settings.BLAST_DB_PATH+"/fna/"+filename+".fna" for filename in filenames_list]
+    path_ffn=[settings.BLAST_DB_PATH+"/ffn/"+filename+".ffn" for filename in filenames_list]
     path_suf_gbk=".gbk"
-    path_gbk=[path_pre + filename + path_suf_gbk for filename in filenames_list]
+    path_gbk=[settings.BLAST_DB_PATH + filename + path_suf_gbk for filename in filenames_list]
 
     filenames_tax_id_db['path_to_faa']= path_faa
     filenames_tax_id_db['path_to_fna']= path_fna
@@ -1060,34 +1054,6 @@ def extract_region(request):
     data_table_header = [ "Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding", "N plasmid contigs", "faa seq", "fna seq", "ffn seq", "gbk file"]
     data_table = genomes_data[[ "id", "description", "gc", "n_prot", "n_contigs", "length", "coding_density", "has_plasmid", "path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk" ]].values.tolist()
 
-    for i in list(filenames_tax_id.keys()): 
-        fasta_src_faa = settings.BLAST_DB_PATH + "/faa/" + i + ".faa"
-        fasta_dst_faa = settings.BASE_DIR + "/assets/temp/" + i + ".faa"
-      
-        fasta_src_fna = settings.BLAST_DB_PATH + "/fna/" + i + ".fna"
-        fasta_dst_fna = settings.BASE_DIR + "/assets/temp/" + i + ".fna"
-
-        fasta_src_ffn = settings.BLAST_DB_PATH + "/ffn/" + i + ".ffn"
-        fasta_dst_ffn = settings.BASE_DIR + "/assets/temp/" + i + ".ffn"
-
-        src_gbk = settings.NEXTFLOW_DIR + "/data/prokka_output_filtered/"  + i + ".gbk"
-        dst_gbk = settings.BASE_DIR + "/assets/temp/" + i + ".gbk"
-        try:
-            os.symlink(fasta_src_faa, fasta_dst_faa)
-            os.symlink(fasta_src_fna, fasta_dst_fna)
-            os.symlink(fasta_src_ffn, fasta_dst_ffn)
-            os.symlink(src_gbk, dst_gbk)
-            break
-        except FileExistsError:
-        
-                os.remove(fasta_dst_faa)
-                os.remove(fasta_dst_fna)
-                os.remove(fasta_dst_ffn)
-                os.remove(dst_gbk)
-                os.symlink(fasta_src_faa, fasta_dst_faa)
-                os.symlink(fasta_src_fna, fasta_dst_fna)
-                os.symlink(fasta_src_ffn, fasta_dst_ffn)
-                os.symlink(src_gbk, dst_gbk)
     return render(request, 'chlamdb/extract_region.html', my_locals(locals()))
 
 
