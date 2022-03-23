@@ -50,13 +50,8 @@
                 {% block content %}
 				{% csrf_token %}
 				{% crispy form %}
-
-        <div class="ui-widget">
-          <input placeholder="Gene, product, orthogroup, COG, KEGG id, ..."  name="search2" id="searchbar2">
-        </div>
-
-
                 {% endblock %}
+
             </div>
 
             {% if wrong_n_missing%}
@@ -113,7 +108,7 @@
                                <td> {{ n_missing }} </td>
                            </tr>
                              <tr>
-                               <th>Number of COGs identified</th>
+                               <th>Number of orthogroups identified</th>
                                <td> {{ number_orth }}  </td>
                            </tr>
 

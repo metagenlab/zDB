@@ -424,7 +424,7 @@ def extract_orthogroup(request):
     ref_genomes = db.get_genomes_description().loc[include_taxids].reset_index()
 
     envoi_extract = True
-    return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals(), "extract_orthogroup"))
+    return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
 
 def venn_orthogroup(request):
