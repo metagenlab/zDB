@@ -5,8 +5,6 @@
 <head>
 {% load static %}
 {% load custom_tags %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 {% include "chlamdb/header.html" %}
 
 </head>
@@ -29,9 +27,9 @@
                   {% csrf_token %}
                   {{ form.as_p }}
                   <input type="submit" value="Submit" />
-
               </form>
-            </div>
+
+
               {% if envoi %}
               <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em">
               <div class="panel panel-success">
@@ -249,7 +247,7 @@
         </div>
       </div>
     </div>
-  </div>
+
 </body>
 {% include "chlamdb/style_menu.html" %}
 </html>

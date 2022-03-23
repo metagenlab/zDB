@@ -13,8 +13,6 @@
 {% include "chlamdb/header.html" %}
 </head>
 
-
-
 <body>
 
   <div class="container-fluid" id="main_container">
@@ -66,7 +64,7 @@
                                         <th>KO</th>
                                         <th>Total count</th>
                                         {% for taxon in taxon_list %}
-                                        <th class="rotate">{{taxon}}</th>
+                                        <th>{{taxon}}</th>
                                         {% endfor %}
                                         <th>Annot</th>
                                     </tr>
@@ -104,23 +102,17 @@
 <script src="{% static 'js/jquery.hottie.js' %}"></script>
 <script>
 $(function(){
-$("#mytable td").hottie({
-readValue : function(e) {
-return $(e).attr("data-hist");
-},
-colorArray : [
-"#5858FA",
-"#FBEFEF",
-"#FA5858"
-]
-
+	$("#mytable td").hottie({
+		readValue : function(e) {
+			return $(e).attr("data-hist");
+		},
+		colorArray : [
+			"#5858FA",
+			"#FBEFEF",
+			"#FA5858"
+		]
+	});
 });
-
-});
-</script>
-
-
-<script>
 
 $(document).ready(function() {
   $('#mytable').DataTable( {
@@ -145,9 +137,5 @@ $(document).ready(function() {
     } );
 } );
 
-$(document).ready(function() {
-$("#mytable").DataTable();} );
-
 </script>
-
 </html>
