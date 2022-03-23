@@ -19,21 +19,21 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 SECRET_KEY  = secrets.token_urlsafe()
 
 DEBUG = int(os.environ.get("DEBUG", 0))
-RUN_NAME     = os.environ["RUN_NAME"]
-NEXTFLOW_DIR = os.environ["NEXTFLOW_DIR"]
+RUN_NAME = os.environ["RUN_NAME"]
 hosts = os.environ.get("ALLOWED_HOSTS", "localhost")
 
-BIODB_DB_PATH = NEXTFLOW_DIR+"/db/"+RUN_NAME
-SEARCH_INDEX  = NEXTFLOW_DIR+"/search_index/"+RUN_NAME
-BLAST_DB_PATH = NEXTFLOW_DIR + "/blast_DB/"+RUN_NAME
-ALIGNMENTS    = NEXTFLOW_DIR+"/alignments/"+RUN_NAME
+PREFIX = "assets"
+
+BIODB_DB_PATH = PREFIX+"/db/"+RUN_NAME
+SEARCH_INDEX  = PREFIX+"/search_index/"+RUN_NAME
+BLAST_DB_PATH = PREFIX+"/blast_DB/"+RUN_NAME
 
 ALLOWED_HOSTS = hosts.split(",")
 
 BIODB_CONF = {
     "zdb.db_type" : "sqlite",
     "zdb.db_name" : "George",
-    "zdb.db_psswd" : ""
+    "zdb.psswd" : ""
 }
 
 

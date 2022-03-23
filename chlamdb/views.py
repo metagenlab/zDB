@@ -1306,9 +1306,8 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
     path = settings.BASE_DIR + '/assets/' + asset_path
     e_tree.render(path, dpi=1200)
 
-    asset_algn_file = f"/alignments/{og_filename}"
-    asset_algn_file_path = settings.BASE_DIR + "/assets/" + asset_algn_file
-    return {"og_phylogeny": asset_path, "root": root, "og_alignment": asset_algn_file}
+    algn_file = f"/alignments/{og_filename}"
+    return {"og_phylogeny": asset_path, "root": root, "og_alignment": algn_file}
 
 
 def tab_og_conservation_tree(db, group, compare_to=None):
