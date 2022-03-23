@@ -1,3 +1,160 @@
+/* Met page */
+
+  .serviceBox_met{
+    color: #555;
+    font-family: 'Poppins', sans-serif;
+    text-align: right;
+    padding: 10px 10px 10px 20px;
+    position: relative;
+    z-index: 1;
+    min-height: 500px;
+    min-width: 500px;
+    max-width: 600px;
+    border-radius: 25px;
+    background-color: #e0e0e0e1;
+   
+}
+
+
+
+.serviceBox_met:before,
+.serviceBox_met:after{
+    content: '';
+    width: calc(100% - 121px);
+    height: calc(100% - 60px);
+    border-left: 2px solid #333;
+    border-top: 2px solid #333;
+    position: absolute;
+    bottom: 0;
+    left: 4px;
+
+}
+.serviceBox_met:after{
+    background-color: #256d97;
+    border: none;
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    left: 0;
+    
+   
+}
+
+
+.serviceBox_met .service-icon{
+    color: rgb(0, 0, 0);
+    background-color: #256d97 ;
+    font-size: 50px;
+    text-align: center;
+    line-height: 100px;
+    height: 100px;
+    width: 100px;
+    margin: 0 0 30px;
+    border-radius: 50%;
+    border: 4px solid rgb(228, 6, 73);
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    display: inline-block;
+    position: relative;
+
+}
+.serviceBox_met .service-icon:before{
+    content: '';
+    border: 2px solid #000000;
+    border-left-color: transparent;
+    border-top-color: transparent;
+    border-radius: inherit;
+    transform: rotate(45deg);
+    position: absolute;
+    right: -8px;
+    top: -8px;
+    bottom: -8px;
+    left: -10px;
+    
+}
+
+
+.serviceBox_met .service-icon_2{
+    color: rgb(0, 0, 0);
+    background-color: #256d97 ;
+    font-size: 50px;
+    text-align: center;
+    line-height: 100px;
+    height: 100px;
+    width: 100px;
+    margin: 0 0 30px;
+    border-radius: 50%;
+    border: 4px solid rgb(39, 176, 255);
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    display: inline-block;
+    position: relative;
+}
+.serviceBox_met .service-icon_2:before{
+    content: '';
+    border: 2px solid #333;
+    border-left-color: transparent;
+    border-top-color: transparent;
+    border-radius: inherit;
+    transform: rotate(45deg);
+    position: absolute;
+    right: -8px;
+    top: -8px;
+    bottom: -8px;
+    left: -8px;
+}
+
+.serviceBox_met .title{
+    
+    text-transform: uppercase;
+    text-align: left;
+   
+}
+.serviceBox_met .description{
+    font-size: 15px;
+    line-height: 20px;
+    text-align: left;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+
+
+
+.genome_search {
+    font-family: inherit, Arial, Helvetica, sans-serif;
+    font-size: 1em;
+    letter-spacing: 1px;
+    padding: 0.7em 1em 0.7em;
+    outline: 0;
+    position: relative;
+    float: left;
+    font-weight:300;
+    text-align:center; 
+  }
+  
+
+.search_form_met{
+    position: absolute;
+    z-index: 9;
+}
+
+.column {
+    float: left;
+    width: 50%;
+    padding: 10px;
+    height: 300px;
+    min-width: 200px;
+  }
+  
+ 
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+    
+  }
+
+
+
 .fill .link_boxes {
     color: rgb(255, 255, 255);
     text-decoration: none
@@ -107,9 +264,7 @@
     height: 100px;
     width: 100px;
     margin: 0 0 30px;
-    border-radius: 50%;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-      position: relative;
+    position: relative;
 }
 .serviceBox_2 .service-icon_2:before{
     content: '';
@@ -183,7 +338,7 @@
     width: 100px;
     margin: 0 0 30px;
     border-radius: 50%;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
     display: inline-block;
     position: relative;
 }
@@ -220,7 +375,6 @@
     width: 100px;
     margin: 0 0 30px;
     border-radius: 50%;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
     display: inline-block;
     position: relative;
 }
@@ -245,12 +399,13 @@
    
 }
 .serviceBox .description{
-    font-size: 13px;
+    font-size: 15px;
     line-height: 20px;
     text-align: left;
     letter-spacing: 0.5px;
     margin: 0;
 }
+
 
 
 #container_boxes {

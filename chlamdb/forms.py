@@ -310,12 +310,40 @@ def make_module_overview_form(db, sub_sub_cat=False):
 
     if sub_sub_cat:
         categories = db.get_module_sub_categories()
+
+        CHOICES = [(cat_id, cat) for cat_id, cat in categories]
+        class ModuleCatChoice(forms.Form):
+            subcategory = forms.ChoiceField(choices=CHOICES)
     else:
         categories = db.get_module_categories()
 
-    CHOICES = [(cat_id, cat) for cat_id, cat in categories]
+        CHOICES = [(cat_id, cat) for cat_id, cat in categories]
+        class ModuleCatChoice(forms.Form):
+            category = forms.ChoiceField(choices=CHOICES)
+
+    return ModuleCatChoice
+
+
+def make_pathway_overview_form(db):
+    
+    pathway_id = db.get_pathways()
+    choices = [(path_id, path_desc) for path_id, path_desc in pathway_id]
     class ModuleCatChoice(forms.Form):
-        category = forms.ChoiceField(choices=CHOICES)
+        pathway = forms.ChoiceField(choices=choices)
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            self.helper.form_action = '../KEGG_mapp_ko'
+            self.helper.layout = Layout(
+                Fieldset(
+                        "",
+                        Column(
+                        Row('pathway'),
+                        Submit('submit', 'Submit',
+                            style=" margin-top:15px; margin-bottom:15px; margin-right:15px ; color: black; box-color: rgb(255, 255, 255) ")))
+                )
 
     return ModuleCatChoice
 
