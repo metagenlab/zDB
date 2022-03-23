@@ -47,6 +47,7 @@ urlpatterns = [
     re_path(r'^extract_ko/$', views.extract_ko, name="extract_ko"),
     re_path(r'^extract_ko/([a-zA-Z0-9_]+)$', views.extract_ko, name="extract_ko"),
     re_path(r'^venn_pfam/$', views.venn_pfam, name="venn_pfam"),
+    re_path(r'^KEGG_mapp_ko$', views.KEGG_mapp_ko, name="KEGG_mapp_ko"),
     re_path(r'^KEGG_mapp_ko/([a-zA-Z0-9_\.]+)$', views.KEGG_mapp_ko, name="KEGG_mapp_ko"),
     re_path(r'^KEGG_mapp_ko/([a-zA-Z0-9_\.]+)/([0-9]+)$', views.KEGG_mapp_ko, name="KEGG_mapp_ko"),
     re_path(r'^KEGG_module_map/([a-zA-Z0-9_\.]+)$', views.KEGG_module_map, name="KEGG_module_map"),
@@ -67,6 +68,8 @@ urlpatterns = [
     re_path(r'^genomes_intro', views.genomes_intro, name='genomes_intro'),
     re_path(r'^extract_contigs/([0-9]+)', views.extract_contigs, name='extract_contigs'),
     re_path(r'^extract_region', views.extract_region, name='extract_region'),
+    re_path(r'^priam_kegg_genomes/$', views.priam_kegg_genomes, name="priam_kegg_genomes"),
+    re_path(r'^priam_kegg_genomes_modules/$', views.priam_kegg_genomes_modules, name="priam_kegg_genomes_modules"),
     re_path(r'^.*$', views.home, name="home"),
     #re_path(r'^FAQ',TemplateView.as_view(template_name='FAQ.html')),
 ]

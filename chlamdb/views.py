@@ -30,6 +30,7 @@ from chlamdb.forms import make_blast_form
 from chlamdb.forms import make_extract_form
 from chlamdb.forms import make_metabo_from
 from chlamdb.forms import make_module_overview_form
+from chlamdb.forms import make_pathway_overview_form
 from chlamdb.forms import make_venn_from
 from chlamdb.forms import make_single_genome_form
 
@@ -2222,16 +2223,42 @@ def gen_pathway_profile(db, ko_ids):
     return e_tree
 
 
-def KEGG_mapp_ko(request, map_name, taxon_id=None):
+def extract_map(db, request):
+    if request.method != "POST":
+        raise Exception("Wrong method")
+
+    if "pathway" not in request.POST:
+        raise Exception("Missing argument")
+
+    return int(request.POST["pathway"])
+
+
+def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    pathway = int(map_name[len("map"):])
-    kos = db.get_ko_pathways([pathway], search_on="pathway", as_df=True)
+
+    if map_name is None:
+        try:
+            pathway = extract_map(db, request)
+        except:
+            ctx = {"error":True, "error_message": "No pathway specified",
+                    "error_title": "Error"}
+            return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(ctx))
+        map_name = format_pathway(pathway)
+    else:
+        pathway = int(map_name[len("map"):])
 
     if not taxon_id is None:
         taxid = int(taxon_id)
 
+    kos = db.get_ko_pathways([pathway], search_on="pathway", as_df=True)
+       
     ko_list = kos["ko"].unique().tolist()
     ko_hits = db.get_ko_hits(ko_list, search_on="ko", indexing="taxid")
+
+    if ko_hits.empty:
+        ctx = {"error":True, "error_title": "No hits for this pathway"}
+        return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(ctx))
+
     ko_desc = db.get_ko_desc(ko_list)
     ko_ttl_count = ko_hits.sum(axis=1)
     hsh_organisms = db.get_genomes_description().description.to_dict()
@@ -2267,7 +2294,9 @@ def KEGG_mapp_ko(request, map_name, taxon_id=None):
         "header": header,
         "data": data,
         "asset_path": asset_path,
-        "url": map_name+"+"+"+".join(all_kos)
+        "url": map_name+"+"+"+".join(all_kos),
+        "envoi" : True,
+        "error": False
     }
 
     if not taxon_id is None:
@@ -3303,31 +3332,32 @@ def format_pathway(path_id, to_url=False, taxid=None):
         to_page = f"/KEGG_mapp_ko/{base_string}/{taxid}"
     return f"<a href=\"{to_page}\">{base_string}</a>"
 
-
-def priam_kegg(request):
+def priam_kegg_genomes(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     single_genome_form = make_single_genome_form(db)
     hsh_organisms = db.get_genomes_description().description.to_dict()
     if request.method != "POST":
         form = single_genome_form()
-        return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
+        return render(request, 'chlamdb/priam_kegg_genomes.html', my_locals(locals()))
 
     form = single_genome_form(request.POST)
     if not form.is_valid():
         form = single_genome_form()
-        return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
+        return render(request, 'chlamdb/priam_kegg_genomes.html', my_locals(locals()))
 
     taxid = form.get_genome()
     ko_hits = db.get_ko_hits([taxid], search_on="taxid")
     kos = ko_hits.index.tolist()
     ko_pathways = db.get_ko_pathways(kos)
-    header = ["Pathway", "Description", "Number of KO"]
+    print("ko_pathways_see", ko_pathways)
+    header = ["Pathway", "Description", "Occurences in the selected genome"]
     data = []
     pathway_count = collections.Counter()
     hsh_path_to_descr = {}
     for ko, pathways in ko_pathways.items():
         pathway_count.update(path_id for path_id, pathway in pathways)
         hsh_path_to_descr.update(pathways)
+        print("pathways_see", pathways)
 
     for element, count in pathway_count.items():
         descr = hsh_path_to_descr[element]
@@ -3336,8 +3366,76 @@ def priam_kegg(request):
 
 
     ctx = {"envoi":True, "data":data, "header": header, "organism":hsh_organisms[taxid]}
-    return render(request, 'chlamdb/priam_kegg.html', my_locals(ctx))
+    return render(request, 'chlamdb/priam_kegg_genomes.html', my_locals(ctx))
 
+def priam_kegg_genomes_modules(request):
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    single_genome_form = make_single_genome_form(db)
+    hsh_organisms = db.get_genomes_description().description.to_dict()
+    if request.method != "POST":
+        form = single_genome_form()
+        return render(request, 'chlamdb/priam_kegg_genomes_modules.html', my_locals(locals()))
+
+    form = single_genome_form(request.POST)
+    if not form.is_valid():
+        form = single_genome_form()
+        return render(request, 'chlamdb/priam_kegg_genomes_modules.html', my_locals(locals()))
+
+    taxid = form.get_genome()
+    list_taxid = [""]
+    list_taxid.append(taxid)
+    module_hits = db.get_ko_count_cat(taxon_ids=list_taxid)
+    grouped_count = module_hits.groupby(["taxon_id", "module_id"]).sum()
+    grouped_count = grouped_count.unstack(level="taxon_id")
+    grouped_count.columns = grouped_count["count"].columns
+    grouped_count.fillna(0, inplace=True, downcast="infer")
+    taxids = grouped_count.columns
+    genomes = db.get_genomes_description().description.to_dict()
+    modules_info = db.get_modules_info(grouped_count.index.tolist(), as_pandas=True)
+    all_infos = modules_info.set_index("module_id").join(grouped_count)
+
+    header = ["Module", "Category", "Sub-category", "Description"]
+    entries = []
+
+    taxons = []
+    for taxid in taxids:
+        taxons.append(genomes[taxid])
+
+    for module_id, data in all_infos.iterrows():
+        line = [format_module(module_id, to_url=True), data["cat"], data.subcat, data.descr]
+        for taxid in taxids:
+            line.append(data[taxid])
+        entries.append(line)
+    envoi_comp=True
+    return render(request, 'chlamdb/priam_kegg_genomes_modules.html', my_locals(locals()))
+
+def priam_kegg(request):
+
+                    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+                    module_overview_form = make_module_overview_form(db)
+                    form_cat = module_overview_form(request.POST)
+                    form_cat = module_overview_form()
+                    
+                    single_genome_form = make_single_genome_form(db)
+                    form_genome = single_genome_form(request.POST)
+                    form_genome = single_genome_form()
+                    
+                    module_overview_form = make_module_overview_form(db, True)
+                    form_subcat = module_overview_form(request.POST)
+                    form_subcat = module_overview_form()
+        
+                    comp_metabo_form = make_metabo_from(db)
+                    form_module = comp_metabo_form(request.POST)
+                    form_module = comp_metabo_form()
+
+                    pathway_overview_form = make_pathway_overview_form(db)
+                    form_pathway = pathway_overview_form(request.POST)
+                    form_pathway = pathway_overview_form()
+
+                    return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
+
+
+                
 
 def kegg_module_subcat(request):
     biodb = settings.BIODB_DB_PATH
@@ -3354,26 +3452,39 @@ def kegg_module_subcat(request):
         form = module_overview_form()
         return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
 
-    category        = form.cleaned_data["category"]
+    category        = form.cleaned_data["subcategory"]
     leaf_to_name    = db.get_genomes_description()
     ko_count_subcat = db.get_ko_count_cat(subcategory=category)
+    subcat_name_id = db.get_module_sub_categories(module_ids=category)
+    subcat_name=[name for id, name  in subcat_name_id][0]
+    
 
+    cat = form.cleaned_data["subcategory"]
+    modules_infos = db.get_modules_info(ids=[cat], search_on="subcategory")
+    cat_count = db.get_ko_count_cat(category=cat)
+    leaf_to_name = db.get_genomes_description()
     grouped_count = ko_count_subcat.groupby(["taxon_id", "module_id"]).sum()
+    if grouped_count.empty:
+        n_occurences = pd.DataFrame()
+    else:
+        n_occurences = grouped_count.groupby(["module_id"]).count()
+
+    data = []
+    expression_tree = {}
+    for module_id, descr, definition, *other in modules_infos:
+        occurences = 0
+        if module_id in n_occurences.index:
+            occurences = n_occurences["count"].loc[module_id]
+            parser = ModuleParser(definition)
+            expression_tree[module_id] = parser.parse()
+        data.append((format_module(module_id, to_url=True), descr, occurences))
 
     unique_module_ids = ko_count_subcat.index.get_level_values("module_id").unique().tolist()
     if len(unique_module_ids) == 0:
         # add error message : no module found
         envoi = True
         return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
-
-    module_infos = db.get_modules_info(unique_module_ids)
-    expression_tree = {}
-    for module_id, descr, definition, *other in module_infos:
-        parser = ModuleParser(definition)
-        expression_tree[module_id] = parser.parse()
-
-    labels = [format_module(val[0]) for val in module_infos]
-
+    
     grouped_count = grouped_count.unstack(level=1, fill_value=0)
     grouped_count.columns = [col for col in grouped_count["count"].columns]
     ref_tree = db.get_reference_phylogeny()
@@ -3415,6 +3526,8 @@ def kegg_module(request):
     modules_infos = db.get_modules_info(ids=[cat], search_on="category")
     cat_count = db.get_ko_count_cat(category=cat)
     leaf_to_name = db.get_genomes_description()
+    cat_name_id = db.get_module_categories(module_ids=cat)
+    cat_name=[name for id, name  in cat_name_id][0]
     grouped_count = cat_count.groupby(["taxon_id", "module_id"]).sum()
     if grouped_count.empty:
         n_occurences = pd.DataFrame()
@@ -3474,11 +3587,16 @@ def module_comparison(request):
         return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
 
     taxids = form.get_choices()
+
     if len(taxids) == 0:
         form = comp_metabo_form()
         return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
 
     module_hits = db.get_ko_count_cat(taxon_ids=taxids)
+    print("print_taxids", taxids)
+    print("print_module_hits", module_hits)
+    tipo = type(taxids)
+    print("print_tipo", tipo)
     grouped_count = module_hits.groupby(["taxon_id", "module_id"]).sum()
     grouped_count = grouped_count.unstack(level="taxon_id")
     grouped_count.columns = grouped_count["count"].columns

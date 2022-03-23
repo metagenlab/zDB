@@ -63,8 +63,7 @@
               <li class="analyses_intra"><a   href="{% url 'circos' %}">Circos</a></li>
               {% if optional2status|keyvalue:"KEGG" %}
           <li  class="sidebar-dropdown" ><p>Metabolism</p>
-          <li class="analyses_intra"><a    href="{% url 'priam_kegg' %}">Kegg maps</a></li>
-          <li class="analyses_intra"><a  href="{% url 'kegg_module' %}">Kegg modules</a></li>
+          <li class="analyses_intra"><a    href="{% url 'priam_kegg' %}">Kegg based</a></li>
                 {% endif %}
 
           <hr class="line-menu">
