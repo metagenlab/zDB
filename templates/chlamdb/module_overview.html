@@ -17,39 +17,19 @@
             <div class="row">
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
-                 <div class="panel-title"><b>Metabolism: Kegg modules </b></div>
 
-                        <ul id="tabs_main" class="nav nav-tabs" style="margin-top: 2em;" >
-                            <li class="active"><a href="{% url 'kegg_module' %}">Category Heatmap</a></li>
-                            <li><a href="{% url 'kegg_module_subcat' %}">Sub Category Heatmap</a></li>
-                            <li><a href="{% url 'module_comparison' %}">Compare strains</a></li>
+              </div>
 
-                        </ul>
-
-                        <br>
-                        <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Occurrences of the Kegg category of interest in the database </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#kegg-modules" id="show-option" target="_blank" title="Select a Kegg category and display the occurences of its Kegg modules within the database and visualize their distribution in a heatmap "><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
-
-                    
-                   <form action='{% url "kegg_module" %}' method="post">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <input type="submit" value="Submit" />
-
-                    </form>
-                </div>
                     {%if envoi %}
-                       <h3>{{ fam }} </h3>
+                    <b> Category: {{cat_name}} </b>
                        <div class="panel panel-success" style="width:100%; top: 200px; margin-top: 2em;">
                         <div class="panel-heading" style="width:100%">
                             <h3 class="panel-title">Help</h3>
                         </div>
                         <p style="margin: 10px 10px 10px 10px">  
-                            Two outpus are generated:
+                            Two outpus are generated :
                             <br>-<strong>Maps</strong>: list of Kegg modules, their description and frequency in all the genomes.
                             <br>-<strong>Profile</strong>: annotated phylogenetic tree to visualize the distribution of the enzymes of each Kegg module among the genomes in the annotated phylogenetic tree.
-                             
-               
-          
                     </div>
                         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                             <li class="active"><a href="#tab1" data-toggle="tab">Maps</a></li>
@@ -79,7 +59,7 @@
                             </div>
 
                             <div class="tab-pane" id="tab2">
-                                <object type="image/svg+xml" data="{% static asset_path %}" id="metabo_tree"></object>
+                                <object type="image/svg+xml" data="{% static asset_path %}" id="metabo_tree" style="width: 100%;"></object>
 								<a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
                             </div>
                         </div>
@@ -121,6 +101,4 @@ $('#module_category').DataTable( {
 } );
 
 </script>
-
-{% include "chlamdb/style_menu.html" %}
 </html>

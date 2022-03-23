@@ -25,18 +25,14 @@
                     <div id="my-tab-content" class="tab-content">
                         <div class="tab-pane active" id="home">
 
-                            <div>
+                              <div>
                                 <div class="jumbotron">
-                                <h1>zDB</h1>
-                                <center>
-                                  <p>
-                                  A comparative genomics database
-                                  </p>
-                                </center>
+                                  <h1>zDB</h1>
+                                  <center><p>A comparative genomics database</p> </center>
                                 </div>
                               </div>
                              <!-- Title end -->
-                            
+                     </div>  
                     <!-- Images and boxes menu-->
                 
 
@@ -76,7 +72,7 @@
                             <div class="serviceBox">
                               <a  href="{% url 'phylogeny_intro' %}">
                                 <div class="service-icon">
-                                    <span><i class="fa fa-tree"></i></span>
+                                  <span><img src="{% static '/img/icons8-active-directory-50.png' %}"/></span>
                                 </div>
                                 <br></a>
                                 <h3 class="title">Phylogeny</h3> 
@@ -88,66 +84,82 @@
                     </div>
                 <br>
                 
-                      <div class="col-md-3 col-sm-6"   style=" min-width: 200px;"  >
-                          <div class="serviceBox"  >
+                <div class="row">
+                      <div class="col-md-4 col-sm-7"   style=" min-width: 200px;"  >
+                          <div class="serviceBox" >
                               <div class="service-icon_2">
-                                  <span><i class="fa fa-shapes"></i></span>
+                                  <span><i class="fa fa-grip-lines"></i></span>
                               </div>
-                              <h3 class="title">Comparisons</h3>
-                              <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}{% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}{% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.   </p>
-                              <br>  
-                              <div class= "col-md-3 col-sm-6">
-                                    <button type="button_analyses" class="fill" ><a class="link_boxes" href="{% url 'extract_orthogroup' %}"><span class="link"></span> Orthogroups</a></button>
-                                    {% if optional2status|keyvalue:"COG" == 1 %}
-                                    <button type="button_analyses" class="fill" ><a class="link_boxes"  href="{% url 'extract_cog' %}"><span class="link"></span>COGs</a></button>
-                                    {% endif %}
-                                    {% if optional2status|keyvalue:"KEGG" %}
-                                    <button type="button_analyses" class="fill" ><a class="link_boxes" href="{% url 'extract_ko' %}">  <span class="link"></span>Kegg Orthologs</a></button>
-                                    {% endif %}
-                                    {% if optional2status|keyvalue:"pfam" == 1 %}
-                                    <button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'extract_pfam' %}">  <span class="link"></span>Pfam domains</a></button>
-                                    {% endif %}
-                               </div>
+                              <h3 class="title" >Homology search</a></h3> 
+                              <p class="description"> Blast an input sequence against the genomes of the database. You can select among blastn, blastp, or the six-frame translation-based approaches, blastx and tblastn. </p>
+                              <br> 
+                              <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'blast' %}">  <span class="link"></span> Blast </a></button></div>
                           </div>
-                      </div>
-                      {% if optional2status|keyvalue:"KEGG" == 1 %}
-                      <div class="col-md-3 col-sm-6"    style=" min-width: 200px;" >
-                        <div  class="serviceBox" >
-                            <div class="service-icon_2">
-                                <span><i class="fa fa-cogs"></i></span>
-                            </div>
-                            <h3 class="title" >Metabolism</h3>
-                            <p class="description"> Discover which metabolic pathways are present in the genomes. KEGG categories can be investigated checking which KEGG entries are present in each KEGG module. Entries can be visualized in lists or used to generate an annotated phylogeny. In addition, you can visualize in the KEGG maps which genes of a specific pathway are carried by a genome of interest. </p>
-                            <br> 
-                            <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a class="link_boxes"  href="{% url 'priam_kegg' %}">  <span class="link"></span>Kegg maps</a></button>
-                           <button type="button_analyses" class="fill" ><a  class="link_boxes"   href="{% url 'kegg_module' %}">  <span class="link"></span>Kegg modules</a></button></div>
                         </div>
-                    </div>
-                    {% endif %}
-                  <div class="col-md-3 col-sm-6"  style=" min-width: 200px;">
-                    <div  class="serviceBox" >
-                        <div class="service-icon_2">
-                            <span><i class="fa fa-circle-notch"></i></span>
-                        </div>
-                        <h3 class="title">Genome alignments</a></h3>
-                        <p class="description"> Generate a clickable version of circos plot indicating the presence/absence of homologous proteins in one or multiple genomes, the GC content and navigate to the description of the locus tags of interest. </p>
-                        <br> 
-                        <p class="description"> Align target genomic regions of two or more genomes and plot them. </p>
-                        <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a  class="link_boxes"   href="{% url 'circos' %}">  <span class="link"></span>Plot region</a></button>
-                        <button type="button_analyses" class="fill" ><a  class="link_boxes"   href="{% url 'circos' %}">  <span class="link"></span>Circos</a></button></div>
-                    </div>
-                </div>
-              
-                <div class="col-md-3 col-sm-6"    style=" min-width: 200px;">
-                  <div class="serviceBox" >
-                      <div class="service-icon_2">
-                          <span><i class="fa fa-grip-lines"></i></span>
+                      <div class="col-md-4 col-sm-7"    style=" min-width: 200px;" >
+                        <div class="serviceBox"  >
+                          <div class="service-icon_2">
+                            <span><i class="fa fa-object-ungroup"></i></span>
+                          </div>
+                          <h3 class="title">Orthology</h3>
+                          <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}{% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}{% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.   </p>
+                          <br>  
+                          <div class= "col-md-4 col-sm-7">
+                                <button type="button_analyses" class="fill" ><a class="link_boxes" href="{% url 'extract_orthogroup' %}"><span class="link"></span> Orthogroups</a></button>
+                           </div>
                       </div>
-                      <h3 class="title" >Homology search</a></h3> 
-                      <p class="description"> Blast an input sequence against the genomes of the database. You can select among blastn, blastp, or the six-frame translation-based approaches, blastx and tblastn. </p>
-                      <br> 
-                      <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'blast' %}">  <span class="link"></span> Blast </a></button></div>
                   </div>
+                  <div class="col-md-4 col-sm-7"  style=" min-width: 200px;">
+                    <div class="serviceBox"  >
+                        <div class="service-icon_2">
+                          <span><i class="fa fa-asterisk"></i></span>
+                        </div>
+                        <h3 class="title">Annotations</h3>
+                        <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}{% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}{% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.   </p>
+                        <br>  
+                        <div class= "col-md-4 col-sm-7">
+                              {% if optional2status|keyvalue:"COG" == 1 %}
+                              <button type="button_analyses" class="fill" ><a class="link_boxes"  href="{% url 'extract_cog' %}"><span class="link"></span>COGs</a></button>
+                              {% endif %}
+                              {% if optional2status|keyvalue:"KEGG" %}
+                              <button type="button_analyses" class="fill" ><a class="link_boxes" href="{% url 'extract_ko' %}">  <span class="link"></span>Kegg Orthologs</a></button>
+                              {% endif %}
+                              {% if optional2status|keyvalue:"pfam" == 1 %}
+                              <button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'extract_pfam' %}">  <span class="link"></span>Pfam domains</a></button>
+                              {% endif %}
+                        </div>
+                     </div>
+                  </div> 
+              </div>
+
+              <div class="row">
+                <div class="col-md-4 col-sm-7"    style=" min-width: 200px;">
+                  <div  class="serviceBox" >
+                    <div class="service-icon_2">
+                        <span><i class="fa fa-circle-notch"></i></span>
+                    </div>
+                    <h3 class="title">Genome alignments</a></h3>
+                    <p class="description"> Generate a clickable version of circos plot indicating the presence/absence of homologous proteins in one or multiple genomes, the GC content and navigate to the description of the locus tags of interest. </p>
+                    <br> 
+                    <p class="description"> Align target genomic regions of two or more genomes and plot them. </p>
+                    <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a  class="link_boxes"   href="{% url 'circos' %}">  <span class="link"></span>Plot region</a></button>
+                    <button type="button_analyses" class="fill" ><a  class="link_boxes"   href="{% url 'circos' %}">  <span class="link"></span>Circos</a></button></div>
+                 </div>
+               </div>
+                
+                {% if optional2status|keyvalue:"KEGG" == 1 %}
+                <div class="col-md-4 col-sm-7"    style=" min-width: 200px;">
+                  <div  class="serviceBox" >
+                      <div class="service-icon_2">
+                        <span><i class="fa fa-cogs"></i></span>
+                      </div>
+                      <h3 class="title" >Metabolism</h3>
+                      <p class="description"> Discover which metabolic pathways are present in the genomes. KEGG categories can be investigated checking which KEGG entries are present in each KEGG module. Entries can be visualized in lists or used to generate an annotated phylogeny. In addition, you can visualize in the KEGG maps which genes of a specific pathway are carried by a genome of interest. </p>
+                      <br> 
+                      <div class= "col-md-4 col-sm-7"><button type="button_analyses" class="fill" ><a class="link_boxes"  href="{% url 'priam_kegg' %}">  <span class="link"></span>Kegg based</a></button>
+                  </div>
+                </div>
+                {% endif %}
               </div>
           
                   </div>

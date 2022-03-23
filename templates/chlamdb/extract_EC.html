@@ -40,15 +40,7 @@
               <div class="row">
                 <div class="col-lg-12">
                    {% include "chlamdb/menu.html" %}
-
-                    <nav>
-                        <ul id="tabs_main" class="nav nav-tabs">
-                            <li class="active"><a href="{% url 'extract_EC' %}">Detailed comparison</a></li>
-                            <li><a href="{% url 'venn_EC' %}">Venn diagram</a></li>
-                            <li><a href="{% url 'plot_heatmap' 'EC' %}">Whole proteomes heatmaps</a></li>
-                            <li><a href="{% url 'pan_genome' 'EC' %}">Pan/Core genome plots</a></li>
-                        </ul>
-                    </nav>
+                   {% include "chlamdb/extract_nav_tabs_template.html" with type="EC" active_tab="det" %}
 
                      <div id="extract_form">
 

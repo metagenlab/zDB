@@ -15,50 +15,86 @@
       <div id="wrapper">
           <div id="page-content-wrapper">
             <div class="row">
-              <div class="col-lg-12">
-                 {% include "chlamdb/menu.html" %}
-                 <div class="panel-title"><b>Metabolism: Kegg modules </b></div>
 
-                 <ul id="tabs_main" class="nav nav-tabs" style="margin-top: 2em;" >
-                            <li><a href="{% url 'kegg_module' %}">Category Heatmap</a></li>
-                            <li class="active"><a href="{% url 'kegg_module_subcat' %}">Sub Category Heatmap</a></li>
-                            <li><a href="{% url 'module_comparison' %}">Compare strains</a></li>
+                  <div class="col-lg-12">
+                    {% include "chlamdb/menu.html" %}
 
-                        </ul>
-
-                        <br>
-                        <center><p class="home-title" style="color: rgb(0, 86, 121);"><b>Occurrences of the Kegg subcategory of interest in the database </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#kegg-modules" id="show-option" target="_blank"  title="Select a Kegg subcategory and display a phylogenetic tree annotated with a heatmap of the distribution of the corrispong Ko entries"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
-
-                   <form action='{% url "kegg_module_subcat" %}' method="post">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <input type="submit" value="Submit" />
-
-                    </form>
                   </div>
-                    {%if envoi %}
-                       <h3>{{ fam }} </h3>
-
-                        <div id="my-tab-content" class="tab-content" style="height:1000px">
-
-
-                            <div class="tab-pane active" id="tab2" style="height:1000px; margin-top: 2em;">
-                                <object type="image/svg+xml" data="{% static asset_path %}" id="metabo_tree"></object>
-								<a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
-                            </div>
-
-
-                        </div>
-                    {%endif%}
-
+                  <b> Subcategory:  {{subcat_name}} </b>
+                  <div class="panel panel-success" style="width:100%; top: 200px; margin-top: 2em;">
+                    <div class="panel-heading" style="width:100%">
+                        <h3 class="panel-title">Help</h3>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px">  
+                        Two outpus are generated:
+                        <br>-<strong>Maps</strong>: list of Kegg modules, their description and frequency in all the genomes.
+                        <br>-<strong>Profile</strong>: annotated phylogenetic tree to visualize the distribution of the enzymes of each Kegg module among the genomes in the annotated phylogenetic tree.
                 </div>
-            </div>
-        </div>
+
+                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                        <li class="active"><a href="#tab1" data-toggle="tab">Maps</a></li>
+                        <li><a href="#tab2" data-toggle="tab">Profile</a></li>
+                    </ul>
+
+                    <div id="my-tab-content" class="tab-content" style="margin-top: 1em;">
+                        <div class="tab-pane active" id="tab1">
+                            <table class="display" id="module_category">
+                                <thead>
+                                    <tr>
+                                        <th>Module</th>
+                                        <th>Description</th>
+                                        <th># occurences</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for line in data %}
+                                        <tr>
+                                        {% for value in line %}
+                                            <td>{{value|safe}}</td>
+                                        {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="tab-pane" id="tab2">
+                    <div class="tab-pane active" id="tab2" style="height:1000px; margin-top: 2em;">
+                      <object type="image/svg+xml" data="{% static asset_path %}" id="metabo_tree"></object>
+								      <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+                    </div>
+                  </div>
+              </div>
+           </div>
       </div>
     </div>
   </div>
 
 
 </body>
-{% include "chlamdb/style_menu.html" %}
+
+<script>
+
+  $(document).ready(function() {
+  $('#module_category').DataTable( {
+          dom: 'Bfrtip',
+          "order": [[2, "desc" ]],
+          "pageLength": 15,
+          "paging":   true,
+          "ordering": true,
+          "info":     false,
+          buttons: [
+          {
+              extend: 'excel',
+              title: 'module_category'
+          },
+          {
+              extend: 'csv',
+              title: 'module_category'
+          }
+          ],
+      } );
+  } );
+  
+  </script>
 </html>

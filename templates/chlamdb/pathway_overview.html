@@ -17,12 +17,11 @@
             <div class="row">
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
-		 <div class="panel-title"><b>Metabolism: Kegg maps - Kegg pathways </b></div>
+				 <div class="panel-title"><b>Metabolism: Kegg maps - Kegg pathways </b></div>
                  <br>
-
 				 <br>
 				</div>
-                 <p class="page-title"><b><a href='http://www.genome.jp/kegg-bin/show_pathway?{{url}}' style="color: rgb(0, 86, 121);"target="_blank"> {{pathway}} pathway </a>{% if organism%} in {{organism}} {%endif%} </b><a href="/docs/index.html" id="show-option" title="Retrieve information about the metabolism of the genome of interest "><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                 <center><p class="home-title" style="color: rgb(0, 86, 121);"><b><a href='http://www.genome.jp/kegg-bin/show_pathway?{{url}}' style="color: rgb(0, 86, 121);"target="_blank"> {{pathway}} pathway </a>{% if organism%} in {{organism}} {%endif%} </b><a href="/docs/index.html" id="show-option" title="Retrieve information about the metabolism of the genome of interest "><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
 				 <hr class="lines-home">
 				 <div class="panel panel-success" style="width:100%; top: 200px; float: left;">
 					<div class="panel-heading" style="width:100%">
@@ -67,8 +66,6 @@
 				    </div>
 				</div>
               </div>
-	      {% endif %}
-
           </div>
         </div>
       </div>
@@ -76,8 +73,6 @@
   </div>
 </div>
 </body>
-
-
 {% include "chlamdb/style_menu.html" %}
 
 <script type="text/javascript">
