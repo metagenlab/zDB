@@ -156,7 +156,7 @@ margin-top: 15em;
                 <div class="col-lg-12">
                   {% include "chlamdb/menu.html" %}
 
-                  <p class="page-title"><b></a>Blast a sequence of interest against the genomes of the database </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#homology-search-blast" id="show-option" target="_blank"  title=" The blast input can be either an amino-acid or a nucleotide sequence, or a set (one or more) of fasta sequences"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                  <p class="page-title"><b></a>Blast a sequence of interest against the genomes of the database </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#homology-search-blast" id="show-option" target="_blank"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
                   <hr class="lines-home">
          
                   <div class="panel panel-success">
@@ -174,12 +174,12 @@ margin-top: 15em;
                       </table>
 		    </div>
 
-	            <div style="margin: 10px 10px 10px 10px">
-		     <p>
-		     The blast input can be either an amino-acid or a nucleotide sequence, or a set (one or more) of fasta sequences.
-		     </p>
-		    </div>
 
+		 
+			<div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
+				<a href="#" class="close" data-dismiss="alert">&times;</a>
+				<strong>Note!</strong>  The blast input can be either an amino-acid or a nucleotide sequence, or a set (one or more) of fasta sequences.
+			</div>
                   
                   <form action="{% url "blast" %}" method="post">{% csrf_token %}
                     {{ form.as_p }} 
