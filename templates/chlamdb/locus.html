@@ -152,7 +152,7 @@
 				  </div>
 
 				<div class="tab-pane" id="swissprot_homologs_tab">
-					<div class="col-md-12 col-lg-8" style="padding-top:20px">
+					<div class="col-md-12 col-lg-10" style="padding-top:20px">
 
 					<table id="blast_swissprot_table" class="table">
 					  <thead>
@@ -166,7 +166,12 @@
 						  {% for values in swissprot_blast_data %}
 						  <tr>
 							  {% for entry in values %}
-							  <td>{{entry|safe}}</td>
+							      {% if forloop.counter0 == 0 %}
+								      <td><a href="https://www.uniprot.org/uniprot/{{entry|safe}}">{{entry|safe}}</a></td>
+								  {% else %}
+								      <td>{{entry|safe}}</td>
+								  {% endif %}
+							  
 							  {% endfor %}
 						  </tr>
 						  {%  endfor %}
