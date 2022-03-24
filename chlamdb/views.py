@@ -105,6 +105,21 @@ page2title = {
     'plot_region':'Genome alignments: Plot region',
     'circos': 'Genome alignments: Circos plot',
     'cog_comparison': 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'priam_kegg': 'Metabolism: kegg based',
+    'priam_kegg_genomes': 'Metabolism: kegg based',
+    'priam_kegg_genomes_modules': 'Metabolism: kegg based',
+    'KEGG_mapp_ko': 'Metabolism: kegg based',
+    'kegg_module': 'Metabolism: kegg based',
+    'kegg_module_subcat': 'Metabolism: kegg based',
+    'module_comparison': 'Metabolism: kegg based',
+    'fam_pfam': 'Pfam domain ',
+    'fam_ko': 'Kegg Ortholog ',
+    'fam_cog': 'COG Ortholog ',
+    'KEGG_module_map': 'Kegg module ',
+    'phylogeny_intro': 'Phylogeny',
+    'genomes_intro': 'Genomes: table of contents',
+    'extract_contigs': 'Genomes: table of contents',
+
 }
 
     
@@ -1038,18 +1053,11 @@ def extract_region(request):
     filenames_tax_id_db.columns = ['filename','taxon_id']
     filenames_tax_id_db.index= list(filenames_tax_id_db['taxon_id'])
     filenames_list= list(filenames_tax_id_db["filename"])
-    path_pre="temp/"
-    path_suf_faa=".faa"
-    path_faa=[path_pre + filename + path_suf_faa for filename in filenames_list]
 
-    path_suf_fna=".fna"
-    path_fna=[path_pre + filename + path_suf_fna for filename in filenames_list]
-
-    path_suf_ffn=".ffn"
-    path_ffn=[path_pre + filename + path_suf_ffn for filename in filenames_list]
-
-    path_suf_gbk=".gbk"
-    path_gbk=[path_pre + filename + path_suf_gbk for filename in filenames_list]
+    path_faa=[settings.BLAST_DB_PATH+"/faa/"+filename+".faa" for filename in filenames_list]
+    path_fna=[settings.BLAST_DB_PATH+"/fna/"+filename+".fna" for filename in filenames_list]
+    path_ffn=[settings.BLAST_DB_PATH+"/ffn/"+filename+".ffn" for filename in filenames_list]
+    path_gbk=[settings.BLAST_DB_PATH+"/gbk/"+filename+".gbk" for filename in filenames_list]
 
     filenames_tax_id_db['path_to_faa']= path_faa
     filenames_tax_id_db['path_to_fna']= path_fna
@@ -1059,39 +1067,12 @@ def extract_region(request):
     genomes_data=genomes_data.join(filenames_tax_id_db, on= "taxon_id")
     data_table_header = [ "Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding", "N plasmid contigs", "faa seq", "fna seq", "ffn seq", "gbk file"]
     data_table = genomes_data[[ "id", "description", "gc", "n_prot", "n_contigs", "length", "coding_density", "has_plasmid", "path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk" ]].values.tolist()
-
-    for i in list(filenames_tax_id.keys()): 
-        fasta_src_faa = settings.BLAST_DB_PATH + "/faa/" + i + ".faa"
-        fasta_dst_faa = settings.BASE_DIR + "/assets/temp/" + i + ".faa"
-      
-        fasta_src_fna = settings.BLAST_DB_PATH + "/fna/" + i + ".fna"
-        fasta_dst_fna = settings.BASE_DIR + "/assets/temp/" + i + ".fna"
-
-        fasta_src_ffn = settings.BLAST_DB_PATH + "/ffn/" + i + ".ffn"
-        fasta_dst_ffn = settings.BASE_DIR + "/assets/temp/" + i + ".ffn"
-
-        src_gbk = settings.NEXTFLOW_DIR + "/data/prokka_output_filtered/"  + i + ".gbk"
-        dst_gbk = settings.BASE_DIR + "/assets/temp/" + i + ".gbk"
-        try:
-            os.symlink(fasta_src_faa, fasta_dst_faa)
-            os.symlink(fasta_src_fna, fasta_dst_fna)
-            os.symlink(fasta_src_ffn, fasta_dst_ffn)
-            os.symlink(src_gbk, dst_gbk)
-            break
-        except FileExistsError:
-        
-                os.remove(fasta_dst_faa)
-                os.remove(fasta_dst_fna)
-                os.remove(fasta_dst_ffn)
-                os.remove(dst_gbk)
-                os.symlink(fasta_src_faa, fasta_dst_faa)
-                os.symlink(fasta_src_fna, fasta_dst_fna)
-                os.symlink(fasta_src_ffn, fasta_dst_ffn)
-                os.symlink(src_gbk, dst_gbk)
     return render(request, 'chlamdb/extract_region.html', my_locals(locals()))
 
 
 def extract_contigs(request, genome):
+    page_title = page2title["extract_contigs"]
+
     taxid = int(genome)
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
 
@@ -2056,6 +2037,8 @@ def tab_gen_profile_tree(db, main_series, header, intersect):
 
 # TODO : add error handling
 def fam_cog(request, cog_id):
+    page_title = page2title["fam_cog"]
+    
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
     cog_id = int(cog_id[3:])
@@ -2109,6 +2092,8 @@ def format_module(mod_id, base=None, to_url=False):
 
 
 def fam_ko(request, ko_str):
+    page_title = page2title["fam_ko"]
+
     ko_id = int(ko_str[len("K"):])
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
 
@@ -2142,6 +2127,8 @@ def fam_ko(request, ko_str):
 
 
 def fam_pfam(request, pfam):
+    page_title = page2title["fam_pfam"]
+
     context = {
         "type": "pfam",
         "menu" : True,
@@ -2174,6 +2161,7 @@ def fam_pfam(request, pfam):
     context["group_count"] = group_count
     context["info"] = [infos.loc[pfam_id]["def"]] 
     context["asset_path"] = asset_path
+    context["page_title"] = page_title
     return render(request, 'chlamdb/fam.html', my_locals(context))
 
 
@@ -2245,6 +2233,8 @@ class KOModuleChooser:
 
 
 def KEGG_module_map(request, module_name):
+    page_title = page2title["KEGG_module_map"]
+
     if request.method != "GET":
         return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
@@ -2395,8 +2385,10 @@ def extract_map(db, request):
 
 
 def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    page_title = page2title["KEGG_mapp_ko"]
 
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+   
     if map_name is None:
         try:
             pathway = extract_map(db, request)
@@ -2457,11 +2449,13 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
         "asset_path": asset_path,
         "url": map_name+"+"+"+".join(all_kos),
         "envoi" : True,
-        "error": False
+        "error": False,
+        "page_titleA" : page_title
     }
 
     if not taxon_id is None:
         ctx["organism"] = hsh_organisms[taxid]
+
     return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(ctx))
 
 
@@ -3506,6 +3500,8 @@ def format_pathway(path_id, base=None, to_url=False, taxid=None):
     return f"<a href=\"{to_page}\">{base_string}</a>"
 
 def priam_kegg_genomes(request):
+    page_title = page2title["priam_kegg_genomes"]
+
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     single_genome_form = make_single_genome_form(db)
     hsh_organisms = db.get_genomes_description().description.to_dict()
@@ -3522,15 +3518,16 @@ def priam_kegg_genomes(request):
     ko_hits = db.get_ko_hits([taxid], search_on="taxid")
     kos = ko_hits.index.tolist()
     ko_pathways = db.get_ko_pathways(kos)
-    print("ko_pathways_see", ko_pathways)
-    header = ["Pathway", "Description", "Occurences in the selected genome"]
+    genomes = db.get_genomes_description().description.to_dict()
+    print("genomes_see", genomes)
+    header = ["Pathway", "Description", hsh_organisms[taxid]]
     data = []
     pathway_count = collections.Counter()
     hsh_path_to_descr = {}
     for ko, pathways in ko_pathways.items():
         pathway_count.update(path_id for path_id, pathway in pathways)
         hsh_path_to_descr.update(pathways)
-        print("pathways_see", pathways)
+       
 
     for element, count in pathway_count.items():
         descr = hsh_path_to_descr[element]
@@ -3538,10 +3535,12 @@ def priam_kegg_genomes(request):
         data.append(entry)
 
 
-    ctx = {"envoi":True, "data":data, "header": header, "organism":hsh_organisms[taxid]}
+    ctx = {"envoi":True, "data":data, "header": header, "organism":hsh_organisms[taxid], "page_title": page_title }
     return render(request, 'chlamdb/priam_kegg_genomes.html', my_locals(ctx))
 
 def priam_kegg_genomes_modules(request):
+    page_title = page2title["priam_kegg_genomes_modules"]
+
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     single_genome_form = make_single_genome_form(db)
     hsh_organisms = db.get_genomes_description().description.to_dict()
@@ -3583,6 +3582,7 @@ def priam_kegg_genomes_modules(request):
     return render(request, 'chlamdb/priam_kegg_genomes_modules.html', my_locals(locals()))
 
 def priam_kegg(request):
+                    page_title = page2title["priam_kegg"]
 
                     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
                     module_overview_form = make_module_overview_form(db)
@@ -3611,6 +3611,8 @@ def priam_kegg(request):
                 
 
 def kegg_module_subcat(request):
+    page_title = page2title["kegg_module_subcat"]
+
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
@@ -3682,6 +3684,8 @@ def kegg_module_subcat(request):
 
 
 def kegg_module(request):
+    page_title = page2title["kegg_module"]
+
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
     module_overview_form = make_module_overview_form(db)
@@ -3746,6 +3750,8 @@ def kegg_module(request):
 
 
 def module_comparison(request):
+    page_title = page2title["module_comparison"]
+
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
     comp_metabo_form = make_metabo_from(db)
@@ -3979,6 +3985,8 @@ def faq(request):
 
 
 def phylogeny_intro(request):
+    page_title = page2title["phylogeny_intro"]
+
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
 
@@ -4031,6 +4039,8 @@ def phylogeny_intro(request):
 
 
 def genomes_intro(request):
+    page_title = page2title["genomes_intro"]
+
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
 

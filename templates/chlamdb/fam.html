@@ -21,33 +21,23 @@
               <div class="row">
                 <div class="col-lg-12">
                    {% include "chlamdb/menu.html" %}
-                   <div class="panel-title"><b>
-                    {% if type == 'cog'%}
-                    COGs 
-                    {% elif type == 'ko' %}
-                    Kegg Ortholog
-                    {% elif type == 'pfam' %}
-                    Pfam domain
-                    {% endif %} 
-                   </b>
+                  
                 </div>
                 </div>
-                   <br>
-           
                             <p class="page-title"><b>
                              {% if type == 'cog'%}
-                             COG: {{ fam }}
+                             {{ fam }}
                              {% elif type == 'pfam' %}
-                             Pfam domain: {{ fam }}
+                             {{ fam }}
                              
-                             <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#cog-pfam-annotation-summary" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></b></p></center>
+                             <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#cog-pfam-annotation-summary" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></b></center>
 
                 
                              {% elif type == 'ko' %}
-                             Kegg Ortholog: {{ fam }}
-                             {% endif %}
+                             {{ fam }}
+                             
                              <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#kegg-module-overview-page" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></b></p></center>
-
+                            {% endif %}
                             <hr class="lines-home">
 
                   
@@ -424,7 +414,7 @@
                                   <div class="tab-pane" id="tab3">
                                        <div class="row">
 										   <a download="profile_{{fam}}.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
-                                           <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree" style="width:60%"></object>
+                                           <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree" style="width:100%; height:100%"></object>
                                        </div>
                                   </div>
                                 </div> <!--tabs-->

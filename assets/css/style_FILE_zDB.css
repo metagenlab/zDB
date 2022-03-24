@@ -8,8 +8,8 @@
     position: relative;
     z-index: 1;
     min-height: 500px;
-    min-width: 500px;
-    max-width: 600px;
+    min-width: 200px;
+    max-width: 500px;
     border-radius: 25px;
     background-color: #e0e0e0e1;
    
@@ -42,8 +42,8 @@
 
 
 .serviceBox_met .service-icon{
-    color: rgb(0, 0, 0);
-    background-color: #256d97 ;
+    color: rgb(255, 255, 255);
+    background-color:#1f2e20 ;
     font-size: 50px;
     text-align: center;
     line-height: 100px;
@@ -51,7 +51,7 @@
     width: 100px;
     margin: 0 0 30px;
     border-radius: 50%;
-    border: 4px solid rgb(228, 6, 73);
+    border: 4px solid rgb(54, 134, 54);
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
     display: inline-block;
     position: relative;
@@ -74,8 +74,9 @@
 
 
 .serviceBox_met .service-icon_2{
-    color: rgb(0, 0, 0);
-    background-color: #256d97 ;
+    color: rgb(255, 255, 255);
+    background-color: #1f2e20 ;
+    ;
     font-size: 50px;
     text-align: center;
     line-height: 100px;
@@ -83,7 +84,7 @@
     width: 100px;
     margin: 0 0 30px;
     border-radius: 50%;
-    border: 4px solid rgb(39, 176, 255);
+    border: 4px solid rgb(141, 0, 19);
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
     display: inline-block;
     position: relative;
@@ -1291,7 +1292,7 @@ form.example input[type=text] {
       height: 100%;
       margin-left: -270px;
       overflow-y: auto;
-      background-color: #259725; 
+      background-color: #196d87; 
       -webkit-transition: all 0 ease;
       -moz-transition: all 0 ease;
       -o-transition: all 0 ease;

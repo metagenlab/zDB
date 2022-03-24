@@ -4,10 +4,7 @@
 <html>
 <head>
 {% load static %}
-{% load static %}
 {% load crispy_forms_tags %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.js'></script>
 <script src="{% static 'js/circos.js' %}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
 
@@ -72,46 +69,8 @@
 
 
 <script type="text/javascript">
-function hide_submenus(hidden_menu) {
-
-var menu_ul = $('.' + hidden_menu +'> ul'),
-    menu_a  = $('.' + hidden_menu +'> a');
-
-menu_ul.hide();
-
-menu_a.click(function(e) {
-    e.preventDefault();
-    if(!$(this).hasClass('active')) {
-        menu_a.removeClass('active');
-        menu_ul.filter(':visible').slideUp('normal');
-        $(this).addClass('active').next().stop(true,true).slideDown('normal');
-    } else {
-        $(this).removeClass('active');
-        $(this).next().stop(true,true).slideUp('normal');
-    }
-});
-
-};
-
-$(hide_submenus("rollmenu1"))
-
 
 {{js_code|safe}}
 
-{% if envoi %}
-/*
-  $(document).ready(function(){
-    d3.select("#download").append("button")
-            .attr("type","button")
-            .attr("class", "btn btn-primary btn-sm")
-            .text("Download SVG")
-            .on("click", function() {
-				var svg_div = document.querySelector("#heatmapChart");
-				var svg = svg_div.getElementsByTagName("svg")[0];
-			    svgExport.downloadSvg(svg, "circos_plot");
-            });
-  }); */
-{% endif %}
 </script>
-
 </html>

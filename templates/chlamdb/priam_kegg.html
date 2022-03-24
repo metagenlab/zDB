@@ -22,16 +22,16 @@
 
                  <div class="row" style="padding-top:40px">
 
-                    <div class="col-md-6 col-sm-7" >
+                    <div class="col-md-5 col-sm-7" >
                     <div class="serviceBox_met"  >
-                        <div class="service-icon">
-                          <span><i class="fa fa-dna"></i></span>
+                        <div class="service-icon_2">
+                          <span><img src="{% static '/img/icons8-dna-64.png' %}"/></span>
                         </div>
                         <h3 class="title">Genome centered modules</h3>
                         <p class="description"> List Kegg modules or Kegg modules in a genome of interest</p>
                         <br>
                         <br>
-                        <div class= "col-md-6 col-sm-6">
+                        <div class= "col-md-4 col-sm-6">
                           <form action="{% url "priam_kegg_genomes_modules" %}" method="post">{% csrf_token %}
                             {{ form_genome.as_p }}
                             <input type="submit" value="Submit" />
@@ -40,17 +40,17 @@
                     </div>
                     </div>
 
-                    <div class="col-md-6 col-sm-12"    style=" min-width: 200px;" >
+                    <div class="col-md-5 col-sm-12"  >
                     <div  class="serviceBox_met" >
-                      <div class="service-icon_2">
-                        <span><i class="fa fa-dna"></i></span>
+                      <div class="service-icon">
+                        <span><img src="{% static '/img/icons8-dna-64.png' %}"/></span>
                       </div>
                       <h3 class="title" >Genome centered pathways</h3>
                       <p class="description"> List Kegg pathways or Kegg pathways in a genome of interest</p>
                       <br>
                       <br>
-                      <div class= "col-md-6 col-sm-6">
-                        <form action="{% url "priam_kegg_genomes_modules" %}" method="post">{% csrf_token %}
+                      <div class= "col-md-4 col-sm-6">
+                        <form action="{% url "priam_kegg_genomes" %}" method="post">{% csrf_token %}
                           {{ form_genome.as_p }}
                           <input type="submit" value="Submit" />
                         </form>
@@ -63,10 +63,10 @@
                 <br>
                 <div class="row">
 
-                  <div class="col-md-6 col-sm-7" >
-                    <div class="serviceBox_met"  >
-                        <div class="service-icon">
-                          <span><img src="{% static '/img/icons8-module-50.png' %}"/></span>
+                  <div class="col-md-5 col-sm-7" >
+                    <div class="serviceBox_met "  >
+                        <div class="service-icon_2">
+                          <span><img src="{% static '/img/icons8-module-70.png' %}"/></span>
                         </div>
                         <h3 class="title">kEGG Modules centered</h3>
                         <p class="description"> Discover the distribution of Kegg Modules within the genomes of the database</p>
@@ -88,16 +88,16 @@
                         </div>
                       </div>
                   </div>
-                  <div class="col-md-6 col-sm-12"    style=" min-width: 200px;" >
-                   <div  class="serviceBox_met" >
-                      <div class="service-icon_2">
-                        <span><img src="{% static '/img/icons8-train-track-50.png' %}" /></span>
+                  <div class="col-md-5 col-sm-12">
+                   <div  class="serviceBox_met " >
+                      <div class="service-icon">
+                        <span><img src="{% static '/img/icons8-train-track-60.png' %}" /></span>
                       </div>
                       <h3 class="title" >kEGG Pathways centered</h3>
                       <p class="description"> Discover the distribution of Kegg patwhays within the genomes of the database</p>
                       <br>
                       <br>
-                      <div class= "col-md-6 col-sm-6">
+                      <div class= "col-md-4 col-sm-6">
                           <div class="genome_search">
                             {% crispy form_pathway %}
                       </div>
@@ -112,9 +112,9 @@
               <div class="row">
 
                       <div class="col-md-6 col-sm-7" >
-                        <div class="serviceBox_met"  >
-                            <div class="service-icon">
-                              <span><img src="{% static '/img/icons8-data-sheet-50.png' %}"/></span>
+                        <div class="serviceBox_met "  >
+                            <div class="service-icon_2">
+                              <span><img src="{% static '/img/icons8-data-sheet-60.png' %}"/></span>
                             </div>
                             <h3 class="title">Comparative analysis</h3>
                             <p class="description"> Discover the distribution of Kegg Modules within the genomes of the database</p>
