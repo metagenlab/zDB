@@ -79,6 +79,7 @@ error_search.filter { it.extension!="gbk" }
 
 process check_gbk {
     container "$params.annotation_container"
+    publishDir "${params.results_dir}/blast_DB/$workflow.runName/gbk"
 
 	input:
 	    file gbk from gbk_from_local_assembly.collect()
