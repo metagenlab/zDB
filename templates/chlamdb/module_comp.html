@@ -24,51 +24,35 @@
                  {% include "chlamdb/menu.html" %}
 
                     {% if envoi_comp %}
-                  
-                 
-                    </div>
-                     
-                
-
-                  
-                  <div class="col-lg-12">
-                    <table class="display" id="mytable_module" style="width: 100%; padding-right: 1em; padding-top: 10em">
+                      <br>
+                      <div class="col-lg-12">
+                        <table class="display" id="mytable_module" style="width: 100%; padding-right: 1em; padding-top: 10em">
         
-                      <style>
-                        table {
-                          table-layout: fixed;
-                        } </style>
-                                    <thead>
+                                <style>
+                                  table {
+                                    table-layout: fixed;}
+                                </style>
+                                <thead>
                                        <tr>
 								                        {% for entry in header %}
 								                         <th> {{entry|safe}} </th>
 								                        {% endfor %}
                                         {% for taxon in taxons %}
-                                       <th valign="bottom"><div >{{ taxon}}</div></th>
-                                       {% endfor %}
-							                        </tr>
-                                      </thead>
-                                      <body>
-                                      <tr>
-								                        {% for line in entries %}
-                                        {% for value in line %}
-								  		                  <td> {{value|safe}} </td>
+                                        <th valign="bottom"><div >{{ taxon}}</div></th>
                                         {% endfor %}
-                                      </tr>
-                              {% endfor %}
-                          </tbody>
-                        </table>
+							                          </tr>
+                                    </thead>
+                                    <body>
+                                        <tr>
+                                            {% for line in entries %}
+                                            {% for value in line %}
+                                            <td> {{value|safe}} </td>
+                                            {% endfor %}
+                                        </tr>
+                                          {% endfor %}
+                                   </tbody>
+                          </table>
                     {% endif %}
-                 <div class="row" style="padding-top:30px ;" >
-                        
-                         <div class="panel panel-success"  style="margin:1em;">
-                             <div class="panel-heading" style="width:100%">
-                                 <h5 class="panel-title">Help to interpret the results</h5>
-                             </div>
-                      <p style="margin: 10px 10px 10px 10px"> 
-                        The output consists of a table with Kegg module accession numbers that redirect you to the Kegg entries identified in the genomes, category description, subCategory description, and occurrences in the selected genomes.
-                  </div>
-                </div>
             </div>
           </div>
         </div>
