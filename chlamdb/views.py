@@ -1057,8 +1057,7 @@ def extract_region(request):
     path_faa=[settings.BLAST_DB_PATH+"/faa/"+filename+".faa" for filename in filenames_list]
     path_fna=[settings.BLAST_DB_PATH+"/fna/"+filename+".fna" for filename in filenames_list]
     path_ffn=[settings.BLAST_DB_PATH+"/ffn/"+filename+".ffn" for filename in filenames_list]
-    path_suf_gbk=".gbk"
-    path_gbk=[settings.BLAST_DB_PATH + filename + path_suf_gbk for filename in filenames_list]
+    path_gbk=[settings.BLAST_DB_PATH+"/gbk/"+filename+".gbk" for filename in filenames_list]
 
     filenames_tax_id_db['path_to_faa']= path_faa
     filenames_tax_id_db['path_to_fna']= path_fna
@@ -1068,7 +1067,6 @@ def extract_region(request):
     genomes_data=genomes_data.join(filenames_tax_id_db, on= "taxon_id")
     data_table_header = [ "Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding", "N plasmid contigs", "faa seq", "fna seq", "ffn seq", "gbk file"]
     data_table = genomes_data[[ "id", "description", "gc", "n_prot", "n_contigs", "length", "coding_density", "has_plasmid", "path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk" ]].values.tolist()
-
     return render(request, 'chlamdb/extract_region.html', my_locals(locals()))
 
 
