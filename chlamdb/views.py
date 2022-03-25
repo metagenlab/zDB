@@ -13,6 +13,8 @@ import string
 import random
 import os
 import time
+import re
+import bibtexparser
 
 from io import StringIO
 from tempfile import NamedTemporaryFile
@@ -145,8 +147,6 @@ def help(request):
 
 
 def about(request):
-    import re
-    import bibtexparser
     path = settings.BASE_DIR + '/assets/bibliography/references.bib'
     with open(path) as bibtex_file:
         bib_database = bibtexparser.load(bibtex_file)
@@ -154,22 +154,6 @@ def about(request):
     entry_list = []
 
     for entry in bib_database.entries:
-
-        """
-        Sophie S Abby, Jean Cury, Julien Guglielmini, Bertrand Néron, Marie Touchon, and Eduardo PC
-        Rocha. Identification of protein secretion systems in bacterial genomes. Scientific reports, 6, 2016.
-        53, 57, 61, 164
-
-        Peter JA Cock, Tiago  Antao, Jeffrey T Chang, Brad
-        Biopython: freely    available    python    tools    for computational molecular biology and bioinformatics.Bioinformatics, 25(11):1422–1423, 2009.
-
-        {'publisher': 'Oxford University Press', 'year': '2009', 'pages': '1422--1423', 'number': '11', 'volume': '25',
-         'journal': 'Bioinformatics',
-         'author': 'Cock, Peter JA and Antao, Tiago and Chang, Jeffrey T and Chapman, Brad A and Cox, Cymon J and Dalke, Andrew and Friedberg, Iddo and Hamelryck, Thomas and Kauff, Frank and Wilczynski, Bartek and others',
-         'title': 'Biopython: freely available Python tools for computational molecular biology and bioinformatics',
-         'ENTRYTYPE': 'article', 'ID': 'cock2009biopython'}
-
-        """
         string = ("<b>%s</b></br> %s, %s, %s(%s):%s, %s" % (re.sub('[{}]','', entry["title"]),
                                                          entry["author"],
                                                             entry["journal"],
