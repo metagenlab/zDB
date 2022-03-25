@@ -14,6 +14,7 @@ import random
 import os
 import time
 import re
+
 import bibtexparser
 
 from io import StringIO
@@ -346,10 +347,12 @@ def extract_orthogroup(request):
     og_counts_in = db.get_og_count(include_taxids, plasmids=include_plasmids)
     if not single_copy:
         og_counts_in["presence"] = og_counts_in[og_counts_in > 0].count(axis=1)
+        og_counts_in["selection"] = og_counts_in.presence >= (sum_include_lengths-n_missing)
     else:
         og_counts_in["presence"] = og_counts_in[og_counts_in == 1].count(axis=1)
-
-    og_counts_in["selection"] = og_counts_in.presence >= (sum_include_lengths-n_missing)
+        og_counts_in["absence"] = og_counts_in[og_counts_in == 0].count(axis=1)
+        og_counts_in["selection"] = ((og_counts_in.presence >= (sum_include_lengths-n_missing))
+                & (og_counts_in.absence+og_counts_in.presence==sum_include_lengths))
 
     sum_exclude_lengths = len(exclude_taxids)
     if not exclude_plasmids is None:
@@ -415,7 +418,7 @@ def extract_orthogroup(request):
         optional = []
         if "KO" in opt_header and row in kos:
             optional.append(format_lst_to_html(kos.loc[row], add_count=True, format_func=format_ko_url))
-        if "COG" in opt_header and row in cogs:
+        if "COG" in opt_header:
             optional.append(format_lst_to_html(cogs.loc[row], add_count=True, format_func=format_cog_url))
         entry = [column_header, gene_data, prod_data, *optional, cnt_in, count]
         match_groups_data.append(entry)
