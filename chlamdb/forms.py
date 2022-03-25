@@ -42,9 +42,12 @@ def make_plot_form(db):
     # selct random locus present in at least 50% of genomes
     og_df = pd.DataFrame(db.get_all_orthogroups())
     og_df.columns = ["og", "size"]
-    random_group = og_df.query(f"size > {len(accession_choices)/2}").iloc[-1]
-    locus_list = db.get_genes_from_og([str(random_group.og)], taxon_ids=None, terms=["locus_tag"])
-    locus = locus_list.locus_tag.to_list()[0]
+    try:
+        random_group = og_df.query(f"size >= {len(accession_choices)-1}").iloc[-1]
+        locus_list = db.get_genes_from_og([str(random_group.og)], taxon_ids=None, terms=["locus_tag"])
+        locus = locus_list.locus_tag.to_list()[0]
+    except:
+        locus = 'n/a'
     
     class PlotForm(forms.Form):
         choices = (("yes", "all homologs"),("no", "best hits only"))
