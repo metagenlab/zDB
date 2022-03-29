@@ -42,9 +42,12 @@ def make_plot_form(db):
     # selct random locus present in at least 50% of genomes
     og_df = pd.DataFrame(db.get_all_orthogroups())
     og_df.columns = ["og", "size"]
-    random_group = og_df.query(f"size > {len(accession_choices)/2}").iloc[-1]
-    locus_list = db.get_genes_from_og([str(random_group.og)], taxon_ids=None, terms=["locus_tag"])
-    locus = locus_list.locus_tag.to_list()[0]
+    try:
+        random_group = og_df.query(f"size >= {len(accession_choices)-1}").iloc[-1]
+        locus_list = db.get_genes_from_og([str(random_group.og)], taxon_ids=None, terms=["locus_tag"])
+        locus = locus_list.locus_tag.to_list()[0]
+    except:
+        locus = 'n/a'
     
     class PlotForm(forms.Form):
         choices = (("yes", "all homologs"),("no", "best hits only"))
@@ -317,19 +320,22 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
 
 
 def make_module_overview_form(db, sub_sub_cat=False):
-
+    attrs = {'size':'1', "class":"selectpicker",
+            "data-live-search":"true",
+            "data-actions-box":"true"}
     if sub_sub_cat:
         categories = db.get_module_sub_categories()
 
         CHOICES = [(cat_id, cat) for cat_id, cat in categories]
         class ModuleCatChoice(forms.Form):
-            subcategory = forms.ChoiceField(choices=CHOICES)
+            subcategory = forms.ChoiceField(choices=CHOICES, widget=forms.Select(attrs=attrs))
+
     else:
         categories = db.get_module_categories()
 
         CHOICES = [(cat_id, cat) for cat_id, cat in categories]
         class ModuleCatChoice(forms.Form):
-            category = forms.ChoiceField(choices=CHOICES)
+            category = forms.ChoiceField(choices=CHOICES, widget=forms.Select(attrs=attrs))
 
     return ModuleCatChoice
 
@@ -339,21 +345,9 @@ def make_pathway_overview_form(db):
     pathway_id = db.get_pathways()
     choices = [(path_id, path_desc) for path_id, path_desc in pathway_id]
     class ModuleCatChoice(forms.Form):
-        pathway = forms.ChoiceField(choices=choices)
+        pathway = forms.ChoiceField(choices=choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
 
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.helper = FormHelper()
-            self.helper.form_method = 'post'
-            self.helper.form_action = '../KEGG_mapp_ko'
-            self.helper.layout = Layout(
-                Fieldset(
-                        "",
-                        Column(
-                        Row('pathway'),
-                        Submit('submit', 'Submit',
-                            style=" margin-top:15px; margin-bottom:15px; margin-right:15px ; color: black; box-color: rgb(255, 255, 255) ")))
-                )
+
 
     return ModuleCatChoice
 
@@ -362,7 +356,7 @@ def make_single_genome_form(db):
     accession_choices, rev_index = get_accessions(db)
 
     class SingleGenomeForm(forms.Form):
-        genome = forms.ChoiceField(choices=accession_choices)
+        genome = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
         def get_genome(self):
             target = self.cleaned_data["genome"]
             return rev_index[int(target)]

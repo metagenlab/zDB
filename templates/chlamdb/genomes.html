@@ -23,22 +23,17 @@
                 <div class="col-lg-12">
                    {% include "chlamdb/menu.html" %}
 
-        <div class="home-title"><b> Table of content: Genomes </b></div>
-        <hr class="lines-home">
-
-
-
-          <div class="tab-pane" id="genomes" style="margin-right: 1em; overflow-x:auto;">
+                    <hr class="lines-home">
+                    <div class="tab-pane" id="genomes" style="margin-right: 1em; overflow-x:auto;">
                             
-
                           <table class="display" id="genomes_table">
                             <thead>
 
 
                                 <tr>
-                {% for header in data_table_header %}
-                <th>{{header}}</th>
-                {% endfor %}
+                            {% for header in data_table_header %}
+                            <th>{{header}}</th>
+                            {% endfor %}
 
                                 </tr>
                             </thead>

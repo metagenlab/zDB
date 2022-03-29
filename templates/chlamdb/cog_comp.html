@@ -36,7 +36,7 @@
                                  <h5 class="panel-title">Help to interpret the results</h5>
                              </div>
                              <p style="margin: 10px 10px 10px 10px">
-                              The ouput table contains the list of shared COG and the number of times each of them was identified in the selected genomes. 
+                              The ouput table contains the list of COG annotated in selected genomes and the number of times each of them was identified in each genome. 
                               <br>Click on COG accession to get detailed phylogenetic profile of the corresponding COG entry. 
                              </p>
                          </div>
@@ -57,8 +57,8 @@
                                       <tr >
                                       <th valign="bottom">COG accession</th>
                                       <th valign="bottom">Description</th>
-                                      <th valign="bottom">Freq. in complete DB</th>
-                                      <th valign="bottom">Present in # genomes</th>
+                                      <th valign="bottom"># complete DB</th>
+                                      <th valign="bottom"># genomes</th>
                                     {% for taxon in taxon_list %}
                                           <th>{{ taxon_id2description|keyvalue:taxon}}</div></th>
                                     {% endfor %}

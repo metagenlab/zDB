@@ -9,9 +9,9 @@
                         <li class={% if active_tab == "comp" %}"active"{%endif%}><a href="{% url 'cog_comparison' %}">Presence/absence table</a></li>
                         <li class={% if active_tab == "heat" %}"active"{%endif%}><a href="{% url 'plot_heatmap' 'COG' %}">Heatmap</a></li>
                         <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'COG' %}">Accumulation/rarefaction plot</a></li>
-                        <li class={% if active_tab == "bar" %}"active"{%endif%}><a href="{% url 'cog_barchart' %}">COG categories barchart</a></li>
-                        <li class={% if active_tab == "COG_freq" %}"active"{%endif%}><a href="{% url 'COG_phylo_heatmap' True %}">COG cat. heatmap freq.</a></li>
-                        <li class={% if active_tab == "COG_counts" %}"active"{%endif%}><a href="{% url 'COG_phylo_heatmap' False %}">COG cat. heatmap counts</a></li>
+                        <li class={% if active_tab == "bar" %}"active"{%endif%}><a href="{% url 'cog_barchart' %}">Categories barchart</a></li>
+                        <li class={% if active_tab == "COG_freq" %}"active"{%endif%}><a href="{% url 'COG_phylo_heatmap' True %}">Cat. heatmap freq.</a></li>
+                        <li class={% if active_tab == "COG_counts" %}"active"{%endif%}><a href="{% url 'COG_phylo_heatmap' False %}">Cat. heatmap counts</a></li>
                     </ul>
                 </nav>
 {% elif type == "ko" %}
