@@ -372,7 +372,7 @@
                                   </div>
 
                                   <div class="tab-pane" id="tab2">
-                                        <table id="fam_table" class="display">
+                                        <table id="fam_table">
                                             <thead>
                                                 <tr>
                                                     <th>#</th>
@@ -387,9 +387,6 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {% load static %}
-                                                {% get_static_prefix as STATIC_PREFIX %}
-
                                                 {% for values in all_locus_data %}
                                                     <tr>
                                                         <td>{{values.0}}</td>
@@ -414,7 +411,7 @@
                                   <div class="tab-pane" id="tab3">
                                        <div class="row">
 										   <a download="profile_{{fam}}.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
-                                           <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree" style="width:100%; height:100%"></object>
+                                           <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
                                        </div>
                                   </div>
                                 </div> <!--tabs-->
@@ -453,10 +450,6 @@ $(document).ready(function() {
 
     $('#fam_table').DataTable( {
             dom: 'Bfrtip',
-            "order": [[2, "desc" ]],
-            "columnDefs": [
-            { className: "wrapcol", "targets": [ 12 ] }
-            ],
             "pageLength": 15,
             "paging":   true,
             "ordering": true,

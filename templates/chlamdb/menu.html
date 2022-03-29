@@ -38,8 +38,8 @@
                   </form></li>
                
                   <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'home' %}#home"><b>Home</b></a></li>
-                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'extract_region' %}" ><b>Genomes</b></a></li>
-                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'phylogeny_intro' %}" ><b>Phylogeny</b></a></li>
+                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'genomes' %}" ><b>Genomes</b></a></li>
+                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'phylogeny' %}" ><b>Phylogeny</b></a></li>
                   <hr class="line-menu">
                   <li class="analyses"><b>Analyses</b></a></li>
                   <li class="sidebar-dropdown" ><p> Homology search</p> 
@@ -62,16 +62,14 @@
               <li class="analyses_intra"><a   href="{% url 'circos' %}">Circos</a></li>
               {% if optional2status|keyvalue:"KEGG" %}
           <li  class="sidebar-dropdown" ><p>Metabolism</p>
-          <li class="analyses_intra"><a    href="{% url 'priam_kegg' %}">Kegg based</a></li>
+          <li class="analyses_intra"><a    href="{% url 'kegg' %}">Kegg based</a></li>
                 {% endif %}
 
           <hr class="line-menu">
           <li class="sidebar-nav-item"><a  href="{% url 'FAQ' %}"><b>FAQ</b></a></li>
           <li class="sidebar-nav-item"><a  href='https://zdb.readthedocs.io/en/latest/'target="_blank"><b>Documentation</b></a></li>
           <li class="sidebar-nav-item"><a   href="{% url 'about' %}"><b>References</b></a></li>
-          <li class="sidebar-nav-item" style="margin-bottom: 5em"><a href="https://github.com/metagenlab/annotation_pipeline_nextflow"><i class="fab fa-github" ></i><b> Project and contacts</b></a></li>
-         
-    
+          <li class="sidebar-nav-item" style="margin-bottom: 5em"><a href="https://github.com/metagenlab/annotation_pipeline_nextflow"><i class="fab fa-github" ></i><b> Project and contacts</b></a></li> 
             
 
 
@@ -84,6 +82,7 @@
 
 <script>
 
+/*
 $(document).ready(function(){ 
     $("#searchbar").autocomplete({
         source: "/search_suggest/",
@@ -93,12 +92,30 @@ $(document).ready(function(){
     }
       });        
 });
+*/
 
 $("#menu-toggle").click(function(e) {
   e.preventDefault();
   $("#wrapper").toggleClass("toggled"); 
 
 });
+
+
+$(document).ready(function() {
+    breakpoint = 800;
+    function changeMenuStyle() {
+        var w = document.documentElement.clientWidth;
+        console.log('size');
+        console.log(w);
+        if (w < breakpoint) {
+          $("#wrapper").toggleClass("toggled"); 
+        } 
+      }
+
+    window.addEventListener("resize", changeMenuStyle);
+    changeMenuStyle();
+});
+
 
 $(window).scroll(function() {
   if ($(this).scrollTop() > 0) {

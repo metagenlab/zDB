@@ -6,12 +6,11 @@
     text-align: right;
     padding: 10px 10px 10px 20px;
     position: relative;
-    z-index: 1;
     min-height: 500px;
     min-width: 200px;
-    max-width: 500px;
     border-radius: 25px;
     background-color: #e0e0e0e1;
+    margin-top:20px;
    
 }
 
@@ -201,7 +200,6 @@
     padding: 10px 10px 10px 20px;
     position: relative;
     z-index: 1;
-    min-height: 400px;
     margin-top: 6em;
 }
 
@@ -254,7 +252,13 @@
     left: -8px;
 }
 
-
+.linkdiv {
+    margin-top:20px;
+    background-color: rgb(218, 216, 214);
+    max-width: 350px;
+    max-width: 350px;
+    border-radius: 25px;
+}
 
 .serviceBox_2 .service-icon_2{
     color: #fff;
@@ -1238,9 +1242,6 @@ form.example input[type=text] {
   }
 
 
-@media only screen and (min-width: 990px){
-    .serviceBox{ margin: 0 auto 30px; }
-}
 @media only screen and (max-width: 768px){
     .serviceBox{ width: 250px; }
     .container {
@@ -1248,9 +1249,6 @@ form.example input[type=text] {
         position:relative;
         padding:0 0 0 0;
     }
-
-
-
 }
 
 
@@ -1427,7 +1425,7 @@ form.example input[type=text] {
 
 /*Style menu html sizes*/
 
-    @media screen and (min-width:415px) {
+@media screen and (min-width:768px) {
 /*Other sizes*/
   .sidebar-title{
     padding-left: 12px;
@@ -1595,7 +1593,7 @@ form.example input[type=text] {
     }
 
 
- @media screen and (min-width:415px) {
+ @media screen and (min-width:168px) {
 /*Other sizes*/
   .sidebar-title{
     padding-left: 12px;
@@ -1609,7 +1607,6 @@ form.example input[type=text] {
       -o-transition: all 0.6s ease;
       transition: all 0.6s ease;
   }
-
   #wrapper.toggled {
       padding-left: 200px;
   }
@@ -1759,3 +1756,7 @@ form.example input[type=text] {
           margin-right: 0;
       }
  }
+
+.bootstrap-select.form-control.input-group-btn {
+    z-index: auto;
+}

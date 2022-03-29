@@ -20,9 +20,9 @@
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
 
-                 <div class="row" style="padding-top:40px">
+                 <div class="row" style="padding-top:20px">
 
-                    <div class="col-md-5 col-sm-7" >
+                    <div class="col-lg-5 col-md-6 col-sm-12" >
                     <div class="serviceBox_met"  >
                         <div class="service-icon_2">
                           <span><img src="{% static '/img/icons8-dna-64.png' %}"/></span>
@@ -32,7 +32,7 @@
                         <br>
                         <br>
                         <div class= "col-md-4 col-sm-6">
-                          <form action="{% url "priam_kegg_genomes_modules" %}" method="post">{% csrf_token %}
+                          <form action="{% url "kegg_genomes_modules" %}" method="post">{% csrf_token %}
                             {{ form_genome.as_p }}
                             <input type="submit" value="Submit" />
                           </form>
@@ -40,7 +40,7 @@
                     </div>
                     </div>
 
-                    <div class="col-md-5 col-sm-12"  >
+                    <div class="col-lg-5 col-md-6 col-sm-12"  >
                     <div  class="serviceBox_met" >
                       <div class="service-icon">
                         <span><img src="{% static '/img/icons8-dna-64.png' %}"/></span>
@@ -50,7 +50,7 @@
                       <br>
                       <br>
                       <div class= "col-md-4 col-sm-6">
-                        <form action="{% url "priam_kegg_genomes" %}" method="post">{% csrf_token %}
+                        <form action="{% url "kegg_genomes" %}" method="post">{% csrf_token %}
                           {{ form_genome.as_p }}
                           <input type="submit" value="Submit" />
                         </form>
@@ -60,10 +60,9 @@
 
                 </div>
        
-                <br>
                 <div class="row">
 
-                  <div class="col-md-5 col-sm-7" >
+                  <div class="col-lg-5 col-md-6 col-sm-12" >
                     <div class="serviceBox_met "  >
                         <div class="service-icon_2">
                           <span><img src="{% static '/img/icons8-module-70.png' %}"/></span>
@@ -72,7 +71,7 @@
                         <p class="description"> Discover the distribution of Kegg Modules within the genomes of the database</p>
                         <br>
                         <br>
-                        <div class= "col-md-6 col-sm-6">
+                        <div class= "col-lg-5 col-md-6 col-sm-12">
                           <form action="{% url "kegg_module" %}" method="post">{% csrf_token %}
                             {{ form_cat.as_p }}
                             <input type="submit" value="Submit" />
@@ -88,7 +87,7 @@
                         </div>
                       </div>
                   </div>
-                  <div class="col-md-5 col-sm-12">
+                  <div class="col-lg-5 col-md-6 col-sm-12">
                    <div  class="serviceBox_met " >
                       <div class="service-icon">
                         <span><img src="{% static '/img/icons8-train-track-60.png' %}" /></span>
@@ -97,38 +96,38 @@
                       <p class="description"> Discover the distribution of Kegg patwhays within the genomes of the database</p>
                       <br>
                       <br>
-                      <div class= "col-md-4 col-sm-6">
+                      <div class= "col-lg-5 col-md-6 col-sm-12">
                           <div class="genome_search">
-                            {% crispy form_pathway %}
+                            <form action="{% url "KEGG_mapp_ko" %}" method="post">{% csrf_token %}
+                            {{ form_pathway.as_p }}
+                            <input type="submit" value="Submit" />
+                          </form>
                       </div>
                    </div>
                   </div>
 
                  </div>
               </div>
-
-              
-              <br>
               <div class="row">
 
-                      <div class="col-md-6 col-sm-7" >
-                        <div class="serviceBox_met "  >
-                            <div class="service-icon_2">
-                              <span><img src="{% static '/img/icons8-data-sheet-60.png' %}"/></span>
-                            </div>
-                            <h3 class="title">Comparative analysis</h3>
-                            <p class="description"> Discover the distribution of Kegg Modules within the genomes of the database</p>
-                            <br>
-                            <br>
-                            <div class= "col-md-6 col-sm-6">
-                              <form action='{% url "module_comparison" %}' method="post">
-                                {% csrf_token %}
-                                {{ form_module.as_p }}
-                                <input type="submit" value="Submit" />
-                              </form>
-                            </div>
+                    <div class="col-lg-5 col-md-6 col-sm-12" >
+                      <div class="serviceBox_met "  >
+                          <div class="service-icon_2">
+                            <span><img src="{% static '/img/icons8-data-sheet-60.png' %}"/></span>
+                          </div>
+                          <h3 class="title">Comparative analysis</h3>
+                          <p class="description"> Discover the distribution of Kegg Modules within the genomes of the database</p>
+                          <br>
+                          <br>
+                          <div class= "col-md-6 col-sm-6">
+                            <form action='{% url "module_comparison" %}' method="post">
+                              {% csrf_token %}
+                              {{ form_module.as_p }}
+                              <input type="submit" value="Submit" />
+                            </form>
                           </div>
                         </div>
+                      </div>
                 </div>
                     
 

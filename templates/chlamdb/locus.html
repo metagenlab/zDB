@@ -36,25 +36,15 @@
 
           {% if menu %}
               {% include "chlamdb/menu.html" %}
-			  <div class="panel-title"><b>
-				Locus tag annotation
-				</b>
-			 </div>
-			 
-				<br>
-				<p class="page-title"><b>
-					Locus tag: {{locus_tag}}
-				   </p></b></center></center>
-				   <hr class="lines-home">
           {% endif %}
           {% if not valid_id %}
               <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
               <p>
          {% else %}
 
-            <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+            <ul id="tabs" class="nav nav-tabs">
 
-                <li class="active" id="main_overview">
+                <li class="active">
 					<a href="#main_tab" data-toggle="tab">Overview</a>
 				</li>
 
@@ -82,11 +72,11 @@
 
 
 				{% if optional2status|keyvalue:"BLAST_database" and n_refseq_homologs > 0 %}
-				<li>
-					<a href="#refseq_homologs_tab" data-toggle="tab">
-						RefSeq homologs <span class="badge">{{n_refseq_homologs}}</span>
-					</a>
-				</li>
+					<li>
+						<a href="#refseq_homologs_tab" data-toggle="tab">
+							RefSeq homologs <span class="badge">{{n_refseq_homologs}}</span>
+						</a>
+					</li>
 				{% endif %}
 
 				{% if optional2status|keyvalue:"BLAST_swissprot" and n_swissprot_hits > 0 %}
@@ -100,7 +90,7 @@
 				{% if has_refseq_phylo and optional2status|keyvalue:"BBH_phylogenies" %}
                     <li><a href="#refseq_phylogeny" data-toggle="tab">RefSeq best hits phylogeny  </a></li>
                 {% endif %}
-              </ul>
+            </ul>
 
             <div id="my-tab-content" class="tab-content">
 

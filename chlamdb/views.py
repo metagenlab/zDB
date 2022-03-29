@@ -72,7 +72,7 @@ page2title = {
     'extract_orthogroup': 'Comparisons: orthologous groups',
     'extract_pfam': 'Comparisons: PFAM domains',
     'extract_ko': 'Comparisons: Kegg Orthologs (KO)',
-    'extract_COG': 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'extract_cog': 'Comparisons: Clusters of Orthologous groups (COGs)',
     'venn_orthogroup': 'Comparisons: orthologous groups',
     'venn_ko': 'Comparisons: Kegg Orthologs (KO)',
     'venn_pfam': 'Comparisons: Pfam domains',
@@ -105,9 +105,9 @@ page2title = {
     'plot_region':'Genome alignments: Plot region',
     'circos': 'Genome alignments: Circos plot',
     'cog_comparison': 'Comparisons: Clusters of Orthologous groups (COGs)',
-    'priam_kegg': 'Metabolism: kegg based',
-    'priam_kegg_genomes': 'Metabolism: kegg based',
-    'priam_kegg_genomes_modules': 'Metabolism: kegg based',
+    'kegg': 'Metabolism: kegg based',
+    'kegg_genomes': 'Kegg metabolic pathways ',
+    'kegg_genomes_modules': 'Metabolism: kegg based',
     'KEGG_mapp_ko': 'Metabolism: kegg based',
     'kegg_module': 'Metabolism: kegg based',
     'kegg_module_subcat': 'Metabolism: kegg based',
@@ -119,6 +119,8 @@ page2title = {
     'phylogeny_intro': 'Phylogeny',
     'genomes_intro': 'Genomes: table of contents',
     'extract_contigs': 'Genomes: table of contents',
+    'COG_phylo_heatmap': 'Comparisons: Clusters of Orthologous groups (COGs)',
+    'genomes': 'Table of content: Genomes '
 
 }
 
@@ -265,7 +267,7 @@ def home(request):
      
     number_ort = db.get_n_orthogroups()
     taxids = list(genomes_descr.index)
-    core = db.get_n_orthogroups(only_core=True)
+    
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 
@@ -828,6 +830,7 @@ def venn_pfam(request):
 def extract_cog(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     extract_form_class = make_extract_form(db, "extract_cog", plasmid=True, label="COG")
+    page_title =  page2title["extract_cog"]
 
     if request.method != "POST":
         form = extract_form_class()
@@ -991,6 +994,7 @@ def venn_cog(request, sep_plasmids=False):
 
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    page_title = page2title["venn_cog"]
 
     display_form = True
     venn_form_class = make_venn_from(db, limit=6, label="COG")
@@ -1035,10 +1039,10 @@ def venn_cog(request, sep_plasmids=False):
     return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
 
 
-def extract_region(request):
+def genomes(request):
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
-
+    page_title = page2title["genomes"]
     genomes_data = db.get_genomes_infos()
     genomes_descr = db.get_genomes_description()
 
@@ -1067,7 +1071,7 @@ def extract_region(request):
     genomes_data=genomes_data.join(filenames_tax_id_db, on= "taxon_id")
     data_table_header = [ "Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding", "N plasmid contigs", "faa seq", "fna seq", "ffn seq", "gbk file"]
     data_table = genomes_data[[ "id", "description", "gc", "n_prot", "n_contigs", "length", "coding_density", "has_plasmid", "path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk" ]].values.tolist()
-    return render(request, 'chlamdb/extract_region.html', my_locals(locals()))
+    return render(request, 'chlamdb/genomes.html', my_locals(locals()))
 
 
 def extract_contigs(request, genome):
@@ -1462,7 +1466,7 @@ def orthogroup(request, og):
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
     og_counts = db.get_og_count([og_id], search_on="orthogroup")
-    print(og_counts)
+
     if len(og_counts.index) == 0:
         valid_id = False
         return render(request, "chlamdb/og.html", my_locals(locals()))
@@ -1725,7 +1729,7 @@ def tab_get_refseq_homologs(db, seqid):
 def locusx(request, locus=None, menu=True):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
-    
+
     if locus is None:
         return render(request, 'chlamdb/locus.html', my_locals({"valid_id": False}))
     try:
@@ -1736,6 +1740,7 @@ def locusx(request, locus=None, menu=True):
     else:
         valid_id = True
 
+    page_title = f'Locus tag: {locus}'
     sequence = get_sequence(db, seqid, flanking=50)
     all_infos, wd_start, wd_end = locusx_genomic_region(db, seqid, window=8000)
     region_js = genomic_region_df_to_js(all_infos, wd_start, wd_end)
@@ -1751,6 +1756,7 @@ def locusx(request, locus=None, menu=True):
             "menu": True,
             "seq": sequence,
             "feature_type": feature_type,
+            "page_title": page_title,
             **ctx_RNA,
             **genomic_region_ctx
         }
@@ -1817,6 +1823,7 @@ def locusx(request, locus=None, menu=True):
         "sequence_type": feature_type,
         "locus": locus,
         "feature_type" : "CDS",
+        "page_title": page_title,
         **cog_ctx,
         **kegg_ctx,
         **homolog_tab_ctx,
@@ -1838,14 +1845,12 @@ def str_if_none(s):
     return s
 
 def search_suggest(request,):
-    print("suggest")
     index = sb.ChlamdbIndex.use_index(settings.SEARCH_INDEX)
     params = request.GET
     user_query = params["term"]
     results = list(index.search(user_query, limit=None))
     data = [{"label":f"{i.name}: {i.description} ({i.entry_type})", "value":f"{i.name}: {i.description}"} for i in results]
     #data = [f"{i.name} ({i.entry_type})" for i in results]
-    print("AUTOCOMPLETE", data)
     mimetype = "application/json"
     return JsonResponse(data,safe=False)
 
@@ -1882,10 +1887,8 @@ def search_bar(request):
             pfam.append([format_pfam(None, base=result.name, to_url=True), result.description])
         elif result.entry_type == sb.EntryTypes.Module and has_ko:
             mod.append([format_module(None, base=result.name, to_url=True), result.description])
-            print(result)
         elif result.entry_type == sb.EntryTypes.Pathway and has_ko:
             pat.append([format_pathway(None, base=result.name, to_url=True), result.description])
-            print(result)
 
     gene_active, cogs_active, ko_active, pfam_active, pat_active, mod_active = "active", "", "", "", "", ""
     if len(genes)==0:
@@ -2167,6 +2170,8 @@ def fam_pfam(request, pfam):
 
 def COG_phylo_heatmap(request, frequency):
     biodb = settings.BIODB_DB_PATH
+    
+    page_title = page2title["COG_phylo_heatmap"]
 
     if request.method != "GET":
         return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
@@ -2896,7 +2901,6 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
         acc_to_taxid = db.get_taxid_from_accession(list(accessions), look_on="locus_tag")
     elif blast_type in ["tblastn", "blastn_fna"]:
         acc_to_taxid = db.get_taxid_from_accession(list(accessions), look_on="contig")
-        print(acc_to_taxid)
     else:
         raise Exception("Unknown blast type: "+blast_type)
 
@@ -3499,28 +3503,31 @@ def format_pathway(path_id, base=None, to_url=False, taxid=None):
         to_page = f"/KEGG_mapp_ko/{base_string}/{taxid}"
     return f"<a href=\"{to_page}\">{base_string}</a>"
 
-def priam_kegg_genomes(request):
-    page_title = page2title["priam_kegg_genomes"]
+def kegg_genomes(request):
+    
 
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     single_genome_form = make_single_genome_form(db)
     hsh_organisms = db.get_genomes_description().description.to_dict()
     if request.method != "POST":
         form = single_genome_form()
-        return render(request, 'chlamdb/priam_kegg_genomes.html', my_locals(locals()))
+        return render(request, 'chlamdb/kegg_genomes.html', my_locals(locals()))
 
     form = single_genome_form(request.POST)
     if not form.is_valid():
         form = single_genome_form()
-        return render(request, 'chlamdb/priam_kegg_genomes.html', my_locals(locals()))
+        return render(request, 'chlamdb/kegg_genomes.html', my_locals(locals()))
 
     taxid = form.get_genome()
     ko_hits = db.get_ko_hits([taxid], search_on="taxid")
     kos = ko_hits.index.tolist()
     ko_pathways = db.get_ko_pathways(kos)
     genomes = db.get_genomes_description().description.to_dict()
-    print("genomes_see", genomes)
+
     header = ["Pathway", "Description", hsh_organisms[taxid]]
+    
+    page_title = page2title["kegg_genomes"] + f': {hsh_organisms[taxid]}'
+    
     data = []
     pathway_count = collections.Counter()
     hsh_path_to_descr = {}
@@ -3536,22 +3543,22 @@ def priam_kegg_genomes(request):
 
 
     ctx = {"envoi":True, "data":data, "header": header, "organism":hsh_organisms[taxid], "page_title": page_title }
-    return render(request, 'chlamdb/priam_kegg_genomes.html', my_locals(ctx))
+    return render(request, 'chlamdb/kegg_genomes.html', my_locals(ctx))
 
-def priam_kegg_genomes_modules(request):
-    page_title = page2title["priam_kegg_genomes_modules"]
+def kegg_genomes_modules(request):
+    page_title = page2title["kegg_genomes_modules"]
 
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     single_genome_form = make_single_genome_form(db)
     hsh_organisms = db.get_genomes_description().description.to_dict()
     if request.method != "POST":
         form = single_genome_form()
-        return render(request, 'chlamdb/priam_kegg_genomes_modules.html', my_locals(locals()))
+        return render(request, 'chlamdb/kegg_genomes_modules.html', my_locals(locals()))
 
     form = single_genome_form(request.POST)
     if not form.is_valid():
         form = single_genome_form()
-        return render(request, 'chlamdb/priam_kegg_genomes_modules.html', my_locals(locals()))
+        return render(request, 'chlamdb/kegg_genomes_modules.html', my_locals(locals()))
 
     taxid = form.get_genome()
     list_taxid = [""]
@@ -3579,33 +3586,33 @@ def priam_kegg_genomes_modules(request):
             line.append(data[taxid])
         entries.append(line)
     envoi_comp=True
-    return render(request, 'chlamdb/priam_kegg_genomes_modules.html', my_locals(locals()))
+    return render(request, 'chlamdb/kegg_genomes_modules.html', my_locals(locals()))
 
-def priam_kegg(request):
-                    page_title = page2title["priam_kegg"]
+def kegg(request):
+    page_title = page2title["kegg"]
 
-                    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-                    module_overview_form = make_module_overview_form(db)
-                    form_cat = module_overview_form(request.POST)
-                    form_cat = module_overview_form()
-                    
-                    single_genome_form = make_single_genome_form(db)
-                    form_genome = single_genome_form(request.POST)
-                    form_genome = single_genome_form()
-                    
-                    module_overview_form = make_module_overview_form(db, True)
-                    form_subcat = module_overview_form(request.POST)
-                    form_subcat = module_overview_form()
-        
-                    comp_metabo_form = make_metabo_from(db)
-                    form_module = comp_metabo_form(request.POST)
-                    form_module = comp_metabo_form()
+    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    module_overview_form = make_module_overview_form(db)
+    form_cat = module_overview_form(request.POST)
+    form_cat = module_overview_form()
+    
+    single_genome_form = make_single_genome_form(db)
+    form_genome = single_genome_form(request.POST)
+    form_genome = single_genome_form()
+    
+    module_overview_form = make_module_overview_form(db, True)
+    form_subcat = module_overview_form(request.POST)
+    form_subcat = module_overview_form()
 
-                    pathway_overview_form = make_pathway_overview_form(db)
-                    form_pathway = pathway_overview_form(request.POST)
-                    form_pathway = pathway_overview_form()
+    comp_metabo_form = make_metabo_from(db)
+    form_module = comp_metabo_form(request.POST)
+    form_module = comp_metabo_form()
 
-                    return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
+    pathway_overview_form = make_pathway_overview_form(db)
+    form_pathway = pathway_overview_form(request.POST)
+    form_pathway = pathway_overview_form()
+
+    return render(request, 'chlamdb/kegg.html', my_locals(locals()))
 
 
                 
@@ -3627,15 +3634,12 @@ def kegg_module_subcat(request):
         form = module_overview_form()
         return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
 
-    category        = form.cleaned_data["subcategory"]
-    leaf_to_name    = db.get_genomes_description()
-    ko_count_subcat = db.get_ko_count_cat(subcategory=category)
-    subcat_name_id = db.get_module_sub_categories(module_ids=category)
-    subcat_name=[name for id, name  in subcat_name_id][0]
-    
-
     cat = form.cleaned_data["subcategory"]
+    ko_count_subcat = db.get_ko_count_cat(subcategory=cat)
+    
     modules_infos = db.get_modules_info(ids=[cat], search_on="subcategory")
+
+    subcat_name=modules_infos[0][-1]
     cat_count = db.get_ko_count_cat(category=cat)
     leaf_to_name = db.get_genomes_description()
     grouped_count = ko_count_subcat.groupby(["taxon_id", "module_id"]).sum()
@@ -3772,10 +3776,7 @@ def module_comparison(request):
         return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
 
     module_hits = db.get_ko_count_cat(taxon_ids=taxids)
-    print("print_taxids", taxids)
-    print("print_module_hits", module_hits)
     tipo = type(taxids)
-    print("print_tipo", tipo)
     grouped_count = module_hits.groupby(["taxon_id", "module_id"]).sum()
     grouped_count = grouped_count.unstack(level="taxon_id")
     grouped_count.columns = grouped_count["count"].columns
@@ -3859,7 +3860,7 @@ def cog_comparison(request):
 
     genomes = db.get_genomes_description().description.to_dict()
     cog_hits = db.get_cog_hits(ids=all_targets, search_on="taxid", indexing="taxid")
-    print(genomes)
+
     # retrieve entry list
     cog_all = db.get_cog_hits(list(genomes.keys()), 
                               search_on="taxid", 
@@ -3874,7 +3875,7 @@ def cog_comparison(request):
     cogs_summaries = db.get_cog_summaries(cog_hits.index.tolist(), as_df=True, only_cog_desc=True)
     
     cog2description = cogs_summaries.description.to_dict()
-    cog_hits["accession"] = [format_cog(cog) for cog in cog_hits.index]
+    cog_hits["accession"] = [format_cog(cog, as_url=True) for cog in cog_hits.index]
     cog_hits["description"] = [cog2description[cog] if cog in cog2description else '-' for cog in cog_hits.index]
     
     # combine into df
@@ -3886,10 +3887,7 @@ def cog_comparison(request):
     
     # reorder columns
     combined_df = combined_df[["accession", "description", "count", "freq"] + all_targets]  
-    
-    print("combined_df")
-    print(combined_df.head())
-    
+       
     ctx = {
         "envoi_comp": True,
         "taxon_list": all_targets,
@@ -3984,7 +3982,7 @@ def faq(request):
     return render(request, 'chlamdb/FAQ.html', my_locals(locals()))
 
 
-def phylogeny_intro(request):
+def phylogeny(request):
     page_title = page2title["phylogeny_intro"]
 
     biodb_path = settings.BIODB_DB_PATH
@@ -3995,6 +3993,8 @@ def phylogeny_intro(request):
 
     asset_path = "/temp/species_tree.svg"
     path = settings.BASE_DIR + '/assets/temp/species_tree.svg'
+
+    core = db.get_n_orthogroups(only_core=True)
 
     genomes_data = genomes_data.join(genomes_descr)
 

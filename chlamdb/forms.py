@@ -320,19 +320,22 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
 
 
 def make_module_overview_form(db, sub_sub_cat=False):
-
+    attrs = {'size':'1', "class":"selectpicker",
+            "data-live-search":"true",
+            "data-actions-box":"true"}
     if sub_sub_cat:
         categories = db.get_module_sub_categories()
 
         CHOICES = [(cat_id, cat) for cat_id, cat in categories]
         class ModuleCatChoice(forms.Form):
-            subcategory = forms.ChoiceField(choices=CHOICES)
+            subcategory = forms.ChoiceField(choices=CHOICES, widget=forms.Select(attrs=attrs))
+
     else:
         categories = db.get_module_categories()
 
         CHOICES = [(cat_id, cat) for cat_id, cat in categories]
         class ModuleCatChoice(forms.Form):
-            category = forms.ChoiceField(choices=CHOICES)
+            category = forms.ChoiceField(choices=CHOICES, widget=forms.Select(attrs=attrs))
 
     return ModuleCatChoice
 
@@ -342,21 +345,9 @@ def make_pathway_overview_form(db):
     pathway_id = db.get_pathways()
     choices = [(path_id, path_desc) for path_id, path_desc in pathway_id]
     class ModuleCatChoice(forms.Form):
-        pathway = forms.ChoiceField(choices=choices)
+        pathway = forms.ChoiceField(choices=choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
 
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.helper = FormHelper()
-            self.helper.form_method = 'post'
-            self.helper.form_action = '../KEGG_mapp_ko'
-            self.helper.layout = Layout(
-                Fieldset(
-                        "",
-                        Column(
-                        Row('pathway'),
-                        Submit('submit', 'Submit',
-                            style=" margin-top:15px; margin-bottom:15px; margin-right:15px ; color: black; box-color: rgb(255, 255, 255) ")))
-                )
+
 
     return ModuleCatChoice
 
@@ -365,7 +356,7 @@ def make_single_genome_form(db):
     accession_choices, rev_index = get_accessions(db)
 
     class SingleGenomeForm(forms.Form):
-        genome = forms.ChoiceField(choices=accession_choices)
+        genome = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
         def get_genome(self):
             target = self.cleaned_data["genome"]
             return rev_index[int(target)]
