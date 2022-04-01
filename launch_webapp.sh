@@ -9,7 +9,7 @@ run_name="latest"
 port="8080"
 allowed_host=""
 
-zdb_container="zdb:1.1"
+1db_container="zdb:1.2"
 
 # those parameters are mostly here for debugging purposes
 zdb_folder="/home/chlamdb/"
@@ -113,7 +113,7 @@ if [ ! -z "${metagenlab_folder}" ]; then
 fi
 
 if [ ! -z "${allowed_host}" ]; then
-	allowed_host="--host=${allowed_host}"
+	allowed_host="--hosts=${allowed_host}"
 fi
 
 dev_server=""
