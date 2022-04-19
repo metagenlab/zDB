@@ -79,6 +79,26 @@ done
 
 debugging_mode=""
 
+
+if [ "$list_runs" = true ]; then
+	if [ ! -d "${dir}/zdb/results/" ]; then
+		echo "Could not find results in directory in $dir"
+		exit 1
+	fi
+
+	echo "The following runs could be found:"
+	echo ""
+	for i in $(ls ${dir}/zdb/results/.completed_runs); do
+		if [ "$(cat ${dir}/zdb/results/.completed_runs/$i)" = "$i" ]; then
+			echo $i
+		else
+			echo "$i -> $(cat ${dir}/zdb/results/.completed_runs/$i)"
+		fi
+	done
+	exit 0
+fi
+
+
 bind_path=""
 if [ "$use_custom_zdb" = true ]; then
 	# bind the source code of an alternative, it will be executed in the
@@ -88,12 +108,21 @@ if [ "$use_custom_zdb" = true ]; then
 fi
 
 bind_path="$bind_path,${dir}/zdb/assets/:${zdb_folder}/assets/temp/"
-bind_path="$bind_path:${dir}/zdb/gunicorn:/usr/local/gunicorn/"
+bind_path="$bind_path,${dir}/zdb/gunicorn:/usr/local/gunicorn/"
 bind_path="$bind_path,${dir}/zdb/nginx:/usr/local/nginx"
 
 
 if [ "$debug" = true ]; then
 	debugging_mode="-d"
+fi
+
+
+# De-alias the run_name
+if [ -f "${dir}/zdb/results/.completed_runs/${run_name}" ]; then
+	run_name=$(cat $dir/zdb/results/.completed_runs/${run_name})
+else
+	echo "No run with name : ${run_name} in ${dir}/zdb/results/"
+	exit 1
 fi
 
 if [ ! -d "${dir}/zdb/nginx/var" ]; then
@@ -117,33 +146,6 @@ dev_server=""
 if [ "$use_dev_server" = true ]; then
 	dev_server="--use_dev_server"
 	debugging_mode="-d"
-fi
-
-
-if [ "$ls_runs" = true ]; then
-	if [ ! -d "${dir}/zdb/results/" ]; then
-		echo "Could not find results directory in  directory in $dir"
-		exit 1
-	fi
-
-	echo "The following runs could be found:"
-	echo ""
-	for i in $(ls ${dir}/zdb/results/.completed_runs); do
-		if [ "$(cat ${dir}/zdb/results/.completed_runs/$i)" = "$i" ]; then
-			echo $i
-		else
-			echo "$i -> $(cat ${dir}/zdb/results/.completed_runs/$i)"
-		fi
-	done
-	exit 0
-fi
-
-# De-alias the run_name
-if [ -f "${dir}/zdb/results/.completed_runs/${run_name}" ]; then
-	run_name=$(cat zdb/results/.completed_runs/${run_name})
-else
-	echo "No run with name : ${run_name} in ${dir}/zdb/results/"
-	exit 1
 fi
 
 
@@ -182,5 +184,3 @@ fi
 singularity run --writable-tmpfs --bind ${bind_path} \
 	singularity/${zdb_container}.sif ${zdb_folder}/start_webapp \
 	--run_name=${run_name} --port=${port} ${debugging_mode} ${allowed_host} ${dev_server}
-
-
