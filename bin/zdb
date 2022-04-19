@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 VERSION="1.0.0"
-NEXTFLOW_DIR=""
+NEXTFLOW_DIR="/home/bmarquis/sda1/bmarquis/test_deployment/annotation_pipeline_nextflow/"
 ZDB_DIR=""
 
 if [[ $# == "0" || $1 == "help" ]]; then
@@ -20,7 +20,7 @@ if [[ $# == "0" || $1 == "help" ]]; then
 	echo "       - so that the results can be used to start the webapp"
 	echo ""
 	echo "help - print this message"
-	exit
+	exit 0
 fi
 
 
@@ -83,7 +83,7 @@ if [[ "$1" == "setup" ]]; then
 
 elif [[ "$1" == "webapp" ]]; then
 	shift
-	$ZDB_DIR/bin/launch_webapp.sh "$@"
+	$NEXTFLOW_DIR/bin/launch_webapp.sh "$@"
 elif [[ "$1" == "run" ]]; then
 
 	args=""
@@ -137,7 +137,53 @@ elif [[ "$1" == "run" ]]; then
 	exit 0
 
 elif [[ "$1" == "export" ]]; then
-	echo "Foo"
+	shift
+	dir="$(pwd)/zdb/"
+	run_name="latest"
+
+	for i in "$@"; do
+		case $i in 
+			--dir=*)
+				dir=${i#*=}
+				shift
+				;;
+			--name=*)
+				run_name=${i#*=}
+				shift
+				;;
+			--help)
+				echo "Exports the results of a given run name into an archive to make sharing easier"
+				echo ""
+				echo "The following options can be used"
+				echo ""
+				echo " --dir: specify the directory where the analysis was run"
+				echo ""
+				echo " --name: specify the run to be exported"
+				exit
+				;;
+			*)
+				echo "Unknown option $i"
+				exit 1
+		esac
+	done
+	 
+	if [[ ! -d "$dir/zdb/results/" ]]; then
+		echo "Could not access the results directory: $dir"
+		exit 1
+	elif [[ -f "$dir/results/.completed_runs/$name" ]]; then
+		echo "Could not find run with name $name"
+	fi
+	unaliased_name=$(cat $dir/zdb/results/.completed_runs/$run_name)
+	prefix="$dir/zdb/results/"
+
+	tar zcvfh $run_name.tar.gz $prefix/alignments/$unaliased_name \
+		$prefix/blast_DB/$unaliased_name $prefix/db/$unaliased_name \
+		$prefix/gene_phylogenies/$unaliased_name $prefix/search_index/$unaliased_name
+	echo "Created archive $run_name.tar.gz"
+	exit 0
+
 elif [[ "$1" == "import" ]]; then
 	echo "Bar"
+else
+	echo "Unkown subcommand $1"
 fi
