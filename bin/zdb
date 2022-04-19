@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+
+VERSION="1.0.0"
+NEXTFLOW_DIR=""
+ZDB_DIR=""
+
+if [[ $# == "0" || $1 == "help" ]]; then
+	echo "zDB (v${VERSION})"
+	echo "Available commands:"
+	echo ""
+	echo "setup - download and prepare the reference databases"
+	echo ""
+	echo "webapp - start the webapp"
+	echo ""
+	echo "run - run the analysis pipeline"
+	echo ""
+	echo "export - exports the results of a previous run in an archive"
+	echo ""
+	echo "import - unpack an archive that was prepared with the export command in the current directory"
+	echo "       - so that the results can be used to start the webapp"
+	echo ""
+	echo "help - print this message"
+	exit
+fi
+
+
+if [[ "$1" == "setup" ]]; then
+	shift
+	dir="$(pwd)/zdb_ref"
+	db_setup_args=""
+
+	for i in "$@"; do
+		case $i in 
+			--cog)
+				db_setup_args="${db_setup_args} --cog"
+				shift
+				;;
+			--ko)
+				db_setup_args="${db_setup_args} --ko"
+				shift
+				;;
+			--swissprot)
+				db_setup_args="${db_setup_args} --swissprot"
+				shift
+				;;
+			--pfam)
+				db_setup_args="${db_setup_args} --pfam"
+				shift
+				;;
+			--dir=*)
+				dir=${i#*=}
+				shift
+				;;
+			--help)
+				echo "Downloads and sets up the reference database used by the analysis pipeline"
+				echo ""
+				echo "The following options can be used"
+				echo ""
+				echo " --cog: downloads the CDD profiles used for COG annotations "
+				echo ""
+				echo " --ko: downloads and setups the hmm profiles of the ko database"
+				echo ""
+				echo " --pfam: downloads and setups up the "
+				echo ""
+				echo " --swissprot: downloads and indexes the swissprot database "
+				echo ""
+				echo " --dir: directory where to store the reference databases (defaults zdb_ref in the current directory) "
+				exit
+				;;
+			*)
+				echo "Unknown option $i"
+				exit 1
+		esac
+	done
+
+	db_setup_args="${db_setup_args} --dir=${dir}"
+	echo $db_setup_args
+	exit 1
+	echo "Preparing the reference databases, this will take some time"
+	nextflow run $NEXTFLOW_DIR/db_setup.nf ${db_setup_args}
+	echo "Done. The reference databases were prepared in the ${dir} folder"
+	exit 0
+
+elif [[ "$1" == "webapp" ]]; then
+	shift
+	$ZDB_DIR/bin/launch_webapp.sh "$@"
+elif [[ "$1" == "run" ]]; then
+
+	args=""
+
+	for i in "$@"; do
+		case $i in 
+			--cog)
+				args="${args} --cog"
+				shift
+				;;
+			--ko)
+				args="${args} --ko"
+				shift
+				;;
+			--swissprot)
+				args="${args} --swissprot"
+				shift
+				;;
+			--pfam)
+				args="${args} --pfam"
+				shift
+				;;
+			--ref_dir=*)
+				dir=${i#=*}
+				shift
+				;;
+			--run_name=*)
+				shift
+				;;
+			--help)
+				echo "Downloads and sets up the reference database used by the analysis pipeline"
+				echo ""
+				echo "The following options can be used"
+				echo " --cog: downloads the CDD profiles used for COG annotations "
+				echo " --ko: downloads and setups the hmm profiles of the ko database"
+				echo " --pfam: downloads and setups up the "
+				echo " --swissprot: downloads and indexes the swissprot database "
+				echo " --dir: directory where to store the reference databases (defaults zdb_ref in the current directory) "
+				exit
+				;;
+			*)
+				echo "Unknown option $i"
+				exit 1
+		esac
+	done
+
+	db_setup_args="${db_setup_args} --dir=${dir}"
+	echo "Preparing the reference databases, this will take some time"
+	nextflow run $NEXTFLOW_DIR/db_setup.nf ${db_setup_args}
+	echo "Done. The reference databases were prepared in the ${dir} folder"
+	exit 0
+
+elif [[ "$1" == "export" ]]; then
+	echo "Foo"
+elif [[ "$1" == "import" ]]; then
+	echo "Bar"
+fi
