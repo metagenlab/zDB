@@ -126,11 +126,11 @@ else
 fi
 
 if [ ! -d "${dir}/zdb/nginx/var" ]; then
-	mkdir zdb/nginx/var
+	mkdir ${dir}/zdb/nginx/var
 fi
 
 if [ ! -d "${dir}/zdb/assets" ]; then
-	mkdir zdb/assets
+	mkdir ${dir}/zdb/assets
 fi
 
 if [ ! -z "${metagenlab_folder}" ]; then

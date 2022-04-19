@@ -174,16 +174,58 @@ elif [[ "$1" == "export" ]]; then
 		echo "Could not find run with name $name"
 	fi
 	unaliased_name=$(cat $dir/zdb/results/.completed_runs/$run_name)
-	prefix="$dir/zdb/results/"
+	prefix="zdb/results/"
 
-	tar zcvfh $run_name.tar.gz $prefix/alignments/$unaliased_name \
+	echo "Packaging archive"
+	tar zcvfh $run_name.tar.gz -C $dir $prefix/alignments/$unaliased_name \
 		$prefix/blast_DB/$unaliased_name $prefix/db/$unaliased_name \
-		$prefix/gene_phylogenies/$unaliased_name $prefix/search_index/$unaliased_name
+		$prefix/gene_phylogenies/$unaliased_name $prefix/search_index/$unaliased_name \
+		$prefix/.completed_runs/$run_name \
+		zdb/nginx zdb/gunicorn &> /dev/null
 	echo "Created archive $run_name.tar.gz"
 	exit 0
 
 elif [[ "$1" == "import" ]]; then
-	echo "Bar"
+	shift
+	outdir="$(pwd)/"
+	archive=""
+
+	for i in "$@"; do
+		case $i in 
+			--outdir=*)
+				outdir=${i#*=}
+				shift
+				;;
+			--archive=*)
+				archive=${i#*=}
+				shift
+				;;
+			--help)
+				echo "Exports the results of a given run name into an archive to make sharing easier"
+				echo ""
+				echo "The following options can be used"
+				echo ""
+				echo " --dir: specify the directory where the analysis was run"
+				echo ""
+				echo " --name: specify the run to be exported"
+				exit
+				;;
+		esac
+	done
+
+	if [[ ! -f "$archive" ]]; then
+		echo "Could not find file $archive"
+		exit 1
+	fi
+
+	if [[ ! -d $outdir ]]; then
+		mkdir -p $outdir
+	fi
+
+	echo "Unpacking archive"
+	tar xvf $archive -C $outdir &> /dev/null
+	echo "Done"
+	echo "You can now start the zdb webapp in the $outdir directory"
 else
 	echo "Unkown subcommand $1"
 fi
