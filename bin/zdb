@@ -83,11 +83,32 @@ elif [[ "$1" == "webapp" ]]; then
 	shift
 	$NEXTFLOW_DIR/bin/launch_webapp.sh "$@"
 elif [[ "$1" == "run" ]]; then
+	shift
 
 	args=""
+	dir="zdb_ref"
+	mem="8G"
+	cpus="8"
+	input_file=""
 
 	for i in "$@"; do
 		case $i in 
+			--input=*)
+				input_file="${i#*=}"
+				shift
+				;;
+			--name=*)
+				args="${args} --name=${i#*=}"
+				shift
+				;;
+			--cpu=*)
+				cpus=${i#*=}
+				shift
+				;;
+			--mem=*)
+				mem=${i#*=}
+				shift
+				;;
 			--cog)
 				args="${args} --cog"
 				shift
@@ -97,7 +118,7 @@ elif [[ "$1" == "run" ]]; then
 				shift
 				;;
 			--swissprot)
-				args="${args} --swissprot"
+				args="${args} --blast_swissprot"
 				shift
 				;;
 			--pfam)
@@ -105,22 +126,27 @@ elif [[ "$1" == "run" ]]; then
 				shift
 				;;
 			--ref_dir=*)
-				dir=${i#=*}
+				dir=${i#*=}
 				shift
 				;;
 			--run_name=*)
 				shift
 				;;
 			--help)
-				echo "Downloads and sets up the reference database used by the analysis pipeline"
+				echo "Run the analysis pipeline (some analysis may not be available depending on which reference databases were setup)"
 				echo ""
 				echo "The following options can be used"
-				echo " --cog: downloads the CDD profiles used for COG annotations "
-				echo " --ko: downloads and setups the hmm profiles of the ko database"
-				echo " --pfam: downloads and setups up the "
-				echo " --swissprot: downloads and indexes the swissprot database "
-				echo " --dir: directory where to store the reference databases (defaults zdb_ref in the current directory) "
-				exit
+				echo " --input: CSV file containing the path to the genbank files to include in the analsysis"
+				echo " --name: run name (defaults to the name given by nextflow)"
+				echo "         the latest completed run is also named latest"
+				echo " --cog: perform cog annotation"
+				echo " --ko: perform ko (metabolism) annotation"
+				echo " --pfam: peform PFAM domain annotation"
+				echo " --swissprot: search for homologs in the swissprot database"
+				echo " --ref_dir: directory where the reference databases were setup up (default zdb_ref)"
+				echo " --cpu: number of parallel processes allowed (default 8)"
+				echo " --mem: max memory usage allowed (default 8G)"
+				exit 1
 				;;
 			*)
 				echo "Unknown option $i"
@@ -128,10 +154,16 @@ elif [[ "$1" == "run" ]]; then
 		esac
 	done
 
-	db_setup_args="${db_setup_args} --dir=${dir}"
-	echo "Preparing the reference databases, this will take some time"
-	nextflow run $NEXTFLOW_DIR/db_setup.nf ${db_setup_args}
-	echo "Done. The reference databases were prepared in the ${dir} folder"
+	if [ -z "${input_file}" ]; then
+		echo "No input file specified"
+		exit 1
+	fi
+
+	args="${args} --base_db=${dir} --cpus=${cpus} --mem=${mem} --input=${input_file}"
+	echo $args
+	echo "Starting the analysis pipeline"
+	nextflow run $NEXTFLOW_DIR/annotation_pipeline.nf ${args}
+	echo "Done. You can now launch the webapp"
 	exit 0
 
 elif [[ "$1" == "export" ]]; then

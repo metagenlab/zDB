@@ -65,7 +65,7 @@ str_pythonized_params = gen_python_args()
 
 
 // Input processing
-Channel.fromPath(params.local_assemblies)
+Channel.fromPath(params.input)
     .splitCsv(header: true, strip: true)
     .map { row -> file(row.file) }
     .into { gbk_from_local_assembly_f; error_search }
