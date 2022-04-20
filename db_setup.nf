@@ -91,9 +91,11 @@ process prepare_hmm {
 
     input:
         file pfam_hmm
+        file pfam_defs
 
     output:
         file "${pfam_hmm}.h3*"
+        file "*.dat"
     
     script:
     """

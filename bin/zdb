@@ -87,12 +87,17 @@ elif [[ "$1" == "run" ]]; then
 
 	args=""
 	dir="zdb_ref"
-	mem="8G"
+	mem="8GB"
 	cpus="8"
 	input_file=""
+	output_dir=$(pwd)
 
 	for i in "$@"; do
 		case $i in 
+			--out=*)
+				output_dir=${i#*=}
+				shift
+				;;
 			--input=*)
 				input_file="${i#*=}"
 				shift
@@ -136,6 +141,7 @@ elif [[ "$1" == "run" ]]; then
 				echo "Run the analysis pipeline (some analysis may not be available depending on which reference databases were setup)"
 				echo ""
 				echo "The following options can be used"
+				echo " --out: directory where the files necessary for the webapp will be stored"
 				echo " --input: CSV file containing the path to the genbank files to include in the analsysis"
 				echo " --name: run name (defaults to the name given by nextflow)"
 				echo "         the latest completed run is also named latest"
@@ -145,7 +151,7 @@ elif [[ "$1" == "run" ]]; then
 				echo " --swissprot: search for homologs in the swissprot database"
 				echo " --ref_dir: directory where the reference databases were setup up (default zdb_ref)"
 				echo " --cpu: number of parallel processes allowed (default 8)"
-				echo " --mem: max memory usage allowed (default 8G)"
+				echo " --mem: max memory usage allowed (default 8GB)"
 				exit 1
 				;;
 			*)
@@ -159,10 +165,19 @@ elif [[ "$1" == "run" ]]; then
 		exit 1
 	fi
 
-	args="${args} --base_db=${dir} --cpus=${cpus} --mem=${mem} --input=${input_file}"
-	echo $args
+	args="${args} --base_db=${dir} --n_cpus=${cpus} --mem=${mem} --input=${input_file}"
+	args="${args} --results_dir=${output_dir}/zdb/results"
 	echo "Starting the analysis pipeline"
 	nextflow run $NEXTFLOW_DIR/annotation_pipeline.nf ${args}
+	if [[ ! -d ${output_dir}/zdb/nginx ]]; then
+		cp -R $NEXTFLOW_DIR/zdb/nginx ${output_dir}/zdb
+	fi
+
+	if [[ ! -d ${output_dir}/zdb/gunicorn ]]; then
+		mkdir ${output_dir}/zdb/gunicorn
+		cp -R $NEXTFLOW_DIR/zdb/gunicorn/gunicorn.py ${output_dir}/zdb/gunicorn/
+	fi
+
 	echo "Done. You can now launch the webapp"
 	exit 0
 
