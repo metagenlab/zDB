@@ -166,12 +166,19 @@ nr_seqs.splitFasta( by: 300, file: "chunk_" )
         to_kofamscan
         to_pfam_scan }
 
+
 if(params.pfam) {
+    Channel.fromPath("${params.pfam_db}", type: "dir").set { pfam_db }
+
+    pfam_db.combine(to_pfam_scan).set { to_pfam_scan_combined }
+
     process pfam_scan {
         container "$params.pfam_scan_container"
 
         input:
-            file faa_chunk from to_pfam_scan
+            tuple (file(pfam_db), file(faa_chunk) ) from to_pfam_scan_combined
+            // file faa_chunk from to_pfam_scan
+            // file pfam_db from Channel.fromPath("${params.pfam_db}", type: "dir")
 
         output:
             file pfam_result_file into pfam_results
@@ -179,7 +186,7 @@ if(params.pfam) {
         script:
         pfam_result_file="${faa_chunk}_results"
         """
-            pfam_scan.pl -f $faa_chunk -d $params.pfam_db > $pfam_result_file
+            pfam_scan.pl -f $faa_chunk -d pfam > $pfam_result_file
         """
     }
 } else {
