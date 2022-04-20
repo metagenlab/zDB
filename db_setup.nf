@@ -87,7 +87,7 @@ process download_pfam_db {
 
 process prepare_hmm {
     container "$params.pfam_scan_container"
-    publishDir "$params.pfam_db"
+    publishDir "$params.pfam_db", mode: "move"
 
     input:
         file pfam_hmm
