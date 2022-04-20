@@ -246,13 +246,14 @@ elif [[ "$1" == "import" ]]; then
 				shift
 				;;
 			--help)
-				echo "Exports the results of a given run name into an archive to make sharing easier"
+				echo "Unpack an archive that was prepared by the export command"
+				echo "You can alternatively manually unpack it."
 				echo ""
 				echo "The following options can be used"
 				echo ""
-				echo " --dir: specify the directory where the analysis was run"
+				echo " --outdir: specify where the archive will be unpacked "
 				echo ""
-				echo " --name: specify the run to be exported"
+				echo " --archive: specify the archive to be unpacked"
 				exit
 				;;
 		esac

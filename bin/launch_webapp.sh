@@ -168,6 +168,9 @@ bind_path="${bind_path},${dir}/zdb/nginx/var:/var/log/nginx"
 # To be added later, to allow users to download the newick trees
 # bind_path="${bind_path},zdb/results/gene_phylogenies/${run_name}:${zdb_folder}/assets/phylogenies/"
 
+if [ ! -d "singularity" ]; then
+	mkdir "singularity"
+fi
 
 if [ ! -f "singularity/${zdb_container}.sif" ]; then
 	echo "Preparing the zdb container, this may take a while."
