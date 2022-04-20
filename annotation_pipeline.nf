@@ -166,7 +166,7 @@ nr_seqs.splitFasta( by: 300, file: "chunk_" )
         to_kofamscan
         to_pfam_scan }
 
-if(params.pfam_scan) {
+if(params.pfam) {
     process pfam_scan {
         container "$params.pfam_scan_container"
 
@@ -805,7 +805,7 @@ process load_PFAM_info_db {
         file db into to_load_swissprot_hits
 
     script:
-    if(params.pfam_scan)
+    if(params.pfam)
         """
 #!/usr/bin/env python
 import setup_chlamdb

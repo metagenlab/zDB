@@ -40,7 +40,7 @@ if [[ "$1" == "setup" ]]; then
 				shift
 				;;
 			--swissprot)
-				db_setup_args="${db_setup_args} --swissprot"
+				db_setup_args="${db_setup_args} --blast_swissprot"
 				shift
 				;;
 			--pfam)
@@ -73,9 +73,7 @@ if [[ "$1" == "setup" ]]; then
 		esac
 	done
 
-	db_setup_args="${db_setup_args} --dir=${dir}"
-	echo $db_setup_args
-	exit 1
+	db_setup_args="${db_setup_args} --base_db=${dir}"
 	echo "Preparing the reference databases, this will take some time"
 	nextflow run $NEXTFLOW_DIR/db_setup.nf ${db_setup_args}
 	echo "Done. The reference databases were prepared in the ${dir} folder"

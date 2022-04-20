@@ -69,7 +69,7 @@ process diamond_refseq {
 process download_pfam_db {
     publishDir "$params.pfam_db"
     when:
-        params.pfam_scan
+        params.pfam
     
     output:
         file "Pfam-A.hmm" into pfam_hmm
