@@ -87,7 +87,7 @@ process download_pfam_db {
 
 process prepare_hmm {
     container "$params.pfam_scan_container"
-    publishDir "$params.pfam_db", mode: "move"
+    publishDir "$params.pfam_db", mode: "copy"
 
     input:
         file pfam_hmm
@@ -95,7 +95,7 @@ process prepare_hmm {
 
     output:
         file "${pfam_hmm}.h3*"
-        file "*.dat"
+        file "Pfam-A.hmm.dat"
     
     script:
     """

@@ -4,6 +4,7 @@ VERSION="1.0.0"
 NEXTFLOW_DIR="/home/bmarquis/sda1/bmarquis/test_deployment/annotation_pipeline_nextflow/"
 ZDB_DIR=""
 
+
 if [[ $# == "0" || $1 == "help" ]]; then
 	echo "zDB (v${VERSION})"
 	echo "Available commands:"
@@ -19,12 +20,49 @@ if [[ $# == "0" || $1 == "help" ]]; then
 	echo "import - unpack an archive that was prepared with the export command in the current directory"
 	echo "       - so that the results can be used to start the webapp"
 	echo ""
+	echo "list_runs - lists the completed runs available to start the website in a given directory"
+	echo ""
 	echo "help - print this message"
 	exit 0
 fi
 
 
-if [[ "$1" == "setup" ]]; then
+if [[ "$1" == "list_runs" ]]; then
+	dir=$(pwd)
+
+	if [ "$2" == "--help" -o "$2" == "-h" ]; then
+		echo "This subcommands list the completed analysis runs available to start the webapp"
+		echo "If no parameter is passed, it will look into the current directory"
+		echo ""
+		echo "Options:"
+		echo "--help|-h: prints this help"
+		exit 0
+	fi
+
+	if [[ "$#" -gt "2" ]]; then
+		echo "Warning: only one argument is supported. The runs will be printed only for $2"
+		dir=$2
+	elif [[ "$#" == "2" ]]; then
+		dir=$2
+	fi
+
+	if [ ! -d "${dir}/zdb/results/" -o ! -d "${dir}/zdb/results/.completed_runs" ]; then
+		echo "Could not find results in directory in $dir"
+		exit 1
+	fi
+
+	echo "The following runs could be found:"
+	echo ""
+	for i in $(ls ${dir}/zdb/results/.completed_runs); do
+		if [ "$(cat ${dir}/zdb/results/.completed_runs/$i)" = "$i" ]; then
+			echo $i
+		else
+			echo "$i -> $(cat ${dir}/zdb/results/.completed_runs/$i)"
+		fi
+	done
+	exit 0
+
+elif [[ "$1" == "setup" ]]; then
 	shift
 	dir="$(pwd)/zdb_ref"
 	db_setup_args=""
