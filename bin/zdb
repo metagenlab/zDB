@@ -64,6 +64,12 @@ if [[ "$1" == "list_runs" ]]; then
 
 elif [[ "$1" == "setup" ]]; then
 	shift
+
+	if [[ "$#" == "0" ]]; then
+		echo "No database to download, exiting"
+		exit 0
+	fi
+
 	dir="$(pwd)/zdb_ref"
 	db_setup_args=""
 
@@ -98,12 +104,12 @@ elif [[ "$1" == "setup" ]]; then
 				echo ""
 				echo " --ko: downloads and setups the hmm profiles of the ko database"
 				echo ""
-				echo " --pfam: downloads and setups up the "
+				echo " --pfam: downloads and setups up the hmm profiles of the PFAM protein domains"
 				echo ""
 				echo " --swissprot: downloads and indexes the swissprot database "
 				echo ""
 				echo " --dir: directory where to store the reference databases (defaults zdb_ref in the current directory) "
-				exit
+				exit 0
 				;;
 			*)
 				echo "Unknown option $i"
