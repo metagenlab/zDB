@@ -1447,6 +1447,7 @@ process execute_T3SS_inc_protein_prediction {
 // to speed up execution
 process execute_psortb {
   container "$params.psort_container"
+  memory '2 GB'
 
   publishDir 'annotation/psortb/', mode: 'copy', overwrite: true
 
@@ -1508,7 +1509,7 @@ process get_uniparc_crossreferences {
   """
 	#!/usr/bin/env python
 	import annotations
-	annotations.get_uniparc_crossreferences("${params.databases_dir}" + "/databases/", "${table}")
+	annotations.get_uniparc_crossreferences("${params.databases_dir}", "${table}")
   """
 }
 
