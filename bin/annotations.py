@@ -1286,8 +1286,8 @@ def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
         category = go[3]
         o.write(f"{accession_base}\\t{GO_id}\\t{reference}\\t{evidence_code}\\t{category}\\n")
 
-def setup_diamond_refseq_db(diamond_tsv_files_list):
-    conn = sqlite3.connect("diamond_refseq.db")
+def setup_diamond_uniref_db(diamond_tsv_files_list):
+    conn = sqlite3.connect("diamond_uniref.db")
     cursor = conn.cursor()
 
     sql1 = """CREATE TABLE diamond_refseq(hit_count INTEGER, qseqid varchar(200),

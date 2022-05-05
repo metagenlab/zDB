@@ -324,7 +324,7 @@ merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
 
 process prepare_orthofinder {
 
-  container "$params.annotation_container"
+  container "$params.orthofinder_container"
 
   when:
   params.orthofinder
@@ -345,7 +345,7 @@ process prepare_orthofinder {
 
 process blast_orthofinder {
 
-  container "$params.annotation_container"
+  container "$params.blast_container"
 
   cpus 2
 
@@ -428,7 +428,7 @@ process orthogroups2fasta {
 
 
 process align_with_mafft {
-  container "$params.annotation_container"
+  container "$params.mafft_container"
 
   publishDir 'orthology/orthogroups_alignments', mode: 'copy', overwrite: true
 
@@ -481,7 +481,7 @@ process orthogroups_phylogeny_with_raxml {
 
 process orthogroups_phylogeny_with_fasttree3 {
 
-  container "$params.annotation_container"
+  container "$params.fasttree_container"
   cpus 4
   publishDir 'orthology/orthogroups_phylogenies_fasttree', mode: 'copy', overwrite: true
 
@@ -500,61 +500,6 @@ process orthogroups_phylogeny_with_fasttree3 {
   """
 }
 
-
-process orthogroups_phylogeny_with_iqtree {
-
-  container "$params.annotation_container"
-  cpus 2
-  publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
-
-  when:
-  params.orthogroups_phylogeny_with_iqtree
-
-  input:
-  each file(og) from alignments_larget_tah_3_seqs
-
-  output:
-    file "${og.getBaseName()}.iqtree"
-    file "${og.getBaseName()}.treefile"
-    file "${og.getBaseName()}.log"
-    file "${og.getBaseName()}.bionj"
-    file "${og.getBaseName()}.ckp.gz"
-    file "${og.getBaseName()}.mldist"
-    file "${og.getBaseName()}.model.gz"
-    file "${og.getBaseName()}.splits.nex"
-
-  script:
-  """
-  iqtree -nt 2 -s ${og} -alrt 1000 -bb 1000 -pre ${og.getBaseName()}
-  """
-}
-
-process orthogroups_phylogeny_with_iqtree_no_boostrap {
-
-  container "$params.annotation_container"
-  cpus 2
-  publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
-
-  when:
-  params.orthogroups_phylogeny_with_iqtree == true
-
-  input:
-  each file(og) from alignments_3_seqs
-
-  output:
-    file "${og.getBaseName()}.iqtree"
-    file "${og.getBaseName()}.treefile"
-    file "${og.getBaseName()}.log"
-    file "${og.getBaseName()}.bionj"
-    file "${og.getBaseName()}.ckp.gz"
-    file "${og.getBaseName()}.mldist"
-    file "${og.getBaseName()}.model.gz"
-
-  script:
-  """
-  iqtree -nt 2 -s ${og} -pre ${og.getBaseName()}
-  """
-}
 
 process get_core_orthogroups {
 
@@ -607,7 +552,7 @@ process concatenate_core_orthogroups {
 
 process build_core_phylogeny_with_fasttree {
 
-  container "$params.annotation_container"
+  container "$params.fasttree_container"
 
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
@@ -675,7 +620,7 @@ blast_result.collectFile(name: 'annotation/COG/blast_COG.tab')
 
 process blast_swissprot {
 
-  container "$params.annotation_container"
+  container "$params.blast_container"
 
   publishDir 'annotation/blast_swissprot', mode: 'copy', overwrite: true
 
@@ -698,62 +643,33 @@ process blast_swissprot {
   """
 }
 
-
-process plast_refseq {
-
-  publishDir 'annotation/plast_refseq', mode: 'copy', overwrite: true
-
-  cpus 12
-
-  when:
-  params.plast_refseq == true
-
-  input:
-  file(seq) from faa_chunks5
-
-  output:
-  file '*tab' into refseq_plast
-  file '*log' into refseq_plast_log
-
-  script:
-
-  n = seq.name
-  """
-  # 15'000'000 vs 10'000'000
-  # 100'000'000 max
-  # -s 45
-  export PATH="\$PATH:\$PLAST_HOME"
-  plast -p plastp -a ${task.cpus} -d $params.databases_dir/refseq/merged.faa.pal -i ${n} -M BLOSUM62 -s 60 -seeds-use-ratio 45 -max-database-size 50000000 -e 1e-5 -G 11 -E 1 -o ${n}.tab -F F -bargraph -verbose -force-query-order 1000 -max-hit-per-query 200 -max-hsp-per-hit 1 > ${n}.log;
-  """
-}
-
 // cut sequences in smaller chunks to speed up execution?
 // use a caching method to speed up queries if two identical sequences come up?
-process diamond_refseq {
+process diamond_uniref {
 
-  publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
+  publishDir 'annotation/diamond_uniref', mode: 'copy', overwrite: true
 
   cpus 4
-  container "$params.annotation_container"
+  container "$params.diamond_container"
 
   when:
-  params.diamond_refseq
+  params.diamond_uniref
 
   input:
   file(seq) from faa_chunks6
 
   output:
-  file '*tab' into refseq_diamond
+  file '*tab' into uniref_diamond
 
   script:
 
   n = seq.name
   """
-  diamond blastp -p ${task.cpus} -d $params.databases_dir/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
+  diamond blastp -p ${task.cpus} -d $params.databases_dir/uniref/uniref100.dmnd -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
   """
 }
 
-refseq_diamond.collectFile().set { refseq_diamond_results_sqlitedb }
+uniref_diamond.collectFile().set { uniref_diamond_results_sqlitedb }
 
 
 //refseq_diamond_results_taxid_mapping
@@ -795,7 +711,7 @@ process get_uniparc_mapping {
   """
 	#!/usr/bin/env python
 	import annotations
-	annotations.get_uniparc_mapping("${params.databases_dir}" + "/databases", "$fasta_file")
+	annotations.get_uniparc_mapping("${params.databases_dir}", "$fasta_file")
   """
 }
 
@@ -1106,7 +1022,7 @@ process execute_kofamscan {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  container "$params.annotation_container"
+  container "$params.kegg_container"
 
   cpus 4
   memory '8 GB'
@@ -1123,9 +1039,8 @@ process execute_kofamscan {
   script:
   n = seq.name
 
-  // Hack for now
   """
-  ${params.databases_dir}/kegg/exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
+  exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
   """
 }
 
@@ -1187,19 +1102,19 @@ process setup_orthology_db {
 }
 
 
-process setup_diamond_refseq_db {
+process setup_diamond_uniref_db {
 
   container "$params.annotation_container"
-  publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
+  publishDir 'annotation/diamond_uniref', mode: 'copy', overwrite: true
   echo false
   cpus 4
   memory '8 GB'
 
   when:
-  params.refseq_diamond_BBH_phylogeny == true
+  params.uniref_diamond_BBH_phylogeny == true
 
   input:
-  file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
+  file diamond_tsv_list from uniref_diamond_results_sqlitedb.collect()
 
   output:
   file 'diamond_refseq.db' into diamond_refseq_db
@@ -1209,7 +1124,7 @@ process setup_diamond_refseq_db {
   """
 	#!/usr/bin/env python
 	import annotations
-	annotations.setup_diamond_refseq_db("$diamond_tsv_list")
+	annotations.setup_diamond_uniref_db("$diamond_tsv_list")
   """
 }
 
@@ -1272,7 +1187,7 @@ process get_diamond_refseq_top_hits {
 
 process align_refseq_BBH_with_mafft {
 
-  container "$params.annotation_container"
+  container "$params.mafft_container"
 
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_alignments', mode: 'copy', overwrite: true
 
@@ -1300,7 +1215,7 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 
   // Note : not sure fasttree is actually included in
   // annotation_container
-  container "$params.annotation_container"
+  container "$params.fasttree_container"
   cpus 4
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
 
@@ -1552,7 +1467,7 @@ process execute_psortb {
 
 process blast_pdb {
   publishDir 'annotation/pdb_mapping', mode: 'copy', overwrite: true
-  container "$params.annotation_container"
+  container "$params.blast_container"
 
   cpus 4
 
