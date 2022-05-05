@@ -20,28 +20,6 @@ zDB can be installed from conda with the following command
 conda install zDB -c bioconda
 ```
 
-## Config file
-
-The ```nextflow.config``` file is separated in several sections:
-
-1. The input section. The annotation pipeline expects a simple tsv file as input (actually, could also be a csv file, as separators are currently not necessary). The file should list the genbank files to be included in the analysis under the ```file``` header. The pipeline is currently picky and will loudly complain if anything else than a genbank file is used as input. Input file example:
-
-```
-file
-foo.gbk
-ponk/bar.gbk
-pof/baz.gbk
-```
-
-2. The second section defines where the reference databases will be stored on disk. This is used both during the analysis and when setting up the reference databases. Unless you already have some of the reference databases installed, you won't have to modify this section.
-
-3. The third section is where you define which analysis to run and the parameters for the tools that need them. By default, all analysis are enabled (set to true), except the search for refseq homologs. All analysis can be set to false in case the results are not relevant or if you don't want to install the reference database. The core_missing parameter may be useful to build the species phylogeny in datasets that include incomplete genomes. If the parameter is set to 0, only  single copy genes present in all genomes will be taken into account to build the phylogeny. If this parameter is not 0, zDB will relax the condition  and also include genes missing in up to ```core_missing``` genomes.
-
-4. The internals lists all the parameters necessary for pipeline to run. Modify those at your own risk and perils.
-
-5. The last section allows you to specify the resources allocated to the analysis. You can limit CPU or memory usage by setting different values for the cpus or memory options.
-
-
 ## Setting up the reference databases
 
 Depending on which analysis are to be run, reference databases will need to be downloaded and set up. This is done using the ```zdb setup``` command.
