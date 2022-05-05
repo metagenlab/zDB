@@ -15,11 +15,9 @@ All the results are stored either in a SQLite database or directly as files and 
 
 ## Installation
 
-[Nextflow](https://www.nextflow.io/) and [singularity](https://sylabs.io/guides/3.5/user-guide/introduction.html) will need to be installed before running zDB (and of course, git).
-Once both tools have been installed, checkout zDB with the following command:
-
+zDB can be installed from conda with the following command
 ```
-git clone https@github.com:metagenlab/annotation_pipeline_nextflow.git
+conda install zDB -c bioconda
 ```
 
 ## Config file
@@ -46,15 +44,16 @@ pof/baz.gbk
 
 ## Setting up the reference databases
 
-Depending on which analysis are to be run, reference databases will need to be downloaded and set up. 
-This is done by running the db_setup.nf script with nextflow:
-
+Depending on which analysis are to be run, reference databases will need to be downloaded and set up. This is done using the ```zdb setup``` command.
+You'll need to specifiy which databases are to be downloaded. The following options are available:
 ```
-nextflow run db_setup.nf
+--cog: downloads the CDD profiles used for COG annotations
+--ko: downloads and setups the hmm profiles of the ko database
+--pfam: downloads and setups up the hmm profiles of the PFAM protein domains
+--swissprot: downloads and indexes the swissprot database
 ```
 
-The script will download the reference databases needed for the analysis set to true in the nextflow config file.
-For instance, if only the swissprot homologs and COG annotation are set to true in the config file, only the swissprot and COG reference databases will be downloaded and prepared.
+In addition, you can specify the directory where you want the databases to be installed with the ```--dir``` option.
 
 Downloading the HMM files from the KEGG server can take a bit of time (but you'll only need to do this once).
 
