@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
 VERSION="1.0.0"
-NEXTFLOW_DIR="/home/bmarquis/sda1/bmarquis/test_deployment/annotation_pipeline_nextflow/"
+
+# this value will be replaced by the install script of the 
+# conda package
+# For debugging purposes, you can also manually set it to the directory where the 
+# annotation_pipeline.nf is
+NEXTFLOW_DIR="nextflow_dir_val"
 ZDB_DIR=""
 
 
@@ -135,6 +140,7 @@ elif [[ "$1" == "run" ]]; then
 	cpus="8"
 	input_file=""
 	output_dir=$(pwd)
+	n_missing="0"
 
 	for i in "$@"; do
 		case $i in 
@@ -158,6 +164,16 @@ elif [[ "$1" == "run" ]]; then
 				mem=${i#*=}
 				shift
 				;;
+			--num_missing=*)
+				n_missing=${i#*=}
+				int_re='^[0-9]*$'
+				if ! [[ $n_missing =~ $int_re ]]; then
+					echo "Expect a number for n_missing option"
+					exit 1
+				fi
+				args="${args} --num_missing=$n_missing"
+				shift
+				;;
 			--cog)
 				args="${args} --cog"
 				shift
@@ -178,9 +194,6 @@ elif [[ "$1" == "run" ]]; then
 				dir=${i#*=}
 				shift
 				;;
-			--run_name=*)
-				shift
-				;;
 			--help)
 				echo "Run the analysis pipeline (some analysis may not be available depending on which reference databases were setup)"
 				echo ""
@@ -196,6 +209,7 @@ elif [[ "$1" == "run" ]]; then
 				echo " --ref_dir: directory where the reference databases were setup up (default zdb_ref)"
 				echo " --cpu: number of parallel processes allowed (default 8)"
 				echo " --mem: max memory usage allowed (default 8GB)"
+				echo " --num_missing: allows for missing genomes for the determination of core orthogroups (default 0)"
 				exit 1
 				;;
 			*)
