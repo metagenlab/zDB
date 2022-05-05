@@ -68,17 +68,22 @@ command. You can also name the run with the ```--name=``` parameter, which may b
 
 ## Starting the web server
 
-Once the analysis is complete, the web application can be run with the launch_webapp.sh script. The following options can be used:
+Once the analysis is complete, the web application can be run with the ```zdb webapp``` command. The following options can be used:
 ```
 --port=PORT_NUMBER      the port the application will be listening to, 8080 by default.
 --name=RUN_NAME     when nextflow runs. If not specified, will default to the last successful run (latest).
 --allowed_hosts=HOSTS   the name of the host or the ip address of the server. If not specified, will default to the ip addresses of the current host.
 ```
-Simply put, if the port 8080 is not in use, that you want to access the results of your latest run and will only access the web application locally, you can simply run the launch_webapp script without any parameters.
-
-Some other options are also available, but are essentially here for debugging purposes.
+Simply put, if the port 8080 is not in use, that you want to access the results of your latest run and will only access the web application locally, you can simply run the ```zdb webapp``` script without any parameters.
 
 Once the webserver has started, you'll be able to access the webpages with a web-browser.
 
+If you do not remember which runs are available, you can list them with the ```zdb list_runs``` command.
+
 ## Bugs and feature requests
 Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/annotation_pipeline_nextflow/issues).
+
+We already have several idea to improve the tool:
+- make it possible to add or remove genomes in an existing database
+- use d3.js to draw interactive phylogenetic trees
+- add new annotations, in particular, we've already received some requests for antibiotic resistance and virulence
