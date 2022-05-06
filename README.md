@@ -71,7 +71,7 @@ If you do not remember which runs are available, you can list them with the ```z
 
 As the analysis may be run on a server or on an HPC cluster, the results may need to be exported to start a web application on a different machine.
 
-This can be done with the ```zdb export``` command with a run name as parameter. This will create a compressed archive containing all the necessary results. The archive can then be transferred to a different machin and unpacked, either manually or with the ```zdb import``` command.
+This can be done with the ```zdb export``` command with a run name as parameter. This will create a compressed archive containing all the necessary results. The archive can then be transferred to a different machine and unpacked, either manually or with the ```zdb import``` command.
 The web server can then be started as if the analysis had been run locally.
 
 ## Bugs and feature requests
