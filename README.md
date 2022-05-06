@@ -98,3 +98,5 @@ We already have several idea to improve the tool:
 - make it possible to add or remove genomes in an existing database
 - use d3.js to draw interactive phylogenetic trees
 - add new annotations, in particular, we've already received some requests for antibiotic resistance and virulence
+
+But we're definitely open for suggestions and contributions.
