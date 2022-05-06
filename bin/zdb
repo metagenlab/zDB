@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 
 VERSION="1.0.0"
-
-# this value will be replaced by the install script of the 
-# conda package
-# For debugging purposes, you can also manually set it to the directory where the 
-# annotation_pipeline.nf is
-NEXTFLOW_DIR="nextflow_dir_val"
-ZDB_DIR=""
+CONDA=$(which zdb | sed 's=bin/zdb==')
+NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
 
 
 if [[ $# == "0" || $1 == "help" ]]; then
