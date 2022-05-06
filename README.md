@@ -20,6 +20,20 @@ zDB can be installed from conda with the following command
 conda install zDB -c bioconda
 ```
 
+## Overview
+
+Several subcommands are available:
+```
+setup - download and prepare the reference databases
+webapp - start the webapp
+run - run the analysis pipeline
+export - exports the results of a previous run in an archive
+import - unpack an archive that was prepared with the export command in the current directory
+       - so that the results can be used to start the webapp
+list_runs - lists the completed runs available to start the website in a given directory
+help - print this message
+```
+
 ## Setting up the reference databases
 
 Depending on which analysis are to be run, reference databases will need to be downloaded and set up. This is done using the ```zdb setup``` command.
