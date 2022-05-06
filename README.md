@@ -51,7 +51,9 @@ Several options are available and allow you to customize the run:
 --ref_dir: directory where the reference databases were setup up (default zdb_ref)
 --cpu: number of parallel processes allowed (default 8)
 --mem: max memory usage allowed (default 8GB)
+--singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)
 ```
+As the analysis are run in containers, nextflow will have to download the first time zDB is used. The containers will be stored in the singularity folder of the current directory. If you already downloaded the containers, you can point zDB to the location where they are located to avoid new downloads.
 
 ## Starting the web server
 
@@ -60,6 +62,7 @@ Once the analysis is complete, the web application can be run with the ```zdb we
 --port=PORT_NUMBER      the port the application will be listening to, 8080 by default.
 --name=RUN_NAME     when nextflow runs. If not specified, will default to the last successful run (latest).
 --allowed_hosts=HOSTS   the name of the host or the ip address of the server. If not specified, will default to the ip addresses of the current host.
+--singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)
 ```
 Simply put, if the port 8080 is not in use, that you want to access the results of your latest run and will only access the web application locally, you can simply run the ```zdb webapp``` script without any parameters.
 
