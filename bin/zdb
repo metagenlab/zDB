@@ -141,6 +141,8 @@ elif [[ "$1" == "run" ]]; then
 	input_file=""
 	output_dir=$(pwd)
 	n_missing="0"
+	singularity_dir="$(pwd)/singularity"
+	name=""
 
 	for i in "$@"; do
 		case $i in 
@@ -153,7 +155,8 @@ elif [[ "$1" == "run" ]]; then
 				shift
 				;;
 			--name=*)
-				args="${args} --name=${i#*=}"
+				name=${i#*=}
+				args="${args} --name=${name}"
 				shift
 				;;
 			--cpu=*)
@@ -190,6 +193,10 @@ elif [[ "$1" == "run" ]]; then
 				args="${args} --pfam"
 				shift
 				;;
+			--singularity_dir=*)
+				singularity_dir=${i#*=}
+				shift
+				;;
 			--ref_dir=*)
 				dir=${i#*=}
 				shift
@@ -210,6 +217,7 @@ elif [[ "$1" == "run" ]]; then
 				echo " --cpu: number of parallel processes allowed (default 8)"
 				echo " --mem: max memory usage allowed (default 8GB)"
 				echo " --num_missing: allows for missing genomes for the determination of core orthogroups (default 0)"
+				echo " --singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)"
 				exit 1
 				;;
 			*)
@@ -223,8 +231,21 @@ elif [[ "$1" == "run" ]]; then
 		exit 1
 	fi
 
+	if [ "$name" = "latest" ]; then
+		echo "You sneaky bastard, this is a reserved name"
+		echo "Goodbye."
+		exit 1
+	fi
+
+	if [ -f "${output_dir}/zdb/results/.completed_runs/$name" ]; then
+		echo "A run with that name already exists and I don't like overwriting stuff"
+		echo "Goodbye."
+		exit 1
+	fi
+
 	args="${args} --base_db=${dir} --n_cpus=${cpus} --mem=${mem} --input=${input_file}"
 	args="${args} --results_dir=${output_dir}/zdb/results"
+	args="${args} --singularity_dir=$singularity_dir"
 	echo "Starting the analysis pipeline"
 	nextflow run $NEXTFLOW_DIR/annotation_pipeline.nf ${args}
 	if [[ ! -d ${output_dir}/zdb/nginx ]]; then
