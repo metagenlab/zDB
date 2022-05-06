@@ -67,6 +67,13 @@ Once the webserver has started, you'll be able to access the webpages with a web
 
 If you do not remember which runs are available, you can list them with the ```zdb list_runs``` command.
 
+## Importing and exporting results
+
+As the analysis may be run on a server or on an HPC cluster, the results may need to be exported to start a web application on a different machine.
+
+This can be done with the ```zdb export``` command with a run name as parameter. This will create a compressed archive containing all the necessary results. The archive can then be transferred to a different machin and unpacked, either manually or with the ```zdb import``` command.
+The web server can then be started as if the analysis had been run locally.
+
 ## Bugs and feature requests
 Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/annotation_pipeline_nextflow/issues).
 
