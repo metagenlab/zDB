@@ -8,78 +8,95 @@ Several analysis are currently supported, with more to come:
 - KEGG orthologs annotation
 - PFAM domains annotation
 - Swissprot homologs search
-- (RefSeq homologs search): implemented, but significantly slows down the analysis
+- (RefSeq homologs search): implemented, but significantly slows down the analysis. You'll also have to download and prepare the database for diamond search, as this was not included in the database setup script.
 
 In addition, zDB performs orthology and phylogeny inference.
 All the results are stored either in a SQLite database or directly as files and displayed in the web application.
 
 ## Installation
 
-[Nextflow](https://www.nextflow.io/) and [singularity](https://sylabs.io/guides/3.5/user-guide/introduction.html) will need to be installed before running zDB (and of course, git).
-Once both tools have been installed, checkout zDB with the following command:
-
+zDB can be installed from conda with the following command
 ```
-git clone https@github.com:metagenlab/annotation_pipeline_nextflow.git
+conda install zDB -c bioconda
 ```
 
-## Config file
+## Overview
 
-The ```nextflow.config``` file is separated in several sections:
-
-1. The input section. The annotation pipeline expects a simple tsv file as input (actually, could also be a csv file, as separators are currently not necessary). The file should list the genbank files to be included in the analysis under the ```file``` header. The pipeline is currently picky and will loudly complain if anything else than a genbank file is used as input. Input file example:
-
+Several subcommands are available:
 ```
-file
-foo.gbk
-ponk/bar.gbk
-pof/baz.gbk
+setup - download and prepare the reference databases
+webapp - start the webapp
+run - run the analysis pipeline
+export - exports the results of a previous run in an archive
+import - unpack an archive that was prepared with the export command in the current directory
+       - so that the results can be used to start the webapp
+list_runs - lists the completed runs available to start the website in a given directory
+help - print this message
 ```
-
-2. The second section defines where the reference databases will be stored on disk. This is used both during the analysis and when setting up the reference databases. Unless you already have some of the reference databases installed, you won't have to modify this section.
-
-3. The third section is where you define which analysis to run and the parameters for the tools that need them. By default, all analysis are enabled (set to true), except the search for refseq homologs. All analysis can be set to false in case the results are not relevant or if you don't want to install the reference database. The core_missing parameter may be useful to build the species phylogeny in datasets that include incomplete genomes. If the parameter is set to 0, only  single copy genes present in all genomes will be taken into account to build the phylogeny. If this parameter is not 0, zDB will relax the condition  and also include genes missing in up to ```core_missing``` genomes.
-
-4. The internals lists all the parameters necessary for pipeline to run. Modify those at your own risk and perils.
-
-5. The last section allows you to specify the resources allocated to the analysis. You can limit CPU or memory usage by setting different values for the cpus or memory options.
-
 
 ## Setting up the reference databases
 
-Depending on which analysis are to be run, reference databases will need to be downloaded and set up. 
-This is done by running the db_setup.nf script with nextflow:
-
+Depending on which analysis are to be run, reference databases will need to be downloaded and set up. This is done using the ```zdb setup``` command.
+You'll need to specifiy which databases are to be downloaded. The following options are available:
 ```
-nextflow run db_setup.nf
+--cog: downloads the CDD profiles used for COG annotations
+--ko: downloads and setups the hmm profiles of the ko database
+--pfam: downloads and setups up the hmm profiles of the PFAM protein domains
+--swissprot: downloads and indexes the swissprot database
 ```
 
-The script will download the reference databases needed for the analysis set to true in the nextflow config file.
-For instance, if only the swissprot homologs and COG annotation are set to true in the config file, only the swissprot and COG reference databases will be downloaded and prepared.
+In addition, you can specify the directory where you want the databases to be installed with the ```--dir``` option.
 
 Downloading the HMM files from the KEGG server can take a bit of time (but you'll only need to do this once).
 
 ## Running the analysis
 
-Easy. Once you have the reference databases set up, the genomes ready and are happy with the nextflow.config file, just run the 
-```
-nextflow run annotation_pipeline.nf
-```
-command. You can also name the run with the ```--name=``` parameter, which may be useful in case you plan on running several analysis. For example: ```nextflow run annotation_pipeline.nf --name=enterobacteriaceae```. If no name is provided, the run name automatically generated by nextflow will be used. Note that the name ```latest``` points to the last successful run.
+Easy. Once you have the reference databases set up, the genomes ready, just run the ```zdb run``` command.
+Several options are available and allow you to customize the run:
 
+```
+--out: directory where the files necessary for the webapp will be stored
+--input: CSV file containing the path to the genbank files to include in the analysis
+--name: run name (defaults to the name given by nextflow). The latest completed run is also named latest.
+--cog: perform cog annotation
+--ko: perform ko (metabolism) annotation
+--pfam: peform PFAM domain annotation
+--swissprot: search for homologs in the swissprot database
+--ref_dir: directory where the reference databases were setup up (default zdb_ref)
+--cpu: number of parallel processes allowed (default 8)
+--mem: max memory usage allowed (default 8GB)
+--singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)
+```
+As the analysis are run in containers, nextflow will have to download the first time zDB is used. The containers will be stored in the singularity folder of the current directory. If you already downloaded the containers, you can point zDB to the location where they are located to avoid new downloads.
 
 ## Starting the web server
 
-Once the analysis is complete, the web application can be run with the launch_webapp.sh script. The following options can be used:
+Once the analysis is complete, the web application can be run with the ```zdb webapp``` command. The following options can be used:
 ```
 --port=PORT_NUMBER      the port the application will be listening to, 8080 by default.
 --name=RUN_NAME     when nextflow runs. If not specified, will default to the last successful run (latest).
 --allowed_hosts=HOSTS   the name of the host or the ip address of the server. If not specified, will default to the ip addresses of the current host.
+--singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)
 ```
-Simply put, if the port 8080 is not in use, that you want to access the results of your latest run and will only access the web application locally, you can simply run the launch_webapp script without any parameters.
-
-Some other options are also available, but are essentially here for debugging purposes.
+Simply put, if the port 8080 is not in use, that you want to access the results of your latest run and will only access the web application locally, you can simply run the ```zdb webapp``` script without any parameters.
 
 Once the webserver has started, you'll be able to access the webpages with a web-browser.
 
+If you do not remember which runs are available, you can list them with the ```zdb list_runs``` command.
+
+## Importing and exporting results
+
+As the analysis may be run on a server or on an HPC cluster, the results may need to be exported to start a web application on a different machine.
+
+This can be done with the ```zdb export``` command with a run name as parameter. This will create a compressed archive containing all the necessary results. The archive can then be transferred to a different machine and unpacked, either manually or with the ```zdb import``` command.
+The web server can then be started as if the analysis had been run locally.
+
 ## Bugs and feature requests
 Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/annotation_pipeline_nextflow/issues).
+
+We already have several idea to improve the tool:
+- make it possible to add or remove genomes in an existing database
+- use d3.js to draw interactive phylogenetic trees
+- add new annotations, in particular, we've already received some requests for antibiotic resistance and virulence
+
+But we're definitely open for suggestions and contributions.
