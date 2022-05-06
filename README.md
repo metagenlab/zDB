@@ -8,7 +8,7 @@ Several analysis are currently supported, with more to come:
 - KEGG orthologs annotation
 - PFAM domains annotation
 - Swissprot homologs search
-- (RefSeq homologs search): implemented, but significantly slows down the analysis
+- (RefSeq homologs search): implemented, but significantly slows down the analysis. You'll also have to download and prepare the database for diamond search, as this was not included in the database setup script.
 
 In addition, zDB performs orthology and phylogeny inference.
 All the results are stored either in a SQLite database or directly as files and displayed in the web application.
