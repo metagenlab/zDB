@@ -131,9 +131,9 @@ fi
 # zdb relies on this script being run from the nextflow directory so that singularity
 # mounts the whole results dir in the container and keep the symbolic links valid
 
-bind_path="${bind_path},${dir}/zdb/results/db/${run_name}:${zdb_folder}/assets/db/${run_name}"
-bind_path="${bind_path},${dir}/zdb/results/search_index/${run_name}:${zdb_folder}/assets/search_index/${run_name}"
-bind_path="${bind_path},${dir}/zdb/results/blast_DB/${run_name}:${zdb_folder}/assets/blast_DB/${run_name}"
+bind_path="${bind_path},${dir}/zdb/results/db/:${zdb_folder}/assets/db/"
+bind_path="${bind_path},${dir}/zdb/results/search_index/${run_name}:${zdb_folder}/assets/search_index/"
+bind_path="${bind_path},${dir}/zdb/results/blast_DB/${run_name}:${zdb_folder}/assets/blast_DB/"
 bind_path="${bind_path},${dir}/zdb/results/alignments/${run_name}:${zdb_folder}/assets/alignments/"
 
 
