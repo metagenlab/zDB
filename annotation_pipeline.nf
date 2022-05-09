@@ -154,7 +154,7 @@ if(params.ncbi_sample_sheet == false) {
 
     publishDir 'data/refseq_corresp', mode: 'copy', overwrite: true
 
-    maxForks 2
+    maxForks 1
     maxRetries 3
     //errorStrategy 'ignore'
 
@@ -187,7 +187,7 @@ if(params.ncbi_sample_sheet == false) {
 
     publishDir 'data/refseq_corresp', mode: 'copy', overwrite: true
 
-    maxForks 2
+    maxForks 1
     maxRetries 3
     //errorStrategy 'ignore'
 
@@ -639,6 +639,7 @@ process blast_swissprot {
 
   n = seq.name
   """
+  ls $params.databases_dir/uniprot/swissprot/
   blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
   """
 }
@@ -808,7 +809,7 @@ process get_string_PMID_mapping {
     publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
 
     when:
-    params.string
+    params.string_pmid
 
     input:
     file(string_map) from string_mapping
@@ -902,7 +903,8 @@ process tcdb_gblast3 {
     script:
     n = seq.name
     """
-    /usr/local/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq} --db_path /usr/local/bin/tcdb_db/
+    export ALLOW_HTTP=true
+    /usr/local/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq} --db_path ${params.tcdb_db_path}
     """
 }
 
@@ -974,8 +976,6 @@ process execute_interproscan_no_uniparc_matches {
 
   output:
   file '*gff3' into interpro_gff3_no_uniparc
-  file '*html.tar.gz' into interpro_html_no_uniparc
-  file '*svg.tar.gz' into interpro_svg_no_uniparc
   file '*tsv' into interpro_tsv_no_uniparc
   file '*xml' into interpro_xml_no_uniparc
   file '*log' into interpro_log_no_uniparc
@@ -983,7 +983,7 @@ process execute_interproscan_no_uniparc_matches {
   script:
   n = seq.name
   """
-  bash "$params.interproscan_home"/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} >> ${n}.log
+  bash "$params.interproscan_home"/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3 -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} >> ${n}.log
   """
 }
 
@@ -1004,8 +1004,6 @@ process execute_interproscan_uniparc_matches {
 
   output:
   file '*gff3' into interpro_gff3_uniparc
-  file '*html.tar.gz' into interpro_html_uniparc
-  file '*svg.tar.gz' into interpro_svg_uniparc
   file '*tsv' into interpro_tsv_uniparc
   file '*xml' into interpro_xml_uniparc
   file '*log' into interpro_log_uniparc
@@ -1013,7 +1011,7 @@ process execute_interproscan_uniparc_matches {
   script:
   n = seq.name
   """
-  bash "$params.interproscan_home"/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
+  bash "$params.interproscan_home"/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3 -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
   """
 }
 
@@ -1082,7 +1080,7 @@ process setup_orthology_db {
   memory '8 GB'
 
   when:
-  params.refseq_diamond_BBH_phylogeny
+  params.uniref_diamond_BBH_phylogeny
 
   input:
   file nr_mapping_file from nr_mapping
@@ -1117,8 +1115,8 @@ process setup_diamond_uniref_db {
   file diamond_tsv_list from uniref_diamond_results_sqlitedb.collect()
 
   output:
-  file 'diamond_refseq.db' into diamond_refseq_db
-  file 'nr_refseq_hits.tab' into refseq_diamond_nr
+  file 'diamond_uniref.db' into diamond_uniref_db
+  file 'nr_uniref_hits.tab' into uniref_diamond_nr
 
   script:
   """
@@ -1129,76 +1127,48 @@ process setup_diamond_uniref_db {
 }
 
 
-process get_refseq_hits_taxonomy {
-
-  publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
-  container "$params.annotation_container"
-
-  echo true
-
-  when:
-  params.diamond_refseq_taxonomy
-
-  input:
-  file refseq_hit_table from refseq_diamond_nr
-
-  output:
-  file 'refseq_taxonomy.db' into refseq_hit_taxid_mapping_db
-
-  script:
-
-  """
-	#!/usr/bin/env python
-
-	import annotations
-	annotations.get_refseq_hits_taxonomy("$refseq_hit_table", "$params.databases_dir")
-  """
-}
-
-
-process get_diamond_refseq_top_hits {
+process get_diamond_uniref_top_hits {
 
   container "$params.annotation_container"
-  publishDir 'annotation/diamond_refseq_BBH_phylogenies', mode: 'copy', overwrite: true
+  publishDir 'annotation/diamond_uniref_BBH_phylogenies', mode: 'copy', overwrite: true
   echo false
   cpus 4
   memory '8 GB'
 
   when:
-  params.refseq_diamond_BBH_phylogeny
+  params.uniref_diamond_BBH_phylogeny
 
   input:
   file 'orthology.db' from orthology_db
-  file 'refseq_taxonomy.db' from refseq_hit_taxid_mapping_db
-  file 'diamond_refseq.db' from diamond_refseq_db
+  file 'diamond_uniref.db' from diamond_uniref_db
 
   output:
-  file '*_nr_hits.faa' optional true into diamond_refseq_hits_fasta
+  file '*_nr_hits.faa' optional true into diamond_uniref_hits_fasta
 
   script:
   """
 	#!/usr/bin/env python
 	import annotations
-	annotations.get_diamond_refseq_top_hits("$params.databases_dir",
-	$params.refseq_diamond_BBH_phylogeny_phylum_filter,
-	$params.refseq_diamond_BBH_phylogeny_top_n_hits)
+	annotations.get_diamond_uniref_top_hits("$params.databases_dir",
+	$params.uniref_diamond_BBH_phylogeny_phylum_filter,
+	$params.uniref_diamond_BBH_phylogeny_top_n_hits)
   """
 }
 
-process align_refseq_BBH_with_mafft {
+process align_uniref_BBH_with_mafft {
 
   container "$params.mafft_container"
 
-  publishDir 'orthology/orthogroups_refseq_diamond_BBH_alignments', mode: 'copy', overwrite: true
+  publishDir 'orthology/orthogroups_uniref_diamond_BBH_alignments', mode: 'copy', overwrite: true
 
   when:
-  params.refseq_diamond_BBH_phylogeny == true
+  params.uniref_diamond_BBH_phylogeny == true
 
   input:
-  file og from diamond_refseq_hits_fasta.flatten().collate( 20 )
+  file og from diamond_uniref_hits_fasta.flatten().collate( 20 )
 
   output:
-  file "*_mafft.faa" into mafft_alignments_refseq_BBH
+  file "*_mafft.faa" into mafft_alignments_uniref_BBH
 
   script:
   """
@@ -1209,18 +1179,18 @@ process align_refseq_BBH_with_mafft {
   """
 }
 
-mafft_alignments_refseq_BBH.flatten().set{ diamond_BBH_alignments }
+mafft_alignments_uniref_BBH.flatten().set{ diamond_BBH_alignments }
 
-process orthogroup_refseq_BBH_phylogeny_with_fasttree {
+process orthogroup_uniref_BBH_phylogeny_with_fasttree {
 
   // Note : not sure fasttree is actually included in
   // annotation_container
   container "$params.fasttree_container"
   cpus 4
-  publishDir 'orthology/orthogroups_refseq_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
+  publishDir 'orthology/orthogroups_uniref_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
 
   when:
-  params.refseq_diamond_BBH_phylogeny == true
+  params.uniref_diamond_BBH_phylogeny == true
 
   input:
   each file(og) from diamond_BBH_alignments
@@ -1323,7 +1293,7 @@ process execute_DeepT3 {
   container "$params.chlamdb_container"
 
   when:
-  params.effector_prediction == true && false
+  params.effector_prediction == true
 
   input:
   file "nr_fasta.faa" from nr_faa_large_sequences_chunks3
@@ -1333,6 +1303,7 @@ process execute_DeepT3 {
 
   script:
   """
+  export PYTHONPATH=$PYTHONPATH:/usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
   DeepT3_scores.py -f nr_fasta.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
   """
 }

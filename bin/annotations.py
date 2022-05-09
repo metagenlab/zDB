@@ -175,7 +175,7 @@ def get_idmapping_crossreferences(databases_dir, table):
                 uniprot_accession = crossref[0]
                 db_name = crossref[1]
                 db_accession = crossref[2]
-                o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
+                o.write("%s\t%s\t%s\t%s\n" % ( checksum,
                                                uniprot_accession,
                                                db_name,
                                                db_accession))
@@ -202,7 +202,7 @@ def get_uniparc_crossreferences(databases_dir, table):
                 db_name = crossref[0]
                 db_accession = crossref[1]
                 entry_status = crossref[2]
-                o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
+                o.write("%s\t%s\t%s\t%s\n" % ( checksum,
                                           db_name,
                                           db_accession,
                                           entry_status))
@@ -213,7 +213,7 @@ def get_oma_mapping(databases_dir, fasta_file):
     cursor = conn.cursor()
     oma_map = open('oma_mapping.tab', 'w')
     no_oma_mapping = open('no_oma_mapping.faa', 'w')
-    oma_map.write("locus_tag\\toma_id\\n")
+    oma_map.write("locus_tag\toma_id\n")
     records = SeqIO.parse(fasta_file, "fasta")
     no_oma_mapping_records = []
 
@@ -224,7 +224,7 @@ def get_oma_mapping(databases_dir, fasta_file):
         if len(hits) == 0:
             no_oma_mapping_records.append(record)
         for hit in hits:
-            oma_map.write("%s\\t%s\\n" % (record.id, hit[0]))
+            oma_map.write("%s\t%s\n" % (record.id, hit[0]))
     SeqIO.write(no_oma_mapping_records, no_oma_mapping, "fasta")
 
 def pmid2abstract_info(pmid_list):
@@ -311,8 +311,8 @@ def uniprot_accession2score(uniprot_accession_list):
     link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=id,annotation%%20score&format=tab" % ("+OR+id:".join(uniprot_accession_list))
 
     page = urllib.request.urlopen(link)
-    data = page.read().decode('utf-8').split('\\n')
-    rows = [i.rstrip().split('\\t') for i in data]
+    data = page.read().decode('utf-8').split('\n')
+    rows = [i.rstrip().split('\t') for i in data]
     unirpot2score = {}
     for row in rows:
         if len(row) > 0:
@@ -330,9 +330,9 @@ def get_uniprot_data(databases_dir, table):
     cursor = conn.cursor()
     uniprot_table = open(table, 'r')
     uniprot_data = open('uniprot_data.tab', 'w')
-    uniprot_data.write("uniprot_accession\\tuniprot_score\\tuniprot_status\\tproteome\\tcomment_function\\tec_number\\tcomment_subunit\\tgene\\trecommendedName_fullName\\tproteinExistence\\tdevelopmentalstage\\tcomment_similarity\\tcomment_catalyticactivity\\tcomment_pathway\\tkeywords\\n")
+    uniprot_data.write("uniprot_accession\tuniprot_score\tuniprot_status\tproteome\tcomment_function\tec_number\tcomment_subunit\tgene\trecommendedName_fullName\tproteinExistence\tdevelopmentalstage\tcomment_similarity\tcomment_catalyticactivity\tcomment_pathway\tkeywords\n")
 
-    uniprot_accession_list = [row.rstrip().split("\\t")[1].split(".")[0] for row in uniprot_table if row.rstrip().split("\\t")[1] != 'uniprot_accession']
+    uniprot_accession_list = [row.rstrip().split("\t")[1].split(".")[0] for row in uniprot_table if row.rstrip().split("\t")[1] != 'uniprot_accession']
     uniprot_accession_chunks = chunks(uniprot_accession_list, 300)
 
     sql_uniprot_annot = 'SELECT * FROM uniprot_annotation WHERE uniprot_accession IN ("%s");'
@@ -364,7 +364,7 @@ def get_uniprot_data(databases_dir, table):
             proteome = uniprot_annotation[12]
             reviewed = uniprot_annotation[14]
 
-            uniprot_data.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n"
+            uniprot_data.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n"
                     % (uniprot_accession, uniprot_score, reviewed, proteome, comment_function, ec_number,
                        comment_subunit, gene, recommendedName_fullName, proteinExistence,
                        developmentalstage, comment_similarity, comment_catalyticactivity,
@@ -380,8 +380,8 @@ def get_uniparc_mapping(databases_dir, fasta_file):
     no_uniparc_mapping = open('no_uniparc_mapping.faa', 'w')
     uniparc_mapping_faa = open('uniparc_mapping.faa', 'w')
 
-    uniparc_map.write("locus_tag\\tuniparc_id\\tuniparc_accession\\tstatus\\n")
-    uniprot_map.write("locus_tag\\tuniprot_accession\\ttaxon_id\\tdescription\\n")
+    uniparc_map.write("locus_tag\tuniparc_id\tuniparc_accession\tstatus\n")
+    uniprot_map.write("locus_tag\tuniprot_accession\ttaxon_id\tdescription\n")
 
     records = SeqIO.parse(fasta_file, "fasta")
     no_mapping_uniprot_records = []
@@ -411,11 +411,11 @@ def get_uniparc_mapping(databases_dir, fasta_file):
                 status = 'active'
             else:
                 status = 'dead'
-            uniparc_map.write(f"{record.id}\\t{hits[0][0]}\\t{hits[0][1]}\\t{status}\\n")
+            uniparc_map.write(f"{record.id}\t{hits[0][0]}\t{hits[0][1]}\t{status}\n")
             for uniprot_hit in hits:
                 if uniprot_hit[5] in ["UniProtKB/Swiss-Prot", "UniProtKB/TrEMBL"] and uniprot_hit[6] == 1:
                     match = True
-                    uniprot_map.write("%s\\t%s\\t%s\\t%s\\t%s\\n" % (record.id,
+                    uniprot_map.write("%s\t%s\t%s\t%s\t%s\n" % (record.id,
                                                                  uniprot_hit[2],
                                                                  uniprot_hit[3],
                                                                  uniprot_hit[4],
@@ -437,7 +437,7 @@ def refseq_locus_mapping(accessions_list):
                         refseq_locus_tag = feature.qualifiers["locus_tag"][0]
                         protein_id = feature.qualifiers["protein_id"][0]
                         old_locus_tag = feature.qualifiers["old_locus_tag"][0]
-                        o.write(f"{old_locus_tag}\\t{refseq_locus_tag}\\t{protein_id}\\n")
+                        o.write(f"{old_locus_tag}\t{refseq_locus_tag}\t{protein_id}\n")
 
 def download_assembly_refseq(accession):
     Entrez.email = "trestan.pillonel@chuv.ch"
@@ -776,7 +776,7 @@ def filter_out_unannotated(gbk_file):
 def string_id2pubmed_id_list(accession):
     link = 'http://string-db.org/api/tsv/abstractsList?identifiers=%s' % accession
     try:
-        data = urllib.request.urlopen(link).read().rstrip().decode('utf-8').split('\\n')[1:]
+        data = urllib.request.urlopen(link).read().rstrip().decode('utf-8').split('\n')[1:]
     except urllib.error.URLError:
         return False
     pid_list = [row.split(':')[1] for row in data]
@@ -1076,63 +1076,6 @@ def accession2taxid_entrez(accession):
     # record['Length']
     return int(record['TaxId'])
 
-def get_refseq_hits_taxonomy(hit_table, database_dir):
-    conn = sqlite3.connect("refseq_taxonomy.db")
-    cursor = conn.cursor()
-    cursor.execute("PRAGMA synchronous = OFF")
-    cursor.execute("BEGIN TRANSACTION")
-    conn_refseq = sqlite3.connect(database_dir + "/refseq/merged_refseq.db")
-    cursor_refseq = conn_refseq.cursor()
-
-    conn_taxid = sqlite3.connect(database_dir + "/ncbi-taxonomy/prot_accession2taxid.db")
-    cursor_taxid = conn_taxid.cursor() 
-    sql = 'create table refseq_hits (accession varchar(200), taxid INTEGER, description TEXT, length INTEGER)'
-    cursor.execute(sql,)
-    conn.commit()
-
-    f = open(hit_table, 'r')
-    # get list of accessions, remove version number
-    hit_list = [i.rstrip().split(".")[0] for i in f]
-
-    chunk_lists = chunks(hit_list, 5000)
-    sql_template = 'insert into refseq_hits values (?,?,?,?)'
-    hits = []
-
-    template_annotation = 'select accession, description, sequence_length from refseq where accession in ("%s")'
-    template_taxid = 'select accession, taxid from accession2taxid where accession in ("%s")'
-
-    for acc_list in chunk_lists:
-        filter = '","'.join(acc_list)
-        data_annotation = cursor_refseq.execute(template_annotation % filter,).fetchall()
-        data_taxid = cursor_taxid.execute(template_taxid % filter,).fetchall()
-        accession2taxid = {}
-
-        for row in data_taxid:
-            accession2taxid[row[0]] = row[1]
-        for annot in data_annotation:
-            annot = list(annot)
-            accession = annot[0]
-            seq_length = annot[2]
-            # AccessionVersion, TaxId, Title, Length
-            description = re.sub("%s.[0-9]+ " % annot[0], "", annot[1])
-
-            if accession in accession2taxid:
-                taxid = accession2taxid[accession]
-            else:
-                taxid = accession2taxid_entrez(accession)
-            hits.append([accession, taxid, description, seq_length])
-
-    cursor.executemany(sql_template, hits)
-    conn.commit()
-    # index accession and taxid columns
-    sql_index_1 = 'create index acc on refseq_hits (accession);'
-    sql_index_2 = 'create index taxid on refseq_hits (taxid);'
-
-    cursor.execute(sql_index_1)
-    cursor.execute(sql_index_2)
-    conn.commit()
-
-
 def concatenate_core_orthogroups(fasta_files):
     out_name = 'msa.faa'
 
@@ -1188,22 +1131,19 @@ def refseq_accession2fasta(accession_list):
     records = [i for i in SeqIO.parse(handle, "fasta")]
     return records
 
-def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
+def get_diamond_uniref_top_hits(databases_dir, phylum_filter, n_hits):
     conn = sqlite3.connect("orthology.db")
     cursor = conn.cursor()
     #sql1 = 'create table diamond_top_%s_nr_hits(orthogroup varchar, hit_accession, hit_sequence)' % ${params.refseq_diamond_BBH_phylogeny_top_n_hits}
 
     sql2 = 'attach "' + databases_dir + '/ncbi-taxonomy/linear_taxonomy.db" as linear_taxonomy'
-    sql3 = 'attach "refseq_taxonomy.db" as refseq_taxonomy'
-    sql4 = 'attach "diamond_refseq.db" as diamond_refseq'
+    sql3 = 'attach "' + databases_dir + '/uniref/uniref100.db" as uniref_taxonomy'
+    sql4 = 'attach "diamond_uniref.db" as diamond_uniref'
 
-    #cursor.execute(sql1,)
     cursor.execute(sql2,)
     cursor.execute(sql3,)
     cursor.execute(sql4,)
     conn.commit()
-
-    #sql_template = 'insert into diamond_top_%s_nr_hits values (?,?,?)' % ${params.refseq_diamond_BBH_phylogeny_top_n_hits}
 
     sql_filtered_hits = """SELECT t1.orthogroup, t1.locus_tag, t3.sseqid, t3.hit_count 
        FROM locus_tag2orthogroup t1 INNER JOIN locus_tag2sequence_hash t2 ON t1.locus_tag=t2.locus_tag 
@@ -1260,10 +1200,10 @@ def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
         if len(refseq_sequence_records) > 0:
             with open(group + "_nr_hits.faa", 'w') as f:
                 for one_ortholog in ortho_sequences:
-                    f.write(">%s\\n%s\\n" % (one_ortholog[0], one_ortholog[1]))
+                    f.write(">%s\n%s\n" % (one_ortholog[0], one_ortholog[1]))
                 for record in refseq_sequence_records:
                     name = record.name
-                    f.write(">%s\\n%s\\n" % (name, str(record.seq)))
+                    f.write(">%s\n%s\n" % (name, str(record.seq)))
 
 
 def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
@@ -1284,30 +1224,37 @@ def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
         reference = go[1]
         evidence_code = go[2]
         category = go[3]
-        o.write(f"{accession_base}\\t{GO_id}\\t{reference}\\t{evidence_code}\\t{category}\\n")
+        o.write(f"{accession_base}\t{GO_id}\t{reference}\t{evidence_code}\t{category}\n")
+
+
+def rename_uniref(uniref_label):
+    # UniRef100_UPI0005A8869C 
+    print(uniref_label)
+    return uniref_label.split("UniRef100_")[1]
 
 def setup_diamond_uniref_db(diamond_tsv_files_list):
     conn = sqlite3.connect("diamond_uniref.db")
     cursor = conn.cursor()
 
-    sql1 = """CREATE TABLE diamond_refseq(hit_count INTEGER, qseqid varchar(200),
+    sql1 = """CREATE TABLE diamond_uniref(hit_count INTEGER, qseqid varchar(200),
         sseqid varchar(200), pident FLOAT, length INTEGER, mismatch INTEGER,
         gapopen INTEGER, qstart INTEGER, qend INTEGER, sstart INTEGER,
         send INTEGER, evalue FLOAT, bitscore FLOAT)"""
     cursor.execute(sql1,)
     conn.commit()
 
-    sql = 'insert into diamond_refseq values (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+    sql = 'insert into diamond_uniref values (?,?,?,?,?,?,?,?,?,?,?,?,?)'
 
     diamond_file_list = diamond_tsv_files_list.split(' ')
     for one_file in diamond_file_list:
-        diamond_table = pd.read_csv(one_file, sep="\\t")
+        diamond_table = pd.read_csv(one_file, sep="\t", header=None)
+        
+        diamond_table.iloc[:,1] = diamond_table.apply(lambda x: rename_uniref(x[1]), axis=1)
+
         accession = ''
         count = ''
         # add hit count as first column
         for index, row in diamond_table.iterrows():
-            # remove version number from accession
-            row[1] = row[1].split(".")[0]
             # if new protein, reinitialise the count
             if row[0] != accession:
                 accession = row[0]
@@ -1318,15 +1265,15 @@ def setup_diamond_uniref_db(diamond_tsv_files_list):
         conn.commit()
 
     # index query accession (hash) + hit number
-    sql_index_1 = 'create index hitc on diamond_refseq (hit_count);'
-    sql_index_2 = 'create index qacc on diamond_refseq (qseqid);'
-    sql_index_3 = 'create index sacc on diamond_refseq (sseqid);'
+    sql_index_1 = 'create index hitc on diamond_uniref (hit_count);'
+    sql_index_2 = 'create index qacc on diamond_uniref (qseqid);'
+    sql_index_3 = 'create index sacc on diamond_uniref (sseqid);'
 
     cursor.execute(sql_index_1)
     cursor.execute(sql_index_2)
     cursor.execute(sql_index_3)
     conn.commit()
-    sql = 'select distinct sseqid from diamond_refseq'
-    with open("nr_refseq_hits.tab", 'w') as f:
+    sql = 'select distinct sseqid from diamond_uniref'
+    with open("nr_uniref_hits.tab", 'w') as f:
         for acc in cursor.execute(sql,):
-            f.write("%s\\n" % acc[0])
+            f.write("%s\n" % acc[0])
