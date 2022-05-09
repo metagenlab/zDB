@@ -72,6 +72,7 @@ elif [[ "$1" == "setup" ]]; then
 
 	dir="$(pwd)/zdb_ref"
 	db_setup_args=""
+	singularity_dir="$(pwd)/singularity"
 
 	for i in "$@"; do
 		case $i in 
@@ -89,6 +90,10 @@ elif [[ "$1" == "setup" ]]; then
 				;;
 			--pfam)
 				db_setup_args="${db_setup_args} --pfam"
+				shift
+				;;
+			--singularity_dir=*)
+				singularity_dir=${i#*=}
 				shift
 				;;
 			--dir=*)
@@ -109,6 +114,8 @@ elif [[ "$1" == "setup" ]]; then
 				echo " --swissprot: downloads and indexes the swissprot database "
 				echo ""
 				echo " --dir: directory where to store the reference databases (defaults zdb_ref in the current directory) "
+				echo ""
+				echo " --singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)"
 				exit 0
 				;;
 			*)
@@ -117,7 +124,7 @@ elif [[ "$1" == "setup" ]]; then
 		esac
 	done
 
-	db_setup_args="${db_setup_args} --base_db=${dir}"
+	db_setup_args="${db_setup_args} --base_db=${dir} --singularity_dir=${singularity_dir}"
 	echo "Preparing the reference databases, this will take some time"
 	nextflow run $NEXTFLOW_DIR/db_setup.nf ${db_setup_args}
 	echo "Done. The reference databases were prepared in the ${dir} folder"
