@@ -257,7 +257,7 @@ elif [[ "$1" == "run" ]]; then
 
 elif [[ "$1" == "export" ]]; then
 	shift
-	dir="$(pwd)/zdb/"
+	dir="$(pwd)"
 	run_name="latest"
 
 	for i in "$@"; do

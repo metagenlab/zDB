@@ -84,6 +84,7 @@ if [ "$use_custom_zdb" = true ]; then
 	# bind the source code of an alternative, it will be executed in the
 	# zdb container instead of the "official" code stored in the container
 	# Useful for testing new features and debugging
+	zdb_folder=$(realpath $zdb_folder)
 	bind_path="$zdb_folder"
 fi
 
@@ -132,8 +133,8 @@ fi
 # mounts the whole results dir in the container and keep the symbolic links valid
 
 bind_path="${bind_path},${dir}/zdb/results/db/:${zdb_folder}/assets/db/"
-bind_path="${bind_path},${dir}/zdb/results/search_index/${run_name}:${zdb_folder}/assets/search_index/"
-bind_path="${bind_path},${dir}/zdb/results/blast_DB/${run_name}:${zdb_folder}/assets/blast_DB/"
+bind_path="${bind_path},${dir}/zdb/results/search_index/:${zdb_folder}/assets/search_index/"
+bind_path="${bind_path},${dir}/zdb/results/blast_DB/:${zdb_folder}/assets/blast_DB/"
 bind_path="${bind_path},${dir}/zdb/results/alignments/${run_name}:${zdb_folder}/assets/alignments/"
 
 
@@ -162,6 +163,6 @@ if [ ! -f "${singularity_dir}/${zdb_container}.sif" ]; then
 	echo "Done"
 fi
 
-singularity run --writable-tmpfs --bind ${bind_path} \
+singularity run --bind ${bind_path} \
 	${singularity_dir}/${zdb_container}.sif ${zdb_folder}/start_webapp \
 	--run_name=${run_name} --port=${port} ${debugging_mode} ${allowed_host} ${dev_server}
