@@ -2935,7 +2935,6 @@ def blast(request):
         form = blast_form_class()
         return render(request, 'chlamdb/blast.html', my_locals({"form": form, "page_title": page_title}))
 
-
     form = blast_form_class(request.POST)
     if not form.is_valid():
         return render(request, 'chlamdb/blast.html', my_locals({"form": form}))
@@ -2946,10 +2945,15 @@ def blast(request):
     target = form.get_target()
     no_query_name = False
 
-
     if '>' in input_sequence:
         try:
             records = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
+            for record in records:
+                if len(record.seq)==0:
+                    context = {"error_message": "Empty sequence in input",
+                            "error_title": "Query format error", "envoi": True, 
+                            "form": form, "wrong_format": True}
+                    return render(request, 'chlamdb/blast.html', my_locals(context))
         except:
             context = {"error_message": "Error while parsing the fasta query",
                     "error_title": "Query format error", 
@@ -2957,14 +2961,14 @@ def blast(request):
             return render(request, 'chlamdb/blast.html', my_locals(context))
     else:
         no_query_name = True
-        input_sequence = "".join(input_sequence.split())
+        input_sequence = "".join(input_sequence.split()).upper()
         records = [SeqRecord(Seq(input_sequence))]
                         
     dna = set("ATGCNRYKMSWBDHV")
     prot = set('ACDEFGHIKLMNPQRSTVWYXZJOU')
     sequence_set = set()
     for rec in records:
-        sequence_set = sequence_set.union(set(rec.seq))
+        sequence_set = sequence_set.union(set(rec.seq.upper()))
     check_seq_DNA = sequence_set-dna
     check_seq_prot = sequence_set-prot
 
@@ -3008,7 +3012,12 @@ def blast(request):
     if blast_type=="tblastn" or blast_type=="blastn_fna":
         blastType = "genome"
 
-    blast_stdout, blast_stderr = blast_cline()
+    try:
+        blast_stdout, blast_stderr = blast_cline()
+    except Exception as e:
+        context = {"error_message": "Error in blast "+str(e), "wrong_format": True,
+                "error_title": "Blast error", "envoi": True, "form": form}
+        return render(request, 'chlamdb/blast.html', my_locals(context))
 
     if blast_stdout.find("No hits found") != -1:
         blast_no_hits = blast_stdout
