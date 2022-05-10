@@ -74,7 +74,16 @@ Several options are available and allow you to customize the run:
 --mem: max memory usage allowed (default 8GB)
 --singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)
 ```
-As the analysis are run in containers, nextflow will have to download the first time zDB is used. The containers will be stored in the singularity folder of the current directory. If you already downloaded the containers, you can point zDB to the location where they are located to avoid new downloads.
+As the analysis are run in containers, nextflow will have to download the first time zDB is used. The containers will be stored in the singularity folder of the current directory. If you already downloaded the containers, you can point zDB to the location where they are located with the ````--singularity_dir`` to avoid new downloads.
+
+The input CSV file should look like this:
+
+```
+file
+foo/bar.gbk
+baz/bazz.gbk
+```
+For now, only genbank files are supported and zDB will expect the "gbk" extension.
 
 ## Starting the web server
 
