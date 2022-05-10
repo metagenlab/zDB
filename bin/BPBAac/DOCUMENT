@@ -1,0 +1,20 @@
+
+Before using BPBAac tool, please ensure following softwares have been downloaded and successfully installed in your computer:
+(1)R
+(2)Perl
+(3)SVM R package 'e1071'
+Imput protein sequence file must be FASTA format. Each sequence should contain the start codon for methionine.
+
+
+In current directory, run following command:
+
+perl DataPrepare.pl FASTA_FILE_NAME 
+Rscript BPBAacPre.R
+
+Now, a file named "FinalResult.csv" is generated, which can be opened with Excel softwares.
+
+The default SVM cutoff value for decision is set as 0.5. You can change the value in the last command of "BPBAacPre.R" script.
+A web-based online prediction server is now under development: http://biocompute.bio.cuhk.edu.hk/BPBAac/.
+
+Any problem, please send email to Yejun Wang <yejun.wang@gmail.com>.
+  
