@@ -18,8 +18,9 @@ All the results are stored either in a SQLite database or directly as files and 
 zDB relies on singularity to run the analysis and the web server. Unfortunately, the singularity versions available in the bioconda channel are currently outdated and you'll need to install more recent ones from conda-forge. Run the following command:
 
 ```
-conda install singularity -c conda-forge
+conda install singularity=3.8.4 -c conda-forge
 ```
+As of now, zDB has been tested with this version of singularity, but it might work on more recent releases.
 
 Once this is done, zDB can be installed from conda with the following command
 ```
