@@ -65,7 +65,7 @@ str_pythonized_params = gen_python_args()
 
 
 // Input processing
-Channel.fromPath(params.local_assemblies)
+Channel.fromPath(params.input)
     .splitCsv(header: true, strip: true)
     .map { row -> file(row.file) }
     .into { gbk_from_local_assembly_f; error_search }
@@ -166,12 +166,19 @@ nr_seqs.splitFasta( by: 300, file: "chunk_" )
         to_kofamscan
         to_pfam_scan }
 
-if(params.pfam_scan) {
+
+if(params.pfam) {
+    Channel.fromPath("${params.pfam_db}", type: "dir").set { pfam_db }
+
+    pfam_db.combine(to_pfam_scan).set { to_pfam_scan_combined }
+
     process pfam_scan {
         container "$params.pfam_scan_container"
 
         input:
-            file faa_chunk from to_pfam_scan
+            tuple (file(pfam_db), file(faa_chunk) ) from to_pfam_scan_combined
+            // file faa_chunk from to_pfam_scan
+            // file pfam_db from Channel.fromPath("${params.pfam_db}", type: "dir")
 
         output:
             file pfam_result_file into pfam_results
@@ -179,7 +186,7 @@ if(params.pfam_scan) {
         script:
         pfam_result_file="${faa_chunk}_results"
         """
-            pfam_scan.pl -f $faa_chunk -d $params.pfam_db > $pfam_result_file
+            pfam_scan.pl -f $faa_chunk -d pfam > $pfam_result_file
         """
     }
 } else {
@@ -467,12 +474,15 @@ process checkm_analyse {
 
 
 if(params.cog) {
+
+    Channel.fromPath("$params.cog_db", type: "dir").set { to_cog_multi }
+    to_cog_multi.combine(to_rpsblast_COG).set { to_rpsblast_COG_multi }
+    
     process rpsblast_COG {
       container "$params.blast_container"
 
-
       input:
-      file seq from to_rpsblast_COG
+        tuple (file(cog_db), file(seq)) from to_rpsblast_COG_multi
 
       output:
       file result_file into COG_to_load_db
@@ -481,7 +491,7 @@ if(params.cog) {
       n = seq.name
       result_file = "${n}.tab"
       """
-      rpsblast -db $params.cog_db/cog_db -query $seq -outfmt 6 -evalue 0.001 \
+      rpsblast -db cog/cog_db -query $seq -outfmt 6 -evalue 0.001 \
                 -num_threads ${task.cpus} > ${result_file}
       """
     }
@@ -491,21 +501,24 @@ if(params.cog) {
 
 
 if (params.blast_swissprot) {
-    process blast_swissprot {
 
+    Channel.fromPath("$params.swissprot_db", type: "dir").set { to_swissprot_multi }
+    to_swissprot_multi.combine(to_blast_swissprot).set { to_blast_swissprot_multi }
+
+    process blast_swissprot {
       container "$params.blast_container"
 
       input:
-      file(seq) from to_blast_swissprot
+          tuple (file(swissprot_db), file(seq)) from to_blast_swissprot_multi
 
       output:
-      file '*tab' into swissprot_blast
+          file '*tab' into swissprot_blast
 
       script:
 
       n = seq.name
       """
-      blastp -db $params.swissprot_db/swissprot.fasta -query ${n} \
+      blastp -db $swissprot_db/swissprot.fasta -query ${n} \
                 -outfmt 6 -evalue 0.001 > ${n}.tab
       """
     }
@@ -538,21 +551,25 @@ if(params.diamond_refseq) {
 
 
 if(params.ko) {
+
+    Channel.fromPath("$params.ko_db", type: "dir").set { to_ko_multi }
+    to_ko_multi.combine(to_kofamscan).set { to_kofamscan_multi }
+    
     process execute_kofamscan {
       container "$params.kegg_container"
 
       input:
-      file(seq) from to_kofamscan
+        tuple (file(ko_db), file(seq)) from to_kofamscan_multi
 
       output:
-      file '*tab' into to_load_KO
+          file '*tab' into to_load_KO
 
       script:
       n = seq.name
 
       """
-      exec_annotation ${n} -p ${params.ko_db}/profiles/prokaryote.hal \
-            -k ${params.ko_db}/ko_list --cpu ${task.cpus} -o ${n}.tab
+      exec_annotation ${n} -p ${ko_db}/profiles/prokaryote.hal \
+            -k ${ko_db}/ko_list --cpu ${task.cpus} -o ${n}.tab
       """
     }
 } else {
@@ -743,6 +760,7 @@ process load_COG_into_db {
     input:
         file db from to_load_COG
         file cog_file from COG_to_load_db.collect()
+        file cdd_to_cog from Channel.fromPath("$params.cog_db/cdd_to_cog")
 
     output:
         file db into to_load_KO_db
@@ -756,8 +774,7 @@ process load_COG_into_db {
         
         kwargs = ${gen_python_args()}
         cog_files = "${cog_file}".split()
-        setup_chlamdb.load_cog(kwargs, cog_files, "$db", \
-            "${params.cog_db}/cdd_to_cog")
+        setup_chlamdb.load_cog(kwargs, cog_files, "$db", "$cdd_to_cog")
         """
     else
         """
@@ -800,20 +817,21 @@ process load_PFAM_info_db {
     input:
         file db from to_pfam_db
         file pfam_annot from pfam_results.collect()
+        file pfam_dat from Channel.fromPath("$params.pfam_db/Pfam-A.hmm.dat")
 
     output:
         file db into to_load_swissprot_hits
 
     script:
-    if(params.pfam_scan)
+    if(params.pfam)
         """
-#!/usr/bin/env python
-import setup_chlamdb
+        #!/usr/bin/env python
+        import setup_chlamdb
 
-kwargs = ${gen_python_args()}
-pfam_files = "$pfam_annot".split()
+        kwargs = ${gen_python_args()}
+        pfam_files = "$pfam_annot".split()
 
-setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$params.pfam_db/Pfam-A.hmm.dat")
+        setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$pfam_dat")
         """
     else
         """
@@ -827,6 +845,7 @@ process load_swissprot_hits_into_db {
     input:
         file db from to_load_swissprot_hits
         file blast_results from swissprot_blast.collect()
+        file swissprot_db from Channel.fromPath("$params.swissprot_db/swissprot.fasta")
 
     output:
         file db into to_create_index
@@ -840,7 +859,7 @@ process load_swissprot_hits_into_db {
         kwargs = ${gen_python_args()}
         blast_results = "$blast_results".split()
 
-        setup_chlamdb.load_swissprot(kwargs, blast_results, "$db", "$params.swissprot_db/swissprot.fasta")
+        setup_chlamdb.load_swissprot(kwargs, blast_results, "$db", "swissprot.fasta")
     """
     else
     """
@@ -878,10 +897,10 @@ process cleanup {
         file index from to_index_cleanup
         file db from to_db_cleanup
         file alignments from to_alignment_gather
+        file results_dir from Channel.fromPath("${params.results_dir}", type: "dir")
 
     script:
     custom_run_name=(params.name)?params.name:""
-    results_dir="$baseDir/${params.results_dir}"
     """
     ln -sf $index ${results_dir}/search_index/$workflow.runName
 

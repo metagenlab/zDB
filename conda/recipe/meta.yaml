@@ -1,0 +1,36 @@
+{% set version = "1.0.0" %}
+
+package:
+  name: zdb
+  version: {{ version }}
+
+build:
+  number: 0
+  noarch: generic
+
+source:
+  url: https://github.com/metagenlab/zDB/archive/refs/tags/v1.0.0-alpha.tar.gz
+  sha256: d74a48ba150b47317dab080de51432cc22cc37b66dd301f896831910fbef8407
+
+
+requirements:
+  run:
+    - singularity
+    - nextflow >=21.04.0
+
+test:
+  commands:
+    - "zdb"
+
+about:
+  home: https://github.com/metagenlab/zDB/
+  license: MIT
+  license_file: LICENSE
+  summary: zDB is both a bacterial comparative genomics pipeline and a tool to visualize the results
+  dev_url: https://github.com/metagenlab/zDB/
+
+extra:
+  recipe-maintainers:
+    - bkm
+  identifiers:
+    - biotools:zDB

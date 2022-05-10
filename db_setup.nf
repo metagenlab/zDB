@@ -69,7 +69,7 @@ process diamond_refseq {
 process download_pfam_db {
     publishDir "$params.pfam_db"
     when:
-        params.pfam_scan
+        params.pfam
     
     output:
         file "Pfam-A.hmm" into pfam_hmm
@@ -87,13 +87,15 @@ process download_pfam_db {
 
 process prepare_hmm {
     container "$params.pfam_scan_container"
-    publishDir "$params.pfam_db"
+    publishDir "$params.pfam_db", mode: "copy"
 
     input:
         file pfam_hmm
+        file pfam_defs
 
     output:
         file "${pfam_hmm}.h3*"
+        file "Pfam-A.hmm.dat"
     
     script:
     """
@@ -114,9 +116,10 @@ process download_ko_profiles {
         file "profiles/prokaryote.hal"
 
     script:
+    version="2022-03-01"
     """
-    wget https://www.genome.jp/ftp/db/kofam/ko_list.gz
-    wget https://www.genome.jp/ftp/db/kofam/profiles.tar.gz
+    wget https://www.genome.jp/ftp/db/kofam/archives/$version/ko_list.gz
+    wget https://www.genome.jp/ftp/db/kofam/archives/$version/profiles.tar.gz
 
     gunzip < ko_list.gz > ko_list && rm -f ko_list.gz
     tar xvf profiles.tar.gz

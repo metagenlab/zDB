@@ -1,0 +1,358 @@
+#!/usr/bin/env bash
+
+VERSION="1.0.0"
+CONDA=$(which zdb | sed 's=bin/zdb==')
+NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
+
+
+if [[ $# == "0" || $1 == "help" ]]; then
+	echo "zDB (v${VERSION})"
+	echo "Available commands:"
+	echo ""
+	echo "setup - download and prepare the reference databases"
+	echo ""
+	echo "webapp - start the webapp"
+	echo ""
+	echo "run - run the analysis pipeline"
+	echo ""
+	echo "export - exports the results of a previous run in an archive"
+	echo ""
+	echo "import - unpack an archive that was prepared with the export command in the current directory"
+	echo "       - so that the results can be used to start the webapp"
+	echo ""
+	echo "list_runs - lists the completed runs available to start the website in a given directory"
+	echo ""
+	echo "help - print this message"
+	exit 0
+fi
+
+
+if [[ "$1" == "list_runs" ]]; then
+	dir=$(pwd)
+
+	if [ "$2" == "--help" -o "$2" == "-h" ]; then
+		echo "This subcommands list the completed analysis runs available to start the webapp"
+		echo "If no parameter is passed, it will look into the current directory"
+		echo ""
+		echo "Options:"
+		echo "--help|-h: prints this help"
+		exit 0
+	fi
+
+	if [[ "$#" -gt "2" ]]; then
+		echo "Warning: only one argument is supported. The runs will be printed only for $2"
+		dir=$2
+	elif [[ "$#" == "2" ]]; then
+		dir=$2
+	fi
+
+	if [ ! -d "${dir}/zdb/results/" -o ! -d "${dir}/zdb/results/.completed_runs" ]; then
+		echo "Could not find results in directory in $dir"
+		exit 1
+	fi
+
+	echo "The following runs could be found:"
+	echo ""
+	for i in $(ls ${dir}/zdb/results/.completed_runs); do
+		if [ "$(cat ${dir}/zdb/results/.completed_runs/$i)" = "$i" ]; then
+			echo $i
+		else
+			echo "$i -> $(cat ${dir}/zdb/results/.completed_runs/$i)"
+		fi
+	done
+	exit 0
+
+elif [[ "$1" == "setup" ]]; then
+	shift
+
+	if [[ "$#" == "0" ]]; then
+		echo "No database to download, exiting"
+		exit 0
+	fi
+
+	dir="$(pwd)/zdb_ref"
+	db_setup_args=""
+	singularity_dir="$(pwd)/singularity"
+
+	for i in "$@"; do
+		case $i in 
+			--cog)
+				db_setup_args="${db_setup_args} --cog"
+				shift
+				;;
+			--ko)
+				db_setup_args="${db_setup_args} --ko"
+				shift
+				;;
+			--swissprot)
+				db_setup_args="${db_setup_args} --blast_swissprot"
+				shift
+				;;
+			--pfam)
+				db_setup_args="${db_setup_args} --pfam"
+				shift
+				;;
+			--singularity_dir=*)
+				singularity_dir=${i#*=}
+				shift
+				;;
+			--dir=*)
+				dir=${i#*=}
+				shift
+				;;
+			--help)
+				echo "Downloads and sets up the reference database used by the analysis pipeline"
+				echo ""
+				echo "The following options can be used"
+				echo ""
+				echo " --cog: downloads the CDD profiles used for COG annotations "
+				echo ""
+				echo " --ko: downloads and setups the hmm profiles of the ko database"
+				echo ""
+				echo " --pfam: downloads and setups up the hmm profiles of the PFAM protein domains"
+				echo ""
+				echo " --swissprot: downloads and indexes the swissprot database "
+				echo ""
+				echo " --dir: directory where to store the reference databases (defaults zdb_ref in the current directory) "
+				echo ""
+				echo " --singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)"
+				exit 0
+				;;
+			*)
+				echo "Unknown option $i"
+				exit 1
+		esac
+	done
+
+	db_setup_args="${db_setup_args} --base_db=${dir} --singularity_dir=${singularity_dir}"
+	echo "Preparing the reference databases, this will take some time"
+	nextflow run $NEXTFLOW_DIR/db_setup.nf ${db_setup_args}
+	echo "Done. The reference databases were prepared in the ${dir} folder"
+	exit 0
+
+elif [[ "$1" == "webapp" ]]; then
+	shift
+	$NEXTFLOW_DIR/bin/launch_webapp.sh "$@"
+elif [[ "$1" == "run" ]]; then
+	shift
+
+	args=""
+	dir="zdb_ref"
+	mem="8GB"
+	cpus="8"
+	input_file=""
+	output_dir=$(pwd)
+	n_missing="0"
+	singularity_dir="$(pwd)/singularity"
+	name=""
+
+	for i in "$@"; do
+		case $i in 
+			--out=*)
+				output_dir=${i#*=}
+				shift
+				;;
+			--input=*)
+				input_file="${i#*=}"
+				shift
+				;;
+			--name=*)
+				name=${i#*=}
+				args="${args} --name=${name}"
+				shift
+				;;
+			--cpu=*)
+				cpus=${i#*=}
+				shift
+				;;
+			--mem=*)
+				mem=${i#*=}
+				shift
+				;;
+			--num_missing=*)
+				n_missing=${i#*=}
+				int_re='^[0-9]*$'
+				if ! [[ $n_missing =~ $int_re ]]; then
+					echo "Expect a number for n_missing option"
+					exit 1
+				fi
+				args="${args} --num_missing=$n_missing"
+				shift
+				;;
+			--cog)
+				args="${args} --cog"
+				shift
+				;;
+			--ko)
+				args="${args} --ko"
+				shift
+				;;
+			--swissprot)
+				args="${args} --blast_swissprot"
+				shift
+				;;
+			--pfam)
+				args="${args} --pfam"
+				shift
+				;;
+			--singularity_dir=*)
+				singularity_dir=${i#*=}
+				shift
+				;;
+			--ref_dir=*)
+				dir=${i#*=}
+				shift
+				;;
+			--help)
+				echo "Run the analysis pipeline (some analysis may not be available depending on which reference databases were setup)"
+				echo ""
+				echo "The following options can be used"
+				echo " --out: directory where the files necessary for the webapp will be stored"
+				echo " --input: CSV file containing the path to the genbank files to include in the analsysis"
+				echo " --name: run name (defaults to the name given by nextflow)"
+				echo "         the latest completed run is also named latest"
+				echo " --cog: perform cog annotation"
+				echo " --ko: perform ko (metabolism) annotation"
+				echo " --pfam: peform PFAM domain annotation"
+				echo " --swissprot: search for homologs in the swissprot database"
+				echo " --ref_dir: directory where the reference databases were setup up (default zdb_ref)"
+				echo " --cpu: number of parallel processes allowed (default 8)"
+				echo " --mem: max memory usage allowed (default 8GB)"
+				echo " --num_missing: allows for missing genomes for the determination of core orthogroups (default 0)"
+				echo " --singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)"
+				exit 1
+				;;
+			*)
+				echo "Unknown option $i"
+				exit 1
+		esac
+	done
+
+	if [ -z "${input_file}" ]; then
+		echo "No input file specified"
+		exit 1
+	fi
+
+	if [ "$name" = "latest" ]; then
+		echo "You sneaky bastard, this is a reserved name"
+		echo "Goodbye."
+		exit 1
+	fi
+
+	if [ -f "${output_dir}/zdb/results/.completed_runs/$name" ]; then
+		echo "A run with that name already exists and I don't like overwriting stuff"
+		echo "Goodbye."
+		exit 1
+	fi
+
+	args="${args} --base_db=${dir} --n_cpus=${cpus} --mem=${mem} --input=${input_file}"
+	args="${args} --results_dir=${output_dir}/zdb/results"
+	args="${args} --singularity_dir=$singularity_dir"
+	echo "Starting the analysis pipeline"
+	nextflow run $NEXTFLOW_DIR/annotation_pipeline.nf ${args}
+	if [[ ! -d ${output_dir}/zdb/nginx ]]; then
+		cp -R $NEXTFLOW_DIR/zdb/nginx ${output_dir}/zdb
+	fi
+
+	if [[ ! -d ${output_dir}/zdb/gunicorn ]]; then
+		mkdir ${output_dir}/zdb/gunicorn
+		cp -R $NEXTFLOW_DIR/zdb/gunicorn/gunicorn.py ${output_dir}/zdb/gunicorn/
+	fi
+
+	echo "Done. You can now launch the webapp"
+	exit 0
+
+elif [[ "$1" == "export" ]]; then
+	shift
+	dir="$(pwd)"
+	run_name="latest"
+
+	for i in "$@"; do
+		case $i in 
+			--dir=*)
+				dir=${i#*=}
+				shift
+				;;
+			--name=*)
+				run_name=${i#*=}
+				shift
+				;;
+			--help)
+				echo "Exports the results of a given run name into an archive to make sharing easier"
+				echo ""
+				echo "The following options can be used"
+				echo ""
+				echo " --dir: specify the directory where the analysis was run"
+				echo ""
+				echo " --name: specify the run to be exported"
+				exit
+				;;
+			*)
+				echo "Unknown option $i"
+				exit 1
+		esac
+	done
+	 
+	if [[ ! -d "$dir/zdb/results/" ]]; then
+		echo "Could not access the results directory: $dir"
+		exit 1
+	elif [[ -f "$dir/results/.completed_runs/$name" ]]; then
+		echo "Could not find run with name $name"
+	fi
+	unaliased_name=$(cat $dir/zdb/results/.completed_runs/$run_name)
+	prefix="zdb/results/"
+
+	echo "Packaging archive"
+	tar zcvfh $run_name.tar.gz -C $dir $prefix/alignments/$unaliased_name \
+		$prefix/blast_DB/$unaliased_name $prefix/db/$unaliased_name \
+		$prefix/gene_phylogenies/$unaliased_name $prefix/search_index/$unaliased_name \
+		$prefix/.completed_runs/$run_name \
+		zdb/nginx zdb/gunicorn &> /dev/null
+	echo "Created archive $run_name.tar.gz"
+	exit 0
+
+elif [[ "$1" == "import" ]]; then
+	shift
+	outdir="$(pwd)/"
+	archive=""
+
+	for i in "$@"; do
+		case $i in 
+			--outdir=*)
+				outdir=${i#*=}
+				shift
+				;;
+			--archive=*)
+				archive=${i#*=}
+				shift
+				;;
+			--help)
+				echo "Unpack an archive that was prepared by the export command"
+				echo "You can alternatively manually unpack it."
+				echo ""
+				echo "The following options can be used"
+				echo ""
+				echo " --outdir: specify where the archive will be unpacked "
+				echo ""
+				echo " --archive: specify the archive to be unpacked"
+				exit
+				;;
+		esac
+	done
+
+	if [[ ! -f "$archive" ]]; then
+		echo "Could not find file $archive"
+		exit 1
+	fi
+
+	if [[ ! -d $outdir ]]; then
+		mkdir -p $outdir
+	fi
+
+	echo "Unpacking archive"
+	tar xvf $archive -C $outdir &> /dev/null
+	echo "Done"
+	echo "You can now start the zdb webapp in the $outdir directory"
+else
+	echo "Unkown subcommand $1"
+fi
