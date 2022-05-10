@@ -6,7 +6,6 @@ package:
 
 build:
   number: 0
-  noarch: generic
 
 source:
   url: https://github.com/metagenlab/zDB/archive/refs/tags/v1.0.2.tar.gz
