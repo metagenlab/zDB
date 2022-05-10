@@ -116,9 +116,10 @@ process download_ko_profiles {
         file "profiles/prokaryote.hal"
 
     script:
+    version="2022-03-01"
     """
-    wget https://www.genome.jp/ftp/db/kofam/ko_list.gz
-    wget https://www.genome.jp/ftp/db/kofam/profiles.tar.gz
+    wget https://www.genome.jp/ftp/db/kofam/archives/$version/ko_list.gz
+    wget https://www.genome.jp/ftp/db/kofam/archives/$version/profiles.tar.gz
 
     gunzip < ko_list.gz > ko_list && rm -f ko_list.gz
     tar xvf profiles.tar.gz
