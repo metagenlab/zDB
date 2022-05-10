@@ -9,13 +9,12 @@ build:
   noarch: generic
 
 source:
-  url: https://github.com/metagenlab/zDB/archive/refs/tags/v1.0.0-alpha.tar.gz
-  sha256: d74a48ba150b47317dab080de51432cc22cc37b66dd301f896831910fbef8407
+  url: https://github.com/metagenlab/zDB/archive/refs/tags/v1.0.2.tar.gz
+  sha256: 5b2cd965a496b525cf582ab19b32155e4e515f9b836e7bbfefbbbc9cbad0868b
 
 
 requirements:
   run:
-    - singularity
     - nextflow >=21.04.0
 
 test:
