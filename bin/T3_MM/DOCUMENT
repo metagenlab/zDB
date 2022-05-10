@@ -1,0 +1,16 @@
+Before using T3_MM tool, please ensure following softwares have been downloaded and successfully installed in your computer:
+(1)R
+(2)Perl
+Imput protein sequence file must be FASTA format. Each sequence should contain the start codon for methionine.
+
+
+In current directory, run following command:
+
+perl T3_MM.pl FASTA_FILE_NAME 
+
+Now, a file named "final.result.csv" is generated, which can be opened with Excel softwares.
+
+A web-based online prediction server is now under development: http://biocompute.bio.cuhk.edu.hk/T3_MM.php.
+
+Any problem, please send email to Yejun Wang <yejun.wang@gmail.com>.
+  
