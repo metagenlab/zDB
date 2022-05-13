@@ -3,7 +3,6 @@
 log.info "====================================="
 log.info "Database folder        : ${params.databases_dir}"
 
-
 def get_interpro_version(){
     def url = 'https://github.com/ebi-pf-team/interproscan/wiki/HowToDownload';
     def page = url.toURL().text;
@@ -179,7 +178,7 @@ process execute_interproscan_no_uniparc_matches {
 
   cpus 16
   memory '16 GB'
-  conda 'anaconda::openjdk=8.0.152'
+  container 'metagenlab/annotation-pipeline:1.2.1'
 
   input:
   file(seq) from merged_no_uniparc_faa.splitFasta( by: 5000, file: "no_uniparc_match_chunk_" )
@@ -199,13 +198,10 @@ process execute_kofamscan {
 
   publishDir 'refseq_annotation/KO', mode: 'link', overwrite: true
 
-  conda 'hmmer=3.2.1 parallel ruby=2.4.5'
+  container 'quay.io/biocontainers/kofamscan:1.3.0--0'
 
   cpus 4
   memory '8 GB'
-
-  when:
-  params.kofamscan == true
 
   input:
   file "*" from faa_list_2
@@ -216,7 +212,6 @@ process execute_kofamscan {
   script:
   """
   input_file=`ls *faa`
-  export "PATH=\$KOFAMSCAN_HOME:\$PATH"
   echo exec_annotation \${input_file} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o \${input_file/faa/tab}
   exec_annotation \${input_file} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o \${input_file/faa/tab}
   """
@@ -227,13 +222,10 @@ process execute_rpsblast_COG {
 
   publishDir 'refseq_annotation/COG', mode: 'link', overwrite: true
 
-  conda 'bioconda::blast=2.7.1'
+  container 'quay.io/biocontainers/blast:2.9.0--pl526h3066fca_4'
 
   cpus 4
   memory '2 GB'
-
-  when:
-  params.cog == true
 
   input:
   file (genome) from faa_list_3
@@ -243,6 +235,6 @@ process execute_rpsblast_COG {
 
   script:
   """
-  rpsblast -db $params.databases_dir/cdd/Cog -query ${genome} -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > ${genome.baseName}.tab
+  rpsblast -db $params.databases_dir/cdd/profiles/Cog -query ${genome} -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > ${genome.baseName}.tab
   """
 }
