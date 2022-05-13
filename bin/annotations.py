@@ -7,7 +7,7 @@ from Bio.Alphabet import IUPAC
 from Bio import AlignIO
 from Bio.Align import MultipleSeqAlignment
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
-
+import logging
 import pandas as pd
 import sys
 import sqlite3
@@ -820,7 +820,6 @@ def get_pdb_mapping(fasta_file, database_dir):
             pdb_map.write("%s\t%s\n" % (record.id, hit[0]))
     SeqIO.write(no_pdb_mapping_records, no_pdb_mapping, "fasta")
 
-
 def get_tcdb_mapping(fasta_file, database_dir):
     conn = sqlite3.connect(database_dir + "/TCDB/tcdb.db")
     cursor = conn.cursor()
@@ -1121,39 +1120,35 @@ def concatenate_core_orthogroups(fasta_files):
     with open(out_name, "w") as handle:
         AlignIO.write(MSA, handle, "fasta")
 
-# TODO: we should improve the error handling rather than remove it 
-# because errors can occur (kind of randomly) with Entez (those errors
-# are not reproducible, this is why I did not care dealing with the 
-# infinite call)
-def refseq_accession2fasta(accession_list):
-    Entrez.email = "trestan.pillonel@chuv.ch"
-    handle = Entrez.efetch(db='protein', id=','.join(accession_list), rettype="fasta", retmode="text")
-    records = [i for i in SeqIO.parse(handle, "fasta")]
-    return records
 
 def get_diamond_uniref_top_hits(databases_dir, phylum_filter, n_hits):
+    logging.basicConfig(filename='uniref_to_hits.log', level=logging.DEBUG)
+    
+    logging.info("Parsing fasta...")
+    fasta_records = SeqIO.to_dict(SeqIO.parse("diamond_uniref_hit_seqs.fasta", "fasta"))
+    logging.info(f'Done. Parsed ({len(fasta_records)}) entries.')
+    
     conn = sqlite3.connect("orthology.db")
     cursor = conn.cursor()
-    #sql1 = 'create table diamond_top_%s_nr_hits(orthogroup varchar, hit_accession, hit_sequence)' % ${params.refseq_diamond_BBH_phylogeny_top_n_hits}
 
     sql2 = 'attach "' + databases_dir + '/ncbi-taxonomy/linear_taxonomy.db" as linear_taxonomy'
-    sql3 = 'attach "' + databases_dir + '/uniref/uniref100.db" as uniref_taxonomy'
     sql4 = 'attach "diamond_uniref.db" as diamond_uniref'
 
     cursor.execute(sql2,)
-    cursor.execute(sql3,)
     cursor.execute(sql4,)
     conn.commit()
-
+    
+    logging.info(f"Retrieve...")
+    logging.info(f"Filtering {phylum_filter}...")
     sql_filtered_hits = """SELECT t1.orthogroup, t1.locus_tag, t3.sseqid, t3.hit_count 
        FROM locus_tag2orthogroup t1 INNER JOIN locus_tag2sequence_hash t2 ON t1.locus_tag=t2.locus_tag 
-       INNER JOIN diamond_refseq.diamond_refseq t3 ON t2.sequence_hash=t3.qseqid 
-       INNER JOIN refseq_taxonomy.refseq_hits t4 ON t3.sseqid=t4.accession
-       INNER JOIN linear_taxonomy.ncbi_taxonomy t5 ON t4.taxid=t5.tax_id 
+       INNER JOIN diamond_uniref.diamond_uniref t3 ON t2.sequence_hash=t3.qseqid 
+       INNER JOIN linear_taxonomy.ncbi_taxonomy t5 ON t3.taxon_id=t5.tax_id 
        WHERE t5.phylum not in ("%s")
        ORDER BY t1.orthogroup, t1.locus_tag, t3.hit_count;"""  % '","'.join(phylum_filter)
     filtered_hits = cursor.execute(sql_filtered_hits,).fetchall()
-
+    logging.info(f"Number of hits: {len(filtered_hits)}")
+    logging.info(f"Retrieve top hits excluding phylum of choice")
     # retrieve top hits excluding phylum of choice
     orthogroup2locus2top_hits = {}
     for row in filtered_hits:
@@ -1169,6 +1164,7 @@ def get_diamond_uniref_top_hits(databases_dir, phylum_filter, n_hits):
         if len(orthogroup2locus2top_hits[orthogroup][locus_tag]) < n_hits:
             orthogroup2locus2top_hits[orthogroup][locus_tag].append(hit_id)
 
+    logging.info(f"Retrieve orthogroup sequences")
     sql = """SELECT orthogroup, t1.locus_tag, sequence 
      FROM locus_tag2orthogroup t1 INNER JOIN locus_tag2sequence_hash t2 ON t1.locus_tag=t2.locus_tag 
      INNER JOIN sequence_hash2aa_sequence t3 ON t2.sequence_hash=t3.sequence_hash"""
@@ -1182,9 +1178,13 @@ def get_diamond_uniref_top_hits(databases_dir, phylum_filter, n_hits):
             orthogroup2locus_and_sequence[orthogroup] = []
         orthogroup2locus_and_sequence[orthogroup].append([locus_tag, sequence])
 
+    logging.info(f"Retrieve top hits sequences from NCBI")
     # for each group, retrieve aa sequence from NCBI
     # write it to fasta file with orthogroup sequences
-    for group in orthogroup2locus2top_hits:
+    # TODO: retrieve from fasta?
+    for n,group in enumerate(orthogroup2locus2top_hits):
+        if n % 100 == 0:
+            print(f"{n} / {len(orthogroup2locus2top_hits)}")
         ortho_sequences = orthogroup2locus_and_sequence[group]
         refseq_sequence_records = []
 
@@ -1195,7 +1195,7 @@ def get_diamond_uniref_top_hits(databases_dir, phylum_filter, n_hits):
 
         # multithreading here would be nice to run queries in parallel
         for one_list in split_lists:
-            refseq_sequence_records += refseq_accession2fasta(one_list)
+            refseq_sequence_records += [fasta_records[acc] for acc in one_list]
 
         if len(refseq_sequence_records) > 0:
             with open(group + "_nr_hits.faa", 'w') as f:
@@ -1229,31 +1229,43 @@ def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
 
 def rename_uniref(uniref_label):
     # UniRef100_UPI0005A8869C 
-    print(uniref_label)
     return uniref_label.split("UniRef100_")[1]
 
-def setup_diamond_uniref_db(diamond_tsv_files_list):
+def setup_diamond_uniref_db(databases_dir, diamond_tsv_files_list):
+    logging.basicConfig(filename='uniref_diamond.log', level=logging.DEBUG)
+    # load uniref hits into db
+    # retrieve taxids from uniref db
     conn = sqlite3.connect("diamond_uniref.db")
     cursor = conn.cursor()
+
+    
+
+    conn_uniref = sqlite3.connect(databases_dir + "/uniref/uniref100.db")
+    cursor_uniref = conn_uniref.cursor()
+
 
     sql1 = """CREATE TABLE diamond_uniref(hit_count INTEGER, qseqid varchar(200),
         sseqid varchar(200), pident FLOAT, length INTEGER, mismatch INTEGER,
         gapopen INTEGER, qstart INTEGER, qend INTEGER, sstart INTEGER,
-        send INTEGER, evalue FLOAT, bitscore FLOAT)"""
+        send INTEGER, evalue FLOAT, bitscore FLOAT, taxon_id INTEGER)"""
     cursor.execute(sql1,)
     conn.commit()
 
-    sql = 'insert into diamond_uniref values (?,?,?,?,?,?,?,?,?,?,?,?,?)'
-
+    sql = 'insert into diamond_uniref values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+    
     diamond_file_list = diamond_tsv_files_list.split(' ')
-    for one_file in diamond_file_list:
+    for n_file, one_file in enumerate(diamond_file_list):
         diamond_table = pd.read_csv(one_file, sep="\t", header=None)
         
         diamond_table.iloc[:,1] = diamond_table.apply(lambda x: rename_uniref(x[1]), axis=1)
+        
+        #nr_acc = set(diamond_table.iloc[:,1].to_list())
 
+        accession2taxon_id ={row[0]:row[1] for row in cursor_uniref.fetchall()}
         accession = ''
         count = ''
         # add hit count as first column
+        logging.info(f"Iter rows file {n_file}")
         for index, row in diamond_table.iterrows():
             # if new protein, reinitialise the count
             if row[0] != accession:
@@ -1261,19 +1273,55 @@ def setup_diamond_uniref_db(diamond_tsv_files_list):
                 count = 1
             else:
                 count+=1
-            cursor.execute(sql, [count] + row.tolist())
+            cursor.execute(sql, [count] + row.tolist() + [0])
         conn.commit()
 
     # index query accession (hash) + hit number
     sql_index_1 = 'create index hitc on diamond_uniref (hit_count);'
     sql_index_2 = 'create index qacc on diamond_uniref (qseqid);'
     sql_index_3 = 'create index sacc on diamond_uniref (sseqid);'
+    
 
     cursor.execute(sql_index_1)
     cursor.execute(sql_index_2)
     cursor.execute(sql_index_3)
+    
     conn.commit()
+    
     sql = 'select distinct sseqid from diamond_uniref'
+    cursor.execute(sql,)
+    nr_acc_list = [i[0] for i in cursor.fetchall()]
+    nr_acc_set = set(nr_acc_list)
+    logging.info(f"Retrieve fasta sequences for {len(nr_acc_list)} entries")
+    seqs_uniref = SeqIO.FastaIO.SimpleFastaParser(gzip.open(databases_dir + "/uniref/uniref100.fasta.gz", "rt"))
+    fasta_records = []
+    acc2taxid = {}
+    for n, (title, sequence) in enumerate(seqs_uniref):
+        if n % 10000000 == 0:
+            logging.info(f'Parsed {n} records -- {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}')
+        accession = rename_uniref(title.split(" ")[0])
+        if not accession in nr_acc_set:
+            continue
+        try:
+            taxid = re.search("TaxID=(\d+)", title).group(1)
+        except:
+            taxid = 1
+        acc2taxid[accession] = taxid
+        fasta_records.append([accession, sequence])
+    
+    with open("diamond_uniref_hit_seqs.fasta", "w") as outfasta:
+        for acc,seq in fasta_records:
+            outfasta .write(f">{acc}\n{seq}\n")
+    
+    logging.info(f"Updating taxids")
+    for n, acc in enumerate(acc2taxid):
+        if n % 10000 == 0:
+            print(f"{n} / {len(acc2taxid)}")
+        cursor.execute(f'update diamond_uniref set taxon_id={acc2taxid[acc]} where sseqid="{acc}"')
+    sql_index_4 = 'create index txd on diamond_uniref (taxon_id);'
+    cursor.execute(sql_index_4)
+    conn.commit()
+    
     with open("nr_uniref_hits.tab", 'w') as f:
-        for acc in cursor.execute(sql,):
+        for acc in nr_acc_list:
             f.write("%s\n" % acc[0])

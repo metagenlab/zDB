@@ -270,7 +270,8 @@ faa_locus1.into { faa_genomes1
                   faa_genomes4
                   faa_genomes5
                   faa_genomes6 
-                  inc_effectors_prediction }
+                  inc_effectors_prediction 
+                  to_paperblast}
 
 faa_locus2.collectFile(name: 'merged.faa', newLine: true)
     .set { merged_faa0 }
@@ -320,7 +321,8 @@ merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
         faa_chunks6
         faa_chunks7
         faa_chunks8
-        faa_chunks9 }
+        faa_chunks9
+        faa_chunks10 }
 
 process prepare_orthofinder {
 
@@ -858,7 +860,7 @@ process get_tcdb_mapping {
     publishDir 'annotation/tcdb_mapping/', mode: 'copy', overwrite: true
 
     when:
-    params.tcdb
+    params.tcdb_gblast
 
     input:
     file(seq) from merged_faa3
@@ -904,7 +906,7 @@ process tcdb_gblast3 {
     n = seq.name
     """
     export ALLOW_HTTP=true
-    /usr/local/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq} --db_path ${params.tcdb_db_path}
+    /usr/local/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq} --db_path ${params.tcdb_db_path} --family_abbreviations ${params.tcdb_db_path}/family_abbreviations.tsv --substrates ${params.tcdb_db_path}/getSubstrates.tsv
     """
 }
 
@@ -1116,13 +1118,14 @@ process setup_diamond_uniref_db {
 
   output:
   file 'diamond_uniref.db' into diamond_uniref_db
+  file 'diamond_uniref_hit_seqs.fasta' into diamond_uniref_seqs
   file 'nr_uniref_hits.tab' into uniref_diamond_nr
 
   script:
   """
 	#!/usr/bin/env python
 	import annotations
-	annotations.setup_diamond_uniref_db("$diamond_tsv_list")
+	annotations.setup_diamond_uniref_db("$params.databases_dir", "$diamond_tsv_list")
   """
 }
 
@@ -1141,6 +1144,7 @@ process get_diamond_uniref_top_hits {
   input:
   file 'orthology.db' from orthology_db
   file 'diamond_uniref.db' from diamond_uniref_db
+  file 'diamond_uniref_hit_seqs.fasta' from diamond_uniref_seqs
 
   output:
   file '*_nr_hits.faa' optional true into diamond_uniref_hits_fasta
@@ -1248,14 +1252,14 @@ process execute_BPBAac {
 
   script:
   """
-  ln -s /usr/local/bin/BPBAac/BPBAacPre.R
-  ln -s /usr/local/bin/BPBAac/BPBAac.Rdata
-  ln -s /usr/local/bin/BPBAac/Classify.pl
-  ln -s /usr/local/bin/BPBAac/DataPrepare.pl
-  ln -s /usr/local/bin/BPBAac/Feature100.pl
-  ln -s /usr/local/bin/BPBAac/Integ.pl
-  ln -s /usr/local/bin/BPBAac/Neg100AacFrequency
-  ln -s /usr/local/bin/BPBAac/Pos100AacFrequency
+  ln -s /usr/local/bin/annotation_pipeline_nextflow/bin/BPBAac/BPBAacPre.R
+  ln -s /usr/local/bin/annotation_pipeline_nextflow/bin/BPBAac/BPBAac.Rdata
+  ln -s /usr/local/bin/annotation_pipeline_nextflow/bin/BPBAac/Classify.pl
+  ln -s /usr/local/bin/annotation_pipeline_nextflow/bin/BPBAac/DataPrepare.pl
+  ln -s /usr/local/bin/annotation_pipeline_nextflow/bin/BPBAac/Feature100.pl
+  ln -s /usr/local/bin/annotation_pipeline_nextflow/bin/BPBAac/Integ.pl
+  ln -s /usr/local/bin/annotation_pipeline_nextflow/bin/BPBAac/Neg100AacFrequency
+  ln -s /usr/local/bin/annotation_pipeline_nextflow/bin/BPBAac/Pos100AacFrequency
   sed 's/CRC-/CRC/g' nr_fasta.faa > edited_fasta.faa
   perl DataPrepare.pl edited_fasta.faa;
   Rscript BPBAacPre.R;
@@ -1293,7 +1297,7 @@ process execute_DeepT3 {
   container "$params.chlamdb_container"
 
   when:
-  params.effector_prediction == true
+  params.effector_prediction_deep == true
 
   input:
   file "nr_fasta.faa" from nr_faa_large_sequences_chunks3
@@ -1325,8 +1329,8 @@ process execute_T3_MM {
 
   script:
   """
-  ln -s /usr/local/bin/T3_MM/log.freq.ratio.txt
-  perl /usr/local/bin/T3_MM/T3_MM.pl nr_fasta.faa
+  ln -s /usr/local/bin/annotation_pipeline_nextflow/bin/T3_MM/log.freq.ratio.txt
+  perl /usr/local/bin/annotation_pipeline_nextflow/bin/T3_MM/T3_MM.pl nr_fasta.faa
   mv final.result.csv T3_MM_results.csv
   """
 }
@@ -1460,6 +1464,29 @@ process blast_pdb {
   """
 }
 
+process blast_paperblast {
+  publishDir 'annotation/paperblast_mapping', mode: 'copy', overwrite: true
+  container "$params.blast_container"
+
+  cpus 4
+
+  when:
+  params.paperblast == true
+
+  input:
+  file(seq) from faa_chunks10
+
+  output:
+  file '*tab' into paperblast_blast
+
+  script:
+
+  n = seq.name
+  """
+  blastp -db $params.databases_dir/paperblast/uniq.faa -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
+  """
+}
+
 
 process get_uniparc_crossreferences {
 
@@ -1532,6 +1559,11 @@ process get_uniprot_goa_mapping {
 	annotations.get_uniprot_goa_mapping("$params.databases_dir", $uniprot_acc_list)
   """
 }
+
+
+
+
+
 
 
 workflow.onComplete {
