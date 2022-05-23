@@ -89,7 +89,7 @@ if [ "$use_custom_zdb" = true ]; then
 	bind_path="$zdb_folder"
 fi
 
-bind_path="$bind_path,${dir}/zdb/assets/:${zdb_folder}/assets/temp/"
+bind_path="$bind_path,${dir},${dir}/zdb/assets/:${zdb_folder}/assets/temp/"
 bind_path="$bind_path,${dir}/zdb/gunicorn:/usr/local/gunicorn/"
 bind_path="$bind_path,${dir}/zdb/nginx:/usr/local/nginx"
 

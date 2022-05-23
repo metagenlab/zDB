@@ -576,13 +576,9 @@ if(params.ko) {
     Channel.value("void").set { to_load_KO }
 }
 
-Channel.fromPath("${params.zdb.file}").set { db_skeleton }
-
 
 process setup_db {
     container "$params.annotation_container"
-    input:
-        file db_skeleton
 
     output:
         file output_file into db_base
@@ -590,7 +586,7 @@ process setup_db {
     script:
     output_file = "$workflow.runName"
     """
-    cp $db_skeleton $output_file
+    cp ${params.zdb.file} $output_file
     """
 }
 
