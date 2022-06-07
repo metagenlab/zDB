@@ -336,8 +336,6 @@ def orthofinder2core_groups(fasta_list,
         for seq in SeqIO.parse(fasta, "fasta"):
             locus2genome[seq.name] = genome
 
-    # NOTE: to be replace by a map-reduce algo, to avoid
-    # a slow for loop in python and to make the code more compact
     n_genomes = len(set(locus2genome.values()))
     hsh_ogs = defaultdict(lambda : defaultdict(lambda: 0))
     for group_id, loci_list in orthogroup2locus_list.items():
