@@ -6,7 +6,7 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation, ExactPosition
 from Bio import AlignIO
 from Bio.Align import MultipleSeqAlignment
 
-import setup_chlamdb
+# import setup_chlamdb
 
 import pandas as pd
 import itertools
@@ -336,25 +336,27 @@ def orthofinder2core_groups(fasta_list,
         for seq in SeqIO.parse(fasta, "fasta"):
             locus2genome[seq.name] = genome
 
-    df = pd.DataFrame(index=orthogroup2locus_list.keys(), columns=set(locus2genome.values()))
-    df = df.fillna(0)
-
     # NOTE: to be replace by a map-reduce algo, to avoid
     # a slow for loop in python and to make the code more compact
-    for group_id,loci_list in orthogroup2locus_list.items():
+    n_genomes = len(set(locus2genome.values()))
+    hsh_ogs = defaultdict(lambda : defaultdict(lambda: 0))
+    for group_id, loci_list in orthogroup2locus_list.items():
+        # we know there will be paralogs in this case
+        if len(loci_list)>n_genomes:
+            continue
+        
+        # cannot possibly be a core orthogroup
+        if len(loci_list)<n_genomes-n_missing:
+            continue
+
         for locus in loci_list:
             genome = locus2genome[locus]
-            df.loc[group_id, genome] += 1
+            hsh_to_count = hsh_ogs[genome]
+            hsh_to_count[group_id] += 1
 
-    df =df.apply(pd.to_numeric, args=('coerce',))
-
-    n_genomes = len(set(locus2genome.values()))
-    n_minimum_genomes = n_genomes-n_missing
-    
-    groups_with_paralogs = df[(df > 1).sum(axis=1) > 0].index
-    df = df.drop(groups_with_paralogs)
-
-    core_groups = df[(df == 1).sum(axis=1) >= n_genomes-n_missing].index.tolist()
+    df = pd.DataFrame(hsh_ogs).fillna(0)
+    df_sum = df[df < 2].sum(axis=1)
+    core_groups = df_sum[df_sum >= n_genomes-n_missing].index.tolist()
     return core_groups, orthogroup2locus_list, locus2genome
 
 

@@ -176,7 +176,7 @@ elif [[ "$1" == "run" ]]; then
 					echo "Expect a number for n_missing option"
 					exit 1
 				fi
-				args="${args} --num_missing=$n_missing"
+				args="${args} --core_missing=$n_missing"
 				shift
 				;;
 			--cog)
