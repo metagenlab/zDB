@@ -836,7 +836,7 @@ process get_PMID_data {
     publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
 
     when:
-    params.string
+    params.string_pmid
 
     input:
     file 'string_mapping_PMID.tab' from string_mapping_BMID

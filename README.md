@@ -95,7 +95,7 @@
 - [ ] TCDB: no exact match first, directly blast against db
 - [ ] PDB: no exact match first, directly blast against db
 - [ ] STRING no exact match first, directly blast against db
-- [ ] add PaperBlast BLAST
+- [X] add PaperBlast BLAST
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [ ] retrieve GO annotations from uniprotKB GOA 
     - [ ] from uniprot accession mapping

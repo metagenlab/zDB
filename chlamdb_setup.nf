@@ -23,10 +23,6 @@ Channel.from([["cognames2003-2014.tab", "ftp://ftp.ncbi.nih.gov/pub/COG/COG2014/
               ["fun2003-2014.tab", "ftp://ftp.ncbi.nih.gov/pub/COG/COG2014/data/fun2003-2014.tab"]])
               .set { cog_urls }
 
-Channel.fromPath("${params.databases_dir}/annotation/COG/blast_COG.tab")
-              .into { cog_results }
-
-
 process download_COG {
 
   publishDir 'chlamdb_setup/COG_tables', mode: 'copy', overwrite: true
@@ -128,6 +124,30 @@ process mysql_setup_linear_taxonomy {
   chlamdb-setup-linear-taxonomy.py -i ${params.databases_dir}/ncbi-taxnomy/COG/blast_COG.tab -d blastnr > mysql_linear_taxonomy_setup.log
   """
 }
+
+
+process mysql_load_COG_results {
+
+  publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
+  echo true
+  conda 'mysqlclient=1.3.10 biopython=1.73'
+
+  when:
+  params.setup_linear_taxonomy == true
+
+  input:
+  file mysql_COG_setup
+
+  output:
+  file("mysql_load_COG.log") into mysql_load_COG
+
+  script:
+  """
+  chlamdb-setup-linear-taxonomy.py -i ${params.execution_dir}/annotation/COG/blast_COG.tab > mysql_load_COG.log
+  """
+}
+
+
 
 
 workflow.onComplete {
