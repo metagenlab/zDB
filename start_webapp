@@ -47,13 +47,31 @@ for i in "$@"; do
 	esac
 done
 
+display=""
+for i in $(seq 1 1024);do
+	if [ ! -f "/tmp/.X${i}-lock" ]; then
+		display="$i"
+		break
+	fi
+done
 
-Xvfb :1&  # should be running on the container
+if [ "$display" = "" ]; then
+	echo "Could not find any free display for Xvfb"
+	exit 1
+fi
+
+
+Xvfb ":${display}" &  # should be running on the container
+if [ ! $? -eq 0 ]; then
+	echo "Could not instantiate Xvfb, exiting"
+	exit 1
+fi
+
 xvfb_pid=$!
 
 # This is unfortunately necessary as ete3 uses Qt, which cannot
 # run without a display
-export DISPLAY=:1
+export DISPLAY=":${display}"
 
 if [ -z "${hosts}" ]; then
 	# if no host was specified, try to guess one
