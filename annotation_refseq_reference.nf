@@ -79,7 +79,7 @@ assembly_faa.into {faa_list_1
 
 process get_uniparc_mapping {
 
-  conda 'bioconda::biopython=1.68'
+  //conda 'bioconda::biopython=1.68 anaconda::pandas'
 
   publishDir 'refseq_annotation/uniparc_mapping/', mode: 'link', overwrite: true
   cpus 1
@@ -98,72 +98,11 @@ process get_uniparc_mapping {
 
   """
 #!/usr/bin/env python
-
-from Bio import SeqIO
-import sqlite3
-from Bio.SeqUtils import CheckSum
+import refseq 
 import glob
-import re
-
-conn = sqlite3.connect("${params.databases_dir}/interproscan/annotated_uniparc/uniparc_match.db")
-cursor = conn.cursor()
-
-sql = 'attach "${params.databases_dir}/uniprot/uniparc/uniparc.db" as uniparc'
-cursor.execute(sql,)
-
+print("ok4")
 fasta_file = glob.glob("*.faa")[0]
-
-basename = re.sub(".faa", "", fasta_file)
-
-uniparc_map = open('%s_uniparc_mapping_interpro.tab' % basename, 'w')
-no_uniparc_mapping = open('%s_no_uniparc_mapping.faa' % basename, 'a')
-
-uniparc_map.write("locus_tag\\tuniparc_accession\\tuniparc_id\\tentry_accession\\tentry_name\\taccession\\tdescription\\tevidence_name\\tdb_name\\tname\\tstart\\tend\\tscore\\n")
-
-records = SeqIO.parse(fasta_file, "fasta")
-no_mapping_uniparc_records = []
-
-lines = []
-for record in records:
-
-    checksum = CheckSum.seguid(record.seq)
-    print(checksum)
-    sql1 = 'select uniparc_accession from uniparc.uniparc_accession where sequence_hash=?'
-    cursor.execute(sql1, (checksum,))
-    hits = cursor.fetchall()
-
-    # check if uniparc match
-
-    if len(hits) == 0:
-        no_mapping_uniparc_records.append(record)
-    else:
-        # fetch interpro annotation
-        sql = 'select uniparc_accession,t0.uniparc_id,entry_accession,entry_name,accession,description,evidence_name,db_name,name,start,end,score from uniparc.uniparc_accession t0 inner join uniparc_match t1 on t0.uniparc_id=t1.uniparc_id inner join match_entry t2 on t1.entry_id=t2.entry_id inner join interpro_entry t3 on t1.interpro_id=t3.interpro_id inner join evidence t4 on t1.evidence_id=t4.evidence_id inner join database t5 on t2.db_id=t5.db_id inner join interpro_type t6 on t3.type_id=t6.type_id where t0.sequence_hash=? and t5.db_name!="MOBIDBLT"'
-        cursor.execute(sql, (checksum,))
-        hits = cursor.fetchall()
-
-        # some uniparc entries wont have any interpro annotation 
-        # ATTENTION: should be the same uniparc release: if uniparc release is more recent than the 
-        # annotated uniparc release from InterPro, new uniparc entries could be missing from the 
-        # interpro annotation
-        if len(hits) != 0:
-          for hit in hits:
-            lines.append("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t\\n" % (record.id,
-                                                                                                        hit[0],
-                                                                                                        hit[1],
-                                                                                                        hit[2],
-                                                                                                        hit[3],
-                                                                                                        hit[4],
-                                                                                                        hit[5],
-                                                                                                        hit[6],
-                                                                                                        hit[7],
-                                                                                                        hit[8],
-                                                                                                        hit[9],
-                                                                                                        hit[10],
-                                                                                                        hit[11]))
-uniparc_map.writelines(lines)
-
-SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
+refseq.uniparc_interpro_annotations(fasta_file, "${params.databases_dir}")
   """
 }
 
