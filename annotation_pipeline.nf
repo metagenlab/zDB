@@ -852,34 +852,7 @@ process get_PMID_data {
     """
 }
 
-
-process get_tcdb_mapping {
-
-    container "$params.annotation_container"
-
-    publishDir 'annotation/tcdb_mapping/', mode: 'copy', overwrite: true
-
-    when:
-    params.tcdb_gblast
-
-    input:
-    file(seq) from merged_faa3
-
-    output:
-    file 'tcdb_mapping.tab' into tcdb_mapping
-    file 'no_tcdb_mapping.faa' into no_tcdb_mapping
-
-    script:
-    fasta_file = seq.name
-    """
-    #!/usr/bin/env python
-
-    import annotations
-    annotations.get_tcdb_mapping("${fasta_file}", "${params.databases_dir}")
-    """
-}
-
-no_tcdb_mapping.splitFasta( by: 1000, file: "chunk" )
+merged_faa3.splitFasta( by: 1000, file: "chunk" )
 .set { faa_tcdb_chunks }
 
 process tcdb_gblast3 {
@@ -907,32 +880,6 @@ process tcdb_gblast3 {
     """
     export ALLOW_HTTP=true
     /usr/local/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq} --db_path ${params.tcdb_db_path} --family_abbreviations ${params.tcdb_db_path}/family_abbreviations.tsv --substrates ${params.tcdb_db_path}/getSubstrates.tsv
-    """
-}
-
-process get_pdb_mapping {
-
-    container "$params.annotation_container"
-
-    publishDir 'annotation/pdb_mapping/', mode: 'copy', overwrite: true
-
-    when:
-    params.pdb
-
-    input:
-    file(seq) from merged_faa4
-
-
-    output:
-    file 'pdb_mapping.tab' into pdb_mapping
-    file 'no_pdb_mapping.faa' into no_pdb_mapping
-
-    script:
-    fasta_file = seq.name
-    """
-    #!/usr/bin/env python
-    import annotations
-    annotations.get_pdb_mapping("${fasta_file}", "${params.databases_dir}")
     """
 }
 
@@ -985,7 +932,7 @@ process execute_interproscan_no_uniparc_matches {
   script:
   n = seq.name
   """
-  bash "$params.interproscan_home"/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3 -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} >> ${n}.log
+  bash "$params.interproscan_home"/interproscan.sh --pathways --goterms --enable-tsv-residue-annot -f TSV,XML,GFF3 -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} >> ${n}.log
   """
 }
 
@@ -1451,7 +1398,7 @@ process blast_pdb {
   params.pdb == true
 
   input:
-  file(seq) from no_pdb_mapping.splitFasta( by: 1000, file: "chunk_" )
+  file(seq) from merged_faa4.splitFasta( by: 1000, file: "chunk_" )
 
   output:
   file '*tab' into pdb_blast
