@@ -66,11 +66,11 @@ manipulate_biosqldb.create_new_biodb("${params.db_name}")
 }
 
 biosqldb.into{sql_db_to_COG
-            sql_db_to_KEGG
-            sql_db_to_taxonomy
-            sql_db_to_interpro
-            sql_db_to_annotations
-            sql_db_to_TCDB
+              sql_db_to_KEGG
+              sql_db_to_taxonomy
+              sql_db_to_interpro
+              sql_db_to_annotations
+              sql_db_to_TCDB
             } 
 
 
@@ -220,13 +220,12 @@ process mysql_load_genbank {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
   echo true
-  //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
   params.load_annotations == true
 
   input:
-  sql_db_to_annotations
+  file sql_db_to_annotations
 
   output:
   file("mysql_load_genbank.log") into mysql_load_genbank
@@ -259,6 +258,14 @@ process mysql_load_orthofinder {
   """
 }
 
+
+mysql_load_orthogroups.into{
+  orthology_to_alignments
+  orthology_to_COG
+  orthology_to_blast_setup
+}
+
+
 process mysql_load_alignments {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
@@ -269,7 +276,7 @@ process mysql_load_alignments {
   params.load_annotations == true
 
   input:
-  file mysql_load_orthogroups
+  file orthology_to_alignments
 
   output:
   file("mysql_load_alignments.log") into mysql_load_alignments
@@ -599,6 +606,7 @@ process load_COG {
 
   input:
   file mysql_COG_setup
+  file orthology_to_COG
 
   output:
   file("load_COG.log") into load_COG
@@ -765,6 +773,7 @@ process load_uniref_hits {
 
   script:
   """
+  echo ok3
   chlamdb-load-refseq-homology-search.py -t -f -d ${params.db_name} -u ${params.execution_dir}/data/nr_mapping.tab -lt ${params.linear_taxonomy} -rd  ${params.execution_dir}/annotation/diamond_uniref/diamond_uniref.db -ud ${params.uniref_db} > load_uniref_hits.log
   """
 }
@@ -787,7 +796,7 @@ process load_swissprot_hits {
 
   script:
   """
-  chlamdb-load-swissprot-homology-search.py -l -p 8 -t -f -d ${params.db_name} -u ${params.execution_dir}/data/nr_mapping.tab -i ${params.execution_dir}/annotation/blast_swissprot/*tab > load_swissprot_hits.log
+  chlamdb-load-swissprot-homology-search.py -l -p 8 -t -f -d ${params.db_name} -s ${params.swissprot_sqlite} -u ${params.execution_dir}/data/nr_mapping.tab -i ${params.execution_dir}/annotation/blast_swissprot/*tab > load_swissprot_hits.log
   """
 }
 
@@ -925,7 +934,7 @@ process phyloprofile {
   """
 }
 
-process crossrefs {
+process load_uniprot_data {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
@@ -937,6 +946,28 @@ process crossrefs {
 
   input:
   file hash_to_synonyms
+
+  output:
+  file("load_uniprot_data.log") into load_uniprot_data
+
+  script:
+  """
+  chlamdb-load-uniprot-annotations.py -d ${params.db_name} -hm ${params.execution_dir}/data/nr_mapping.tab -um ${params.execution_dir}/annotation/uniparc_mapping/uniprot_mapping.tab -ud ${params.execution_dir}/annotation/uniparc_mapping/uniprot_data.tab > load_uniprot_data.log
+  """
+}
+
+process crossrefs {
+  // # update TM et SP columns from legacy `ortho_detail` table
+
+  publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
+  echo true
+  //conda 'mysqlclient=1.3.10 biopython=1.73'
+
+  when:
+  params.add_cross_references == true
+
+  input:
+  file load_uniprot_data
 
   output:
   file("crossrefs.log") into crossrefs
@@ -988,7 +1019,7 @@ process load_pdb {
 
   script:
   """
-  chlamdb-load-psortdb.py -d ${params.db_name}  -c ${params.execution_dir}/data/nr_mapping.tab -t ${params.execution_dir}/annotation/pdb_mapping/chunk*tab > load_pdb.log
+  chlamdb-load-psortdb.py -d ${params.db_name}  -c ${params.execution_dir}/data/nr_mapping.tab -t ${params.execution_dir}/annotation/psortb/psortb_chunk_*.txt > load_pdb.log
   """
 }
 
@@ -1022,8 +1053,51 @@ process load_T3_effectors {
 
 //  STRING links to litterature
 
+process load_string_pmid {
+  // # update TM et SP columns from legacy `ortho_detail` table
+
+  publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
+  echo true
+  //conda 'mysqlclient=1.3.10 biopython=1.73'
+
+  when:
+  params.string_pmid == true
+
+  input:
+  file hash_to_string_pmid
+
+  output:
+  file("load_string_pmid.log") into load_string_pmid
+
+  script:
+  """
+  #chlamdb-load-PMID.py -d ${params.db_name} -i ${params.string_sqlite} -c ${params.execution_dir}/data/nr_mapping.tab -t annotation/string_mapping/string_mapping.tab > load_string_pmid.log
+  chlamdb-load-string-pmid-mapping.py -d ${params.db_name} -t ${params.execution_dir}/annotation/string_mapping/diamond/*tab -qf ${params.execution_dir}/data/nr.faa -dl ${params.string_db_len} -p ${params.string_sqlite} -c ${params.execution_dir}/data/nr_mapping.tab > load_string_pmid.log
+  """
+}
 
 
+process setup_blast_databases {
+  // # update TM et SP columns from legacy `ortho_detail` table
+
+  publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
+  echo true
+  //conda 'mysqlclient=1.3.10 biopython=1.73'
+
+  when:
+  params.setup_blast_db == true
+
+  input:
+  file orthology_to_blast_setup
+
+  output:
+  file("setup_blast_databases.log") into setup_blast_databases
+
+  script:
+  """
+  chlamdb-setup-blast-databases.py -d ${params.db_name} -p ${params.static_dir} > setup_blast_databases.log
+  """
+}
 
 
 workflow.onComplete {
