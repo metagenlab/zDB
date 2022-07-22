@@ -3,12 +3,10 @@ from Bio.SeqUtils import CheckSum
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation, ExactPosition
-from Bio.Alphabet import IUPAC
 from Bio import AlignIO
 from Bio.Align import MultipleSeqAlignment
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 import logging
-import pandas as pd
 import sys
 import sqlite3
 import urllib
@@ -18,7 +16,7 @@ import os
 import datetime
 import logging
 import http.client
-
+import pandas as pd
 from ftplib import FTP
 
 # Heuristic to detect T3SS effectors inc proteins
@@ -307,8 +305,8 @@ def get_PMID_data():
 # remove it (with eg a max number of retry) 
 
 def uniprot_accession2score(uniprot_accession_list):
-    # https://www.uniprot.org/uniprot/?query=id:V8TQN7+OR+id:V8TR74&format=xml
-    link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=id,annotation%%20score&format=tab" % ("+OR+id:".join(uniprot_accession_list))
+    # https://rest.uniprot.org/uniprotkb/?query=id:V8TQN7+OR+id:V8TR74&format=xml
+    link = "https://rest.uniprot.org/uniprotkb/search?query=accession:%s&fields=accession,annotation_score&format=tsv" % ("+OR+accession:".join(uniprot_accession_list))
 
     page = urllib.request.urlopen(link)
     data = page.read().decode('utf-8').split('\n')
@@ -339,30 +337,33 @@ def get_uniprot_data(databases_dir, table):
 
     # parallelizing those requests could be interesting if this function
     # took too much time
+    # uniprot_id  uniprot_accession  comment_function                                              
+    # ec_number  comment_similarity                        
+    # comment_catalyticactivity  comment_pathway  keywords  comment_subunit  gene  recommendedName_fullName  proteinExistence        developmentalstage  proteome     annotation_score  reviewed
     for one_chunk in uniprot_accession_chunks:
         uniprot2score = uniprot_accession2score(one_chunk)
         filter = '","'.join(one_chunk)
-        uniprot_annot_data = cursor.execute(sql_uniprot_annot % filter,).fetchall()
+        uniprot_annot_data = pd.read_sql(sql_uniprot_annot % filter, conn)
 
-        for uniprot_annotation in uniprot_annot_data:
-            uniprot_accession = uniprot_annotation[0]
+        for n,uniprot_annotation in uniprot_annot_data.iterrows():
+            uniprot_accession = uniprot_annotation.uniprot_accession
             if uniprot_accession in uniprot2score:
                 uniprot_score = uniprot2score[uniprot_accession]
             else:
                 uniprot_score = 0
-            comment_function = uniprot_annotation[1]
-            ec_number = uniprot_annotation[2]
-            comment_similarity = uniprot_annotation[3]
-            comment_catalyticactivity = uniprot_annotation[4]
-            comment_pathway = uniprot_annotation[5]
-            keywords = uniprot_annotation[6]
-            comment_subunit = uniprot_annotation[7]
-            gene = uniprot_annotation[8]
-            recommendedName_fullName = uniprot_annotation[9]
-            proteinExistence = uniprot_annotation[10]
-            developmentalstage = uniprot_annotation[11]
-            proteome = uniprot_annotation[12]
-            reviewed = uniprot_annotation[14]
+            comment_function = uniprot_annotation.comment_function
+            ec_number = uniprot_annotation.ec_number
+            comment_similarity = uniprot_annotation.comment_similarity
+            comment_catalyticactivity = uniprot_annotation.comment_catalyticactivity
+            comment_pathway = uniprot_annotation.comment_pathway
+            keywords = uniprot_annotation.keywords
+            comment_subunit = uniprot_annotation.comment_subunit
+            gene = uniprot_annotation.gene
+            recommendedName_fullName = uniprot_annotation.recommendedName_fullName
+            proteinExistence = uniprot_annotation.proteinExistence
+            developmentalstage = uniprot_annotation.developmentalstage
+            proteome = uniprot_annotation.proteome
+            reviewed = uniprot_annotation.reviewed
 
             uniprot_data.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n"
                     % (uniprot_accession, uniprot_score, reviewed, proteome, comment_function, ec_number,
@@ -773,32 +774,6 @@ def filter_out_unannotated(gbk_file):
     to_keep = [rec for rec in SeqIO.parse(gbk_file, "genbank") if is_annotated(rec)]
     SeqIO.write(to_keep, result_file, "genbank")
 
-def string_id2pubmed_id_list(accession):
-    link = 'http://string-db.org/api/tsv/abstractsList?identifiers=%s' % accession
-    try:
-        data = urllib.request.urlopen(link).read().rstrip().decode('utf-8').split('\n')[1:]
-    except urllib.error.URLError:
-        return False
-    pid_list = [row.split(':')[1] for row in data]
-    return pid_list
-
-
-# TODO may be interesting to parellize the queries if performance were
-# to become an issue
-def get_string_PMID_mapping(string_map):
-    o = open("string_mapping_PMID.tab", "w")
-    with open(string_map, 'r') as f:
-        # skip header
-        f.readline()
-        for row in f:
-            data = row.rstrip().split("\t")
-            pmid_list = string_id2pubmed_id_list(data[1])
-            if pmid_list:
-                for id in pmid_list:
-                    o.write("%s\t%s\n" % (data[0], id))
-            else:
-                o.write("%s\tNone\n" % (data[0]))
-
 
 def get_pdb_mapping(fasta_file, database_dir):
     conn = sqlite3.connect(database_dir + "/pdb/pdb.db")
@@ -891,7 +866,7 @@ def filter_sequences(fasta_file):
     processed_records = []
     for record in records:
         if len(record.seq) >= 10:
-            processed_records.append(SeqRecord(Seq(re.sub("B|Z|J", "X", str(record.seq)), IUPAC.protein),
+            processed_records.append(SeqRecord(Seq(re.sub("B|Z|J", "X", str(record.seq))),
                                   id=record.id, 
                                   name=record.name,
                                   description=record.description))
