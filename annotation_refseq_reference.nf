@@ -108,7 +108,7 @@ refseq.uniparc_interpro_annotations(fasta_file, "${params.databases_dir}")
 
 
 no_uniparc_mapping_faa.collectFile(name: 'merged.faa', newLine: true)
-    .into { merged_no_uniparc_faa }
+    .set { merged_no_uniparc_faa }
 
 
 process execute_interproscan_no_uniparc_matches {
@@ -117,7 +117,7 @@ process execute_interproscan_no_uniparc_matches {
 
   cpus 16
   memory '16 GB'
-  container 'metagenlab/annotation-pipeline:1.2.1'
+  container "$params.container_interproscan"
 
   input:
   file(seq) from merged_no_uniparc_faa.splitFasta( by: 5000, file: "no_uniparc_match_chunk_" )
@@ -128,8 +128,8 @@ process execute_interproscan_no_uniparc_matches {
   script:
   n = seq.name
   """
-  echo $INTERPRO_HOME/interproscan.sh -f TSV -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus}
-  bash $INTERPRO_HOME/interproscan.sh -f TSV -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} >> ${n}.log
+  echo ${params.interproscan_home}/interproscan.sh -f TSV -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus}
+  bash ${params.interproscan_home}/interproscan.sh -f TSV -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} --applications TIGRFAM,SFLD,SMART,CDD,SUPERFAMILY,PANTHER,Gene3D,PIRSF,Pfam >> ${n}.log
   """
 }
 
