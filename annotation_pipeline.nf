@@ -23,7 +23,7 @@ if (params.ncbi_sample_sheet != false){
 process prokka {
 	publishDir 'data/prokka_output', mode: 'copy', overwrite: true
 
-	container "$params.annotation_container"
+	container "$params.prokka"
 
 	// NOTE : according to Prokka documentation, a linear acceleration
 	// is obtained up to 8 processes and after that, the overhead becomes
@@ -49,7 +49,7 @@ process prokka {
 // leave all the contigs with no coding region (check_gbk doesn't like them)
 process prokka_filter_CDS {
 	publishDir 'data/prokka_output_filtered', mode: 'copy', overwrite: true
-	container "$params.annotation_container"
+	container "$params.biopython_container"
 
 	input:
 	file prokka_file from gbk_from_local_assembly.collect()
@@ -62,7 +62,7 @@ process prokka_filter_CDS {
 
 	script:
 	"""
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	
 	import annotations
 
@@ -119,7 +119,7 @@ if(params.ncbi_sample_sheet == false) {
   // TODO : create a single query to the database
   process download_assembly {
 
-	container "$params.annotation_container"
+	container "$params.biopython_container"
 
     publishDir 'data/gbk_ncbi', mode: 'copy', overwrite: true
 
@@ -141,7 +141,7 @@ if(params.ncbi_sample_sheet == false) {
     script:
     //accession = assembly_accession[0]
     """
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	import annotations
 	annotations.download_assembly("$accession")
     """
@@ -150,7 +150,7 @@ if(params.ncbi_sample_sheet == false) {
   // TODO: create a single query to the database
   process download_assembly_refseq {
 
-    container "$params.annotation_container"
+    container "$params.biopython_container"
 
     publishDir 'data/refseq_corresp', mode: 'copy', overwrite: true
 
@@ -174,7 +174,7 @@ if(params.ncbi_sample_sheet == false) {
     script:
     //accession = assembly_accession[0]
     """
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	import annotations
 	annotations.download_assembly_refseq("$accession")
     """
@@ -183,7 +183,7 @@ if(params.ncbi_sample_sheet == false) {
   // TODO : test with containers
   process refseq_locus_mapping {
 
-	container "$params.annotation_container"
+	container "$params.biopython_container"
 
     publishDir 'data/refseq_corresp', mode: 'copy', overwrite: true
 
@@ -206,7 +206,7 @@ if(params.ncbi_sample_sheet == false) {
 
     script:
     """
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	import annotations
 	accessions_list = "$accession_list".split(' ')
 	annotations.refseq_locus_mapping(accessions_list)
@@ -219,7 +219,7 @@ all_raw_gbff = raw_ncbi_gbffs.mix(raw_local_gbffs)
 process gbk_check {
   publishDir 'data/gbk_edited', mode: 'copy', overwrite: true
 
-  container "$params.annotation_container"
+  container "$params.biopython_container"
 
   input:
   file all_gbff from all_raw_gbff.collect()
@@ -229,7 +229,7 @@ process gbk_check {
 
   script:
   """
-  #!/usr/bin/env python
+  #!/opt/conda/bin/python
   
   import annotations
   annotations.check_gbk("$all_gbff".split())
@@ -240,7 +240,7 @@ process convert_gbk_to_faa {
 
   publishDir 'data/faa_locus', mode: 'copy', overwrite: true
 
-  container "$params.annotation_container"
+  container "$params.biopython_container"
 
   echo false
 
@@ -254,7 +254,7 @@ process convert_gbk_to_faa {
 
   script:
   """
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	import annotations
 
 	annotations.convert_gbk_to_faa("${edited_gbk}", "${edited_gbk.baseName}.faa")
@@ -279,7 +279,7 @@ faa_locus2.collectFile(name: 'merged.faa', newLine: true)
 
 process get_nr_sequences {
 
-  container "$params.annotation_container"
+  container "$params.biopython_container"
 
   publishDir 'data/', mode: 'copy', overwrite: true
 
@@ -295,7 +295,7 @@ process get_nr_sequences {
   script:
   fasta_file = seq.name
   """
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	
 	import annotations
 	annotations.get_nr_sequences("${fasta_file}", "${genome_list}".split())
@@ -310,7 +310,8 @@ nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
         merged_faa4
         merged_faa5
         merged_faa6
-        merged_faa7 }
+        merged_faa7
+         }
 
 merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
 .into { faa_chunks1
@@ -322,7 +323,8 @@ merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
         faa_chunks7
         faa_chunks8
         faa_chunks9
-        faa_chunks10 }
+        faa_chunks10
+        faa_chunks10_to_diamond_string }
 
 process prepare_orthofinder {
 
@@ -410,7 +412,7 @@ orthogroups
         orthogroups_2}
 
 process orthogroups2fasta {
-  container "$params.annotation_container"
+  container "$params.biopython_container"
 
   publishDir 'orthology/orthogroups_fasta', mode: 'copy', overwrite: true
 
@@ -422,7 +424,7 @@ process orthogroups2fasta {
   file "*faa" into orthogroups_fasta
 
   """
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	import annotations
 	annotations.orthogroups_to_fasta("$genome_list")
   """
@@ -505,7 +507,7 @@ process orthogroups_phylogeny_with_fasttree3 {
 
 process get_core_orthogroups {
 
-  container "$params.annotation_container"
+  container "$params.biopython_container"
   cpus 1
   memory '16 GB'
   echo false
@@ -522,7 +524,7 @@ process get_core_orthogroups {
   script:
 
   """
-  #!/usr/bin/env python
+  #!/opt/conda/bin/python
   import annotations
   genomes_list = "$genomes_list".split()
   annotations.get_core_orthogroups(genomes_list, int("${params.core_missing}"))
@@ -531,7 +533,7 @@ process get_core_orthogroups {
 
 process concatenate_core_orthogroups {
 
-  container "$params.annotation_container"
+  container "$params.biopython_container"
 
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
@@ -544,7 +546,7 @@ process concatenate_core_orthogroups {
   script:
 
   """
-  #!/usr/bin/env python
+  #!/opt/conda/bin/python
   import annotations
   fasta_files = "${core_groups}".split(" ")
   annotations.concatenate_core_orthogroups(fasta_files)
@@ -598,7 +600,7 @@ process checkm_analyse {
 
 process rpsblast_COG {
   
-  container "$params.annotation_container"
+  container "$params.blast_container"
 
   cpus 4
 
@@ -642,7 +644,7 @@ process blast_swissprot {
   n = seq.name
   """
   ls $params.databases_dir/uniprot/swissprot/
-  blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
+  blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}_raw.txt
   """
 }
 
@@ -692,7 +694,7 @@ uniref_diamond.collectFile().set { uniref_diamond_results_sqlitedb }
 
 process get_uniparc_mapping {
 
-  container "$params.annotation_container"
+  container "$params.biopython_container"
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
 
@@ -712,7 +714,7 @@ process get_uniparc_mapping {
   script:
   fasta_file = seq.name
   """
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	import annotations
 	annotations.get_uniparc_mapping("${params.databases_dir}", "$fasta_file")
   """
@@ -732,7 +734,7 @@ uniprot_mapping_tab2.splitCsv(header: true, sep: '\t')
 .map{row -> "\"$row.uniprot_accession\"" }.unique().set { uniprot_nr_accessions }
 
 process get_uniprot_data {
-  container "$params.annotation_container"
+  container "$params.biopython_container"
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
   echo true
@@ -747,8 +749,8 @@ process get_uniprot_data {
   file 'uniprot_data.tab' into uniprot_data
 
   script:
-  	"""
-	#!/usr/bin/env python
+  """
+	#!/opt/conda/bin/python
 	import annotations
 	annotations.get_uniprot_data("${params.databases_dir}", "${table}")
 	"""
@@ -778,10 +780,35 @@ process get_uniprot_data {
 //  """
 //}
 
+process string_diamond {
+
+  publishDir 'annotation/string_mapping/diamond', mode: 'copy', overwrite: true
+
+  cpus 4
+  //container "$params.blast_container"
+
+  when:
+  params.string == true
+
+  input:
+  file(seq) from faa_chunks10_to_diamond_string
+
+
+  output:
+  file 'chunk_.*.tab' into string_diamond
+
+  script:
+  fasta_file = seq.name
+  """
+  # protein.sequences.v11.5.pmid.fa
+  #diamond blastp -p ${task.cpus} -d ${params.stringdb_diamond} -q ${fasta_file} -o ${fasta_file}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
+  blastp -db $params.databases_dir/string/protein.sequences.v11.5.pmid.fa -query ${fasta_file} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${fasta_file}.tab
+  """
+}
 
 process get_string_mapping {
 
-  container "$params.annotation_container"
+  container "$params.biopython_container"
 
   publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
 
@@ -798,59 +825,12 @@ process get_string_mapping {
   script:
   fasta_file = seq.name
   """
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	import annotations
 	annotations.get_string_mapping("${fasta_file}", "${params.databases_dir}")
     """
 }
 
-process get_string_PMID_mapping {
-
-    container "$params.annotation_container"
-
-    publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
-
-    when:
-    params.string_pmid
-
-    input:
-    file(string_map) from string_mapping
-
-
-    output:
-    file 'string_mapping_PMID.tab' into string_mapping_BMID
-
-    script:
-
-    """
-    #!/usr/bin/env python
-    import annotations
-    annotations.get_string_PMID_mapping("${string_map}")
-    """
-}
-
-
-process get_PMID_data {
-    container "$params.annotation_container"
-
-    publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
-
-    when:
-    params.string_pmid
-
-    input:
-    file 'string_mapping_PMID.tab' from string_mapping_BMID
-
-    output:
-    file 'string_mapping_PMID.db' into PMID_db
-
-    script:
-    """
-    #!/usr/bin/env python
-    import annotations
-    annotations.get_PMID_data()
-    """
-}
 
 merged_faa3.splitFasta( by: 1000, file: "chunk" )
 .set { faa_tcdb_chunks }
@@ -885,7 +865,7 @@ process tcdb_gblast3 {
 
 process get_oma_mapping {
 
-    container "$params.annotation_container"
+    container "$params.biopython_container"
 
     publishDir 'annotation/oma_mapping/', mode: 'copy', overwrite: true
 
@@ -903,7 +883,7 @@ process get_oma_mapping {
     script:
     fasta_file = seq.name
     """
-    #!/usr/bin/env python
+    #!/opt/conda/bin/python
     import annotations
     annotations.get_oma_mapping("${params.databases_dir}", "$fasta_file")
     """
@@ -912,9 +892,9 @@ process get_oma_mapping {
 process execute_interproscan_no_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
-  container "$params.annotation_container"
+  container "$params.interproscan_container"
 
-  cpus 20
+  cpus 8
   memory '16 GB'
 
   when:
@@ -940,9 +920,9 @@ process execute_interproscan_no_uniparc_matches {
 process execute_interproscan_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
-  container "$params.annotation_container"
+  container "$params.interproscan_container"
 
-  cpus	20
+  cpus	8
   memory '8 GB'
 
   when:
@@ -1023,7 +1003,7 @@ PRIAM_results.collectFile(name: 'annotation/PRIAM/sequenceECs.txt')
 
 process setup_orthology_db {
   publishDir 'orthology/', mode: 'link', overwrite: true
-  container "$params.annotation_container"
+  container "$params.biopython_container"
 
   cpus 4
   memory '8 GB'
@@ -1041,7 +1021,7 @@ process setup_orthology_db {
 
   script:
   """
-  #!/usr/bin/env python
+  #!/opt/conda/bin/python
 
   import annotations
   annotations.setup_orthology_db("${nr_fasta}", "${nr_mapping_file}", "${orthogroup}")
@@ -1051,7 +1031,7 @@ process setup_orthology_db {
 
 process setup_diamond_uniref_db {
 
-  container "$params.annotation_container"
+  container "$params.biopython_container"
   publishDir 'annotation/diamond_uniref', mode: 'copy', overwrite: true
   echo false
   cpus 4
@@ -1070,7 +1050,7 @@ process setup_diamond_uniref_db {
 
   script:
   """
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	import annotations
 	annotations.setup_diamond_uniref_db("$params.databases_dir", "$diamond_tsv_list")
   """
@@ -1079,7 +1059,7 @@ process setup_diamond_uniref_db {
 
 process get_diamond_uniref_top_hits {
 
-  container "$params.annotation_container"
+  container "$params.biopython_container"
   publishDir 'annotation/diamond_uniref_BBH_phylogenies', mode: 'copy', overwrite: true
   echo false
   cpus 4
@@ -1098,7 +1078,7 @@ process get_diamond_uniref_top_hits {
 
   script:
   """
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	import annotations
 	annotations.get_diamond_uniref_top_hits("$params.databases_dir",
 	$params.uniref_diamond_BBH_phylogeny_phylum_filter,
@@ -1159,7 +1139,7 @@ process orthogroup_uniref_BBH_phylogeny_with_fasttree {
 // Filter out small sequences and ambiguous AA
 process filter_sequences {
 
-  container "$params.annotation_container"
+  container "$params.biopython_container"
   publishDir 'data/', mode: 'copy', overwrite: true
 
   when:
@@ -1173,7 +1153,7 @@ process filter_sequences {
   
   script:
 	"""
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	import annotations
 	annotations.filter_sequences("${nr_fasta}")
 	"""
@@ -1327,7 +1307,7 @@ process T3SS_inc_protein_prediction_interproscan_domains {
 
   script:
   """
-  #!/usr/bin/env python
+  #!/opt/conda/bin/python
     
   import annotations
   
@@ -1337,7 +1317,7 @@ process T3SS_inc_protein_prediction_interproscan_domains {
 
 // inclusion membrane T3SS effector prediction
 process execute_T3SS_inc_protein_prediction {
-  container "$params.annotation_container"
+  container "$params.biopython_container"
 
   publishDir "annotation/T3SS_inc_effectors/", mode: "copy", overwrite: true
 
@@ -1356,7 +1336,7 @@ process execute_T3SS_inc_protein_prediction {
 
   script:
   """
-  #!/usr/bin/env python
+  #!/opt/conda/bin/python
 
   import annotations
   genomes_list = "${genomes}".split()
@@ -1438,7 +1418,7 @@ process blast_paperblast {
 process get_uniparc_crossreferences {
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
-  container "$params.annotation_container"
+  container "$params.biopython_container"
 
   when:
   params.uniparc
@@ -1452,7 +1432,7 @@ process get_uniparc_crossreferences {
   script:
 
   """
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	import annotations
 	annotations.get_uniparc_crossreferences("${params.databases_dir}", "${table}")
   """
@@ -1462,7 +1442,7 @@ process get_uniparc_crossreferences {
 process get_idmapping_crossreferences {
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
-  container "$params.annotation_container"
+  container "$params.biopython_container"
 
   when:
   params.uniprot_idmapping
@@ -1476,7 +1456,7 @@ process get_idmapping_crossreferences {
   script:
 
 	"""
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	import annotations
 	annotations.get_idmapping_crossreferences("${params.databases_dir}", "${table}")
 	"""
@@ -1486,7 +1466,7 @@ process get_idmapping_crossreferences {
 process get_uniprot_goa_mapping {
 
   publishDir 'annotation/goa/', mode: 'copy', overwrite: true
-  container "$params.annotation_container"
+  container "$params.biopython_container"
   echo true
 
   when:
@@ -1501,7 +1481,7 @@ process get_uniprot_goa_mapping {
   script:
 
   """
-	#!/usr/bin/env python
+	#!/opt/conda/bin/python
 	import annotations
 	annotations.get_uniprot_goa_mapping("$params.databases_dir", $uniprot_acc_list)
   """
