@@ -26,7 +26,6 @@ log.info "input                  : ${params.input}"
 process mysql_setup_biosql_db {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -45,7 +44,6 @@ process mysql_setup_biosql_db {
 process create_biodb {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -77,7 +75,6 @@ biosqldb.into{sql_db_to_COG
 process download_COG {
 
   publishDir 'chlamdb_setup/COG_tables', mode: 'copy', overwrite: true
-  echo true
 
   when:
   params.setup_COG == true
@@ -102,7 +99,6 @@ process download_COG {
 process mysql_setup_COG_tables {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -126,7 +122,6 @@ process mysql_setup_COG_tables {
 process mysql_setup_enzyme_KEGG_tables {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73 beautifulsoup4=4.7.1 lxml=4.3.3'
 
   when:
@@ -150,7 +145,6 @@ process mysql_setup_enzyme_KEGG_tables {
 process mysql_setup_linear_taxonomy {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -171,7 +165,6 @@ process mysql_setup_linear_taxonomy {
 process mysql_setup_interpro {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   input:
@@ -193,7 +186,6 @@ process mysql_setup_interpro {
 process mysql_setup_TCDB {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   input:
@@ -219,7 +211,6 @@ process mysql_setup_TCDB {
 process mysql_load_genbank {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
 
   when:
   params.load_annotations == true
@@ -240,7 +231,6 @@ process mysql_load_genbank {
 process mysql_load_orthofinder {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -269,7 +259,6 @@ mysql_load_orthogroups.into{
 process mysql_load_alignments {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -291,7 +280,6 @@ process mysql_load_alignments {
 process setup_orthology_matrix {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -314,7 +302,6 @@ process setup_orthology_matrix {
 process consenus_orthogroup_annot {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -335,7 +322,6 @@ process consenus_orthogroup_annot {
 process consensus_orthogroup_annot {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -356,7 +342,6 @@ process consensus_orthogroup_annot {
 process reference_phylo {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -377,7 +362,6 @@ process reference_phylo {
 process genomes_statistics {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -398,7 +382,6 @@ process genomes_statistics {
 process orthogroup_phylo {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -419,7 +402,6 @@ process orthogroup_phylo {
 process inteproscan {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -440,7 +422,6 @@ process inteproscan {
 process inteproscan_legacy {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -462,7 +443,6 @@ process inteproscan_TM_SP {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -484,7 +464,6 @@ process locus2hash {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -525,7 +504,6 @@ process comparative_tables_pfam {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -550,7 +528,6 @@ process comparative_tables_interpro {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -575,7 +552,6 @@ process consensus_annot_og {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -598,7 +574,6 @@ process load_COG {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -622,7 +597,6 @@ process comparative_tables_COG {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -646,7 +620,6 @@ process consensus_annot_COG {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -668,7 +641,6 @@ process load_KEGG {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -690,7 +662,6 @@ process comparative_tables_KEGG {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -714,7 +685,6 @@ process consensus_annot_KEGG {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -732,11 +702,11 @@ process consensus_annot_KEGG {
   """
 }
 
+
 process load_TCDB {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -750,7 +720,7 @@ process load_TCDB {
 
   script:
   """
-  chlamdb-load-TCDB.py -t GBLAST_HTML -b FASTA DATABASE  -k ${params.execution_dir}/annotation/KO/chunk*.tab -d ${params.db_name} -u ${params.execution_dir}/data/nr_mapping.tab > load_TCDB.log
+  chlamdb-load-TCDB.py -t GBLAST_HTML -b FASTA_DATABASE  -d ${params.db_name} -c ${params.execution_dir}/data/nr_mapping.tab -f FASTA QUERY -x ${params.execution_dir}/annotation/tcdb_mapping/TCDB_RESULTS_chunk.1/xml/  > load_TCDB.log
   """
 }
 
@@ -759,7 +729,6 @@ process load_uniref_hits {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -782,7 +751,6 @@ process load_swissprot_hits {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -804,7 +772,6 @@ process load_BBH_phylo {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -826,7 +793,6 @@ process load_paperblast {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -844,11 +810,33 @@ process load_paperblast {
   """
 }
 
+
+process load_paperblast_snippets {
+  // # update TM et SP columns from legacy `ortho_detail` table
+
+  publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
+  //conda 'mysqlclient=1.3.10 biopython=1.73'
+
+  when:
+  params.load_paperblast == true
+
+  input:
+  file load_paperblast
+
+  output:
+  file("load_paperblast_snippets.log") into load_paperblast_snippets
+
+  script:
+  """
+  chlamdb-load-paperblast-snippets.py -d ${params.db_name} -p ${params.paperblast_sqlite} > load_paperblast_snippets.log
+  """
+}
+
+
 process protparams {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -871,7 +859,6 @@ process GC_table {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -893,7 +880,6 @@ process synteny {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -915,7 +901,6 @@ process phyloprofile {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -938,7 +923,6 @@ process load_uniprot_data {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -960,7 +944,6 @@ process crossrefs {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -982,7 +965,6 @@ process load_psortb {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -1005,7 +987,6 @@ process load_pdb {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -1027,7 +1008,6 @@ process load_T3_effectors {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -1057,7 +1037,6 @@ process load_string_pmid {
   // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -1078,10 +1057,8 @@ process load_string_pmid {
 
 
 process setup_blast_databases {
-  // # update TM et SP columns from legacy `ortho_detail` table
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  echo true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
@@ -1098,6 +1075,50 @@ process setup_blast_databases {
   chlamdb-setup-blast-databases.py -d ${params.db_name} -p ${params.static_dir} > setup_blast_databases.log
   """
 }
+
+
+process pathway_ko_associations {
+
+  publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
+
+  when:
+  params.load_KEGG == true
+
+  input:
+  file consensus_annot_KEGG
+
+  output:
+  file("pathway_ko_associations.log") into pathway_ko_associations 
+
+  script:
+  """
+  chlamdb-setup-pathway_ko_associations.py -d ${params.db_name} > pathway_ko_associations.log
+  """
+}
+
+process setup_search_index {
+
+  publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
+  //conda 'mysqlclient=1.3.10 biopython=1.73'
+
+  when:
+  params.setup_blast_db == true
+
+  input:
+  file setup_blast_databases
+
+  output:
+  file("setup_search_index.log") into setup_search_index
+
+  script:
+  """
+  chlamdb-setup-search-index.py -d ${params.db_name} > setup_search_index.log
+  """
+}
+
+// chlamdb-setup-pathway_ko_associations ok
+// setup search index ok
+// paperblast-snippets 
 
 
 workflow.onComplete {
