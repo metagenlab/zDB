@@ -21,7 +21,7 @@ log.info "input                  : ${params.input}"
 // setup reference tables
 //
 
-
+tcdb_channel = Channel.fromPath("${params.execution_dir}/annotation/tcdb_mapping/TCDB_RESULTS_chunk.*/", type: 'dir')
 
 process mysql_setup_biosql_db {
 
@@ -714,13 +714,15 @@ process load_TCDB {
 
   input:
   file mysql_setup_TCDB
+  file tcdb_channel
 
   output:
-  file("load_TCDB.log") into load_TCDB
+  file("*.log") into load_TCDB
 
   script:
   """
-  chlamdb-load-TCDB.py -t GBLAST_HTML -b FASTA_DATABASE  -d ${params.db_name} -c ${params.execution_dir}/data/nr_mapping.tab -f FASTA QUERY -x ${params.execution_dir}/annotation/tcdb_mapping/TCDB_RESULTS_chunk.1/xml/  > load_TCDB.log
+
+  chlamdb-load-TCDB.py -t ${tcdb_channel}/results.html -b ${tcdb_channel}/mytcdb.faa  -d ${params.db_name} -c ${params.execution_dir}/data/nr_mapping.tab -f ${tcdb_channel}/myqueries.faa -x ${tcdb_channel}/xml/  > \$(basename ${tcdb_channel}).log
   """
 }
 
