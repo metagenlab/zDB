@@ -10,7 +10,7 @@
 if (params.ncbi_sample_sheet != false){
   Channel.fromPath( file(params.ncbi_sample_sheet) )
                       .splitCsv(header: true, sep: '\t')
-                      .map{ row -> "$row.Genbank" } 
+                      .map{ row -> "$row.GenBank" } 
                       .into{ assembly_accession_list }
 
   Channel.fromPath( file(params.ncbi_sample_sheet) )
@@ -446,7 +446,7 @@ process align_with_mafft {
   """
   unset MAFFT_BINARIES
   for faa in ${og}; do
-  mafft \$faa > \${faa/.faa/_mafft.faa}
+  mafft --anysymbol \$faa > \${faa/.faa/_mafft.faa}
   done
   """
 }
@@ -459,7 +459,9 @@ mafft_alignments.collect().into {all_alignments_1
 
 all_alignments_1.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 3 }.set { alignments_larget_tah_3_seqs }
 all_alignments_2.flatten().map { it }.filter { (it.text =~ /(>)/).size() == 3 }.set { alignments_3_seqs }
+all_alignments_3.flatten().map { it }.filter { (it.text =~ /(>)/).size() >= params.min_genomes }.set { all_alignments_core_candidate }
 all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.set { alignement_larger_than_2_seqs }
+
 
 /*
 process orthogroups_phylogeny_with_raxml {
@@ -510,13 +512,13 @@ process get_core_orthogroups {
   container "$params.biopython_container"
   cpus 1
   memory '16 GB'
-  echo false
+  echo true
   publishDir 'orthology/core_groups', mode: 'copy', overwrite: true
 
   input:
   file 'Orthogroups.txt' from orthogroups
   file genomes_list from faa_genomes3.collect()
-  file fasta_files from all_alignments_3.collect()
+  file fasta_files from all_alignments_core_candidate.collect()
 
   output:
   file '*_taxon_ids.faa' into core_orthogroups
@@ -528,6 +530,7 @@ process get_core_orthogroups {
   import annotations
   genomes_list = "$genomes_list".split()
   annotations.get_core_orthogroups(genomes_list, int("${params.core_missing}"))
+
   """
 }
 
@@ -644,7 +647,7 @@ process blast_swissprot {
   n = seq.name
   """
   ls $params.databases_dir/uniprot/swissprot/
-  blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}_raw.txt
+  blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}_raw.tab
   """
 }
 
@@ -785,7 +788,7 @@ process string_diamond {
   publishDir 'annotation/string_mapping/diamond', mode: 'copy', overwrite: true
 
   cpus 4
-  //container "$params.blast_container"
+  container "$params.diamond_container"
 
   when:
   params.string == true
@@ -801,8 +804,8 @@ process string_diamond {
   fasta_file = seq.name
   """
   # protein.sequences.v11.5.pmid.fa
-  #diamond blastp -p ${task.cpus} -d ${params.stringdb_diamond} -q ${fasta_file} -o ${fasta_file}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
-  blastp -db $params.databases_dir/string/protein.sequences.v11.5.pmid.fa -query ${fasta_file} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${fasta_file}.tab
+  diamond blastp -p ${task.cpus} -d ${params.stringdb_diamond} -q ${fasta_file} -o ${fasta_file}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
+  #blastp -db $params.databases_dir/string/protein.sequences.v11.5.pmid.fa -query ${fasta_file} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${fasta_file}.tab
   """
 }
 
@@ -912,6 +915,7 @@ process execute_interproscan_no_uniparc_matches {
   script:
   n = seq.name
   """
+  echo ok4
   bash "$params.interproscan_home"/interproscan.sh --pathways --goterms --enable-tsv-residue-annot -f TSV,XML,GFF3 -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} >> ${n}.log
   """
 }
@@ -922,8 +926,9 @@ process execute_interproscan_uniparc_matches {
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
   container "$params.interproscan_container"
 
-  cpus	8
+  cpus	2
   memory '8 GB'
+  maxForks 4
 
   when:
   params.interproscan
@@ -940,6 +945,7 @@ process execute_interproscan_uniparc_matches {
   script:
   n = seq.name
   """
+  echo ok4
   bash "$params.interproscan_home"/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3 -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
   """
 }
@@ -1393,7 +1399,8 @@ process blast_pdb {
 
 process blast_paperblast {
   publishDir 'annotation/paperblast_mapping', mode: 'copy', overwrite: true
-  container "$params.blast_container"
+  //container "$params.blast_container"
+  container "$params.diamond_container"
 
   cpus 4
 
@@ -1410,7 +1417,8 @@ process blast_paperblast {
 
   n = seq.name
   """
-  blastp -db $params.databases_dir/paperblast/uniq.faa -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
+  #blastp -db $params.databases_dir/paperblast/uniq.faa -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
+  diamond blastp -p ${task.cpus} -d $params.databases_dir/paperblast/uniq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
   """
 }
 
