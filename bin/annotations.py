@@ -307,7 +307,7 @@ def get_PMID_data():
 def uniprot_accession2score(uniprot_accession_list):
     # https://rest.uniprot.org/uniprotkb/?query=id:V8TQN7+OR+id:V8TR74&format=xml
     link = "https://rest.uniprot.org/uniprotkb/search?query=accession:%s&fields=accession,annotation_score&format=tsv" % ("+OR+accession:".join(uniprot_accession_list))
-
+    print(link)
     page = urllib.request.urlopen(link)
     data = page.read().decode('utf-8').split('\n')
     rows = [i.rstrip().split('\t') for i in data]
@@ -1119,7 +1119,7 @@ def get_diamond_uniref_top_hits(databases_dir, phylum_filter, n_hits):
        FROM locus_tag2orthogroup t1 INNER JOIN locus_tag2sequence_hash t2 ON t1.locus_tag=t2.locus_tag 
        INNER JOIN diamond_uniref.diamond_uniref t3 ON t2.sequence_hash=t3.qseqid 
        INNER JOIN linear_taxonomy.ncbi_taxonomy t5 ON t3.taxon_id=t5.tax_id 
-       WHERE t5.phylum not in ("%s")
+       WHERE (t5.phylum not in ("%s", "") and t5.genus!="")
        ORDER BY t1.orthogroup, t1.locus_tag, t3.hit_count;"""  % '","'.join(phylum_filter)
     filtered_hits = cursor.execute(sql_filtered_hits,).fetchall()
     logging.info(f"Number of hits: {len(filtered_hits)}")
@@ -1153,8 +1153,8 @@ def get_diamond_uniref_top_hits(databases_dir, phylum_filter, n_hits):
             orthogroup2locus_and_sequence[orthogroup] = []
         orthogroup2locus_and_sequence[orthogroup].append([locus_tag, sequence])
 
-    logging.info(f"Retrieve top hits sequences from NCBI")
-    # for each group, retrieve aa sequence from NCBI
+    logging.info(f"Retrieve top hits sequences")
+    # for each group, retrieve aa sequence
     # write it to fasta file with orthogroup sequences
     # TODO: retrieve from fasta?
     for n,group in enumerate(orthogroup2locus2top_hits):
