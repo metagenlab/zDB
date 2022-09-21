@@ -20,12 +20,14 @@ zDB relies on singularity to run the analysis and the web server. Unfortunately,
 ```
 conda install singularity=3.8.4 -c conda-forge
 ```
-As of now, zDB has been tested with this version of singularity, but it might work on more recent releases.
+As of now, zDB has been tested with this version of singularity (and 3.8.3), but it might work on more recent releases.
 
 Once this is done, zDB can be installed from conda with the following command
 ```
-conda install zDB -c bioconda
+conda install zdb -c metagenlab
 ```
+
+For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
 
 ## Overview
 
