@@ -5,8 +5,7 @@ ZDB_DIR="${PREFIX}/share/${ZDB}"
 
 mkdir -p ${PREFIX}/bin ${ZDB_DIR}
 
-sed "s/nextflow_dir_val/${ZDB_DIR}/" bin/zdb |
-	sed "s/version/{$PKG_VERSION}/" > ${PREFIX}/bin/zdb
+sed "s=version={$PKG_VERSION}==" > ${PREFIX}/bin/zdb
 
 chmod u+x ${PREFIX}/bin/zdb
 
