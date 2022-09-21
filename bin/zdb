@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 
-VERSION="1.0.0"
+
+# This will get replaced by conda installation script to point
+# to the correct version.
+VERSION="version"
+
+# Hack to know the installation folder
 CONDA=$(which zdb | sed 's=bin/zdb==')
+
+# The value of this variable will be replaced by the conda installation script
+# to point to the folder where all the nextflow scripts are installed.
+# 
+# If you are running a version from github, just point it to the checked out
+# directory.
 NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
 
 
