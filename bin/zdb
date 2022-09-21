@@ -7,6 +7,9 @@
 # directory.
 NEXTFLOW_DIR="nextflow_dir_val"
 
+# Same principle here. It does not need to be replaced when installed from github.
+VERSION="version"
+
 
 if [[ $# == "0" || $1 == "help" ]]; then
 	echo "zDB (v${VERSION})"
