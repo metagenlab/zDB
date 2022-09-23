@@ -20,7 +20,7 @@ zDB relies on singularity to run the analysis and the web server. Unfortunately,
 ```
 conda install singularity=3.8.4 -c conda-forge
 ```
-As of now, zDB has been tested with this version of singularity (and 3.8.3), but it might work on more recent releases.
+As of now, zDB has been tested with this version of singularity (and 3.8.3), but it should work on more recent releases.
 
 Once this is done, zDB can be installed from conda with the following command
 ```
@@ -28,6 +28,14 @@ conda install zdb -c metagenlab
 ```
 
 For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
+You can also install zdb directly from the github repository. This is particularly useful if you want to make modifications or if you want to have a direct access to Nextflow config file for a better control of the execution.
+
+Check out the project or download and unpack a release, then edit this line of bin/zdb:
+```
+NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
+```
+and replace it by the directory where you downloaded the project (this should point to the directory where zdb's nextflow.config is located).
+Add zdb's bin directory to PATH and voila, zdb is installed straight from the source.
 
 ## Overview
 
