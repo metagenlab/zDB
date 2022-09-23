@@ -28,6 +28,8 @@ conda install zdb -c metagenlab
 ```
 
 For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
+
+### Install from sources
 You can also install zdb directly from the github repository. This is particularly useful if you want to make modifications or if you want to have a direct access to Nextflow config file for a better control of the execution.
 
 Check out the project or download and unpack a release, then edit this line of bin/zdb:
