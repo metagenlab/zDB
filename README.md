@@ -32,12 +32,12 @@ For now, the project is hosted on our own conda channel. A bioconda package is a
 ### Install from sources
 You can also install zdb directly from the github repository. This is particularly useful if you want to make modifications or if you want to have a direct access to Nextflow config file for a better control of the execution.
 
-Check out the project or download and unpack a release, then edit this line of bin/zdb:
+Check out the project or download and unpack a release, then edit this line of the bin/zdb bash script:
 ```
 NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
 ```
 and replace it by the directory where you downloaded the project (this should point to the directory where zdb's nextflow.config is located).
-Add zdb's bin directory to PATH and voila, zdb is installed straight from the source.
+Add zdb's bin directory to PATH and voila, zdb should run smoothly.
 
 ## Overview
 
