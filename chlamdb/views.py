@@ -2897,7 +2897,7 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
         for accession, score in lst_vals:
             taxid = acc_to_taxid.loc[accession].taxid
             if hsh_taxid_to_score.get(taxid, 0) < score:
-                hsh_taxid_to_score[taxid] = int(score)
+                hsh_taxid_to_score[taxid] = int(round(score, 0))
         all_infos.append((query, hsh_taxid_to_score))
 
     min_val = min(min(hsh.values()) for _, hsh in all_infos)
