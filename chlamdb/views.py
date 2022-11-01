@@ -2559,9 +2559,11 @@ def ko_venn_subset(request, category):
     ko2description = []
     for ko, ko_desc in ko_descriptions.items():
         forbidden = "\""
-        ko_item = f"h[{to_s(format_ko(ko))}] = {forbidden}{ko_desc}{forbidden};"
+        safe_desc = escape_quotes(ko_desc)
+        ko_item = f"h[{to_s(format_ko(ko))}] = {forbidden}{safe_desc}{forbidden};"
         ko2description.append(ko_item)
 
+    ko2description = "".join(ko2description)
     display_form = False
     envoi_venn = True
     return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
