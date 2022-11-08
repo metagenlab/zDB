@@ -64,7 +64,7 @@ You'll need to specifiy which databases are to be downloaded. The following opti
 --swissprot: downloads and indexes the swissprot database
 ```
 
-In addition, you can specify the directory where you want the databases to be installed with the ```--dir``` option.
+In addition, you can specify the directory where you want the databases to be installed with the ```--dir``` option: ```zdb setup --swissprot --dir=foobardir```.
 
 Downloading the HMM files from the KEGG server can take a bit of time (but you'll only need to do this once).
 
@@ -95,6 +95,8 @@ file
 foo/bar.gbk
 baz/bazz.gbk
 ```
+
+And the command could look like this ```zdb run --input=my_genomes.csv --cpu=32 --pfam --out=my_outputdirectory```.
 For now, only genbank files are supported and zDB will expect the "gbk" extension.
 
 ## Starting the web server
