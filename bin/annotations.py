@@ -15,8 +15,7 @@ import re
 import os
 
 from collections import defaultdict
-
-
+from collections import namedtuple
 
 def chunks(l, n):
     for i in range(0, len(l), n):
@@ -80,8 +79,44 @@ def gen_new_organism(organism, hsh_prev_values):
     hsh_prev_values[new_name] += 1
     return new_name
 
+CsvEntry = namedtuple("CsvEntry", "name file")
 
-def check_gbk(gbk_lst):
+header_entries = ["name", "file"]
+
+
+def parse_csv(csv_file):
+    csv = pd.read_csv(csv_file).fillna('')
+    entries = []
+    has_names = False
+
+    names = set()
+
+    for i in csv.columns:
+        if i=="name":
+            has_names = True
+        if i not in header_entries:
+            raise Exception("Unknown entry in header: " + i)
+
+    entries = []
+    for index, entry in csv.iterrows():
+        name = None
+        if has_names and len(entry["name"]) > 0:
+            name = entry["name"]
+            if name in names:
+                raise Exception(name+" is duplicated")
+            names.add(name)
+           
+        # only get the filename, as nextflow will symlink it
+        # in the current work directory
+        entries.append(CsvEntry(name, os.path.basename(entry.file)))
+
+    if len(entries) == 0:
+        raise Exception(csv_file + " is empty")
+
+    return entries
+
+
+def check_gbk(csv_file):
     """
     As BioSQL uses the organism/source entries of the records to assign
     a taxid when it is not allowed to access the ncbi online,
@@ -102,17 +137,27 @@ def check_gbk(gbk_lst):
 
     # contig name also need to be unique as they are used by blast
     contigs = defaultdict(lambda : 0)
+    csv_entries = parse_csv(csv_file)
 
     gbk_passed = []
     gbk_to_revise = []
+
+    custom_names = []
     
-    for gbk_file in gbk_lst:
+    for entry in csv_entries:
+        gbk_file = entry.file
         curr_organism = None
         n_cds = 0
         failed = False
         for record in SeqIO.parse(gbk_file, "genbank"):
             sci_name = record.annotations.get("organism", None)
             common_name = record.annotations.get("source", None)
+
+            if not entry.name is None:
+                custom_names.append(entry.name)
+                failed = True
+                sci_name = entry.name
+                common_name = entry.name
 
             if sci_name is None:
                 raise Exception(f"No scientific for record {record.id} " \
@@ -168,6 +213,10 @@ def check_gbk(gbk_lst):
         else:
             gbk_passed.append(gbk_file)
 
+    for name in custom_names:
+        if organisms[name] > 1:
+            raise Exception("The custom name "+name+" is already used in another file")
+
     for failed_gbk in gbk_to_revise:
         records = []
         sci_name = None
@@ -214,10 +263,10 @@ def check_gbk(gbk_lst):
                     feature.qualifiers["locus_tag"] = gen_new_locus_tag(locuses)
                     locuses[curr_locus[0]] -= 1
             records.append(record)
-        SeqIO.write(records, failed_gbk.replace(".gbk", "_filtered.gbk"), "genbank")
+        SeqIO.write(records, "filtered/"+failed_gbk, "genbank")
 
     for passed in gbk_passed:
-        os.symlink(passed, passed.replace(".gbk", "_filtered.gbk"))
+        os.symlink(passed, "filtered/"+passed)
 
 
 

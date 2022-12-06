@@ -63,18 +63,14 @@ def gen_python_args() {
 str_pythonized_params = gen_python_args()
 
 
-
-// Input processing
 Channel.fromPath(params.input)
+    .into { get_files
+            parse_input }
+
+get_files
     .splitCsv(header: true, strip: true)
     .map { row -> file(row.file) }
-    .into { gbk_from_local_assembly_f; error_search }
-
-gbk_from_local_assembly_f.filter { it.extension == "gbk" }
     .set { gbk_from_local_assembly }
-
-error_search.filter { it.extension!="gbk" }
-    .subscribe { error "Unsupported file extension" }
 
 
 process check_gbk {
@@ -83,30 +79,34 @@ process check_gbk {
 
 	input:
 	    file gbk from gbk_from_local_assembly.collect()
+        file input_file from parse_input
 
 	output:
-	    file "*_filtered.gbk" into checked_gbks
+	    path "filtered/*" into checked_gbks
 
 	script:
 	"""
         #!/usr/bin/env python
         import annotations
+        import os
 
-        gbk_files = "${gbk}".split() 
-        annotations.check_gbk(gbk_files)
+        os.mkdir("filtered")
+
+        annotations.check_gbk("$input_file")
 	"""
 }
 
 
 checked_gbks.into {
     to_load_gbk_into_db
-    to_convert_gbk }
- 
+    to_convert_gbk
+}
+
 
 process convert_gbk {
   container "$params.annotation_container"
   input:
-      each file(edited_gbk) from to_convert_gbk
+      each edited_gbk from to_convert_gbk.flatten()
 
   output:
       file "*.faa" into faa_files
