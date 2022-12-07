@@ -121,8 +121,9 @@ zdb run --input=input.csv --ko --cog --resume
 ```
 This can also be used if you want to add another analysis to a previous run:
 ```
-zdb run --input=input.csv --ko --cog --pfam
+zdb run --input=input.csv --ko --cog --pfam --resume
 ```
+in this case, only the pfam annotations will be performed as the other analysis have already completed.
 
 ## Starting the web server
 
