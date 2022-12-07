@@ -28,12 +28,24 @@ zDB relies on singularity to run the analysis and the web server. Unfortunately,
 ```
 conda install singularity=3.8.4 -c conda-forge
 ```
-As of now, zDB has been tested with this version of singularity, but it might work on more recent releases.
+As of now, zDB has been tested with this version of singularity (and 3.8.3), but it should work on more recent releases.
 
 Once this is done, zDB can be installed from conda with the following command
 ```
 conda install zDB -c metagenlab bioconda
 ```
+
+For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
+
+### Install from sources
+You can also install zdb directly from the github repository. This is particularly useful if you want to make modifications or if you want to have a direct access to Nextflow config file for a better control of the execution.
+
+Check out the project or download and unpack a release, then edit this line of the bin/zdb bash script:
+```
+NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
+```
+and replace it by the directory where you downloaded the project (this should point to the directory where zdb's nextflow.config is located).
+Add zdb's bin directory to PATH and voila, zdb should run smoothly.
 
 ## Overview
 
@@ -60,7 +72,7 @@ You'll need to specifiy which databases are to be downloaded. The following opti
 --swissprot: downloads and indexes the swissprot database
 ```
 
-In addition, you can specify the directory where you want the databases to be installed with the ```--dir``` option.
+In addition, you can specify the directory where you want the databases to be installed with the ```--dir``` option: ```zdb setup --swissprot --dir=foobardir```.
 
 Downloading the HMM files from the KEGG server can take a bit of time (but you'll only need to do this once).
 
@@ -93,6 +105,7 @@ name, file
 ,baz/bazz.gbk
 foobar,foobar/baz.gbff
 ```
+and the command could look like this ```zdb run --input=my_genomes.csv --cpu=32 --pfam --out=my_outputdirectory```.
 
 The ```name``` column is optional and can be omitted from the input csv file. By default, zdb will use the organism's name in the webapp. Specifying a name for a genome will tell zdb to use that name instead of the organism name from the genbank file. This is handy when working with assembled genomes that haven't been named yet.
 
@@ -110,7 +123,6 @@ This can also be used if you want to add another analysis to a previous run:
 ```
 zdb run --input=input.csv --ko --cog --pfam
 ```
-
 
 ## Starting the web server
 
