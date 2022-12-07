@@ -32,7 +32,7 @@ As of now, zDB has been tested with this version of singularity, but it might wo
 
 Once this is done, zDB can be installed from conda with the following command
 ```
-conda install zDB -c bioconda
+conda install zDB -c metagenlab bioconda
 ```
 
 ## Overview
@@ -70,6 +70,7 @@ Easy. Once you have the reference databases set up, the genomes ready, just run 
 Several options are available and allow you to customize the run:
 
 ```
+--resume: wrapper for nextflow resume, allows to restart a run that crashed without redoing all the computations
 --out: directory where the files necessary for the webapp will be stored
 --input: CSV file containing the path to the genbank files to include in the analysis
 --name: run name (defaults to the name given by nextflow). The latest completed run is also named latest.
@@ -87,11 +88,15 @@ As the analysis are run in containers, nextflow will have to download the first 
 The input CSV file should look like this:
 
 ```
-file
-foo/bar.gbk
-baz/bazz.gbk
+name, file
+,foo/bar.gbk
+,baz/bazz.gbk
+foobar,foobar/baz.gbff
 ```
-For now, only genbank files are supported and zDB will expect the "gbk" extension.
+
+The ```name``` column is optional and can be omitted from the input csv file. By default, zdb will use the organism's name in the webapp. Specifying a name for a genome will tell zdb to use that name instead of the organism name from the genbank file. This is handy when working with assembled genomes that haven't been named yet.
+
+Before launching the analysis, zdb will also check for the uniqueness of locus tags and generate new ones if necessary. This is usually not necessary for genomes downloaded from RefSeq or other databases, but if genomes were annotated with automated tools, name collisions might happen.
 
 ## Starting the web server
 
