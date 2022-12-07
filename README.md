@@ -32,7 +32,7 @@ As of now, zDB has been tested with this version of singularity (and 3.8.3), but
 
 Once this is done, zDB can be installed from conda with the following command
 ```
-conda install zDB -c metagenlab bioconda
+conda install zDB -c metagenlab -c bioconda
 ```
 
 For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
