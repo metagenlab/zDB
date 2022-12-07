@@ -13,6 +13,14 @@ Several analysis are currently supported, with more to come:
 In addition, zDB performs orthology and phylogeny inference.
 All the results are stored either in a SQLite database or directly as files and displayed in the web application.
 
+
+## Changelog
+
+v1.0.5 (december 2022): 
+- added a ```--resume``` option to ```zdb run``
+- added a name field in the input csv file
+- genbank files with other extensions are now accepted by the pipeline
+
 ## Installation
 
 zDB relies on singularity to run the analysis and the web server. Unfortunately, the singularity versions available in the bioconda channel are currently outdated and you'll need to install more recent ones from conda-forge. Run the following command:
