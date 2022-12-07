@@ -98,6 +98,20 @@ The ```name``` column is optional and can be omitted from the input csv file. By
 
 Before launching the analysis, zdb will also check for the uniqueness of locus tags and generate new ones if necessary. This is usually not necessary for genomes downloaded from RefSeq or other databases, but if genomes were annotated with automated tools, name collisions might happen.
 
+We noticed that undeterministic bugs sometimes happen when downloading a singularity container or when running long analysis. To resume the analysis when this happens, just add the ```--resume``` flag to the previous command. For example, if the run launched with the command  
+```
+zdb run --input=input.csv --ko --cog
+```
+crashed after 5 hours of analysis, you can resume the run to where it was before crashing with the command:
+```
+zdb run --input=input.csv --ko --cog --resume
+```
+This can also be used if you want to add another analysis to a previous run:
+```
+zdb run --input=input.csv --ko --cog --pfam
+```
+
+
 ## Starting the web server
 
 Once the analysis is complete, the web application can be run with the ```zdb webapp``` command. The following options can be used:
