@@ -142,7 +142,7 @@ def check_gbk(csv_file):
     gbk_passed = []
     gbk_to_revise = []
 
-    custom_names = []
+    custom_names = {}
     
     for entry in csv_entries:
         gbk_file = entry.file
@@ -154,7 +154,7 @@ def check_gbk(csv_file):
             common_name = record.annotations.get("source", None)
 
             if not entry.name is None:
-                custom_names.append(entry.name)
+                custom_names[entry.file] = entry.name
                 failed = True
                 sci_name = entry.name
                 common_name = entry.name
@@ -213,13 +213,13 @@ def check_gbk(csv_file):
         else:
             gbk_passed.append(gbk_file)
 
-    for name in custom_names:
+    for filename, name in custom_names.items():
         if organisms[name] > 1:
             raise Exception("The custom name "+name+" is already used in another file")
 
     for failed_gbk in gbk_to_revise:
         records = []
-        sci_name = None
+        sci_name = custom_names.get(failed_gbk, None)
         for record in SeqIO.parse(failed_gbk, "genbank"):
             if sci_name is None:
                 sci_name = record.annotations["organism"]
