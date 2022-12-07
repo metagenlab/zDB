@@ -217,6 +217,8 @@ def check_gbk(csv_file):
         if organisms[name] > 1:
             raise Exception("The custom name "+name+" is already used in another file")
 
+    # at one point, will have to rewrite this to avoid 
+    # re-parsing the genbank files that failed the check
     for failed_gbk in gbk_to_revise:
         records = []
         sci_name = custom_names.get(failed_gbk, None)
@@ -266,7 +268,7 @@ def check_gbk(csv_file):
         SeqIO.write(records, "filtered/"+failed_gbk, "genbank")
 
     for passed in gbk_passed:
-        os.symlink(passed, "filtered/"+passed)
+        os.symlink(os.readlink(passed), "filtered/"+passed)
 
 
 
