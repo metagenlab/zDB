@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 
-# This will get replaced by conda installation script to point
-# to the correct version.
+# This will get replaced by conda installation script
 VERSION="version"
 
 # Hack to know the installation folder
@@ -11,7 +10,7 @@ CONDA=$(which zdb | sed 's=bin/zdb==')
 # The value of this variable will be replaced by the conda installation script
 # to point to the folder where all the nextflow scripts are installed.
 # 
-# If you are running a version from github, just point it to the checked out
+# If you are installed zdb github, just point it to the checked out
 # directory.
 NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
 
@@ -156,9 +155,14 @@ elif [[ "$1" == "run" ]]; then
 	n_missing="0"
 	singularity_dir="$(pwd)/singularity"
 	name=""
+	resume=false
 
 	for i in "$@"; do
 		case $i in 
+			--resume)
+				resume=true
+				shift
+				;;
 			--out=*)
 				output_dir=${i#*=}
 				shift
@@ -218,6 +222,7 @@ elif [[ "$1" == "run" ]]; then
 				echo "Run the analysis pipeline (some analysis may not be available depending on which reference databases were setup)"
 				echo ""
 				echo "The following options can be used"
+				echo " --resume: wrapper for nextflow resume. Add this flag to the command that failed to resume the execution where it stopped. "
 				echo " --out: directory where the files necessary for the webapp will be stored"
 				echo " --input: CSV file containing the path to the genbank files to include in the analsysis"
 				echo " --name: run name (defaults to the name given by nextflow)"
@@ -245,22 +250,33 @@ elif [[ "$1" == "run" ]]; then
 	fi
 
 	if [ "$name" = "latest" ]; then
-		echo "You sneaky bastard, this is a reserved name"
-		echo "Goodbye."
+		echo "latest is a reserved name"
 		exit 1
 	fi
 
 	if [ -f "${output_dir}/zdb/results/.completed_runs/$name" ]; then
-		echo "A run with that name already exists and I don't like overwriting stuff"
-		echo "Goodbye."
+		echo "A run with that name already exists"
 		exit 1
 	fi
 
 	args="${args} --base_db=${dir} --n_cpus=${cpus} --mem=${mem} --input=${input_file}"
 	args="${args} --results_dir=${output_dir}/zdb/results"
 	args="${args} --singularity_dir=$singularity_dir"
-	echo "Starting the analysis pipeline"
+
+	if [ "$resume" = true ]; then
+		echo "Resuming previous run"
+		args="${args} -resume"
+	else
+		echo "Starting the analysis pipeline"
+	fi
+
 	nextflow run $NEXTFLOW_DIR/annotation_pipeline.nf ${args}
+	if [ $? -ne 0 ]; then
+		echo "Could not finish the analysis"
+		echo "Try to rerun the same command with the --resume flag set to rerun the analysis"
+		exit 1
+	fi
+
 	if [[ ! -d ${output_dir}/zdb/nginx ]]; then
 		cp -R $NEXTFLOW_DIR/zdb/nginx ${output_dir}/zdb
 	fi
@@ -272,6 +288,7 @@ elif [[ "$1" == "run" ]]; then
 
 	echo "Done. You can now launch the webapp"
 	exit 0
+
 
 elif [[ "$1" == "export" ]]; then
 	shift

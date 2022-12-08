@@ -13,6 +13,14 @@ Several analysis are currently supported, with more to come:
 In addition, zDB performs orthology and phylogeny inference.
 All the results are stored either in a SQLite database or directly as files and displayed in the web application.
 
+
+## Changelog
+
+v1.0.5 (december 2022): 
+- added a ```--resume``` option to ```zdb run``
+- added a name field in the input csv file
+- genbank files with other extensions are now accepted by the pipeline
+
 ## Installation
 
 zDB relies on singularity to run the analysis and the web server. Unfortunately, the singularity versions available in the bioconda channel are currently outdated and you'll need to install more recent ones from conda-forge. Run the following command:
@@ -24,7 +32,7 @@ As of now, zDB has been tested with this version of singularity (and 3.8.3), but
 
 Once this is done, zDB can be installed from conda with the following command
 ```
-conda install zdb -c metagenlab
+conda install zDB -c metagenlab -c bioconda
 ```
 
 For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
@@ -74,6 +82,7 @@ Easy. Once you have the reference databases set up, the genomes ready, just run 
 Several options are available and allow you to customize the run:
 
 ```
+--resume: wrapper for nextflow resume, allows to restart a run that crashed without redoing all the computations
 --out: directory where the files necessary for the webapp will be stored
 --input: CSV file containing the path to the genbank files to include in the analysis
 --name: run name (defaults to the name given by nextflow). The latest completed run is also named latest.
@@ -91,13 +100,30 @@ As the analysis are run in containers, nextflow will have to download the first 
 The input CSV file should look like this:
 
 ```
-file
-foo/bar.gbk
-baz/bazz.gbk
+name, file
+,foo/bar.gbk
+,baz/bazz.gbk
+foobar,foobar/baz.gbff
 ```
+and the command could look like this ```zdb run --input=my_genomes.csv --cpu=32 --pfam --out=my_outputdirectory```.
 
-And the command could look like this ```zdb run --input=my_genomes.csv --cpu=32 --pfam --out=my_outputdirectory```.
-For now, only genbank files are supported and zDB will expect the "gbk" extension.
+The ```name``` column is optional and can be omitted from the input csv file. By default, zdb will use the organism's name in the webapp. Specifying a name for a genome will tell zdb to use that name instead of the organism name from the genbank file. This is handy when working with assembled genomes that haven't been named yet.
+
+Before launching the analysis, zdb will also check for the uniqueness of locus tags and generate new ones if necessary. This is usually not necessary for genomes downloaded from RefSeq or other databases, but if genomes were annotated with automated tools, name collisions might happen.
+
+We noticed that undeterministic bugs sometimes happen when downloading a singularity container or when running long analysis. To resume the analysis when this happens, just add the ```--resume``` flag to the previous command. For example, if the run launched with the command  
+```
+zdb run --input=input.csv --ko --cog
+```
+crashed after 5 hours of analysis, you can resume the run to where it was before crashing with the command:
+```
+zdb run --input=input.csv --ko --cog --resume
+```
+This can also be used if you want to add another analysis to a previous run:
+```
+zdb run --input=input.csv --ko --cog --pfam --resume
+```
+in this case, only the pfam annotations will be performed as the other analysis have already completed.
 
 ## Starting the web server
 

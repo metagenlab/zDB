@@ -73,7 +73,7 @@ def load_gbk(gbks, args, db_file):
 
         # hack to link the bioentry to the filename, useful later for parsing and
         # storing checkM results in the dtb.
-        data.append((taxon_id, gbk.replace(".gbk", "")))
+        data.append((taxon_id, os.path.splitext(gbk)[0]))
 
     db.load_filenames(data)
     db.commit()
@@ -388,7 +388,7 @@ def get_gen_stats(gbk_list):
                     # allow to take compoundlocation into account
                     for part in location.parts:
                         cds_length += part.end-part.start
-        gbk_shortened = gbk_file.replace(".gbk", "")
+        gbk_shortened = os.path.splitext(gbk_file)[0]
         hsh_gen_stats[gbk_shortened] = (float(gc_cum)/ttl_length,
                 float(cds_length)/ttl_length, ttl_length)
     return hsh_gen_stats

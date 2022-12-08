@@ -8,8 +8,8 @@ build:
   number: 3
 
 source:
-  url: https://github.com/metagenlab/zDB/archive/refs/tags/v1.0.4.2-alpha.tar.gz
-  sha256: 5fdeadfd6db555a94b035625a1d2694b446391f0b2d974b4f57999e731851229
+  url: https://github.com/metagenlab/zDB/archive/refs/tags/v1.0.4.tar.gz
+  sha256: 854d785d98d82e481fb7c0b318ae105669b441c1e56843f56be950bc99872644
 
 
 requirements:
