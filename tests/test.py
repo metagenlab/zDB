@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import shutil
 
 import annotations
@@ -53,3 +54,8 @@ else:
 print("Cleaning up")
 for test in tests_list:
     test.cleanup()
+
+if len(failed)==0:
+    sys.exit(0)
+else:
+    sys.exit("Some tests failed!")
