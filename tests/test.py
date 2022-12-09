@@ -27,7 +27,9 @@ tests_list = [
     TestCheckGbk("Organism collision", "test2"),
     TestCheckGbk("Different organism in same gbk", "test3"),
     TestCheckGbk("Organism renaming", "test4"),
-    TestCheckGbk("Wrong format", "test5")
+    TestCheckGbk("Organism renaming, no name column", "test5"),
+    TestCheckGbk("Organism renaming, no names", "test6"),
+    TestCheckGbk("Wrong format", "test7")
 ]
 
 
