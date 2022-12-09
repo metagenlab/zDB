@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 import os
 import shutil
@@ -5,7 +6,7 @@ import shutil
 import annotations
 
 class TestCheckGbk:
-    def __init__(self, test_name, test_dir, run, check):
+    def __init__(self, test_name, test_dir, run):
         self.name = test_name
         self.test_dir = test_dir
         self.passed = False
@@ -23,8 +24,8 @@ def check_gbk_run_test_1(test):
 
 
 tests_list = [
-    TestCheckGbk("Locus tag collision", "test1"),
-    TestCheckGbk("Organism collision", "test2"),
+    TestCheckGbk("Locus tag collision", "test1", run=check_gbk_run_test_1),
+    TestCheckGbk("Organism collision", "test2", run=check_gbk_run_test_2),
     TestCheckGbk("Different organism in same gbk", "test3"),
     TestCheckGbk("Organism renaming", "test4"),
     TestCheckGbk("Organism renaming, no name column", "test5"),
