@@ -6,6 +6,9 @@ import shutil
 
 import annotations
 
+from ko_parsing import ko_tests
+
+
 class TestCheckGbk:
     def __init__(self, test_name, test_dir, run):
         self.name = test_name
@@ -20,7 +23,7 @@ class TestCheckGbk:
 def check_gbk_run_test_1(test):
     annotations.check_gbk(test.test_dir + "/test.csv")
 
-def check_gbk_run_test_1(test):
+def check_gbk_run_test_2(test):
     annotations.check_gbk(test.test_dir + "/test.csv")
 
 
@@ -31,7 +34,8 @@ tests_list = [
     TestCheckGbk("Organism renaming", "test4"),
     TestCheckGbk("Organism renaming, no name column", "test5"),
     TestCheckGbk("Organism renaming, no names", "test6"),
-    TestCheckGbk("Wrong format", "test7")
+    TestCheckGbk("Wrong format", "test7"),
+    *ko_tests
 ]
 
 
