@@ -10,6 +10,7 @@ process run_tests {
 
     script:
     """
+        cp ${params.zdb.file} test_db
         ./test.py
     """
 }

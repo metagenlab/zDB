@@ -13,7 +13,7 @@ class KO_test_parser:
     """
     def __init__(self):
         db_config = {"zdb.db_name": "George", "zdb.db_type": "sqlite", "zdb.db_psswd": ""}
-        self.db = db_utils.DB.load_db("/home/metagenlab/zdb_base", db_config)
+        self.db = db_utils.DB.load_db("../test_db", db_config)
         self.passed = False
 
     def run(self):
