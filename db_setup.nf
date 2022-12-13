@@ -96,6 +96,7 @@ process prepare_hmm {
     output:
         file "${pfam_hmm}.h3*"
         file "Pfam-A.hmm.dat"
+        file "Pfam-A.hmm"
     
     script:
     """

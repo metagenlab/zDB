@@ -106,7 +106,7 @@ checked_gbks.into {
 process convert_gbk {
   container "$params.annotation_container"
   input:
-      each edited_gbk from to_convert_gbk.flatten()
+      file edited_gbk from to_convert_gbk.flatten()
 
   output:
       file "*.faa" into faa_files
