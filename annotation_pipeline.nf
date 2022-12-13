@@ -595,7 +595,8 @@ process load_base_db {
     publishDir "${params.results_dir}/db"
 
     // Necessary to prevent segfaults due to the large size
-    // of the stage script
+    // of the stage script.
+    // TODO: use directories instead of list of files!
     beforeScript "ulimit -Ss unlimited"
 
     input:
