@@ -140,9 +140,9 @@ Once the webserver has started, you'll be able to access the webpages with a web
 
 If you do not remember which runs are available, you can list them with the ```zdb list_runs``` command.
 
-### Know issue
+### Known issue
 
-When trying to run several instances of the webapp on the same machine, you'll need to modify two files to avoid interferences between the instance.
+When trying to run several instances of the webapp on the same machine, you'll need to modify two files to avoid interferences between the instances.
 
 In zdb/gunicorn/gunicorn.py:
 ```
