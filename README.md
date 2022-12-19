@@ -140,6 +140,21 @@ Once the webserver has started, you'll be able to access the webpages with a web
 
 If you do not remember which runs are available, you can list them with the ```zdb list_runs``` command.
 
+### Known issue
+
+When trying to run several instances of the webapp on the same machine, you'll need to modify two files to avoid interferences between the instances.
+
+In zdb/gunicorn/gunicorn.py:
+```
+bind = "0.0.0.0:8000"
+```
+modify the 8000 number to another, yet unused port.
+Same in the zdb/nginx/nginx.config file:
+```
+proxy_pass http://localhost:8000;
+```
+Modify the 8000 to the same number you attributed to the port number of gunicorn.
+
 ## Importing and exporting results
 
 As the analysis may be run on a server or on an HPC cluster, the results may need to be exported to start a web application on a different machine.
