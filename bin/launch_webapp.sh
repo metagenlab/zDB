@@ -142,8 +142,8 @@ bind_path="${bind_path},${dir}/zdb/results/alignments/${run_name}:${zdb_folder}/
 # annoying part to avoid error messages from nginx attempting to write
 # into an hard-coded /var/log/nginx/error.log -> the zdb/nginx/var directory is mounted
 # on /var/log/nginx in the container so that nginx can write in the file and be happy.
-
 bind_path="${bind_path},${dir}/zdb/nginx/var:/var/log/nginx"
+bind_path="${bind_path},${dir}/zdb/nginx/proxy_temp:/usr/local/nginx/proxy_temp"
 
 # To be added later, to allow users to download the newick trees
 # bind_path="${bind_path},zdb/results/gene_phylogenies/${run_name}:${zdb_folder}/assets/phylogenies/"

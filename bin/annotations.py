@@ -425,6 +425,9 @@ def get_core_orthogroups(genomes_list, int_core_missing):
         print(og, is_core, og_size, num_genomes, sep="\t", file=og_resume_file)
     og_resume_file.close()
 
+    if len(core_groups) <= 0:
+        raise Exception("No core orthogroups, maybe try to rerun the pipeline with num_missing to a higher value")
+
     for group_id in core_groups:
         sequence_data = SeqIO.to_dict(SeqIO.parse(group_id + "_mafft.faa", "fasta"))
         dest = group_id + '_taxon_ids.faa'
