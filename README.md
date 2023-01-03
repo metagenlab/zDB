@@ -107,7 +107,7 @@ foobar,foobar/baz.gbff
 ```
 and the command could look like this ```zdb run --input=my_genomes.csv --cpu=32 --pfam --out=my_outputdirectory```.
 
-The ```name``` column is optional and can be omitted from the input csv file. *By default, zdb will use the organism's name as defined in the genbank file for the pages of the web application*. Specifying a name for a genome will tell zdb to use that name instead of the organism name from the genbank file. This is practical when working with assembled genomes that haven't been named yet or when working with genomes of different strains of a same species. If the same name is used in different files, zdb will just add a numbering suffix to make the names unique.
+The ```name``` column is optional and can be omitted from the input csv file. **By default, zdb will use the organism's name as defined in the genbank file for the pages of the web application**. Specifying a name for a genome will tell zdb to use that name instead of the organism name from the genbank file. This is practical when working with assembled genomes that haven't been named yet or when working with genomes of different strains of a same species. If the same name is used in different files, zdb will just add a numbering suffix to make the names unique.
 
 Before launching the analysis, zdb will also check for the uniqueness of locus tags and generate new ones if necessary. This is usually not necessary for genomes downloaded from RefSeq or other databases, but if genomes were annotated with automated tools, name collisions might happen.
 
