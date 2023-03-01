@@ -29,8 +29,8 @@ def download_refseq(download_dir, n_retry=10):
     # letters to make sure it ends with faa.gz, instead of using regular 
     # expression
     nr_re = re.compile("complete.nonredundant_protein.(\d)*.protein.faa.gz")
-    nr_filelist = (i for i in ftp.nlst() if not re.match(nr_re, i) is None and
-            not i in existing_files)
+    nr_filelist = [i for i in ftp.nlst() if not re.match(nr_re, i) is None and
+            not i in existing_files]
 
     for f in nr_filelist:
         failed = 0
