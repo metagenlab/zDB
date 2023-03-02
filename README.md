@@ -27,8 +27,8 @@ v1.0.5 (december 2022):
 ## Installation
 
 zDB can be run with either conda, dockers and singularity.
-Docker usually requires sudo access on Unix machine and might not be available on HPC clusters for security reasons, but might be useful is zDB is to be run on an Apple machine, as singularity is currently not supported on Mac OS.
-Running zDB in conda is likely the easiest way, but comes with the drawback that the webserver will be run in debug mode, without nginx and gunicorn. This is fine for local access, but is not optimized for multiple simultaneous users.
+Docker usually requires sudo access on Unix machine and might not be available on HPC clusters for security reasons, but might be useful if zDB is to be run on an Apple machine, as singularity is currently not supported on Mac OS.
+Running zDB in conda is likely the easiest way as it does not require to install any additional package, but comes with the drawback that the webserver will be run in debug mode, without nginx and gunicorn. This is fine for local access, but is not optimized for multiple simultaneous users.
 
 ### Install singularity
 The singularity versions available in the bioconda channel are currently outdated and you'll need to install more recent ones from conda-forge. Run the following command:
