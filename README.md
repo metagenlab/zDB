@@ -16,6 +16,9 @@ All the results are stored either in a SQLite database or directly as files and 
 
 ## Changelog
 
+v1.0.6 (february 2023):
+- added support for dockers and conda
+
 v1.0.5 (december 2022): 
 - added a ```--resume``` option to ```zdb run```
 - added a name field in the input csv file
@@ -23,12 +26,18 @@ v1.0.5 (december 2022):
 
 ## Installation
 
-zDB relies on singularity to run the analysis and the web server. Unfortunately, the singularity versions available in the bioconda channel are currently outdated and you'll need to install more recent ones from conda-forge. Run the following command:
+zDB can be run with either conda, dockers and singularity.
+Docker usually requires sudo access on Unix machine and might not be available on HPC clusters for security reasons, but might be useful is zDB is to be run on an Apple machine, as singularity is currently not supported on Mac OS.
+Running zDB in conda is likely the easiest way, but comes with the drawback that the webserver will be run in debug mode, without nginx and gunicorn. This is fine for local access, but is not optimized for multiple simultaneous users.
 
+### Install singularity
+The singularity versions available in the bioconda channel are currently outdated and you'll need to install more recent ones from conda-forge. Run the following command:
 ```
 conda install singularity=3.8.4 -c conda-forge
 ```
 As of now, zDB has been tested with this version of singularity (and 3.8.3), but it should work on more recent releases.
+
+### zDB Installation
 
 Once this is done, zDB can be installed from conda with the following command
 ```
@@ -37,7 +46,8 @@ conda install zDB -c metagenlab -c bioconda
 
 For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
 
-### Install from sources
+### Install zDB from sources
+
 You can also install zdb directly from the github repository. This is particularly useful if you want to make modifications or if you want to have a direct access to Nextflow config file for a better control of the execution.
 
 Check out the project or download and unpack a release, then edit this line of the bin/zdb bash script:
