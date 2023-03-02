@@ -413,7 +413,7 @@ gene_phylogeny.collect().set { all_og_phylogeny }
 
 process get_core_orthogroups {
     container "$params.annotation_container"
-    conda "annotation.yaml"
+    conda "conda/annotation.yaml"
 
   input:
   file 'Orthogroups.txt' from orthogroups
@@ -438,7 +438,7 @@ process get_core_orthogroups {
 // TODO: merge with get_core_orthogroups
 process concatenate_core_orthogroups {
     container "$params.annotation_container"
-    conda "annotation.yaml"
+    conda "conda/annotation.yaml"
 
   input:
   file core_groups from core_orthogroups.collect()
@@ -478,6 +478,7 @@ process build_core_phylogeny_with_fasttree {
 
 process checkm_analyse {
   container "$params.checkm_container"
+  conda "conda/checkm.yaml"
 
   input:
   file genome_list from to_checkm.collect()
@@ -577,6 +578,7 @@ if(params.ko) {
     
     process execute_kofamscan {
       container "$params.kegg_container"
+      conda "conda/kofamscan.yaml"
 
       input:
         tuple (file(ko_db), file(seq)) from to_kofamscan_multi
