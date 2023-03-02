@@ -147,6 +147,7 @@ elif [[ "$1" == "webapp" ]]; then
 
 	port="8080"
 	docker=false
+	conda=false
 	allowed_host=""
 	zdb_container="zdb:1.2"
 	dir=$(pwd)
@@ -193,6 +194,10 @@ elif [[ "$1" == "webapp" ]]; then
 				metagenlab_folder="${i#*=}"
 				shift
 				;;
+			--conda)
+				conda=true
+				shift
+				;;
 			--docker)
 				docker=true
 				shift
@@ -209,12 +214,19 @@ elif [[ "$1" == "webapp" ]]; then
 				echo "Arguments:"
 				echo "--dir: the directory where the results (should contain a zdb subfolder) can be found"
 				echo "       (defaults to the current directory)"
-				echo "--docker: the web application will be run in a docker instead of a singularity environment"
 				echo "--name=NAME: tells the web application to use a different database than the latest"
 				echo "--port=PORT: the web server will listen on a different port (default: 8080)"
-				echo "--allowed_host=HOSTS: coma separated list that will be passed as argument to django ALLOWED_HOSTS. "
-				echo "                      If none specified, will try to guess with the hostname command."
-				echo "                      This is basically the URL or IP adress you will using to access the web page."
+				echo "--allowed_host=HOSTS: coma separated list that will be passed as argument"
+				echo "                      to django ALLOWED_HOSTS. If none specified, will try"
+				echo "                      to guess with the hostname command. This is basically" 
+			    echo "	                    the URL or IP adress you will using to access the web page."
+				echo ""
+				echo "By default, the web application will be run in a singularity container."
+				echo "This can be changed with either one of the two following options:"
+				echo "--docker: the web application will be run in a docker instead of "
+				echo "          a singularity container "
+				echo "--conda: the web application will be run in a conda environment"
+				echo ""
 				echo "--singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)"
 				echo ""
 				exit 0
@@ -226,6 +238,11 @@ elif [[ "$1" == "webapp" ]]; then
 	done
 
 	debugging_mode=""
+
+	if [ "$conda" = true -a "$docker"  = true ]; then
+		echo "Conda and docker cannot be used simultaneously"
+		exit 1
+	fi
 
 	if [ "$debug" = true ]; then
 		debugging_mode="-d"
@@ -257,12 +274,12 @@ elif [[ "$1" == "webapp" ]]; then
 	fi
 
 	dev_server=""
-	if [ "$use_dev_server" = true ]; then
+	if [ "$use_dev_server" = true -o "$conda" = true ]; then
 		dev_server="--use_dev_server"
 		debugging_mode="-d"
 	fi
 
-	bind_path=()
+	bind_path_results=()
 
 	if [ "$use_custom_zdb" = true ]; then
 		# bind the source code of an alternative, it will be executed in the
@@ -276,32 +293,27 @@ elif [[ "$1" == "webapp" ]]; then
 	fi
 
 	# bind_path+=("${dir},${dir}/zdb/assets/:${zdb_folder}/assets/temp/"
-	bind_path+=("${dir}/zdb/assets/":"${zdb_folder}/assets/temp/")
+	bind_path_results+=("${dir}/zdb/assets":"${zdb_folder}/assets/temp")
+	bind_path_results+=($(readlink "${dir}/zdb/results/db/${run_name}"):"${zdb_folder}/assets/db/${run_name}")
+	bind_path_results+=($(readlink "${dir}/zdb/results/search_index/index_${run_name}"):"${zdb_folder}/assets/search_index/${run_name}")
+	bind_path_results+=("${dir}/zdb/results/blast_DB":"${zdb_folder}/assets/blast_DB")
+	bind_path_results+=("${dir}/zdb/results/alignments/${run_name}":"${zdb_folder}/assets/alignments")
+
+
+	bind_path=("${bind_path_results[@]}")
 	bind_path+=("${dir}/zdb/gunicorn":"/usr/local/gunicorn/")
 	bind_path+=("${dir}/zdb/nginx":"/usr/local/nginx")
-
-	# NOTE: as some of these files may be symbolic links (particularly if using latest)
-	# zdb relies on this script being run from the nextflow directory so that singularity
-	# mounts the whole results dir in the container and keep the symbolic links valid
-	bind_path+=($(readlink "${dir}/zdb/results/db/${run_name}"):"${zdb_folder}/assets/db/${run_name}")
-	bind_path+=($(readlink "${dir}/zdb/results/search_index/index_${run_name}"):"${zdb_folder}/assets/search_index/${run_name}")
-	bind_path+=("${dir}/zdb/results/blast_DB/":"${zdb_folder}/assets/blast_DB/")
-	bind_path+=("${dir}/zdb/results/alignments/${run_name}":"${zdb_folder}/assets/alignments/")
-
 	# annoying part to avoid error messages from nginx attempting to write
 	# into an hard-coded /var/log/nginx/error.log -> the zdb/nginx/var directory is mounted
 	# on /var/log/nginx in the container so that nginx can write in the file and be happy.
 	bind_path+=("${dir}/zdb/nginx/var":"/var/log/nginx")
 	bind_path+=("${dir}/zdb/nginx/proxy_temp":"/usr/local/nginx/proxy_temp")
 
-	# To be added later, to allow users to download the newick trees
-	# bind_path="${bind_path},zdb/results/gene_phylogenies/${run_name}:${zdb_folder}/assets/phylogenies/"
-
 	if [ ! -d "${singularity_dir}" ]; then
 		mkdir -p ${singularity_dir}
 	fi
 
-
+	options="--run_name=${run_name} --port=${port} ${debugging_mode} ${allowed_host} ${dev_server}"
 	if [[ "$docker" = true ]]; then
 		full_docker_name="registry.hub.docker.com/metagenlab/${zdb_container}"
 		docker pull ${full_docker_name}
@@ -309,8 +321,32 @@ elif [[ "$1" == "webapp" ]]; then
 		for index in ${bind_path[@]}; do
 			bind_docker="$bind_docker -v $index"
 		done
-		docker run ${bind_docker} -it ${full_docker_name} ${zdb_folder}/start_webapp \
-			--run_name=${run_name} --port=${port} ${debugging_mode} ${allowed_host} ${dev_server}
+		docker run ${bind_docker} -it ${full_docker_name} ${zdb_folder}/start_webapp ${options}
+	elif [[ "$conda" = true ]]; then
+		#  Still need the code to check if conda package exists
+		#  and to build it if necessary.
+
+		# link the results directory into the assets/directory of the webapp
+		to_remove=""
+		for bd in ${bind_path_results[@]}; do
+			ln_args="${bd/:/ }"
+			target=$(echo $ln_args | cut -d' ' -f 2)
+			base=$(echo $ln_args | cut -d' ' -f 1)
+			basedir=$(dirname $target)
+			if [ ! -e "$target" ]; then
+				to_remove="$to_remove $basedir"
+				mkdir -p $basedir
+				echo $basedir
+				ln -s $base $target
+			fi
+		done
+
+		${zdb_folder}/start_webapp ${options}
+
+		# crude cleanup
+		rm -rf "${zdb_folder}/assets/blast_DB"
+		rm -rf "${zdb_folder}/assets/alignments"
+		rm -rf "${zdb_folder}/assets/temp"
 	else
 		if [ ! -f "${singularity_dir}/${zdb_container}.sif" ]; then
 			echo "Preparing the zdb container, this may take a while."
@@ -324,9 +360,13 @@ elif [[ "$1" == "webapp" ]]; then
 			fi
 			echo "Done"
 		fi
-		singularity run --bind ${bind_path} \
-			${singularity_dir}/${zdb_container}.sif ${zdb_folder}/start_webapp \
-			--run_name=${run_name} --port=${port} ${debugging_mode} ${allowed_host} ${dev_server}
+
+		bind_singularity=""
+		for index in ${bind_path[@]}; do
+			bind_singularity="$bind_singularity,$index"
+		done
+		singularity run --bind ${bind_singularity} \
+			${singularity_dir}/${zdb_container}.sif /bin/bash # ${zdb_folder}/start_webapp ${options}
 	fi
 elif [[ "$1" == "run" ]]; then
 	shift
