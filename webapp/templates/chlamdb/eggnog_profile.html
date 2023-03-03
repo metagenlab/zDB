@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+
+
+<html>
+
+{% load static %}
+<body height="4000px">
+
+               <div>
+                   {% if rank == 'phylum'%}
+                    <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width: 800px"></object>
+                   {%else %}
+<object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width: 1000px"></object>
+
+                   {%endif%}
+               </div>
+</body>
+</html>

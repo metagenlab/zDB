@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+    {% load static %}
+</head>
+
+<body height="100%">
+
+
+    <div id="container">
+        <div id="sidebar">
+            {% include "chlamdb/menu.html" %}
+        </div>
+
+        <div id="header">
+            {% include "chlamdb/user.html" %}
+        </div>
+
+
+        <div id="content" style="min-height: 100vh;">
+
+
+            <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                <div class="panel-heading" style="width:100%">
+                    <h3 class="panel-title">Help</h3>
+                </div>
+                <p>Get informations about a locus (homologs, annotation, domains,...)<br>
+                   Input: locus tag, protein id (not necessarily unique, may be better to use locus tags) or orthogroup id (group_xxx).
+                </p>
+                    <p>  <img height="32" width="32" src="{% static "warrning.svg" %}" alt="warrning"/>
+                Some genomes where recently reannotated ba the NCBI, including the Waddlia genome.
+                <a href="{% static "NC_014225_locus2old_locus.txt" %}">Locus tag orrespondance table</a></p>
+
+            </div>
+
+
+            <form action='{% url "homology" %}' method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="Submit" />
+
+            </form>
+
+            {% if envoi %}
+                <div w3-include-html="{% url 'locusx' accession %}"></div>
+            <script src="http://www.w3schools.com/lib/w3data.js"></script>
+            <script>
+            w3IncludeHTML();
+            </script>
+            {% endif %}
+        </div>
+    </div>
+
+
+
+
+
+</body>
+
+</html>

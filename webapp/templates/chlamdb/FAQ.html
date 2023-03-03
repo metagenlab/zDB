@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+
+
+<html>
+
+<head>
+   <link rel= "stylesheet" href="style_home.css">
+    {% load static %}
+    {% load custom_tags %}
+    {% include "chlamdb/header.html" %}
+    {% include "chlamdb/style_menu.html" %}
+ 
+</head>
+
+<body>
+    <div class="container-fluid" id="main_container">
+      <div class="row">
+        <div id="wrapper">
+            <div id="page-content-wrapper">
+                <div class="col-lg-12">
+                   {% include "chlamdb/menu.html" %}
+
+        <div class="home-title"><b> FAQ </b></div>
+        <hr class="lines-home">
+
+        <button type="button" class="collapsible_FAQ">-Why is the database called ZDB?</button>
+        <div class="content-FAQ">
+          Since this database is capable of several analyses, and ideally it would be enirched with additional ones, the name "The DataBase" has been considered (maybe with a bit of overconfidence) to be the proper one, and ZDB is the abbreviation of how french people would pronunce TheDB: zeDéBé. Secondly, It also wants to make comparative bacterial genomics eaZy. 
+        </div>  
+                  <div class="tab-content">
+                    <h3>How the pipeline works</h3>
+                    <button type="button" class="collapsible_FAQ">-How many genomes can I compare?</button>
+                    <div class="content-FAQ">
+                      <p> 150 is maximum number of genomes banchmarked with zDB, although there is no potential limit.</p>
+                    </div>
+                    <button id="button" type="button" class="collapsible_FAQ">-Which analyses does the pipeline include?</button>
+                    <div class="content-FAQ", id="AAA">
+                                            The pipeline performs the following analyses:
+                                            
+                                                <li>Orthologous proteins identified with <strong>OrthoFinder</strong></li>
+                                                <li>Detailed annotation of proteins based on 
+                                                <strong>(Kegg orthologs)</strong> - (optional)
+                                                <strong>COG</strong> (clusters of orthologous groups) - (optional) - <strong>Pfam domains</strong> (optional) </li>
+                                                <li>Precomputed homology searches with <strong>SwissProt</strong> (optional, manually annotated proteins) and <strong>Refseq</strong> (optional, but higly time and memory consuming - <span style="color: red"><b>to use carefully</b></span>) databases </li>
+                                                <li>Precomputed phylogenetic reconstructions of orthologous groups</li>
+                                                <li>Generation of customized databases for blast search</li>
+                                                <br>For a detailed description link (Bastian’s documentation)
+                                            
+                                        </div>      
+                    <button type="button" class="collapsible_FAQ">-Can I add more annotations to the database if it is not complete?</button>
+                    <div class="content-FAQ">
+                      <p>The user selects which annotations wants to include in the configuration file when he/she runs the analysis, therefore a new analyis must be run to include additional features (the argument ' -resume' of Netxflow will take into account the steps already performed if a new analysis is run).
+                    </div>
+                    <button type="button" class="collapsible_FAQ">-Where do I see which analyses are missing?</button>
+                    <div class="content-FAQ">
+                      <p>In the home page in the box "Status of your database" you can visualize in red which analyses were not performed. 
+                    </div>  
+
+                    <h3>How to use the Comparative database web</h3>
+                    <button type="button" class="collapsible_FAQ">-How do I identify which proteins are part of a specific orthogroup?</button>
+                    <div class="content-FAQ">
+                      There are several ways to do so. The easiest one is searching the name of the orthogroup of interest in the search bar, alternatively you can find all the orthogroups in the Genomes page once clicking on a genome of interest, or reach the <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#orthogroup-annotation-summary"> Orthogroup </a> overview page in the tutorial.     
+                    </div>  
+                    <button type="button" class="collapsible_FAQ">- How many sequence can I blast? </button>
+                    <div class="content-FAQ">
+                        You can blast several sequence (both protein or nucleotide) at a time against the genomes of the database.                         
+                    </div>  
+                    <button type="button" class="collapsible_FAQ">-How do I use the search bar? </button>
+                    <div class="content-FAQ">
+                      The search bar takes in input single terms or combination of them - refer to the <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#search-bar"> Tutorial </a>  for further info. can be used to search any term into the datbase. For example it is possible to access a cog, a kegg or an accession term directly typing it in the searchbar.                      
+                    </div>  
+
+                    <h3>Biological aspects</h3> 
+                    <button type="button" class="collapsible_FAQ"> -Are plasmids identified? </button>
+                    <div class="content-FAQ">
+                        The distinction between chromosome and plasmids is done based on the annotaions reported in the input file.                      
+                    </div>  
+                    <button type="button" class="collapsible_FAQ">-How are orthogroups identified? </button>
+                    <div class="content-FAQ">
+                      Orthogroups (or orthologous groups) are identified with <a href="https://github.com/davidemms/OrthoFinder"> OrthoFinder </a>. This tools identify orthogroups based on BLASTp (parameters: -evalue 0.001) results using the <a href="https://micans.org/mcl/"> MCL </a> clustering software.
+                    </div>  
+                   
+
+                      
+              
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <script>
+        var coll = document.getElementsByClassName("collapsible_FAQ");
+        var i;
+        
+        for (i = 0; i < coll.length; i++) {
+          coll[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+              content.style.display = "none";
+            } else {
+              content.style.display = "block";
+            }
+          });
+        }
+        </script>
+
+</body>

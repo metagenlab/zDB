@@ -1,0 +1,67 @@
+<html>
+<head>
+  {% load static %}
+{% include "chlamdb/header.html" %}
+</head>
+
+{% load static %}
+<body>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
+
+                  <h3>Click on any rank to get the corresponding hit list</h3>
+                  <div>
+                    <table class="table" id="taxonomy_table">
+                        <thead>
+                            <tr>
+                              <th scope="col">Superkingdom</th>
+                              <th scope="col">Phylum</th>
+                              <th scope="col">Order</th>
+                              <th scope="col">Family</th>
+                              <th scope="col">Genus</th>
+                              <th scope="col">N-hits</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for row in taxon_data %}
+                            <tr>
+                                <td><a href="{% url 'get_pfam_hit_list' pfam_domain row.0 %}">{{row.0}}</a></td>
+                                <td><a href="{% url 'get_pfam_hit_list' pfam_domain row.0 row.1 %}">{{row.1}}</a></td>
+                                <td><a href="{% url 'get_pfam_hit_list' pfam_domain row.0 row.1 row.2 %}">{{row.2}}</a></td>
+                                <td><a href="{% url 'get_pfam_hit_list' pfam_domain row.0 row.1 row.2 row.3 %}">{{row.3}}</a></td>
+                                <td><a href="{% url 'get_pfam_hit_list' pfam_domain row.0 row.1 row.2 row.3 row.4 %}">{{row.4}}</a></td>
+                                <td>{{row.5}}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+<script>
+
+$(document).ready(function() {
+$('#taxonomy_table').DataTable( {
+"order": [[ 5, "desc" ]],
+"pageLength": 15,
+"paging":   true,
+"ordering": true,
+"info":     false
+} );
+} );
+
+</script>
+{% include "chlamdb/style_menu.html" %}
+</html>

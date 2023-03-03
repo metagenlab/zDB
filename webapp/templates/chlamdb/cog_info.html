@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+  {% load custom_tags %}
+  {% load static %}
+  {% load static %}
+
+  {% include "chlamdb/header.html" %}
+
+</head>
+
+<body>
+    <div class="container-fluid" id="main_container">
+      <div class="row">
+        <div id="wrapper">
+            <div id="page-content-wrapper">
+              <div class="row">
+                <div class="col-lg-12">
+                   {% include "chlamdb/menu.html" %}
+
+                    <h3>   Category: {{ description }} (n={{data|length}})</h3>
+
+
+                    <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                        <div class="panel-heading" style="width:100%">
+                            <h3 class="panel-title">Help</h3>
+                        </div>
+                        <p style="margin: 10px 10px 10px 10px">  Summary table of all the genomic loci ({{data|length}}) of the genomes present in the database annotated with the Cog category "{{ description }}".
+                          <br>Click on the accession number of a COG entry to discover its description and frequency.  
+                        </p>
+                    </div>
+
+                    <table id="cog_table" class="display">
+                        <thead>
+                          <tr>
+                              <th>Organism</th>
+                              <th>locus_tag</th>
+                              <th>Accession</th>
+                              <th>Description</th>
+                              <th>Genbank annotation</th>
+                          </tr>
+                          </thead>
+                        <tbody>
+
+                            {%for values in data%}
+                            <tr>
+                                <td>{{values.0}}</td>
+                                <td><a href='{% url "locusx" values.1 True %}' target="_top">{{values.1}}</a></td>
+								
+								{% if data_type == "ko" %}
+                                <td><a href="{% url "fam_ko" values.2 %}" target="_top">{{values.2}}</a></td>
+								{% elif data_type == "cog" %}
+                                <td><a href="{% url "fam_cog" values.2 %}" target="_top">{{values.2}}</a></td>
+								{% endif %}
+                                <td>{{values.3}}</td>
+                                <td>
+                                {{ values.4 }}
+                                </td>
+                            </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+</div>
+{% include "chlamdb/style_menu.html" %}
+</body>
+<script>
+
+$(document).ready(function() {
+$('#cog_table').DataTable( {
+ dom: 'Bfrtip',
+"paging":   true,
+"ordering": true,
+"info":     false,
+buttons: [
+{
+    extend: 'excel',
+    title: 'subset_table'
+},
+{
+    extend: 'csv',
+    title: 'subset_table'
+}
+],
+} );
+} );
+
+</script>
+</html>

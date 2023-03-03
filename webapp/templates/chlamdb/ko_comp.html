@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+    {% load static %}
+    {% load static %}
+    {% get_static_prefix as STATIC_PREFIX %}
+    {% load custom_tags %}
+{% include "chlamdb/header.html" %}
+</head>
+
+<body>
+
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
+                 {% include "chlamdb/extract_nav_tabs_template.html" with type="ko" active_tab="comp" %}
+
+                  <br>
+                  <p class="page-title"><b>Size of shared Kegg Orthologs </b><a href="/docs/index.html" id="show-option" title="Compare the size of the orthogroup shared by selected genomes (targets)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                </div>
+                      <form action='{% url "ko_comparison" %}' method="post">
+                          {% csrf_token %}
+                          {{ form.as_p }}
+                          <input type="submit" value="Submit" />
+
+                      </form>
+
+                      {% if envoi_comp %}
+                         
+
+                          <div class="row" style="padding-top:30px ;background-color: rgba(245, 245, 245, 0.986); margin-top: 1em;" >
+                                
+                      <h4>Number of KO present at least oncen in one of the selected genomes: {{n_ko}}</h4>
+                             <div class="panel panel-success" style="margin: 1em;">
+                                 <div class="panel-heading" style="width:100%;">
+                                     <h5 class="panel-title">Help to interpret the results</h5>
+                                 </div>
+                                 <p style="margin: 10px 10px 10px 10px">
+                                    The ouput table contains the number of homologs in the shared Kegg Orthologs of the selected genomes and the total number of homologs of each Kegg Orthologs identified in the whole collection. Interesting for comparing the size of Kegg Orthologs within genomes.
+                                    <br> Homolog counts can be reordrered by clicking on column headers.<br>
+                                    <br>Click on the Ko entry and list the Ko modules and pathways of which it is part.
+                                 </p>
+                             </div>
+                            </div>
+
+                            <br>
+                            <div class="col-lg-12">
+                              <table class="hover" id="mytable"  style="padding-top: 10em;">
+                               <style>
+                               table {
+                                 table-layout: fixed;
+                               } </style>
+                                  <thead>
+                                    <tr>
+                                        <th>KO</th>
+                                        <th>Total count</th>
+                                        {% for taxon in taxon_list %}
+                                        <th>{{taxon}}</th>
+                                        {% endfor %}
+                                        <th>Annot</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {% for key, values in ko2counts.items %}
+									<tr> <td><a href="{% url 'fam_ko' ko2_print|keyvalue:key %}" target="_top">{{ko2_print|keyvalue:key}}</a></td>
+                                          <td>{{ko2total_count|keyvalue:key}}</td>
+                                          {% for taxon_count in values%}
+                                                {%if taxon_count != 0 %}
+                                                <td data-hist="{{taxon_count}}">{{taxon_count}}</td>
+                                                {% else %}
+                                                 <td>{{taxon_count}}</td>
+                                                {% endif %}
+                                          {% endfor %}
+                                          <td>{{ ko2annot|keyvalue:key }}</td>
+                                      </tr>
+                                    {% endfor %}
+                                  </tbody>
+                              </table>
+
+
+
+                      {% endif %}
+
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+<script src="{% static 'js/jquery.hottie.js' %}"></script>
+<script>
+$(function(){
+	$("#mytable td").hottie({
+		readValue : function(e) {
+			return $(e).attr("data-hist");
+		},
+		colorArray : [
+			"#5858FA",
+			"#FBEFEF",
+			"#FA5858"
+		]
+	});
+});
+
+$(document).ready(function() {
+  $('#mytable').DataTable( {
+    dom: 'lBfrtip',
+    buttons: [
+        {
+            extend: 'colvis',
+            columns: ':not(.noVis)',
+        },
+        {
+            extend: 'excel',
+            title: 'plast_refseq'
+        },
+        {
+            extend: 'csv',
+            title: 'plast_refseq'
+        }
+    ],
+   
+    "ordering": true,
+    "info":     false,
+    } );
+} );
+
+</script>
+</html>

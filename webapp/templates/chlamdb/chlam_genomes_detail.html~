@@ -1,0 +1,506 @@
+<table cellspacing="0" border="0">
+<tr>
+    <th>accession</th>
+    <th>size</th>
+    <th>n proteins</th>
+    <th>n contigs</th>
+    <th>gc </th>
+    <th>description</th>
+    <th colspan="4">Download</th>
+    </tr>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/281500581">ACZE01000000<a></td>
+    <td>2990061</td>
+    <td>2809</td>
+    <td>95</td>
+    <td>38.72</td>
+    <td>Parachlamydia acanthamoebae str. Hall's coccus</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/ACZE01000000.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/ACZE01000000.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/ACZE01000000.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/ACZE01000000.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/532821947">APJW01000000<a></td>
+    <td>1146666</td>
+    <td>1018</td>
+    <td>4</td>
+    <td>38.3</td>
+    <td>Chlamydia ibidis 10-1398/6</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/APJW01000000.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/APJW01000000.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/APJW01000000.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/APJW01000000.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/555686579">AYKJ01000001.1<a></td>
+    <td>5976</td>
+    <td>6</td>
+    <td>1</td>
+    <td>36.86</td>
+    <td>Chlamydia suis MD56 plasmid pMD56</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/AYKJ01000001.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/AYKJ01000001.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/AYKJ01000001.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/AYKJ01000001.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/678277869">CCEJ010000000<a></td>
+    <td>2974004</td>
+    <td>2418</td>
+    <td>23</td>
+    <td>38.18</td>
+    <td> Criblamydia sequanensis CRIB-18</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/CCEJ010000000.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/CCEJ010000000.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/CCEJ010000000.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/CCEJ010000000.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/685075421">CCSC01000000<a></td>
+    <td>2822021</td>
+    <td>2446</td>
+    <td>5</td>
+    <td>32.63</td>
+    <td>Chlamydia sp. 'Rubis'</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/CCSC01000000.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/CCSC01000000.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/CCSC01000000.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/CCSC01000000.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/742148377">JSAM01000000<a></td>
+    <td>3041085</td>
+    <td>2755</td>
+    <td>162</td>
+    <td>38.63</td>
+    <td>Parachlamydia acanthamoebae</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/JSAM01000000.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/JSAM01000000.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/JSAM01000000.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/JSAM01000000.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/742765684">JSAN01000000<a></td>
+    <td>2433075</td>
+    <td>2149</td>
+    <td>178</td>
+    <td>34.31</td>
+    <td>Candidatus Protochlamydia amoebophila</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/JSAN01000000.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/JSAN01000000.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/JSAN01000000.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/JSAN01000000.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/742767369">JSDQ01000000<a></td>
+    <td>2552877</td>
+    <td>2173</td>
+    <td>112</td>
+    <td>37.76</td>
+    <td>Neochlamydia sp. EPS4</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/JSDQ01000000.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/JSDQ01000000.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/JSDQ01000000.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/JSDQ01000000.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/742768357">JRXI01000000<a></td>
+    <td>2596923</td>
+    <td>2344</td>
+    <td>254</td>
+    <td>37.28</td>
+    <td>Neochlamydia sp. TUME1</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/JRXI01000000.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/JRXI01000000.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/JRXI01000000.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/JRXI01000000.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/62184647">NC_004552.2<a></td>
+    <td>1144377</td>
+    <td>932</td>
+    <td>1</td>
+    <td>39.87</td>
+    <td>Chlamydophila abortus S26/3</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/NC_004552.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/NC_004552.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/NC_004552.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/NC_004552.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/12057206">AE001273.1<a></td>
+    <td>1042519</td>
+    <td>894</td>
+    <td>1</td>
+    <td>41.31</td>
+    <td>Chlamydia trachomatis D/UW-3/CX</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/AE001273.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/AE001273.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/AE001273.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/AE001273.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/29835126">AE015925.1<a></td>
+    <td>1173390</td>
+    <td>998</td>
+    <td>1</td>
+    <td>39.22</td>
+    <td>Chlamydophila caviae GPIC</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/AE015925.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/AE015925.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/AE015925.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/AE015925.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/29835118">AE015926.1<a></td>
+    <td>7966</td>
+    <td>7</td>
+    <td>1</td>
+    <td>33.69</td>
+    <td>Chlamydophila caviae GPIC plasmid pCpGP1</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/AE015926.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/AE015926.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/AE015926.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/AE015926.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/555686586">AYKJ01000000<a></td>
+    <td>1081599</td>
+    <td>925</td>
+    <td>46</td>
+    <td>41.68</td>
+    <td>Merged record from Chlamydia suis MD56</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/AYKJ01000000.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/AYKJ01000000.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/AYKJ01000000.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/AYKJ01000000.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/89897807">NC_007899.1<a></td>
+    <td>1166239</td>
+    <td>1005</td>
+    <td>1</td>
+    <td>39.38</td>
+    <td>Chlamydophila felis Fe/C-56</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/NC_007899.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/NC_007899.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/NC_007899.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/NC_007899.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/89898813">NC_007900.1<a></td>
+    <td>7552</td>
+    <td>8</td>
+    <td>1</td>
+    <td>33.91</td>
+    <td>Chlamydophila felis Fe/C-56 plasmid pCfe1 DNA</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/NC_007900.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/NC_007900.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/NC_007900.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/NC_007900.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/29337300">NC_002620.2<a></td>
+    <td>1072950</td>
+    <td>903</td>
+    <td>1</td>
+    <td>40.34</td>
+    <td>Chlamydia muridarum Nigg</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/NC_002620.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/NC_002620.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/NC_002620.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/NC_002620.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/7190951">AE002162.1<a></td>
+    <td>7501</td>
+    <td>7</td>
+    <td>1</td>
+    <td>35.72</td>
+    <td>Chlamydia muridarum Nigg plasmid pMoPn</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/AE002162.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/AE002162.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/AE002162.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/AE002162.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/297375547">CP001928.1<a></td>
+    <td>2116312</td>
+    <td>1934</td>
+    <td>1</td>
+    <td>43.78</td>
+    <td>Waddlia chondrophila WSU 86-1044</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/CP001928.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/CP001928.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/CP001928.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/CP001928.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/297377482">CP001929.1<a></td>
+    <td>15593</td>
+    <td>22</td>
+    <td>1</td>
+    <td>37.61</td>
+    <td>Waddlia chondrophila WSU 86-1044 plasmid pWc</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/CP001929.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/CP001929.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/CP001929.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/CP001929.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/325506430">CP002549.1<a></td>
+    <td>1171660</td>
+    <td>967</td>
+    <td>1</td>
+    <td>39.06</td>
+    <td>Chlamydophila psittaci 6BC</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/CP002549.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/CP002549.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/CP002549.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/CP002549.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/325507398">CP002550.1<a></td>
+    <td>7553</td>
+    <td>8</td>
+    <td>1</td>
+    <td>32.89</td>
+    <td>Chlamydophila psittaci 6BC plasmid p6BC</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/CP002550.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/CP002550.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/CP002550.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/CP002550.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/328806865">CP002608.1<a></td>
+    <td>1106197</td>
+    <td>988</td>
+    <td>1</td>
+    <td>41.08</td>
+    <td>Chlamydophila pecorum E58</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/CP002608.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/CP002608.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/CP002608.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/CP002608.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/589298744">CP006571.1<a></td>
+    <td>1041170</td>
+    <td>940</td>
+    <td>1</td>
+    <td>36.92</td>
+    <td>Chlamydia avium 10DC88</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/CP006571.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/CP006571.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/CP006571.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/CP006571.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/589299685">CP006572.1<a></td>
+    <td>7099</td>
+    <td>7</td>
+    <td>1</td>
+    <td>31.22</td>
+    <td>Chlamydia avium 10DC88 plasmid p10DC88</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/CP006572.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/CP006572.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/CP006572.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/CP006572.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/58021288">NC_002179.2<a></td>
+    <td>1229853</td>
+    <td>1112</td>
+    <td>1</td>
+    <td>40.57</td>
+    <td>Chlamydophila pneumoniae AR39</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/NC_002179.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/NC_002179.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/NC_002179.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/NC_002179.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/ElaC">-<a></td>
+    <td>2825795</td>
+    <td>2202</td>
+    <td>29</td>
+    <td>48.13</td>
+    <td>Estrella lausannensis CRIB-30</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/-.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/-.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/-.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/-.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/ElaCp">-<a></td>
+    <td>9136</td>
+    <td>15</td>
+    <td>1</td>
+    <td>44.63</td>
+    <td>Estrella lausannensis CRIB-30 plasmid</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/-.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/-.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/-.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/-.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/336478352">FR872580.1<a></td>
+    <td>3072383</td>
+    <td>2788</td>
+    <td>1</td>
+    <td>39.03</td>
+    <td>Parachlamydia acanthamoebae UV-7</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/FR872580.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/FR872580.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/FR872580.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/FR872580.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/189184875">CP000975.1<a></td>
+    <td>2287145</td>
+    <td>2472</td>
+    <td>1</td>
+    <td>45.48</td>
+    <td>Methylacidiphilum infernorum V4</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/CP000975.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/CP000975.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/CP000975.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/CP000975.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/KNic">-<a></td>
+    <td>2885111</td>
+    <td>2433</td>
+    <td>1</td>
+    <td>42.7</td>
+    <td>Protochlamydia naegleriophila Knic</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/-.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/-.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/-.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/-.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/KNicp">-<a></td>
+    <td>145285</td>
+    <td>160</td>
+    <td>1</td>
+    <td>37.21</td>
+    <td>Protochlamydia naegleriophila KNic, plasmid</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/-.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/-.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/-.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/-.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/615276186">BASK00000000<a></td>
+    <td>3455274</td>
+    <td>2459</td>
+    <td>1342</td>
+    <td>35.08</td>
+    <td>Neochlamydia sp. S13.</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/BASK00000000.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/BASK00000000.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/BASK00000000.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/BASK00000000.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/NHA">-<a></td>
+    <td>3060946</td>
+    <td>2552</td>
+    <td>42</td>
+    <td>37.52</td>
+    <td>Neochlamydia hartmannella CRIB, wg</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/-.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/-.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/-.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/-.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/752900677">BAWW00000000<a></td>
+    <td>3013561</td>
+    <td>2498</td>
+    <td>72</td>
+    <td>38.76</td>
+    <td>Parachlamydia acanthamoebae strain Bn9</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/BAWW00000000.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/BAWW00000000.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/BAWW00000000.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/BAWW00000000.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/754738461">NZ_BBPT00000000<a></td>
+    <td>2314485</td>
+    <td>2067</td>
+    <td>34</td>
+    <td>38.6</td>
+    <td>Parachlamydiaceae sp. HS-T3.</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/NZ_BBPT00000000.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/NZ_BBPT00000000.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/NZ_BBPT00000000.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/NZ_BBPT00000000.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/46445634">NC_005861.1<a></td>
+    <td>2414465</td>
+    <td>2031</td>
+    <td>1</td>
+    <td>34.72</td>
+    <td>Candidatus Protochlamydia amoebophila UWE25</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/NC_005861.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/NC_005861.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/NC_005861.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/NC_005861.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/565666442">PnaD<a></td>
+    <td>2956928</td>
+    <td>2480</td>
+    <td>1</td>
+    <td>42.74</td>
+    <td>Protochlamydia naeglerophila strain Diamant.</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/PnaD.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/PnaD.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/PnaD.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/PnaD.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/754925668">NZ_BASL01000000<a></td>
+    <td>2881499</td>
+    <td>2160</td>
+    <td>795</td>
+    <td>32.86</td>
+    <td>Protochlamydia sp. R18.</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/NZ_BASL01000000.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/NZ_BASL01000000.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/NZ_BASL01000000.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/NZ_BASL01000000.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/283436255">CP001848.1<a></td>
+    <td>6196199</td>
+    <td>4717</td>
+    <td>1</td>
+    <td>-</td>
+    <td>Pirellula staleyi DSM 6068</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/CP001848.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/CP001848.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/CP001848.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/CP001848.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/32456059">BX119912.1<a></td>
+    <td>7145576</td>
+    <td>7325</td>
+    <td>1</td>
+    <td>-</td>
+    <td>Rhodopirellula baltica SH 1</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/BX119912.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/BX119912.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/BX119912.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/BX119912.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/Rhab">-<a></td>
+    <td>1879212</td>
+    <td>1733</td>
+    <td>39</td>
+    <td>36.07</td>
+    <td>Rhabdochlamydiaceae sp.</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/-.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/-.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/-.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/-.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/Rhabp">-<a></td>
+    <td>5386</td>
+    <td>7</td>
+    <td>1</td>
+    <td>44.71</td>
+    <td>Rhabdochlamydiaceae sp. phage</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/-.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/-.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/-.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/-.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/338731896">NC_015713<a></td>
+    <td>2496337</td>
+    <td>2381</td>
+    <td>1</td>
+    <td>41.78</td>
+    <td>Simkania negevensis Z chromosome gsn.131</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/NC_015713.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/NC_015713.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/NC_015713.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/NC_015713.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+<tr>
+    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/338731758">NC_015710.1<a></td>
+    <td>132038</td>
+    <td>136</td>
+    <td>1</td>
+    <td>38.28</td>
+    <td>Simkania negevensis Z plasmid pSn</td>
+<td style="vertical-align:top" nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/gbk/NC_015710.gbk"><span style="background-color:#64FE2E;color:black;padding:1px;">GBK</span></a></td>
+<td snowrap><a  style="text-decoration:none;" href="/assets/chlamdb/faa/NC_015710.faa"><span style="background-color:#64FE2E;color:black;padding:1px;">FAA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/fna/NC_015710.fna"><span style="background-color:#64FE2E;color:black;padding:1px;">FNA</span></a></td>
+<td nowrap><a  style="text-decoration:none;" href="/assets/chlamdb/ffn/NC_015710.ffn"><span style="background-color:#64FE2E;color:black;padding:1px;">FFN</span></a></td>
+</table>

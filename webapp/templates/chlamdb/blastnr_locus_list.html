@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+
+    <div id="content">
+
+        <nav>
+            <ul id="tabs" class="nav nav-tabs">
+                <li><a href="{% url 'blastnr_euk' %}">Overview</a></li>
+                <li class="active"><a>Locus lists</a></li>
+                <!--<li><a>Barcharts BBH non top phylum</a></li>-->
+
+            </ul>
+        </nav>
+
+
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">Get list of best eukaryotic hits (excluding hit within phylum)<br>
+            </p>
+        </div>
+
+    <form action='{% url "blastnr_top_non_phylum" %}' method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit" />
+
+    </form>
+
+    {% if envoi %}
+
+        <table class="display dataTable" id="hit_table">
+
+            <thead>
+                <tr>
+                    <th>locus</th>
+                    <th>product</th>
+                    <th>hit n.</th>
+                    <th>ID(%)</th>
+                    <th>Subj. accession</th>
+                    <th>Subj. Title</th>
+                    <th>kingdom</th>
+                    <th>class</th>
+                    <th>subclass</th>
+                    <th>order</th>
+                    <th>family</th>
+                    <th>species</th>
+
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in data%}
+                <tr>
+                    <td><a href="{% url 'locusx' row.0 True %}" target="_top">{{row.0}}</a></td>
+                    <td>{{row.1}}</td>
+                    <td>{{row.3}}</td>
+                    <td>{{row.4}}</td>
+                    <td>{{row.12}}</td>
+                    <td>{{row.11}}</td>
+                    <td>{{row.5}}</td>
+                    <td>{{row.6}}</td>
+                    <td>{{row.7}}</td>
+                    <td>{{row.8}}</td>
+                    <td>{{row.9}}</td>
+                    <td>{{row.10}}</td>
+
+
+                </tr>
+            {% endfor %}
+            </tbody>
+
+        </table>
+
+    {% endif %}
+
+    </div>
+</div>
+</body>
+
+<script>
+
+$(document).ready(function() {
+    $('#hit_table').DataTable( {
+        dom: 'Bfrtip',
+        columnDefs: [
+            {
+                targets: 6,
+                visible: false
+            },
+            {
+                targets: 8,
+                visible: false
+            },
+            {
+                targets: 9,
+                visible: false
+            }
+        ],
+        buttons: [
+            {
+                extend: 'colvis',
+                columns: ':not(.noVis)'
+            }
+        ],
+        "pageLength": 250
+    } );
+} );
+
+
+
+</script>
+
+</html>

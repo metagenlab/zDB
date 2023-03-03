@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+
+<html> 
+<head>
+
+{% include "chlamdb/header.html" %}
+{% load crispy_forms_tags %}
+
+</head>
+
+<div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+             {% include "chlamdb/menu.html" %}
+             {% include "chlamdb/extract_nav_tabs_template.html" with type="Pfam" active_tab="venn" %}
+
+            <br>
+            <p class="page-title"><b>Visual representation of unique and shared Pfam domains among selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+
+                    {% block content %}
+                    <form action='{% url "venn_pfam" %}' method="post">
+                        {% csrf_token %}
+                        {{ form_venn.as_p }}
+                        <input type="submit" name="venn" value="Compare Pfam" id="venn_button" />
+                    </form>
+                    {% endblock %}
+                
+                  </div>
+
+             {% if envoi_venn %}
+             <div class="row" style="padding-top:30px ; background-color: rgba(245, 245, 245, 0.986) ; margin-top: 2em;">
+              <div class="panel panel-success">
+                <div class="panel-heading" style="width:100%">
+                    <h5 class="panel-title">Help to interpret the results</h5>
+              </div>
+              <p style="margin: 10px 10px 10px 10px">
+                The interactive Venn diagram let you visualize how many Pfam domains are shared among the selected genomes or a subset of genomes of interest, and how many are unique to each genome.
+                <br> Clicking on the reported numbers the list of identified Pfam domains is displayed below. The table contains a list of the Pfam entries and their description.
+                <br> Additionally, the total number of Pfam domains identified in each genome can be visualized in the barplot, while the number of unique or shared ones can be appreciated in the last plot.
+              </p>
+            </div>
+                {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=pfam2description %}
+            {% endif %}
+              </div>
+          </div>
+
+    </div>
+  </div>
+
+<script>
+	var columns = [
+		{title: "PFAM"},
+		{title: "Description"}
+	];
+
+	function build_set(val, dict) {
+		let link = "<a href=/fam_pfam/"+val+">"+val+"</a>";
+		let data = dict[val];
+		return [link, data];
+	}
+
+</script>
+
+<p id="jqtest"></p>
+
+</body>
+{% include "chlamdb/style_menu.html" %}
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+<h1>Login</h1>
+
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+
+<section id="locus_section">
+
+
+{% if error %}
+<p><strong>Unkown User or Wrong Password</strong></p>
+{% endif %}
+
+
+
+{% if envoi %}
+
+
+    {% if user.is_authenticated %}
+
+        You are logged in, {{ user.username }} !
+        <meta http-equiv="REFRESH" content="0;url={% url "home"  %}">
+    {% else %}
+    <form action="{% url "chlamdb_login" %}"  method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+    <input type="submit" value="Login" />
+    </form>
+    {% endif %}
+
+
+{% else %}
+
+    <form action="{% url "chlamdb_login" %}"  method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+    <input type="submit" value="Login" />
+    </form>
+{% endif %}
+
+</section>

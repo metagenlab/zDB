@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+<head>
+{% load static %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+{% include "chlamdb/header.html" %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+</head>
+
+<body>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
+
+                  <nav>
+                  <ul id="tabs" class="nav nav-tabs">
+                      <li class="active"><a href="{% url 'transporters' %}">Transporters superfamilies</a></li>
+                      <li ><a href="{% url 'transporters_list' %}">Transporters lists</a></li>
+
+                  </ul>
+                  </nav>
+
+
+
+                  <form action='{% url "transporters" %}' method="post">
+                      {% csrf_token %}
+                          {{ form.as_p }}
+
+                  <input type="submit" value="Submit" />
+                  </form>
+
+
+                  {% if envoi %}
+
+                          <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                              <li class="active"><a href="#tab1" data-toggle="tab">Counts</a></li>
+                          </ul>
+
+
+                          <div id="my-tab-content" class="tab-content">
+                              <div class="tab-pane active" id="tab1">
+                                  <object type="image/svg+xml" data="{% static asset_path1 %}" id="asset_path1" style="width:80%"></object>
+                              </div>
+                          </div>
+
+                  {% endif %}
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+{% include "chlamdb/style_menu.html" %}
+<style>
+#id_category{
+    width:280px;
+    text-align:left;
+    left:600px;
+
+}
+
+
+</style>
+
+</html>

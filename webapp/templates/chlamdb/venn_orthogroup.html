@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% include "chlamdb/header.html" %}
+{% load crispy_forms_tags %}
+</head>
+
+<div class="container-fluid" id="main_container">
+  <div class="row">
+    <div id="wrapper">
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+               {% include "chlamdb/menu.html" %}
+               {% include "chlamdb/extract_nav_tabs_template.html" with type="orthology" active_tab="venn" %}
+
+             <br>
+                <p class="page-title"><b>Visual representation of unique and shared orthogroups among selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank"  title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+
+                        {% block content %}
+						{% csrf_token %}
+						{% crispy form_venn %}
+                        {% endblock %}
+
+                </div>
+
+
+                {% if envoi_venn %}
+                <div class="row" style="padding-top:1em ;background-color: rgba(245, 245, 245, 0.986)" >
+                    <br>
+                    <div class="panel panel-success" style="margin:1em;">
+                        <div class="panel-heading" style="width:100%">
+                            <h5 class="panel-title">Help to interpret the results</h5>
+                        </div>
+                        <p style="margin: 10px 10px 10px 10px">
+                            The interactive Venn diagram let you visualize how many orthologous groups are shared among the selected genomes or a subset of genomes of interest, and how many are unique to each genome.
+                            <br> Clicking on the reported numbers the list of identified orthologous groups is displayed below. The table contains a list of the genes annotated in each Orthogroup and their description.
+                            <br> Additionally, the total number of Orthologous identified in each genome can be visualized in the barplot, while the number of unique or shared ones can be appreciated in the last plot.
+                        </p>
+                    </div>
+                    {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=orthogroup2description %}
+                    </div>
+                </div>
+            {% endif %}
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+	var columns = [
+		{title: "Orthogroup"},
+		{title: "Gene"},
+		{title: "Description"}
+	];
+	function build_set(val, dict) {
+		var link = "<a href=/orthogroup/"+val+">"+val+"</a>";
+
+		// data[0] contains the gene name(s); data[1] contains the description(s)
+		var data = dict[val];
+		return [link, data[0], data[1]];
+	}
+
+
+</script>
+
+<p id="jqtest"></p>
+
+</body>
+{% include "chlamdb/style_menu.html" %}
+</html>

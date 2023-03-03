@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+{% load static %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+
+{% include "chlamdb/header.html" %}
+
+</head>
+
+<body>
+<div id="container2">
+
+    <div id="content">
+
+
+        {% if not valid_id %}
+
+            <section id="head_section">
+            Invalid ID or 0 significant NR hits
+            </section>
+
+
+        {% else %}
+
+            <nav>
+                <ul id="tabs_main" class="nav nav-tabs">
+                    <li class="active"><a href="{% url 'blastnr' blast_query_locus %}">Detailed result</a></li>
+                    <li><a href="{% url 'sunburst' blast_query_locus %}">Vizual</a></li>
+                </ul>
+            </nav>
+
+
+
+            <h3> RefSeq homologs (homology search computed with <a href="https://plast.inria.fr/">PLAST</a>) </h3>
+            <ul>
+             <li><A HREF={% url 'locusx' locus_tag True%}>{{ locus_tag }} ({{ organism }})</A></li>
+              <li>Number of RefSeq hits (max 100): {{ blast_data|length }} </li>
+
+
+            </ul>
+
+
+
+
+                <table id="blast_nr_table" class="table">
+                  <thead>
+                    <tr>
+                      <th>n</th>
+                      <th>Subject</th>
+                      <th>Kingdom</th>
+                      <th>Phylum</th>
+                      <th>Order</th>
+                      <th>Family</th>
+                      <th>eval.</th>
+                      <th>score</th>
+                      <th>ID(%)</th>
+                      <th>N gaps</th>
+                      <th>Len.</th>
+                      <th id=blast_subject_title>Description</th>
+                      <th id=blast_taxonomy>Taxonomy</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                  <!-- hit_number, subject_accession, subject_kingdom -->
+                  <!-- subject_scientific_name, subject_taxid, subject_title, evalue, bit_score, percent_identity, gaps, length -->
+                  {% for values in blast_data %}
+                  <tr>
+                      <td>{{ values.0 }}</td>
+                      <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{ values.1 }}">{{ values.1 }}<a></td>
+                      <td>{{ values.2 }}</td>
+                      <td>{{ values.11 }}</td>
+                      <td>{{ values.12 }}</td>
+                      <td>{{ values.13 }}</td>
+                      <td>{{ values.6 }}</td>
+                      <td>{{ values.7 }}</td>
+                      <td>{{ values.8 }}</td>
+                      <td>{{ values.9 }}</td>
+                      <td>{{ values.10 }}</td>
+                      <td>{{ values.5 }}</td>
+                      <td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{values.4}}" target="_top">{{ values.3}}</a></td>
+                  </tr>
+              {%  endfor %}
+              </tbody>
+            </table>
+
+        {% endif %}
+
+    </div>
+</div>
+<script>
+
+  $(document).ready(function() {
+    $('#blast_nr_table').DataTable( {
+      dom: 'lBfrtip',
+      buttons: [
+          {
+              extend: 'colvis',
+              columns: ':not(.noVis)',
+          },
+          {
+              extend: 'excel',
+              title: 'plast_refseq'
+          },
+          {
+              extend: 'csv',
+              title: 'plast_refseq'
+          }
+      ],
+      "paging":   true,
+      "ordering": true,
+      "info":     false,
+      } );
+  } );
+$('.dropdown-toggle').dropdown()
+</script>
+
+</body>
+</html>

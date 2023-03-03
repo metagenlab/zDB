@@ -1,0 +1,83 @@
+body {
+  font-family: "Open Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  padding-top: 10px;
+  padding-bottom: 100px;
+}
+html {
+  overflow-y: scroll;
+}
+h1 {
+  color: steelblue;
+  font-weight: 800;
+  font-size: 1.7em;
+}
+h2 {
+  color: steelblue;
+  font-size: 1.3em;
+  padding-bottom: 10px;
+}
+footer a,
+footer a:hover, footer a:visited {
+  color: #D2A000;
+}
+.text-small {
+  font-size: 12px;
+  font-style: italic;
+}
+footer {
+  color: white;
+  padding-top: 5px;
+  border-top: 1px solid gray;
+  font-size: 12px;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  height: 50px;
+  width: 100%;
+  background: black;
+  text-align: center;
+}
+.percentage {
+  font-size: 2em;
+}
+pre {
+  height: 300px;
+  font-size: 9px;
+  overflow-y: scroll;
+}
+/* Customizable classes used in D3 vis, uncomment to customize
+.vis-container {
+  position: relative;
+  top: 50px;
+  left: 50px;
+}
+.sunburst-container {
+  position: absolute;
+  z-index: 1;
+}
+.summary-container {
+  position: absolute;
+}
+.breadcrumbs-container {
+  position: absolute;
+}
+.legend-container {
+  position: absolute;
+}
+.lastCrumb {
+  fill: black;
+  font-weight: 600;
+}
+.breadcrumbs-text {
+  fill: white;
+  font-weight: 600;
+}
+.legend-text{
+  fill: red;
+  font-weight: 600;
+}
+.nodePath {
+  stroke: white;
+} */

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+{% load static %}
+
+</head>
+
+<body>
+
+
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+
+
+    <div id="content">
+    <form action='{% url "homology" %}' method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit" />
+
+    </form>
+
+    {% if envoi %}
+
+    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+        {%if not group %}
+        <li class="active"><a href="#tab1" data-toggle="tab">Overview</a></li>
+        <li><a href="#tab2" data-toggle="tab">InterproScan</a></li>
+        <li><a href="#tab33" data-toggle="tab">Homologs</a></li>
+        {% else %}
+         <li class="active"><a href="#tab33" data-toggle="tab">Homologs</a></li>
+        {% endif %}
+
+        <li><a href="#tab44" data-toggle="tab">Phylogenetic distribution</a></li>
+        <li><a href="#tab55" data-toggle="tab">Download</a></li>
+        <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' data.0 group %}', 'theFrame'); return false">Orthogroup conservation</a></li>
+    </ul>
+    <div id="my-tab-content" class="tab-content">
+        <!-- check if locus of orthogroup was asked -->
+        {% if not group %}
+        <div class="tab-pane active" id="tab1">
+            <h2>Features of {{accession}}</h2>
+
+                <table>
+                <tr>
+                <th id="entete">Feature</th>
+                <th>Value</th>
+                </tr>
+
+                    <tr>
+                    <td>orthogroup</td>
+                    <td id="entete_features">{{ data.0 }}</td>
+                    </tr>
+
+                    <tr>
+                    <td>locus_tag</td>
+                    <td id="entete_features">{{ data.1 }}</td>
+                    </tr>
+                    <tr>
+                    <td>protein_id</td>
+                    <td id="entete_features">{{ data.2 }}</td>
+                    </tr>
+
+                    <tr>
+                    <td>start</td>
+                    <td id="entete_features">{{ data.3 }}</td>
+                    </tr>
+                    <tr>
+                    <td>stop</td>
+                    <td id="entete_features">{{ data.4 }}</td>
+                    </tr>
+                     <tr>
+                    <td>strand</td>
+                    <td id="entete_features">{{ data.5 }}</td>
+                    </tr>
+                    <td>gene</td>
+                    <td id="entete_features">{{ data.6 }}</td>
+                    </tr>
+                    <td>orthogroup size</td>
+                    <td id="entete_features">{{ data.7 }}</td>
+                    </tr>
+
+                    <td>n genomes</td>
+                    <td id="entete_features">{{ data.8 }}</td>
+                    </tr>
+                    <td>TM</td>
+                    <td id="entete_features">{{ data.9 }}</td>
+                    </tr>
+                    <td>SP</td>
+                    <td id="entete_features">{{ data.10 }}</td>
+                    </tr>
+                    <td>Product</td>
+                    <td id="entete_features">{{ data.11 }}</td>
+                    </tr>
+                    <td>Organism</td>
+                    <td id="entete_features">{{ data.12 }}</td>
+                    </tr>
+                    <tr>
+                    <td>Translation</td>
+                    <td id="entete_features">{{ data.13 }}</td>
+                    </tr>
+                    {%if cog_data %}
+                        <tr>
+                        <td>COG</td>
+                        <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
+                        </tr>
+                    {% endif %}
+                </table>
+        </div>
+
+        <div class="tab-pane" id="tab2">
+                           <h3>Interpro</h3>
+
+                            <table>
+                                <tr>
+                                    <th id="entete">Analysis</th>
+                                    <th>Name</th>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th>Description</th>
+                                    <th>Interpro</th>
+                                </tr>
+
+                                {% for values in interpro_data %}
+                                <tr>
+                                    <td>{{values.0}}</td>
+
+                                    {% if values.0 == 'SUPERFAMILY' %}
+                                       <td><a href="http://supfam.cs.bris.ac.uk/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{values.1}}">{{values.1}}</a></td>
+
+                                     {% elif values.0 = 'Pfam' %}
+                                       <td><a href="http://pfam.xfam.org/family/{{values.1}}">{{values.1}}</a></td>
+
+                                     {% elif values.0 = 'SMART' %}
+                                       <td><a href="http://smart.embl-heidelberg.de/smart/do_annotation.pl?ACC={{values.1}}&BLAST=DUMMY">{{values.1}}</a></td>
+
+                                     {% elif values.0 = 'Gene3D' %}
+                                       <td><a href="http://www.cathdb.info/version/latest/superfamily/{{values.1|slice:"6:"}}">{{values.1}}</a></td>
+
+                                     {% elif values.0 = 'ProSiteProfiles' %}
+                                       <td><a href="http://prosite.expasy.org/{{values.1}}">{{values.1}}</a></td>
+
+                                     {% elif values.0 = 'ProSitePatterns' %}
+                                       <td><a href="http://prosite.expasy.org/{{values.1}}">{{values.1}}</a></td>
+
+                                     {% elif values.0 = 'PRINTS' %}
+                                       <td><a href="http://www.bioinf.manchester.ac.uk/cgi-bin/dbbrowser/sprint/searchprintss.cgi?display_opts=Prints&category=None&queryform=false&prints_accn={{values.1}}">{{values.1}}</a></td>
+
+                                     {% elif values.0 = 'TIGRFAM' %}
+                                       <td><a href="http://www.jcvi.org/cgi-bin/tigrfams/HmmReportPage.cgi?acc={{values.1}}">{{values.1}}</a></td>
+
+                                    {% else %}
+                                         <td>{{values.1}}</td>
+
+                                    {% endif %}
+                                    <td>{{values.2}}</td>
+                                    <td>{{values.3}}</td>
+                                    <td>{{values.4}}</td>
+                                    {% if values.5 != '0' %}
+                                       <td><a href="http://www.ebi.ac.uk/interpro/entry/{{values.5}}">{{values.5}}: {{values.6}}</a></td>
+                                    {% else %}
+                                       <td>-</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </table>
+
+        </div>
+
+        <div class="tab-pane" id="tab33">
+        <!-- if only group information is asked, homologs tabs become the active tab -->
+        {% else %}
+
+        <div class="tab-pane active" id="tab33">
+        {% endif %}
+                        <h2>Homologs</h2>
+
+                        <div id="export_bouttons">
+                            <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'homologues_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                            <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'homologues_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                        <br/>
+                        </div>
+
+                       <table id="homologues_table" class="sortable">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th id="entete_locus" class="rotate">Orthogroup</th>
+                                    <th id="entete_gene" class="rotate">ID(%)</th>
+                                    <th id="entete_locus" class="rotate">Locus</th>
+                                    <th id="entete_locus" class="rotate">Protein id</th>
+                                    <th id="entete_gene" class="rotate">Start</th>
+                                    <th id="entete_gene" class="rotate">Stop</th>
+                                    <th id="entete_strand" class="rotate">S.</th>
+                                    <th id="entete_gene" class="rotate">Gene</th>
+                                    <th id="entete_n" class="rotate">nH</th>
+                                    <th id="entete_n" class="rotate">nG</th>
+                                    <th id="entete_n" class="rotate">TM</th>
+                                    <th id="entete_n" class="rotate">SP</th>
+                                    <th id="entete_product" class="rotate">Product</th>
+                                    <th id="entete_organism" class="rotate">Organism</th>
+                                    <th id="entete_translation" class="rotate">Translation</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for values in homologues %}
+                                {% load static %}
+                                {% get_static_prefix as STATIC_PREFIX %}
+                                    <tr>
+                                        <td>{{values.0}}</td>
+                                        <td>{{values.1}}</td>
+                                        <td>{{values.15}}</td>
+                                        <td><a href="{{ STATIC_PREFIX }}chlamdb/interpro/{{ values.16 }}.html" target="_blank">{{values.2}}</a></td>
+                                        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
+                                        <td>{{values.4}}</td>
+                                        <td>{{values.5}}</td>
+                                        <td>{{values.6}}</td>
+                                        <td>{{values.7}}</td>
+                                        <td>{{values.8}}</td>
+                                        <td>{{values.9}}</td>
+                                        <td>{{values.10}}</td>
+                                        <td>{{values.11}}</td>
+                                        <td>{{values.12}}</td>
+                                        <td>{{values.13}}</td>
+                                        <td>{{values.14}}</td>
+                                    </tr>
+
+                                {% endfor %}
+                            </tbody>
+                        </table>
+        </div>
+        <div class="tab-pane" id="tab44">
+            <h1>Distrib</h1>
+
+    <img src="{% static 'temp/phylo.svg' %}" />
+        </div>
+        <div class="tab-pane" id="tab55">
+                        <h2>Sequences</h2>
+                        <table>
+                             <tr>
+                                <td id="entete_sequences"><a href="{% static fasta %}">Protein sequences (fasta)</a> </td>
+                            </tr>
+                            <tr>
+                                <td><a href="{% static alignment %}">Protein alignment (html)</a> </td>
+                            </tr>
+                            <tr>
+                                <td><a href="{% static alignment_fasta %}">Protein alignment (fasta)</a> </td>
+                            </tr>
+                            <tr>
+                                <td><a href="{% static alignment_fasta_nucl %}">Nucleotide sequences (fasta)</a> </td>
+                            </tr>
+                                <td><a href="{% url "blastnr" data.1  %}">BLAST NR</a> </td>
+                            </tr>
+
+                        </table>
+        </div>
+        <div class="tab-pane" id="tab66">
+        <iframe width="100%" height="2000px" name="theFrame" id="theFrame"  marginwidth="0" marginheight="0" scrolling="no"></iframe>
+        </div>
+
+    </div>
+    {% endif %}
+</div>
+
+
+
+
+
+</body>
+</html>

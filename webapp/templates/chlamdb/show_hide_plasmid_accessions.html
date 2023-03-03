@@ -1,0 +1,42 @@
+<script type="text/javascript" id="js2">
+
+	
+$(document).ready(function() {
+
+	function check_presence_generic(id_check, id_apply) {
+		var x=document.getElementById(id_check);
+		var show_plasmids = document.getElementById("id_checkbox_accessions").checked;
+		for (var i = 0; i < x.options.length; i++) {
+		  if(x.options[i].selected) {
+			  $("#"+id_apply).children("option[value^=" + x.options[i].value + "]").hide();
+		  } else if (show_plasmids || !(x.options[i].text.includes("plasmid"))) {
+			  $("#"+id_apply).children("option[value^=" + x.options[i].value + "]").show();
+			  console.log("Show "+x.options[i].text);
+		  } else {
+			  $("#"+id_apply).children("option[value^=" + x.options[i].value + "]").hide();
+		  }
+		}
+		$("#"+id_apply).selectpicker('refresh');
+	}
+
+	function hide_present() {
+		check_presence_generic("id_no_orthologs_in", "id_orthologs_in");
+	}
+
+	function hide_absent() {
+		check_presence_generic("id_orthologs_in", "id_no_orthologs_in");
+	}
+
+	function hide_plasmids() {
+		check_presence_generic("id_no_orthologs_in", "id_orthologs_in");
+		check_presence_generic("id_orthologs_in", "id_no_orthologs_in");
+	}
+
+	$("#id_orthologs_in").change(hide_absent);
+	$("#id_no_orthologs_in").change(hide_present);
+	$("#id_checkbox_accessions").change(hide_plasmids);
+
+	check_presence_generic("id_no_orthologs_in", "id_orthologs_in");
+	check_presence_generic("id_orthologs_in", "id_no_orthologs_in");
+})
+</script>

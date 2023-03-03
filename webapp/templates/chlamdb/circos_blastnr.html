@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+{% include "chlamdb/header.html" %}
+</head>
+<body>
+
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
+
+
+                  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Help</h3>
+                      </div>
+                      <p style="margin: 10px 10px 10px 10px">Create circos plots with summary of PLAST versus RefSeq.
+                      </p>
+                  </div>
+
+
+
+                  <div class="row">
+                    <form action="{% url "circos_blastnr" %}" method="post">{% csrf_token %}
+
+                    <table>
+                    <tr>
+                      <td>{{ form.as_p }}</td>
+                    </tr>
+
+                    <tr>
+                      <td><input type="submit" name="submit_circos" value="get circos plot" id="id_submit_circos" /> </td>
+                    </tr>
+                    </table>
+
+                  </div>
+
+                  {% if envoi_circos %}
+
+                  <div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
+                      <a href="#" class="close" data-dismiss="alert">&times;</a>
+                      <strong>Note:</strong> Click on the image to access the interactive plot.
+                  </div>
+
+                      {% load static %}
+                      <div class="row">
+                        <a download="circos.svg" class="btn" href="{% static circos_svg_file %}"><i class="fa fa-download"></i> Download SVG</a>
+                        <a download="circos.png" class="btn" href="{% static circos_png_file %}"><i class="fa fa-download"></i> Download PNG</a>
+                      </div>
+
+                        <div class="row">
+                          <div class="col-lg-12">
+                            <div>
+                              <a href="{{ circos_new_file }}"><img src="{% static ""%}{{circos_file}}" id="circos_plot" style="position: absolute; top: 00px; left: 00px;"></a>
+
+                              <img src="{% static "/scales/circos_blastnr.png" %}" id="circos_legend"  width="260" style="position: relative; top: 0; left: 0;">
+
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                  {% endif %}
+
+
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+{% include "chlamdb/style_menu.html" %}
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+{% include "chlamdb/header.html" %}
+</head>
+<body>
+
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
+
+                  <nav>
+                  <ul id="tabs" class="nav nav-tabs">
+                      <li class="active"><a>Pairwise Identity</a></li>
+                      <li><a href="{% url 'identity_heatmap' %}">Heatmaps</a></li>
+                  </ul>
+                  </nav>
+
+
+                  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Help</h3>
+                      </div>
+                      <p style="margin: 10px 10px 10px 10px">Plot the distribution of amino acid identity of pairwise reciprocal best blast hits. Can include between 3 and 6 genomes.<br>
+                      </p>
+                  </div>
+
+                  <form action='{% url "pairwiseid" %}' method="post">
+                      {% csrf_token %}
+                      {{ form.as_p }}
+                      <input type="submit" value="Submit" />
+
+                  </form>
+
+                  {% if envoi %}
+                      <ul id="tabs2" class="nav nav-tabs" data-tabs="tabs">
+                          <li class="active"><a href="#tab1" data-toggle="tab">ID distrib</a></li>
+                          <li><a href="#tab2" data-toggle="tab">ID Profile</a></li>
+                      </ul>
+
+                      <div id="my-tab-content" class="tab-content">
+                          <div class="tab-pane active" id="tab1">
+
+                              <embed src="{% static asset_path1 %}"
+                     width="600px" height="600px"
+                     type="image/svg+xml"
+                     pluginspage="http://www.adobe.com/svg/viewer/install/" />
+
+                          </div>
+                          <div class="tab-pane" id="tab2">
+                              <object type="image/svg+xml" data="{% static asset_path2 %}" id="inter_tree4" style="position: relative; top: 10px; left: 10px;width: 600px"></object>
+                          </div>
+                      </div>
+                  {% endif %}
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+</body>
+{% include "chlamdb/style_menu.html" %}
+</html>
