@@ -12,8 +12,8 @@ CONDA=$(which zdb | sed 's=bin/zdb==')
 # 
 # If you are installed zdb github, just point it to the checked out
 # directory.
-# NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
-NEXTFLOW_DIR="/home/bmarquis/sda1/bmarquis/test_deployment/annotation_pipeline_nextflow"
+NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
+
 
 
 if [[ $# == "0" || $1 == "help" ]]; then
