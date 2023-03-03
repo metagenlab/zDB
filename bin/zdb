@@ -292,11 +292,13 @@ elif [[ "$1" == "webapp" ]]; then
 		bind_path+=("$zdb_folder":"$zdb_folder")
 	fi
 
-	# bind_path+=("${dir},${dir}/zdb/assets/:${zdb_folder}/assets/temp/"
+	# need to make an exception for this one, as singularity
+	# seemingly does not support binding a single writable file
+	bind_path_db="${dir}/zdb/results/db/$run_name"
+
 	bind_path_results+=("${dir}/zdb/assets":"${zdb_folder}/assets/temp")
-	bind_path_results+=($(readlink "${dir}/zdb/results/db/${run_name}"):"${zdb_folder}/assets/db/${run_name}")
 	bind_path_results+=($(readlink "${dir}/zdb/results/search_index/index_${run_name}"):"${zdb_folder}/assets/search_index/${run_name}")
-	bind_path_results+=("${dir}/zdb/results/blast_DB":"${zdb_folder}/assets/blast_DB")
+	bind_path_results+=("${dir}/zdb/results/blast_DB/${run_name}":"${zdb_folder}/assets/blast_DB/${run_name}")
 	bind_path_results+=("${dir}/zdb/results/alignments/${run_name}":"${zdb_folder}/assets/alignments")
 
 
@@ -318,6 +320,8 @@ elif [[ "$1" == "webapp" ]]; then
 		full_docker_name="registry.hub.docker.com/metagenlab/${zdb_container}"
 		docker pull ${full_docker_name}
 		bind_docker=""
+		bind_path+=$($bind_path_db:"${zdb_folder}/assets/db/${run_name}")
+
 		for index in ${bind_path[@]}; do
 			bind_docker="$bind_docker -v $index"
 		done
@@ -325,18 +329,17 @@ elif [[ "$1" == "webapp" ]]; then
 	elif [[ "$conda" = true ]]; then
 		#  Still need the code to check if conda package exists
 		#  and to build it if necessary.
+		bind_path_results+=("$bind_path_db:${zdb_folder}/assets/db/${run_name}")
 
 		# link the results directory into the assets/directory of the webapp
 		to_remove=""
 		for bd in ${bind_path_results[@]}; do
-			ln_args="${bd/:/ }"
-			target=$(echo $ln_args | cut -d' ' -f 2)
-			base=$(echo $ln_args | cut -d' ' -f 1)
+			target=$(echo $bd | cut -d':' -f 2)
+			base=$(echo $bd | cut -d':' -f 1)
 			basedir=$(dirname $target)
 			if [ ! -e "$target" ]; then
 				to_remove="$to_remove $basedir"
 				mkdir -p $basedir
-				echo $basedir
 				ln -s $base $target
 			fi
 		done
@@ -365,8 +368,10 @@ elif [[ "$1" == "webapp" ]]; then
 		for index in ${bind_path[@]}; do
 			bind_singularity="$bind_singularity,$index"
 		done
+
+		bind_singularity="$bind_singularity,$(dirname $bind_path_db):${zdb_folder}/assets/db/"
 		singularity run --bind ${bind_singularity} \
-			${singularity_dir}/${zdb_container}.sif /bin/bash # ${zdb_folder}/start_webapp ${options}
+			${singularity_dir}/${zdb_container}.sif ${zdb_folder}/start_webapp ${options}
 	fi
 elif [[ "$1" == "run" ]]; then
 	shift

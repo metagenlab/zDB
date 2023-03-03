@@ -602,6 +602,7 @@ if(params.ko) {
 process setup_db {
     container "$params.annotation_container"
     conda "conda/annotation.yaml"
+    publishDir "${params.results_dir}/db"
 
     output:
         file output_file into db_base
@@ -617,7 +618,6 @@ process setup_db {
 process load_base_db {
     container "$params.annotation_container"
     conda "conda/annotation.yaml"
-    publishDir "${params.results_dir}/db"
 
     // Necessary to prevent segfaults due to the large size
     // of the stage script
@@ -841,6 +841,7 @@ process load_KO_into_db {
         """
 }
 
+
 process load_PFAM_info_db {
     container "$params.annotation_container"
     conda "conda/annotation.yaml"
@@ -936,7 +937,12 @@ process cleanup {
 
     script:
     custom_run_name=(params.name)?params.name:""
+    db_path="${results_dir}/db/$workflow.runName"
     """
+    mv $db_path ${db_path}_backup
+    mv \$(readlink ${db_path}_backup) $db_path
+    rm ${db_path}_backup
+
     ln -sf $index ${results_dir}/search_index/$workflow.runName
 
     if [ ! -d "${results_dir}/.completed_runs" ]; then
