@@ -293,7 +293,7 @@ elif [[ "$1" == "webapp" ]]; then
 		bind_path+=("$zdb_folder":"$zdb_folder")
 	fi
 
-	# need to make an exception for this one, as singularity
+	# Necessary to make an exception for this one, as singularity
 	# seemingly does not support binding a single writable file
 	bind_path_db="${dir}/zdb/results/db/$run_name"
 
@@ -306,7 +306,8 @@ elif [[ "$1" == "webapp" ]]; then
 	bind_path=("${bind_path_results[@]}")
 	bind_path+=("${dir}/zdb/gunicorn":"/usr/local/gunicorn/")
 	bind_path+=("${dir}/zdb/nginx":"/usr/local/nginx")
-	# annoying part to avoid error messages from nginx attempting to write
+
+	# Annoying part to avoid error messages from nginx attempting to write
 	# into an hard-coded /var/log/nginx/error.log -> the zdb/nginx/var directory is mounted
 	# on /var/log/nginx in the container so that nginx can write in the file and be happy.
 	bind_path+=("${dir}/zdb/nginx/var":"/var/log/nginx")
@@ -327,30 +328,39 @@ elif [[ "$1" == "webapp" ]]; then
 			bind_docker="$bind_docker -v $index"
 		done
 		docker run ${bind_docker} -it ${full_docker_name} ${zdb_folder}/start_webapp ${options}
-	elif [[ "$conda" = true ]]; then
-		#  Still need the code to check if conda package exists
-		#  and to build it if necessary.
-		bind_path_results+=("$bind_path_db:${zdb_folder}/assets/db/${run_name}")
 
+	elif [[ "$conda" = true ]]; then
+		conda_prefix="$NEXTFLOW_DIR/conda-env/webapp"
+		if [[ ! -e "$conda_prefix" ]]; then
+			echo "Building conda environment..."
+			conda env create --prefix $conda_prefix -f $NEXTFLOW_DIR/conda/webapp.yaml &> conda_log
+			if [[ $? -eq 0 ]]; then
+				echo "Done"
+			else
+				echo "Failed to build conda environment, you can check conda_log for details"
+				exit 1
+			fi
+		fi
+
+		bind_path_results+=("$bind_path_db:${zdb_folder}/assets/db/${run_name}")
 		# link the results directory into the assets/directory of the webapp
 		to_remove=""
 		for bd in ${bind_path_results[@]}; do
 			target=$(echo $bd | cut -d':' -f 2)
 			base=$(echo $bd | cut -d':' -f 1)
 			basedir=$(dirname $target)
-			if [ ! -e "$target" ]; then
-				to_remove="$to_remove $basedir"
-				mkdir -p $basedir
-				ln -s $base $target
+			if [ -e "$target" ]; then
+				rm -rf $target
 			fi
+			to_remove="$to_remove $target"
+			mkdir -p $basedir
+			ln -s $base $target
 		done
 
-		${zdb_folder}/start_webapp ${options}
+		conda run --live-stream -p $conda_prefix ${zdb_folder}/start_webapp ${options}
 
-		# crude cleanup
-		rm -rf "${zdb_folder}/assets/blast_DB"
-		rm -rf "${zdb_folder}/assets/alignments"
-		rm -rf "${zdb_folder}/assets/temp"
+		# cleanup links
+		rm -rf ${to_remove}
 	else
 		if [ ! -f "${singularity_dir}/${zdb_container}.sif" ]; then
 			echo "Preparing the zdb container, this may take a while."
