@@ -14,8 +14,6 @@ CONDA=$(which zdb | sed 's=bin/zdb==')
 # directory.
 NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
 
-
-
 if [[ $# == "0" || $1 == "help" ]]; then
 	echo "zDB (v${VERSION})"
 	echo "Available commands:"
