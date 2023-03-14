@@ -115,8 +115,13 @@ else
 	# kill gunicorn when the user interrupts the nginx server
 	echo "Chasing gunicorn..."
 	cat /usr/local/gunicorn/gunicorn.pid | xargs kill
+	rm /usr/local/gunicorn/gunicorn.log
+	if [ -e "/usr/local/gunicorn/gunicorn.pid" ]; then
+		rm -f /usr/local/gunicorn/gunicorn.pid
+	fi
 	echo "Done"
 	rm /usr/local/nginx/nginx_curr.config
+
 	echo "Brutally stopping Xvfb"
 	kill -TERM $xvfb_pid
 fi

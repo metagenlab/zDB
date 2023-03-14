@@ -156,7 +156,7 @@ elif [[ "$1" == "webapp" ]]; then
 	debug=false
 	use_dev_server=false
 	singularity_dir="$(pwd)/singularity"
-
+	bind_path=()
 
 	for i in "$@"; do
 		case $i in
@@ -264,7 +264,7 @@ elif [[ "$1" == "webapp" ]]; then
 	fi
 
 	if [ ! -z "${metagenlab_folder}" ]; then
-		bind_path+=("${metagenlab_folder}" "${metagenlab_folder}")
+		bind_path+=("${metagenlab_folder}:${metagenlab_folder}")
 		export PYTHONPATH="$metagenlab_folder"
 	fi
 
@@ -280,16 +280,7 @@ elif [[ "$1" == "webapp" ]]; then
 
 	bind_path_results=()
 
-	if [ "$use_custom_zdb" = true ]; then
-		# bind the source code of an alternative, it will be executed in the
-		# zdb container instead of the "official" code stored in the container
-		# Useful for testing new features and debugging
-		# 
-		# zDB and chlamdb should eventually be merged into a single project
-		# using this technique.
-		zdb_folder=$(realpath $zdb_folder)
-		bind_path+=("$zdb_folder":"$zdb_folder")
-	fi
+	bind_path+=("$zdb_folder":"$zdb_folder")
 
 	# Necessary to make an exception for this one, as singularity
 	# seemingly does not support binding a single writable file
@@ -301,7 +292,7 @@ elif [[ "$1" == "webapp" ]]; then
 	bind_path_results+=("${dir}/zdb/results/alignments/${run_name}":"${zdb_folder}/assets/alignments")
 
 
-	bind_path=("${bind_path_results[@]}")
+	bind_path+=("${bind_path_results[@]}")
 	bind_path+=("${dir}/zdb/gunicorn":"/usr/local/gunicorn/")
 	bind_path+=("${dir}/zdb/nginx":"/usr/local/nginx")
 
@@ -311,16 +302,13 @@ elif [[ "$1" == "webapp" ]]; then
 	bind_path+=("${dir}/zdb/nginx/var":"/var/log/nginx")
 	bind_path+=("${dir}/zdb/nginx/proxy_temp":"/usr/local/nginx/proxy_temp")
 
-	if [ ! -d "${singularity_dir}" ]; then
-		mkdir -p ${singularity_dir}
-	fi
 
 	options="--run_name=${run_name} --port=${port} ${debugging_mode} ${allowed_host} ${dev_server}"
 	if [[ "$docker" = true ]]; then
 		full_docker_name="registry.hub.docker.com/metagenlab/${zdb_container}"
 		docker pull ${full_docker_name}
 		bind_docker=""
-		bind_path+=$($bind_path_db:"${zdb_folder}/assets/db/${run_name}")
+		bind_path+=("$bind_path_db:${zdb_folder}/assets/db/${run_name}")
 
 		for index in ${bind_path[@]}; do
 			bind_docker="$bind_docker -v $index"
@@ -360,6 +348,10 @@ elif [[ "$1" == "webapp" ]]; then
 		# cleanup links
 		rm -rf ${to_remove}
 	else
+		if [ ! -d "${singularity_dir}" ]; then
+			mkdir -p ${singularity_dir}
+		fi
+
 		if [ ! -f "${singularity_dir}/${zdb_container}.sif" ]; then
 			echo "Preparing the zdb container, this may take a while."
 			singularity build ${singularity_dir}/${zdb_container}.sif \
