@@ -18,6 +18,8 @@ process download_cog_cdd {
 
 process setup_cog_cdd {
     container "$params.blast_container"
+    conda "$baseDir/conda/blast.yaml"
+
     publishDir "$params.cog_db", mode: "move"
 
     input:
@@ -87,6 +89,8 @@ process download_pfam_db {
 
 process prepare_hmm {
     container "$params.pfam_scan_container"
+    conda "$baseDir/conda/pfam_scan.yaml"
+
     publishDir "$params.pfam_db", mode: "copy"
 
     input:
@@ -130,33 +134,22 @@ process download_ko_profiles {
 
 
 process download_swissprot_db {
+    container "$params.blast_container"
+    conda "$baseDir/conda/blast.yaml"
+
+    publishDir "$params.swissprot_db", mode: "move"
+
     when:
         params.blast_swissprot
 
     output:
+        file "*"
         file "swissprot.fasta" into swissprot_fasta
 
     script:
     """
-    wget https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
+    wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
     gunzip < uniprot_sprot.fasta.gz > swissprot.fasta && rm -f uniprot_sprot.fasta
-    """
-}
-
-
-process setup_swissprot {
-    container "$params.blast_container"
-    publishDir "$params.swissprot_db", mode: "move"
-
-    input:
-        file swissprot_fasta
-
-    output:
-        file "*"
-        file "$swissprot_fasta"
-
-    script:
-    """
-    makeblastdb -dbtype prot -in $swissprot_fasta
+    makeblastdb -dbtype prot -in swissprot.fasta
     """
 }
