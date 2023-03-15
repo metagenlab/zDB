@@ -187,6 +187,30 @@ As the analysis may be run on a server or on an HPC cluster, the results may nee
 This can be done with the ```zdb export``` command with a run name as parameter. This will create a compressed archive containing all the necessary results. The archive can then be transferred to a different machine and unpacked, either manually or with the ```zdb import``` command.
 The web server can then be started as if the analysis had been run locally.
 
+## In brief
+
+For a minimal database relying on orthology (might be already enough to have interesting results if you add reference genomes in addition to your genomes of interest). This assumes that singularity is installed.
+```
+conda install zdb -c metagenlab
+zdb run --input=simple_input.csv --name=simple_run # runs the analysis
+zdb webapp # Launches the webapp on the latest run
+```
+
+To do the same in conda environments:
+```
+conda install zdb -c metagenlab
+zdb run --input=simple_input.csv --name=simple_run --conda # runs the analysis
+zdb webapp --conda # Launches the webapp on the latest run
+```
+
+To have a more complete set of analyses (includes cog and pfam annotation):
+```
+conda install zdb -c metagenlab
+zdb setup --pfam --cog --conda
+zdb run --input=simple_input.csv --name=simple_run --conda --cog --pfam # runs the analysis
+zdb webapp --conda # Launches the webapp on the latest run
+```
+
 ## Bugs and feature requests
 Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/annotation_pipeline_nextflow/issues).
 
