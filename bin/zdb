@@ -448,11 +448,11 @@ elif [[ "$1" == "run" ]]; then
 				shift
 				;;
 			--singularity_dir=*)
-				singularity_dir=${i#*=}
+				singularity_dir=$(realpath ${i#*=})
 				shift
 				;;
 			--ref_dir=*)
-				dir=${i#*=}
+				dir=$(realpath ${i#*=})
 				shift
 				;;
 			--help)

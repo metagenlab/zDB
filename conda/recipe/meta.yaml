@@ -5,11 +5,11 @@ package:
   version: {{ version }}
 
 build:
-  number: 4
+  number: 5
 
 source:
   url: https://github.com/metagenlab/zDB/archive/refs/tags/v1.0.8-beta.tar.gz
-  sha256: d292a7774c8fec45515de8bd0b1b457100f4c9a186e74656c4a670131de5050d
+  sha256: bf69cf86bc6053693d67706ef8ecb5ddc2ebbcec9af0cbf8f4489f62c5e50abe
 
 requirements:
   run:
