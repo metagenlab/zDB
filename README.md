@@ -193,22 +193,22 @@ For a minimal database relying on orthology (might be already enough to have int
 ```
 conda install zdb -c metagenlab
 zdb run --input=simple_input.csv --name=simple_run # runs the analysis
-zdb webapp # Launches the webapp on the latest run
+zdb webapp --name=simple_run # Launches the webapp on simple run
 ```
 
 To do the same in conda environments:
 ```
 conda install zdb -c metagenlab
-zdb run --input=simple_input.csv --name=simple_run --conda # runs the analysis
-zdb webapp --conda # Launches the webapp on the latest run
+zdb run --input=simple_input.csv --name=simple_run_conda --conda # runs the analysis
+zdb webapp --conda --name=simple_run_conda # Launches the webapp on the latest run
 ```
 
 To have a more complete set of analyses (includes cog and pfam annotation):
 ```
 conda install zdb -c metagenlab
 zdb setup --pfam --cog --conda
-zdb run --input=simple_input.csv --name=simple_run --conda --cog --pfam # runs the analysis
-zdb webapp --conda # Launches the webapp on the latest run
+zdb run --input=simple_input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
+zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
 ```
 
 ## Bugs and feature requests
