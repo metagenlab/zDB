@@ -132,6 +132,23 @@ process download_ko_profiles {
     """
 }
 
+process download_swissprot {
+    // not optimal... might be a bit slow to move
+    publishDir "$params.swissprot_db", mode: "copy"
+
+    when:
+        params.blast_swissprot
+
+    output:
+        file "swissprot.fasta" into swissprot_fasta
+
+    script:
+    """
+    wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
+    gunzip < uniprot_sprot.fasta.gz > swissprot.fasta 
+    rm uniprot_sprot.fasta.gz
+    """
+}
 
 process download_swissprot_db {
     container "$params.blast_container"
@@ -139,17 +156,15 @@ process download_swissprot_db {
 
     publishDir "$params.swissprot_db", mode: "move"
 
-    when:
-        params.blast_swissprot
+    input:
+        file swissprot_fasta
 
     output:
         file "*"
-        file "swissprot.fasta" into swissprot_fasta
 
     script:
     """
-    wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
-    gunzip < uniprot_sprot.fasta.gz > swissprot.fasta && rm -f uniprot_sprot.fasta
     makeblastdb -dbtype prot -in swissprot.fasta
+    rm $swissprot_fasta
     """
 }
