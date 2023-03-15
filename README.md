@@ -92,7 +92,7 @@ In addition, you can specify the directory where you want the databases to be in
 
 Downloading the HMM files from the KEGG server can take a bit of time (but you'll only need to do this once).
 
-Example commmand, setting up all the databases in the current diretory, using conda environments:
+Example commmand, setting up all the databases in the current directory, using conda environments:
 ```
 zdb setup --pfam --swissprot --cog --ko --conda
 ```
@@ -102,7 +102,7 @@ zdb setup --pfam --swissprot --cog --ko --conda
 Once you have the reference databases set up, the genomes ready, just run the ```zdb run``` command.
 Several options are available and allow you to customize the run.
 
-By default, the analysis are run in singularity containers, but you can change this by using the ```--conda``` or ```--docker`` flags to have them run in conda environments or docker containers, respectively. If singularity is enabled, the containers will have to be downloaded. By default, they are stored in the singularity folder of the current directory, but this can be changed using the ```--singularity_dir``` option. This might be useful if you want to share containers between analyses.
+By default, the analysis are run in singularity containers, but you can change this by using the ```--conda``` or ```--docker``` flags to have them run in conda environments or docker containers, respectively. If singularity is enabled, the containers will have to be downloaded. By default, they are stored in the singularity folder of the current directory, but this can be changed using the ```--singularity_dir``` option. This might be useful if you want to share containers between analyses.
 
 If the databases were set up, additional analyses can also be enabled with the ```--ko```, ```--cog```, ```--pfam``` and ```--swissprot``` flags. The directory (by default zdb_ref in the current directory) where the database were installed can be specified with the ```--ref_dir``` option.
 
