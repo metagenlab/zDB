@@ -173,7 +173,7 @@ elif [[ "$1" == "webapp" ]]; then
 				shift
 				;;
 			--singularity_dir=*)
-				singularity_dir="${i#*=}"
+				singularity_dir=$(realpath "${i#*=}")
 				shift
 				;;
 			-d|--debug)
@@ -184,13 +184,10 @@ elif [[ "$1" == "webapp" ]]; then
 				use_dev_server=true
 				shift
 				;;
-			--zdb_folder=*)
-				zdb_folder="${i#*=}"
-				use_custom_zdb=true
-				shift
-				;;
 			--metagenlab_folder=*)
-				metagenlab_folder="${i#*=}"
+				# for development purposes
+
+				metagenlab_folder=$(realpath "${i#*=}")
 				shift
 				;;
 			--conda)
@@ -202,7 +199,7 @@ elif [[ "$1" == "webapp" ]]; then
 				shift
 				;;
 			--dir=*)
-				dir="${i#*=}"
+				dir=$(realpath "${i#*=}")
 				shift
 				;;
 			-h|--help)
