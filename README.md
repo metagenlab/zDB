@@ -38,7 +38,7 @@ For now, the project is hosted on our own conda channel. A bioconda package is a
 The analysis and the webserver can be run in either conda environments or in containers (both singularity and dockers are supported).
 
 Running zDB in conda is likely the easiest way as it does not require to install either singularity or dockers, but comes with several drawbacks:
-- django will be run in native mode, without nginx and gunicorn: it is fine , but should not be used to set up a web-facing database (it is fine for a local access)
+- django will be run in native mode, without nginx and gunicorn and should not be used to set up a web-facing database (it is fine for a local access)
 - containers allow us to have a precise control of the environment where the webapp is run; it is less the case for conda environment. Despite our best care, running the webapp in conda might not work due to local differences.
 
 Of note, zDB has been tested on singularity v3.8.3 and v3.8.4 but should work on more recent versions. 
@@ -74,9 +74,10 @@ list_runs - lists the completed runs available to start the website in a given d
 ## Setting up the reference databases
 
 Depending on which analysis are to be run, reference databases will need to be downloaded and set up.
-Of note, in minimal mode, zdb does not require any database to run.
 This is done using the ```zdb setup``` command.
-You'll need to specifiy which databases are to be downloaded. 
+You'll need to specifiy which databases are to be downloaded.
+Of note, in minimal mode, zdb does not require any database to run.
+
 
 The following databases can be downloaded:
 ```
