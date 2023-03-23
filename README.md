@@ -189,7 +189,7 @@ Once the analysis is complete, the web application can be run with the ```zdb we
 The webserver can also be run in a conda environment by setting the ```--conda``` flag or in docker by setting the ```docker``` flag.
 By default, it will be run in a singularity container.
 
-Simply put, if the port 8080 is not in use, that you want to access the results of your latest run and will only access the web application locally, you can simply run the ```zdb webapp``` script without any parameters.
+Simply put, if the port 8080 is not in use, you can simply run the ```zdb webapp``` script without any parameters. zDB will launch the webapp on the last run of analysis.
 
 Once the webserver has started, you'll be able to access the webpages with a web browser.
 
