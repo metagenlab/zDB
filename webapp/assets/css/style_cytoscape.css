@@ -1,0 +1,28 @@
+body { 
+  font: 18px helvetica neue, helvetica, arial, sans-serif;
+}
+
+#cy {
+  height: 800px;
+  width: 600px;
+  position: absolute;
+  left: 10px;
+  top: 50px;
+}
+
+.qtip-bootstrap .qtip-content {
+font-size: 12px;
+ line-height: 1.55em;
+}
+
+.qtip-bootstrap .qtip-content {
+font-size: 12px;
+}
+
+div.tooltip-inner {
+    max-width: 550px;
+    /* If max-width does not work, try using width instead */
+    width: 550px; 
+}
+.MyQtip {max-width: 800px;
+	width: 600px}

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+<ul><li><a href="{% url 'contact' %}">Home</a></li>
+  <li><a href="{% url 'orthogroups' %}">Orthogroups</a></li>
+  <li><a href="{% url 'circos' %}">Circos</a></li>
+  <li><a href="{% url 'search' %}">Search</a></li>
+  <li><a href="{% url 'blast' %}">Blast</a></li>
+  <li><a href="{% url 'circos2genomes' %}">Circos2Genomes</a></li>
+  <!--
+  <li>
+    Portfolio
+    <ul>
+      <li>Web Design</li>
+      <li>Web Development</li>
+      <li>Illustrations</li>
+    </ul>
+  </li>
+  -->
+  <li><a href="http://127.0.0.1:8765/vista-alignment">GenomeVista</a></li>
+  <li><a href="http://127.0.0.17/jbrowse/JBrowse-1.11.4/">GBrowse</a></li>
+  <li><a href="asd">Discourse</a></li>
+</ul>  
+
+  
+<!--
+{% load static %}
+<img src="{% static 'im_1.jpg' %}" alt="Mon image" />
+-->
+
+
+<form action="{% url "biodb.views.contact" %}" method="post">{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" value="Submit" />
+</form>
+
+
+{% block extrahead %}
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script>
+  var update_fields = function () {
+    if ($("#id_plot_region").is(":checked")) {
+
+        $('#id_region_size').prop('disabled', false);
+    }
+    else {
+ 
+       $('#id_region_size').prop('disabled', 'disabled');
+    }
+  };
+  $(update_fields);
+  $("#id_plot_region").change(update_fields);
+</script>
+{% endblock %}
+
+
+
+{% if envoi %}
+
+    {% if invalid_id %}
+
+        Wrong accession!
+        <!--
+        Existing accessions are:
+        <table>
+        <tr>
+        <th>accession</th>
+        <th>Name</th>
+        </tr>
+        {% for key, value  in accession_dict.items %}
+    
+        <tr>
+        <td>{{key}}</td>
+        <td>{{value}}</td>
+        </tr>
+
+
+        {% endfor %}
+        </ul>
+        -->
+
+    {% else %}
+
+
+	
+    &nbsp
+
+    <h2>Bioentry</h2>
+    <table>
+    <tr> 
+    <td>{{bioentry_accession}}</td>
+    <td>{{bioentry_name}}  </td>  
+    </tr>
+    </table>
+
+     &nbsp
+
+    <h2>Sequences</h2>
+    <table>
+    <tr> 
+    <td>Protein sequences</td>
+    <td><a href="{% static fasta %}">Fasta File</a> </td>
+    </tr>
+    <tr> 
+    <td>Protein alignment (html)</td>
+    <td><a href="{% static alignment %}">alignment</a> </td>
+    </tr>
+    <tr> 
+    <td>Protein alignment (fasta)</td>
+    <td><a href="{% static alignment_fasta %}">alignment</a> </td>
+    </tr>    
+    </table>    
+     
+
+
+     
+    &nbsp
+
+
+     
+    <h2>Features of {{accession}}</h2>
+  
+    <table>
+    <tr>
+    <th id="entete">Feature</th>
+    <th>Value</th>
+    </tr>
+
+    {% for key, value  in seqfeature_values.items %}
+
+        <tr>
+        <td>{{key}}</td>
+        <td>{{value}}</td>
+        </tr>
+    {% endfor %}
+    </table>
+
+    &nbsp
+    <h2>Homologs</h2>
+  
+    <table>
+    <tr>
+    <th> </th> 
+    <th>Accession</th>
+    <th>Seqfeature id</th>
+    <th>Protein id</th>
+    <th>Organism</th>
+
+    </tr>
+    {% for values in ortho_detail %}
+        <tr>
+        <td>{{values.0}}</td>
+        <td>{{values.1}}</td>
+        <td>{{values.2}}</td>
+	<td>{{values.3}}</td>
+	<td>{{values.4}}</td>
+        </tr>
+    {% endfor %}
+    </table>
+
+    {% endif %}
+
+    {% if plot_region %}
+    &nbsp
+    <h2>Region</h2>
+    {% load static %}
+    <img src="{% static name %}" id="genomic_region" />
+    {% endif %}
+
+{% endif %}
+
+
+</body>
+</html>

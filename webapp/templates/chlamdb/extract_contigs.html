@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+
+
+<html>
+
+<head>
+
+   <link rel= "stylesheet" href="style_home.css">
+    {% load static %}
+    {% load custom_tags %}
+    {% include "chlamdb/header.html" %}
+    {% include "chlamdb/style_menu.html" %}
+ 
+</head>
+
+<body>
+    <div class="container-fluid" id="main_container">
+      <div class="row">
+        <div id="wrapper">
+            <div id="page-content-wrapper">
+              <div class="row">
+                <div class="col-lg-12">
+                   {% include "chlamdb/menu.html" %}
+         <p class="page-title"><b>Predicted proteins of {{organism}} </b></p>
+        <hr class="lines-home">
+
+          <div class="tab-pane" id="genomes" style="margin-right: 1em; overflow-x:auto;">
+                            
+            <table class="display" id="proteins_table">
+              <thead>
+                  <tr>
+					  {% for header in data_table_header %}
+					  <th>{{header}}</th>
+					  {% endfor %}
+                  </tr>
+              </thead>
+
+              <tbody>
+                {% for entry_line in data_table %}
+                  <tr>
+					{% for entry_col in entry_line %}
+					<td> {{entry_col|safe}}</td>
+					{% endfor %}
+                  </tr>
+                  {% endfor %}
+		 	  </tbody>
+
+          </table>        
+           </div>
+  <script>
+
+    $(document).ready(function() {
+    $("#proteins_table").DataTable();} );
+          
+  </script>
+  
+</html>

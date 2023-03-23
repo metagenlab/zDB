@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+
+    <div id="content">
+
+
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">Localisation of locus list
+            </p>
+        </div>
+
+
+
+        {% if envoi_circos %}
+
+            {% load static %}
+
+            <!--<object type="image/svg+xml" data="{{circos_new_file}}" id="pfam_tree" width="100%" height="1000px"></object>-->
+            <div style="position: relative; left: 0; top: 0;">
+                    <a href="{{ circos_new_file }}"><img src="{% static ""%}{{circos_file}}" id="circos_plot" style="position: absolute; top: 00px; left: 00px;"></a>
+
+                    <img src="{% static "/scales/circos_legend.png" %}" id="circos_legend"  width="160" style="position: relative; top: 0; left: 0;">
+
+            </div>
+        {% endif %}
+
+
+    </div>
+</div>
+
+</body>
+</html>

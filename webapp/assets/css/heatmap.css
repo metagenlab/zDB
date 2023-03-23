@@ -1,0 +1,79 @@
+.heatmap {
+    
+  font-size: 8px;
+  font-family: monospace;
+  
+}
+rect.bordered {
+  stroke: #E6E6E6;
+  stroke-width:2px;
+  
+}
+text.mono {
+  font-size: 10px;
+  font-family: monospace;
+  fill: #000;
+}
+text.legendElement {
+  font-size: 10px;
+}
+text.hover {
+  font-weight: bold;
+  fill: #66F;
+  font-background: #000;
+}
+.heatmap_tooltip {
+  text-align: center;
+  font-family: monospace;
+  font-size: 14pt;
+  color: #000;
+  position: relative;
+  background: rgba(255, 255, 255, 0.8);
+  border: 4px solid #66F;
+  padding: 5px;
+  border-radius: 8px ;
+  -webkit-border-top-left-radius: 8px;
+  -webkit-border-top-right-radius: 8px;
+  -webkit-border-bottom-right-radius: 8px;
+  -webkit-border-bottom-left-radius: 8px;
+  -khtml-border-top-left-radius: 8px;
+  -khtml-border-top-right-radius: 8px;
+  -khtml-border-bottom-right-radius: 8px;
+  -khtml-border-bottom-left-radius: 8px;
+  -moz-border-radius-topleft: 8px;
+  -moz-border-radius-topright: 8px;
+  -moz-border-radius-bottomright: 8px;
+  -moz-border-radius-bottomleft: 8px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-bottom-left-radius: 8px;
+  width: 100px;
+  z-index:10000;
+  -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.8);
+  -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.8);
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.8);
+}
+.heatmap_tooltip:after, .heatmap_tooltip:before {
+  top: 100%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+.heatmap_tooltip:after {
+  border-color: rgba(236, 240, 241, 0);
+  border-top-color: #FFFFF;
+  border-width: 10px;
+  left: 50%;
+  margin-left: -10px;
+}
+.heatmap_tooltip:before {
+  border-color: rgba(44, 62, 80, 0);
+  border-top-color: #66F;
+  border-width: 16px;
+  left: 50%;
+  margin-left: -16px;
+}

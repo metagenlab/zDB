@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+</head>
+
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+
+    <div id="content">
+
+
+        <form action="{% url "motif_search" %}" method="post">{% csrf_token %}
+
+
+
+        {{ form.as_p }}
+        <input type="submit" value="Submit" />
+
+
+
+
+        </form>
+
+
+
+        {% if envoi %}
+
+            &nbsp
+
+            <h2>Motif search result</h2>
+
+
+        <pre>
+        <div id="formatted_blast">
+        {{std_out}}
+        </div>
+            </pre>
+        <!--
+        <table>
+        <tr>
+          <td>
+           <pre id=blast_result>
+            {{blast_result}}
+           </pre>
+
+          </td>
+        </tr>
+        -->
+
+        </table>
+
+        </section>
+
+
+        {% endif %}
+    </div>
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#id_motif_input,#id_input_file').each(function(i, e) {
+        $('<input name="test_field" value="'+i+'" type="radio">')
+            .insertBefore(e)
+            .click(function() {
+                $('#id_motif_input, #id_input_file').attr('disabled', 'disabled');
+                $(e).removeAttr('disabled');
+            })
+            .next('#id_motif_input').prev().click();
+    });
+});
+</script>
+
+
+
+</body>
+</html>

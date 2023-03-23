@@ -1,0 +1,84 @@
+<!DOCTYPE html> <html>  <head> {% load custom_tags %}
+  {% load static %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+  {% include "chlamdb/header.html" %}
+
+
+   
+</head>
+
+
+<div class="container-fluid" id="main_container">
+  <div class="row">
+    <div id="wrapper">
+      <div id="page-content-wrapper">
+        <div class="row">
+          <div class="col-lg-12">
+           {% include "chlamdb/menu.html" %}
+           {% include "chlamdb/extract_nav_tabs_template.html" with type="Pfam" active_tab="index" %} 
+          </br></br></br>
+           <table id="pfam_table">
+             <thead>
+                <tr>
+                    <td></td>
+                    <td>Accession</td>
+                    <td>Description</td>
+                    <td>Count</td>
+                    <td>Frequency (n genomes)</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% for index, row in combined_df.iterrows %}
+                  <tr>
+                      <td>{{forloop.counter}}</td>
+                      <td><a href="{% url 'fam_pfam' row.accession%}">{{row.accession}}</a></td>
+                      <td>{{row.def}}</td>
+                      <td>{{row.count}}</td>
+                      <td>{{row.freq}}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+          </table>
+
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+      
+      <script>
+      
+      $(document).ready(function() {
+        $('#pfam_table').DataTable( {
+          dom: 'lBfrtip',
+          buttons: [
+              {
+                  extend: 'colvis',
+                  columns: ':not(.noVis)',
+              },
+              {
+                  extend: 'excel',
+                  title: 'plast_refseq'
+              },
+              {
+                  extend: 'csv',
+                  title: 'plast_refseq'
+              }
+          ],
+         
+          "ordering": true,
+          "info":     false,
+          } );
+      } );
+      
+      </script>
+
+</body>
+</html>

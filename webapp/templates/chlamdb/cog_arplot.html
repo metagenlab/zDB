@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+
+    <div id="content">
+
+
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
+            rRNA are colored in blue, tRNA in red.
+            </p>
+        </div>
+
+        <form action="{% url "circos" %}" method="post">{% csrf_token %}
+
+        <table>
+        <tr>
+          <td>{{ form.as_p }}</td>
+        </tr>
+
+        <tr>
+          <td><input type="submit" name="submit_circos" value="get circos plot" id="id_submit_circos" /> <input type="submit" name="submit_region" value="Get region" id="id_submit_region" /></td>
+        </tr>
+        </table>
+
+
+
+
+        {% block extrahead %}
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+        <script>
+          var update_fields = function () {
+            if ($("#id_get_region").is(":checked")) {
+
+                $('#id_region').prop('disabled', false);
+                $('#id_submit_region').show();
+                $('#id_submit_circos').hide();
+            }
+            else {
+
+               $('#id_region').prop('disabled', 'disabled');
+               $('#id_submit_region').hide();
+               $('#id_submit_circos').show();
+            }
+          };
+          $(update_fields);
+          $("#id_get_region").change(update_fields);
+
+        </script>
+
+
+        {% endblock %}
+
+
+
+
+
+
+        {% if envoi_circos %}
+
+            {% load static %}
+
+            <!--<object type="image/svg+xml" data="{{circos_new_file}}" id="pfam_tree" width="100%" height="1000px"></object>-->
+
+            <a href="{{ circos_new_file }}"><img src="{% static ""%}{{circos_file}}" id="circos_plot"></a>
+
+        {% endif %}
+
+
+        {% if envoi_region %}
+            <table>
+              <tr>
+
+            <!--["contig", "type", "start", "stop", "length", "GC", "strand", "gene", "function", "inference",
+                                  "gi", "locus", "translation"]-->
+
+            <th id="entete3">{{header.1}}</th>
+            <th id="entete3">{{header.4}}</th>
+            <th id="entete3">{{header.5}}</th>
+            <th id="entete3">{{header.6}}</th>
+            <th id="entete3">{{header.7}}</th>
+            <th id="entete3">{{header.8}}</th>
+
+            <th id="entete3">{{header.11}}</th>
+            <th id="entete_circos">{{header.12}}</th>
+              </tr>
+
+              {% for one_feature in result %}
+                  <tr>
+            <td id="entete3">{{one_feature.1}}</td>
+
+            <td id="entete3">{{one_feature.4}}</td>
+            <td id="entete3">{{one_feature.5}}</td>
+            <td id="entete3">{{one_feature.6}}</td>
+            <td id="entete3">{{one_feature.7}}</td>
+            <td id="entete3">{{one_feature.8}}</td>
+
+            <td id="entete3">{{one_feature.11}}</td>
+            <td id="entete_circos">{{one_feature.12}}</td>
+                  </tr>
+              {% endfor %}
+
+
+            </table>
+
+
+        {% endif %}
+
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+function hide_submenus(hidden_menu) {
+
+    var menu_ul = $('.' + hidden_menu +'> ul'),
+        menu_a  = $('.' + hidden_menu +'> a');
+
+    menu_ul.hide();
+
+    menu_a.click(function(e) {
+        e.preventDefault();
+        if(!$(this).hasClass('active')) {
+            menu_a.removeClass('active');
+            menu_ul.filter(':visible').slideUp('normal');
+            $(this).addClass('active').next().stop(true,true).slideDown('normal');
+        } else {
+            $(this).removeClass('active');
+            $(this).next().stop(true,true).slideUp('normal');
+        }
+    });
+
+};
+
+$(hide_submenus("rollmenu1"))
+
+</script>
+    
+</body>
+</html>

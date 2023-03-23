@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+<head>
+{% load static %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+{% include "chlamdb/header.html" %}
+
+</head>
+
+<body>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              {% include "chlamdb/menu.html" %}
+              <div class="col-lg-12">
+                <div class="row">
+
+                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                        <li class="active"><a href="#tab1" data-toggle="tab">Table</a></li>
+                        <li><a href="#tab2" data-toggle="tab">Phylogeny</a></li>
+                    </ul>
+
+                    <div id="my-tab-content" class="tab-content">
+                        <div class="tab-pane active" id="tab1">
+
+                          <table class="display dataTable" id="taxonomy">
+                              <thead>
+                                  <tr>
+                                      <th>AssemblyAccession</th>
+                                      <th>accession</th>
+                                      <th>assembly_id</th>
+                                      <th>description</th>
+                                      <th>species_id</th>
+                                      <th>phylum</th>
+                                      <th>order</th>
+                                      <th>family</th>
+                                      <th>genus</th>
+                                      <th>species</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+
+                                  {% for values in data %}
+                                      <tr>
+                                          <td><a href="https://www.ncbi.nlm.nih.gov/assembly/{{values.0}}" target="_top">{{values.0}}</a></td>
+                                          <td><a href="https://www.ncbi.nlm.nih.gov/nucleotide/{{values.1}}" target="_top">{{values.1}}</a></td>
+                                          <td>{{values.2}}</td>
+                                          <td>{{values.3}}</td>
+                                          <td><a href="{% url 'edit_species_taxonomy' values.4 %}" target="_top">{{values.4}}</a></td>
+                                          <td>{{values.5}}</td>
+                                          <td>{{values.6}}</td>
+                                          <td>{{values.7}}</td>
+                                          <td>{{values.8}}</td>
+                                          <td>{{values.9}}</td>
+                                      </tr>
+                                  {% endfor %}
+                              </tbody>
+                          </table>
+                        </div>
+                        <div class="tab-pane" id="tab2">
+                            <img src="{% static asset_path1 %}" alt="phylo" style="width:1100px;">
+                        </div>
+                    </div>
+
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+
+
+
+<script>
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+});
+
+$(document).ready(function() {
+    $('#taxonomy').DataTable( {
+      dom: 'lBfrtip',
+      buttons: [
+          {
+              extend: 'colvis',
+              columns: ':not(.noVis)',
+          },
+          {
+              extend: 'excel',
+              title: 'blast_swissprot'
+          },
+          {
+              extend: 'csv',
+              title: 'blast_swissprot'
+          }
+      ],
+        "pageLength": 100
+    } );
+} );
+
+</script>
+{% include "chlamdb/style_menu.html" %}
+</html>

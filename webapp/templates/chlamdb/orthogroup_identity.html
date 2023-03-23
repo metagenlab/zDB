@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+{% load static %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+
+
+
+</head>
+
+<body id="locus_body">
+        {% if homologs %}
+            <iframe  width="100%" height="2000px" src="{% url 'ortho_id_plot' orthogroup %}" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+        {% else %}
+
+        {% endif %}
+
+</body>
+</html>

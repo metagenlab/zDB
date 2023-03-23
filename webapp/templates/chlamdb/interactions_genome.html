@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+    {% load static %}
+    {% load static %}
+    {% get_static_prefix as STATIC_PREFIX %}
+
+    {% include "chlamdb/header.html" %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.8.1/cytoscape.min.js"></script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qtip2/3.0.3/basic/jquery.qtip.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/qtip2/3.0.3/basic/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.7.1/cytoscape-qtip.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/4.10.3/css/bootstrap-slider.min.css">
+    <script type="text/javascript" src="{% static 'js/cytoscape-cola.js' %}"></script>
+    
+</head>
+
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              {% include "chlamdb/menu.html" %}
+              <div class="col-lg-12">
+                <div class="row">
+
+                    <h3>Clusters of conserved genes</h3>
+
+                        <form action="{% url "interactions_genome" %}" method="post">{% csrf_token %}
+
+                        <table>
+                        <tr>
+                        <td>{{ form.as_p }}</td>
+                        </tr>
+
+                        <tr>
+                        <td><input type="submit" name="submit_circos" value="get network" id="id_submit_circos" /></td>
+                        </tr>
+                        </table>
+
+
+                        <ul style="padding-top: 10px" id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                            <li class="active"><a href="#tab1" data-toggle="tab">Annotation</a></li>
+                            <li><a href="#tab2" data-toggle="tab">Profile</a></li>
+                        </ul>
+
+                        <div id="my-tab-content" class="tab-content" style="height: 4000px;">
+                            <div class="row">
+                                <div class="col-xs-6" style="padding-left: 15px">
+                                    <a id="cy_png" download="myimage">png</a>
+                                    <div id="cy" style="width:1200px;height:1200px">
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                </div>
+             </div>
+         </div>
+     </div>
+    </div>
+</div>
+ </div>
+</body>
+{% include "chlamdb/style_menu.html" %}
+{{script|safe}}
+</html>

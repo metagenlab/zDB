@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+
+
+debugging=0
+custom_port=""
+custom_run_name=""
+default_port="8080"
+default_run_name="latest"
+hosts=""
+use_dev_server=false
+
+
+for i in "$@"; do
+	case $i in
+		-d|--debug)
+			debugging=1
+			shift
+			;;
+		-p|--port=*)
+			custom_port="${i#*=}"
+			shift
+			;;
+		--hosts=*)
+			hosts="${i#*=}"
+			shift
+			;;
+		--use_dev_server)
+			use_dev_server=true
+			shift
+			;;
+		--run_name=*)
+			custom_run_name="${i#*=}"
+			shift
+			;;
+		-h)
+			echo "Startup script for the web app, will be invoked from within "
+			echo "a container in production, but may also be invoked directly "
+			echo "when in debug mode."
+			echo " --d|--debug:  debug mode. Assumes that the code will be run outside of a container"
+			echo "-p|--port=PORT:  change the port the web server will listen to"
+			echo "--run_name=NAME:  the name of the run (or the name passed as argument to the annotation_pipeline)."
+			echo "The information will be used to choose which database/blast index and seach index to use."
+			;;
+		*)
+			echo "Unkown argument '$i'"
+			exit 1
+	esac
+done
+
+display=""
+for i in $(seq 1 1024);do
+	if [ ! -f "/tmp/.X${i}-lock" ]; then
+		display="$i"
+		break
+	fi
+done
+
+if [ "$display" = "" ]; then
+	echo "Could not find any free display for Xvfb"
+	exit 1
+fi
+
+
+Xvfb ":${display}" &  # should be running on the container
+if [ ! $? -eq 0 ]; then
+	echo "Could not instantiate Xvfb, exiting"
+	exit 1
+fi
+
+xvfb_pid=$!
+
+# This is unfortunately necessary as ete3 uses Qt, which cannot
+# run without a display
+export DISPLAY=":${display}"
+
+if [ -z "${hosts}" ]; then
+	# if no host was specified, try to guess one
+	hosts=`hostname -I`
+fi
+
+
+if [ -z "${custom_run_name}" ]; then
+	echo "No run name specified, using '${default_run_name}'"
+	custom_run_name="$default_run_name"
+fi
+
+
+if [ -z "${custom_port}" ]; then
+	echo "No port specified, using '${default_port}'"
+	custom_port="$default_port"
+fi
+
+
+export PORT="$custom_port"
+export RUN_NAME="$custom_run_name"
+export DEBUG="$debugging"
+export ALLOWED_HOSTS="${hosts// /,}"
+
+
+# go to the chlamdb folder
+scriptpath=`realpath $0`
+zdb_dir=$(dirname $scriptpath)
+cd $zdb_dir
+
+echo "Starting web server. The application will be accessible @${hosts} on port ${custom_port}"
+if [ "$use_dev_server" = true ]; then
+	python manage.py runserver --nothreading 0.0.0.0:$custom_port
+else
+	gunicorn -c /usr/local/gunicorn/gunicorn.py
+	sed "s/PORT/${custom_port}/" /usr/local/nginx/nginx.config | sed --expression "s@ASSETS_PATH@${zdb_dir}\/assets@" > /usr/local/nginx/nginx_curr.config
+
+	nginx -p /usr/local/nginx -c /usr/local/nginx/nginx_curr.config
+
+	echo "Nginx server stopped"
+	# kill gunicorn when the user interrupts the nginx server
+	echo "Chasing gunicorn..."
+	cat /usr/local/gunicorn/gunicorn.pid | xargs kill
+	rm /usr/local/gunicorn/gunicorn.log
+	if [ -e "/usr/local/gunicorn/gunicorn.pid" ]; then
+		rm -f /usr/local/gunicorn/gunicorn.pid
+	fi
+	echo "Done"
+	rm /usr/local/nginx/nginx_curr.config
+
+	echo "Brutally stopping Xvfb"
+	kill -TERM $xvfb_pid
+fi
+
+unset DISPLAY
+unset PORT
+unset RUN_NAME
+unset ALLOWED_HOSTS
+unset DEBUG

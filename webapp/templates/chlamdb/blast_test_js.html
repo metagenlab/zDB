@@ -1,0 +1,37 @@
+<html>
+<meta charset="UTF-8">
+<link type="text/css" rel="stylesheet" href="https://cdn.rawgit.com/sing-group/biojs-vis-blasterjs/master/css/bootstrap.css">
+
+
+<script src="https://cdn.rawgit.com/sing-group/biojs-vis-blasterjs/master/lib/html2canvas.js"></script>
+<script src="https://wzrd.in/bundle/biojs-vis-blasterjs@0.2.1"></script>
+
+
+<div id='snippetDiv'></div>
+
+<div id="blast-multiple-alignments"></div>
+<div id="blast-alignments-table"></div>
+<div id="blast-single-alignment"></div>
+
+<script>
+
+var alignments = new XMLHttpRequest();
+alignments.open('GET', '{{blast_file_l}}');
+alignments.onreadystatechange = function() {
+  var align = alignments.responseText;
+  var blasterjs = require("biojs-vis-blasterjs");
+
+  var instance = new blasterjs({
+     string: align,
+     multipleAlignments: "blast-multiple-alignments",
+     alignmentsTable: "blast-alignments-table",
+     singleAlignment: "blast-single-alignment"
+  });
+
+}
+alignments.send();
+
+
+
+</script>
+</html>

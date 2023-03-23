@@ -1,0 +1,21 @@
+{% load static %}
+{% load custom_tags %}
+
+
+<div class="tab-pane active" id="tab1">
+<br>
+  <p class="page-title"><b>
+    Distribution of {{og}} homologs
+     </b></p></center>
+  <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
+	  <div class="panel-heading" style="width:100%">
+		  <h3 class="panel-title">Help</h3>
+	  </div>
+	  <p style="margin: 10px 10px 10px 10px; line-height: 180%"> Number of homologs  in each genome (first column and <span style="color: rgb(24, 120, 230)"><b>blue</b></span> bar chart)</p>
+  </div>
+
+  <object type="image/svg+xml" data="{% static asset_path %}"></object>
+
+  <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+
+</div>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+<ul><li><a href="{% url 'contact' %}">Home</a></li>
+  <li><a href="{% url 'orthogroups' %}">Orthogroups</a></li>
+  <li><a href="{% url 'circos' %}">Circos</a></li>
+  <li><a href="{% url 'search' %}">Search</a></li>
+  <li><a href="{% url 'blast' %}">Blast</a></li>
+  <!--
+  <li>
+    Portfolio
+    <ul>
+      <li>Web Design</li>
+      <li>Web Development</li>
+      <li>Illustrations</li>
+    </ul>
+  </li>
+  -->
+  <li><a href="http://127.0.0.1:8765/vista-alignment">GenomeVista</a></li>
+  <li><a href="http://127.0.0.17/jbrowse/JBrowse-1.11.4/">GBrowse</a></li>
+</ul>
+
+
+<form action="{% url "biodb.views.orthogroups" %}" method="post">{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" value="Submit" />
+</form>
+
+{% if envoi %}
+
+    {% load static %}
+    <img src="{% static ""%}{{groups}}" id="orthology_plot"/>
+{% endif %}
+</body>
+</html>

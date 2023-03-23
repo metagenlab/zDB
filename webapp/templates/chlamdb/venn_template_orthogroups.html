@@ -1,0 +1,47 @@
+<script language="Javascript">
+
+/**
+* Note: columns and build_set need to be defined 
+*   in the template file that includes this one.
+*/
+
+var h = new Object();
+{{ description_dico|safe }}
+
+$(document).ready(function() {
+	$("#names").DataTable ({
+		columns: columns
+	});
+
+	// initially hide the table when no set is selected
+	$("#names_div").hide();
+	
+	$('#venn_diagram').jvenn({
+		series: {{ series|safe }},
+		displayStat: true,
+		fnClickCallback: function() {
+			console.log(this.list);
+			let dataSet = this.list
+				.filter(it => it in h)
+				.map(it => build_set(it, h));
+			$("#names_div").show();
+			let table = $("#names").DataTable();
+			table.clear();
+			for(el in dataSet) {
+				table.row.add(dataSet[el]);
+			}
+			table.draw();
+		}
+	});
+});
+
+
+</script>
+
+
+<div id="venn_diagram" style="display: table;margin: 0;">
+</div>
+
+<div id="names_div">
+	<table id="names" class="hover"></table>
+</div>

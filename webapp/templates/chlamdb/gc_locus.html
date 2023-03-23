@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+    {% load static %}
+    {% load static %}
+    {% get_static_prefix as STATIC_PREFIX %}
+    {% include "chlamdb/header.html" %}
+
+</head>
+
+<body height="2000px">
+<h3>GC locus</h3>
+
+               <div class="container">
+
+                   <div class="row">
+                       <div class="col">
+                           <table class="table">
+                               <tr>
+                                   <th style="width:100px"></th>
+                                   <th style="width:150px">genome mean CDS GC</th>
+                                   <th style="width:150px"> genome median CDS GC</th>
+                                   <th style="width:150px">Locus GC</th>
+                               </tr>
+                               <tr>
+                                   <th>all</th>
+                                   <td>{{gc_all_mean}}</td>
+                                   <td>{{gc_all_median}}</td>
+                                   <td>{{gc_locus}}</td>
+
+                               </tr>
+                               <tr>
+                                   <th>codon position 1</th>
+                                   <td>{{gc_1_mean}}</td>
+                                   <td>{{gc_1_median}}</td>
+                                   <td>{{gc_1_locus}}</td>
+                               </tr>
+                               <tr>
+                                   <th>codon position 2</th>
+                                   <td>{{gc_2_mean}}</td>
+                                   <td>{{gc_2_median}}</td>
+                                   <td>{{gc_2_locus}}</td>
+                               </tr>
+                               <tr>
+                                   <th>codon position 3</th>
+                                   <td>{{gc_3_mean}}</td>
+                                   <td>{{gc_3_median}}</td>
+                                   <td>{{gc_3_locus}}</td>
+                               </tr>
+
+                           </table>
+
+                       </div>
+                   </div>
+
+                   <div class="row">
+                           <div class="col-lg-6" style="padding-left: 1px">
+                                <object type="image/svg+xml" data="{% static asset_path %}" id="gc1" width="600px" height="600px" align="left" style="margin-left: 5px"></object>
+                           </div>
+                           <div class="col-lg-6" style="padding-left: 50px">
+                                <object type="image/svg+xml" data="{% static asset_path2 %}" id="gc2" width="600px" height="600px" align="left" style="margin-left: 5px"></object>
+                           </div>
+
+                   </div>
+               </div>
+
+</body>
+</html>

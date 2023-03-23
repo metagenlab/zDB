@@ -1,0 +1,11 @@
+name: annotation-base
+channels:
+    - anaconda
+    - conda-forge
+dependencies:
+    - python=3.9
+    - whoosh
+    - sqlite
+    - biopython
+    - numpy
+    - pandas

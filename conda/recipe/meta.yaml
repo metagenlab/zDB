@@ -1,15 +1,15 @@
-{% set version = "1.0.7" %}
+{% set version = "1.0.8" %}
 
 package:
   name: zdb
   version: {{ version }}
 
 build:
-  number: 4
+  number: 5
 
 source:
-  url: https://github.com/metagenlab/zDB/archive/refs/tags/v1.0.7.tar.gz
-  sha256: 0f69d56abe92c8224fdc801c73a2d5daec81dfc0d49700ed71da46996a228e16
+  url: https://github.com/metagenlab/zDB/archive/refs/tags/v1.0.8-beta.tar.gz
+  sha256: a58a047dcb146b38374b37746b970607ab817c35d6939abfae67a8a9924e6ff9
 
 requirements:
   run:

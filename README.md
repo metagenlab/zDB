@@ -16,6 +16,10 @@ All the results are stored either in a SQLite database or directly as files and 
 
 ## Changelog
 
+v1.0.8 (february 2023):
+- added support for dockers and conda
+- several bugfixes
+
 v1.0.5 (december 2022): 
 - added a ```--resume``` option to ```zdb run```
 - added a name field in the input csv file
@@ -23,21 +27,28 @@ v1.0.5 (december 2022):
 
 ## Installation
 
-zDB relies on singularity to run the analysis and the web server. Unfortunately, the singularity versions available in the bioconda channel are currently outdated and you'll need to install more recent ones from conda-forge. Run the following command:
+### zDB Installation
 
-```
-conda install singularity=3.8.4 -c conda-forge
-```
-As of now, zDB has been tested with this version of singularity (and 3.8.3), but it should work on more recent releases.
-
-Once this is done, zDB can be installed from conda with the following command
+zDB can be installed from conda with the following command
 ```
 conda install zDB -c metagenlab -c bioconda
 ```
-
 For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
 
-### Install from sources
+The analysis and the webserver can be run in either conda environments or in containers (both singularity and dockers are supported).
+
+Running zDB in conda is likely the easiest way as it does not require to install either singularity or dockers, but comes with several drawbacks:
+- django will be run in native mode, without nginx and gunicorn: it is fine , but should not be used to set up a web-facing database (it is fine for a local access)
+- containers allow us to have a precise control of the environment where the webapp is run; it is less the case for conda environment. Despite our best care, running the webapp in conda might not work due to local differences.
+
+Of note, zDB has been tested on singularity v3.8.3 and v3.8.4 but should work on more recent versions. 
+If you opt to use singularity, it can be installed with the following command:
+```
+conda install singularity=3.8.4 -c conda-forge
+```
+
+### Install zDB from sources
+
 You can also install zdb directly from the github repository. This is particularly useful if you want to make modifications or if you want to have a direct access to Nextflow config file for a better control of the execution.
 
 Check out the project or download and unpack a release, then edit this line of the bin/zdb bash script:
@@ -58,13 +69,16 @@ export - exports the results of a previous run in an archive
 import - unpack an archive that was prepared with the export command in the current directory
        - so that the results can be used to start the webapp
 list_runs - lists the completed runs available to start the website in a given directory
-help - print this message
 ```
 
 ## Setting up the reference databases
 
-Depending on which analysis are to be run, reference databases will need to be downloaded and set up. This is done using the ```zdb setup``` command.
-You'll need to specifiy which databases are to be downloaded. The following options are available:
+Depending on which analysis are to be run, reference databases will need to be downloaded and set up.
+Of note, in minimal mode, zdb does not require any database to run.
+This is done using the ```zdb setup``` command.
+You'll need to specifiy which databases are to be downloaded. 
+
+The following databases can be downloaded:
 ```
 --cog: downloads the CDD profiles used for COG annotations
 --ko: downloads and setups the hmm profiles of the ko database
@@ -72,33 +86,41 @@ You'll need to specifiy which databases are to be downloaded. The following opti
 --swissprot: downloads and indexes the swissprot database
 ```
 
+The database setup can be run either in singularity containers (by default), in conda environment (if the ```--conda``` flag is set) or in docker (if the ```--docker``` flag is set).
+
 In addition, you can specify the directory where you want the databases to be installed with the ```--dir``` option: ```zdb setup --swissprot --dir=foobardir```.
 
 Downloading the HMM files from the KEGG server can take a bit of time (but you'll only need to do this once).
 
+Example commmand, setting up all the databases in the current directory, using conda environments:
+```
+zdb setup --pfam --swissprot --cog --ko --conda
+```
+
 ## Running the analysis
 
-Easy. Once you have the reference databases set up, the genomes ready, just run the ```zdb run``` command.
-Several options are available and allow you to customize the run:
+Once you have the reference databases set up, the genomes ready, just run the ```zdb run``` command.
+Several options are available and allow you to customize the run.
 
+By default, the analysis are run in singularity containers, but you can change this by using the ```--conda``` or ```--docker``` flags to have them run in conda environments or docker containers, respectively. If singularity is enabled, the containers will have to be downloaded. By default, they are stored in the singularity folder of the current directory, but this can be changed using the ```--singularity_dir``` option. This might be useful if you want to share containers between analyses.
+
+If the databases were set up, additional analyses can also be enabled with the ```--ko```, ```--cog```, ```--pfam``` and ```--swissprot``` flags. The directory (by default zdb_ref in the current directory) where the database were installed can be specified with the ```--ref_dir``` option.
+
+Other options include:
 ```
 --resume: wrapper for nextflow resume, allows to restart a run that crashed without redoing all the computations
 --out: directory where the files necessary for the webapp will be stored
 --input: CSV file containing the path to the genbank files to include in the analysis
---name: run name (defaults to the name given by nextflow). The latest completed run is also named latest.
---cog: perform cog annotation
---ko: perform ko (metabolism) annotation
---pfam: peform PFAM domain annotation
---swissprot: search for homologs in the swissprot database
---ref_dir: directory where the reference databases were setup up (default zdb_ref)
+--name: custom run name (defaults to the name given by nextflow). The latest completed run is also named latest.
+
 --cpu: number of parallel processes allowed (default 8)
 --mem: max memory usage allowed (default 8GB)
 --singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)
 ```
-As the analysis are run in containers, nextflow will have to download the first time zDB is used. The containers will be stored in the singularity folder of the current directory. If you already downloaded the containers, you can point zDB to the location where they are located with the ``--singularity_dir`` to avoid new downloads.
+
+The ```--name``` option is optional and can be used to replace nextflow's randomly generated run names by more meaningful ones.
 
 The input CSV file should look like this:
-
 ```
 name, file
 ,foo/bar.gbk
@@ -132,11 +154,14 @@ Once the analysis is complete, the web application can be run with the ```zdb we
 --port=PORT_NUMBER      the port the application will be listening to, 8080 by default.
 --name=RUN_NAME     when nextflow runs. If not specified, will default to the last successful run (latest).
 --allowed_hosts=HOSTS   the name of the host or the ip address of the server. If not specified, will default to the ip addresses of the current host.
---singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)
 ```
+
+The webserver can also be run in a conda environment by setting the ```--conda``` flag or in docker by setting the ```docker``` flag.
+By default, it will be run in a singularity container.
+
 Simply put, if the port 8080 is not in use, that you want to access the results of your latest run and will only access the web application locally, you can simply run the ```zdb webapp``` script without any parameters.
 
-Once the webserver has started, you'll be able to access the webpages with a web-browser.
+Once the webserver has started, you'll be able to access the webpages with a web browser.
 
 If you do not remember which runs are available, you can list them with the ```zdb list_runs``` command.
 
@@ -161,6 +186,30 @@ As the analysis may be run on a server or on an HPC cluster, the results may nee
 
 This can be done with the ```zdb export``` command with a run name as parameter. This will create a compressed archive containing all the necessary results. The archive can then be transferred to a different machine and unpacked, either manually or with the ```zdb import``` command.
 The web server can then be started as if the analysis had been run locally.
+
+## In brief
+
+For a minimal database relying on orthology (might be already enough to have interesting results if you add reference genomes in addition to your genomes of interest). This assumes that singularity is installed.
+```
+conda install zdb -c metagenlab
+zdb run --input=simple_input.csv --name=simple_run # runs the analysis
+zdb webapp --name=simple_run # Launches the webapp on simple run
+```
+
+To do the same in conda environments:
+```
+conda install zdb -c metagenlab
+zdb run --input=simple_input.csv --name=simple_run_conda --conda # runs the analysis
+zdb webapp --conda --name=simple_run_conda # Launches the webapp on the latest run
+```
+
+To have a more complete set of analyses (includes cog and pfam annotation):
+```
+conda install zdb -c metagenlab
+zdb setup --pfam --cog --conda
+zdb run --input=simple_input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
+zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
+```
 
 ## Bugs and feature requests
 Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/annotation_pipeline_nextflow/issues).

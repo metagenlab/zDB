@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load static %}
+    {% load custom_tags %}
+{% include "chlamdb/header.html" %}
+</head>
+<body>
+
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
+
+                  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Help</h3>
+                      </div>
+                      <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
+                      rRNA are colored in blue, tRNA in red.
+                      </p>
+                  </div>
+
+                  <h3>   Kegg modules sub sub category: {{category}}</h3>
+                  <div id="export_bouttons_groups">
+                      <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" class="btn btn-success">Export to Excel</a>
+
+                      <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" class="btn btn-success">Export to CSV</a>
+                      <br/>
+                  </div>
+                  <table id="cog_table" class="sortable">
+                      <thead>
+                      <tr>
+                          {% if type == 'module'%}
+                          <th>KO id</th>
+                          <th>Ko name</th>
+                          <th>Ko description</th>
+                          <th>kegg Map(s)</th>
+                          <th>kegg module(s)</th>
+                          <th>module</th>
+                          <th>Description</th>
+                          <th>Name</th>
+                          {%else%}
+                          <th>KO id</th>
+                          <th>Ko name</th>
+                          <th>Ko description</th>
+                          <th>Pathway ID</th>
+                          <th>kegg Pathway</th>
+                          <th>Pathway description</th>
+
+                          {%endif%}
+                      </tr>
+                      </thead>
+                      <tbody>
+
+                          {%for values in data%}
+
+                          <tr>
+                              {% if type == 'module'%}
+                              <td><a href="{% url 'fam' values.0 "ko" %}">{{values.0}}</a></td>
+                              <td>{{values.1}}</td>
+                              <td>{{values.2}}</td>
+                              <td>{{values.3}}</td>
+                              <td>{{values.4}}</td>
+                              <td>{{values.5}}</td>
+                              <td>{{values.6}}</td>
+                              <td>{{values.7}}</td>
+                              {%else%}
+                              <td><a href="{% url 'fam' values.0 "ko" %}">{{values.0}}</a></td>
+                              <td>{{values.1}}</td>
+                              <td>{{values.2}}</td>
+                              <td><a href="{% url 'KEGG_mapp' values.3 %}">{{values.3}}</a></td>
+                              <td>{{values.4}}</td>
+                              <td>{{values.5}}</td>
+                              <td>{{values.6}}</td>
+                              <td>{{values.7}}</td>
+
+
+                              {%endif%}
+                          </tr>
+                          {%endfor%}
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+{% include "chlamdb/style_menu.html" %}
+</html>

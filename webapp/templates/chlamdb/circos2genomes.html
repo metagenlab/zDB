@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+
+
+
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+
+    <div id="content">
+
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">Comparions of pairs of genomes (first genome as reference, them second genome as reference)<br>
+            Missing Protein encoding ORF indicated in orange in the reference tracks.
+            Optional: possibility to highlight locus in pink. Provide a comma separeted list of locus to highlight.
+            </p>
+        </div>
+
+
+    <form action="{% url "circos2genomes" %}" method="post">{% csrf_token %}
+    {{ form.as_p }}
+
+    <input type="submit" name="GO" value="GO" id="id_GO" />
+
+
+
+    </form>
+
+
+
+
+
+
+
+
+
+
+
+
+    {% if envoi %}
+
+
+        {% if not valid_id %}
+
+            Invalid identifier
+
+        {% else %}
+
+            {% load static %}
+
+
+            <div style="border:1px solid red; padding:5px;">
+                <table>
+                    <tr>
+                        <th>{{ reference_name }}</th>
+                        <th>{{ query_name }}</th>
+                    </tr>
+                        <tr>
+                        <td>
+                        <img src="{% static reference_file %}" style="float: left; width: 99%; margin-right: 1%; margin-bottom: 0.5em;">
+                        </td>
+                        <td>
+                        <img src="{% static query_file %}" style="float: left; width: 99%; margin-right: 1%; margin-bottom: 0.5em;">
+                        </td>
+                        <p style="clear: both;">
+                    </tr>
+
+                    <tr>
+                        <th> N orthogroups </th>
+                        <th> </th>
+                        </tr>
+                        <tr>
+                        <td>{{ reference_n_orthogroups }} </td>
+                        <td>{{ query_n_orthogroups }} </td>
+                    </tr>
+
+                    <tr>
+                        <th> N proteins </th>
+                        <th> </th>
+                        </tr>
+                    <tr>
+
+                    <tr>
+                        <td>{{ reference_n_proteins }} </td>
+                        <td>{{ query_n_proteins }} </td>
+                    </tr>
+
+                    <tr>
+                        <th> N shared </th>
+                        <th> </th>
+                    </tr>
+                    <tr>
+
+                    <tr>
+                        <td> {{n_shared_orthogroups}} </td>
+                        <td> </td>
+                    </tr>
+                    <tr>
+
+                </table>
+            </div>
+
+
+
+
+
+        {% endif %}
+
+
+
+
+    {% endif %}
+
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+function hide_submenus(hidden_menu) {
+
+    var menu_ul = $('.' + hidden_menu +'> ul'),
+        menu_a  = $('.' + hidden_menu +'> a');
+
+    menu_ul.hide();
+
+    menu_a.click(function(e) {
+        e.preventDefault();
+        if(!$(this).hasClass('active')) {
+            menu_a.removeClass('active');
+            menu_ul.filter(':visible').slideUp('normal');
+            $(this).addClass('active').next().stop(true,true).slideDown('normal');
+        } else {
+            $(this).removeClass('active');
+            $(this).next().stop(true,true).slideUp('normal');
+        }
+    });
+
+};
+
+$(hide_submenus("rollmenu1"))
+$(hide_submenus("rollmenu2"))
+
+</script>
+
+
+
+
+
+</body>
+</html>

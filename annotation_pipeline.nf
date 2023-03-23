@@ -75,6 +75,7 @@ get_files
 
 process check_gbk {
     container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
     publishDir "${params.results_dir}/blast_DB/$workflow.runName/gbk"
 
 	input:
@@ -105,6 +106,8 @@ checked_gbks.into {
 
 process convert_gbk {
   container "$params.annotation_container"
+  conda "$baseDir/conda/annotation.yaml"
+
   input:
       file edited_gbk from to_convert_gbk.flatten()
 
@@ -138,6 +141,7 @@ faa_locus1.into { faa_genomes1
 
 process get_nr_sequences {
   container "$params.annotation_container"
+  conda "$baseDir/conda/annotation.yaml"
 
   input:
     file(seq) from to_get_nr_sequences
@@ -174,6 +178,7 @@ if(params.pfam) {
 
     process pfam_scan {
         container "$params.pfam_scan_container"
+        conda "$baseDir/conda/pfam_scan.yaml"
 
         input:
             tuple (file(pfam_db), file(faa_chunk) ) from to_pfam_scan_combined
@@ -208,7 +213,8 @@ fna_files_SEQ_2.mix(faa_files_SEQ_2, ffn_files_seq_2, merged_ffn_makeblastdb,
 
 process makeblastdb {
     container "$params.blast_container"
-    publishDir "${params.results_dir}/blast_DB/$workflow.runName/${file_type}"
+    conda "$baseDir/conda/blast.yaml"
+    publishDir "${params.results_dir}/blast_DB/$workflow.runName/${file_type}", mode: 'move'
 
     input:
         file(input_file) from to_makeblastdb
@@ -229,6 +235,7 @@ process makeblastdb {
 
 process prepare_orthofinder {
   container "$params.orthofinder_container"
+  conda "$baseDir/conda/orthofinder.yaml"
 
   input:
     file genome_list from faa_genomes1.collect()
@@ -244,9 +251,10 @@ process prepare_orthofinder {
   """
 }
 
-process blast_orthofinder {
 
+process blast_orthofinder {
   container "$params.blast_container"
+  conda "$baseDir/conda/blast.yaml"
 
   input:
   file complete_dir from result_dir
@@ -269,8 +277,10 @@ process blast_orthofinder {
   """
 }
 
+
 process orthofinder_main {
   container "$params.orthofinder_container"
+  conda "$baseDir/conda/orthofinder.yaml"
 
   cpus 2
 
@@ -300,6 +310,7 @@ orthogroups
 
 process orthogroups2fasta {
   container "$params.annotation_container"
+  conda "$baseDir/conda/annotation.yaml"
 
   input:
   file 'Orthogroups.txt' from orthogroups_1
@@ -318,7 +329,8 @@ process orthogroups2fasta {
 
 process align_with_mafft {
   container "$params.mafft_container"
-  publishDir "${params.results_dir}/alignments/$workflow.runName"
+  conda "$baseDir/conda/mafft.yaml"
+  publishDir "${params.results_dir}/alignments/$workflow.runName", mode: "copy"
 
   input:
       file og from orthogroups_fasta.toSortedList().flatten().collate(20)
@@ -348,6 +360,7 @@ to_identity_calculation.toSortedList().flatten().collate(50).
 
 process identity_calculation {
     container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
     
     input:
         file input_fasta from to_identity_calculation_split
@@ -377,6 +390,7 @@ alignement_larger_than_2_seqs.toSortedList().flatten().collate(50).set { to_fast
 
 process orthogroups_phylogeny_with_fasttree3 {
   container "$params.fasttree_container"
+  conda "$baseDir/conda/fasttree.yaml"
   publishDir "${params.results_dir}/gene_phylogenies/$workflow.runName"
 
   input:
@@ -399,6 +413,7 @@ gene_phylogeny.collect().set { all_og_phylogeny }
 
 process get_core_orthogroups {
     container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
 
   input:
   file 'Orthogroups.txt' from orthogroups
@@ -420,8 +435,10 @@ process get_core_orthogroups {
 }
 
 
+// TODO: merge with get_core_orthogroups
 process concatenate_core_orthogroups {
     container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
 
   input:
   file core_groups from core_orthogroups.collect()
@@ -443,6 +460,7 @@ process concatenate_core_orthogroups {
 
 process build_core_phylogeny_with_fasttree {
   container "$params.fasttree_container"
+  conda "$baseDir/conda/fasttree.yaml"
   publishDir "${params.results_dir}/gene_phylogenies/$workflow.runName"
 
   input:
@@ -460,6 +478,7 @@ process build_core_phylogeny_with_fasttree {
 
 process checkm_analyse {
   container "$params.checkm_container"
+  conda "$baseDir/conda/checkm.yaml"
 
   input:
   file genome_list from to_checkm.collect()
@@ -480,6 +499,7 @@ if(params.cog) {
     
     process rpsblast_COG {
       container "$params.blast_container"
+      conda "$baseDir/conda/blast.yaml"
 
       input:
         tuple (file(cog_db), file(seq)) from to_rpsblast_COG_multi
@@ -507,6 +527,7 @@ if (params.blast_swissprot) {
 
     process blast_swissprot {
       container "$params.blast_container"
+      conda "$baseDir/conda/blast.yaml"
 
       input:
           tuple (file(swissprot_db), file(seq)) from to_blast_swissprot_multi
@@ -557,6 +578,7 @@ if(params.ko) {
     
     process execute_kofamscan {
       container "$params.kegg_container"
+      conda "$baseDir/conda/kofamscan.yaml"
 
       input:
         tuple (file(ko_db), file(seq)) from to_kofamscan_multi
@@ -579,6 +601,8 @@ if(params.ko) {
 
 process setup_db {
     container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+    publishDir "${params.results_dir}/db"
 
     output:
         file output_file into db_base
@@ -590,9 +614,10 @@ process setup_db {
     """
 }
 
+
 process load_base_db {
     container "$params.annotation_container"
-    publishDir "${params.results_dir}/db"
+    conda "$baseDir/conda/annotation.yaml"
 
     // Necessary to prevent segfaults due to the large size
     // of the stage script
@@ -654,6 +679,7 @@ if(!params.diamond_refseq) {
 } else {
     process load_refseq_results {
         container "$params.annotation_container"
+        conda "$baseDir/conda/annotation.yaml"
         input:
             file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
             file curr_db from db_gen
@@ -678,6 +704,7 @@ if(!params.diamond_refseq) {
 
 process align_refseq_BBH_with_mafft {
   container "$params.mafft_container"
+  conda "$baseDir/conda/mafft.yaml"
 
   input:
     file og from diamond_best_hits.flatten().collate( 20 )
@@ -697,6 +724,7 @@ process align_refseq_BBH_with_mafft {
 
 process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   container "$params.fasttree_container"
+  conda "$baseDir/conda/fasttree.yaml"
 
   input:
     file og from mafft_alignments_refseq_BBH
@@ -723,6 +751,7 @@ if(!params.diamond_refseq) {
 
 process load_BBH_phylogenies {
     container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
 
     input:
         file db from to_load_BBH_phylo
@@ -753,6 +782,8 @@ process load_BBH_phylogenies {
 
 process load_COG_into_db {
     container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
     input:
         file db from to_load_COG
         file cog_file from COG_to_load_db.collect()
@@ -781,6 +812,8 @@ process load_COG_into_db {
 
 process load_KO_into_db {
     container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
     input:
         file KO_results from to_load_KO.collect()
         file db from to_load_KO_db
@@ -808,8 +841,11 @@ process load_KO_into_db {
         """
 }
 
+
 process load_PFAM_info_db {
     container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
     input:
         file db from to_pfam_db
         file pfam_annot from pfam_results.collect()
@@ -838,6 +874,8 @@ process load_PFAM_info_db {
 
 process load_swissprot_hits_into_db {
     container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
     input:
         file db from to_load_swissprot_hits
         file blast_results from swissprot_blast.collect()
@@ -866,6 +904,8 @@ process load_swissprot_hits_into_db {
 
 process create_chlamdb_search_index {
     container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
     publishDir "${params.results_dir}/search_index/"
 
     input:
@@ -897,7 +937,12 @@ process cleanup {
 
     script:
     custom_run_name=(params.name)?params.name:""
+    db_path="${results_dir}/db/$workflow.runName"
     """
+    mv $db_path ${db_path}_backup
+    mv \$(readlink ${db_path}_backup) $db_path
+    rm ${db_path}_backup
+
     ln -sf $index ${results_dir}/search_index/$workflow.runName
 
     if [ ! -d "${results_dir}/.completed_runs" ]; then

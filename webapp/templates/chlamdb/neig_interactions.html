@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+    {% load static %}
+    {% load static %}
+    {% load custom_tags %}
+    {% get_static_prefix as STATIC_PREFIX %}
+
+    {% include "chlamdb/header.html" %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.8.1/cytoscape.min.js"></script>
+
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.js"></script>
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.7.1/cytoscape-qtip.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/4.10.3/css/bootstrap-slider.min.css">
+    <script type="text/javascript" src="{% static 'js/cytoscape-cola.js' %}"></script>
+    
+
+{{script|safe}}
+
+</head>
+
+<body height="2000px">
+<h3>Conserved neighborhood for {{orthogroup}}</h3>
+    {% if match %}
+        <object width="95%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
+
+        <div class="row">
+            <div class="col-lg-12 col-md-12" style="padding-left: 15px">
+                <div id="cy" style="width:100%;height:600px"></div>
+            </div>
+        </div>
+
+        <ul style="padding-top: 10px" id="tabs" class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#tab1" data-toggle="tab">Annotation</a></li>
+            <li><a href="#tab2" data-toggle="tab">Profile</a></li>
+            <!--<li><a href="#tab77" data-toggle="tab" onclick="window.open('{% url 'plot_region_direct' orthogroup %}{{plot_url|safe}}', 'orthoIDframe4'); return false">Region</a></li>-->
+        </ul>
+
+        <div id="my-tab-content" class="tab-content">
+            <div class="tab-pane active" id="tab1">
+
+                        <table id="interaction_table" class="table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Orthogroup</th>
+                                    <th>Locus</th>
+                                    <th>C</th>
+                                    <th>COGn</th>
+                                    <th>KO</th>
+                                    <th>Pathways</th>
+                                    <th>Modules</th>
+                                    <th>Interpro</th>
+                                    <th>Gene</th>
+                                    <th>nH</th>
+                                    <th>nG</th>
+                                    <th>TM</th>
+                                    <th>SP</th>
+                                    <th>Product</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                {%for values in locus2annot%}
+                                <tr>
+                                    <td>{{values.0}}</td>
+                                    <td>{{values.1}}</td>
+                                    <td><a href="{% url 'locusx'  values.2 True %}" target="_top">{{values.2}}</a></td>
+                                    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
+                                    {% with locus_tag2cog_name|keyvalue:values.2 as name %}
+                                        {% if name == '-' %}
+                                            <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
+                                        {% else %}
+                                            <td><a href="{% url "fam"  name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
+                                        {% endif %}
+                                    {%endwith%}
+                                    {% with locus_tag2ko|keyvalue:values.2 as oneko %}
+                                        {% if oneko == '-' %}
+                                            <td>{{locus_tag2ko|keyvalue:values.2}}</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                        {% else %}
+                                            <td><a href="{% url "fam"  oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
+                                            {% with ko2ko_pathways|keyvalue:oneko as name %}
+                                                {% if name == '-' %}
+                                                    <td>-</td>
+                                                {% else %}
+                                                    <td>{{name|safe}}</td>
+                                                {% endif %}
+                                            {%endwith%}
+                                            {% with ko2ko_modules|keyvalue:oneko as name %}
+                                                {% if name == '-' %}
+                                                    <td>-</td>
+                                                {% else %}
+                                                    <td>{{name|safe}}</td>
+                                                {% endif %}
+                                            {%endwith%}
+                                        {% endif %}
+
+
+                                    {%endwith%}
+                                    {% with locus2interpro|keyvalue:values.2 as interpro_data %}
+                                    <td>
+                                        {% for one_interpro in interpro_data %}
+                                        {% if one_interpro.0 != '-' %}
+                                            <a href="{% url 'fam'  one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                        {%else%}
+                                            {{one_interpro.0}}
+                                        {%endif%}
+                                            {{one_interpro.1}} </br>
+                                        {% endfor %}
+                                        {%endwith%}
+                                    </td>
+                                    <td>{{values.7}}</td>
+                                    <td>{{values.8}}</td>
+                                    <td>{{values.9}}</td>
+                                    <td>{{values.10}}</td>
+                                    <td>{{values.11}}</td>
+                                    <td>{{values.12}}</td>
+
+                                </tr>
+
+                                {%endfor%}
+                            </tbody>
+                        </table>
+            </div>
+            <div class="tab-pane" id="tab2">
+                <object type="image/svg+xml" data="{% static asset_path %}" id="cluster_profile"></object>
+            </div>
+            <div class="tab-pane" id="tab77" style="height:2px">
+                <iframe name="orthoIDframe4" id="theFrame2"  style="height:8000px" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+            </div>
+        </div>
+    {% elif too_much_hits %}
+
+        Too much similar profile, not relevant
+
+    {%else%}
+
+{{too_much_hits}}
+    {%endif%}
+
+
+
+</body>
+<script>
+$(document).ready(function() {
+  $('#interaction_table').DataTable( {
+    dom: 'Bfrtip',
+    buttons: [
+      {
+          extend: 'excel',
+          title: 'interaction_table'
+      },
+      {
+          extend: 'csv',
+          title: 'interaction_table'
+      }
+    ],
+  "paging":   true,
+  "ordering": true,
+  "info":     false,
+  colReorder: true,
+  } );
+} );
+</script>
+
+</html>

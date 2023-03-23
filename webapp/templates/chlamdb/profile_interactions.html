@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+    {% load static %}
+    {% load static %}
+    {% get_static_prefix as STATIC_PREFIX %}
+
+    {% include "chlamdb/header.html" %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.8.1/cytoscape.min.js"></script>
+
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.js"></script>
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.7.1/cytoscape-qtip.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/4.10.3/css/bootstrap-slider.min.css">
+    <script type="text/javascript" src="{% static 'js/cytoscape-cola.js' %}"></script>
+    
+</head>
+
+<body height="2000px">
+<h3>Interactions predicted based on the similarity of phylogenetic profiles. Reference orthogroup: {{orthogroup}}</h3>
+    {% if match %}
+    
+        <h4>Cutoff: {{cutoff}}</h4>
+
+        <div class="row">
+            <div class="col-xs-6" style="padding-left: 15px">
+                <div id="cy" style="width:100%;height:600px"></div>
+            </div>
+        </div>
+
+
+
+        <ul style="padding-top: 5px" id="tabs" class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#tab1" data-toggle="tab">Annotation</a></li>
+            <li><a href="#tab2" data-toggle="tab">Profile</a></li>
+            <!--<li><a href="#tab77" data-toggle="tab" onclick="window.open('{% url 'plot_region_direct' orthogroup %}{{plot_url|safe}}', 'orthoIDframe4'); return false">Region</a></li>-->
+        </ul>
+
+        <div id="my-tab-content" class="tab-content">
+            <div class="tab-pane active" id="tab1">
+
+                <p>Orthogroups with similar profiles:</p>
+
+                <table class="table" id="table_groups">
+
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Orthogroup</th>
+                            <th>Genes</th>
+                            <th>Products</th>
+                            <th>Cogs</th>
+                            <th>Pfam</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for value in match_groups_data %}
+                            <tr>
+                                <td>{{value.0}}</td>
+                                <td><a href="{% url 'locusx' value.1 True%}" target="_top">{{value.1}}</a></td>
+                                <td>{{value.2|safe}}</td>
+                                <td>{{value.3|safe}}</td>
+                                <td>{{value.4|safe}}</td>
+                                <td>{{value.5|safe}}</td>
+
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane" id="tab2">
+                <object type="image/svg+xml" data="{% static asset_path %}" id="cluster_profile"></object>
+            </div>
+            <div class="tab-pane" id="tab77" style="height:2px">
+                <iframe name="orthoIDframe4" id="theFrame2"  style="height:8000px" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+            </div>
+        </div>
+    {% elif too_much_hits %}
+
+        Too much similar profile, not relevant
+
+    {%else%}
+
+{{too_much_hits}}
+    {%endif%}
+
+
+
+</body>
+{{script|safe}}
+
+<script>
+$(document).ready(function() {
+    $('#table_groups').DataTable( {
+            dom: 'Bfrtip',
+            "order": [[2, "desc" ]],
+            "pageLength": 15,
+            "paging":   true,
+            "ordering": true,
+            "info":     false,
+            buttons: [
+            {
+                extend: 'excel',
+                title: '{{ fam }}'
+            },
+            {
+                extend: 'csv',
+                title: '{{ fam }}'
+            }
+            ],
+        } );
+    } );
+</script>
+</html>

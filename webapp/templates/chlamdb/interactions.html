@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+    {% load static %}
+    {% load static %}
+    {% get_static_prefix as STATIC_PREFIX %}
+
+    <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
+    <!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
+    <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
+
+</head>
+
+<body height="2000px">
+<h3>Putative interactors based on comparative analysis</h3>
+
+
+        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+            {% if profile_match_eucl %}
+            <li><a href="#tab55" data-toggle="tab" onclick="window.open('{% url 'profile_interactions' orthogroup "eucl" %}', 'orthoIDframe2'); return false">Similar profiles (euclidean distances) <span class="badge">{{all_groups_profile_eucl|length}}</span></a></li>
+            {% endif %}
+            {% if profile_match_jac %}
+            <li><a href="#tab55" data-toggle="tab" onclick="window.open('{% url 'profile_interactions' orthogroup "jac" %}', 'orthoIDframe2'); return false">Similar profiles (Jaccard distances) <span class="badge">{{all_groups_profile_jac|length}}</span></a></li>
+            {% endif %}
+            {% if neig_match %}
+            <li><a href="#tab55" data-toggle="tab" onclick="window.open('{% url 'neig_interactions' locus_tag %}', 'orthoIDframe2'); return false">Conserved neighbors <span class="badge">{{all_groups_neig|length}}</span></a></li>
+            {% endif %}
+        </ul>
+
+
+        <div id="my-tab-content" class="tab-content">
+                <div class="tab-pane" id="tab55" style="height:8800px">
+                    <iframe name="orthoIDframe2" id="theFrame2" scrolling="no" width="100%" height="8800px"></iframe>
+                </div>
+
+            {% if not neig_match and not profile_match %}
+            No predicted interactors
+            {% endif %}
+
+        </div>
+</body>
+</html>

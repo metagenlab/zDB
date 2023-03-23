@@ -1,0 +1,25 @@
+name: webapp
+channels:
+    - bioconda
+    - conda-forge
+    - metagenlab
+dependencies:
+    - python=3.9
+    - ete3
+    - plotly
+    - pandas
+    - seaborn
+    - django=4.0.6
+    - biopython>=1.76
+    - matplotlib
+    - celery
+    - django-crispy-forms=1.14.0
+    - django-extensions
+    - reportlab
+    - gunicorn
+    - scipy
+    - Whoosh
+    - pyqt
+    - bibtexparser
+    - blast=2.9.0
+    - metagenlab_libs

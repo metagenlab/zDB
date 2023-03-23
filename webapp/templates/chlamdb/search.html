@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load static %}
+    {% include "chlamdb/header.html" %}
+    {% load custom_tags %}
+    <script type="text/javascript" src="{% static 'js/mark.min.js' %}?v1"></script>
+</head>
+
+<body>
+    <div class="container-fluid" id="main_container">
+        <div class="row">
+            <div id="wrapper">
+                <div id="page-content-wrapper">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            {% include "chlamdb/menu.html" %}
+
+                            {% if search_failed %}
+
+                                <div class="panel panel-warning" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                                    <div class="panel-heading" style="width:100%">
+                                        <h3 class="panel-title">This is not the protein you're looking for</h3>
+										Try a better search term, you must.
+                                    </div>
+                                    <p style="margin: 0px 0px 0px 10px">
+								</div>
+
+                            {% else %}
+                                <h3>Search results </h3>
+
+								<ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+
+								{% if genes|length > 0%}
+									<li>
+										<a href="#genes" data-toggle="tab">
+										Genes <span class="badge">{{genes|length}}</span><br>
+										</a>
+									</li>
+								{% endif %}
+
+								{% if cogs|length > 0 %}
+									<li>
+										<a href="#cogs" data-toggle="tab">
+										COG <span class="badge">{{cogs|length}}</span><br>
+										</a>
+									</li>
+								{% endif %}
+
+								{% if ko|length > 0 %}
+									<li>
+										<a href="#KO" data-toggle="tab">
+										KEGG orthologs <span class="badge">{{ko|length}}</span><br>
+										</a>
+									</li>
+								{% endif %}
+
+								{% if pat|length > 0 %}
+									<li>
+										<a href="#KO_path" data-toggle="tab">
+										KEGG Pathways<span class="badge">{{pat|length}}</span><br>
+										</a>
+									</li>
+								{% endif %}
+
+								{% if mod|length > 0 %}
+									<li>
+										<a href="#KO_mod" data-toggle="tab">
+										KEGG Modules<span class="badge">{{mod|length}}</span><br>
+										</a>
+									</li>
+								{% endif %}
+
+								{% if pfam|length > 0 %}
+									<li>
+										<a href="#PFAM" data-toggle="tab">
+										PFAM domains <span class="badge">{{pfam|length}}</span><br>
+										</a>
+									</li>
+								{% endif %}
+
+								</ul>
+
+
+                                <div id="my-tab-content" class="tab-content">
+
+									{% if genes|length > 0 %}
+									<div class="tab-pane {{gene_active}}" id="genes">
+										<table class="table table-striped" id="search_table1" name="search">
+											<thead>
+												<tr>
+													{% for col in genes_headers %}
+													<th> {{col}} </th>
+													{% endfor %}
+												</tr>
+											</thead>
+											<tbody>
+												{% load static %}
+												{% for values in genes %}
+													<tr>
+													{% for val in values %}
+														<td>{{val|safe}} </td>
+													{% endfor %}
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div> <!-- panel -->
+									{% endif %}
+
+									<div class="tab-pane {{cogs_active}}" id="cogs">
+										<table class="table table-striped" id="search_table2" name="search">
+											<thead>
+												<tr>
+													{% for col in cog_headers %}
+													<th> {{col}} </th>
+													{% endfor %}
+												</tr>
+											</thead>
+											<tbody>
+												{% load static %}
+												{% for values in cogs %}
+													<tr>
+													{% for val in values %}
+														<td>{{val|safe}} </td>
+													{% endfor %}
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div>
+
+									<div class="tab-pane {{ko_active}}" id="KO">
+										<table class="table table-striped" id="search_table3" name="search">
+											<thead>
+												<tr>
+													{% for col in ko_headers %}
+													<th> {{col}} </th>
+													{% endfor %}
+												</tr>
+											</thead>
+											<tbody>
+												{% load static %}
+												{% for values in ko %}
+													<tr>
+													{% for val in values %}
+														<td>{{val|safe}} </td>
+													{% endfor %}
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div>
+
+
+									<div class="tab-pane {{pat_active}}" id="KO_path">
+										<table class="table table-striped" id="search_table4" name="search">
+											<thead>
+												<tr>
+													{% for col in pat_headers %}
+													<th> {{col}} </th>
+													{% endfor %}
+												</tr>
+											</thead>
+											<tbody>
+												{% load static %}
+												{% for values in pat %}
+													<tr>
+													{% for val in values %}
+														<td>{{val|safe}} </td>
+													{% endfor %}
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div>
+
+
+									<div class="tab-pane {{mod_active}}" id="KO_mod">
+										<table class="table table-striped" id="search_table5" name="search">
+											<thead>
+												<tr>
+													{% for col in mod_headers %}
+													<th> {{col}} </th>
+													{% endfor %}
+												</tr>
+											</thead>
+											<tbody>
+												{% load static %}
+												{% for values in mod %}
+													<tr>
+													{% for val in values %}
+														<td>{{val|safe}} </td>
+													{% endfor %}
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div>
+
+									<div class="tab-pane {{pfam_active}}" id="PFAM">
+										<table class="table table-striped" id="search_table6" name="search">
+											<thead>
+												<tr>
+													{% for col in pfam_headers %}
+													<th> {{col}} </th>
+													{% endfor %}
+												</tr>
+											</thead>
+											<tbody>
+												{% load static %}
+												{% for values in pfam %}
+													<tr>
+													{% for val in values %}
+														<td>{{val|safe}} </td>
+													{% endfor %}
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div> <!-- panel -->
+
+                                </div>
+                            {% endif %}
+                        </div> <!-- column -->
+                    </div> <!-- row -->
+                </div> <!-- page-content-wrapper -->
+            </div>
+        </div>
+    </div>
+</body>
+{% include "chlamdb/style_menu.html" %}
+<style>
+mark{
+    background: orange;
+    color: black;
+}
+</style>
+<script>
+  var options = {
+      "ignoreJoiners": true,
+      "wildcards": "enabled",
+      "exclude": [
+          "h3",
+          ".byline *",
+          "th"
+      ]
+  };
+
+  $(document).ready(function() {
+	$('#search_table1').DataTable( {
+		dom: 'Bfrtip',
+		buttons: [ ],
+		"paging":   false,
+		"ordering": true,
+		"info":     false,
+		colReorder: true,
+		fixedHeader: true
+	});
+  });
+
+
+  $(document).ready(function() {
+    var docu = document.getElementById("wrapper");
+    var instance = new Mark(docu);
+    instance.mark("{{search_term_edit}}", options);
+  } );
+
+</script>
+
+<style>
+
+table td.wrapcol {
+  word-break: break-all;
+  word-wrap: break-word;
+  width: auto;
+}
+
+</style>
+
+</html>

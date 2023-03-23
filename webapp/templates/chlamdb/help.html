@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+
+
+<html>
+
+<head>
+
+    {% load static %}
+    {% load static %}
+    {% include "chlamdb/header.html" %}
+</head>
+
+<body>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
+                  <div id="help">
+                      <h2>Chlamydiae Database version 2.0</h2>
+
+
+                      <div class="row" style="padding-top:20px;">
+
+                        </div>
+                        <div col class="col-lg-1">
+                          <img width = "100%" src = "{% static "homepage/Under_construction.png" %}" alt = "circos" />
+  
+                        </div>
+                        <div col class="col-lg-10">
+                          <font size="3">Help page under construction. Contact <strong>&#116;&#114;&#101;&#115;&#116;&#097;&#110;&#046;&#112;&#105;&#108;&#108;&#111;&#110;&#101;&#108;[&#064;]&#099;&#104;&#117;&#118;&#046;&#099;&#104; </strong> if you have suggestions, problems or questions.</font>
+                        </div>
+  
+                        <div class="row" style="padding-top:20px;">
+                          <div col class="col-lg-10">
+                          <a href="{% static "homepage/poster_chlamdb.pdf" %}">Poster of the CBRS meeting describing the database</a>
+                        </div>
+                        </div>
+
+
+                      <div class="row">
+                        <!--Nav Bar -->
+                        <nav class="col-xs-3 bs-docs-sidebar">
+                            <ul id="sidebar" class="nav nav-stacked fixed">
+
+                                <li>
+                                    <a href="#GroupA">Website tutorial</a>
+                                    <ul class="nav nav-stacked">
+                                        <li><a href="#GroupASub1">Search for a protein of interest</a></li>
+                                        <li><a href="#GroupASub2">BLAST interface</a></li> 
+                                        <li><a href="#GroupASub3">Protein annotation view</a></li> 
+                                        <li><a href="#GroupASub4">Alignments</a></li>
+                                        <li><a href="#GroupASub5">Whole genomes alignments</a></li>
+                                        <li><a href="#GroupASub6">Identification of clade specific genes</a></li>
+                                        <li><a href="#GroupASub7">Comparison of annotations</a></li>
+                                        
+                                    </ul>
+                                </li>
+                                <li>
+                                  <a href="#GroupB">Methods</a>
+                                  <ul class="nav nav-stacked">
+                                      <li><a href="#GroupBSub1">Source of the data</a></li>
+                                      <li><a href="#GroupBSub2">Proteins annotation</a></li>
+                                      <li><a href="#GroupBSub3">Phylogenetic trees</a></li>
+                                      <li><a href="#GroupBSub4">Homology search</a></li>
+                                      <li><a href="#GroupBSub5">Candidate T3SS effectors</a></li>
+                                      <li><a href="#GroupBSub6">Orthologs Identification</a></li>
+                                      <li><a href="#GroupBSub7">Protein-Protein Interactions</a></li>
+                                  </ul>
+                              </li>
+                              <li>
+                                <a href="#GroupC">ChlamDB Version 2.0</a>
+                                <ul class="nav nav-stacked">
+                                    <li><a href="#GroupCSub1">Source databases</a></li>
+                                    <li><a href="#GroupCSub2">Softwares</a></li>
+                                </ul>
+                            </li>
+
+                            </ul>
+                        </nav>
+                        <!--Main Content -->
+                        <div class="col-md-9 col-lg-9">
+
+                            <section id="GroupA" class="group">
+                                <h3>Website tutorial</h3>
+                                <div id="GroupASub1" class="subgroup">
+                                    <h3>Search for a protein of interest</h3>
+
+                                    <h5>The following protein accessions can be used to search the database:</h5>
+
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Example</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Genbank locus tag</td> 
+                                                <td><a href="{% url 'locusx' %}?accession=wcw_1594">wcw_1594</a></td> 
+                                            </tr>
+                                            <tr>
+                                                <td>Genbank protein accession</td> 
+                                                <td><a href="{% url 'locusx' %}?accession=ADI38940.1">ADI38940.1</a></td> 
+                                            </tr>                                       
+                                            <tr>
+                                                <td>RefSeq locus tag</td> 
+                                                <td><a href="{% url 'locusx' %}?accession=WCW_RS07680">WCW_RS07680</a></td> 
+                                            </tr> 
+                                            <tr>
+                                                <td>RefSeq protein accession</td> 
+                                                <td><a href="{% url 'locusx' %}?accession=WP_013182646.1">WP_013182646.1</a></td> 
+                                            </tr>  
+                                            <tr>
+                                                <td>UniParc accession</td> 
+                                                <td><a href="{% url 'locusx' %}?accession=UPI0001D5C1DD">UPI0001D5C1DD</a></td> 
+                                            </tr>  
+                                            <tr>
+                                                <td>UniProtKB-Accession</td> 
+                                                <td><a href="{% url 'locusx' %}?accession=D6YS95">D6YS95</a></td> 
+                                            </tr> 
+                                            <tr>
+                                                <td>UniProtKB-ID</td> 
+                                                <td><a href="{% url 'locusx' %}?accession=D6YS95_WADCW">D6YS95_WADCW</a></td> 
+                                            </tr> 
+                                        </tbody>
+                                    </table>
+                                    <br>
+                                    <h5>Accessions from KEGG, COG, Pfam and InterPro can also be searched to retreive the list of proteins with the corresponding annotation:</h5>
+
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Accession type</th>
+                                                <th>Example</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>KEGG ortholog</td> 
+                                                <td><a href="{% url 'locusx' %}?accession=K00844">K00844</a></td> 
+                                                <td>hexokinase [EC:2.7.1.1]</td>
+                                            </tr>
+                                            <tr>
+                                                <td>COG</td> 
+                                                <td><a href="{% url 'locusx' %}?accession=COG0333">COG0333</a></td> 
+                                                <td>Ribosomal protein L32</td>
+                                            </tr>                                       
+                                            <tr>
+                                                <td>PFAM</td> 
+                                                <td><a href="{% url 'locusx' %}?accession=PF06723">PF06723</a></td> 
+                                                <td>MreB/Mbl protein</td>
+                                            </tr> 
+                                            <tr>
+                                                <td>InterPro</td> 
+                                                <td><a href="{% url 'locusx' %}?accession=IPR004753">IPR004753</a></td> 
+                                                <td>Cell shape determining protein MreB</td>
+                                            </tr>  
+                                            <tr>
+                                                <td>KEGG modules</td> 
+                                                <td><a href="{% url 'locusx' %}?accession=M00023">M00023</a></td> 
+                                                <td>Amino acid metabolism </td>
+                                            </tr>  
+                                            <tr>
+                                                <td>Kegg pathways</td> 
+                                                <td><a href="{% url 'locusx' %}?accession=map00400">map00400</a></td> 
+                                                <td>Phenylalanine, tyrosine and tryptophan biosynthesis </td>
+                                            </tr> 
+                                        </tbody>
+                                    </table>
+
+                                  <h5>It's also possible to seach for a gene or product name</h5>
+                                  <ul>
+                                        <li><a href="{% url 'locusx' %}?accession=mreb">mreb</a></li>
+                                        <li><a href="{% url 'locusx' %}?accession=mreb+Waddlia">mreb Waddlia</a></li>
+                                        <li><a href="{% url 'locusx' %}?accession=secretion+system">secretion system</a></li>
+                                  </ul>
+                                  <h5>It's also possible to browse genomes tables from links listed in the <a href="{% url 'home' %}#genomes">home page</a> table (column: Browse online) </h5> 
+                                    
+                                  
+                                </div>
+                                <div id="GroupASub2" class="subgroup">
+                                    <h3>BLAST interface</h3>
+
+                                    <h5>A <a href="{% url 'blast' %}">BLAST</a> interface is also available for homology search. You can access it from the left vertical menu under "Search".</h5> 
+                                    <figure>
+                                    <figcaption>Example of BLAST results</figcaption>
+                                       <img src="{% static "homepage/screenshot_blast.png" %}" alt="BLAST" style="width:100%">
+                                       
+                                    </figure>
+
+
+                                </div>
+
+
+                                <div id="GroupASub3" class="subgroup">
+                                    <h3>Protein annotation view</h3>
+                                    
+
+                                    <figure>
+                                    <figcaption>Screenshot of the annotation page of CT_495</figcaption>
+                                            <object type="image/svg+xml" data="{% static "homepage/figure_trachomatis_ntt2.svg" %}"></object>
+                                    </figure>
+
+
+                                </div>
+
+
+                                <div id="GroupASub4" class="subgroup">
+                                    <h3>Alignments of target genomic regions</h3>
+                                    
+
+                                    <figure>
+                                    <figcaption>Genome aligments based on identified orthologs (interactive plot)</figcaption>
+                                            <object type="image/svg+xml" data="{% static "homepage/region_align1.svg" %}" id="venn" style="width:100%"></object>
+                                    </figure>
+
+
+                                </div>
+
+                                <div id="GroupASub5" class="subgroup">
+
+                                    <h3>Whole genomes alignments</h3>
+
+ 
+        
+                                        <figure>
+                                            <figcaption>Circos comparative plot (interactive plot)</figcaption>
+                                            <img width = "50%" src = "{% static "homepage/circos.png" %}" alt = "circos" />
+                                        </figure>
+     
+
+
+                                </div>
+
+
+                                <div id="GroupASub6" class="subgroup">
+                                    <h3>Identification of genome(s) specific genes</h3>
+
+
+                                    <figure>
+                                    <figcaption>Venn diagram: orthologs (interactive plot)</figcaption>
+
+                                            <object type="image/svg+xml" data="{% static "homepage/jVenn_chart1.svg" %}" align="middle" style="width:590px; display:inline-block;"></object>
+
+                                    </figure>
+
+                                </div>
+
+
+
+                                <div id="GroupASub7" class="subgroup">
+                                    <h4>Protein-Protein Interactions</h4>
+                                </div>
+
+
+
+                            </section>
+                            <section id="GroupB" class="group">
+                                <h2>Methods</h2>
+                              </section>  
+                              <section id="GroupC" class="group">
+                                  <div id="GroupCSub1" class="subgroup">
+                                      <h3>Source of the data -- ChlamDB Version 2.0</h3>
+                                        <table class="table" id="db_data" style="width:400px">
+
+                                          <thead>
+                                            <tr>
+                                              <th>Database name</th>
+                                              <th>Version</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            <tr>
+                                              <td>UniprotKB</td>
+                                              <td>2019_03</td>
+                                            </tr>
+                                            <tr>
+                                              <td>TCDB</td>
+                                              <td>June 2019</td>
+                                            </tr>  
+                                            <tr>
+                                                <td>RefSeq</td>
+                                                <td>90</td>
+                                            </tr>  
+                                            <tr>
+                                                <td>CDD (COG)</td>
+                                                <td>v3.17</td>
+                                            </tr> 
+                                            <tr>
+                                              <td>InterPro</td>
+                                              <td>InterProScan 5.35-74.0</td>
+                                            </tr>    
+                                          </tbody>
+                                        </table>
+                                  </div>
+
+                                  <div id="GroupCSub2" class="subgroup">
+                                      <h4>Softwares</h4>
+    
+                                      <table class="table" id="db_soft" style="width:400px;">
+
+                                          <thead>
+                                            <tr>
+                                              <th>Software name</th>
+                                              <th>Version</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            <tr>
+                                              <td>FastTree</td>
+                                              <td>2.1.10</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Diamond</td>
+                                                <td>0.9.24</td>
+                                            </tr>  
+                                            <tr>
+                                                <td>OrthoFinder</td>
+                                                <td>2.2.7</td>
+                                            </tr>  
+                                            <tr>
+                                                <td>BLAST</td>
+                                                <td>2.7.1</td>
+                                            </tr>  
+                                            <tr>
+                                                <td>CheckM</td>
+                                                <td>1.0.12</td>
+                                            </tr> 
+                                            <tr>
+                                              <td>KoFamScan</td>
+                                              <td>2019/4/9</td>
+                                            </tr>    
+                                            <tr>
+                                                <td>Mafft</td>
+                                                <td>7.407</td>
+                                              </tr>  
+
+                                        </tbody>
+                                        </table>
+    
+                                    </div>
+
+                              </section>
+
+                              
+                        </div>
+                    </div>
+
+
+                  </div>
+
+
+
+
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+
+$('.dropdown-toggle').dropdown()
+
+$(document).ready(function() {
+    $('#db_data').DataTable( {
+            dom: 'Bfrtip',
+            "order": [[2, "desc" ]],
+            "pageLength": 15,
+            "paging":   true,
+            "ordering": true,
+            "info":     false,
+            buttons: [
+            {
+                extend: 'excel',  
+                title: '{{ fam }}'
+            },
+            {
+                extend: 'csv',
+                title: '{{ fam }}'
+            }
+            ],
+        } );
+    } );
+
+    $(document).ready(function() {
+    $('#db_soft').DataTable( {
+            dom: 'Bfrtip',
+            "order": [[2, "desc" ]],
+            "pageLength": 15,
+            "paging":   true,
+            "ordering": true,
+            "info":     false,
+            buttons: [
+            {
+                extend: 'excel',  
+                title: '{{ fam }}'
+            },
+            {
+                extend: 'csv',
+                title: '{{ fam }}'
+            }
+            ],
+        } );
+    } );
+
+</script>
+<!--<script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>-->
+</body>
+{% include "chlamdb/style_menu.html" %}
+</html>
+<style>
+
+
+.group {
+    background: gray;
+    width: 100%;
+    height: 100%x;
+}
+.group .subgroup {
+    background: white;
+    width: 100%;
+    height: 100%;
+    padding-bottom: 20px;
+}
+.fixed {
+    position: fixed;
+}
+
+/* sidebar */
+.bs-docs-sidebar {
+    padding-left: 2px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* all links */
+.bs-docs-sidebar .nav>li>a {
+    color: #999;
+    border-left: 2px solid transparent;
+    padding: 4px 20px;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+/* nested links */
+.bs-docs-sidebar .nav .nav>li>a {
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 30px;
+    font-size: 12px;
+}
+
+/* active & hover links */
+.bs-docs-sidebar .nav>.active>a, 
+.bs-docs-sidebar .nav>li>a:hover, 
+.bs-docs-sidebar .nav>li>a:focus {
+    color: #563d7c;                 
+    text-decoration: none;          
+    background-color: transparent;  
+    border-left-color: #563d7c; 
+}
+/* all active links */
+.bs-docs-sidebar .nav>.active>a, 
+.bs-docs-sidebar .nav>.active:hover>a,
+.bs-docs-sidebar .nav>.active:focus>a {
+    font-weight: 700;
+}
+/* nested active links */
+.bs-docs-sidebar .nav .nav>.active>a, 
+.bs-docs-sidebar .nav .nav>.active:hover>a,
+.bs-docs-sidebar .nav .nav>.active:focus>a {
+    font-weight: 500;
+}
+
+/* hide inactive nested list 
+.bs-docs-sidebar .nav ul.nav {
+    display: none;           
+}
+/* show active nested list 
+.bs-docs-sidebar .nav>.active>ul.nav {
+    display: block;           
+}
+*/
+
+figure {
+    border: thin #c0c0c0 solid;
+    display: flex;
+    flex-flow: column;
+    padding: 5px;
+    margin: auto;
+}
+
+figcaption {
+    background-color: #222;
+    color: #fff;
+  font-family: 'Cherry Swash', cursive;
+  font-size: 1.3em;
+    padding: 12px;
+    text-align: center;
+}
+
+img{
+
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+
+}
+
+object {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+</style>
+
+<script>
+$('body').scrollspy({
+    target: '.bs-docs-sidebar',
+    offset: 40
+});
+</script>
