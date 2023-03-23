@@ -71,6 +71,38 @@ import - unpack an archive that was prepared with the export command in the curr
 list_runs - lists the completed runs available to start the website in a given directory
 ```
 
+### Too long, will not read
+
+Here are a few examples of workflows with a test dataset available from the git repository.
+To get the test dataset:
+```
+wget https://github.com/metagenlab/zDB/raw/master/test_dataset.tar.gz
+tar xvf test_dataset.tar.gz
+```
+
+For a minimal database (assuming that singularity is installed):
+```
+conda install zdb -c metagenlab
+zdb run --input=input.csv --name=simple_run # runs the analysis
+zdb webapp --name=simple_run # Launches the webapp on simple run
+```
+The minimal database should take around 5 minutes to complete in a recent Desktop machine.
+
+To do the same in conda environments:
+```
+conda install zdb -c metagenlab
+zdb run --input=input.csv --name=simple_run_conda --conda # runs the analysis
+zdb webapp --conda --name=simple_run_conda # Launches the webapp on the latest run
+```
+
+To have a more complete set of analyses (includes cog and pfam annotation):
+```
+conda install zdb -c metagenlab
+zdb setup --pfam --cog --conda
+zdb run --input=input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
+zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
+```
+
 ## Setting up the reference databases
 
 Depending on which analysis are to be run, reference databases will need to be downloaded and set up.
@@ -100,7 +132,17 @@ zdb setup --pfam --swissprot --cog --ko --conda
 
 ## Running the analysis
 
-Once you have the reference databases set up, the genomes ready, just run the ```zdb run``` command.
+Once you have the reference databases set up, the genomes ready, just run the ```zdb run``` command. The run command expects a csv file as input. The csv should look like:
+```
+name, file
+,foo/bar.gbk
+,baz/bazz.gbk
+foobar,foobar/baz.gbff
+```
+The ```name``` column is optional and can be omitted from the input csv file. **By default, zdb will use the organism's name as defined in the genbank file to identify genomes in the web application**. Specifying a name for a genome will tell zdb to use that name instead of the organism name from the genbank file. This is practical when working with assembled genomes that haven't been named yet or when working with genomes of different strains of a same species. If the same name is used in different files, zdb will just add a numbering suffix to make the names unique.
+
+Before launching the analysis, zdb will also check for the uniqueness of locus tags and generate new ones if necessary. This is usually not necessary for genomes downloaded from RefSeq or other databases, but if genomes were annotated with automated tools, name collisions might happen.
+
 Several options are available and allow you to customize the run.
 
 By default, the analysis are run in singularity containers, but you can change this by using the ```--conda``` or ```--docker``` flags to have them run in conda environments or docker containers, respectively. If singularity is enabled, the containers will have to be downloaded. By default, they are stored in the singularity folder of the current directory, but this can be changed using the ```--singularity_dir``` option. This might be useful if you want to share containers between analyses.
@@ -120,19 +162,6 @@ Other options include:
 ```
 
 The ```--name``` option is optional and can be used to replace nextflow's randomly generated run names by more meaningful ones.
-
-The input CSV file should look like this:
-```
-name, file
-,foo/bar.gbk
-,baz/bazz.gbk
-foobar,foobar/baz.gbff
-```
-and the command could look like this ```zdb run --input=my_genomes.csv --cpu=32 --pfam --out=my_outputdirectory```.
-
-The ```name``` column is optional and can be omitted from the input csv file. **By default, zdb will use the organism's name as defined in the genbank file to identify genomes in the web application**. Specifying a name for a genome will tell zdb to use that name instead of the organism name from the genbank file. This is practical when working with assembled genomes that haven't been named yet or when working with genomes of different strains of a same species. If the same name is used in different files, zdb will just add a numbering suffix to make the names unique.
-
-Before launching the analysis, zdb will also check for the uniqueness of locus tags and generate new ones if necessary. This is usually not necessary for genomes downloaded from RefSeq or other databases, but if genomes were annotated with automated tools, name collisions might happen.
 
 We noticed that undeterministic bugs sometimes happen when downloading a singularity container or when running long analysis. To resume the analysis when this happens, just add the ```--resume``` flag to the previous command. For example, if the run launched with the command  
 ```
@@ -188,29 +217,6 @@ As the analysis may be run on a server or on an HPC cluster, the results may nee
 This can be done with the ```zdb export``` command with a run name as parameter. This will create a compressed archive containing all the necessary results. The archive can then be transferred to a different machine and unpacked, either manually or with the ```zdb import``` command.
 The web server can then be started as if the analysis had been run locally.
 
-## In brief
-
-For a minimal database relying on orthology (might be already enough to have interesting results if you add reference genomes in addition to your genomes of interest). This assumes that singularity is installed.
-```
-conda install zdb -c metagenlab
-zdb run --input=simple_input.csv --name=simple_run # runs the analysis
-zdb webapp --name=simple_run # Launches the webapp on simple run
-```
-
-To do the same in conda environments:
-```
-conda install zdb -c metagenlab
-zdb run --input=simple_input.csv --name=simple_run_conda --conda # runs the analysis
-zdb webapp --conda --name=simple_run_conda # Launches the webapp on the latest run
-```
-
-To have a more complete set of analyses (includes cog and pfam annotation):
-```
-conda install zdb -c metagenlab
-zdb setup --pfam --cog --conda
-zdb run --input=simple_input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
-zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
-```
 
 ## Bugs and feature requests
 Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/annotation_pipeline_nextflow/issues).
