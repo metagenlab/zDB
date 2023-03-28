@@ -1360,6 +1360,10 @@ def og_tab_get_cog_annot(db, seqids):
     cog_summ = db.get_cog_summaries(n_entries.index.tolist())
     cog_entries = []
     for cog_id, count in n_entries.iteritems():
+        if not cog_id in cog_summ:
+            # should add a warning on the web page
+            continue
+
         entry = [format_cog(cog_id, as_url=True), count]
         funcs = []
         func_descrs = []
@@ -1372,6 +1376,9 @@ def og_tab_get_cog_annot(db, seqids):
         entry.append("<br>".join(funcs))
         entry.append("<br>".join(func_descrs))
         cog_entries.append(entry)
+
+    if len(cog_entries)==0:
+        return {}
 
     cog_header = ["COG", "Occurences", "Description", "Category", "Category description"]
     return {
