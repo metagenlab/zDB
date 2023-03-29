@@ -85,6 +85,7 @@ elif [[ "$1" == "setup" ]]; then
 	singularity=true
 	docker=false
 	conda=false
+	resume=false
 
 	for i in "$@"; do
 		case $i in 
@@ -100,6 +101,10 @@ elif [[ "$1" == "setup" ]]; then
 			--docker)
 				docker=true
 				singularity=false
+				shift
+				;;
+			--resume)
+				resume=true
 				shift
 				;;
 			--ko)
@@ -123,16 +128,21 @@ elif [[ "$1" == "setup" ]]; then
 				shift
 				;;
 			--help)
-				echo "Downloads and sets up the reference database used by the analysis pipeline"
-				echo "The following options can be used"
+				echo "Downloads and sets up the reference database used by the analysis pipeline."
+				echo ""
+				echo "The following options can be used:"
 				echo " --cog: downloads the CDD profiles used for COG annotations "
 				echo " --ko: downloads and setups the hmm profiles of the ko database"
 				echo " --pfam: downloads and setups up the hmm profiles of the PFAM protein domains"
 				echo " --swissprot: downloads and indexes the swissprot database "
-				echo " --dir: directory where to store the reference databases (defaults zdb_ref in the current directory) "
+				echo ""
+				echo "Other parameters:"
+				echo " --dir: directory where to store the reference databases (defaults zdb_ref in the current directory)"
+				echo " --resume: resume a previously failed execution"
+				echo ""
 				echo "Environments (by default, singularity containers are used):"
-				echo "--conda: uses conda environment to prepare the databases"
-				echo "--docker: uses docker containers to prepare the databases"
+				echo " --conda: uses conda environment to prepare the databases"
+				echo " --docker: uses docker containers to prepare the databases"
 				echo " --singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)"
 				exit 0
 				;;
@@ -152,8 +162,14 @@ elif [[ "$1" == "setup" ]]; then
 		env="--docker=false --conda=false --singularity=true"
 	fi
 
+	if [ "$resume" = true ]; then
+		echo "Resuming previous run"
+		db_setup_args="${db_setup_args} -resume"
+	else
+		echo "Preparing the reference databases, this will take some time"
+	fi
+
 	db_setup_args="${db_setup_args} --base_db=${dir} ${env} --singularity_dir=${singularity_dir}"
-	echo "Preparing the reference databases, this will take some time"
 	nextflow run $NEXTFLOW_DIR/db_setup.nf ${db_setup_args}
 	echo "Done. The reference databases were prepared in the ${dir} folder"
 	exit 0

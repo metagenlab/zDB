@@ -132,6 +132,7 @@ process download_ko_profiles {
     """
 }
 
+
 process download_swissprot {
     // not optimal... might be a bit slow to move
     publishDir "$params.swissprot_db", mode: "copy"
@@ -150,7 +151,8 @@ process download_swissprot {
     """
 }
 
-process download_swissprot_db {
+
+process prepare_swissprot {
     container "$params.blast_container"
     conda "$baseDir/conda/blast.yaml"
 
