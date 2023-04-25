@@ -253,8 +253,8 @@ process prepare_orthofinder {
 
 
 process blast_orthofinder {
-  container "$params.blast_container"
-  conda "$baseDir/conda/blast.yaml"
+  container "$params.orthofinder_container"
+  conda "$baseDir/conda/orthofinder.yaml"
 
   input:
   file complete_dir from result_dir
@@ -602,7 +602,11 @@ if(params.ko) {
 process setup_db {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
+
     publishDir "${params.results_dir}/db"
+
+    input:
+        file base_dir from Channel.fromPath("${params.zdb.file}")
 
     output:
         file output_file into db_base
@@ -610,7 +614,7 @@ process setup_db {
     script:
     output_file = "$workflow.runName"
     """
-    cp ${params.zdb.file} $output_file
+    cp $base_dir $output_file
     """
 }
 
@@ -621,6 +625,7 @@ process load_base_db {
 
     // Necessary to prevent segfaults due to the large size
     // of the stage script
+    // TODO: remove this by putting the numerous into a single directory
     beforeScript "ulimit -Ss unlimited"
 
     input:
