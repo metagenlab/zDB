@@ -197,7 +197,11 @@ By default, it will be run in a singularity container.
 
 Simply put, if the port 8080 is not in use, you can simply run the ```zdb webapp``` script without any parameters. zDB will launch the webapp on the last run of analysis.
 
-Once the webserver has started, you'll be able to access the webpages with a web browser.
+Once the webserver has started, you'll be able to access the webpages with a web browser. You'll typically see a line of the sort:
+```
+Starting web server. The application will be accessible @155.105.138.249 172.17.0.1  on port 8080
+```
+To access the webap, type either 155.105.138.249:8080 or 172.17.0.1:8080 on your web browser.
 
 If you do not remember which runs are available, you can list them with the ```zdb list_runs``` command.
 
