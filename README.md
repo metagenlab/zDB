@@ -51,7 +51,7 @@ If you opt to use singularity, it can be installed with the following command:
 conda install singularity=3.8.4 -c conda-forge
 ```
 
-If you plan on running the webapp in a conda environment, **Xvfb should be installed on your machine**. The ete3 rendering engine unfortunately relies on Qt, which requires an X server running in headless mode. If you can't install Xvfb, please consider using singularity containers.
+If you plan on running the webapp in a conda environment, **Xvfb should be installed on your machine**. The ete3 rendering engine unfortunately relies on Qt, which requires an X server running in headless mode. If you can't install Xvfb, please consider using singularity containers. We plan on developing our own Javascript tree rendering code to get rid of this dependency.
 
 ### Install zDB from sources
 
