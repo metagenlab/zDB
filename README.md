@@ -201,7 +201,7 @@ Once the webserver has started, you'll be able to access the webpages with a web
 ```
 Starting web server. The application will be accessible @155.105.138.249 172.17.0.1  on port 8080
 ```
-To access the webap, type either 155.105.138.249:8080 or 172.17.0.1:8080 on your web browser.
+To access the webapp, type either 155.105.138.249:8080 or 172.17.0.1:8080 on your web browser.
 
 If you do not remember which runs are available, you can list them with the ```zdb list_runs``` command.
 
