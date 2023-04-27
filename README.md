@@ -16,6 +16,9 @@ All the results are stored either in a SQLite database or directly as files and 
 
 ## Changelog
 
+v1.1.1 (april 2023):
+ - several fixes with conda environments
+
 v1.0.8 (february 2023):
 - added support for dockers and conda
 - several bugfixes
@@ -40,13 +43,15 @@ The analysis and the webserver can be run in either conda environments or in con
 Running zDB in conda is likely the easiest way as it does not require to install either singularity or dockers, but comes with several drawbacks:
 - django will be run in native mode, without nginx and gunicorn and should not be used to set up a web-facing database (it is fine for a local access)
 - containers allow us to have a precise control of the environment where the webapp is run; it is less the case for conda environment. Despite our best care, running the webapp in conda might not work due to local differences.
-- *some conda environments have numerous dependencies: to speed the installation, we strongly recommend the use of [libmamba](https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community)*
+- *some conda environments have numerous dependencies: to speed the installation, we strongly recommend the use of [libmamba](https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community)* or to have a fresh conda installation.
 
 Of note, zDB has been tested on singularity v3.8.3 and v3.8.4 but should work on more recent versions. 
 If you opt to use singularity, it can be installed with the following command:
 ```
 conda install singularity=3.8.4 -c conda-forge
 ```
+
+If you plan on running the webapp in a conda environment, **Xvfb should be installed on your machine**. The ete3 rendering engine unfortunately relies on Qt, which requires an X server running in headless mode. If you can't install Xvfb, please consider using singularity containers. We plan on developing our own Javascript tree rendering code to get rid of this dependency.
 
 ### Install zDB from sources
 
@@ -192,7 +197,11 @@ By default, it will be run in a singularity container.
 
 Simply put, if the port 8080 is not in use, you can simply run the ```zdb webapp``` script without any parameters. zDB will launch the webapp on the last run of analysis.
 
-Once the webserver has started, you'll be able to access the webpages with a web browser.
+Once the webserver has started, you'll be able to access the webpages with a web browser. You'll typically see a line of the sort:
+```
+Starting web server. The application will be accessible @155.105.138.249 172.17.0.1  on port 8080
+```
+To access the webapp, type either 155.105.138.249:8080 or 172.17.0.1:8080 on your web browser.
 
 If you do not remember which runs are available, you can list them with the ```zdb list_runs``` command.
 
