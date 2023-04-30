@@ -34,24 +34,22 @@ v1.0.5 (december 2022):
 
 zDB can be installed from conda with the following command
 ```
-conda install zDB -c metagenlab -c bioconda
+conda install zdb -c metagenlab -c bioconda
 ```
 For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
 
-The analysis and the webserver can be run in either conda environments or in containers (both singularity and dockers are supported).
-
-Running zDB in conda is likely the easiest way as it does not require to install either singularity or dockers, but comes with several drawbacks:
+Once zDB is installed, you'll need to install either docker or singularity if you plan on running the analyses and/or the webapp in containers (we strongly encourage the use of singularity). Both the analyses and the webapp can also be run in conda, but this comes with several drawbacks:
 - django will be run in native mode, without nginx and gunicorn and should not be used to set up a web-facing database (it is fine for a local access)
 - containers allow us to have a precise control of the environment where the webapp is run; it is less the case for conda environment. Despite our best care, running the webapp in conda might not work due to local differences.
 - *some conda environments have numerous dependencies: to speed the installation, we strongly recommend the use of [libmamba](https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community)* or to have a fresh conda installation.
+- *Xvfb should be installed on your machine**. The ete3 rendering engine unfortunately relies on Qt, which requires an X server running in headless mode. If you can't install Xvfb, please consider using singularity containers. We plan on developing our own Javascript tree rendering code to get rid of this dependency.
 
 Of note, zDB has been tested on singularity v3.8.3 and v3.8.4 but should work on more recent versions. 
 If you opt to use singularity, it can be installed with the following command:
 ```
 conda install singularity=3.8.4 -c conda-forge
 ```
-
-If you plan on running the webapp in a conda environment, **Xvfb should be installed on your machine**. The ete3 rendering engine unfortunately relies on Qt, which requires an X server running in headless mode. If you can't install Xvfb, please consider using singularity containers. We plan on developing our own Javascript tree rendering code to get rid of this dependency.
+For the installation of dockers, please have a look [here](https://docs.docker.com/get-docker/).
 
 ### Install zDB from sources
 
