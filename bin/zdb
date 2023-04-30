@@ -319,7 +319,7 @@ elif [[ "$1" == "webapp" ]]; then
 	bind_path_db="${dir}/zdb/results/db/$run_name"
 
 	bind_path_results+=("${dir}/zdb/assets":"${zdb_folder}/assets/temp")
-	bind_path_results+=($(readlink "${dir}/zdb/results/search_index/index_${run_name}"):"${zdb_folder}/assets/search_index/${run_name}")
+	bind_path_results+=($(realpath "${dir}/zdb/results/search_index/index_${run_name}"):"${zdb_folder}/assets/search_index/${run_name}")
 	bind_path_results+=("${dir}/zdb/results/blast_DB/${run_name}":"${zdb_folder}/assets/blast_DB/${run_name}")
 	bind_path_results+=("${dir}/zdb/results/alignments/${run_name}":"${zdb_folder}/assets/alignments")
 
@@ -605,12 +605,12 @@ elif [[ "$1" == "export" ]]; then
 	prefix="zdb/results/"
 
 	echo "Packaging archive"
-	tar zcvfh $run_name.tar.gz -C $dir $prefix/alignments/$unaliased_name \
+	tar zcvfh $unaliased_name.tar.gz -C $dir $prefix/alignments/$unaliased_name \
 		$prefix/blast_DB/$unaliased_name $prefix/db/$unaliased_name \
-		$prefix/gene_phylogenies/$unaliased_name $prefix/search_index/$unaliased_name \
+		$prefix/gene_phylogenies/$unaliased_name $prefix/search_index/index_$unaliased_name \
 		$prefix/.completed_runs/$run_name \
 		zdb/nginx zdb/gunicorn &> /dev/null
-	echo "Created archive $run_name.tar.gz"
+	echo "Created archive $unaliased_name.tar.gz"
 	exit 0
 
 elif [[ "$1" == "import" ]]; then
@@ -647,8 +647,17 @@ elif [[ "$1" == "import" ]]; then
 		exit 1
 	fi
 
+	# TODO: will need to write code to handle the case where 
+	# the archive is imported into an exisiting zdb folder with 
+	# existing results
+	run_name=$(basename $archive .tar.gz)
 	if [[ ! -d $outdir ]]; then
 		mkdir -p $outdir
+	fi
+
+	if [[ -f "zdb/results/.completed_runs/$run_name" ]]; then
+		echo "A run with that name already exists. Please unpack the archive in a different directory"
+		exit 1
 	fi
 
 	echo "Unpacking archive"

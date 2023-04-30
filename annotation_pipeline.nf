@@ -911,8 +911,6 @@ process create_chlamdb_search_index {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
-    publishDir "${params.results_dir}/search_index/"
-
     input:
         file db from to_create_index
 
@@ -948,7 +946,7 @@ process cleanup {
     mv \$(readlink ${db_path}_backup) $db_path
     rm ${db_path}_backup
 
-    ln -sf $index ${results_dir}/search_index/$workflow.runName
+    mv \$(readlink $index) ${results_dir}/search_index/index_${workflow.runName}
 
     if [ ! -d "${results_dir}/.completed_runs" ]; then
         mkdir ${results_dir}/.completed_runs
