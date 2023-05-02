@@ -411,7 +411,7 @@ def extract_orthogroup(request):
     table_headers.extend(opt_header)
     table_headers.extend([f"Present in {sum_include_lengths}", f"Freq complete database (/{max_n})"])
 
-    for row, count in orthogroup2count_all.iteritems():
+    for row, count in orthogroup2count_all.items():
         cnt_in = og_counts_in.presence.loc[row]
         g = genes.loc[row]
         gene_data = format_lst_to_html("-" if pd.isna(entry) else entry for entry in g)
@@ -451,7 +451,7 @@ def venn_orthogroup(request):
     fmt_data = []
     for taxon in og_count:
         ogs = og_count[taxon]
-        ogs_str = ",".join(f"{to_s(format_orthogroup(og))}" for og, cnt in ogs.iteritems() if cnt > 0)
+        ogs_str = ",".join(f"{to_s(format_orthogroup(og))}" for og, cnt in ogs.items() if cnt > 0)
         genome = genomes.loc[int(taxon)].description
         fmt_data.append(f"{{name: {to_s(genome)}, data: [{ogs_str}] }}")
     series = "[" + ",".join(fmt_data) + "]"
@@ -798,7 +798,7 @@ def venn_pfam(request):
     for target in targets:
         pfams = pfam_hits[target]
         non_zero = pfams[pfams > 0]
-        str_fmt = ",".join(f"\"{format_pfam(pfam)}\"" for pfam, _ in non_zero.iteritems())
+        str_fmt = ",".join(f"\"{format_pfam(pfam)}\"" for pfam, _ in non_zero.items())
         series_tab.append(f"{{name: \"{genomes_desc[target]}\", data: [{str_fmt}]}}")
     series = "[" + ",".join(series_tab) + "]"
 
@@ -1007,7 +1007,7 @@ def venn_cog(request, sep_plasmids=False):
     for target in targets:
         cogs = cog_hits[target]
         non_zero_cogs = cogs[cogs > 0]
-        str_fmt = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.iteritems())
+        str_fmt = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.items())
         series_tab.append( f"{{name: \"{genome_desc[target]}\", data: [{str_fmt}]}}" )
     series = "[" + ",".join(series_tab) + "]"
 
@@ -1335,7 +1335,7 @@ def og_tab_get_kegg_annot(db, seqids, from_taxid=None):
     ko_modules = db.get_ko_modules(ko_ids)
         
     ko_entries = []
-    for ko_id, count in n_occurences.iteritems():
+    for ko_id, count in n_occurences.items():
         entry = [format_ko(ko_id, as_url=True), count]
         descr = ko_descr.get(ko_id, "-")
         entry.append(descr)
@@ -1359,7 +1359,7 @@ def og_tab_get_cog_annot(db, seqids):
     n_entries = cog_hits["cog"].value_counts()
     cog_summ = db.get_cog_summaries(n_entries.index.tolist())
     cog_entries = []
-    for cog_id, count in n_entries.iteritems():
+    for cog_id, count in n_entries.items():
         if not cog_id in cog_summ:
             # should add a warning on the web page
             continue
@@ -1619,7 +1619,7 @@ def tab_get_pfam_annot(db, seqid):
     pfam_defs_df = db.get_pfam_def(pfam_hits.pfam.tolist())
 
     pfam_defs = []
-    for pfam, starts in pfam_starts.iteritems():
+    for pfam, starts in pfam_starts.items():
         ends = pfam_ends.loc[pfam]
         name = format_pfam(pfam)
         data = "["+",".join(f"{{x:{start}, y:{end}}}" for start, end in zip(starts, ends))+"]"
@@ -2289,7 +2289,7 @@ def KEGG_module_map(request, module_name):
         associated_ogs = ko_to_og_mapping.loc[ko]
         n_homologs = og_taxid[associated_ogs].sum(axis=1)
         hsh_col, hsh_val = {}, {}
-        for taxid, count in mat[ko].iteritems():
+        for taxid, count in mat[ko].items():
             hsh_curr = hsh_pres[taxid]
             if count>0:
                 hsh_curr[ko] = 1
@@ -2355,7 +2355,7 @@ def gen_pathway_profile(db, ko_ids):
         associated_ogs = ko_to_og_mapping.loc[ko]
         n_homologs = og_taxid[associated_ogs].sum(axis=1)
         hsh_col, hsh_val = {}, {}
-        for taxid, count in mat[ko].iteritems():
+        for taxid, count in mat[ko].items():
             if count>0:
                 hsh_val[taxid] = count
                 hsh_col[taxid] = EteTree.RED
@@ -2519,7 +2519,7 @@ def cog_venn_subset(request, category):
     for target in targets:
         cogs = cog_hits[target]
         non_zero_cogs = cogs[cogs > 0]
-        data = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.iteritems())
+        data = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.items())
         series_tab.append( f"{{name: \"{genome_desc[target]}\", data: [{data}]}}" )
     series = "[" + ",".join(series_tab) + "]"
 
@@ -3673,12 +3673,12 @@ def kegg_module_subcat(request):
     grouped_count.columns = [col for col in grouped_count["count"].columns]
     ref_tree = db.get_reference_phylogeny()
     e_tree = EteTree.default_tree(ref_tree)
-    for module, counts in grouped_count.iteritems():
+    for module, counts in grouped_count.items():
         values = counts.to_dict()
         header = format_module(module)
         expr_tree = expression_tree[module]
         n_missing = {}
-        for bioentry, count in counts.iteritems():
+        for bioentry, count in counts.items():
             # hack for now
             s = ko_count_subcat.loc[bioentry].index.get_level_values("KO").tolist()
             n_missing[bioentry] = expr_tree.get_n_missing({ko: 1 for ko in s})
@@ -3738,12 +3738,12 @@ def kegg_module(request):
     grouped_count.columns = [col for col in grouped_count["count"].columns]
     ref_tree = db.get_reference_phylogeny()
     e_tree = EteTree.default_tree(ref_tree)
-    for module, counts in grouped_count.iteritems():
+    for module, counts in grouped_count.items():
         values = counts.to_dict()
         header = format_module(module)
         expr_tree = expression_tree[module]
         n_missing = {}
-        for bioentry, count in counts.iteritems():
+        for bioentry, count in counts.items():
             # hack for now
             s = cat_count.loc[bioentry].index.get_level_values("KO").tolist()
             n_missing[bioentry] = expr_tree.get_n_missing({ko: 1 for ko in s})
