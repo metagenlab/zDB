@@ -10,7 +10,7 @@ build:
 
 source:
   url: https://github.com/metagenlab/zDB/archive/refs/tags/v1.1.1.tar.gz
-  sha256: 56d1cd7ec82b45d015a0d0323adc72271152ee363506c7f1cfc1593c6acb8d8d
+  sha256: 66b4696a248222e06a0d82f25ba28c14f2a96af3598d71e8dd632142aff714d4
 
 requirements:
   run:
