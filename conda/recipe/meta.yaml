@@ -6,11 +6,11 @@ package:
 
 build:
   noarch: generic
-  number: 8
+  number: 9
 
 source:
   url: https://github.com/metagenlab/zDB/archive/refs/tags/v1.1.1.tar.gz
-  sha256: 66b4696a248222e06a0d82f25ba28c14f2a96af3598d71e8dd632142aff714d4
+  sha256: 37307fe27cd0ca3b65fc1ce1a1c7727ee77e692ab671b8b78af6a0ff3f09e2b6
 
 requirements:
   run:
