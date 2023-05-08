@@ -2,4 +2,4 @@ name: fasttree
 channels:
     - bioconda
 dependencies:
-    - fasttree=2.1.8
+    - fasttree=2.1.11
