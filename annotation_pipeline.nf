@@ -946,6 +946,10 @@ process cleanup {
     mv \$(readlink ${db_path}_backup) $db_path
     rm ${db_path}_backup
 
+    if [ ! -d "${results_dir}/search_index" ]; then
+        mkdir ${results_dir}/search_index/
+    fi
+
     mv \$(readlink $index) ${results_dir}/search_index/index_${workflow.runName}
 
     if [ ! -d "${results_dir}/.completed_runs" ]; then
