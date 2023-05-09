@@ -345,7 +345,7 @@ elif [[ "$1" == "webapp" ]]; then
 		for index in ${bind_path[@]}; do
 			bind_docker="$bind_docker -v $index"
 		done
-		docker run ${bind_docker} -it ${full_docker_name} ${zdb_folder}/start_webapp ${options}
+		docker run -p $port:$port ${bind_docker} -it ${full_docker_name} ${zdb_folder}/start_webapp ${options}
 
 	elif [[ "$conda" = true ]]; then
 		conda_prefix="$NEXTFLOW_DIR/conda-env/webapp"
