@@ -1,17 +1,17 @@
 # zDB: comparative bacterial genomics made easy
 
-zDB is designed to perform comparative genomics analysis and to integrate the results in a Django web-application.
+zDB is designed to perform comparative genomics analyses and to integrate the results in a Django web-application.
 
-Several analysis are currently supported, with more to come:
-
+Several analyses are currently supported, with more to come:
+- Orthology inference
+- Phylogenetic reconstructions
 - COG annotation
-- KEGG orthologs annotation
+- KEGG orthologs annotation and pathway completion analysis
 - PFAM domains annotation
 - Swissprot homologs search
-- (RefSeq homologs search): implemented, but significantly slows down the analysis. You'll also have to download and prepare the database for diamond search, as this was not included in the database setup script.
+- RefSeq homologs search: implemented, but significantly slows down the analysis. You'll also have to download and prepare the database for diamond search, as this was not included in the database setup script.
 
-In addition, zDB performs orthology and phylogeny inference.
-All the results are stored either in a SQLite database or directly as files and displayed in the web application.
+All the results are stored either in a SQLite database or directly as files and displayed in the web application. Interactive visualizations facilitates the comparison of gene content and static figure can be downloaded for publication. 
 
 
 ## Changelog
@@ -38,7 +38,7 @@ conda install zdb -c metagenlab -c bioconda
 ```
 For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
 
-Once zDB is installed, you'll need to install either docker or singularity if you plan on running the analyses and/or the webapp in containers (we strongly encourage the use of singularity). Both the analyses and the webapp can also be run in conda, but this comes with several drawbacks:
+Once zDB is installed, we strongly encourage you to run the analysis and/or webapp in containers. For this, you'll need to install either docker or singularity. Both the analyses and the webapp can also be run in conda, but this comes with several drawbacks:
 - django will be run in native mode, without nginx and gunicorn and should not be used to set up a web-facing database (it is fine for a local access)
 - containers allow us to have a precise control of the environment where the webapp is run; it is less the case for conda environment. Despite our best care, running the webapp in conda might not work due to local differences.
 - *some conda environments have numerous dependencies: to speed the installation, we strongly recommend the use of [libmamba](https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community)* or to have a fresh conda installation.
@@ -51,7 +51,7 @@ conda install singularity=3.8.4 -c conda-forge
 ```
 For the installation of dockers, please have a look [here](https://docs.docker.com/get-docker/).
 
-### Install zDB from sources
+### zDB Installation from sources
 
 You can also install zdb directly from the github repository. This is particularly useful if you want to make modifications or if you want to have a direct access to Nextflow config file for a better control of the execution.
 
@@ -86,7 +86,7 @@ tar xvf test_dataset.tar.gz
 
 For a minimal database (assuming that singularity is installed):
 ```
-conda install zdb -c metagenlab
+conda install zdb -c metagenlab -c bioconda
 zdb run --input=input.csv --name=simple_run # runs the analysis
 zdb webapp --name=simple_run # Launches the webapp on simple run
 ```
@@ -94,7 +94,7 @@ The minimal database should take around 5 minutes to complete in a recent Deskto
 
 To do the same in conda environments:
 ```
-conda install zdb -c metagenlab
+conda install zdb -c metagenlab -c bioconda
 zdb run --input=input.csv --name=simple_run_conda --conda # runs the analysis
 zdb webapp --conda --name=simple_run_conda # Launches the webapp on the latest run
 ```
@@ -202,6 +202,8 @@ Starting web server. The application will be accessible @155.105.138.249 172.17.
 To access the webapp, type either 155.105.138.249:8080 or 172.17.0.1:8080 on your web browser.
 
 If you do not remember which runs are available, you can list them with the ```zdb list_runs``` command.
+
+For **MacOSX users** running the webapp in docker containers, please set --allowed_hosts=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
 
 ### Known issue
 
