@@ -101,7 +101,7 @@ zdb webapp --conda --name=simple_run_conda # Launches the webapp on the latest r
 
 To have a more complete set of analyses (includes cog and pfam annotation):
 ```
-conda install zdb -c metagenlab
+conda install zdb -c metagenlab -c bioconda
 zdb setup --pfam --cog --conda
 zdb run --input=input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
 zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
