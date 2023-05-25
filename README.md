@@ -38,7 +38,7 @@ conda install zdb -c metagenlab -c bioconda
 ```
 For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
 
-Once zDB is installed, we strongly encourage you to run the analysis and/or webapp in containers. For this, you'll need to install either docker or singularity. Both the analyses and the webapp can also be run in conda, but this comes with several drawbacks:
+Once zDB is installed, we advise you to run the analysis and/or webapp in containers, especially for **MacOSX users**. For this, you'll need to install either **docker** or **singularity**. Both the analyses and the webapp can also be run in conda, but this comes with several drawbacks:
 - django will be run in native mode, without nginx and gunicorn and should not be used to set up a web-facing database (it is fine for a local access)
 - containers allow us to have a precise control of the environment where the webapp is run; it is less the case for conda environment. Despite our best care, running the webapp in conda might not work due to local differences.
 - *some conda environments have numerous dependencies: to speed the installation, we strongly recommend the use of [libmamba](https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community)* or to have a fresh conda installation.
@@ -49,7 +49,7 @@ If you opt to use singularity, it can be installed with the following command:
 ```
 conda install singularity=3.8.4 -c conda-forge
 ```
-For the installation of dockers, please have a look [here](https://docs.docker.com/get-docker/).
+For the installation of docker, please have a look [here](https://docs.docker.com/get-docker/).
 
 ### zDB Installation from sources
 
@@ -75,7 +75,7 @@ import - unpack an archive that was prepared with the export command in the curr
 list_runs - lists the completed runs available to start the website in a given directory
 ```
 
-### Too long, will not read
+### Quick start
 
 Here are a few examples of workflows with a test dataset available from the git repository.
 To get the test dataset:
@@ -106,6 +106,7 @@ zdb setup --pfam --cog --conda
 zdb run --input=input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
 zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
 ```
+For troubleshooting, please first read the more detailed sections below on how to set up reference databases, running the analysis and starting the webserver.
 
 ## Setting up the reference databases
 
@@ -183,17 +184,21 @@ in this case, only the pfam annotations will be performed as the other analysis 
 
 ## Starting the web server
 
-Once the analysis is complete, the web application can be run with the ```zdb webapp``` command. The following options can be used:
+Once the analysis is complete, the web application can be run with the ```zdb webapp``` command. If the port 8080 is not in use, you can simply run the ```zdb webapp``` script without any parameters. zDB will launch the webapp on the last run of analysis.
+
+The following options can be used:
 ```
 --port=PORT_NUMBER      the port the application will be listening to, 8080 by default.
 --name=RUN_NAME     when nextflow runs. If not specified, will default to the last successful run (latest).
 --allowed_hosts=HOSTS   the name of the host or the ip address of the server. If not specified, will default to the ip addresses of the current host.
 ```
 
-The webserver can also be run in a conda environment by setting the ```--conda``` flag or in docker by setting the ```docker``` flag.
-By default, it will be run in a singularity container.
+By default, the webserver will be run in a singularity container. It can also be run in a conda environment by setting the ```--conda``` flag or in docker by setting the ```docker``` flag.
+For MacOSX users, we advise to run the webapp in docker containers, setting --allowed_hosts=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
 
-Simply put, if the port 8080 is not in use, you can simply run the ```zdb webapp``` script without any parameters. zDB will launch the webapp on the last run of analysis.
+```
+zdb webapp --docker --name=simple_run_docker # Launches the webapp using docker 
+```
 
 Once the webserver has started, you'll be able to access the webpages with a web browser. You'll typically see a line of the sort:
 ```
@@ -203,9 +208,11 @@ To access the webapp, type either 155.105.138.249:8080 or 172.17.0.1:8080 on you
 
 If you do not remember which runs are available, you can list them with the ```zdb list_runs``` command.
 
-For **MacOSX users** running the webapp in docker containers, please set --allowed_hosts=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
 
-### Known issue
+
+### Known issues
+
+**Running several instances**
 
 When trying to run several instances of the webapp on the same machine, you'll need to modify two files to avoid interferences between the instances.
 
@@ -219,6 +226,11 @@ Same in the zdb/nginx/nginx.config file:
 proxy_pass http://localhost:8000;
 ```
 Modify the 8000 to the same number you attributed to the port number of gunicorn.
+
+**Running the webapp on a MacOSX**
+
+Please run the webapp in docker containers, setting --allowed_hosts=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
+
 
 ## Importing and exporting results
 
