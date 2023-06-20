@@ -190,11 +190,11 @@ The following options can be used:
 ```
 --port=PORT_NUMBER      the port the application will be listening to, 8080 by default.
 --name=RUN_NAME     when nextflow runs. If not specified, will default to the last successful run (latest).
---allowed_hosts=HOSTS   the name of the host or the ip address of the server. If not specified, will default to the ip addresses of the current host.
+--allowed_host=HOSTS   the name of the host or the ip address of the server. If not specified, will default to the ip addresses of the current host.
 ```
 
 By default, the webserver will be run in a singularity container. It can also be run in a conda environment by setting the ```--conda``` flag or in docker by setting the ```docker``` flag.
-For MacOSX users, we advise to run the webapp in docker containers, setting --allowed_hosts=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
+For MacOSX users, we advise to run the webapp in docker containers, setting --allowed_host=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
 
 ```
 zdb webapp --docker --name=simple_run_docker # Launches the webapp using docker 
@@ -229,7 +229,7 @@ Modify the 8000 to the same number you attributed to the port number of gunicorn
 
 **Running the webapp on a MacOSX**
 
-Please run the webapp in docker containers, setting --allowed_hosts=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
+Please run the webapp in docker containers, setting --allowed_host=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
 
 
 ## Importing and exporting results
