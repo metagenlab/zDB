@@ -96,9 +96,16 @@ function createGenomicRegion(div, svg_id, regions, connections, highlight, windo
 		// whose arrow can be completely drawn, discard the other ones.
 		let start=region.start;
 		let end=region.end;
-		let filtered_features = region.features.filter(function(d) {
+		/* let filtered_features = region.features.filter(function(d) {
 			return (d.start<=end-max_arrow_size)&&(d.end>=start+max_arrow_size);
-		});
+		}); */
+	
+		for (let i=0; i<region.features.length;i++) {
+			if(region.features[i].end-start <= max_arrow_size) {
+				region.features[i].start = start;
+			}
+		}
+		let filtered_features = region.features;
 		let locus_to_position = {};
 
 		svg.append("g")

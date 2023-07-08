@@ -1649,7 +1649,7 @@ def genomic_region_df_to_js(df, start, end, name=None):
 
         prod = to_s(data["product"])
         features.append((
-            f"{{start: {data.start}, gene: {to_s(feature_name)}, end: {data.end},"
+            f"{{start: {data.start_pos}, gene: {to_s(feature_name)}, end: {data.end_pos},"
             f"strand: {data.strand}, type: {to_s(feature_type)}, product: {prod},"
             f"locus_tag: {to_s(data.locus_tag)}}}"
         ))
@@ -1665,20 +1665,38 @@ def locusx_genomic_region(db, seqid, window):
     strand, start, end = hsh_loc[seqid]
     window_start, window_stop = start-window, start+window
 
-    if window_start<0:
-        window_start=0
-    df_seqids = db.get_seqid_in_neighborhood(seqid, window_start, window_stop)
-    bioentry, _, _, _ = db.get_bioentry_list(seqid, search_on="seqid")
-    contig_size = db.get_contig_size(bioentry)
-
     hsh_organism = db.get_organism([seqid], id_type="seqid")
+    bioentry, _, contig_size, _ = db.get_bioentry_list(seqid, search_on="seqid")
+    qualifiers = db.get_bioentry_qualifiers(bioentry)
+    is_circular = "circular" in qualifiers["value"].values
+    df_seqids = db.get_features_location(bioentry, search_on="bioentry_id")
+
+    if 2*window >= contig_size:
+        window_start = 0
+        window_stop = contig_size
+    elif window_start<0 and not is_circular:
+        window_start = 0
+        df_seqids = df_seqids[start >= 1]
+    elif window_stop>contig_size and not is_circular:
+        window_stop = contig_size
+        df_seqids = df_seqids[stop <= contig_size]
+    elif window_start<0:
+        window_start = 0
+        window_stop = 0
+    elif window_stop > contig_size:
+        pass
+
+    df_seqids = df_seqids[(df_seqids.start_pos<window_stop) & (df_seqids.end_pos>window_start)]
+    df_seqids = df_seqids.set_index("seqfeature_id")
+
+    # Some parts are redundant with get_features_location
+    # those two function should be merged at some point
     infos = db.get_proteins_info(df_seqids.index.tolist(),
             to_return=["gene", "locus_tag", "product"], as_df=True,
             inc_non_CDS=True, inc_pseudo=True)
     cds_type = db.get_CDS_type(df_seqids.index.tolist())
     all_infos = infos.join(cds_type).join(df_seqids)
-    if window_stop > contig_size:
-        window_stop = contig_size
+    print(all_infos)
     return all_infos, window_start, window_stop
 
 
