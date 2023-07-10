@@ -76,14 +76,14 @@ get_files
 process check_gbk {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
-    publishDir "${params.results_dir}/blast_DB/$workflow.runName/gbk"
 
 	input:
-	    file gbk from gbk_from_local_assembly.collect()
+        file gbk from gbk_from_local_assembly.collect()
         file input_file from parse_input
 
 	output:
 	    path "filtered/*" into checked_gbks
+            path "filtered" into to_cleanup_gbks
 
 	script:
 	"""
@@ -214,7 +214,7 @@ fna_files_SEQ_2.mix(faa_files_SEQ_2, ffn_files_seq_2, merged_ffn_makeblastdb,
 process makeblastdb {
     container "$params.blast_container"
     conda "$baseDir/conda/blast.yaml"
-    publishDir "${params.results_dir}/blast_DB/$workflow.runName/${file_type}", mode: 'move'
+    publishDir "${params.results_dir}/blast_DB/$workflow.runName/${file_type}", mode: 'copy'
 
     input:
         file(input_file) from to_makeblastdb
@@ -630,7 +630,7 @@ process load_base_db {
 
     input:
         file db_base
-		file gbks from to_load_gbk_into_db
+	file gbks from to_load_gbk_into_db
         file orthofinder from to_load_orthofinder_in_db
         file alignments from to_load_alignment.collect()
         file nr_mapping_file from nr_mapping_to_db_setup
@@ -937,10 +937,12 @@ process cleanup {
         file db from to_db_cleanup
         file alignments from to_alignment_gather
         file results_dir from Channel.fromPath("${params.results_dir}", type: "dir")
+	file gbks from to_cleanup_gbks
 
     script:
     custom_run_name=(params.name)?params.name:""
     db_path="${results_dir}/db/$workflow.runName"
+    gbk_dir="${results_dir}/blast_DB/$workflow.runName/gbk"
     """
     mv $db_path ${db_path}_backup
     mv \$(readlink ${db_path}_backup) $db_path
@@ -949,6 +951,11 @@ process cleanup {
     if [ ! -d "${results_dir}/search_index" ]; then
         mkdir ${results_dir}/search_index/
     fi
+
+    mkdir -p "${gbk_dir}"
+    for gbk in filtered/*.gbk; do
+	cp \$gbk ${gbk_dir}
+    done
 
     mv \$(readlink $index) ${results_dir}/search_index/index_${workflow.runName}
 
