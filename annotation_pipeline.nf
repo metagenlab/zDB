@@ -83,6 +83,7 @@ process check_gbk {
 
 	output:
 	    path "filtered/*" into checked_gbks
+            path "filtered" into to_cleanup_gbks
 
 	script:
 	"""
@@ -100,7 +101,6 @@ process check_gbk {
 checked_gbks.into {
     to_load_gbk_into_db
     to_convert_gbk
-    to_cleanup_gbks
 }
 
 
@@ -953,7 +953,7 @@ process cleanup {
     fi
 
     mkdir -p "${gbk_dir}"
-    for gbk in *.gbk; do
+    for gbk in filtered/*.gbk; do
 	cp \$gbk ${gbk_dir}
     done
 
