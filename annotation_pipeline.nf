@@ -122,8 +122,8 @@ process convert_gbk {
     import annotations
 
     annotations.convert_gbk_to_fasta("${edited_gbk}", "${edited_gbk.baseName}.faa")
-    annotations.convert_gbk_to_fna("${edited_gbk}", "${edited_gbk.baseName}.ffn")
-    annotations.convert_gbk_to_fasta("${edited_gbk}", "${edited_gbk.baseName}.fna",
+    annotations.convert_gbk_to_fna("${edited_gbk}", "${edited_gbk.baseName}.fna")
+    annotations.convert_gbk_to_fasta("${edited_gbk}", "${edited_gbk.baseName}.ffn",
         output_fmt="fna", keep_pseudo=True)
   """
 }
