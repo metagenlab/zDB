@@ -2857,15 +2857,10 @@ def pan_genome(request, type):
     envoi = True
     return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
 
-
-# NOTE:
-# Due to a bug in the annotation pipeline
-# the ffn and fna are switched. This should
-# be replaced as soon as the bug will be fixed.
 blast_input_dir = {"blastp": "faa",
         "tblastn": "ffn",
-        "blastn_fna": "ffn",
-        "blastn_ffn": "fna",
+        "blastn_fna": "fna",
+        "blastn_ffn": "ffn",
         "blastx": "faa"}
 
 blast_command = {"blastp": NcbiblastpCommandline,
