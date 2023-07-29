@@ -1676,17 +1676,37 @@ def locusx_genomic_region(db, seqid, window):
         window_stop = contig_size
     elif window_start<0 and not is_circular:
         window_start = 0
-        df_seqids = df_seqids[start >= 1]
+        df_seqids = df_seqids[df_seqids.start_pos < window_stop]
     elif window_stop>contig_size and not is_circular:
         window_stop = contig_size
-        df_seqids = df_seqids[stop <= contig_size]
+        df_seqids = df_seqids[df_seqids.end_pos>window_start]
     elif window_start<0:
-        window_start = 0
-        window_stop = 0
-    elif window_stop > contig_size:
-        pass
+        # circular contig
 
-    df_seqids = df_seqids[(df_seqids.start_pos<window_stop) & (df_seqids.end_pos>window_start)]
+        diff = contig_size+window_start
+        df_seqids = df_seqids[(df_seqids.end_pos >= diff) | (df_seqids.start_pos <= window_stop)]
+        df_seqids.start_pos += -window_start
+        df_seqids.end_pos += -window_start
+        df_seqids.start_pos -= (df_seqids.start_pos>contig_size)*contig_size
+        df_seqids.end_pos -= (df_seqids.end_pos>contig_size)*contig_size
+        window_stop += -window_start
+        window_start = 0
+        df_seqids.start_pos -= (df_seqids.start_pos>window_stop)*df_seqids.start_pos
+    elif window_stop > contig_size:
+        # circular contig
+
+        diff = window_stop-contig_size
+        df_seqids = df_seqids[(df_seqids.end_pos >= window_start) | (df_seqids.start_pos <= diff)]
+        df_seqids.start_pos -= diff
+        df_seqids.end_pos -= diff
+        df_seqids.start_pos += (df_seqids.start_pos<0)*contig_size
+        df_seqids.end_pos += (df_seqids.end_pos<0)*contig_size
+        window_start -= diff
+        df_seqids.end_pos += (df_seqids.end_pos<window_start)*(contig_size-df_seqids.end_pos)
+        window_stop = contig_size
+    else:
+        df_seqids = df_seqids[(df_seqids.end_pos>window_start) | (df_seqids.end_pos>window_start)]
+
     df_seqids = df_seqids.set_index("seqfeature_id")
 
     # Some parts are redundant with get_features_location
@@ -1696,7 +1716,6 @@ def locusx_genomic_region(db, seqid, window):
             inc_non_CDS=True, inc_pseudo=True)
     cds_type = db.get_CDS_type(df_seqids.index.tolist())
     all_infos = infos.join(cds_type).join(df_seqids)
-    print(all_infos)
     return all_infos, window_start, window_stop
 
 
