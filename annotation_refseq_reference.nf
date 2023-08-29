@@ -106,10 +106,94 @@ refseq.uniparc_interpro_annotations(fasta_file, "${params.databases_dir}")
   """
 }
 
+no_uniparc_mapping_faa.into{
+  no_uniparc_mapping_faa_to_counts
+  no_uniparc_mapping_faa_to_merge
+}
 
-no_uniparc_mapping_faa.collectFile(name: 'merged.faa', newLine: true)
-    .set { merged_no_uniparc_faa }
+process calculate_fraction_mapped {
 
+  //conda 'bioconda::biopython=1.68 anaconda::pandas'
+
+  cpus 1
+
+  when:
+  params.mapping_uniparc == true
+
+  input:
+  file "*_uniparc_mapping_interpro.tab" from uniparc_mapping_tab
+  file "*_no_uniparc_mapping.faa" from no_uniparc_mapping_faa_to_counts
+
+  output: 
+  file "*interpro_summary.tsv" into interpro_mapping_counts
+
+  script:
+
+  """
+genome=\$(echo \$( basename "\$( readlink -f "_no_uniparc_mapping.faa" )" ) | sed 's/_no.*//')
+n_mapped=\$(cut -f1 *_uniparc_mapping_interpro.tab | grep -v accession | sort | uniq| wc -l)
+n_non_mapped=\$(grep ">" _no_uniparc_mapping.faa | wc -l)
+echo -e "\$genome\t\$n_mapped\t\$n_non_mapped" > \$genome\\_interpro_summary.tsv
+  """
+}
+
+interpro_mapping_counts.collectFile(name: 'combined_interpro_summary.tsv', newLine: false).into{combined_interpro_summary}
+
+//no_uniparc_mapping_faa_to_merge.collect().collate(1000).combine(combined_interpro_summary).view()
+no_uniparc_mapping_faa_to_merge.toList().collate(1000).combine(combined_interpro_summary).set{stats_and_faa}
+
+// TODO: write file with mapping genome:protein-id
+// TODO remove sequence redundancy (same protein in multiple genomes do not need to be analysed multiple times) 
+process filter_fasta_fraction_mapped {
+
+  //conda 'bioconda::biopython=1.68 anaconda::pandas'
+
+  publishDir 'refseq_annotation/interproscan_stats/', mode: 'link', overwrite: true
+  cpus 1
+
+  when:
+  params.mapping_uniparc == true
+
+  input:
+  //file "*_no_uniparc_mapping.faa" from no_uniparc_mapping_faa_to_merge.collect()
+  each file(stat) from stats_and_faa
+
+
+  output: 
+  file "combined_interpro_no_mapping.faa" into interpro_no_mapping_filter_faa
+  file 'interpro_stats.tsv' into summary
+
+  script:
+
+  """
+#!/usr/bin/env python
+import pandas
+from Bio import SeqIO
+import os
+import glob
+df = pandas.read_csv("combined_interpro_summary.tsv", sep="\\t", names=["genome","n_mapped","n_non_mapped"])
+df["fraction_mapped"] = df['n_mapped'].astype(float) / (df['n_non_mapped'] + df['n_mapped'])
+df["keep"] = False
+df.loc[(df["fraction_mapped"] > 0.9) & (df["n_non_mapped"] < 200), "keep"] = True
+df.to_csv("interpro_stats.tsv", sep="\t", index=False)
+all_records = []
+
+input_f = glob.glob("input*")
+print(input_f)
+f = open(input_f[0], "r")
+lst = f.readline()
+file_list = lst[0:-1].split(", ")
+genome_id2fasta_path = {os.path.basename(i).split("_no")[0]:i for i in file_list}
+
+for n, row in df[df.keep == True].iterrows():
+  if row.genome in genome_id2fasta_path and row.n_non_mapped > 0:
+    records = [i for i in SeqIO.parse(genome_id2fasta_path[row.genome], "fasta")]
+    all_records += records
+SeqIO.write(all_records, "combined_interpro_no_mapping.faa", "fasta")
+  """
+}
+
+interpro_no_mapping_filter_faa.collectFile(name: 'interproscan_nomap_filtered.faa', newLine: true).splitFasta( by: 10000, file: "no_uniparc_match_chunk_" ).into{interproscan_nomap_filtered}
 
 process execute_interproscan_no_uniparc_matches {
 
@@ -120,7 +204,7 @@ process execute_interproscan_no_uniparc_matches {
   container "$params.container_interproscan"
 
   input:
-  file(seq) from merged_no_uniparc_faa.splitFasta( by: 5000, file: "no_uniparc_match_chunk_" )
+  file(seq) from interproscan_nomap_filtered
 
   output:
   file '*tsv' into interpro_tsv_no_uniparc

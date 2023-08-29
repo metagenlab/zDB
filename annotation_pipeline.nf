@@ -226,6 +226,7 @@ process gbk_check {
 
   output:
   file "*merged.gbk" into edited_gbks
+  file 'gbk_check.log' into gbk_check_log
 
   script:
   """
@@ -455,13 +456,37 @@ process align_with_mafft {
 mafft_alignments.collect().into {all_alignments_1
                                  all_alignments_2
                                  all_alignments_3
-                                 all_alignments_4}
+                                 all_alignments_4
+                                 all_alignments_5}
 
 all_alignments_1.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 3 }.set { alignments_larget_tah_3_seqs }
 all_alignments_2.flatten().map { it }.filter { (it.text =~ /(>)/).size() == 3 }.set { alignments_3_seqs }
 all_alignments_3.flatten().map { it }.filter { (it.text =~ /(>)/).size() >= params.min_genomes }.set { all_alignments_core_candidate }
 all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.set { alignement_larger_than_2_seqs }
+all_alignments_5.flatten().collate(1).set { to_identity_calculation_split }
 
+
+process identity_calculation {
+    container "$params.annotation_container"
+    publishDir 'orthology/orthogroups_identity', mode: 'copy', overwrite: true
+    input:
+        file input_fasta from to_identity_calculation_split
+
+    output:
+        file "*${suffix}" into to_load_alignment
+
+    script:
+    suffix = "_ident.csv"
+    """
+    #!/usr/bin/env python
+    import annotations
+    
+    input_fasta = "${input_fasta}".split()
+    for file in input_fasta:
+        output_filename = file+"${suffix}"
+        annotations.calculate_og_identities(file, output_filename)
+    """
+}
 
 /*
 process orthogroups_phylogeny_with_raxml {
@@ -911,12 +936,13 @@ process execute_interproscan_no_uniparc_matches {
   file '*tsv' into interpro_tsv_no_uniparc
   file '*xml' into interpro_xml_no_uniparc
   file '*log' into interpro_log_no_uniparc
+  file '*json' into interpro_json_no_uniparc
 
   script:
   n = seq.name
   """
-  echo ok4
-  bash "$params.interproscan_home"/interproscan.sh --pathways --goterms --enable-tsv-residue-annot -f TSV,XML,GFF3 -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} >> ${n}.log
+  echo ok5
+  bash "$params.interproscan_home"/interproscan.sh --pathways --goterms --enable-tsv-residue-annot -f TSV,XML,GFF3,JSON -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} >> ${n}.log
   """
 }
 
@@ -941,12 +967,13 @@ process execute_interproscan_uniparc_matches {
   file '*tsv' into interpro_tsv_uniparc
   file '*xml' into interpro_xml_uniparc
   file '*log' into interpro_log_uniparc
+  file '*json' into interpro_json_uniparc
 
   script:
   n = seq.name
   """
-  echo ok4
-  bash "$params.interproscan_home"/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3 -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
+  echo ok5
+  bash "$params.interproscan_home"/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,JSON -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
   """
 }
 
@@ -1240,8 +1267,7 @@ process execute_DeepT3 {
 
   script:
   """
-  export PYTHONPATH=$PYTHONPATH:/usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
-  DeepT3_scores.py -f nr_fasta.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
+  /usr/local/bin/annotation_pipeline_nextflow/bin/DeepT3_scores.py -f nr_fasta.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
   """
 }
 

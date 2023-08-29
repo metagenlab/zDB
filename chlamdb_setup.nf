@@ -23,6 +23,12 @@ log.info "input                  : ${params.input}"
 
 tcdb_channel = Channel.fromPath("${params.execution_dir}/annotation/tcdb_mapping/TCDB_RESULTS_chunk.*/", type: 'dir')
 
+Channel.fromPath("${params.execution_dir}/orthology/orthogroups_alignments/*faa").collate( 50 ).set{ortho_alignments_channel}
+Channel.fromPath("${params.execution_dir}/orthology/orthogroups_uniref_diamond_BBH_phylogenies/*nwk").collate( 1000 ).set{BBH_phylogenies_channel}
+Channel.fromPath("${params.execution_dir}/orthology/orthogroups_phylogenies_fasttree/*nwk").collate( 1000 ).set{og_phylogenies_channel}
+
+
+
 process mysql_setup_biosql_db {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
@@ -200,6 +206,7 @@ process mysql_setup_TCDB {
 
   script:
   """
+  echo ok
   chlamdb-setup-TCDB.py -d ${params.db_name} -l setup_TCDB.log
   """
 }
@@ -223,7 +230,7 @@ process mysql_load_genbank {
 
   script:
   """
-  chlamdb-load-gbk.py -g ${params.execution_dir}/data/gbk_edited/*gbk -d ${params.db_name} >> mysql_load_genbank.log
+  chlamdb-load-gbk.py -g ${params.execution_dir}/data/gbk_edited/*merged.gbk -d ${params.db_name} >> mysql_load_genbank.log
   """
 }
 
@@ -253,19 +260,29 @@ mysql_load_orthogroups.into{
   orthology_to_alignments
   orthology_to_COG
   orthology_to_blast_setup
+  orthology_to_KEGG
+  orthology_to_TCDB
+  orthology_to_ref_phylo
+  orthology_to_genome_stats
+  orthology_to_ortho_phylo
+  orthology_to_interproscan
+  orthology_to_nr_hash
 }
 
 
+
+
+/*
 process mysql_load_alignments {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
-
-  when:
-  params.load_annotations == true
+  maxForks 6
+  cpus	10
 
   input:
   file orthology_to_alignments
+  file ortho_alignments_channel
 
   output:
   file("mysql_load_alignments.log") into mysql_load_alignments
@@ -273,9 +290,11 @@ process mysql_load_alignments {
   script:
   """
   # number of cpu
-  chlamdb-load-alignments.py -a ${params.execution_dir}/orthology/orthogroups_alignments/*faa -d ${params.db_name} -c 20 > mysql_load_alignments.log
+  chlamdb-load-alignments.py -a *faa -d ${params.db_name} -c ${task.cpus} > mysql_load_alignments.log
   """
 }
+*/ 
+
 
 process setup_orthology_matrix {
 
@@ -286,7 +305,8 @@ process setup_orthology_matrix {
   params.load_annotations == true
 
   input:
-  file mysql_load_alignments
+  //file mysql_load_alignments
+  file orthology_to_alignments
 
   output:
   file("orthology_mat.log") into mysql_orthology_mat
@@ -294,9 +314,16 @@ process setup_orthology_matrix {
 
   script:
   """
-  chlamdb-setup-comparative-tables.py -d ${params.db_name} -o >> orthology_mat.log
+  #chlamdb-setup-comparative-tables.py -d ${params.db_name} -o >> orthology_mat.log
+  echo ok >> orthology_mat.log
   chlamdb-setup-comparative-tables.py -d ${params.db_name} -o -a >> orthology_mat_plas.log
   """
+}
+
+mysql_orthology_mat.into{
+  mysql_orthology_mat_to_consensus
+  mysql_orthology_mat_to_phyloprofile
+  mysql_orthology_mat_to_synteny
 }
 
 process consenus_orthogroup_annot {
@@ -308,7 +335,7 @@ process consenus_orthogroup_annot {
   params.load_annotations == true
 
   input:
-  file mysql_orthology_mat
+  file mysql_orthology_mat_to_consensus
 
   output:
   file("orthogroups_annot.log") into orthogroups_annot
@@ -319,25 +346,7 @@ process consenus_orthogroup_annot {
   """
 }
 
-process consensus_orthogroup_annot {
 
-  publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
-  //conda 'mysqlclient=1.3.10 biopython=1.73'
-
-  when:
-  params.load_annotations == true
-
-  input:
-  file orthogroups_annot
-
-  output:
-  file("old_locus_corresp.log") into old_locus_corresp
-
-  script:
-  """
-  chlamdb-setup-old_locus-table.py -d ${params.db_name} >> old_locus_corresp.log
-  """
-}
 
 process reference_phylo {
 
@@ -348,7 +357,7 @@ process reference_phylo {
   params.load_annotations == true
 
   input:
-  file orthogroups_annot
+  file orthology_to_ref_phylo
 
   output:
   file("reference_phylo.log") into reference_phylo
@@ -368,7 +377,7 @@ process genomes_statistics {
   params.load_annotations == true
 
   input:
-  file reference_phylo
+  file orthology_to_genome_stats
 
   output:
   file("genomes_statistics.log") into genomes_statistics
@@ -388,16 +397,19 @@ process orthogroup_phylo {
   params.load_annotations == true
 
   input:
-  file reference_phylo
+  file orthology_to_ortho_phylo
+  file og_phylogenies_channel
 
   output:
   file("orthogroup_phylo.log") into orthogroup_phylo
 
   script:
   """
-  chlamdb-load-phylogenies.py -d ${params.db_name} -t ${params.execution_dir}/orthology/orthogroups_phylogenies_fasttree/*nwk >> orthogroup_phylo.log
+  chlamdb-load-phylogenies.py -d ${params.db_name} -t *nwk >> orthogroup_phylo.log
   """
 }
+
+
 
 process inteproscan {
 
@@ -408,7 +420,7 @@ process inteproscan {
   params.load_annotations == true
 
   input:
-  file orthogroup_phylo
+  file orthology_to_interproscan
 
   output:
   file("inteproscan.log") into inteproscan
@@ -470,7 +482,7 @@ process locus2hash {
   params.load_annotations == true
 
   input:
-  file inteproscan_TM_SP
+  file orthology_to_nr_hash
 
   output:
   file("locus2hash.log") into locus2hash
@@ -496,8 +508,30 @@ locus2hash.into {
   hash_to_pdb
   hash_to_string_pmid
   hash_to_T3_effectors
+  hash_to_old_locus
+  hash_to_consensus_og
 }
 
+
+process old_locus_table {
+
+  publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
+  //conda 'mysqlclient=1.3.10 biopython=1.73'
+
+  when:
+  params.load_annotations == true
+
+  input:
+  file hash_to_old_locus
+
+  output:
+  file("old_locus_table.log") into old_locus_table
+
+  script:
+  """
+  chlamdb-setup-old_locus-table.py -d ${params.db_name} >> old_locus_table.log
+  """
+}
 
 
 process comparative_tables_pfam {
@@ -558,7 +592,7 @@ process consensus_annot_og {
   params.load_annotations == true
 
   input:
-  file locus2hash
+  file hash_to_consensus_og
 
   output:
   file("consensus_annot_og.log") into consensus_annot_og
@@ -648,6 +682,7 @@ process load_KEGG {
 
   input:
   file mysql_enzyme_setup
+  file orthology_to_KEGG
 
   output:
   file("load_KEGG.log") into load_KEGG
@@ -708,6 +743,7 @@ process load_TCDB {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
   //conda 'mysqlclient=1.3.10 biopython=1.73'
+  maxForks 2
 
   when:
   params.load_TCDB == true
@@ -715,6 +751,7 @@ process load_TCDB {
   input:
   file mysql_setup_TCDB
   file tcdb_channel
+  file orthology_to_TCDB
 
   output:
   file("*.log") into load_TCDB
@@ -781,13 +818,14 @@ process load_BBH_phylo {
 
   input:
   file hash_to_BBH_phylo
+  file BBH_phylogenies_channel
 
   output:
   file("load_BBH_phylo.log") into load_BBH_phylo
 
   script:
   """
-  chlamdb-load-phylogenies-BBH.py -d ${params.db_name} -t ${params.execution_dir}/orthology/orthogroups_uniref_diamond_BBH_phylogenies/*nwk > load_BBH_phylo.log
+  chlamdb-load-phylogenies-BBH.py -d ${params.db_name} -t *nwk > load_BBH_phylo.log
   """
 }
 
@@ -878,6 +916,9 @@ process GC_table {
   """
 }
 
+
+
+
 process synteny {
   // # update TM et SP columns from legacy `ortho_detail` table
 
@@ -889,6 +930,7 @@ process synteny {
 
   input:
   file hash_to_synteny
+  file mysql_orthology_mat_to_synteny
 
   output:
   file("synteny.log") into synteny
@@ -898,6 +940,8 @@ process synteny {
   chlamdb-find-conserved-neighborhood.py -d ${params.db_name} > synteny.log
   """
 }
+
+
 
 process phyloprofile {
   // # update TM et SP columns from legacy `ortho_detail` table
@@ -910,6 +954,7 @@ process phyloprofile {
 
   input:
   file hash_to_phyloprofile
+  file mysql_orthology_mat_to_phyloprofile
 
   output:
   file("phyloprofile.log") into phyloprofile

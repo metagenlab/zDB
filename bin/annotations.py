@@ -306,7 +306,7 @@ def get_PMID_data():
 
 def uniprot_accession2score(uniprot_accession_list):
     # https://rest.uniprot.org/uniprotkb/?query=id:V8TQN7+OR+id:V8TR74&format=xml
-    link = "https://rest.uniprot.org/uniprotkb/search?query=accession:%s&fields=accession,annotation_score&format=tsv" % ("+OR+accession:".join(uniprot_accession_list))
+    link = "https://rest.uniprot.org/uniprotkb/search?query=%s&fields=accession,annotation_score&format=tsv&size=%s" % ("+OR+".join(uniprot_accession_list), len(uniprot_accession_list))
     print(link)
     page = urllib.request.urlopen(link)
     data = page.read().decode('utf-8').split('\n')
@@ -331,7 +331,7 @@ def get_uniprot_data(databases_dir, table):
     uniprot_data.write("uniprot_accession\tuniprot_score\tuniprot_status\tproteome\tcomment_function\tec_number\tcomment_subunit\tgene\trecommendedName_fullName\tproteinExistence\tdevelopmentalstage\tcomment_similarity\tcomment_catalyticactivity\tcomment_pathway\tkeywords\n")
 
     uniprot_accession_list = [row.rstrip().split("\t")[1].split(".")[0] for row in uniprot_table if row.rstrip().split("\t")[1] != 'uniprot_accession']
-    uniprot_accession_chunks = chunks(uniprot_accession_list, 300)
+    uniprot_accession_chunks = chunks(uniprot_accession_list, 100)
 
     sql_uniprot_annot = 'SELECT * FROM uniprot_annotation WHERE uniprot_accession IN ("%s");'
 
@@ -350,7 +350,7 @@ def get_uniprot_data(databases_dir, table):
             if uniprot_accession in uniprot2score:
                 uniprot_score = uniprot2score[uniprot_accession]
             else:
-                uniprot_score = 0
+                uniprot_score = None
             comment_function = uniprot_annotation.comment_function
             ec_number = uniprot_annotation.ec_number
             comment_similarity = uniprot_annotation.comment_similarity
@@ -570,11 +570,20 @@ def filter_plasmid(record_list):
 def count_missing_locus_tags(gbk_record):
     count_CDS = 0
     count_no_locus = 0
+    protein2count = {}
     for feature in gbk_record.features:
         if feature.type == 'CDS':
             count_CDS += 1
             if "locus_tag" not in feature.qualifiers:
                 count_no_locus += 1
+                protein_id = feature.qualifiers["protein_id"][0].split(".")[0]
+                if protein_id not in protein2count:
+                    protein2count[protein_id] = 1
+                    locus_tag = protein_id
+                else:
+                    protein2count[protein_id] += 1
+                    locus_tag = "%s_%s" % (protein_id, protein2count[protein_id])
+                feature.qualifiers["locus_tag"] = [locus_tag]
     return count_no_locus, count_CDS
 
 # See documentation of GenBank record format for more informations
@@ -659,8 +668,36 @@ def orthogroups_to_fasta(genomes_list):
                 out_handle = open(out_path, "w")
                 SeqIO.write(new_fasta, out_handle, "fasta")
 
+def calculate_og_identities(input_fasta, output_file):
+    alignment = AlignIO.read(input_fasta, "fasta")
+    values = []
+    for i in range(len(alignment)):
+        for j in range(i+1, len(alignment)):
+            alignment_1 = alignment[i]
+            alignment_2 = alignment[j]
+            locus_tag_1 = alignment_1.name
+            locus_tag_2 = alignment_2.name
+            alignment_length = 0
+            identical = 0
+            for ch1, ch2 in zip(alignment_1, alignment_2):
+                if ch1=="-" or ch2=="-":
+                    continue
+                if ch1==ch2:
+                    identical += 1
+                alignment_length += 1
+
+            if alignment_length>0:
+                per_identity = 100*(identical/float(alignment_length))
+            else:
+                per_identity = 0
+            values.append((locus_tag_1, locus_tag_2, per_identity, alignment_length))
+    output_fh = open(output_file, "w")
+    for lt1, lt2, ident, le in values:
+        print(lt1, lt2, ident, le, sep=",", file=output_fh)
+    output_fh.close()
 
 def check_gbk(gbff_files, minimal_contig_length=1000):
+    logging.basicConfig(filename='gbk_check.log', level=logging.DEBUG)
     reannotation_list = []
 
     # count the number of identical source names
@@ -671,9 +708,10 @@ def check_gbk(gbff_files, minimal_contig_length=1000):
         records = list(SeqIO.parse(gzip.open(gbff_file, "rt"), "genbank"))
 
         for record in records:
+            # check for missing locus_tags, add gene name as locus if needed
             n_missing, total = count_missing_locus_tags(record)
             if n_missing > 0:
-                print ('Warrning: %s/%s missing locus tag for record %s' % (n_missing, total, record.name))
+                logging.info('WARNING: %s/%s missing locus tag for record %s, protein ids will be used as locus_tags' % (n_missing, total, record.name))
 
         chromosome, plasmids = filter_plasmid(records)
 
@@ -689,7 +727,7 @@ def check_gbk(gbff_files, minimal_contig_length=1000):
 
                 plasmid = update_record_taxon_id(plasmid, 1000 + genome_number)
                 strain, new_source = rename_source(plasmid)
-                print("plasmid:", strain, new_source )
+                logging.info("plasmid:", strain, new_source )
                 if new_source:
                     if not 'plasmid' in new_source:
                         new_source = "%s plasmid %s" % (new_source, n_plasmid+1)
@@ -700,14 +738,14 @@ def check_gbk(gbff_files, minimal_contig_length=1000):
                     if strain.lower() not in plasmid.annotations['source'].lower():
                         plasmid.annotations['source'] = new_source
                 else:
-                    print ('ACHTUNG\t no strain name for \t%s\t, SOUCE uniqueness should be checked manually' % merged_record.id)
+                    logging.info ('ACHTUNG\t no strain name for \t%s\t, SOUCE uniqueness should be checked manually' % merged_record.id)
                 # check if accession is meaningful
                 if 'NODE_' in plasmid.id or 'NODE_' in plasmid.name:
-                    print ('ACHTUNG\t accession probably not unique (%s) for \t%s\t --> should be checked manually' % (merged_record.id))
+                    logging.info ('ACHTUNG\t accession probably not unique (%s) for \t%s\t --> should be checked manually' % (merged_record.id))
                 cleaned_records.append(plasmid)
             else:
                 plasmid_reannot = True
-                print("Warrning: unannotated genome: %s" % plasmid)
+                logging.info("Warrning: unannotated genome: %s" % plasmid)
 
         if len(chromosome) > 0:
 
@@ -727,9 +765,9 @@ def check_gbk(gbff_files, minimal_contig_length=1000):
                     merged_record = merge_gbk(chromosome)
                 else:
                     merged_record = chromosome[0]
-                print(merged_record.description )
+                logging.info(merged_record.description )
                 merged_record.description = clean_description(merged_record.description)
-                print(merged_record.description)
+                logging.info(merged_record.description)
                 # rename source with strain name
                 merged_record = update_record_taxon_id(merged_record, 1000 + genome_number)
                 strain, new_source = rename_source(merged_record)
@@ -741,27 +779,27 @@ def check_gbk(gbff_files, minimal_contig_length=1000):
                     if strain.lower() not in merged_record.annotations['source'].lower():
                         merged_record.annotations['source'] = new_source
                 else:
-                    print('ACHTUNG\t no strain name for\t%s' % gbff_file)
+                    logging.info('ACHTUNG\t no strain name for\t%s' % gbff_file)
                 # check if accession is meaningful
                 if 'NODE_' in merged_record.id or 'NODE_' in merged_record.name:
-                    print('ACHTUNG\t accession probably not unique (%s) for\t%s' % (merged_record.id, gbff_file))
+                    logging.info('ACHTUNG\t accession probably not unique (%s) for\t%s' % (merged_record.id, gbff_file))
                 cleaned_records.append(merged_record)
             else:
                 chromosome_reannot = True
-                print("Warrning: unannotated genome: %s" % chromosome)
+                logging.info("Warrning: unannotated genome: %s" % chromosome)
 
 
         if plasmid_reannot and not chromosome_reannot and len(chromosome) > 0:
-            print("plasmid", plasmid_reannot)
-            print("chr", chromosome_reannot)
+            logging.info("plasmid", plasmid_reannot)
+            logging.info("chr", chromosome_reannot)
             raise TypeError('Combination of unannotated plasmid(s) and annotated chromosome')
         elif not plasmid_reannot and chromosome_reannot and len(plasmids) > 0:
-            print("plasmid", plasmid_reannot)
-            print("chr", chromosome_reannot)
+            logging.info("plasmid", plasmid_reannot)
+            logging.info("chr", chromosome_reannot)
             raise TypeError('Combination of annotated plasmid(s) and unannotated chromosome')
         elif plasmid_reannot or chromosome_reannot:
-            print("plasmid", plasmid_reannot)
-            print("chr", chromosome_reannot)
+            logging.info("plasmid", plasmid_reannot)
+            logging.info("chr", chromosome_reannot)
             raise TypeError('Some genomes are not annotated!')
         else:
             out_name = gbff_file.split('.')[0] + '_merged.gbk'
@@ -1064,7 +1102,7 @@ def concatenate_core_orthogroups(fasta_files):
             for record in alignment:
                 if record.id not in taxons:
                     taxons.append(record.id)
-            all_seq_data[one_fasta][record.id] = record
+                all_seq_data[one_fasta][record.id] = record
 
 
     # building dictionnary of the form: dico[one_fasta][one_taxon] = sequence
