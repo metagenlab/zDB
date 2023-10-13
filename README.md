@@ -13,6 +13,9 @@ Several analyses are currently supported, with more to come:
 
 All the results are stored either in a SQLite database or directly as files and displayed in the web application. Interactive visualizations facilitates the comparison of gene content and static figure can be downloaded for publication. 
 
+## Demo of the webapp
+
+- https://zdb.metagenlab.ch/
 
 ## Changelog
 
