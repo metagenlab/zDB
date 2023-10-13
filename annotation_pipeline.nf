@@ -937,7 +937,7 @@ process cleanup {
         file db from to_db_cleanup
         file alignments from to_alignment_gather
         file results_dir from Channel.fromPath("${params.results_dir}", type: "dir")
-	file gbks from to_cleanup_gbks
+	    file gbks from to_cleanup_gbks
 
     script:
     custom_run_name=(params.name)?params.name:""
@@ -953,7 +953,7 @@ process cleanup {
     fi
 
     mkdir -p "${gbk_dir}"
-    for gbk in filtered/*.gbk; do
+    for gbk in filtered/*.gb*; do
 	cp \$gbk ${gbk_dir}
     done
 
