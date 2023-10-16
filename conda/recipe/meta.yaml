@@ -6,8 +6,10 @@ package:
 
 build:
   noarch: generic
-  number: 0
-
+  number: 1
+  run_exports:
+    - {{ pin_subpackage('zdb', max_pin="x.x") }}
+    
 source:
   url: https://github.com/metagenlab/zDB/archive/refs/tags/v1.2.0.tar.gz
   sha256: 19611b62cf591f03697259748e9aae8d8f82541885879d2f3a8c3d69e9bb72ab
