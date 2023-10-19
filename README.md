@@ -18,7 +18,9 @@ All the results are stored either in a SQLite database or directly as files and 
 - https://zdb.metagenlab.ch/
 
 ## Changelog
-
+v1.2.1 (October 2023)
+ - use mamba to build conda environments
+ 
 v1.1.1 (april 2023):
  - several fixes with conda environments
 
@@ -37,7 +39,7 @@ v1.0.5 (december 2022):
 
 zDB can be installed from conda with the following command
 ```
-conda install zdb -c metagenlab -c bioconda
+conda install zdb -c bioconda
 ```
 For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
 
@@ -89,7 +91,7 @@ tar xvf test_dataset.tar.gz
 
 For a minimal database (assuming that singularity is installed):
 ```
-conda install zdb -c metagenlab -c bioconda
+conda install zdb -c bioconda
 zdb run --input=input.csv --name=simple_run # runs the analysis
 zdb webapp --name=simple_run # Launches the webapp on simple run
 ```
@@ -97,14 +99,14 @@ The minimal database should take around 5 minutes to complete in a recent Deskto
 
 To do the same in conda environments:
 ```
-conda install zdb -c metagenlab -c bioconda
+conda install zdb -c bioconda
 zdb run --input=input.csv --name=simple_run_conda --conda # runs the analysis
 zdb webapp --conda --name=simple_run_conda # Launches the webapp on the latest run
 ```
 
 To have a more complete set of analyses (includes cog and pfam annotation):
 ```
-conda install zdb -c metagenlab -c bioconda
+conda install zdb -c bioconda
 zdb setup --pfam --cog --conda
 zdb run --input=input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
 zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
