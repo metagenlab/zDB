@@ -15,7 +15,7 @@ function createGenomicRegion(div, svg_id, regions, connections, highlight, windo
 	const margin = { top:5, right: 5, bottom:5, left:5 };
 	const max_arrow_size = 350;
 	const arrow_tube_size = 12;
-	const default_width = 600;
+	const default_width = 1200;
 	const base_line_width = 2;
 	const regions_vertical_interval = 20;
 	const arrow_height = 30;

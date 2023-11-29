@@ -1705,9 +1705,23 @@ def locusx_genomic_region(db, seqid, window):
         df_seqids.end_pos += (df_seqids.end_pos<window_start)*(contig_size-df_seqids.end_pos)
         window_stop = contig_size
     else:
-        df_seqids = df_seqids[(df_seqids.end_pos>window_start) | (df_seqids.end_pos>window_start)]
+        df_seqids = df_seqids[(df_seqids.end_pos>window_start)]
+        df_seqids = df_seqids[(df_seqids.start_pos < window_stop)]
 
-    df_seqids = df_seqids.set_index("seqfeature_id")
+    if len(df_seqids)!= len(df_seqids["seqfeature_id"].unique()):
+        # This case may happen when a gene overlaps the break of a circular contig.
+        # The location of this gene will be coded as join(...,...) in the gbk file
+        # and stored as two separate genes with the same seqid in BioSQL.
+        # If we want to display the whole contig as a continuous sequence, it is necessary
+        # to detect this and manually merge this overlapping gene.
+        grouped = df_seqids[["seqfeature_id", "strand", "end_pos",
+            "start_pos"]].groupby("seqfeature_id")
+        start = grouped["start_pos"].min()
+        end = grouped["end_pos"].max()
+        strands = df_seqids[["seqfeature_id", "strand"]].drop_duplicates("seqfeature_id")
+        df_seqids = start.to_frame().join(end).join(strands.set_index("seqfeature_id"))
+    else:
+        df_seqids = df_seqids.set_index("seqfeature_id")
 
     # Some parts are redundant with get_features_location
     # those two function should be merged at some point
@@ -1715,7 +1729,8 @@ def locusx_genomic_region(db, seqid, window):
             to_return=["gene", "locus_tag", "product"], as_df=True,
             inc_non_CDS=True, inc_pseudo=True)
     cds_type = db.get_CDS_type(df_seqids.index.tolist())
-    all_infos = infos.join(cds_type).join(df_seqids)
+    all_infos = infos.join(cds_type)
+    all_infos = all_infos.join(df_seqids)
     return all_infos, window_start, window_stop
 
 
@@ -1964,21 +1979,6 @@ def search_bar(request):
             "pat": pat,
             "mod": mod}
     return render(request, "chlamdb/search.html", my_locals(ctx))
-
-
-def hydropathy(request, locus):
-    biodb = settings.BIODB
-    print ('hydropathy -- %s --%s' % (biodb, locus))
-
-    from chlamdb.plots import hydrophobicity_plots
-
-    fig = hydrophobicity_plots.locus2hydrophobicity_plot(biodb, locus)
-
-    path = settings.BASE_DIR + '/assets/temp/hydro.png'
-    fig.savefig(path,dpi=500)
-    asset_path = '/temp/hydro.png'
-
-    return render(request, 'chlamdb/hydropathy.html', my_locals(locals()))
 
 
 def get_all_prot_infos(db, seqids, orthogroups):
@@ -3121,8 +3121,8 @@ def locus_tab_swissprot_hits(db, seqid):
     return ctx
 
 
-# Greedy approach to choose regions: 
-# choose the regions that have the higher number of seqids first
+# Might be interesting to draw the regions in the same order as they appear
+# in the phylogenetic tree (assuming single region per genome)
 def coalesce_regions(genomic_regions, seqids):
     seqids_set = set(seqids)
 
@@ -3144,7 +3144,7 @@ def coalesce_regions(genomic_regions, seqids):
 
 
 def plot_region(request):
-    max_region_size = 20000
+    max_region_size = 100000
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     page_title = page2title["plot_region"]
     form_class = make_plot_form(db)
@@ -3223,26 +3223,31 @@ def plot_region(request):
 
     # remove overlapping regions (e.g. if two matches are on the same
     # region, avoid displaying this region twice).
-    filtered_regions = coalesce_regions(genomic_regions, seqids)
+    # XXX : coalesce_regions does not do what it is intended to do, to fix
+    filtered_regions = genomic_regions # coalesce_regions(genomic_regions, seqids)
 
     for genomic_region in filtered_regions:
         seqid, region, start, end = genomic_region
         if region["strand"].loc[seqid]*ref_strand == -1:
             mean_val = (end+start)/2
             region["strand"] *= -1
-            dist_vector_start = region["start"]-mean_val
-            len_vector = region["end"]-region["start"]
-            region["end"] = region["start"]-2*dist_vector_start
-            region["start"] = region["end"] - len_vector
+            dist_vector_start = region["start_pos"]-mean_val
+            len_vector = region["end_pos"]-region["start_pos"]
+            region["end_pos"] = region["start_pos"]-2*dist_vector_start
+            region["start_pos"] = region["end_pos"] - len_vector
         ogs = db.get_og_count(region.index.tolist(), search_on="seqid")
-        region = region.join(ogs)
+        # need to reset index to keep seqid in the next merge
+        region = region.join(ogs).reset_index()
             
         if not prev_infos is None:
             # BM: horrible code (I wrote it, I should know).
             # would be nice to refactor it in a more efficient and clean way.
-            common_og = region.dropna(subset=["orthogroup"]).reset_index().merge(
-                    prev_infos.reset_index(), on="orthogroup")[["locus_tag_x",
-                    "locus_tag_y", "seqid_x", "seqid_y", "orthogroup"]]
+
+            # We need to drop na from orthogroup, as some genes, like rRNA or tRNA
+            # are not assigned any orthogroup
+            common_og = region.dropna(subset=["orthogroup"]).merge(
+                    prev_infos, on="orthogroup")[["locus_tag_x", "locus_tag_y",
+                        "seqid_x", "seqid_y", "orthogroup"]]
             related = []
             ogs = common_og.orthogroup.astype(int).tolist()
             p1 = common_og.seqid_x.tolist()
@@ -3269,7 +3274,7 @@ def plot_region(request):
         genome_name = hsh_description[taxid]
         js_val = genomic_region_df_to_js(region, start, end, genome_name)
         all_regions.append(js_val)
-        prev_infos = region[["orthogroup", "locus_tag"]]
+        prev_infos = region[["orthogroup", "locus_tag", "seqid"]]
 
     ctx = {"form": form, "genomic_regions": "[" + "\n,".join(all_regions) + "]",
             "window_size": max_region_size, "to_highlight": to_highlight, "envoi": True,

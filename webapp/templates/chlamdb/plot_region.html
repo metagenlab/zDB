@@ -13,14 +13,11 @@
 <script type="text/javascript" src="{% static 'js/svg-export.min.js' %}">
 </script>
 
-
 {% include "chlamdb/header.html" %}
 
 </head>
 
-
 <body>
-
   <div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
@@ -33,10 +30,10 @@
 
 
                   
-				  <div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
-					  <a href="#" class="close" data-dismiss="alert">&times;</a>
-					  <strong>Note!</strong> If the target locus has no homolog in the selected genome(s), the plot cannot be drawn (it will only display the reference locus region).
-				  </div>
+		  <div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
+			  <a href="#" class="close" data-dismiss="alert">&times;</a>
+			  <strong>Note!</strong> If the target locus has no homolog in the selected genome(s), the plot cannot be drawn (it will only display the reference locus region).
+		  </div>
 <br>
 				 
 
@@ -82,13 +79,14 @@
                 </div>
                </div>
                <br>
-<button id="download_svg_button">Download SVG</button>
+		<button id="download_svg_button">Download SVG</button>
 
-						  <div id="div_alignment">
+		  <div id="div_alignment">
 
-						  </div>
-					  {% endif %}
-					</div>
+		  </div>
+	  {% endif %}
+
+		</div>
 
               </div>
           </div>
