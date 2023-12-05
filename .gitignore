@@ -2,3 +2,7 @@
 circos_GC*
 asset*
 *~
+.nextflow*
+singularity/
+work/
+zdb/
