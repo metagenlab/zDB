@@ -1077,7 +1077,7 @@ def genomes(request):
     filenames_tax_id_db['path_to_ffn'] = path_ffn
     filenames_tax_id_db['path_to_gbk'] = path_gbk
     filenames_tax_id_db = filenames_tax_id_db[["path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk"]]
-    genomes_data = genomes_data.join(filenames_tax_id_db, on= "taxon_id")
+    genomes_data = genomes_data.join(filenames_tax_id_db, on="taxon_id")
     data_table_header = ["Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding", "N plasmid contigs", "faa seq", "fna seq", "ffn seq", "gbk file"]
     data_table = genomes_data[["id", "description", "gc", "n_prot", "n_contigs", "length", "coding_density", "has_plasmid", "path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk"]].values.tolist()
     return render(request, 'chlamdb/genomes.html', my_locals(locals()))
@@ -1281,7 +1281,7 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
         all_infos.loc[seqid_to_locus.loc[compare_to].locus_tag] = 100.0
 
         ident_col = SimpleColorColumn.fromSeries(all_infos.identity, color_gradient=True,
-                                                 header = "Identity", default_val="-", is_str_index=True)
+                                                 header="Identity", default_val="-", is_str_index=True)
 
     tree, root = prepare_default_tree(og_phylogeny)
     locuses = [branch.name for branch in tree.iter_leaves()]
@@ -1333,7 +1333,7 @@ def tab_og_conservation_tree(db, group, compare_to=None):
         max_identity = identity_matrix.groupby("taxid").max().round(1)
         max_identity.loc[seqid_to_taxon[compare_to]] = 100.0
         col = SimpleColorColumn.fromSeries(max_identity.identity, color_gradient=True,
-                                           header = "Identity", default_val="-")
+                                           header="Identity", default_val="-")
         e_tree.add_column(col)
 
     e_tree.rename_leaves(leaf_to_name)
@@ -2337,7 +2337,7 @@ def KEGG_module_map(request, module_name):
             n_missing = expr_tree.get_n_missing(hsh_pres[index])
         hsh_n_missing[index] = n_missing
 
-    e_tree.add_column(SimpleColorColumn({}, default_val= " "))
+    e_tree.add_column(SimpleColorColumn({}, default_val=" "))
     completeness = ModuleCompletenessColumn(hsh_n_missing, "", add_missing=False)
     e_tree.add_column(completeness)
     e_tree.rename_leaves(leaf_to_name)
@@ -4044,7 +4044,7 @@ def phylogeny(request):
     for serie_name, header, col, is_relative in tree_params:
         data = genomes_data[serie_name]
         e_tree.add_column(SimpleColorColumn.fromSeries(data, header=None, use_col=False))
-        stack = StackedBarColumn(data.to_dict(), colours= [col, "white"],
+        stack = StackedBarColumn(data.to_dict(), colours=[col, "white"],
                                  relative=is_relative, header=header,
                                  header_params=header_params, face_params=stacked_face_params)
         e_tree.add_column(stack)
@@ -4098,7 +4098,7 @@ def genomes_intro(request):
     for serie_name, header, col, is_relative in tree_params:
         data = genomes_data[serie_name]
         e_tree.add_column(SimpleColorColumn.fromSeries(data, header=None, use_col=False))
-        stack = StackedBarColumn(data.to_dict(), colours= [col, "white"],
+        stack = StackedBarColumn(data.to_dict(), colours=[col, "white"],
                                  relative=is_relative, header=header,
                                  header_params=header_params, face_params=stacked_face_params)
         e_tree.add_column(stack)
