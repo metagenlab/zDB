@@ -31,9 +31,9 @@ def bioproject2data(project_uid):
     return project_id, poject_name, project_title, description, registration_date
 
 
-def chunks(l, n):
-    "return sublists of l of minimum length n (work subdivision for the subprocesing module"
-    return [l[i:i + n] for i in range(0, len(l), n)]
+def chunks(lst, n):
+    """return sublists of l of minimum length n (work subdivision for the subprocesing module"""
+    return [lst[i:i + n] for i in range(0, len(lst), n)]
 
 
 def merge_dictionnaries(dico1, dico2):

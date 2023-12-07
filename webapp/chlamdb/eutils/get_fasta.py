@@ -22,14 +22,14 @@ def download_seq_entrez(accession, multifasta, seq_type, append):
     if multifasta == "":
         for one_accession in accession:
             output_name = re.sub(
-                "([a-zA-Z_0-9]+)\.([a-zA-Z]+)", "\\1.fasta", one_accession)
+                r"([a-zA-Z_0-9]+)\.([a-zA-Z]+)", "\\1.fasta", one_accession)
             output_handle = open(output_name, "w")
             handle = Entrez.efetch(
                 db=seq_type, id=one_accession, rettype="fasta")
             output_handle.write(handle.read())
             output_handle.close()
 
-     # if the user requests a single multifasta file
+        # if the user requests a single multifasta file
     else:
         # if the user required to add the blast file
         if append != "":

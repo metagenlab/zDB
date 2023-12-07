@@ -11,9 +11,9 @@ from Bio import Entrez, SeqIO
 Entrez.email = "trestan.pillonel@unil.ch"
 
 
-def chunks(l, n):
+def chunks(lst, n):
     "return sublists of l of minimum length n (work subdivision for the subprocesing module"
-    return [l[i:i + n] for i in range(0, len(l), n)]
+    return [lst[i:i + n] for i in range(0, len(lst), n)]
 
 
 def get_protein_sequences(crispdata):
