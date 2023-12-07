@@ -20,7 +20,7 @@ from collections import namedtuple
 
 def chunks(l, n):
     for i in range(0, len(l), n):
-        yield l[i:i+n]
+        yield l[i:i + n]
 
 
 def count_missing_locus_tags(gbk_record):
@@ -73,7 +73,7 @@ def gen_new_locus_tag(hsh_prev_values):
 
 def gen_new_organism(organism, hsh_prev_values):
     cnt = 1
-    prefix = organism+"_"
+    prefix = organism + "_"
     new_name = f"{prefix}{cnt}"
     while new_name in hsh_prev_values:
         cnt += 1
@@ -106,7 +106,7 @@ def parse_csv(csv_file):
         if has_names and len(entry["name"]) > 0:
             name = entry["name"]
             if name in names:
-                raise Exception(name+" is duplicated")
+                raise Exception(name + " is duplicated")
             names.add(name)
 
         # only get the filename, as nextflow will symlink it
@@ -219,7 +219,7 @@ def check_gbk(csv_file):
 
     for filename, name in custom_names.items():
         if organisms[name] > 1:
-            raise Exception("The custom name "+name +
+            raise Exception("The custom name " + name +
                             " is already used in another file")
 
     # at one point, will have to rewrite this to avoid
@@ -273,10 +273,10 @@ def check_gbk(csv_file):
                         locuses)
                     locuses[curr_locus[0]] -= 1
             records.append(record)
-        SeqIO.write(records, "filtered/"+failed_gbk, "genbank")
+        SeqIO.write(records, "filtered/" + failed_gbk, "genbank")
 
     for passed in gbk_passed:
-        os.symlink(os.readlink(passed), "filtered/"+passed)
+        os.symlink(os.readlink(passed), "filtered/" + passed)
 
 
 def convert_gbk_to_fasta(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=False):
@@ -404,7 +404,7 @@ def orthofinder2core_groups(fasta_list,
             continue
 
         # cannot possibly be a core orthogroup
-        if len(loci_list) < n_genomes-n_missing:
+        if len(loci_list) < n_genomes - n_missing:
             continue
 
         for locus in loci_list:
@@ -414,7 +414,7 @@ def orthofinder2core_groups(fasta_list,
 
     df = pd.DataFrame(hsh_ogs).fillna(0)
     df_sum = df[df < 2].sum(axis=1)
-    core_groups = df_sum[df_sum >= n_genomes-n_missing].index.tolist()
+    core_groups = df_sum[df_sum >= n_genomes - n_missing].index.tolist()
     return core_groups, orthogroup2locus_list, locus2genome
 
 
@@ -459,7 +459,7 @@ def calculate_og_identities(input_fasta, output_file):
     alignment = AlignIO.read(input_fasta, "fasta")
     values = []
     for i in range(len(alignment)):
-        for j in range(i+1, len(alignment)):
+        for j in range(i + 1, len(alignment)):
             alignment_1 = alignment[i]
             alignment_2 = alignment[j]
             locus_tag_1 = alignment_1.name
@@ -474,7 +474,7 @@ def calculate_og_identities(input_fasta, output_file):
                 alignment_length += 1
 
             if alignment_length > 0:
-                per_identity = 100*(identical/float(alignment_length))
+                per_identity = 100 * (identical / float(alignment_length))
             else:
                 per_identity = 0
             values.append((locus_tag_1, locus_tag_2,
@@ -505,7 +505,7 @@ def concatenate_core_orthogroups(fasta_files):
     for one_fasta in fasta_files:
         for taxon in taxons:
             if taxon not in all_seq_data[one_fasta]:
-                seq = "-"*fasta_to_algn_length[one_fasta]
+                seq = "-" * fasta_to_algn_length[one_fasta]
             else:
                 seq = all_seq_data[one_fasta][taxon]
             concat_data[taxon] += seq

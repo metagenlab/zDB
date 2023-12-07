@@ -5,7 +5,7 @@ Entrez.email = "trestan.pillonel@unil.ch"
 
 
 def _chunks(l, n):
-    return [l[i:i+n] for i in range(0, len(l), n)]
+    return [l[i:i + n] for i in range(0, len(l), n)]
 
 
 def download_refseq_assemblies(id_list, complete=True):
@@ -20,7 +20,7 @@ def download_refseq_assemblies(id_list, complete=True):
     local_dir = os.getcwd()
 
     for n, id in enumerate(id_list):
-        print('download %s out of %s: %s ...' % (n+1, len(id_list), id))
+        print('download %s out of %s: %s ...' % (n + 1, len(id_list), id))
         taxid2genomes.get_complete_genomes_data(id, complete=True)
 
 

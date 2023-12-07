@@ -45,7 +45,7 @@ def check_sra(sra_run_list, sra_sample_table):
         largest = [0, '-']
         run_acc2data = {}
         for n, run in enumerate(soup.findAll('run')):
-            run_size = round(float(run.attrs['total_bases'])/1000000, 2)
+            run_size = round(float(run.attrs['total_bases']) / 1000000, 2)
             run_acc2data[run.attrs['acc']] = [bioproject,
                                               experiment, sample, n, run.attrs['acc'], run_size]
             if run_size > largest[0]:
@@ -54,7 +54,7 @@ def check_sra(sra_run_list, sra_sample_table):
             u.write('%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (run_acc2data[largest[1]][0],
                                                       run_acc2data[largest[1]][1],
                                                       run_acc2data[largest[1]][2],
-                                                      n+1,
+                                                      n + 1,
                                                       run_acc2data[largest[1]][4],
                                                       run_acc2data[largest[1]][5],
                                                       'replace %s (%sMb)' % (run_accession,

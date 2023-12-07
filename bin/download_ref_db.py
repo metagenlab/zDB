@@ -22,7 +22,7 @@ def download_refseq(download_dir, n_retry=10):
     # or not present (i.e. removed from the disk in case of problem)
     existing_files = set()
     for current_file in os.listdir(download_dir):
-        if os.path.isfile(download_dir+"/"+current_file):
+        if os.path.isfile(download_dir + "/" + current_file):
             existing_files.add(current_file)
 
     # it would probably be better to use startsWith and check the last
@@ -36,9 +36,9 @@ def download_refseq(download_dir, n_retry=10):
         failed = 0
         complete = False
         while not complete:
-            output_file = open(download_dir+"/"+f, "wb")
+            output_file = open(download_dir + "/" + f, "wb")
             try:
-                ftp.retrbinary("RETR "+f, output_file.write)
+                ftp.retrbinary("RETR " + f, output_file.write)
                 output_file.close()
                 complete = True
                 time.sleep(5)
@@ -48,7 +48,7 @@ def download_refseq(download_dir, n_retry=10):
                 failed += 1
                 if failed == n_retry:
                     os.remove(f)
-                    raise Exception("Failed to download "+f+". You may retry \
+                    raise Exception("Failed to download " + f + ". You may retry \
                             to run the script to complete the download.")
         existing_files.add(f)
 
