@@ -100,7 +100,7 @@ def sra2bioproject2(sra_id_list):
         data = i['ExpXml']
         try:
             bioproject = re.findall('<Bioproject>(.*)</Bioproject>', data)[0]
-        except:
+        except Exception:
             print('problem:', data)
             continue
         id = i['Id']

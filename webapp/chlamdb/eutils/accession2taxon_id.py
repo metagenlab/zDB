@@ -18,7 +18,7 @@ def old_taxon_id2new_taxon_id(old_taxon_id):
             return ncbi_id
         else:
             raise ('Unkown status %s' % record1[0]['Status'])
-    except:
+    except Exception:
         return False
 
 
@@ -39,7 +39,7 @@ def species_name2taxon_id(species_name):
     try:
         ncbi_id = record1['IdList'][0]
         return ncbi_id
-    except:
+    except Exception:
         return False
 
 
@@ -144,7 +144,7 @@ def accession2gbk(accession, db='protein'):
 
         record_gbk = SeqIO.read(handlexx, 'genbank')
         return record_gbk
-    except:
+    except Exception:
         return None
 
 
@@ -364,31 +364,31 @@ if __name__ == '__main__':
                 data = taxon2path[accession]
                 try:
                     superkingdom = data["superkingdom"]
-                except:
+                except Exception:
                     superkingdom = "-"
                 try:
                     phylum = data["phylum"]
-                except:
+                except Exception:
                     phylum = "-"
                 try:
                     class_ = data["class"]
-                except:
+                except Exception:
                     class_ = "-"
                 try:
                     order = data["order"]
-                except:
+                except Exception:
                     order = "-"
                 try:
                     family = data["family"]
-                except:
+                except Exception:
                     family = "-"
                 try:
                     genus = data["genus"]
-                except:
+                except Exception:
                     genus = "-"
                 try:
                     species = data["species"]
-                except:
+                except Exception:
                     species = "-"
                 print("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (accession2taxon.keys()[accession2taxon.values().index(accession)],
                                                               accession,

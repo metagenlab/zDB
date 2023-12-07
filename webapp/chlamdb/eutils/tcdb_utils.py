@@ -19,7 +19,7 @@ def accession2description(tc_id):
         page = urllib.request.urlopen(req)
         # data = page.read().decode('utf-8').split('\n')
         soup = BeautifulSoup(page, 'html.parser')
-    except:
+    except Exception:
         import time
         print('connexion problem, trying again...')
         time.sleep(60)
@@ -41,7 +41,7 @@ def accession2family(family_id):
         page = urllib.request.urlopen(req)
         # data = page.read().decode('utf-8').split('\n')
         soup = BeautifulSoup(page, 'html.parser')
-    except:
+    except Exception:
         import time
         print('connexion problem, trying again...')
         time.sleep(60)
@@ -84,7 +84,7 @@ def accession2substrate(accession, tc):
         page = urllib.request.urlopen(req)
         # data = page.read().decode('utf-8').split('\n')
         soup = BeautifulSoup(page, 'html.parser')
-    except:
+    except Exception:
         import time
         print('connexion problem, trying again...')
         time.sleep(60)
@@ -112,7 +112,7 @@ def accession2species_and_product(accession, tc):
         page = urllib.request.urlopen(req)
         # data = page.read().decode('utf-8').split('\n')
         soup = BeautifulSoup(page, 'html.parser')
-    except:
+    except Exception:
         import time
         print('connexion problem, trying again...')
         time.sleep(60)

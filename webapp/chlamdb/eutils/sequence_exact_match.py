@@ -54,7 +54,7 @@ def accession2exact_matches(sequence, target_databases):
     try:
         page = urllib2.urlopen(req)
         tree = ElementTree.parse(page)
-    except:
+    except Exception:
         import time
         print 'connexion problem, trying again...'
         time.sleep(60)

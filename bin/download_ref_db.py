@@ -42,7 +42,7 @@ def download_refseq(download_dir, n_retry=10):
                 output_file.close()
                 complete = True
                 time.sleep(5)
-            except:
+            except Exception:
                 output_file.close()
                 time.sleep(60)
                 failed += 1

@@ -111,7 +111,7 @@ def uniprot_accession2EMBL_GenBank_DDBJ_id(accession, dbfrom='ACC', dbto='EMBL')
     try:
         acc = result[1].split('\t')[1]
         return acc
-    except:
+    except Exception:
         return None
 
 
@@ -167,7 +167,7 @@ def uniprot_id2record(uniprot_accession, n_trial=0):
 
     try:
         record = SeqIO.read(rec, 'uniprot-xml')
-    except:
+    except Exception:
         import time
         print 'problem with %s, trying again, %s th trial' % (uniprot_accession, n_trial)
         time.sleep(50)
@@ -314,7 +314,7 @@ def uniprot_accession2go_and_status(uniprot_accession):
                 data = page.read().decode('utf-8').split('\n')
                 rows = [i.rstrip().split('\t') for i in data]
                 success = True
-            except:
+            except Exception:
                 success = False
 
     go_id2description = {}
@@ -437,7 +437,7 @@ def get_whole_db_uniprot_crossref(biodb):
                 try:
                     uniprot_id = sequence2uniprot_id(locus2sequence[locus])
                     print 'ok: %s' % uniprot_id
-                except:
+                except Exception:
                     continue
         if uniprot_id:
             # insert uniprot_id into mysql table
@@ -446,7 +446,7 @@ def get_whole_db_uniprot_crossref(biodb):
             try:
                 uniprot_score, uniprot_status, go_data = uniprot_accession2go_and_status(
                     uniprot_id)
-            except:
+            except Exception:
                 print 'echec, continue'
                 continue
             # add go data
@@ -535,7 +535,7 @@ def get_whole_db_uniprot_crossref(biodb):
                         cursor.execute(sql1, )
                         database_index = cursor.fetchall()[0][0]
 
-                    except:
+                    except Exception:
                         # insert new database name
                         sql2 = 'insert into db_xref (db_xref_name) values ("%s")' % database
                         cursor.execute(sql2, )

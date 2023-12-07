@@ -204,31 +204,31 @@ if __name__ == '__main__':
                 data = dico[accession]
                 try:
                     superkingdom = data["superkingdom"]
-                except:
+                except Exception:
                     superkingdom = "-"
                 try:
                     phylum = data["phylum"]
-                except:
+                except Exception:
                     phylum = "-"
                 try:
                     class_ = data["class"]
-                except:
+                except Exception:
                     class_ = "-"
                 try:
                     order = data["order"]
-                except:
+                except Exception:
                     order = "-"
                 try:
                     family = data["family"]
-                except:
+                except Exception:
                     family = "-"
                 try:
                     genus = data["genus"]
-                except:
+                except Exception:
                     genus = "-"
                 try:
                     species = data["species"]
-                except:
+                except Exception:
                     species = "-"
 
                 print("%s\t%s\t%s\t%s\t%s\t%s\t%s" % (superkingdom,

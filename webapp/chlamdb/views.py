@@ -1428,7 +1428,7 @@ def og_tab_get_pfams(db, annotations):
 def tab_og_best_hits(db, orthogroup, locus=None):
     try:
         refseq_newick = db.get_refseq_phylogeny(orthogroup)
-    except:
+    except Exception:
         # no phylogeny for that orthogroup
         return {"has_refseq_phylo": False}
     ete_tree = Tree(refseq_newick)
@@ -1470,7 +1470,7 @@ def orthogroup(request, og):
     tokens = og.split("_")
     try:
         og_id = int(tokens[1])
-    except:
+    except Exception:
         menu = True
         invalid_id = True
         return render(request, "chlamdb/og.html", my_locals(locals()))
@@ -1749,7 +1749,7 @@ def locusx(request, locus=None, menu=True):
     try:
         seqid, feature_type, is_pseudogene = db.get_seqid(locus_tag=locus,
                                                           feature_type=True)
-    except:
+    except Exception:
         return render(request, 'chlamdb/locus.html', my_locals({"valid": False}))
     else:
         valid_id = True
@@ -2158,7 +2158,7 @@ def fam_pfam(request, pfam):
         return render(request, 'chlamdb/fam.html', my_locals(context))
     try:
         pfam_id = int(pfam[len("PF"):])
-    except:
+    except Exception:
         return render(request, 'chlamdb/fam.html', my_locals(context))
 
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
@@ -2261,7 +2261,7 @@ def KEGG_module_map(request, module_name):
 
     try:
         module_id = int(module_name[len("M"):])
-    except:
+    except Exception:
         # add error message: module not formated correctly
         valid_id = False
         return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
@@ -2412,7 +2412,7 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
     if map_name is None:
         try:
             pathway = extract_map(db, request)
-        except:
+        except Exception:
             ctx = {"error": True, "error_message": "No pathway specified",
                    "error_title": "Error"}
             return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(ctx))
@@ -2558,7 +2558,7 @@ def ko_venn_subset(request, category):
     category = category.replace("+", " ")
     try:
         targets = [int(i) for i in request.GET.getlist('h')]
-    except:
+    except Exception:
         # add an error message
         return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
@@ -2978,7 +2978,7 @@ def blast(request):
                             "error_title": "Query format error", "envoi": True,
                                "form": form, "wrong_format": True}
                     return render(request, 'chlamdb/blast.html', my_locals(context))
-        except:
+        except Exception:
             context = {"error_message": "Error while parsing the fasta query",
                     "error_title": "Query format error",
                        "envoi": True, "form": form, "wrong_format": True}
@@ -3292,7 +3292,7 @@ def circos_main(request):
                 sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (reference_taxon)
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
                 target_taxons = ordered_taxons[0:10]
-            except:
+            except Exception:
                 sql_order = 'select taxon_2 from comparative_tables_shared_orthogroups where taxon_1=%s order by n_shared_orthogroups DESC;' % (reference_taxon)
 
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
@@ -3833,7 +3833,7 @@ def pfam_comparison(request):
 
     try:
         all_targets = form.get_choices()
-    except:
+    except Exception:
         # TODO: add error message
         return render(request, 'chlamdb/pfam_comp.html', my_locals(locals()))
 
@@ -3870,7 +3870,7 @@ def cog_comparison(request):
 
     try:
         all_targets = form.get_choices()
-    except:
+    except Exception:
         # TODO: add error message
         return render(request, 'chlamdb/cog_comp.html', my_locals(locals()))
 
@@ -3929,7 +3929,7 @@ def orthogroup_comparison(request):
 
     try:
         all_targets = form.get_choices()
-    except:
+    except Exception:
         # TODO: add error message
         return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
 

@@ -95,7 +95,7 @@ def get_taxi2assembly_accession(ncbi_taxon,
                     handle_assembly = Entrez.esummary(
                         db="assembly", id=one_assembly)
                     urlok = True
-                except:
+                except Exception:
                     urlok = False
         try:
             assembly_record = Entrez.read(handle_assembly, validate=False)
@@ -169,7 +169,7 @@ def get_complete_genomes_data(ncbi_taxon,
                     handle_assembly = Entrez.esummary(
                         db="assembly", id=one_assembly)
                     urlok = True
-                except:
+                except Exception:
                     urlok = False
         try:
             assembly_record = Entrez.read(handle_assembly, validate=False)
@@ -198,10 +198,10 @@ def get_complete_genomes_data(ncbi_taxon,
         try:
             Biosource = assembly_record['DocumentSummarySet']['DocumentSummary'][
                 0]['Biosource']['InfraspeciesList'][0]['Sub_value']
-        except:
+        except Exception:
             try:
                 Biosource = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Biosource']['Isolate']
-            except:
+            except Exception:
                 print(assembly_record['DocumentSummarySet']['DocumentSummary'])
                 import sys
                 sys.exit()
@@ -218,7 +218,7 @@ def get_complete_genomes_data(ncbi_taxon,
         out_dir = local_dir+'/%s' % LastMajorReleaseAccession
         try:
             os.mkdir(out_dir)
-        except:
+        except Exception:
             continue
         # get ftp link in meta data string
         # print assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta']
@@ -266,7 +266,7 @@ def get_complete_genomes_data(ncbi_taxon,
                     ftp_path = re.findall(
                         '<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
                     get_ncbi_genome(ftp_path, out_dir)
-                except:
+                except Exception:
                     print('no ftp link found for assembly id:', one_assembly)
                     os.rmdir(out_dir)
                     continue
@@ -286,7 +286,7 @@ def get_complete_genomes_data(ncbi_taxon,
                         get_ncbi_genome(ftp_path, out_dir)
 
                         success = True
-                    except:
+                    except Exception:
                         i += i
                 else:
                     print('could not download assembly %s' %
@@ -360,7 +360,7 @@ def accession2assembly(accession):
     try:
         handle_assembly = Entrez.esummary(
             db="assembly", id=record[0]['LinkSetDb'][0]['Link'][0]['Id'])
-    except:
+    except Exception:
 
         print('link to assembly could not be found, trying to get it strating from taxon_id...')
 
@@ -419,7 +419,7 @@ def accession2assembly(accession):
                     get_ncbi_genome(ftp_path, out_dir)
 
                     success = True
-                except:
+                except Exception:
                     i += i
             else:
                 print('could not download assembly %s' %
@@ -522,7 +522,7 @@ def download_assembly(assembly_gi, out_dir, complete=False):
                     get_ncbi_genome(ftp_path, out_dir)
 
                     success = True
-                except:
+                except Exception:
                     i += i
             else:
                 print('could not download assembly %s' %

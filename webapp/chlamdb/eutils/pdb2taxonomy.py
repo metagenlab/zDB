@@ -13,7 +13,7 @@ def pdb_entry2data(pdb_entry):
     req = urllib2.Request(link)
     try:
         page = urllib2.urlopen(req)
-    except:
+    except Exception:
         print 'echec: %s' % pdb_entry
 
     tree = ElementTree.fromstring(page.read().decode('utf-8'))

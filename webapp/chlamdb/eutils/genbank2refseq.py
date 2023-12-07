@@ -46,7 +46,7 @@ def refseq2genbank(ncbi_id, database="nuccore"):
         print 'ncbi gi!'
         handle = Entrez.elink(dbfrom=database, db=database,
                               id=ncbi_id, term="srcdb+ddbj/embl/genbank[prop]")
-    except:
+    except Exception:
         handle = Entrez.elink(dbfrom=database, db=database, id=gi(
             ncbi_id), term="srcdb+ddbj/embl/genbank[prop]")
     record = Entrez.read(handle)

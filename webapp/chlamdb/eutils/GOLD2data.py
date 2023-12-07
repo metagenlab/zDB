@@ -18,7 +18,7 @@ def GOLD_id2data(gold_id):
         page = urllib2.urlopen(req)
         # data = page.read().decode('utf-8').split('\n')
         soup = BeautifulSoup(page, 'html.parser')
-    except:
+    except Exception:
         import time
         print 'connexion problem, trying again...'
         time.sleep(60)

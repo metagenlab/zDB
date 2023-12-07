@@ -94,7 +94,7 @@ def download_one_wgs(wgs_link):
                 fasta_record = list(SeqIO.parse(one_handle, "fasta"))[0]
                 print fasta_record
                 record.seq = fasta_record.seq
-                # except:
+                # except Exception:
                 #    no_sequences = True
                 #    break
             else:
@@ -216,7 +216,7 @@ def get_complete_genomes_data(ncbi_taxon):
 
             sequences_links = [link["Id"]
                                for link in record_sequences[0]["LinkSetDb"][0]["Link"]]
-        except:
+        except Exception:
             print "No assembly link, searching bioproject for %s..." % record_id
 
             # first: check if not WGS:

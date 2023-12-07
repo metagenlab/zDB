@@ -27,7 +27,7 @@ def assembly_accession2assembly(accession,
     local_dir = os.getcwd()
     try:
         handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
-    except:
+    except Exception:
 
         print('link to assembly could not be found, trying to get it strating from taxon_id...')
 
@@ -93,7 +93,7 @@ def assembly_accession2assembly(accession,
                     get_ncbi_genome(ftp_path, out_dir)
 
                     success = True
-                except:
+                except Exception:
                     i += i
             else:
                 print('could not download assembly %s' %
