@@ -16,7 +16,7 @@ CSRF_COOKIE_SECURE = False
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 
-SECRET_KEY  = secrets.token_urlsafe()
+SECRET_KEY = secrets.token_urlsafe()
 
 DEBUG = int(os.environ.get("DEBUG", 0))
 RUN_NAME = os.environ["RUN_NAME"]
@@ -25,15 +25,15 @@ hosts = os.environ.get("ALLOWED_HOSTS", "localhost")
 PREFIX = "assets"
 
 BIODB_DB_PATH = PREFIX+"/db/"+RUN_NAME
-SEARCH_INDEX  = PREFIX+"/search_index/"+RUN_NAME
+SEARCH_INDEX = PREFIX+"/search_index/"+RUN_NAME
 BLAST_DB_PATH = PREFIX+"/blast_DB/"+RUN_NAME
 
 ALLOWED_HOSTS = hosts.split(",")
 
 BIODB_CONF = {
-    "zdb.db_type" : "sqlite",
-    "zdb.db_name" : "George",
-    "zdb.psswd" : ""
+    "zdb.db_type": "sqlite",
+    "zdb.db_name": "George",
+    "zdb.psswd": ""
 }
 
 

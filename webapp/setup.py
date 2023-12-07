@@ -36,7 +36,7 @@ setup(
     packages=find_packages(exclude=['chlamdb', 'db_setup', 'tests']),
     python_requires='>=3.0',
     scripts=[script for script in glob.glob('db_setup/*')],
-    project_urls={ 
+    project_urls={
         'Bug Reports': 'https://github.com/metagenlab/chlamdb/issues',
         'Source': 'https://github.com/metagenlab/chlamdb',
     },

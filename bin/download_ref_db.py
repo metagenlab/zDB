@@ -26,11 +26,11 @@ def download_refseq(download_dir, n_retry=10):
             existing_files.add(current_file)
 
     # it would probably be better to use startsWith and check the last
-    # letters to make sure it ends with faa.gz, instead of using regular 
+    # letters to make sure it ends with faa.gz, instead of using regular
     # expression
     nr_re = re.compile("complete.nonredundant_protein.(\d)*.protein.faa.gz")
     nr_filelist = [i for i in ftp.nlst() if not re.match(nr_re, i) is None and
-            not i in existing_files]
+                   not i in existing_files]
 
     for f in nr_filelist:
         failed = 0
@@ -46,20 +46,20 @@ def download_refseq(download_dir, n_retry=10):
                 output_file.close()
                 time.sleep(60)
                 failed += 1
-                if failed==n_retry:
+                if failed == n_retry:
                     os.remove(f)
                     raise Exception("Failed to download "+f+". You may retry \
                             to run the script to complete the download.")
         existing_files.add(f)
 
 
-parser = argparse.ArgumentParser(description = """Downloads the databases necessary
+parser = argparse.ArgumentParser(description="""Downloads the databases necessary
         for the annotation pipeline""")
 
 parser.add_argument("--download_ko", nargs="?", const="databases/ko/", default=False,
-        help="download ko file definition, necessary to do this before --load-kegg")
+                    help="download ko file definition, necessary to do this before --load-kegg")
 parser.add_argument("--download_refseq", nargs="?", const="databases/refseq/", default=False,
-        help="download ko file definition, necessary to do this before --load-kegg")
+                    help="download ko file definition, necessary to do this before --load-kegg")
 
 
 args = vars(parser.parse_args())
@@ -75,4 +75,3 @@ if args.get("download_refseq", False):
 if args.get("download_ko", False):
     print("Download ko")
     pass
-

@@ -3,10 +3,12 @@
 def process_tag(tag):
     return tag.split('}')[-1]
 
+
 def get_UPI(seq):
     for element in seq:
         if element.tag == '{http://model.picr.ebi.ac.uk}UPI':
             return element.text
+
 
 def get_hit_attributes(hit):
     accession = ''
@@ -22,10 +24,10 @@ def get_hit_attributes(hit):
             db_name = element.text
         if element.tag == '{http://model.picr.ebi.ac.uk}taxonId':
             taxon_id = element.text
-    return {"%s.%s" % (accession, version) : [db_name, taxon_id]}
+    return {"%s.%s" % (accession, version): [db_name, taxon_id]}
+
 
 def accession2exact_matches(sequence, target_databases):
-
     '''
     Givent an input AA sequence and target(s) database name(s), return:
      - the uniparc accession of the sequence (if exists)
@@ -38,7 +40,6 @@ def accession2exact_matches(sequence, target_databases):
     :param target_databases: Input database name (see http://www.ebi.ac.uk/Tools/picr/)
 
     '''
-
 
     import urllib2
     import xml.etree.cElementTree as ElementTree
@@ -61,11 +62,13 @@ def accession2exact_matches(sequence, target_databases):
     db2seq = {}
     root = tree.getroot()
 
-    seq = root.find('{http://www.ebi.ac.uk/picr/AccessionMappingService}getUPIForSequenceReturn')
+    seq = root.find(
+        '{http://www.ebi.ac.uk/picr/AccessionMappingService}getUPIForSequenceReturn')
     if seq is None:
         return None
     UPI = get_UPI(seq)
-    identical_seqs = seq.findall('{http://model.picr.ebi.ac.uk}identicalCrossReferences')
+    identical_seqs = seq.findall(
+        '{http://model.picr.ebi.ac.uk}identicalCrossReferences')
     for seq in identical_seqs:
         db2seq.update(get_hit_attributes(seq))
     return UPI, db2seq
@@ -85,7 +88,8 @@ def fasta_corresp(fasta_file, target_database, n_keep=1):
                                            target_database)
 
             if picr is None:
-                sys.stdout.write('%s\t%s\t%s\t%s\n' % (record.name, 'None', 'None', 'None'))
+                sys.stdout.write('%s\t%s\t%s\t%s\n' %
+                                 (record.name, 'None', 'None', 'None'))
             else:
                 uniparc_accession, matches = picr
                 database2count = {}
@@ -102,19 +106,24 @@ def fasta_corresp(fasta_file, target_database, n_keep=1):
                                                            uniparc_accession,
                                                            accession,
                                                            matches[accession][1]))
+
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-p", '--protein_seq', type=str, help="Protein sequence")
-    parser.add_argument("-d", '--database', type=str, help="Target database(s): 'REFSEQ', 'TREMBL', ...", nargs='+', default= ['TREMBL', 'SWISSPROT'])
+    parser.add_argument("-p", '--protein_seq', type=str,
+                        help="Protein sequence")
+    parser.add_argument("-d", '--database', type=str, help="Target database(s): 'REFSEQ', 'TREMBL', ...",
+                        nargs='+', default=['TREMBL', 'SWISSPROT'])
     parser.add_argument("-f", '--fasta_file', type=str, help="Fasta file")
-    parser.add_argument("-k", '--keep', type=int, help="Number of hit(s) to keep (default: 1)", default=1)
+    parser.add_argument("-k", '--keep', type=int,
+                        help="Number of hit(s) to keep (default: 1)", default=1)
 
     args = parser.parse_args()
 
     if args.protein_seq and args.fasta_file:
-        raise(IOError('Input either a fasta file or a protein seqience, not both!'))
+        raise (IOError('Input either a fasta file or a protein seqience, not both!'))
     elif args.protein_seq:
         picr = accession2exact_matches(args.protein_seq,
                                        args.database)
@@ -123,6 +132,6 @@ if __name__ == '__main__':
             print uniparc_accession, matches
     else:
         if len(args.database) > 1:
-            raise(IOError('Fasta file match is only possible for a single database!'))
+            raise (IOError('Fasta file match is only possible for a single database!'))
         else:
             fasta_corresp(args.fasta_file, args.database, n_keep=args.keep)
