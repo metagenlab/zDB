@@ -68,7 +68,7 @@ from reportlab.lib import colors
 with db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
     hsh_config = db.get_config_table(ret_mandatory=True)
     optional2status = {name: value for name,
-        (mandatory, value) in hsh_config.items() if not mandatory}
+                       (mandatory, value) in hsh_config.items() if not mandatory}
     missing_mandatory = [name for name, (mandatory, value) in hsh_config.items()
                          if mandatory and not value]
 
@@ -217,9 +217,9 @@ def home(request):
         lambda x: round(x / pow(10, 6), 2))
 
     data_table_header = ["Name", "%GC", "N proteins",
-        "N contigs", "Size (Mbp)", "Percent coding"]
+                         "N contigs", "Size (Mbp)", "Percent coding"]
     data_table = genomes_data[["description", "gc", "n_prot",
-        "n_contigs", "length", "coding_density"]].values.tolist()
+                               "n_contigs", "length", "coding_density"]].values.tolist()
 
     # plot phylo only of not already in assets
     tree = db.get_reference_phylogeny()
@@ -363,7 +363,7 @@ def extract_orthogroup(request):
             axis=1)
         og_counts_in["absence"] = og_counts_in[og_counts_in == 0].count(axis=1)
         og_counts_in["selection"] = ((og_counts_in.presence >= (sum_include_lengths - n_missing))
-                & (og_counts_in.absence + og_counts_in.presence == sum_include_lengths))
+                                     & (og_counts_in.absence + og_counts_in.presence == sum_include_lengths))
 
     sum_exclude_lengths = len(exclude_taxids)
     if exclude_plasmids is not None:
@@ -1694,7 +1694,7 @@ def locusx_genomic_region(db, seqid, window):
     hsh_organism = db.get_organism([seqid], id_type="seqid")
     infos = db.get_proteins_info(df_seqids.index.tolist(),
                                  to_return=["gene", "locus_tag", "product"], as_df=True,
-        inc_non_CDS=True, inc_pseudo=True)
+                                 inc_non_CDS=True, inc_pseudo=True)
     cds_type = db.get_CDS_type(df_seqids.index.tolist())
     all_infos = infos.join(cds_type).join(df_seqids)
     if window_stop > contig_size:
@@ -2975,12 +2975,12 @@ def blast(request):
             for record in records:
                 if len(record.seq) == 0:
                     context = {"error_message": "Empty sequence in input",
-                            "error_title": "Query format error", "envoi": True,
+                               "error_title": "Query format error", "envoi": True,
                                "form": form, "wrong_format": True}
                     return render(request, 'chlamdb/blast.html', my_locals(context))
         except Exception:
             context = {"error_message": "Error while parsing the fasta query",
-                    "error_title": "Query format error",
+                       "error_title": "Query format error",
                        "envoi": True, "form": form, "wrong_format": True}
             return render(request, 'chlamdb/blast.html', my_locals(context))
     else:
