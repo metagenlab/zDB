@@ -70,7 +70,8 @@ def assembly_accession2assembly(accession,
               ['DocumentSummary'][0]['Meta'])
         try:
             ftp_path = re.findall(
-                '<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                '<FtpPath type="RefSeq">ftp[^<]*<',
+                assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
         except IndexError:
             print('RefSeq ftp link could not be found, downloading GenBank record')
             # print assembly_record['DocumentSummarySet']['DocumentSummary'][0]

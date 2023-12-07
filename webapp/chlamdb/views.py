@@ -38,7 +38,9 @@ from chlamdb.forms import make_venn_from
 from chlamdb.forms import make_single_genome_form
 
 from metagenlab_libs import db_utils
-from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
+from metagenlab_libs.ete_phylo import EteTree
+from metagenlab_libs.ete_phylo import SimpleColorColumn
+from metagenlab_libs.ete_phylo import ModuleCompletenessColumn
 from metagenlab_libs.ete_phylo import KOAndCompleteness
 from metagenlab_libs.ete_phylo import Column
 from metagenlab_libs.KO_module import ModuleParser
@@ -601,7 +603,14 @@ def entry_list_pfam(request,):
     pfam_annot["accession"] = [format_pfam(pfam) for pfam in pfam_annot.index]
 
     # combine into df
-    combined_df = pfam_annot.merge(pfam_count.rename('count'), left_index=True, right_index=True).merge(pfam_freq.rename('freq'), left_index=True, right_index=True).sort_values(["count"], ascending=False)
+    combined_df = pfam_annot.merge(pfam_count.rename('count'),
+                                   left_index=True,
+                                   right_index=True)\
+                            .merge(pfam_freq.rename('freq'),
+                                   left_index=True,
+                                   right_index=True)\
+                            .sort_values(["count"],
+                                         ascending=False)
 
     return render(request, 'chlamdb/entry_list_pfam.html', my_locals(locals()))
 
@@ -1075,8 +1084,32 @@ def genomes(request):
     filenames_tax_id_db['path_to_gbk'] = path_gbk
     filenames_tax_id_db = filenames_tax_id_db[["path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk"]]
     genomes_data = genomes_data.join(filenames_tax_id_db, on="taxon_id")
-    data_table_header = ["Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding", "N plasmid contigs", "faa seq", "fna seq", "ffn seq", "gbk file"]
-    data_table = genomes_data[["id", "description", "gc", "n_prot", "n_contigs", "length", "coding_density", "has_plasmid", "path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk"]].values.tolist()
+    data_table_header = [
+        "Name",
+        "%GC",
+        "N proteins",
+        "N contigs",
+        "Size (Mbp)",
+        "Percent coding",
+        "N plasmid contigs",
+        "faa seq",
+        "fna seq",
+        "ffn seq",
+        "gbk file"
+    ]
+    data_table = genomes_data[[
+        "id",
+        "description",
+        "gc",
+        "n_prot",
+        "n_contigs",
+        "length",
+        "coding_density",
+        "has_plasmid",
+        "path_to_faa",
+        "path_to_fna",
+        "path_to_ffn",
+        "path_to_gbk"]].values.tolist()
     return render(request, 'chlamdb/genomes.html', my_locals(locals()))
 
 
@@ -1104,8 +1137,25 @@ def extract_contigs(request, genome):
     all_infos.orthogroup = all_infos.orthogroup.map(lambda_format_og)
 
     organism = descr[taxid]
-    data_table_header = ["Gene", "Product", "Locus_tag", "Orthogroup", "Contig", "Strand", "Start", "Stop", ]
-    data_table = all_infos[["gene", "product", "locus_tag", "orthogroup", "contig", "strand", "start", "end"]].values.tolist()
+    data_table_header = [
+        "Gene",
+        "Product",
+        "Locus_tag",
+        "Orthogroup",
+        "Contig",
+        "Strand",
+        "Start",
+        "Stop",
+    ]
+    data_table = all_infos[[
+        "gene",
+        "product",
+        "locus_tag",
+        "orthogroup",
+        "contig",
+        "strand",
+        "start",
+        "end"]].values.tolist()
     return render(request, 'chlamdb/extract_contigs.html', my_locals(locals()))
 
 
@@ -1863,7 +1913,11 @@ def search_suggest(request,):
     params = request.GET
     user_query = params["term"]
     results = list(index.search(user_query, limit=None))
-    data = [{"label": f"{i.name}: {i.description} ({i.entry_type})", "value": f"{i.name}: {i.description}"} for i in results]
+    data = [
+        {"label": f"{i.name}: {i.description} ({i.entry_type})",
+         "value": f"{i.name}: {i.description}"}
+        for i in results
+    ]
     # data = [f"{i.name} ({i.entry_type})" for i in results]
     mimetype = "application/json"
     return JsonResponse(data, safe=False)
@@ -3139,7 +3193,10 @@ def plot_region(request):
     accession = form.get_accession()
     prot_info = db.get_proteins_info(ids=[accession], search_on="locus_tag", as_df=True)
     if prot_info.empty:
-        context = {"form": form, "errors": ["Accession not found"], "error": True, "page_title": page_title}
+        context = {"form": form,
+                   "errors": ["Accession not found"],
+                   "error": True,
+                   "page_title": page_title}
         return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
     genomes = form.get_genomes()
@@ -3174,17 +3231,29 @@ def plot_region(request):
         seqids.append(seqid)
 
     if len(seqids) > 20:
-        context = {"form": form, "error": True, "errors": ["Too many regions to display"], "page_title": page_title}
+        context = {
+            "form": form,
+            "error": True,
+            "errors": ["Too many regions to display"],
+            "page_title": page_title
+        }
         return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
     try:
         region_size = form.get_region_size()
         if region_size > max_region_size or region_size < 5000:
-            context = {"form": form, "error": True,
-                       "errors": [f"Region size should be between 5000 and {max_region_size} bp"], "page_title": page_title}
+            context = {
+                "form": form,
+                "error": True,
+                "errors": [f"Region size should be between 5000 and {max_region_size} bp"],
+                "page_title": page_title
+            }
             return render(request, 'chlamdb/plot_region.html', my_locals(context))
     except ValueError:
-        context = {"form": form, "error": True, "errors": ["Wrong format for region size"], "page_title": page_title}
+        context = {"form": form,
+                   "error": True,
+                   "errors": ["Wrong format for region size"],
+                   "page_title": page_title}
         return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
     locus_tags = db.get_proteins_info(seqids, to_return=["locus_tag"], as_df=True)
@@ -3220,7 +3289,10 @@ def plot_region(request):
             # would be nice to refactor it in a more efficient and clean way.
             common_og = region.dropna(subset=["orthogroup"]).reset_index().merge(
                 prev_infos.reset_index(), on="orthogroup")[["locus_tag_x",
-                                                            "locus_tag_y", "seqid_x", "seqid_y", "orthogroup"]]
+                                                            "locus_tag_y",
+                                                            "seqid_x",
+                                                            "seqid_y",
+                                                            "orthogroup"]]
             related = []
             ogs = common_og.orthogroup.astype(int).tolist()
             p1 = common_og.seqid_x.tolist()
@@ -3289,19 +3361,19 @@ def circos_main(request):
         if request.GET.getlist('t')[0] == '':
             # if no target list given, get the 10 closest genomes
             try:
-                sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (reference_taxon)
+                sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa '\
+                            'where taxon_1=%s order by identity desc;' % (reference_taxon)
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
                 target_taxons = ordered_taxons[0:10]
             except Exception:
-                sql_order = 'select taxon_2 from comparative_tables_shared_orthogroups where taxon_1=%s order by n_shared_orthogroups DESC;' % (reference_taxon)
+                sql_order = 'select taxon_2 from comparative_tables_shared_orthogroups '\
+                            'where taxon_1=%s order by n_shared_orthogroups DESC;' % (reference_taxon)
 
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
                 target_taxons = ordered_taxons[0:10]
         else:
             target_taxons = [int(i) for i in request.GET.getlist('t')]
         highlight = request.GET.getlist('h')
-
-        # sql = 'select locus_tag,traduction from orthology_detail_k_cosson_05_16 where orthogroup in (%s) and accession="NC_016845"' % ('"'+'","'.join(highlight)+'"')
 
         task = run_circos_main.delay(reference_taxon, target_taxons, highlight)
         task_id = task.id
@@ -3327,23 +3399,33 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     df_bioentry = db.get_bioentry_list(reference_taxon, min_bioentry_length=1000)
 
     # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
-    df_feature_location = db.get_features_location(reference_taxon, ["CDS", "rRNA", "tRNA"]).set_index(["seqfeature_id"])
+    df_feature_location = db.get_features_location(
+        reference_taxon, ["CDS", "rRNA", "tRNA"]).set_index(["seqfeature_id"])
 
     # retrieve n_orthologs of list of seqids
 
     seq_og = db.get_og_count(df_feature_location.index.to_list(), search_on="seqid")
     count_all_genomes = db.get_og_count(seq_og["orthogroup"].to_list(), search_on="orthogroup")
     orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(axis=1)
-    homologs_count = df_feature_location.loc[df_feature_location.term_name == 'CDS'].join(seq_og).reset_index().set_index("orthogroup").merge(orthogroup2count_all.rename('value'), left_index=True, right_index=True)[["bioentry_id", "start_pos", "end_pos", "value"]]
+    homologs_count = df_feature_location.loc[df_feature_location.term_name == 'CDS']\
+        .join(seq_og)\
+        .reset_index()\
+        .set_index("orthogroup")\
+        .merge(orthogroup2count_all.rename('value'),
+               left_index=True,
+               right_index=True)[["bioentry_id", "start_pos", "end_pos", "value"]]
 
-    df_identity = db.get_identity_closest_homolog(reference_taxon, target_taxons).set_index(["target_taxid"])
+    df_identity = db.get_identity_closest_homolog(reference_taxon, target_taxons)\
+                    .set_index(["target_taxid"])
 
     c = circosjs.CircosJs()
 
     c.add_contigs_data(df_bioentry)
 
     # sort taxons by number of homologs (from mot similar to most dissmilar)
-    target_taxon_n_homologs = df_identity.groupby(["target_taxid"]).count()["seqfeature_id_1"].sort_values(ascending=False)
+    target_taxon_n_homologs = df_identity.groupby(["target_taxid"])\
+                                         .count()["seqfeature_id_1"]\
+                                         .sort_values(ascending=False)
     locus2seqfeature_id = db.get_hsh_locus_to_seqfeature_id()
     seqfeature_id2locus_tag = {value: key for key, value in locus2seqfeature_id.items()}
     heatmap_data_list = {}
@@ -3368,12 +3450,17 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
 
     # iterate ordered list of target taxids, add track to circos
     for n, target_taxon in enumerate(target_taxon_n_homologs.index):
-        df_combined = df_feature_location.join(df_identity.loc[target_taxon].reset_index().set_index("seqfeature_id_1")).reset_index()
+        df_combined = df_feature_location.join(
+            df_identity.loc[target_taxon].reset_index()
+                                         .set_index("seqfeature_id_1")
+            ).reset_index()
         df_combined.identity = df_combined.identity.fillna(0).astype(int)
         df_combined.bioentry_id = df_combined.bioentry_id.astype(str)
 
         # only keep the highest identity for each seqfeature id
-        df_combined = df_combined.sort_values('identity', ascending=False).drop_duplicates('index').sort_index()
+        df_combined = df_combined.sort_values('identity', ascending=False)\
+                                 .drop_duplicates('index')\
+                                 .sort_index()
         loci = []
         for seqid in df_combined.seqfeature_id_2:
             # ugly hack... to be fixed
@@ -3496,8 +3583,8 @@ def plot_heatmap(request, type):
     new_cols = [mat.index.tolist()[i] for i in order_genomes]
 
     new_mat = mat.T.reindex(new_index)[new_cols]
-    fig = go.Figure(data=go.Heatmap(z=new_mat,
-                                    colorscale=colors, y=new_mat.index, x=new_mat.columns))
+    fig = go.Figure(data=go.Heatmap(z=new_mat, colorscale=colors,
+                                    y=new_mat.index, x=new_mat.columns))
     fig.update_traces(showlegend=False, showscale=False)
     fig.update_xaxes(visible=False)
 
@@ -3557,7 +3644,11 @@ def kegg_genomes(request):
         entry = (format_pathway(element, to_url=True, taxid=taxid), descr, count)
         data.append(entry)
 
-    ctx = {"envoi": True, "data": data, "header": header, "organism": hsh_organisms[taxid], "page_title": page_title}
+    ctx = {"envoi": True,
+           "data": data,
+           "header": header,
+           "organism": hsh_organisms[taxid],
+           "page_title": page_title}
     return render(request, 'chlamdb/kegg_genomes.html', my_locals(ctx))
 
 

@@ -67,9 +67,10 @@ def biodb2all_connections(biodb):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select db_accession from custom_tables.uniprot_id2seqfeature_id_%s t0 ' \
-          ' inner join custom_tables.uniprot_db_xref_%s t1 on t0.uniprot_id=t1.uniprot_id ' \
-          ' inner join custom_tables.db_xref t2 on t1.db_xref_id=t2.db_xref_id where db_xref_name="string" and db_accession like "%%%%CPn%%%%";' % (
-              biodb, biodb)
+          'inner join custom_tables.uniprot_db_xref_%s t1 on t0.uniprot_id=t1.uniprot_id ' \
+          'inner join custom_tables.db_xref t2 on t1.db_xref_id=t2.db_xref_id '\
+          'where db_xref_name="string" and db_accession like "%%%%CPn%%%%";' % (
+            biodb, biodb)
 
     all_string_accessions = [i[0]
                              for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -203,24 +204,24 @@ def biodb2all_connections(biodb):
                     tscore = value
                 else:
                     print 'unkonwn score type', score, value
-            # ref_locus, link_locus, ref_locus_seqfeature_id, link_locus_seqfeature_id, label_1, label_2, gscore, ncore, fscore, pscore, ascore, escore, dscore, tscore
             sql = 'insert into string.interactions_%s values ' \
-                  ' (%s, %s, %s, "%s", "%s", "%s", "%s", %s, %s, %s, %s, %s, %s, %s, %s)' % (biodb,
-                                                                                             taxon_id,
-                                                                                             ref_locus_seqfeature_id,
-                                                                                             link_locus_seqfeature_id,
-                                                                                             ref_locus,
-                                                                                             link_locus,
-                                                                                             label_1,
-                                                                                             label_2,
-                                                                                             gscore,
-                                                                                             nscore,
-                                                                                             fscore,
-                                                                                             pscore,
-                                                                                             ascore,
-                                                                                             escore,
-                                                                                             dscore,
-                                                                                             tscore)
+                  ' (%s, %s, %s, "%s", "%s", "%s", "%s", %s, %s, %s, %s, %s, %s, %s, %s)' % (
+                    biodb,
+                    taxon_id,
+                    ref_locus_seqfeature_id,
+                    link_locus_seqfeature_id,
+                    ref_locus,
+                    link_locus,
+                    label_1,
+                    label_2,
+                    gscore,
+                    nscore,
+                    fscore,
+                    pscore,
+                    ascore,
+                    escore,
+                    dscore,
+                    tscore)
             print taxon_id, sql
             server.adaptor.execute(sql,)
         server.commit()
@@ -236,8 +237,9 @@ def biodb2string_pmid_data(biodb):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select db_accession from custom_tables.uniprot_id2seqfeature_id_%s t0 ' \
-          ' inner join custom_tables.uniprot_db_xref_%s t1 on t0.uniprot_id=t1.uniprot_id ' \
-          ' inner join custom_tables.db_xref t2 on t1.db_xref_id=t2.db_xref_id where db_xref_name="string" and db_accession like "%%%%CPn%%%%";' % (
+          'inner join custom_tables.uniprot_db_xref_%s t1 on t0.uniprot_id=t1.uniprot_id ' \
+          'inner join custom_tables.db_xref t2 on t1.db_xref_id=t2.db_xref_id '\
+          'where db_xref_name="string" and db_accession like "%%%%CPn%%%%";' % (
               biodb, biodb)
 
     all_string_accessions = [i[0]
@@ -308,16 +310,18 @@ def biodb2string_pmid_data(biodb):
                 source = re.sub("'", "", abstract_data['source'])
                 source = re.sub("%", "%%%%", source)
 
-                sql = '''insert into string.seqfeature_id2string_pmid_%s values (%s, %s, %s, '%s', '%s', '%s', '%s')''' % (biodb,
-                                                                                                                           taxon_id,
-                                                                                                                           seqfeature_id,
-                                                                                                                           abstract_data[
-                                                                                                                               'pmid'],
-                                                                                                                           re.sub("'", "", str(
-                                                                                                                               abstract_data['authors'])),
-                                                                                                                           title,
-                                                                                                                           abstract,
-                                                                                                                           source)
+                sql = '''insert into string.seqfeature_id2string_pmid_%s '''\
+                      '''values (%s, %s, %s, '%s', '%s', '%s', '%s')''' % (
+                        biodb,
+                        taxon_id,
+                        seqfeature_id,
+                        abstract_data[
+                           'pmid'],
+                        re.sub("'", "", str(
+                           abstract_data['authors'])),
+                        title,
+                        abstract,
+                        source)
                 print sql
                 server.adaptor.execute(sql,)
             server.commit()

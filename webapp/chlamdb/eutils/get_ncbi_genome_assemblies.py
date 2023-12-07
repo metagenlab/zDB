@@ -12,7 +12,8 @@ def download_refseq_assemblies(id_list, complete=True):
     import taxid2genomes
     import os
 
-    # handle = Entrez.esearch(db="assembly", term='txid%s[Organism:exp] AND ("reference genome"[filter])' % ncbi_taxon, retmax=100000)
+    # handle = Entrez.esearch(db="assembly", term='txid%s[Organism:exp] AND
+    #                         ("reference genome"[filter])' % ncbi_taxon, retmax=100000)
 
     # record = Entrez.read(handle)
     # id_list = record['IdList']
@@ -30,7 +31,26 @@ def write_assembly_table(taxid2assemblies,
                          rank_name=False,
                          output_name='out.txt'):
     o = open(output_name, 'w')
-    o.write('target_rank\trank_taxid\trepresentative_species\ttaxid_representative_species\tassembly_name\tRefSeq\tGenbank\tcontig_count\tstatus\trepres\tlength\tclade\tn_subtaxid_available\tno_rank\tsuperkingdom\tphylum\tclass\torder\tfamily\tgenus\n')
+    o.write('target_rank\t'
+            'rank_taxid\t'
+            'representative_species\t'
+            'taxid_representative_species\t'
+            'assembly_name\t'
+            'RefSeq\t'
+            'Genbank\t'
+            'contig_count\t'
+            'status\t'
+            'repres\t'
+            'length\t'
+            'clade\t'
+            'n_subtaxid_available\t'
+            'no_rank\t'
+            'superkingdom\t'
+            'phylum\t'
+            'class\t'
+            'order\t'
+            'family\t'
+            'genus\n')
 
     for clade in taxid2assemblies:
         assembly_list = taxid2assemblies[clade]
@@ -85,26 +105,28 @@ def write_assembly_table(taxid2assemblies,
             else:
                 n_assemblies_in_clade = 1
 
-            o.write('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (rank_name,
-                                                                                                          rank_taxid,
-                                                                                                          species,
-                                                                                                          ncbi_taxon,
-                                                                                                          AssemblyName,
-                                                                                                          Genbank,
-                                                                                                          RefSeq,
-                                                                                                          contig_count,
-                                                                                                          status,
-                                                                                                          repres,
-                                                                                                          length,
-                                                                                                          clade,
-                                                                                                          n_assemblies_in_clade,
-                                                                                                          no_rank,
-                                                                                                          superkingdom,
-                                                                                                          phylum,
-                                                                                                          tclass,
-                                                                                                          order,
-                                                                                                          family,
-                                                                                                          genus))
+            o.write('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (
+                rank_name,
+                rank_taxid,
+                species,
+                ncbi_taxon,
+                AssemblyName,
+                Genbank,
+                RefSeq,
+                contig_count,
+                status,
+                repres,
+                length,
+                clade,
+                n_assemblies_in_clade,
+                no_rank,
+                superkingdom,
+                phylum,
+                tclass,
+                order,
+                family,
+                genus)
+            )
 
 
 def make_random_genome_selection(taxon_id2classification,
@@ -275,21 +297,24 @@ def taxon2genome_subset(ncbi_taxon,
     if get_complete_assembly_list:
         import taxid2genomes
         # get complete assembly list
-        print_assembly_table = taxid2genomes.get_taxi2assembly_accession(ncbi_taxon,
-                                                                         complete=complete,
-                                                                         representative=representative,
-                                                                         reference=reference,
-                                                                         exclude_metagenome_derived=exclude_metagenome_derived,
-                                                                         refseq=refseq,
-                                                                         genbank=genbank)
+        print_assembly_table = taxid2genomes.get_taxi2assembly_accession(
+            ncbi_taxon,
+            complete=complete,
+            representative=representative,
+            reference=reference,
+            exclude_metagenome_derived=exclude_metagenome_derived,
+            refseq=refseq,
+            genbank=genbank)
 
-        taxonomy_dico = get_complete_genomes_taxonomy(ncbi_taxon,
-                                                      complete=complete,
-                                                      reference=reference,
-                                                      representative=representative,
-                                                      exclude_metagenome_derived=exclude_metagenome_derived,
-                                                      genbank=genbank,
-                                                      refseq=refseq)
+        taxonomy_dico = get_complete_genomes_taxonomy(
+            ncbi_taxon,
+            complete=complete,
+            reference=reference,
+            representative=representative,
+            exclude_metagenome_derived=exclude_metagenome_derived,
+            genbank=genbank,
+            refseq=refseq)
+
         taxid2assemblies = []
         taxid2assemblies[ncbi_taxon] = print_assembly_table
         write_assembly_table(taxid2assemblies,
@@ -298,19 +323,21 @@ def taxon2genome_subset(ncbi_taxon,
 
     else:
         # retrieve detailed taxonomy of each assembly
-        taxonomy_dico = get_complete_genomes_taxonomy(ncbi_taxon,
-                                                      complete=complete,
-                                                      reference=reference,
-                                                      representative=representative,
-                                                      exclude_metagenome_derived=exclude_metagenome_derived,
-                                                      genbank=genbank,
-                                                      refseq=refseq)
+        taxonomy_dico = get_complete_genomes_taxonomy(
+            ncbi_taxon,
+            complete=complete,
+            reference=reference,
+            representative=representative,
+            exclude_metagenome_derived=exclude_metagenome_derived,
+            genbank=genbank,
+            refseq=refseq)
 
         print('Performing random selection at the %s level...' % taxon_rank)
-        dw_taxonomy = make_random_genome_selection(taxonomy_dico,
-                                                   taxon_rank,
-                                                   exclude_unclassified=exclude_unclassified,
-                                                   output_name=output_name)
+        dw_taxonomy = make_random_genome_selection(
+            taxonomy_dico,
+            taxon_rank,
+            exclude_unclassified=exclude_unclassified,
+            output_name=output_name)
         # taxon_list = []
         # get all_taxon_list
         # for i in dw_taxonomy:
@@ -337,12 +364,17 @@ if __name__ == '__main__':
                         help="Filter genbank assemblies (default: False)")
     parser.add_argument("-md", '--exclude_metagenome_derived', action='store_true',
                         help="Exclude metagenome derived assemblies (default: False)")
-    parser.add_argument("-e", '--exclude_unclassified', action='store_true',
-                        help='Exclude species labelled as "unclassified xxx" or as "xxxx sp. yyy" (e.g. Blautia sp. TF11-31AT) (default=False)')
-    parser.add_argument("-d", '--complete_list', action='store_true',
-                        help="Report complete list of assemblies (no taxonomy clustering) (default: False) ")
-    parser.add_argument("-ra", '--rank', default='species',
-                        help="Keep one prepresentative/clade of specified taxonomic <rank>")
+    parser.add_argument(
+        "-e", '--exclude_unclassified', action='store_true',
+        help='Exclude species labelled as "unclassified xxx" or as '
+             '"xxxx sp. yyy" (e.g. Blautia sp. TF11-31AT) (default=False)')
+    parser.add_argument(
+        "-d", '--complete_list', action='store_true',
+        help="Report complete list of assemblies (no taxonomy clustering) "
+             "(default: False) ")
+    parser.add_argument(
+        "-ra", '--rank', default='species',
+        help="Keep one prepresentative/clade of specified taxonomic <rank>")
     parser.add_argument("-o", '--output', default=None,
                         help="Output name (default: assemblies_<taxid>.tab )")
 

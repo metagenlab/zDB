@@ -59,9 +59,12 @@ def make_plot_form(db):
         region_size = forms.CharField(max_length=5,
                                       label="Region size (bp)", initial=8000, required=False)
         genomes = forms.MultipleChoiceField(choices=accession_choices,
-                                            widget=forms.SelectMultiple(attrs={'size': '1', "class": "selectpicker",
-                                                                               "data-live-search": "true", "multiple data-max-options": "8",
-                                                                               "multiple data-actions-box": "true"}),
+                                            widget=forms.SelectMultiple(attrs={
+                                                'size': '1',
+                                                "class": "selectpicker",
+                                                "data-live-search": "true",
+                                                "multiple data-max-options": "8",
+                                                "multiple data-actions-box": "true"}),
                                             required=False)
         all_homologs = forms.ChoiceField(
             choices=choices, initial="no", label="Homologs")
@@ -71,15 +74,24 @@ def make_plot_form(db):
             self.helper = FormHelper()
 
             self.helper.form_method = 'post'
-            self.helper.layout = Layout(
-                Fieldset("",
-                         Column(
-                             Row(Column("accession", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
-                                 Column("region_size", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
-                             Row('genomes', style="padding: 15px"),
-                             Column(Row('all_homologs', css_class='form-group col-lg-6 col-md-6 col-sm-12'),
-                                    Submit('submit', 'Compare plot regions'), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
-                             css_class="col-lg-8 col-md-8 col-sm-12"))
+            self.helper.layout = Layout(Fieldset(
+                "",
+                Column(
+                    Row(Column(
+                            "accession",
+                            css_class='form-group col-lg-6 col-md-6 col-sm-12'),
+                        Column(
+                            "region_size",
+                            css_class='form-group col-lg-6 col-md-6 col-sm-12')
+                        ),
+                    Row('genomes', style="padding: 15px"),
+                    Column(
+                        Row('all_homologs',
+                            css_class='form-group col-lg-6 col-md-6 col-sm-12'),
+                        Submit('submit', 'Compare plot regions'),
+                        css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                    css_class="col-lg-8 col-md-8 col-sm-12")
+                )
             )
 
         def get_accession(self):
@@ -107,10 +119,16 @@ def make_metabo_from(db, add_box=False):
     accession_choices, rev_index = get_accessions(db)
 
     class MetaboForm(forms.Form):
-        targets = forms.MultipleChoiceField(choices=accession_choices,
-                                            widget=forms.SelectMultiple(attrs={'size': '%s' % (
-                                                20), "class": "selectpicker", "data-live-search": "true", "multiple data-actions-box": "true"}),
-                                            required=False)
+        targets = forms.MultipleChoiceField(
+            choices=accession_choices,
+            widget=forms.SelectMultiple(
+                attrs={'size': '%s' % (20),
+                       "class": "selectpicker",
+                       "data-live-search": "true",
+                       "multiple data-actions-box": "true"}
+                ),
+            required=False
+        )
 
         if add_box:
             input_box = forms.CharField(
@@ -212,11 +230,20 @@ def make_circos_form(database_name):
     accession_choices, reverse_index = get_accessions(database_name)
 
     class CircosForm(forms.Form):
-        circos_reference = forms.ChoiceField(choices=accession_choices,
-                                             widget=forms.Select(attrs={"class": "selectpicker", "data-live-search": "true"}))
-        targets = forms.MultipleChoiceField(choices=accession_choices,
-                                            widget=forms.SelectMultiple(attrs={'size': '1', "class": "selectpicker",
-                                                                               "data-live-search": "true", "data-max-options": "10"}), required=False)
+        circos_reference = forms.ChoiceField(
+            choices=accession_choices,
+            widget=forms.Select(attrs={
+                "class": "selectpicker",
+                "data-live-search": "true"
+                }
+            ))
+        targets = forms.MultipleChoiceField(
+            choices=accession_choices,
+            widget=forms.SelectMultiple(attrs={'size': '1',
+                                               "class": "selectpicker",
+                                               "data-live-search": "true",
+                                               "data-max-options": "10"}),
+            required=False)
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -259,23 +286,37 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
     accession_choices, rev_index = get_accessions(db, plasmid=plasmid)
 
     class ExtractForm(forms.Form):
-        checkbox_accessions = forms.BooleanField(required=False,
-                                                 label="Distinguish plasmids from chromosomes")
-        checkbox_single_copy = forms.BooleanField(required=False,
-                                                  label="Only consider single copy %s" % label)
+        checkbox_accessions = forms.BooleanField(
+            required=False,
+            label="Distinguish plasmids from chromosomes")
 
-        orthologs_in = forms.MultipleChoiceField(label=f"{label} conserved in",
-                                                 choices=accession_choices,
-                                                 widget=forms.SelectMultiple(attrs={'size': '%s' % "17", "class": "selectpicker", "data-live-search": "true"}), required=True)
-        no_orthologs_in = forms.MultipleChoiceField(label="%s absent from (optional)" % label,
-                                                    choices=accession_choices,
-                                                    widget=forms.SelectMultiple(attrs={'size': '%s' % "17", "class": "selectpicker remove-example", "data-live-search": "true"}), required=False)
+        checkbox_single_copy = forms.BooleanField(
+            required=False,
+            label="Only consider single copy %s" % label)
+
+        orthologs_in = forms.MultipleChoiceField(
+            label=f"{label} conserved in",
+            choices=accession_choices,
+            widget=forms.SelectMultiple(attrs={'size': '%s' % "17",
+                                               "class": "selectpicker",
+                                               "data-live-search": "true"}),
+            required=True)
+
+        no_orthologs_in = forms.MultipleChoiceField(
+            label="%s absent from (optional)" % label,
+            choices=accession_choices,
+            widget=forms.SelectMultiple(attrs={'size': '%s' % "17",
+                                               "class": "selectpicker remove-example",
+                                               "data-live-search": "true"}),
+            required=False)
 
         new_choices = [['None', 'None']] + accession_choices
 
         frequency_choices = ((i, i) for i in range(len(accession_choices)))
-        frequency = forms.ChoiceField(choices=frequency_choices,
-                                      label='Missing data (optional)', required=False)
+        frequency = forms.ChoiceField(
+            choices=frequency_choices,
+            label='Missing data (optional)',
+            required=False)
 
         def extract_choices(self, indices):
             keep_plasmids = self.cleaned_data["checkbox_accessions"]
@@ -308,19 +349,29 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
             self.helper = FormHelper()
             self.helper.form_method = 'post'
             self.helper.form_action = action
-            self.helper.layout = Layout(
-                Fieldset(" ",
-                         Column(
-                             Row('checkbox_accessions',
-                                 style="padding-left:15px"),
-                             Row('checkbox_single_copy',
-                                 style="padding-left:15px"),
-                             Row(Column("orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
-                                 Column("no_orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
-                             Column(Row('frequency'),
-                                    Submit('submit', 'Compare %s' % label, style="margin-top:15px"), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
-                             css_class="col-lg-8 col-md-8 col-sm-12")
-                         )
+            self.helper.layout = Layout(Fieldset(
+                " ",
+                Column(
+                    Row('checkbox_accessions', style="padding-left:15px"),
+                    Row('checkbox_single_copy', style="padding-left:15px"),
+                    Row(
+                        Column(
+                            "orthologs_in",
+                            css_class='form-group col-lg-6 col-md-6 col-sm-12'),
+                        Column(
+                            "no_orthologs_in",
+                            css_class='form-group col-lg-6 col-md-6 col-sm-12')
+                        ),
+                    Column(
+                        Row('frequency'),
+                        Submit('submit',
+                               'Compare %s' % label,
+                               style="margin-top:15px"),
+                        css_class='form-group col-lg-12 col-md-12 col-sm-12'
+                        ),
+                    css_class="col-lg-8 col-md-8 col-sm-12"
+                    )
+                )
             )
 
             super(ExtractForm, self).__init__(*args, **kwargs)
@@ -394,8 +445,12 @@ def make_blast_form(biodb):
                                                         ("20", "20"),
                                                         ("30", "30"),
                                                         ("all", "all")])
-        target = forms.ChoiceField(choices=accession_choices,
-                                   widget=forms.Select(attrs={"class": "selectpicker", "data-live-search": "true"}))
+        target = forms.ChoiceField(
+            choices=accession_choices,
+            widget=forms.Select(attrs={"class": "selectpicker",
+                                       "data-live-search": "true"})
+            )
+
         blast_input = forms.CharField(
             widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
 

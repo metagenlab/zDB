@@ -74,13 +74,15 @@ def get_taxi2assembly_accession(ncbi_taxon,
 
     import get_genomes_chlassification
 
-    assembly_id_list = get_genomes_chlassification.search_assembly_database(ncbi_taxon=ncbi_taxon,
-                                                                            complete=complete,
-                                                                            representative=representative,
-                                                                            reference=reference,
-                                                                            exclude_metagenome_derived=exclude_metagenome_derived,
-                                                                            refseq=refseq,
-                                                                            genbank=genbank)
+    assembly_id_list = get_genomes_chlassification.search_assembly_database(
+        ncbi_taxon=ncbi_taxon,
+        complete=complete,
+        representative=representative,
+        reference=reference,
+        exclude_metagenome_derived=exclude_metagenome_derived,
+        refseq=refseq,
+        genbank=genbank)
+
     assembly_list = []
     for i, one_assembly in enumerate(assembly_id_list):
         try:
@@ -110,13 +112,17 @@ def get_taxi2assembly_accession(ncbi_taxon,
         except KeyError:
             NCBIReleaseDate = '-'
         contig_count = re.findall(
-            '<Stat category="contig_count" sequence_tag="all">([^<]*)<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0]
+            '<Stat category="contig_count" sequence_tag="all">([^<]*)<',
+            assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0]
         status = re.findall(
-            '<assembly-status>([^<]*)<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0]
+            '<assembly-status>([^<]*)<',
+            assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0]
         repres = re.findall(
-            'representative-status>([^<]*)<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0]
+            'representative-status>([^<]*)<',
+            assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0]
         length = re.findall(
-            'Stat category="total_length" sequence_tag="all">([^<]*)<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0]
+            'Stat category="total_length" sequence_tag="all">([^<]*)<',
+            assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0]
         # print assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta']
         assembly_list.append([ncbi_taxon,
                               AssemblyName,
@@ -150,8 +156,10 @@ def get_complete_genomes_data(ncbi_taxon,
     record = Entrez.read(handle)
     f = open('ncbi_genome_download.log', 'w')
     nn = open("assembly_log.tx", "w")
-    header = 'AssemblyName\tLastMajorReleaseAccession\tTaxid\tSpeciesName\tOrganism\t' \
-             'AssemblyStatus\tNCBIReleaseDate\tSubmitterOrganization\tftpPath\tPartialGenomeRepresentation\tCoverage\tRefSeq\tGenbank\tSimilarity\tAnomalousAssembly\n'
+    header = 'AssemblyName\tLastMajorReleaseAccession\tTaxid\tSpeciesName\t'\
+             'Organism\tAssemblyStatus\tNCBIReleaseDate\t'\
+             'SubmitterOrganization\tftpPath\tPartialGenomeRepresentation\t'\
+             'Coverage\tRefSeq\tGenbank\tSimilarity\tAnomalousAssembly\n'
     f.write(header)
     local_dir = os.getcwd()
 
@@ -206,14 +214,17 @@ def get_complete_genomes_data(ncbi_taxon,
                 import sys
                 sys.exit()
 
-        nn.write('assembly %s (%s/%s), %s, %s, %s, %s, %s, %s, %s\n' % (one_assembly, i, len(record['IdList']),
-                                                                        LastMajorReleaseAccession,
-                                                                        AssemblyStatus,
-                                                                        Organism,
-                                                                        SpeciesName,
-                                                                        Biosource,
-                                                                        SubDate,
-                                                                        assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']))
+        nn.write('assembly %s (%s/%s), %s, %s, %s, %s, %s, %s, %s\n' % (
+            one_assembly,
+            i,
+            len(record['IdList']),
+            LastMajorReleaseAccession,
+            AssemblyStatus,
+            Organism,
+            SpeciesName,
+            Biosource,
+            SubDate,
+            assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']))
 
         out_dir = local_dir + '/%s' % LastMajorReleaseAccession
         try:
@@ -228,13 +239,15 @@ def get_complete_genomes_data(ncbi_taxon,
         if 'suppressed_refseq' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
             print('Supressed RefSeq record, downloading GenBank record')
             ftp_path = re.findall(
-                '<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                '<FtpPath type="GenBank">ftp[^<]*<',
+                assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
             get_ncbi_genome(ftp_path, out_dir)
         elif 'latest' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
             print('Downloading RefSeq record')
             try:
                 ftp_path = re.findall(
-                    '<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                    '<FtpPath type="RefSeq">ftp[^<]*<',
+                    assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
                 ftp_path = '/' + ftp_path
                 status = get_ncbi_genome(ftp_path, out_dir)
 
@@ -242,7 +255,8 @@ def get_complete_genomes_data(ncbi_taxon,
                     if genbank:
                         print('RefSeq link is empty, downloading GenBank record')
                         ftp_path = re.findall(
-                            '<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                            '<FtpPath type="GenBank">ftp[^<]*<',
+                            assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
                         get_ncbi_genome(ftp_path, out_dir)
                     else:
                         print('no RefSeq record for assembly %s' %
@@ -254,7 +268,8 @@ def get_complete_genomes_data(ncbi_taxon,
                     print(
                         'RefSeq link could not be identified, downloading GenBank record')
                     ftp_path = re.findall(
-                        '<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                        '<FtpPath type="GenBank">ftp[^<]*<',
+                        assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
                     get_ncbi_genome(ftp_path, out_dir)
                 else:
                     print('no RefSeq record for assembly %s' % (one_assembly))
@@ -264,7 +279,8 @@ def get_complete_genomes_data(ncbi_taxon,
                         'RefSeq ftp link could not be found, downloading GenBank record')
                     # print assembly_record['DocumentSummarySet']['DocumentSummary'][0]
                     ftp_path = re.findall(
-                        '<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                        '<FtpPath type="GenBank">ftp[^<]*<',
+                        assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
                     get_ncbi_genome(ftp_path, out_dir)
                 except Exception:
                     print('no ftp link found for assembly id:', one_assembly)
@@ -353,8 +369,10 @@ def accession2assembly(accession):
     print('links:', record)
 
     f = open('ncbi_genome_download.log', 'w')
-    header = 'AssemblyName\tLastMajorReleaseAccession\tTaxid\tSpeciesName\tOrganism\t' \
-             'AssemblyStatus\tNCBIReleaseDate\tSubmitterOrganization\tftpPath\tPartialGenomeRepresentation\tCoverage\tRefSeq\tGenbank\tSimilarity\n'
+    header = 'AssemblyName\tLastMajorReleaseAccession\tTaxid\tSpeciesName\t'\
+             'Organism\tAssemblyStatus\tNCBIReleaseDate\t'\
+             'SubmitterOrganization\tftpPath\tPartialGenomeRepresentation\t'\
+             'Coverage\tRefSeq\tGenbank\tSimilarity\n'
     f.write(header)
     local_dir = os.getcwd()
     try:
@@ -402,7 +420,8 @@ def accession2assembly(accession):
         print(assembly_record['DocumentSummarySet']
               ['DocumentSummary'][0]['Meta'])
         ftp_path = re.findall(
-            '<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+            '<FtpPath type="RefSeq">ftp[^<]*<',
+            assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
 
         get_ncbi_genome(ftp_path, out_dir)
 
@@ -491,20 +510,23 @@ def download_assembly(assembly_gi, out_dir, complete=False):
     if 'suppressed_refseq' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
         print('Supressed RefSeq record, downloading GenBank record')
         ftp_path = re.findall(
-            '<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+            '<FtpPath type="GenBank">ftp[^<]*<',
+            assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
         get_ncbi_genome(ftp_path, out_dir)
     elif 'latest' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
         print('Downloading RefSeq record')
         try:
             ftp_path = re.findall(
-                '<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                '<FtpPath type="RefSeq">ftp[^<]*<',
+                assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
             print('\nftp path: %s\n' % ftp_path)
             ftp_path = '/' + ftp_path
             get_ncbi_genome(ftp_path, out_dir)
         except IndexError:
             print('RefSeq link could not be identified, downloading GenBank record')
             ftp_path = re.findall(
-                '<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                '<FtpPath type="GenBank">ftp[^<]*<',
+                assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
             get_ncbi_genome(ftp_path, out_dir)
 
     # check if the assembly was replaced
@@ -564,8 +586,10 @@ def bioproject2assemblies(accession, complete=False):
 
     local_dir = os.getcwd()
     f = open('ncbi_genome_download.log', 'w')
-    header = 'AssemblyName\tLastMajorReleaseAccession\tTaxid\tSpeciesName\tOrganism\t' \
-             'AssemblyStatus\tNCBIReleaseDate\tSubmitterOrganization\tftpPath\tPartialGenomeRepresentation\tCoverage\tRefSeq\tGenbank\tSimilarity\tAnomalousAssembly\n'
+    header = 'AssemblyName\tLastMajorReleaseAccession\tTaxid\tSpeciesName\t'\
+             'Organism\tAssemblyStatus\tNCBIReleaseDate\t'\
+             'SubmitterOrganization\tftpPath\tPartialGenomeRepresentation\t'\
+             'Coverage\tRefSeq\tGenbank\tSimilarity\tAnomalousAssembly\n'
     f.write(header)
 
     for i, one_assembly in enumerate(id_list):
