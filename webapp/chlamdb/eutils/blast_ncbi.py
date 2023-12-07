@@ -19,7 +19,7 @@ def blast_fasta(blast_flavor, input, blastdb, evalue, nb_hit, local):
     :return: blast results with taxonomic information
     scientific names and kingdom will only be retrieved if the taxid database has been installed locally ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz
     '''
-    output_name = re.sub("([a-zA-Z_0-9]+)\.([a-zA-Z]+)", "blast\\1.tab", input)
+    output_name = re.sub(r"([a-zA-Z_0-9]+)\.([a-zA-Z]+)", "blast\\1.tab", input)
     if local:
         cmd = "%s -task %s -query %s -out %s -db %s -evalue %s -max_target_seqs %s -outfmt '6 qgi qacc sgi sacc sscinames sskingdoms staxids evalue nident pident positive gaps length qstart qend qcovs sstart send sstrand stitle'" % (
             blast_flavor, blast_flavor, input, output_name, blastdb, evalue, nb_hit)

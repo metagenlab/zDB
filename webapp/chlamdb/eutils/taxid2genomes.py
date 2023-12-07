@@ -238,7 +238,7 @@ def get_complete_genomes_data(ncbi_taxon,
                 ftp_path = '/' + ftp_path
                 status = get_ncbi_genome(ftp_path, out_dir)
 
-                if status == False:
+                if status is False:
                     if genbank:
                         print('RefSeq link is empty, downloading GenBank record')
                         ftp_path = re.findall(

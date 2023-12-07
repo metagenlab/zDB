@@ -54,7 +54,8 @@ def make_plot_form(db):
     class PlotForm(forms.Form):
         choices = (("yes", "all homologs"), ("no", "best hits only"))
         accession = forms.CharField(max_length=100,
-                                    label=f"locus_tag (e.g. {locus})", required = True)
+                                    required=True,
+                                    label=f"locus_tag (e.g. {locus})")
         region_size = forms.CharField(max_length=5,
                                       label="Region size (bp)", initial=8000, required=False)
         genomes = forms.MultipleChoiceField(choices=accession_choices,

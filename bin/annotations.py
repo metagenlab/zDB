@@ -18,9 +18,9 @@ from collections import defaultdict
 from collections import namedtuple
 
 
-def chunks(l, n):
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
+def chunks(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
 
 def count_missing_locus_tags(gbk_record):
@@ -125,8 +125,8 @@ def check_gbk(csv_file):
     a taxid when it is not allowed to access the ncbi online,
     we need to ensure that the same organism name is not used
     twice in the genomes to prevent bioentries from different genbank
-    files to be entered under the same taxon_id (as chlamdb uses the taxon_id to 
-    differentiate between genomes).
+    files to be entered under the same taxon_id (as chlamdb uses the taxon_id
+    to differentiate between genomes).
 
     Display an error message and stop the pipeline if this arises
     """
@@ -219,8 +219,8 @@ def check_gbk(csv_file):
 
     for filename, name in custom_names.items():
         if organisms[name] > 1:
-            raise Exception("The custom name " + name +
-                            " is already used in another file")
+            raise Exception(
+                f"The custom name {name} is already used in another file")
 
     # at one point, will have to rewrite this to avoid
     # re-parsing the genbank files that failed the check

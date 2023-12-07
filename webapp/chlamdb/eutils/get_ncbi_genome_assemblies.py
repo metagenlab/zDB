@@ -4,8 +4,8 @@ from Bio import Entrez
 Entrez.email = "trestan.pillonel@unil.ch"
 
 
-def _chunks(l, n):
-    return [l[i:i + n] for i in range(0, len(l), n)]
+def _chunks(lst, n):
+    return [lst[i:i + n] for i in range(0, len(lst), n)]
 
 
 def download_refseq_assemblies(id_list, complete=True):

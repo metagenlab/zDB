@@ -235,11 +235,11 @@ def home(request):
 
     tree_params = [
         # serie_name, header, color and is_relative
-            ["length", "Size (Mbp)", "#91bfdb", True],
-            ["gc", "GC %", "#fc8d59", False],
-            ["coding_density", "Coding density %", "#99d594", False],
-            ["completeness", "Completeness", "#d7191c", False],
-            ["contamination", "Contamination", "black", False]]
+        ["length", "Size (Mbp)", "#91bfdb", True],
+        ["gc", "GC %", "#fc8d59", False],
+        ["coding_density", "Coding density %", "#99d594", False],
+        ["completeness", "Completeness", "#d7191c", False],
+        ["contamination", "Contamination", "black", False]]
 
     for serie_name, header, col, is_relative in tree_params:
         data = genomes_data[serie_name]
@@ -262,10 +262,7 @@ def home(request):
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 
-def format_lst_to_html(lst_elem, add_count=True, format_func=None):
-    if format_func == None:
-        format_func = lambda x: x
-
+def format_lst_to_html(lst_elem, add_count=True, format_func=lambda x: x):
     dict_elem = {}
     for elem in lst_elem:
         if pd.isna(elem):
@@ -981,7 +978,7 @@ def venn_ko(request):
 def format_cog(cog_id, as_url=False, base=None):
     if base is None:
         base = f"COG{int(cog_id): 04d}"
-    if as_url == False:
+    if as_url is False:
         return base
     return f"<a href=\"/fam_cog/{base}\">{base}</a>"
 
@@ -996,7 +993,7 @@ def escape_quotes(unsafe):
 
 def venn_cog(request, sep_plasmids=False):
     """
-    Will need to modify the signature of the method to remove the sep_plasmid 
+    Will need to modify the signature of the method to remove the sep_plasmid
     parameter as it is not taken into account. Or put back the differentiate
     plasmid parameter in the web page.
     """
@@ -1098,7 +1095,9 @@ def extract_contigs(request, genome):
     loc = db.get_gene_loc(seqids, as_hash=False).set_index("seqid")
     contigs = db.get_contigs_to_seqid(taxid)
 
-    def lambda_format_og(og): return format_orthogroup(og, to_url=True, from_str=False)
+    def lambda_format_og(og):
+        return format_orthogroup(og, to_url=True, from_str=False)
+
     all_infos = prot_infos.join(ogs).join(loc).join(contigs)
     all_infos.gene = all_infos.gene.map(format_gene)
     all_infos.locus_tag = all_infos.locus_tag.map(format_locus)
@@ -1778,7 +1777,7 @@ def locusx(request, locus=None, menu=True):
 
     gene_loc = db.get_gene_loc([seqid])
     og_inf = db.get_og_count([seqid], search_on="seqid")
-    og_id = int(og_inf.loc[seqid].orthogroup) # need to convert from numpy64 to int
+    og_id = int(og_inf.loc[seqid].orthogroup)  # need to convert from numpy64 to int
     og_annot = db.get_genes_from_og(orthogroups=[og_id],
                                     terms=["locus_tag", "gene", "product", "length"])
     all_og_c = db.get_og_count([og_id], search_on="orthogroup")
@@ -1870,6 +1869,7 @@ def search_suggest(request,):
     return JsonResponse(data, safe=False)
 
 # NOTE: should refactor this code to avoid duplicated code
+
 
 def search_bar(request):
     db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
@@ -1982,7 +1982,7 @@ def get_all_prot_infos(db, seqids, orthogroups):
         strand, start, end = hsh_gene_locs[seqid]
         organism = hsh_organisms[seqid]
         locus, prot_id, gene, product = hsh_prot_infos[seqid]
-        if gene == None:
+        if gene is None:
             gene = ""
         data = (index, fmt_orthogroup, locus, prot_id, start, end, strand, gene, product, organism)
         all_locus_data.append(data)
@@ -3557,7 +3557,6 @@ def kegg_genomes(request):
         entry = (format_pathway(element, to_url=True, taxid=taxid), descr, count)
         data.append(entry)
 
-
     ctx = {"envoi": True, "data": data, "header": header, "organism": hsh_organisms[taxid], "page_title": page_title}
     return render(request, 'chlamdb/kegg_genomes.html', my_locals(ctx))
 
@@ -4035,11 +4034,11 @@ def phylogeny(request):
 
     tree_params = [
         # serie_name, header, color and is_relative
-            ["length", "Size (Mbp)", "#91bfdb", True],
-            ["gc", "GC %", "#fc8d59", False],
-            ["coding_density", "Coding density %", "#99d594", False],
-            ["completeness", "Completeness", "#d7191c", False],
-            ["contamination", "Contamination", "black", False]]
+        ["length", "Size (Mbp)", "#91bfdb", True],
+        ["gc", "GC %", "#fc8d59", False],
+        ["coding_density", "Coding density %", "#99d594", False],
+        ["completeness", "Completeness", "#d7191c", False],
+        ["contamination", "Contamination", "black", False]]
 
     for serie_name, header, col, is_relative in tree_params:
         data = genomes_data[serie_name]
@@ -4089,11 +4088,11 @@ def genomes_intro(request):
 
     tree_params = [
         # serie_name, header, color and is_relative
-            ["length", "Size (Mbp)", "#91bfdb", True],
-            ["gc", "GC %", "#fc8d59", False],
-            ["coding_density", "Coding density %", "#99d594", False],
-            ["completeness", "Completeness", "#d7191c", False],
-            ["contamination", "Contamination", "black", False]]
+        ["length", "Size (Mbp)", "#91bfdb", True],
+        ["gc", "GC %", "#fc8d59", False],
+        ["coding_density", "Coding density %", "#99d594", False],
+        ["completeness", "Completeness", "#d7191c", False],
+        ["contamination", "Contamination", "black", False]]
 
     for serie_name, header, col, is_relative in tree_params:
         data = genomes_data[serie_name]
