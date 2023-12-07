@@ -184,8 +184,7 @@ def check_gbk(csv_file):
                 if organisms[sci_name] > 1:
                     failed = True
             elif curr_organism != sci_name:
-                raise Exception(f"Two different organisms in {
-                                gbk_file}: {curr_organism}/{sci_name}")
+                raise Exception(f"Two different organisms in {gbk_file}: {curr_organism}/{sci_name}")
 
             # necessary, as BioSQL will use whatever matches in the
             # common or scientific names to assign taxid. So if the common name
@@ -303,8 +302,7 @@ def convert_gbk_to_fasta(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=Fal
                 elif output_fmt == "fna":
                     data = feature.location.extract(record).seq
                 else:
-                    raise Exception(f"Unsupported option: {
-                                    output_fmt}, must be either faa or fna")
+                    raise Exception(f"Unsupported option: {output_fmt}, must be either faa or fna")
 
                 edited_records.write(">%s %s\n%s\n" % (locus_tag,
                                                        record.description, data))

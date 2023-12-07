@@ -468,8 +468,8 @@ def venn_orthogroup(request):
     fmt_data = []
     for taxon in og_count:
         ogs = og_count[taxon]
-        ogs_str = ",".join(f"{to_s(format_orthogroup(og))
-                           }" for og, cnt in ogs.items() if cnt > 0)
+        ogs_str = ",".join(f"{to_s(format_orthogroup(og))}"
+                           for og, cnt in ogs.items() if cnt > 0)
         genome = genomes.loc[int(taxon)].description
         fmt_data.append(f"{{name: {to_s(genome)}, data: [{ogs_str}]}}")
     series = "[" + ",".join(fmt_data) + "]"
@@ -493,8 +493,7 @@ def venn_orthogroup(request):
             p = products.loc[og]
             prod_data = format_lst_to_html(p, add_count=False)
         og_info = "[\"" + gene_data + "\",\"" + prod_data + "\"]"
-        og_item = f"h[{to_s(format_orthogroup(og))}] = {og_info}
-        "
+        og_item = f"h[{to_s(format_orthogroup(og))}] = {og_info}"
         orthogroup2description.append(og_item)
     orthogroup2description = "\n".join(orthogroup2description)
     envoi_venn = True
@@ -919,14 +918,12 @@ def extract_cog(request):
 
     # Code to generate the barchart diagrams
     cat_map_str = ",".join([f"\"{func}\": \"{descr}\"" for func, descr in cogs_funct.items()])
-    category_map = f"var category_description = {{ {cat_map_str} }}
-    "
+    category_map = f"var category_description = {{ {cat_map_str} }}"
     ttl_sel = sum([c1 for func, (c1, c2) in cat_count.items()])
     ttl_all = sum([c2 for func, (c1, c2) in cat_count.items()])
 
     cat_count_comp = ",".join([f"\"{func}\": [\"{c2}\", \"{c1}\"]" for func, (c1, c2) in cat_count.items()])
-    category_count_complete = f"var category_count_complete = {{ {cat_count_comp} }}
-    "
+    category_count_complete = f"var category_count_complete = {{ {cat_count_comp} }}"
 
     serie_selection_val = [str(round(float(c1)/ttl_sel, 2)) for func, (c1, c2) in cat_count.items()]
     serie_all_val = [str(round(float(c2)/ttl_all, 2)) for func, (c1, c2) in cat_count.items()]
@@ -974,8 +971,7 @@ def venn_ko(request):
     ko2description = []
     for ko, ko_desc in ko_descriptions.items():
         cleaned_desc = escape_quotes(ko_desc)
-        ko_item = f"h[{to_s(format_ko(ko))}] = [\"{cleaned_desc}\"]
-        "
+        ko_item = f"h[{to_s(format_ko(ko))}] = [\"{cleaned_desc}\"]"
         ko2description.append(ko_item)
     ko2description = "\n".join(ko2description)
     envoi_venn = True
@@ -2592,8 +2588,7 @@ def ko_venn_subset(request, category):
     for ko, ko_desc in ko_descriptions.items():
         forbidden = "\""
         safe_desc = escape_quotes(ko_desc)
-        ko_item = f"h[{to_s(format_ko(ko))}] = {forbidden}{safe_desc}{forbidden}
-        "
+        ko_item = f"h[{to_s(format_ko(ko))}] = {forbidden}{safe_desc}{forbidden}"
         ko2description.append(ko_item)
 
     ko2description = "".join(ko2description)
