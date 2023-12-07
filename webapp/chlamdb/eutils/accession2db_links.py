@@ -349,21 +349,63 @@ def get_whole_db_uniprot_crossref(biodb):
 
     cursor = conn.cursor()
 
-    sql1 = 'CREATE TABLE IF NOT EXISTS uniprot_id2seqfeature_id_%s (seqfeature_id INT UNIQUE, uniprot_id INT AUTO_INCREMENT,' \
-           ' uniprot_accession varchar(400), uniprot_status varchar(400), annotation_score INT, insert_date varchar(300), INDEX uniprot_id(uniprot_id))' % biodb
+    table_creation = 'CREATE TABLE IF NOT EXISTS {} ({})'
+    tablename = 'uniprot_id2seqfeature_id_%s' % biodb
+    columns = (
+        'seqfeature_id INT UNIQUE',
+        'uniprot_id INT AUTO_INCREMENT',
+        'uniprot_accession varchar(400)',
+        'uniprot_status varchar(400)',
+        'annotation_score INT',
+        'insert_date varchar(300)',
+        'INDEX uniprot_id(uniprot_id)',
+    )
+    sql1 = table_creation.format(tablename, ', '.join(columns))
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS db_xref (db_xref_id INT AUTO_INCREMENT, db_xref_name varchar(200) UNIQUE, INDEX db_xref_id(db_xref_id))'
+    tablename = 'db_xref'
+    columns = (
+        'db_xref_id INT AUTO_INCREMENT',
+        'db_xref_name varchar(200) UNIQUE',
+        'INDEX db_xref_id(db_xref_id)'
+    )
+    sql2 = table_creation.format(tablename, ', '.join(columns))
 
-    sql3 = 'CREATE TABLE IF NOT EXISTS uniprot_db_xref_%s (uniprot_id INT, db_xref_id INT, db_accession varchar(200), ' \
-           ' INDEX db_xref_id(db_xref_id), index uniprot_id(uniprot_id))' % biodb
+    tablename = 'uniprot_db_xref_%s' % biodb
+    columns = (
+        'uniprot_id INT',
+        'db_xref_id INT',
+        'db_accession varchar(200)',
+        'INDEX db_xref_id(db_xref_id)',
+        'index uniprot_id(uniprot_id)'
+    )
+    sql3 = table_creation.format(tablename, ', '.join(columns))
 
-    sql4 = 'CREATE TABLE IF NOT EXISTS uniprot_go_terms_%s (seqfeature_id INT, go_term_id varchar(400), go_description TEXT, ' \
-           ' INDEX seqfeature_id(seqfeature_id))' % biodb
+    tablename = 'uniprot_go_terms_%s' % biodb
+    columns = (
+        'seqfeature_id INT',
+        'go_term_id varchar(400)',
+        'go_description TEXT',
+        'INDEX seqfeature_id(seqfeature_id)'
+    )
+    sql4 = table_creation.format(tablename, ', '.join(columns))
 
-    sql5 = 'CREATE TABLE IF NOT EXISTS uniprot_annotation_%s (seqfeature_id INT, comment_function TEXT,' \
-           ' ec_number TEXT,comment_similarity TEXT,comment_catalyticactivity TEXT,comment_pathway TEXT,keywords TEXT,' \
-           ' comment_subunit TEXT, gene TEXT, recommendedName_fullName TEXT, proteinExistence TEXT, ' \
-           ' developmentalstage TEXT, index seqfeature_id(seqfeature_id))' % biodb
+    tablename = 'uniprot_annotation_%s' % biodb
+    columns = (
+        'seqfeature_id INT',
+        'comment_function TEXT',
+        'ec_number TEXT',
+        'comment_similarity TEXT',
+        'comment_catalyticactivity TEXT',
+        'comment_pathway TEXT',
+        'keywords TEXT',
+        'comment_subunit TEXT',
+        'gene TEXT',
+        'recommendedName_fullName TEXT',
+        'proteinExistence TEXT',
+        'developmentalstage TEXT',
+        'index seqfeature_id(seqfeature_id)'
+    )
+    sql5 = table_creation.format(tablename, ', '.join(columns))
 
     print sql1
     cursor.execute(sql1, )
