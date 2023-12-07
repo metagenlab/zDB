@@ -108,7 +108,7 @@ def get_prot(refseq_file, hsh_accession):
 
     for record in SeqIO.parse(refseq_file, "fasta"):
         accession = remove_accession_version(record.name)
-        if not accession in hsh_accession:
+        if accession not in hsh_accession:
             continue
         hsh_accession[accession] = record
 
@@ -121,7 +121,7 @@ def get_taxids(ncbi_tax_file, hsh_accession_to_taxid):
     for line in open(ncbi_tax_file, "r"):
         end_of_accession = line.index("\t")
         accession = line[:end_of_accession]
-        if not accession in hsh_accession_to_taxid:
+        if accession not in hsh_accession_to_taxid:
             continue
         tokens = line.split("\t")
         hsh_accession_to_taxid[accession] = int(tokens[2])
@@ -466,7 +466,7 @@ def load_pfam(params, pfam_files, db, pfam_def_file):
     pfam_entries = []
     pfam_def_file_iter = open(pfam_def_file, "r")
     for entry in parse_pfam_entry(pfam_def_file_iter):
-        if not entry.accession in pfam_ids:
+        if entry.accession not in pfam_ids:
             continue
         pfam_entries.append([entry.accession, entry.description])
     db.create_pfam_def_table(pfam_entries)
