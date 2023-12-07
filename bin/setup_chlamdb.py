@@ -597,7 +597,7 @@ def load_module_completeness(params, db_name):
 
     db.create_module_completeness_table()
 
-    for taxid,  _ in all_genomes.items():
+    for taxid, _ in all_genomes.items():
         complete_modules = []
         ko_count = db.get_ko_hits([taxid])
 
