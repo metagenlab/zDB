@@ -635,7 +635,7 @@ def extract_pfam(request, classification="taxon_id"):
         sum_exclude_length += len(exclude_plasmids)
 
     if n_missing >= sum_include_length:
-        ctx = {"wrong_n_missing" : True, "form": form, "page_title": page_title}
+        ctx = {"wrong_n_missing": True, "form": form, "page_title": page_title}
         return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
 
     pfam_include = db.get_pfam_hits(include, plasmids=include_plasmids,
@@ -714,7 +714,7 @@ def format_ko_path(hsh_pathways, ko, as_list=False, with_taxid=None):
 
 def format_ko_module(module_id, module_desc=None):
     if module_desc is None:
-        return f"<a href=\"/KEGG_module_map/M{module_id: 05d}\">M{module_id:05d}</a>"
+        return f"<a href=\"/KEGG_module_map/M{module_id: 05d}\">M{module_id: 05d}</a>"
     else:
         return f"<a href=\"/KEGG_module_map/M{module_id: 05d}\">{module_desc}</a>"
 
@@ -1105,8 +1105,8 @@ def extract_contigs(request, genome):
     all_infos.orthogroup = all_infos.orthogroup.map(lambda_format_og)
 
     organism = descr[taxid]
-    data_table_header = ["Gene", "Product", "Locus_tag", "Orthogroup", "Contig" , "Strand", "Start", "Stop", ]
-    data_table = all_infos[["gene", "product", "locus_tag", "orthogroup", "contig" , "strand", "start", "end" ]].values.tolist()
+    data_table_header = ["Gene", "Product", "Locus_tag", "Orthogroup", "Contig", "Strand", "Start", "Stop", ]
+    data_table = all_infos[["gene", "product", "locus_tag", "orthogroup", "contig", "strand", "start", "end" ]].values.tolist()
     return render(request, 'chlamdb/extract_contigs.html', my_locals(locals()))
 
 
@@ -1575,7 +1575,7 @@ def to_color_code(c):
     red = int(256 * c.red)
     green = int(256 * c.green)
     blue = int(256 * c.blue)
-    return f"#{red: x}{green:x}{blue:x}"
+    return f"#{red: x}{green: x}{blue: x}"
 
 
 class LocusHeatmapColumn(SimpleColorColumn):
@@ -1642,7 +1642,7 @@ def tab_get_pfam_annot(db, seqid):
     for pfam, starts in pfam_starts.items():
         ends = pfam_ends.loc[pfam]
         name = format_pfam(pfam)
-        data = "[" + ",".join(f"{{x: {start}, y:{end}}}" for start, end in zip(starts, ends)) + "]"
+        data = "[" + ",".join(f"{{x: {start}, y: {end}}}" for start, end in zip(starts, ends)) + "]"
         feature = (
             f"{{data: {data}, "
             f" name: \"{name}\", "
@@ -1864,7 +1864,7 @@ def search_suggest(request,):
     params = request.GET
     user_query = params["term"]
     results = list(index.search(user_query, limit=None))
-    data = [{"label": f"{i.name}: {i.description} ({i.entry_type})", "value":f"{i.name}: {i.description}"} for i in results]
+    data = [{"label": f"{i.name}: {i.description} ({i.entry_type})", "value": f"{i.name}: {i.description}"} for i in results]
     # data = [f"{i.name} ({i.entry_type})" for i in results]
     mimetype = "application/json"
     return JsonResponse(data, safe=False)
@@ -2468,9 +2468,9 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
            "data": data,
            "asset_path": asset_path,
            "url": map_name + "+" + "+".join(all_kos),
-           "envoi" : True,
+           "envoi": True,
            "error": False,
-           "page_titleA" : page_title
+           "page_titleA": page_title
            }
 
     if taxon_id is not None:
@@ -2695,7 +2695,7 @@ def module_barchart(request):
             else:
                 entry_data.append(0)
         str_entry_data = (str(entry) for entry in entry_data)
-        string = f"{{label: {to_s(taxid)}, values : [" + ",".join(str_entry_data) + "]}"
+        string = f"{{label: {to_s(taxid)}, values: [" + ",".join(str_entry_data) + "]}"
         series_data.append(string)
 
     taxids = "?" + "&".join((f"h={i}" for i in taxids))
@@ -3563,7 +3563,7 @@ def kegg_genomes(request):
         data.append(entry)
 
 
-    ctx = {"envoi": True, "data":data, "header": header, "organism":hsh_organisms[taxid], "page_title": page_title }
+    ctx = {"envoi": True, "data": data, "header": header, "organism": hsh_organisms[taxid], "page_title": page_title }
     return render(request, 'chlamdb/kegg_genomes.html', my_locals(ctx))
 
 
