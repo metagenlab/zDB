@@ -3729,7 +3729,7 @@ def kegg_module(request):
     cat_count = db.get_ko_count_cat(category=cat)
     leaf_to_name = db.get_genomes_description()
     cat_name_id = db.get_module_categories(module_ids=cat)
-    cat_name = [name for id, name  in cat_name_id][0]
+    cat_name = [name for id, name in cat_name_id][0]
     grouped_count = cat_count.groupby(["taxon_id", "module_id"]).sum()
     if grouped_count.empty:
         n_occurences = pd.DataFrame()
