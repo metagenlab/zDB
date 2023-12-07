@@ -1627,7 +1627,7 @@ def get_sequence(db, seqid, flanking=0):
     fet = SeqFeature(FeatureLocation(start_w_flank, stop_w_flank, strand=strand))
     extracted = fet.extract(seq)
     return extracted[0:red_start] + "<font color='red'>" + \
-    extracted[red_start:red_stop] + "</font>" + extracted[red_stop:]
+        extracted[red_start:red_stop] + "</font>" + extracted[red_stop:]
 
 
 def tab_get_pfam_annot(db, seqid):
