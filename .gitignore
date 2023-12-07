@@ -6,4 +6,5 @@ asset*
 singularity/
 work/
 zdb/
+zdb_ref/
 env
