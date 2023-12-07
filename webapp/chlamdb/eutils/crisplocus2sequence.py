@@ -160,7 +160,7 @@ def parse_crisprfile(crisp_table):
     with open(crisp_table, 'r') as f:
         for line in f:
             data = line.rstrip().split('\t')
-            if not '..' in data[1]:
+            if '..' not in data[1]:
                 continue
             else:
                 if data[0] not in accession2localisation:

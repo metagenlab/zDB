@@ -147,7 +147,7 @@ def make_random_genome_selection(taxon_id2classification,
 
         # get all assemblies associated to each taxon_id
         # unnamed ranks
-        if not rank_name in taxon_id2classification[taxon]:
+        if rank_name not in taxon_id2classification[taxon]:
             print('not %s for %s!-----' %
                   (rank_name, taxon_id2classification[taxon]))
             clade2taxons["unkown_%s" %

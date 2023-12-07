@@ -46,7 +46,7 @@ def orthogroups_to_fasta(genomes_list):
     for fasta_file in fasta_list:
         sequence_data.update(SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta")))
 
-      # write fasta
+    # write fasta
     with open("Orthogroups.txt") as f:
         all_grp = [i for i in f]
         for n, line in enumerate(all_grp):
@@ -170,7 +170,7 @@ def check_gbk(csv_file):
                 failed = True
             contigs[record.name] += 1
 
-            if not "accessions" in record.annotations:
+            if "accessions" not in record.annotations:
                 failed = True
             else:
                 acc = record.annotations["accessions"][0]
@@ -196,10 +196,10 @@ def check_gbk(csv_file):
             for feature in record.features:
                 if feature.type == "CDS":
                     n_cds += 1
-                elif not feature.type in ["tmRNA", "rRNA", "ncRNA", "tRNA"]:
+                elif feature.type not in ["tmRNA", "rRNA", "ncRNA", "tRNA"]:
                     continue
 
-                if not "locus_tag" in feature.qualifiers:
+                if "locus_tag" not in feature.qualifiers:
                     failed = True
                     continue
 
@@ -244,7 +244,7 @@ def check_gbk(csv_file):
             # store the accession into the "accessions" entry of a record when parsing
             # a genbank file, but won't recognize the "accessions" entry
             # when writing the same record. It instead recognizes the "accession" entry.
-            if not "accessions" in record.annotations:
+            if "accessions" not in record.annotations:
                 record.annotations["accession"] = [
                     gen_new_locus_tag(accessions)]
             elif accessions[record.annotations["accessions"][0]] > 1:

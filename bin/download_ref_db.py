@@ -30,7 +30,7 @@ def download_refseq(download_dir, n_retry=10):
     # expression
     nr_re = re.compile("complete.nonredundant_protein.(\d)*.protein.faa.gz")
     nr_filelist = [i for i in ftp.nlst() if not re.match(nr_re, i) is None and
-                   not i in existing_files]
+                   i not in existing_files]
 
     for f in nr_filelist:
         failed = 0

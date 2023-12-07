@@ -1382,7 +1382,7 @@ def og_tab_get_cog_annot(db, seqids):
     cog_summ = db.get_cog_summaries(n_entries.index.tolist())
     cog_entries = []
     for cog_id, count in n_entries.items():
-        if not cog_id in cog_summ:
+        if cog_id not in cog_summ:
             # should add a warning on the web page
             continue
 
@@ -2300,10 +2300,10 @@ def KEGG_module_map(request, module_name):
 
     hsh_pres = collections.defaultdict(dict)
     for ko in ko_ids:
-        if not ko in mat.columns:
+        if ko not in mat.columns:
             e_tree.add_column(SimpleColorColumn({}, header=format_ko(ko), default_val="-"))
             continue
-        if not ko in ko_to_og_mapping.index:
+        if ko not in ko_to_og_mapping.index:
             e_tree.add_column(SimpleColorColumn.fromSeries(mat[ko], header=format_ko(ko)))
             continue
 
@@ -2367,9 +2367,9 @@ def gen_pathway_profile(db, ko_ids):
     tree.ladderize()
     e_tree = EteTree(tree)
     for ko in ko_ids:
-        if not ko in mat.columns:
+        if ko not in mat.columns:
             continue
-        if not ko in ko_to_og_mapping.index:
+        if ko not in ko_to_og_mapping.index:
             e_tree.add_column(SimpleColorColumn.fromSeries(mat[ko], header=format_ko(ko)))
             continue
 
@@ -2573,7 +2573,7 @@ def ko_venn_subset(request, category):
     fmt_data = []
     ko_set = set()
     for taxid in targets:
-        if not taxid in ko_count.index:
+        if taxid not in ko_count.index:
             continue
         kos = ko_count.loc[taxid]
         kos_str = ",".join(f"{to_s(format_ko(ko))}" for ko in kos)
