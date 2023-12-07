@@ -99,7 +99,7 @@ def load_orthofinder_results(orthofinder_output, args, db_file):
 # copying the whole list
 def chunks(lst, n):
     for i in range(0, len(lst), n):
-        yield lst[i:i+n]
+        yield lst[i:i + n]
 
 
 def get_prot(refseq_file, hsh_accession):
@@ -144,8 +144,8 @@ def parse_record(record):
     end_tax_index = description.index(']')
     # also skip the white spaces
 
-    prot_descr = description[end_accession_index+1:beg_tax_index-1]
-    organism = description[beg_tax_index+1:end_tax_index]
+    prot_descr = description[end_accession_index + 1:beg_tax_index - 1]
+    organism = description[beg_tax_index + 1:end_tax_index]
     return prot_descr, organism
 
 
@@ -226,7 +226,7 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
 def hsh_from_s(s):
     v = int(s, 16)
     if v > 0x7FFFFFFFFFFFFFFF:
-        return v-0x10000000000000000
+        return v - 0x10000000000000000
     return v
 
 
@@ -384,7 +384,7 @@ def get_gen_stats(gbk_list):
         cds_length = 0
         for record in SeqIO.parse(gbk_file, "genbank"):
             ttl_length += len(record)
-            gc_cum += SeqUtils.GC(record.seq)*len(record)
+            gc_cum += SeqUtils.GC(record.seq) * len(record)
             for fet in record.features:
                 if fet.type in ["CDS", "tmRNA", "rRNA", "ncRNA", "tRNA"]:
                     if "pseudo" in fet.qualifiers:
@@ -393,10 +393,10 @@ def get_gen_stats(gbk_list):
 
                     # allow to take compoundlocation into account
                     for part in location.parts:
-                        cds_length += part.end-part.start
+                        cds_length += part.end - part.start
         gbk_shortened = os.path.splitext(gbk_file)[0]
-        hsh_gen_stats[gbk_shortened] = (float(gc_cum)/ttl_length,
-                                        float(cds_length)/ttl_length, ttl_length)
+        hsh_gen_stats[gbk_shortened] = (float(gc_cum) / ttl_length,
+                                        float(cds_length) / ttl_length, ttl_length)
     return hsh_gen_stats
 
 
@@ -435,7 +435,7 @@ def parse_pfam_entry(file_iter):
             accession_offset = len("#=GF AC   PF")
             accession_length = 5
             accession = int(
-                line[accession_offset:accession_offset+accession_length])
+                line[accession_offset:accession_offset + accession_length])
         elif line.startswith("#=GF DE"):
             description = line[len("#=GF DE   "):-1]
 

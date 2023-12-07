@@ -24,9 +24,9 @@ hosts = os.environ.get("ALLOWED_HOSTS", "localhost")
 
 PREFIX = "assets"
 
-BIODB_DB_PATH = PREFIX+"/db/"+RUN_NAME
-SEARCH_INDEX = PREFIX+"/search_index/"+RUN_NAME
-BLAST_DB_PATH = PREFIX+"/blast_DB/"+RUN_NAME
+BIODB_DB_PATH = PREFIX + "/db/" + RUN_NAME
+SEARCH_INDEX = PREFIX + "/search_index/" + RUN_NAME
+BLAST_DB_PATH = PREFIX + "/blast_DB/" + RUN_NAME
 
 ALLOWED_HOSTS = hosts.split(",")
 

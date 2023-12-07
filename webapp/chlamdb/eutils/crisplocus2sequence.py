@@ -13,7 +13,7 @@ Entrez.email = "trestan.pillonel@unil.ch"
 
 def chunks(l, n):
     "return sublists of l of minimum length n (work subdivision for the subprocesing module"
-    return [l[i:i+n] for i in range(0, len(l), n)]
+    return [l[i:i + n] for i in range(0, len(l), n)]
 
 
 def get_protein_sequences(crispdata):
@@ -56,7 +56,7 @@ def get_protein_sequences(crispdata):
 
                 localisation = gene_data[0].split('..')
                 strand = gene_data[1]
-                start = int(localisation[0])-1
+                start = int(localisation[0]) - 1
                 end = int(localisation[1])
                 gene_name = ncbi_accession + '_' + gene_data[2]
 
@@ -84,19 +84,19 @@ def get_protein_sequences(crispdata):
                         # print seq
 
                     if '*' in seq[0:-1]:
-                        print 'changing start and stop: %s %s' % (start+1, end+1)
+                        print 'changing start and stop: %s %s' % (start + 1, end + 1)
                         seq = seq_record[(
-                            start+1):(end+1)].seq.reverse_complement().translate(table=table)
+                            start + 1):(end + 1)].seq.reverse_complement().translate(table=table)
                         # print seq
                     if '*' in seq[0:-1]:
-                        print 'changing again start and stop: %s %s' % (start, end+1)
+                        print 'changing again start and stop: %s %s' % (start, end + 1)
                         seq = seq_record[start:(
-                            end+1)].seq.reverse_complement().translate(table=table)
+                            end + 1)].seq.reverse_complement().translate(table=table)
                         # print seq
                     if '*' in seq[0:-1]:
-                        print 'changing again start and stop: %s %s' % (start+2, end+1)
+                        print 'changing again start and stop: %s %s' % (start + 2, end + 1)
                         seq = seq_record[(
-                            start+2):(end+1)].seq.reverse_complement().translate(table=table)
+                            start + 2):(end + 1)].seq.reverse_complement().translate(table=table)
                         # print seq
 
                 else:
@@ -121,23 +121,23 @@ def get_protein_sequences(crispdata):
                         # print seq
 
                     if '*' in seq[0:-1]:
-                        print 'changing start and stop: %s %s' % (start+1, end+1)
-                        seq = seq_record[(start+1):(end+1)
+                        print 'changing start and stop: %s %s' % (start + 1, end + 1)
+                        seq = seq_record[(start + 1):(end + 1)
                                          ].seq.translate(table=table)
                         # print seq
                     if '*' in seq[0:-1]:
-                        print 'changing again start and stop: %s %s' % (start, end+1)
+                        print 'changing again start and stop: %s %s' % (start, end + 1)
                         # print seq
                         seq = seq_record[start:(
-                            end+1)].seq.translate(table=table)
+                            end + 1)].seq.translate(table=table)
                     if '*' in seq[0:-1]:
-                        print 'changing again start and stop: %s %s' % (start+2, end+1)
-                        seq = seq_record[(start+2):(end+1)
+                        print 'changing again start and stop: %s %s' % (start + 2, end + 1)
+                        seq = seq_record[(start + 2):(end + 1)
                                          ].seq.translate(table=table)
 
                     if '*' in seq[0:-1]:
-                        print 'changing again start and stop: %s %s' % (start+3, end+2)
-                        seq = seq_record[(start+3):(end+2)
+                        print 'changing again start and stop: %s %s' % (start + 3, end + 2)
+                        seq = seq_record[(start + 3):(end + 2)
                                          ].seq.translate(table=table)
 
                 if '*' in seq:

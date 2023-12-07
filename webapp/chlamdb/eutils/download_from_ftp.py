@@ -19,10 +19,10 @@ def download_one_file(ftp, path, destination, file_name):
     except OSError:
         pass
     except ftplib.error_perm:
-        print("error: could not change to "+path)
+        print("error: could not change to " + path)
         sys.exit("ending session")
 
-    ftp.retrbinary("RETR "+file_name,
+    ftp.retrbinary("RETR " + file_name,
                    open(os.path.join(destination, file_name), "wb").write)
     print(file_name + " downloaded")
 
@@ -40,7 +40,7 @@ def download_whole_directory(ftp, path,
     except OSError:
         print('could not reach directory: %s' % path)
     except ftplib.error_perm:
-        print("error: could not change to "+path)
+        print("error: could not change to " + path)
         sys.exit("ending session")
 
     filelist = ftp.nlst()
@@ -64,16 +64,16 @@ def download_whole_directory(ftp, path,
         # print "downloading...", os.path.join(path,file)
         if recursive == True:
             try:
-                ftp.cwd(os.path.join(path, file)+"/")
+                ftp.cwd(os.path.join(path, file) + "/")
                 os.mkdir(os.path.join(destination, file))
                 download_whole_directory(
-                    ftp, path+file+"/", os.path.join(destination, file))
+                    ftp, path + file + "/", os.path.join(destination, file))
 
             except ftplib.error_perm:
                 # print "downloading", file
                 os.chdir(destination)
                 try:
-                    ftp.retrbinary("RETR "+file, open(file, "wb").write)
+                    ftp.retrbinary("RETR " + file, open(file, "wb").write)
                     # print file + " downloaded"
                 except ftplib.error_perm:
                     print(ftp.nlst())
@@ -83,7 +83,7 @@ def download_whole_directory(ftp, path,
             # print "downloading", file
             os.chdir(destination)
             try:
-                ftp.retrbinary("RETR "+file, open(file, "wb").write)
+                ftp.retrbinary("RETR " + file, open(file, "wb").write)
                 # print file + " downloaded"
             except ftplib.error_perm:
                 print(ftp.nlst())

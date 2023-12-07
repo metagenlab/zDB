@@ -61,7 +61,7 @@ def assembly_accession2assembly(accession,
         'DocumentSummary'][0]['PartialGenomeRepresentation']
     Coverage = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Coverage']
 
-    out_dir = local_dir+'/%s' % LastMajorReleaseAccession
+    out_dir = local_dir + '/%s' % LastMajorReleaseAccession
     os.mkdir(out_dir)
 
     # get ftp link in meta data string

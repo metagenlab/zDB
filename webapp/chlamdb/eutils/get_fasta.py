@@ -56,7 +56,7 @@ def download_seq_entrez(accession, multifasta, seq_type, append):
 # reads table and retrieve GI in the column specified by the user
 def table_to_gi(file, column):
     df = read_table(file, header=None, sep='\t')
-    gi_list = list(df[column-1])
+    gi_list = list(df[column - 1])
     gi_list = [str(i)for i in gi_list]
     return gi_list
 
