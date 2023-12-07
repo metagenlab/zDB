@@ -156,7 +156,7 @@ def check_gbk(csv_file):
             sci_name = record.annotations.get("organism", None)
             common_name = record.annotations.get("source", None)
 
-            if not entry.name is None:
+            if entry.name is not None:
                 custom_names[entry.file] = entry.name
                 failed = True
                 sci_name = entry.name

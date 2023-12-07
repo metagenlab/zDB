@@ -225,7 +225,7 @@ def home(request):
     tree = db.get_reference_phylogeny()
     t1 = Tree(tree)
     R = t1.get_midpoint_outgroup()
-    if not R is None:
+    if R is not None:
         t1.set_outgroup(R)
     t1.ladderize()
 
@@ -346,7 +346,7 @@ def extract_orthogroup(request):
     single_copy = "checkbox_single_copy" in request.POST
 
     sum_include_lengths = len(include_taxids)
-    if not include_plasmids is None:
+    if include_plasmids is not None:
         sum_include_lengths += len(include_plasmids)
 
     if n_missing >= sum_include_lengths:
@@ -366,7 +366,7 @@ def extract_orthogroup(request):
                 & (og_counts_in.absence+og_counts_in.presence == sum_include_lengths))
 
     sum_exclude_lengths = len(exclude_taxids)
-    if not exclude_plasmids is None:
+    if exclude_plasmids is not None:
         sum_exclude_lengths += len(exclude_plasmids)
     if sum_exclude_lengths > 0:
         mat_exclude = db.get_og_count(
@@ -397,7 +397,7 @@ def extract_orthogroup(request):
     match_groups_data = []
 
     all_taxids = include_taxids
-    if not include_plasmids is None:
+    if include_plasmids is not None:
         all_taxids += include_plasmids
     annotations = db.get_genes_from_og(orthogroups=selection, taxon_ids=all_taxids,
                                        terms=["gene", "product", "locus_tag"])
@@ -627,11 +627,11 @@ def extract_pfam(request, classification="taxon_id"):
     n_missing = form.get_n_missing()
 
     sum_include_length = len(include)
-    if not include_plasmids is None:
+    if include_plasmids is not None:
         sum_include_length += len(include_plasmids)
 
     sum_exclude_length = len(exclude)
-    if not exclude_plasmids is None:
+    if exclude_plasmids is not None:
         sum_exclude_length += len(exclude_plasmids)
 
     if n_missing >=sum_include_length:
@@ -745,11 +745,11 @@ def extract_ko(request):
     n_missing = form.get_n_missing()
 
     sum_include_length = len(include)
-    if not include_plasmids is None:
+    if include_plasmids is not None:
         sum_include_length += len(include_plasmids)
 
     sum_exclude_length = len(exclude)
-    if not exclude_plasmids is None:
+    if exclude_plasmids is not None:
         sum_exclude_length += len(exclude_plasmids)
 
     if n_missing >=sum_include_length:
@@ -852,11 +852,11 @@ def extract_cog(request):
     n_missing = form.get_n_missing()
 
     sum_include_length = len(include)
-    if not include_plasmids is None:
+    if include_plasmids is not None:
         sum_include_length += len(include_plasmids)
 
     sum_exclude_length = len(exclude)
-    if not exclude_plasmids is None:
+    if exclude_plasmids is not None:
         sum_exclude_length += len(exclude_plasmids)
 
     if n_missing >=sum_include_length:
@@ -1127,7 +1127,7 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
 
     headers = ["", "Locus tag", "Source", "Gene", "Product"]
     identities = None
-    if not ref_seqid is None:
+    if ref_seqid is not None:
         identities = db.get_og_identity(og=og, ref_seqid=ref_seqid)
         headers.insert(2, "Identity")
 
@@ -1138,7 +1138,7 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
         organism = hsh_organism[seqid]
         locus_fmt = format_locus(data.locus_tag, to_url=True)
         entry = [index+1, locus_fmt, organism, format_gene(data.gene), data["product"]]
-        if not ref_seqid is None:
+        if ref_seqid is not None:
             if seqid ==ref_seqid:
                 continue
             else:
@@ -1150,7 +1150,7 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
         homologues.append(entry)
         index += 1
 
-    n_genomes = len(orga_set) if not ref_seqid is None else len(set(hsh_organism.values()))
+    n_genomes = len(orga_set) if ref_seqid is not None else len(set(hsh_organism.values()))
     return {"orthogroup": orthogroup_title,
             "n_genomes": "1 genome" if n_genomes ==1 else f"{n_genomes} genomes",
             "headers": headers,
@@ -1245,7 +1245,7 @@ def og_tab_get_swissprot_homologs(db, annotations):
 def prepare_default_tree(og_phylogeny):
     tree = Tree(og_phylogeny)
     R = tree.get_midpoint_outgroup()
-    if not R is None:
+    if R is not None:
         root = "(midpoint rooted)"
         tree.set_outgroup(R)
     tree.ladderize()
@@ -1272,7 +1272,7 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
             hsh_pfam_infos[data.locus_tag] = [data.length, pfam_entries]
         pfam_col = PfamColumn("Pfam domains", hsh_pfam_infos, pfam_cmap)
 
-    if not compare_to is None:
+    if compare_to is not None:
         identity_matrix = db.get_og_identity(og=og_id, ref_seqid=compare_to)
         seqids = identity_matrix.index.tolist()
         seqids.append(compare_to)
@@ -1291,9 +1291,9 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
 
     e_tree = EteTree(tree)
     e_tree.add_column(SimpleTextColumn("Locus tag"))
-    if not ident_col is None:
+    if ident_col is not None:
         e_tree.add_column(ident_col)
-    if not pfam_col is None:
+    if pfam_col is not None:
         e_tree.add_column(pfam_col)
     e_tree.rename_leaves(locus_to_genome, leaf_name_type=str)
 
@@ -1315,13 +1315,13 @@ def tab_og_conservation_tree(db, group, compare_to=None):
 
     tree = Tree(ref_phylogeny)
     R = tree.get_midpoint_outgroup()
-    if not R is None:
+    if R is not None:
         tree.set_outgroup(R)
     tree.ladderize()
     e_tree = EteTree(tree)
 
     e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group], header="Number of homologs"))
-    if not compare_to is None:
+    if compare_to is not None:
         identity_matrix = db.get_og_identity(og=group, ref_seqid=compare_to)
         seqids = identity_matrix.index.tolist()
 
@@ -1439,7 +1439,7 @@ def tab_og_best_hits(db, orthogroup, locus=None):
     acc_to_orga = match_infos.set_index("accession")["organism"]
 
     R = ete_tree.get_midpoint_outgroup()
-    if not R is None:
+    if R is not None:
         ete_tree.set_outgroup(R)
     ete_tree.ladderize()
 
@@ -1451,7 +1451,7 @@ def tab_og_best_hits(db, orthogroup, locus=None):
             continue
 
         color = "red"
-        if not locus is None and shortened ==locus:
+        if locus is not None and shortened ==locus:
             color = "green"
         taxid = zdb_taxids.loc[shortened].taxid
         orga_name = orgas[taxid]
@@ -1675,7 +1675,7 @@ def genomic_region_df_to_js(df, start, end, name=None):
         ))
     features_str = "[" + ",".join(features) + "]"
     genome_name = ""
-    if not name is None:
+    if name is not None:
         genome_name = f"name: {to_s(name)}, "
     return f"{{{genome_name} start: {start}, end: {end}, features: {features_str}}}"
 
@@ -2035,7 +2035,7 @@ def tab_gen_profile_tree(db, main_series, header, intersect):
 
     tree = Tree(ref_tree)
     R = tree.get_midpoint_outgroup()
-    if not R is None:
+    if R is not None:
         tree.set_outgroup(R)
     tree.ladderize()
     e_tree = EteTree(tree)
@@ -2420,7 +2420,7 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
     else:
         pathway = int(map_name[len("map"):])
 
-    if not taxon_id is None:
+    if taxon_id is not None:
         taxid = int(taxon_id)
 
     kos = db.get_ko_pathways([pathway], search_on="pathway", as_df=True)
@@ -2439,14 +2439,14 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
     header = ["KO", "Description", "All occurrences"]
     data = []
     all_kos = []
-    if not taxon_id is None:
+    if taxon_id is not None:
         header.insert(2, "#in this genome")
     for ko_id, descr in ko_desc.items():
         if ko_id in ko_ttl_count.index:
             ttl = ko_ttl_count.loc[ko_id]
         else:
             ttl = 0
-        if ko_id in ko_hits.index and not taxon_id is None:
+        if ko_id in ko_hits.index and taxon_id is not None:
             in_this_genome = ko_hits[taxid].loc[ko_id]
             if ko_hits[taxid].loc[ko_id] >0:
                 all_kos.append(format_ko(ko_id))
@@ -2473,7 +2473,7 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
            "page_titleA" : page_title
            }
 
-    if not taxon_id is None:
+    if taxon_id is not None:
         ctx["organism"] = hsh_organisms[taxid]
 
     return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(ctx))
@@ -3220,7 +3220,7 @@ def plot_region(request):
         ogs = db.get_og_count(region.index.tolist(), search_on="seqid")
         region = region.join(ogs)
 
-        if not prev_infos is None:
+        if prev_infos is not None:
             # BM: horrible code (I wrote it, I should know).
             # would be nice to refactor it in a more efficient and clean way.
             common_og = region.dropna(subset=["orthogroup"]).reset_index().merge(
@@ -4030,7 +4030,7 @@ def phylogeny(request):
     tree = db.get_reference_phylogeny()
     t1 = Tree(tree)
     R = t1.get_midpoint_outgroup()
-    if not R is None:
+    if R is not None:
         t1.set_outgroup(R)
     t1.ladderize()
 
@@ -4084,7 +4084,7 @@ def genomes_intro(request):
     tree = db.get_reference_phylogeny()
     t1 = Tree(tree)
     R = t1.get_midpoint_outgroup()
-    if not R is None:
+    if R is not None:
         t1.set_outgroup(R)
     t1.ladderize()
 
