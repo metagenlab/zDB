@@ -8,3 +8,4 @@ work/
 zdb/
 zdb_ref/
 env
+docs/_build/
