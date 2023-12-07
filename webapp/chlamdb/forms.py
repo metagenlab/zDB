@@ -165,7 +165,7 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
         attrs = {'size': '1', "class": "selectpicker",
                  "data-live-search": "true",
                  "data-actions-box": "true"}
-        if not limit is None:
+        if limit is not None:
             attrs["data-max-options"] = f"{limit}"
         targets = forms.MultipleChoiceField(choices=accession_choices,
                                             widget=forms.SelectMultiple(attrs=attrs), required=True)
