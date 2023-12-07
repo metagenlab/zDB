@@ -67,12 +67,19 @@ if __name__ == '__main__':
                         help="File with accession numbers")
     parser.add_argument("-t", '--seq_type', type=str, default="protein",
                         help="Type of sequence to be downloaded: protein, gene, nuccore. Default: protein")
-    parser.add_argument("-m", '--multifasta', type=str, default="",
-                        help="For multiple accession numbers, enable to download all sequences in a multifasta file. Please provide a prefix for the output.")
-    parser.add_argument("-c", '--column', type=int, default="",
-                        help="Input is a file containing a tabulated table containing the GI of sequences to retrieve in column c. Please specify column number.")
-    parser.add_argument("-p", '--append', type=str, default="",
-                        help="If required, name of the blast query file that should be appended to the output fasta file")
+    parser.add_argument(
+        "-m", '--multifasta', type=str, default="",
+        help="For multiple accession numbers, enable to download all "
+             "sequences in a multifasta file. Please provide a prefix "
+             "for the output.")
+    parser.add_argument(
+        "-c", '--column', type=int, default="",
+        help="Input is a file containing a tabulated table containing the GI of"
+             " sequences to retrieve in column c. Please specify column number.")
+    parser.add_argument(
+        "-p", '--append', type=str, default="",
+        help="If required, name of the blast query file that should be "
+             "appended to the output fasta file")
 
     args = parser.parse_args()
 

@@ -419,7 +419,8 @@ def get_whole_db_uniprot_crossref(biodb):
     sql2 = 'select locus_tag, old_locus_tag from biosqldb.locus_tag2old_locus_tag'
 
     # attention EDIT!!!!!!!!!!!!!!
-    sql3 = 'select locus_tag, protein_id from biosqldb.orthology_detail_%s where protein_id not like "%%%%CHUV%%%%"' % biodb
+    sql3 = 'select locus_tag, protein_id from biosqldb.orthology_detail_%s '\
+           'where protein_id not like "%%%%CHUV%%%%"' % biodb
 
     sql4 = 'select locus_tag,t2.seqfeature_id from locus2seqfeature_id_%s t1 inner join uniprot_annotation_%s t2' \
            ' on t1.seqfeature_id=t2.seqfeature_id group by locus_tag;' % (
@@ -506,13 +507,14 @@ def get_whole_db_uniprot_crossref(biodb):
             now = datetime.now()
             str_date = "%s-%s-%s" % (now.year, now.month, now.day)
 
-            sql = 'insert into uniprot_id2seqfeature_id_%s (seqfeature_id,uniprot_accession, uniprot_status, annotation_score,insert_date) ' \
-                  ' values (%s, "%s", "%s", %s,"%s")' % (biodb,
-                                                         seqid,
-                                                         uniprot_id,
-                                                         uniprot_status,
-                                                         uniprot_score,
-                                                         str_date)
+            sql = 'insert into uniprot_id2seqfeature_id_%s '\
+                  '(seqfeature_id,uniprot_accession, uniprot_status, annotation_score,insert_date) ' \
+                  'values (%s, "%s", "%s", %s,"%s")' % (biodb,
+                                                        seqid,
+                                                        uniprot_id,
+                                                        uniprot_status,
+                                                        uniprot_score,
+                                                        str_date)
             try:
                 cursor.execute(sql, )
                 conn.commit()
@@ -520,8 +522,10 @@ def get_whole_db_uniprot_crossref(biodb):
             except conn.IntegrityError:
                 print '%s already into uniprot_id2seqfeature_id_%s' % (seqid, biodb)
                 pass
-            sqlid = 'select t1.uniprot_id from uniprot_id2seqfeature_id_%s as t1 where t1.seqfeature_id=%s' % (biodb,
-                                                                                                               locus2seqfeature_id[locus])
+            sqlid = 'select t1.uniprot_id from uniprot_id2seqfeature_id_%s as t1 where t1.seqfeature_id=%s' % (
+                biodb,
+                locus2seqfeature_id[locus])
+
             # print sqlid
             cursor.execute(sqlid, )
             uniprot_db_id = cursor.fetchall()[0][0]
@@ -542,29 +546,20 @@ def get_whole_db_uniprot_crossref(biodb):
             sql = 'insert into uniprot_annotation_%s (seqfeature_id, comment_function,' \
                   ' ec_number,comment_similarity,comment_catalyticactivity,comment_pathway,keywords,' \
                   ' comment_subunit, gene, recommendedName_fullName, proteinExistence,developmentalstage) values' \
-                  '  (%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")' % (biodb,
-                                                                                                seqid,
-                                                                                                re.sub(
-                                                                                                    '"', '', annotation["comment_function"]),
-                                                                                                re.sub(
-                                                                                                    '"', '', annotation["ec_number"]),
-                                                                                                re.sub(
-                                                                                                    '"', '', annotation["comment_similarity"]),
-                                                                                                re.sub(
-                                                                                                    '"', '', annotation["comment_catalyticactivity"]),
-                                                                                                re.sub(
-                                                                                                    '"', '', annotation["comment_pathway"]),
-                                                                                                re.sub(
-                                                                                                    '"', '', annotation["keywords"]),
-                                                                                                re.sub(
-                                                                                                    '"', '', annotation["comment_subunit"]),
-                                                                                                re.sub(
-                                                                                                    '"', '', annotation["gene"]),
-                                                                                                re.sub(
-                                                                                                    '"', '', annotation["recommendedName_fullName"]),
-                                                                                                re.sub(
-                                                                                                    '"', '', annotation["proteinExistence"]),
-                                                                                                re.sub('"', '', annotation["developmentalstage"]))
+                  '  (%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")' % (
+                    biodb,
+                    seqid,
+                    re.sub('"', '', annotation["comment_function"]),
+                    re.sub('"', '', annotation["ec_number"]),
+                    re.sub('"', '', annotation["comment_similarity"]),
+                    re.sub('"', '', annotation["comment_catalyticactivity"]),
+                    re.sub('"', '', annotation["comment_pathway"]),
+                    re.sub('"', '', annotation["keywords"]),
+                    re.sub('"', '', annotation["comment_subunit"]),
+                    re.sub('"', '', annotation["gene"]),
+                    re.sub('"', '', annotation["recommendedName_fullName"]),
+                    re.sub('"', '', annotation["proteinExistence"]),
+                    re.sub('"', '', annotation["developmentalstage"]))
             cursor.execute(sql, )
             conn.commit()
 
@@ -587,10 +582,8 @@ def get_whole_db_uniprot_crossref(biodb):
 
                     for crossref in alldbref[database]:
                         # insert cross reference into database
-                        sql3 = 'insert into uniprot_db_xref_%s (uniprot_id, db_xref_id, db_accession) values (%s, %s, "%s")' % (biodb,
-                                                                                                                                uniprot_db_id,
-                                                                                                                                database_index,
-                                                                                                                                crossref)
+                        sql3 = 'insert into uniprot_db_xref_%s (uniprot_id, db_xref_id, db_accession) '\
+                               'values (%s, %s, "%s")' % (biodb, uniprot_db_id, database_index, crossref)
                         # print sql3
                         cursor.execute(sql3, )
                         conn.commit()

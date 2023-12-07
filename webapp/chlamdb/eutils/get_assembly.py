@@ -14,7 +14,8 @@ Entrez.email = "trestan.pillonel@unil.ch"
 
 """
 plsmids: not working?
-handle_plasmids = Entrez.elink(dbfrom="genome", db="nuccore", id=one_genome_id, term="srcdb+ddbj/embl/genbank[prop] AND gene+in+plasmid[prop]")
+handle_plasmids = Entrez.elink(dbfrom="genome", db="nuccore", id=one_genome_id,
+                               term="srcdb+ddbj/embl/genbank[prop] AND gene+in+plasmid[prop]")
 record_plasmids = Entrez.read(handle_plasmids)
 
 

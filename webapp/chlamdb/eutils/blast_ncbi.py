@@ -20,23 +20,29 @@ def blast_fasta(blast_flavor, input, blastdb, evalue, nb_hit, local):
     scientific names and kingdom will only be retrieved if the taxid database has been installed locally ftp://ftp.ncbi.nlm.nih.gov/blast/db/taxdb.tar.gz
     '''
     output_name = re.sub(r"([a-zA-Z_0-9]+)\.([a-zA-Z]+)", "blast\\1.tab", input)
+    output_format = "6 qgi qacc sgi sacc sscinames sskingdoms staxids evalue "\
+                    "nident pident positive gaps length qstart qend qcovs "\
+                    "sstart send sstrand stitle"
     if local:
-        cmd = "%s -task %s -query %s -out %s -db %s -evalue %s -max_target_seqs %s -outfmt '6 qgi qacc sgi sacc sscinames sskingdoms staxids evalue nident pident positive gaps length qstart qend qcovs sstart send sstrand stitle'" % (
-            blast_flavor, blast_flavor, input, output_name, blastdb, evalue, nb_hit)
+        cmd = "%s -task %s -query %s -out %s -db %s -evalue %s -max_target_seqs %s -outfmt '%s'" % (
+            blast_flavor, blast_flavor, input, output_name, blastdb, evalue, nb_hit, output_format)
         print cmd
         out, err, code = shell_command(cmd)
         if code != 0:
             print err
     else:
-        cmd = "%s -remote -task %s -query %s -out %s -db %s -evalue %s -max_target_seqs %s -outfmt '6 qgi qacc sgi sacc sscinames sskingdoms staxids evalue nident pident positive gaps length qstart qend qcovs sstart send sstrand stitle'" % (
-            blast_flavor, blast_flavor, input, output_name, blastdb, evalue, nb_hit)
+        cmd = "%s -remote -task %s -query %s -out %s -db %s -evalue %s -max_target_seqs %s -outfmt '%s'" % (
+            blast_flavor, blast_flavor, input, output_name, blastdb, evalue, nb_hit, output_format)
         out, err, code = shell_command(cmd)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", '--flavor', type=str,
-                        help="BLAST flavor: blastp for protein-protein, blastn for nucleotide-nucleotide, blastx for translated nucleotide query against protein db, tblastn for protein query against translated db")
+    parser.add_argument(
+        "-f", '--flavor', type=str,
+        help="BLAST flavor: blastp for protein-protein, blastn for "
+             "nucleotide-nucleotide, blastx for translated nucleotide query "
+             "against protein db, tblastn for protein query against translated db")
     parser.add_argument("-i", '--input', type=str,
                         help="Fasta or multifasta sequence")
     parser.add_argument("-d", '--blastdb', type=str,

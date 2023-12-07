@@ -390,15 +390,17 @@ if __name__ == '__main__':
                     species = data["species"]
                 except Exception:
                     species = "-"
-                print("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (accession2taxon.keys()[accession2taxon.values().index(accession)],
-                                                              accession,
-                                                              superkingdom,
-                                                              phylum,
-                                                              class_,
-                                                              order,
-                                                              family,
-                                                              genus,
-                                                              species))
+                print("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
+                    accession2taxon.keys()[accession2taxon.values().index(accession)],
+                    accession,
+                    superkingdom,
+                    phylum,
+                    class_,
+                    order,
+                    family,
+                    genus,
+                    species)
+                )
         else:
             print(args.seq_id_genbank)
     elif args.description:
