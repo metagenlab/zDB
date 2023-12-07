@@ -183,7 +183,7 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
                          Column(
                              Row('targets'),
                              Submit('submit', 'Compare %s' %
-                                    label,  style="margin-top:15px"),
+                                    label, style="margin-top:15px"),
                              css_class='form-group col-lg-12 col-md-12 col-sm-12'),
                          )
             )
@@ -317,7 +317,7 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
                              Row(Column("orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
                                  Column("no_orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
                              Column(Row('frequency'),
-                                    Submit('submit', 'Compare %s' % label,   style="margin-top:15px"), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                                    Submit('submit', 'Compare %s' % label, style="margin-top:15px"), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
                              css_class="col-lg-8 col-md-8 col-sm-12")
                          )
             )
