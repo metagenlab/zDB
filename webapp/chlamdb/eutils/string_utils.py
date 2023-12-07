@@ -155,29 +155,29 @@ def biodb2all_connections(biodb):
             # locus tag corresp between old and new RefSeq annotation
             try:
                 ref_locus_seqfeature_id = old_locus_tag2seqfeature_id[ref_locus]
-            except:
+            except Exception:
                 # special case trachomatis
                 try:
                     ref_locus = re.sub('CT', 'CT_', ref_locus)
                     ref_locus_seqfeature_id = new_locus_tag2seqfeature_id[ref_locus]
-                except:
+                except Exception:
                     ref_locus_seqfeature_id = 'NULL'
             print 'ref_locus', ref_locus
             # locus tag corresp OK but pseudogene
             try:
                 taxon_id = seqfeature_id2taxon_id[str(ref_locus_seqfeature_id)]
-            except:
+            except Exception:
                 taxon_id = 'NULL'
             if taxon_id is None:
                 taxon_id = 'NULL'
             # locus tag corresp between old and new RefSeq annotation
             try:
                 link_locus_seqfeature_id = old_locus_tag2seqfeature_id[link_locus]
-            except:
+            except Exception:
                 try:
                     link_locus = re.sub('CT', 'CT_', link_locus)
                     link_locus_seqfeature_id = new_locus_tag2seqfeature_id[link_locus]
-                except:
+                except Exception:
                     link_locus_seqfeature_id = 'NULL'
 
             scores = one_interaction[4].split('|')
@@ -276,12 +276,12 @@ def biodb2string_pmid_data(biodb):
         old_locus_tag = string_accession.split('.')[1]
         try:
             seqfeature_id = old_locus_tag2seqfeature_id[old_locus_tag]
-        except:
+        except Exception:
             try:
                 # special case trachomatis
                 old_locus_tag = re.sub('CT', 'CT_', old_locus_tag)
                 seqfeature_id = new_locus_tag2seqfeature_id[old_locus_tag]
-            except:
+            except Exception:
                 continue
         taxon_id = seqfeature_id2taxon_id[str(seqfeature_id)]
         if taxon_id is None:

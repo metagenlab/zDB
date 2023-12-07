@@ -48,7 +48,7 @@ def make_plot_form(db):
         locus_list = db.get_genes_from_og(
             [str(random_group.og)], taxon_ids=None, terms=["locus_tag"])
         locus = locus_list.locus_tag.to_list()[0]
-    except:
+    except Exception:
         locus = 'n/a'
 
     class PlotForm(forms.Form):

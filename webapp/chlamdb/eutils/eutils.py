@@ -52,19 +52,19 @@ def get_genomic_data(ncbi_accession, genbank2refseq_id=False):
         #    break
         # try:
         SeqIO.write(record, "%s.gbk" % record.name, "genbank")
-        # except:
+        # except Exception:
         #    print "problem writing genbank"
         try:
             SeqIO.write(record, "%s.fna" % record.name, "fasta")
-        except:
+        except Exception:
             print "problem writing fasta"
         # try:
         gbk2faa.gbk2faa([record], "%s.faa" % record.name)
-        # except:
+        # except Exception:
         #    print "problem writing faa"
         try:
             gbk2ffn.gbk2ffn([record], "%s.ffn" % record.name)
-        except:
+        except Exception:
             print "problem writing ffn"
     handle.close()
 

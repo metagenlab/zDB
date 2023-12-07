@@ -46,27 +46,27 @@ def write_assembly_table(taxid2assemblies,
 
             try:
                 species = taxon_id2classification[ncbi_taxon]['species'][0]
-            except:
+            except Exception:
                 species = '-'
             try:
                 genus = taxon_id2classification[ncbi_taxon]['genus'][0]
-            except:
+            except Exception:
                 genus = '-'
             try:
                 family = taxon_id2classification[ncbi_taxon]['family'][0]
-            except:
+            except Exception:
                 family = '-'
             try:
                 order = taxon_id2classification[ncbi_taxon]['order'][0]
-            except:
+            except Exception:
                 order = '-'
             try:
                 tclass = taxon_id2classification[ncbi_taxon]['class'][0]
-            except:
+            except Exception:
                 tclass = '-'
             try:
                 phylum = taxon_id2classification[ncbi_taxon]['phylum'][0]
-            except:
+            except Exception:
                 phylum = '-'
             if clade2taxons:
                 no_rank = taxon_id2classification[ncbi_taxon]['no rank'][0]
