@@ -673,14 +673,14 @@ def extract_pfam(request, classification="taxon_id"):
 
     ctx = {"envoi_extract": True,
            "sum_group": sum_group,
-            "n_genomes": sum_include_length,
-            "max_n": sums.max(),
-            "match_groups_data": match_groups_data,
-            "form": form,
-            "sum_include_length": sum_include_length,
-            "sum_exclude_length": sum_exclude_length,
-            "n_missing": n_missing,
-            "page_title": page_title}
+           "n_genomes": sum_include_length,
+           "max_n": sums.max(),
+           "match_groups_data": match_groups_data,
+           "form": form,
+           "sum_include_length": sum_include_length,
+           "sum_exclude_length": sum_exclude_length,
+           "n_missing": n_missing,
+           "page_title": page_title}
     return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
 
 
@@ -829,8 +829,8 @@ def venn_pfam(request):
 
     ctx = {"envoi_venn": True,
            "series": series,
-            "pfam2description": ";".join(descriptions),
-            "form_venn": form_venn}
+           "pfam2description": ";".join(descriptions),
+           "form_venn": form_venn}
     return render(request, 'chlamdb/venn_Pfam.html', my_locals(ctx))
 
 
@@ -1736,8 +1736,8 @@ def tab_get_refseq_homologs(db, seqid):
         entries.append((to_ncbi, data.evalue, data.bitscore,
                         data.pident, data.gaps, data.length, data.description, data.organism))
     return {"n_refseq_homologs": len(refseq_hits),
-             "refseq_headers": header,
-             "blast_data": entries}
+            "refseq_headers": header,
+            "blast_data": entries}
 
 
 def locusx(request, locus=None, menu=True):
@@ -1929,25 +1929,25 @@ def search_bar(request):
     insert_index = 4
     ctx = {"search_term": user_query,
            "gene_active": gene_active,
-            "cogs_active": cogs_active,
-            "ko_active": ko_active,
-            "pfam_active": pfam_active,
-            "pat_active": pat_active,
-            "mod_active": mod_active,
-            "genes_headers": genes_headers,
-            "genes": genes,
-            "cog_headers": cog_headers,
-            "pfam_headers": pfam_headers,
-            "ko_headers": ko_headers,
-            "pat_headers": pat_headers,
-            "mod_headers": mod_headers,
-            "modules": mod,
-            "pathways": pat,
-            "cogs": cog,
-            "pfam": pfam,
-            "ko": ko,
-            "pat": pat,
-            "mod": mod}
+           "cogs_active": cogs_active,
+           "ko_active": ko_active,
+           "pfam_active": pfam_active,
+           "pat_active": pat_active,
+           "mod_active": mod_active,
+           "genes_headers": genes_headers,
+           "genes": genes,
+           "cog_headers": cog_headers,
+           "pfam_headers": pfam_headers,
+           "ko_headers": ko_headers,
+           "pat_headers": pat_headers,
+           "mod_headers": mod_headers,
+           "modules": mod,
+           "pathways": pat,
+           "cogs": cog,
+           "pfam": pfam,
+           "ko": ko,
+           "pat": pat,
+           "mod": mod}
     return render(request, "chlamdb/search.html", my_locals(ctx))
 
 
@@ -3220,7 +3220,7 @@ def plot_region(request):
             # would be nice to refactor it in a more efficient and clean way.
             common_og = region.dropna(subset=["orthogroup"]).reset_index().merge(
                 prev_infos.reset_index(), on="orthogroup")[["locus_tag_x",
-                                                                "locus_tag_y", "seqid_x", "seqid_y", "orthogroup"]]
+                                                            "locus_tag_y", "seqid_x", "seqid_y", "orthogroup"]]
             related = []
             ogs = common_og.orthogroup.astype(int).tolist()
             p1 = common_og.seqid_x.tolist()
@@ -3251,8 +3251,8 @@ def plot_region(request):
 
     ctx = {"form": form, "genomic_regions": "[" + "\n,".join(all_regions) + "]",
            "window_size": max_region_size, "to_highlight": to_highlight, "envoi": True,
-            "connections": "[" + ",".join(connections) + "]",
-            "page_title": page_title}
+           "connections": "[" + ",".join(connections) + "]",
+           "page_title": page_title}
     if len(all_identities) > 0:
         ctx["max_ident"] = max(all_identities)
         ctx["min_ident"] = min(all_identities)
@@ -3896,10 +3896,10 @@ def cog_comparison(request):
 
     # combine into df
     combined_df = cog_hits.merge(cog_count.rename('count'),
-                                       left_index=True,
-                                       right_index=True).merge(cog_freq.rename('freq'),
-                                                               left_index=True,
-                                                               right_index=True).sort_values(["count"], ascending=False)
+                                 left_index=True,
+                                 right_index=True).merge(cog_freq.rename('freq'),
+                                                         left_index=True,
+                                                         right_index=True).sort_values(["count"], ascending=False)
 
     # reorder columns
     combined_df = combined_df[["accession", "description", "count", "freq"] + all_targets]
