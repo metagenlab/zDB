@@ -918,21 +918,21 @@ def extract_cog(request):
 
     # Code to generate the barchart diagrams
     cat_map_str = ",".join([f"\"{func}\": \"{descr}\"" for func, descr in cogs_funct.items()])
-    category_map = f"var category_description = {{ {cat_map_str} }}"
+    category_map = f"var category_description = {{{cat_map_str}}}"
     ttl_sel = sum([c1 for func, (c1, c2) in cat_count.items()])
     ttl_all = sum([c2 for func, (c1, c2) in cat_count.items()])
 
     cat_count_comp = ",".join([f"\"{func}\": [\"{c2}\", \"{c1}\"]" for func, (c1, c2) in cat_count.items()])
-    category_count_complete = f"var category_count_complete = {{ {cat_count_comp} }}"
+    category_count_complete = f"var category_count_complete = {{{cat_count_comp}}}"
 
     serie_selection_val = [str(round(float(c1) / ttl_sel, 2)) for func, (c1, c2) in cat_count.items()]
     serie_all_val = [str(round(float(c2) / ttl_all, 2)) for func, (c1, c2) in cat_count.items()]
-    serie_selection = f"{{labels: \"selection\", values: [{','.join(serie_selection_val)}] }}"
-    serie_all = f"{{labels: \"complete genomes\", values: [{','.join(serie_all_val)}] }}"
+    serie_selection = f"{{labels: \"selection\", values: [{','.join(serie_selection_val)}]}}"
+    serie_all = f"{{labels: \"complete genomes\", values: [{','.join(serie_all_val)}]}}"
     series_str = ",".join([serie_all, serie_selection])
-    series = f"[{series_str} ]"
+    series = f"[{series_str}]"
     labels_str = ",".join([f"\"{funct}\"" for funct in cat_count.keys()])
-    labels = f"[{labels_str} ]"
+    labels = f"[{labels_str}]"
     envoi_extract = True
     return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 
@@ -1030,7 +1030,7 @@ def venn_cog(request, sep_plasmids=False):
         cogs = cog_hits[target]
         non_zero_cogs = cogs[cogs > 0]
         str_fmt = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.items())
-        series_tab.append(f"{{name: \"{genome_desc[target]}\", data: [{str_fmt}]}}" )
+        series_tab.append(f"{{name: \"{genome_desc[target]}\", data: [{str_fmt}]}}")
     series = "[" + ",".join(series_tab) + "]"
 
     cog2description_l = []
@@ -1079,7 +1079,7 @@ def genomes(request):
     filenames_tax_id_db = filenames_tax_id_db[["path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk"]]
     genomes_data = genomes_data.join(filenames_tax_id_db, on= "taxon_id")
     data_table_header = ["Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding", "N plasmid contigs", "faa seq", "fna seq", "ffn seq", "gbk file"]
-    data_table = genomes_data[["id", "description", "gc", "n_prot", "n_contigs", "length", "coding_density", "has_plasmid", "path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk" ]].values.tolist()
+    data_table = genomes_data[["id", "description", "gc", "n_prot", "n_contigs", "length", "coding_density", "has_plasmid", "path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk"]].values.tolist()
     return render(request, 'chlamdb/genomes.html', my_locals(locals()))
 
 
@@ -1106,7 +1106,7 @@ def extract_contigs(request, genome):
 
     organism = descr[taxid]
     data_table_header = ["Gene", "Product", "Locus_tag", "Orthogroup", "Contig", "Strand", "Start", "Stop", ]
-    data_table = all_infos[["gene", "product", "locus_tag", "orthogroup", "contig", "strand", "start", "end" ]].values.tolist()
+    data_table = all_infos[["gene", "product", "locus_tag", "orthogroup", "contig", "strand", "start", "end"]].values.tolist()
     return render(request, 'chlamdb/extract_contigs.html', my_locals(locals()))
 
 
@@ -1737,7 +1737,7 @@ def tab_get_refseq_homologs(db, seqid):
                         data.pident, data.gaps, data.length, data.description, data.organism))
     return {"n_refseq_homologs": len(refseq_hits),
              "refseq_headers": header,
-             "blast_data": entries }
+             "blast_data": entries}
 
 
 def locusx(request, locus=None, menu=True):
@@ -2541,7 +2541,7 @@ def cog_venn_subset(request, category):
         cogs = cog_hits[target]
         non_zero_cogs = cogs[cogs > 0]
         data = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.items())
-        series_tab.append(f"{{name: \"{genome_desc[target]}\", data: [{data}]}}" )
+        series_tab.append(f"{{name: \"{genome_desc[target]}\", data: [{data}]}}")
     series = "[" + ",".join(series_tab) + "]"
 
     cog_func_dict = (f"\"{func}\": \"{descr}\"" for func, descr in cog_codes.items())
@@ -3465,7 +3465,7 @@ def plot_heatmap(request, type):
         error_message = "Please select at least two genomes"
         error_title = "Wrong input"
         ctx = {"error": True, "type": type, "type": type, "error_title": error_title,
-               "form_venn": form_venn, "error_message": error_message, "page_title": page_title }
+               "form_venn": form_venn, "error_message": error_message, "page_title": page_title}
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(ctx))
 
     if type == "COG":
@@ -3563,7 +3563,7 @@ def kegg_genomes(request):
         data.append(entry)
 
 
-    ctx = {"envoi": True, "data": data, "header": header, "organism": hsh_organisms[taxid], "page_title": page_title }
+    ctx = {"envoi": True, "data": data, "header": header, "organism": hsh_organisms[taxid], "page_title": page_title}
     return render(request, 'chlamdb/kegg_genomes.html', my_locals(ctx))
 
 
