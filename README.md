@@ -250,7 +250,7 @@ The web server can then be started as if the analysis had been run locally.
 
 
 ## Bugs and feature requests
-Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/annotation_pipeline_nextflow/issues).
+Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/zDB/issues).
 
 We already have several idea to improve the tool:
 - make it possible to add or remove genomes in an existing database
