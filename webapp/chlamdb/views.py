@@ -2931,6 +2931,7 @@ def pan_genome(request, type):
     envoi = True
     return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
 
+
 blast_input_dir = {"blastp": "faa",
                    "tblastn": "ffn",
                    "blastn_fna": "ffn",
