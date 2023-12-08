@@ -1526,28 +1526,30 @@ def orthogroup(request, og):
     }
     return render(request, "chlamdb/og.html", my_locals(context))
 
+def tab_general(db, seqid):
+    hsh_infos = db.get_proteins_info([seqid], to_return=["locus_tag", "gene", "product"],
+            inc_non_CDS=True, inc_pseudo=True)
+    hsh_organism = db.get_organism([seqid])
+    gene_loc = db.get_gene_loc([seqid], as_hash=False)
 
-def tab_general(seqid, hsh_organism, gene_loc, annot):
-    organism = hsh_organism[seqid]
-    strand, beg, end = gene_loc[seqid]
-    gene = annot.loc[seqid].gene
+    gene_pos = []
+    nucl_length = 0
+    for index, row in gene_loc.iterrows():
+        gene_pos.append((row.start, row.end, row.strand))
+        nucl_length += row.end-row.start+1
+
+    locus_tag, gene, product = hsh_infos[seqid]
     if pd.isna(gene):
         gene = "-"
-    length = annot.loc[seqid].length
-    product = annot.loc[seqid]["product"]
-    locus_tag = annot.loc[seqid].locus_tag
+    organism = hsh_organism[seqid]
     return {
         "locus_tag": locus_tag,
         "organism": organism,
-        "strand": strand,
+        "gene_pos" : gene_pos,
         "gene": gene,
-        "start": beg,
-        "end": end,
-        "nucl_length": end-beg+1,
-        "length": length,
+        "nucl_length": nucl_length,
         "prot": product
     }
-
 
 # to be moved somewhere else at some point
 def to_color_code(c):
@@ -1587,8 +1589,9 @@ class LocusHeatmapColumn(SimpleColorColumn):
 
 
 def get_sequence(db, seqid, flanking=0):
-    loc      = db.get_gene_loc([seqid])
+    loc = db.get_gene_loc([seqid], as_hash=True)#, as_hash=False)
     bioentry, accession, length, seq = db.get_bioentry_list(seqid, search_on="seqid")
+
     strand, start, stop = loc[seqid]
     start -= 1
 
@@ -1606,6 +1609,7 @@ def get_sequence(db, seqid, flanking=0):
     red_stop = red_start + stop-start
     fet = SeqFeature(FeatureLocation(start_w_flank, stop_w_flank, strand=strand))
     extracted = fet.extract(seq)
+
     return extracted[0:red_start] + "<font color='red'>" + \
             extracted[red_start:red_stop] + "</font>" + extracted[red_stop:]
 
@@ -1684,31 +1688,33 @@ def locusx_genomic_region(db, seqid, window):
         # circular contig
 
         diff = contig_size+window_start
-        df_seqids = df_seqids[(df_seqids.end_pos >= diff) | (df_seqids.start_pos <= window_stop)]
-        df_seqids.start_pos += -window_start
-        df_seqids.end_pos += -window_start
-        df_seqids.start_pos -= (df_seqids.start_pos>contig_size)*contig_size
-        df_seqids.end_pos -= (df_seqids.end_pos>contig_size)*contig_size
+        df_seqids_circled = df_seqids[(df_seqids.end_pos >= diff)]
+        df_seqids_same = df_seqids[(df_seqids.start_pos <= window_stop)]
+        df_seqids_same.start_pos += -window_start
+        df_seqids_same.end_pos += -window_start
+        df_seqids_circled.start_pos -= diff
+        df_seqids_circled.end_pos -= diff
+        df_seqids = pd.concat([df_seqids_circled, df_seqids_same])
         window_stop += -window_start
         window_start = 0
-        df_seqids.start_pos -= (df_seqids.start_pos>window_stop)*df_seqids.start_pos
     elif window_stop > contig_size:
         # circular contig
 
         diff = window_stop-contig_size
-        df_seqids = df_seqids[(df_seqids.end_pos >= window_start) | (df_seqids.start_pos <= diff)]
-        df_seqids.start_pos -= diff
-        df_seqids.end_pos -= diff
-        df_seqids.start_pos += (df_seqids.start_pos<0)*contig_size
-        df_seqids.end_pos += (df_seqids.end_pos<0)*contig_size
+        df_seqids_same = df_seqids[df_seqids.end_pos >= window_start]
+        df_seqids_circled = df_seqids[df_seqids.start_pos <= diff]
+        df_seqids_same.start_pos -= diff
+        df_seqids_same.end_pos -= diff
+        df_seqids_circled.start_pos += (contig_size-diff)
+        df_seqids_circled.end_pos += (contig_size-diff)
+        df_seqids = pd.concat([df_seqids_circled, df_seqids_same])
         window_start -= diff
-        df_seqids.end_pos += (df_seqids.end_pos<window_start)*(contig_size-df_seqids.end_pos)
         window_stop = contig_size
     else:
         df_seqids = df_seqids[(df_seqids.end_pos>window_start)]
         df_seqids = df_seqids[(df_seqids.start_pos < window_stop)]
 
-    if len(df_seqids)!= len(df_seqids["seqfeature_id"].unique()):
+    if len(df_seqids)!=len(df_seqids["seqfeature_id"].unique()):
         # This case may happen when a gene overlaps the break of a circular contig.
         # The location of this gene will be coded as join(...,...) in the gbk file
         # and stored as two separate genes with the same seqid in BioSQL.
@@ -1732,29 +1738,6 @@ def locusx_genomic_region(db, seqid, window):
     all_infos = infos.join(cds_type)
     all_infos = all_infos.join(df_seqids)
     return all_infos, window_start, window_stop
-
-
-def locusx_RNA(db, seqid, is_pseudogene):
-    hsh_infos = db.get_proteins_info([seqid], to_return=["locus_tag", "gene", "product"],
-            inc_non_CDS=True, inc_pseudo=True)
-    hsh_loc = db.get_gene_loc([seqid])
-    organism = db.get_organism([seqid])
-
-    locus_tag, gene, product = hsh_infos[seqid]
-    if gene is None:
-        gene = "-"
-    strand, start, stop = hsh_loc[seqid]
-    return {
-        "locus_tag": locus_tag,
-        "gene": gene,
-        "prot": product,
-        "start": start,
-        "end": stop,
-        "strand": strand,
-        "nucl_length": stop-start,
-        "organism": organism[seqid]
-    }
-
 
 def tab_get_refseq_homologs(db, seqid):
     refseq_hits = db.get_refseq_hits([seqid]).set_index("match_id")
@@ -1792,9 +1775,9 @@ def locusx(request, locus=None, menu=True):
     region_js = genomic_region_df_to_js(all_infos, wd_start, wd_end)
     genomic_region_ctx = {"genomic_region": region_js,
             "window_size": 8000*2}
+    general_tab = tab_general(db, seqid)
 
     if feature_type!="CDS" or is_pseudogene:
-        ctx_RNA = locusx_RNA(db, seqid, is_pseudogene)
         if is_pseudogene:
             feature_type = "Pseudogene"
         context = {
@@ -1803,12 +1786,15 @@ def locusx(request, locus=None, menu=True):
             "seq": sequence,
             "feature_type": feature_type,
             "page_title": page_title,
-            **ctx_RNA,
+            **general_tab,
             **genomic_region_ctx
         }
         return render(request, 'chlamdb/locus.html', my_locals(context))
 
-    gene_loc = db.get_gene_loc([seqid])
+    translation = db.get_translation(seqid)
+
+    # a bit of an hack
+    general_tab["length"] = len(translation)
     og_inf   = db.get_og_count([seqid], search_on="seqid")
     og_id    = int(og_inf.loc[seqid].orthogroup) # need to convert from numpy64 to int
     og_annot = db.get_genes_from_og(orthogroups=[og_id],
@@ -1820,8 +1806,6 @@ def locusx(request, locus=None, menu=True):
     og_size = n_homologues+1
     og_num_genomes = len(set(all_org.values()))
 
-    translation = db.get_translation(seqid)
-    general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
     if n_homologues>1:
         og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
         homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)

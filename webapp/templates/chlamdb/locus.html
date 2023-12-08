@@ -215,32 +215,39 @@
                                           <td>{{locus_tag}}</td>
                                       </tr>
 
-									  <tr>
-										  <th> Feature type </th>
-										  <td> {{feature_type}} </td>
-									  </tr>
+				  <tr>
+					  <th> Feature type </th>
+					  <td> {{feature_type}} </td>
+				  </tr>
 
                                       <th>Gene</th>
                                           <td>{{gene}}</td>
                                       </tr>
 
-									  <tr>
-									  <th>Product</th>
-										  <td>{{prot}}</td>
-									  </tr>
+				  <tr>
+				  <th>Product</th>
+					  <td>{{prot}}</td>
+				  </tr>
 
                                       <tr>
                                           <th>Location</th>
-                                          <td>{{start}} - {{end}} (strand: {{strand}})</td>
+					  <td>
+					  {% for pos in gene_pos %}
+					    {{pos.0}} - {{pos.1}} (strand: {{pos.2}})
+					    {% if gene_pos|length > 1 %}
+					      <br>
+					    {% endif %}
+					  {% endfor %}
+					  </td>
                                       </tr>
 
                                       <tr>
                                           <th>Length</th>
-										  {% if sequence_type == "CDS" %}
-											  <td>{{nucl_length}} (nucleotides) / {{length}} (amino acids)</td>
-										  {% else %}
-											  <td>{{nucl_length}} (nucleotides)</td>
-										  {% endif %}
+					  {% if sequence_type == "CDS" %}
+					    <td>{{nucl_length}} (nucleotides) / {{length}} (amino acids)</td>
+					  {% else %}
+					    <td>{{nucl_length}} (nucleotides)</td>
+					  {% endif %}
                                       </tr>
                                       
                                   </table>
