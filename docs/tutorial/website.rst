@@ -83,7 +83,7 @@ This block of analyses can widely change based on the settings defined during th
 It allows the user to compare several aspects of selected genomes and perform comparative analyses for each annotation: a) Orthogroups are identified by default, and differently, the user can optionally identify b) KEGG orthologs, c) COG cluster, and d) PFAM domains along the genomes during the database generation.
 
 Before proceeding here a brief summary of the mentioned annotations and the link to their databases:
-    * **Kegg**: Kegg annotations refer to the Kyoto Encyclopedia of Genes and Genomes (KEGG_). The genome annotation is composed of two aspects: a) KO assignemnt (KO is the identifier given to a functional ortholog defined from experimentally characterized genes and protein in specific organism), b) KEGG mapping where each KO is stored in a PATHWAY or MODULE identified based on molecular networks. This database provides a highly curated and repliable description of the metabolic pathway of the annotated genomes.
+    * **Kegg**: Kegg annotations refer to the Kyoto Encyclopedia of Genes and Genomes (KEGG_). The genome annotation is composed of two aspects: a) KO assignemnt (KO is the identifier given to a functional ortholog defined from experimentally characterized genes and protein in specific organism), b) KEGG mapping where each KO is stored in a PATHWAY or MODULE identified based on molecular networks. This database provides a highly curated and reliable description of the metabolic pathway of the annotated genomes.
     * **COG**: COG annotations refer to the database of Cluster of Orthologous Genes (COGs_). In this database each COG is assigned to a functional category including metabolic, signal transduction,repair and other pathways. This database allows an easy comparison of organisms based on their preference for certain pathways.
     * **Pfam**: Pfam annotations refer to the Pfam_ database used to identify protein families and domains. Due to the nature of proteins as combinations of fixed structure, this database is based on the idea that the identification of domains wihin proteins can provide insights to discover their function.
 
@@ -98,7 +98,7 @@ List of analyses:
 
 | **1. Detailed comparison**: identify those orthogroups uniformly present in a set of genomes of interest and, optionally absent in others. Flexibility can be given to include orthogroups that, although present in some of the selected genomes, are not uniformly present in all and are missing in some ('Missing data' parameter).
 
-    * **1A.** Summary of the selected settings for the comparative analysis: the orthgroup of 4 genomes are compared, no orthogroup will be exclused if present in other genomes, orthogroup that are present in 3 out of the 4 selected genomes are also reported.
+    * **1A.** Summary of the selected settings for the comparative analysis: the orthgroup of 4 genomes are compared, no orthogroup will be excluded if present in other genomes, orthogroup that are present in 3 out of the 4 selected genomes are also reported.
     * **1B.** List of identified orthogroups, description and distribution in the selected genomes: clicking on a Orthogroup entry redirects the user to the *Orthogroup annotation summary* page.
     * **1C.** List of locus tags per each orthogroup and genome: clicking on a Orthogroup entry redirects the user to the ``Protein annotation view`` page.
 
@@ -137,9 +137,9 @@ Additional plots for Kegg Orthologs and Cluster of Orthologous Groups (COGs)
 
 As anticipated, the comparative analyses of Kegg and COGs come with additional plots:
 
-**1. Barchart of the distribution of the entries annotated with a COG/KEGG category of selected genomes**. It allows the evaluation of potential increment or descrement of entries known to be relevant for a certain function in some genomes of interest (**Fig. 6**).
+**1. Barchart of the distribution of the entries annotated with a COG/KEGG category of selected genomes**. It allows the evaluation of potential increment or decrement of entries known to be relevant for a certain function in some genomes of interest (**Fig. 6**).
 
-Here a focus on the COG 'Cell motility' category is rereserved. *Klebsiella variicola* shows fewer entries annotated in the 'Cell mobility' COG category than *Enterobacter soli, Enterobacter ausbriae*, and *Enterobacter ludvigii*.
+Focusing on the COG 'Cell motility' category, we see that *Klebsiella variicola* has fewer annotations of that category than *Enterobacter soli, Enterobacter ausbriae*, and *Enterobacter ludvigii*.
 
 .. figure:: ../img/COGs_overview_bar_o.svg
     :figclass: align-center
@@ -192,12 +192,12 @@ The operon is highly conserved in the Enterobacter genomes, but absent in *Klebs
 Metabolism
 --------------------------------
 This section provides the user with a set of analyses useful to discover the metabolism of given genomes based on the KEGG Orthology database.
-It relies on the functional orthologs of the KO database which are categorized in molecular interaction, reaction and relation networks, named *KEGG pathay maps*, and functional units of gene sets, named *Kegg modules* associated with metabolism.
+It relies on the functional orthologs of the KO database which are categorized in molecular interaction, reaction and relation networks, named *KEGG pathway maps*, and functional units of gene sets, named *Kegg modules* associated with metabolism.
 
 Kegg maps
 =============
 With this analysis the **Kegg pathways** of a genome of interest can be discovered, which Kegg orthologs of the pathway are present and compare their distribution in the other genomes.
-In the following example (**Fig. 9**), the Kegg pathways present in the *Enterobacter Soli* genome are listed (235 pathways in total) and a heatpat of the Ko of the flagellar pathways is shown. In this page a direct link to the official Kegg page is provided to evaluate the state of composition of this Kegg map (in red the KOs present in *Enterobacter soli*.
+In the following example (**Fig. 9**), the Kegg pathways present in the *Enterobacter Soli* genome are listed (235 pathways in total) and a heatmap of the Ko of the flagellar pathways is shown. In this page a direct link to the official Kegg page is provided to evaluate the state of composition of this Kegg map (in red the KOs present in *Enterobacter soli*.
 
 .. figure:: ../img/Metab_kegg_maps_o.svg
     :figclass: align-center
@@ -244,7 +244,7 @@ In the example reported (**Fig. 12**), the page displays the locus tag ENTAS_RS1
 
 | **1**: A summary of the locus tag name, its size, the gene name if annotated and gene product are reported.
 | **2**: The Orthologous group to which the locus tag is assigned, the number of homologs of that orthogroup, the number of genomes in which the orthogroup is present.
-| **3**: the genomic region around the locus tag of interest. This plot provides an interactive way to discover of the flancking region of the target.
+| **3**: the genomic region around the locus tag of interest. This plot provides an interactive way to discover of the flanking region of the target.
 | **4**: Box with useful functional and metabolic annotations (adatpted to the requested annotations in the config file) 
 
 .. figure:: ../img/Locus_tag_filL_overview_m_o.svg
@@ -262,13 +262,13 @@ These analyses better characterize the locus whether the other annotations are n
     **Figure 13: Locus tag page plots**. A: phylogenetic distribution of the orthogroup; B: Homologs of ENTAS_RS13815 locus tag identified in RefSeq; C: Homologs of ENTAS_RS13815 locus tag identified in SwissProt; D: Orthogroup phylogeny of group_2742 with Pfam domains annotation; E: Phylogeny of the orthogroup identified in the set of genomes plus the addition of the three best RefSeq hits of locus tag ENTAS_RS13815.
 
 
-**NOTE**: In the boxes with Kegg, COGs, and Pfam annotations, you will be redirected to their explanatory overview pages (3 ouputs, all similar, with link to external sources, occurences in proteins in the orthologous groups, then list of locus tags with that annot in all the genomes of the database, phylogeny of the dataset annotated with the copis of hits for that annotation and their distribution in the orthologous groups --- MAYBE PUT AN EXAMPLE OF THAT PAGE FOR ONE ANNOTATION  )
+**NOTE**: In the boxes with Kegg, COGs, and Pfam annotations, you will be redirected to their explanatory overview pages (3 ouputs, all similar, with link to external sources, occurences in proteins in the orthologous groups, then list of locus tags with that annotation in all the genomes of the database, phylogeny of the dataset annotated with the number of hits for that annotation and their distribution in the orthologous groups --- MAYBE PUT AN EXAMPLE OF THAT PAGE FOR ONE ANNOTATION  )
 
 -----------------------------
 Orthogroup annotation summary
 -----------------------------
 
-This page represents several overlaps with the ``Protein annotation view`` page, however this is focused on the orthogroup whether on a single member and its homologs. Indeed, it may occur that the homologs of a locus tag are split within more orthogroups.   
+This page represents several overlaps with the ``Protein annotation view`` page, however this is focused on the orthogroup rather than on a single member and its homologs. Indeed, it may occur that the homologs of a locus tag are split within more orthogroups.
 Of interest, in this page the alignment between the members of the orthogroup is available and amino acid substitutions can be easily observed (Fig.14 A)
 
 .. figure:: ../img/Orthogroup_page_overview_align_m_o.svg
