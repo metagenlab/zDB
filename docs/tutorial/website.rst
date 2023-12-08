@@ -14,7 +14,8 @@ HOME page
 --------------------------------
 In the HOME page the user has an overview of the genomes included in the database through the 'Genome' and 'Phylogeneny' sections (see the paragraph below) and the status of the database. Indeed, a summary reports which analyses are available, and which have not been included in the generation of the database.
 Note that it is necessary to re-run the pipeline to incude the new analyses if wished (-resume argument - see documentation)
-| Direct access to the available analyses is provided in:
+
+Direct access to the available analyses is provided in:
     * the home page
     * the left menu to facilitate the navigation
 
@@ -28,7 +29,8 @@ The phylogeny, built on concatenated single copy orthologs with FastTree, shows 
 Homology search - Blast
 --------------------------------
 Perform a blast search of one or more sequences of interest against one or more genomes of the database.
-| Either an amino-acid or a nucleotide sequence can be given as input.
+
+Either an amino-acid or a nucleotide sequence can be given as input.
 
 Set up:
     * the type of homology search according to the input file:
@@ -56,7 +58,7 @@ Through this analysis it is possible to identify whether any of these genes is p
 | **B**. info table about the hits (genome, contig/locus_tag, alignment scores and identity - Note that the locus tags are clickable and linked to the ``Protein annotation view``),
 | **C**. Alignment of the query and the sequence of a hit selected in table B.
 
-| Additionally, the generated annotated phylogeny facilitate the interpretation of their distribution and conservation along all the genomes. As shown in **Fig.2 - Result 2**, four genomes carry all the investigated genes, fourteen genomes do not carry them, while the remaining ones have an incomplete set. 
+Additionally, the generated annotated phylogeny facilitate the interpretation of their distribution and conservation along all the genomes. As shown in **Fig.2 - Result 2**, four genomes carry all the investigated genes, fourteen genomes do not carry them, while the remaining ones have an incomplete set.
 
  
 .. figure:: ../img/blastp_result1.svg
@@ -117,6 +119,7 @@ In **Fig. 4**:
     **Figure 4.** Orhogroup comparison analyses of *Enterobacter soli, Enterobacter ausbriae, Enterobacter ludvigii, and Klebsiella variicola*.
 
 | **5.Pan/Core genome plot**: Graphical representation of the pan- and core- genome of a subset of genomes or of the uploaded dataset (**Fig. 5**).
+
 This analysis generates three plots that display the content and conservation of Orthologous groups in selected genomes of interest.
 
     * **A**: this plot shows the number of all Orthologous groups present in a set of genomes. If the green curve reaches a plateau we can talk about 'closed pangenome' since no new Orthogroups are carried by additional genomes, on the contrary if the increment of the curve grows when looking at other genomes we can talk about 'open pangenome'.
@@ -130,7 +133,7 @@ This analysis generates three plots that display the content and conservation of
     **Figure 5.** Accumulation/rarefaction plots.
 
 Additional plots for Kegg Orthologs and Cluster of Orthologous Groups (COGs)
-=============
+============================================================================
 
 As anticipated, the comparative analyses of Kegg and COGs come with additional plots:
 
@@ -143,7 +146,7 @@ Here a focus on the COG 'Cell motility' category is rereserved. *Klebsiella vari
 
     **Figure 6.** COGs comparison page. Barchart for each COG category representing the number of entries identified in each genome. The 'Cell motility' category is highligthed in green to stress the differences between the four selected genomes. Analysis 2 and 3 are reported in Fig. 7.
 
-**2 and 3. Heatmaps of the COGs along all the genomes expressed as fequency or number of identified entries ** (These plots are available only for COGs)
+**2 and 3. Heatmaps of the COGs along all the genomes expressed as fequency or number of identified entries** (These plots are available only for COGs)
 | Here the focus is again on the COG 'Cell motility' category where it emerges that *Klebsiella variicola* has 67 loci annotated in this category that represents 1.29% of total number of its loci, while *Enterobacter soli* has more than the double of its loci annotated in this category, 2.76% of them.
 
 .. figure:: ../img/COGs_heatmaps_o.svg
@@ -156,7 +159,8 @@ Here a focus on the COG 'Cell motility' category is rereserved. *Klebsiella vari
 Genome alignments
 --------------------------------
 This set of analyses allow the user to align the genomes and check the conservation of specific regions of interest.
-| Two plots can be generated:
+
+Two plots can be generated:
     * circos
     * Plot region
 
@@ -219,7 +223,7 @@ Three types of search are available:
 **NOTE**: *Search 1 and 3 come with a link to the ``Kegg module overview`` page (see below).*
    
 Kegg module overview page
-=============
+=========================
 This page is accessible clicking on the Kegg module entry from the 'Metabolism/Kegg module' analysis or from the 'Locus tag overview page'. It gives access to the list of Ko entries that form the Kegg module of interest, and provides an indication of the completeness of the Kegg module within the genomes of the database.
 
 The reported example is based on the KO entries of the kegg module number M00049 which describes the Adenine ribonucleotide biosynthesis ( IMP => ADP,ATP), and it is part of the *Nucleotide metabolism* category and *Purine metabolism* subcategory. Four genes are required to have a complete module, and one of them can be one among a set of four redundant genes. Among the genomes of the dataset, all except three have a complete module.
@@ -272,12 +276,13 @@ Of interest, in this page the alignment between the members of the orthogroup is
 
     **Figure 14: Overview of orthogroup 2742 of fliL gene of *Enterobacter soli* and protein alignment of its members.**
 
------------------------------
+------------------------------
 KO/COG/Pfam annotation summary
------------------------------
+------------------------------
 A summary page of each COG, Pfam, and Kegg entry is accessible in the web interface through the analysis in the ``Comparison`` section pages, through the ``Protein annotation view`` page and even from the ``Metabolism`` section pages.
 Each page provides a complete overview of the investigated annotation within the database and it comes also with external links.
-It is organized in three sections that can be visualized in **Fig. 15 ** where Pfam domain PF03748 is reported:
+
+It is organized in three sections that can be visualized in **Fig. 15** where Pfam domain PF03748 is reported:
     * **General**: It provides how many loci are characterized with that annotation combining the info with the Orthogroups classification.
     * **Protein list**: list of all locus tags with that annotation
     * **Profile**: phylogeny annotated with an heatmap of the entries with that annotation and their distribution into Orthogroups
@@ -285,7 +290,7 @@ It is organized in three sections that can be visualized in **Fig. 15 ** where P
 .. figure:: ../img/Pfam_overview_page_o.svg
     :figclass: align-center
 
-    **Figure 15: Overview of Pfam domain PF03748.
+    **Figure 15: Overview of Pfam domain PF03748.**
 
 --------------------------------
 Search bar
