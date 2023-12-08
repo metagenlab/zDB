@@ -5,6 +5,7 @@ from Bio import Entrez
 
 Entrez.email = "trestan.pillonel@unil.ch"
 
+
 def pmid2abstract_info(pmid):
     from Bio import Medline
     handle = Entrez.efetch(db="pubmed", id=pmid, rettype="medline",
@@ -21,17 +22,21 @@ def pmid2abstract_info(pmid):
 
     return pmid_data
 
+
 def doi2abstract_info():
     pass
 
+
 def sequence_accession2abstract_info():
     pass
+
 
 if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i",'--pmid_id', default=False, type=str, help="pubmed id (mpid)")
+    parser.add_argument("-i", '--pmid_id', default=False,
+                        type=str, help="pubmed id (mpid)")
 
     args = parser.parse_args()
     pmid2abstract_info(args.pmid_id)

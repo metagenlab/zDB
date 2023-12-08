@@ -21,8 +21,10 @@ from collections import defaultdict
 def get_og_id(string):
     return int(string[2:])
 
+
 def get_ko_id(string):
     return int(string[1:])
+
 
 def parse_orthofinder_output_file(output_file):
     protein_id2orthogroup_id = {}
@@ -41,7 +43,7 @@ def parse_orthofinder_output_file(output_file):
 
 def is_plasmid(record):
     # it allows to catch malformated genbanks that do not
-    # specify plasmids correctly. An alternative way would be 
+    # specify plasmids correctly. An alternative way would be
     # to just ignore it.
     if "plasmid" in record.description:
         return True
@@ -55,7 +57,7 @@ def is_plasmid(record):
 def load_gbk(gbks, args, db_file):
     db = db_utils.DB.load_db(db_file, args)
     data = []
-     
+
     bioentry_plasmids = []
     for gbk in gbks:
         records = [i for i in SeqIO.parse(gbk, 'genbank')]
@@ -66,10 +68,10 @@ def load_gbk(gbks, args, db_file):
             bioentry_id = db.server.adaptor.last_id("bioentry")
 
             # this assumes that the taxon was not already in the database
-            # as long as we enforce the "unique organism per file" in check_gbk, 
+            # as long as we enforce the "unique organism per file" in check_gbk,
             # this should work
             taxon_id = db.server.adaptor.last_id("taxon")
-            bioentry_plasmids.append( (bioentry_id, is_plasmid(record)))
+            bioentry_plasmids.append((bioentry_id, is_plasmid(record)))
 
         # hack to link the bioentry to the filename, useful later for parsing and
         # storing checkM results in the dtb.
@@ -86,17 +88,18 @@ def load_orthofinder_results(orthofinder_output, args, db_file):
     db = db_utils.DB.load_db(db_file, args)
     hsh_prot_to_group = parse_orthofinder_output_file(orthofinder_output)
     hsh_locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id(only_CDS=True)
-    hits_to_load = [(hsh_locus_to_feature_id[locus], group) for locus, group in hsh_prot_to_group.items()]
+    hits_to_load = [(hsh_locus_to_feature_id[locus], group)
+                    for locus, group in hsh_prot_to_group.items()]
     db.load_og_hits(hits_to_load)
     db.set_status_in_config_table("orthology", 1)
     db.commit()
 
 
-# will need to rewrite it using iterators instead of 
+# will need to rewrite it using iterators instead of
 # copying the whole list
 def chunks(lst, n):
     for i in range(0, len(lst), n):
-        yield lst[i:i+n]
+        yield lst[i:i + n]
 
 
 def get_prot(refseq_file, hsh_accession):
@@ -105,20 +108,20 @@ def get_prot(refseq_file, hsh_accession):
 
     for record in SeqIO.parse(refseq_file, "fasta"):
         accession = remove_accession_version(record.name)
-        if not accession in hsh_accession:
+        if accession not in hsh_accession:
             continue
         hsh_accession[accession] = record
 
 
 def get_taxids(ncbi_tax_file, hsh_accession_to_taxid):
     line_iter = open(ncbi_tax_file, "r")
-    
+
     # pass header
     next(line_iter)
     for line in open(ncbi_tax_file, "r"):
         end_of_accession = line.index("\t")
         accession = line[:end_of_accession]
-        if not accession in hsh_accession_to_taxid:
+        if accession not in hsh_accession_to_taxid:
             continue
         tokens = line.split("\t")
         hsh_accession_to_taxid[accession] = int(tokens[2])
@@ -141,15 +144,15 @@ def parse_record(record):
     end_tax_index = description.index(']')
     # also skip the white spaces
 
-    prot_descr = description[end_accession_index+1:beg_tax_index-1]
-    organism = description[beg_tax_index+1:end_tax_index]
+    prot_descr = description[end_accession_index + 1:beg_tax_index - 1]
+    organism = description[beg_tax_index + 1:end_tax_index]
     return prot_descr, organism
 
 
 def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     db = db_utils.DB.load_db(db_file, args)
-    columns=["str_hsh", "accession", "pident", "length", "mismatch", "gapopen",
-            "qstart", "qend", "sstart", "send", "evalue", "bitscore"]
+    columns = ["str_hsh", "accession", "pident", "length", "mismatch", "gapopen",
+               "qstart", "qend", "sstart", "send", "evalue", "bitscore"]
 
     print("Reading tsvs", flush=True)
     all_data = pd.DataFrame(columns=columns)
@@ -159,7 +162,8 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     all_data.accession = all_data.accession.map(remove_accession_version)
     all_data.str_hsh = all_data.str_hsh.map(simplify_hash)
 
-    hsh_accession_to_record = { accesion: None for accesion in all_data.accession.tolist() }
+    hsh_accession_to_record = {
+        accesion: None for accesion in all_data.accession.tolist()}
 
     print("Extracting records for refseq", flush=True)
     refseq = args["refseq_db"] + "/merged.faa"
@@ -184,8 +188,8 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     all_data["count"] = all_data.groupby("str_hsh").cumcount()
     all_data["match_id"] = all_data["accession"].map(hsh_accession_to_match_id)
     to_load = all_data[["count", "str_hsh", "match_id", "pident",
-        "length", "mismatch", "gapopen", "qstart", "qend", "sstart",
-        "send", "evalue", "bitscore"]]
+                        "length", "mismatch", "gapopen", "qstart", "qend", "sstart",
+                        "send", "evalue", "bitscore"]]
     db.load_refseq_hits(to_load.values.tolist())
     db.create_refseq_hits_indices()
     db.commit()
@@ -203,7 +207,7 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
         to_keep = []
         for idx, data in refseq_matches.iterrows():
             if data.accession in locus_set:
-                # if the genome was downloaded, it is likely that the same 
+                # if the genome was downloaded, it is likely that the same
                 # protein will be present in both og and refseq hits
                 continue
             to_keep.append(hsh_accession_to_record[data.accession])
@@ -216,14 +220,15 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     db.commit()
 
 
-# This is a hack to be able to store 64bit unsigned values into 
+# This is a hack to be able to store 64bit unsigned values into
 # sqlite3's 64 signed value. Values higher than 0x7FFFFFFFFFFFFFFF could not
 # be inserted into sqlite3 if unsigned as sqlite3 integers are 64bits signed integer.
 def hsh_from_s(s):
     v = int(s, 16)
     if v > 0x7FFFFFFFFFFFFFFF:
-        return v-0x10000000000000000
+        return v - 0x10000000000000000
     return v
+
 
 def load_seq_hashes(args, nr_mapping, db_file):
     db = db_utils.DB.load_db(db_file, args)
@@ -244,7 +249,7 @@ def load_seq_hashes(args, nr_mapping, db_file):
     to_load = []
     for hsh_64b, seqids in to_load_hsh_to_seqid.items():
         for seqid in seqids:
-            to_load.append( (hsh_64b, seqid) )
+            to_load.append((hsh_64b, seqid))
 
     db.create_seq_hash_to_seqid(to_load)
     db.commit()
@@ -281,8 +286,8 @@ def load_cog(params, filelist, db_file, cdd_to_cog):
     data = []
     for chunk in filelist:
         cogs_hits = pd.read_csv(chunk, sep="\t", header=None,
-            names=["seq_hsh", "cdd", "pident", "length", "mismatch", "gapopen", "qstart",
-                "qend", "sstart", "send", "evalue", "bitscore"])
+                                names=["seq_hsh", "cdd", "pident", "length", "mismatch", "gapopen", "qstart",
+                                       "qend", "sstart", "send", "evalue", "bitscore"])
 
         # Select only the best hits: using pandas clearly is an overkill here
         min_hits = cogs_hits.groupby("seq_hsh")[["cdd", "evalue"]].min()
@@ -302,7 +307,7 @@ def load_cog(params, filelist, db_file, cdd_to_cog):
 # OGN_nr_hits_mafft.nwk. To retrieve the orthogroup, parse the filename
 # and convert it to int.
 #
-# Note2: from a database design perspective, may be worth to put all the 
+# Note2: from a database design perspective, may be worth to put all the
 # phylogenies in the same table (BBH/gene and reference) and reference them
 # on the orthogroup id and/or a term_id
 def load_BBH_phylogenies(kwargs, lst_orthogroups, db_file):
@@ -314,7 +319,7 @@ def load_BBH_phylogenies(kwargs, lst_orthogroups, db_file):
     for tree in lst_orthogroups:
         t = ete3.Tree(tree)
         og_id = int(tree.split("_")[0])
-        data.append( (og_id, t.write()) )
+        data.append((og_id, t.write()))
     db.create_BBH_phylogeny_table(data)
     db.set_status_in_config_table("BBH_phylogenies", 1)
     db.commit()
@@ -338,7 +343,8 @@ def load_gene_phylogenies(kwargs, og_summary, lst_orthogroups, db_file):
         og, is_core, og_size, num_genomes = line.split("\t")
         og_id = int(og.split("_")[0][2:])
         newick = hsh_ogs.get(og_id, "")
-        data.append((og_id, newick, int(is_core), int(og_size), int(num_genomes)))
+        data.append((og_id, newick, int(is_core),
+                    int(og_size), int(num_genomes)))
 
     db.create_gene_phylogeny_table(data)
     db.set_status_in_config_table("gene_phylogenies", 1)
@@ -366,7 +372,7 @@ def load_reference_phylogeny(kwargs, tree, db_file):
 def get_gen_stats(gbk_list):
     # NOTE: for now, the coding density do not take overlapping genes
     # into account. Depending on how many of them are present in a genome,
-    # this may cause an overestimation of the coding density, as each 
+    # this may cause an overestimation of the coding density, as each
     # CDS will be accounted for separately (and a same region will be counted
     # several times).
 
@@ -378,7 +384,7 @@ def get_gen_stats(gbk_list):
         cds_length = 0
         for record in SeqIO.parse(gbk_file, "genbank"):
             ttl_length += len(record)
-            gc_cum += SeqUtils.GC(record.seq)*len(record)
+            gc_cum += SeqUtils.GC(record.seq) * len(record)
             for fet in record.features:
                 if fet.type in ["CDS", "tmRNA", "rRNA", "ncRNA", "tRNA"]:
                     if "pseudo" in fet.qualifiers:
@@ -387,10 +393,10 @@ def get_gen_stats(gbk_list):
 
                     # allow to take compoundlocation into account
                     for part in location.parts:
-                        cds_length += part.end-part.start
+                        cds_length += part.end - part.start
         gbk_shortened = os.path.splitext(gbk_file)[0]
-        hsh_gen_stats[gbk_shortened] = (float(gc_cum)/ttl_length,
-                float(cds_length)/ttl_length, ttl_length)
+        hsh_gen_stats[gbk_shortened] = (float(gc_cum) / ttl_length,
+                                        float(cds_length) / ttl_length, ttl_length)
     return hsh_gen_stats
 
 
@@ -407,26 +413,29 @@ def load_genomes_info(kwargs, gbk_list, checkm_results, db_file):
         completeness = row.Completeness
         contamination = row.Contamination
         gc, coding_density, length = hsh_taxid_to_gen_stats[row["Bin Id"]]
-        values = [taxon_id, completeness, contamination, gc, length, coding_density]
+        values = [taxon_id, completeness,
+                  contamination, gc, length, coding_density]
         data.append(values)
-        
+
     db.load_genomes_info(data)
     db.set_status_in_config_table("genome_statistics", 1)
     db.commit()
+
 
 PfamEntry = namedtuple("PfamEntry", ["accession", "description"])
 
 
 def parse_pfam_entry(file_iter):
-    accession, description = None, None 
+    accession, description = None, None
     for line in file_iter:
         if line.startswith("//"):
             yield PfamEntry(accession=accession, description=description)
             accession, description = None, None
         if line.startswith("#=GF AC"):
-            accession_offset = len("#=GF AC   PF") 
+            accession_offset = len("#=GF AC   PF")
             accession_length = 5
-            accession = int(line[accession_offset:accession_offset+accession_length])
+            accession = int(
+                line[accession_offset:accession_offset + accession_length])
         elif line.startswith("#=GF DE"):
             description = line[len("#=GF DE   "):-1]
 
@@ -439,7 +448,7 @@ def load_pfam(params, pfam_files, db, pfam_def_file):
     for pfam in pfam_files:
         entries = []
         for line in open(pfam, "r"):
-            if len(line)<len("CRC-") or line[0:len("CRC-")]!="CRC-":
+            if len(line) < len("CRC-") or line[0:len("CRC-")] != "CRC-":
                 continue
 
             tokens = line.split()
@@ -457,7 +466,7 @@ def load_pfam(params, pfam_files, db, pfam_def_file):
     pfam_entries = []
     pfam_def_file_iter = open(pfam_def_file, "r")
     for entry in parse_pfam_entry(pfam_def_file_iter):
-        if not entry.accession in pfam_ids:
+        if entry.accession not in pfam_ids:
             continue
         pfam_entries.append([entry.accession, entry.description])
     db.create_pfam_def_table(pfam_entries)
@@ -475,6 +484,7 @@ class SwissProtIdCount(defaultdict):
         self[key] = self.id_count
         self.id_count += 1
         return tmp
+
 
 def parse_swissprot_entry(description):
     tokens = iter(description.split())
@@ -513,7 +523,7 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta):
     hsh_swissprot_id = SwissProtIdCount()
     db.create_swissprot_tables()
 
-    # Note: this is not really scalable to x genomes, as 
+    # Note: this is not really scalable to x genomes, as
     # it necessitates to keep the prot id in memory
     # may need to process the blast results in batch instead (slower but
     # spares memory).
@@ -526,7 +536,7 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta):
             _, prot_id, _ = parse_swissprot_id(prot_id)
             db_prot_id = hsh_swissprot_id[prot_id]
             data.append((hsh, db_prot_id, float(e), int(float(score)),
-                int(float(perid)), int(n_gap), int(leng)))
+                         int(float(perid)), int(n_gap), int(leng)))
         db.load_swissprot_hits(data)
 
     swiss_prot_defs = []
@@ -535,8 +545,10 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta):
         if prot_id not in hsh_swissprot_id:
             continue
         db_prot_id = hsh_swissprot_id[prot_id]
-        descr, taxid, org, gene, pe, version = parse_swissprot_entry(record.description)
-        swiss_prot_defs.append((db_prot_id, prot_id, descr, taxid, org, gene, pe))
+        descr, taxid, org, gene, pe, version = parse_swissprot_entry(
+            record.description)
+        swiss_prot_defs.append(
+            (db_prot_id, prot_id, descr, taxid, org, gene, pe))
     db.load_swissprot_defs(swiss_prot_defs)
     db.set_status_in_config_table("BLAST_swissprot", 1)
     db.commit()
@@ -559,7 +571,8 @@ def load_KO(params, ko_files, db_name):
             # ignore all but the best hits
             if tokens[0] != "*":
                 continue
-            crc_raw, ko_str, thrs_str, score_str, evalue_str, *descr = tokens[1:]
+            crc_raw, ko_str, thrs_str, score_str, evalue_str, * \
+                descr = tokens[1:]
             hsh = simplify_hash(crc_raw)
             if hsh == curr_hsh:
                 # skip the entries that were classified as significant, but
@@ -584,12 +597,12 @@ def load_module_completeness(params, db_name):
 
     db.create_module_completeness_table()
 
-    for taxid,  _ in all_genomes.items():
+    for taxid, _ in all_genomes.items():
         complete_modules = []
         ko_count = db.get_ko_hits([taxid])
 
         ko_list = ko_count.index.unique().tolist()
-        if len(ko_list)==0:
+        if len(ko_list) == 0:
             continue
 
         modules = db.get_ko_modules(ko_list, as_pandas=True)
@@ -597,7 +610,7 @@ def load_module_completeness(params, db_name):
 
         for module_id, descr, definit, _, _ in module_def:
             parser = KO_module.ModuleParser(definit)
-            ko_set = {ko:1 for ko in ko_list}
+            ko_set = {ko: 1 for ko in ko_list}
             expr_tree = parser.parse()
             if expr_tree.get_n_missing(ko_set) == 0:
                 complete_modules.append((module_id, taxid))
@@ -608,28 +621,31 @@ def load_module_completeness(params, db_name):
 def format_cog(cog_n):
     if pd.isna(cog_n):
         return None
-    return f"COG{int(cog_n):04}"
+    return f"COG{int(cog_n): 04}"
+
 
 def format_ko(ko_n):
     if pd.isna(ko_n):
         return None
-    return f"K{int(ko_n):05}"
+    return f"K{int(ko_n): 05}"
+
 
 def format_og(og_n):
     return f"group_{int(og_n)}"
 
+
 def format_pfam(pfam_n):
     if pd.isna(pfam_n):
         return None
-    return f"PF{int(pfam_n):05}"
+    return f"PF{int(pfam_n): 05}"
 
 
-def  format_module(mod):
-    return f"M{mod:05d}"
+def format_module(mod):
+    return f"M{mod: 05d}"
 
 
 def format_pathway(pat):
-    return f"map{pat:05d}"
+    return f"map{pat: 05d}"
 
 
 def setup_chlamdb_search_index(params, db_name, index_name):
@@ -645,7 +661,7 @@ def setup_chlamdb_search_index(params, db_name, index_name):
 
     for taxid, data in genomes.iterrows():
         all_infos = db.get_proteins_info([taxid], search_on="taxid",
-                as_df=True, inc_non_CDS=True, inc_pseudo=True)
+                                         as_df=True, inc_non_CDS=True, inc_pseudo=True)
         ogs = db.get_og_count(all_infos.index.tolist(), search_on="seqid")
         all_infos = all_infos.join(ogs)
         for seqid, data in all_infos.iterrows():
@@ -670,34 +686,33 @@ def setup_chlamdb_search_index(params, db_name, index_name):
 
             organism = genomes.loc[taxid].description
             index.add(locus_tag=locus_tag,
-                    name=gene, description=product, organism=organism, 
-                    entry_type = search_bar.EntryTypes.Gene, og = og)
+                      name=gene, description=product, organism=organism,
+                      entry_type=search_bar.EntryTypes.Gene, og=og)
 
     if has_cog:
         cog_data = db.get_cog_summaries(cog_ids=None, only_cog_desc=True)
         for cog, (func, descr) in cog_data.items():
             index.add(name=format_cog(cog),
-                    description=descr, entry_type=search_bar.EntryTypes.COG)
+                      description=descr, entry_type=search_bar.EntryTypes.COG)
 
     if has_ko:
         ko_data = db.get_ko_desc(ko_ids=None)
         for ko, descr in ko_data.items():
             index.add(name=format_ko(ko), description=descr,
-                    entry_type=search_bar.EntryTypes.KO)
+                      entry_type=search_bar.EntryTypes.KO)
         mod_data = db.get_modules_info(ids=None, search_on=None)
         for mod_id, mod_desc, _, _, _ in mod_data:
             index.add(name=format_module(mod_id), description=mod_desc,
-                    entry_type=search_bar.EntryTypes.Module)
+                      entry_type=search_bar.EntryTypes.Module)
         pat_data = db.get_pathways()
         for pat_id, path_desc in pat_data:
             index.add(name=format_pathway(pat_id), description=path_desc,
-                    entry_type=search_bar.EntryTypes.Pathway)
+                      entry_type=search_bar.EntryTypes.Pathway)
 
     if has_pfam:
         pfam_data = db.get_pfam_def(pfam_ids=None)
         for pfam, data in pfam_data.iterrows():
             index.add(name=format_pfam(pfam),
-                    description=data["def"],
-                    entry_type=search_bar.EntryTypes.PFAM)
+                      description=data["def"],
+                      entry_type=search_bar.EntryTypes.PFAM)
     index.done_adding()
-
