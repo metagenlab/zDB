@@ -168,7 +168,8 @@ nr_seqs.splitFasta( by: 300, file: "chunk_" )
         to_blast_swissprot
         to_diamond_refseq
         to_kofamscan
-        to_pfam_scan }
+        to_pfam_scan
+        to_amr_scan }
 
 
 if(params.pfam) {
@@ -596,6 +597,30 @@ if(params.ko) {
     }
 } else {
     Channel.value("void").set { to_load_KO }
+}
+
+
+if(params.amr) {
+
+    process execute_amrscan {
+      container "$params.ncbi_amr_container"
+      conda "$baseDir/conda/ncbi_amr.yaml"
+
+      input:
+      file(seq) from to_amr_scan
+
+      output:
+          file "amrfinder_results.tab" into amr_table
+
+      script:
+      n = seq.name
+
+      """
+      amrfinder --plus -p ${n} > amrfinder_results.tab
+      """
+    }
+} else {
+    Channel.value("void").set { amr_table }
 }
 
 
