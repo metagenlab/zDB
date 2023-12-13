@@ -15,6 +15,8 @@ from Bio import SeqUtils
 from collections import namedtuple
 from collections import defaultdict
 
+from zdb.database.database import DB
+
 
 # assumes orthofinder named: OG000N
 # returns the N as int
@@ -55,7 +57,7 @@ def is_plasmid(record):
 
 
 def load_gbk(gbks, args, db_file):
-    db = db_utils.DB.load_db(db_file, args)
+    db = DB.load_db(db_file, args)
     data = []
 
     bioentry_plasmids = []
@@ -85,7 +87,7 @@ def load_gbk(gbks, args, db_file):
 
 
 def load_orthofinder_results(orthofinder_output, args, db_file):
-    db = db_utils.DB.load_db(db_file, args)
+    db = DB.load_db(db_file, args)
     hsh_prot_to_group = parse_orthofinder_output_file(orthofinder_output)
     hsh_locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id(only_CDS=True)
     hits_to_load = [(hsh_locus_to_feature_id[locus], group)
@@ -150,7 +152,7 @@ def parse_record(record):
 
 
 def load_refseq_matches_infos(args, lst_diamond_files, db_file):
-    db = db_utils.DB.load_db(db_file, args)
+    db = DB.load_db(db_file, args)
     columns = ["str_hsh", "accession", "pident", "length", "mismatch", "gapopen",
                "qstart", "qend", "sstart", "send", "evalue", "bitscore"]
 
@@ -231,7 +233,7 @@ def hsh_from_s(s):
 
 
 def load_seq_hashes(args, nr_mapping, db_file):
-    db = db_utils.DB.load_db(db_file, args)
+    db = DB.load_db(db_file, args)
     hsh_locus_to_id = db.get_hsh_locus_to_seqfeature_id(only_CDS=True)
 
     to_load_hsh_to_seqid = {}
@@ -256,7 +258,7 @@ def load_seq_hashes(args, nr_mapping, db_file):
 
 
 def load_alignments_results(args, identity_csvs, db_file):
-    db = db_utils.DB.load_db(db_file, args)
+    db = DB.load_db(db_file, args)
     db.create_new_og_matrix()
     locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id(only_CDS=True)
 
@@ -277,7 +279,7 @@ def load_alignments_results(args, identity_csvs, db_file):
 
 
 def load_cog(params, filelist, db_file, cdd_to_cog):
-    db = db_utils.DB.load_db(db_file, params)
+    db = DB.load_db(db_file, params)
     hsh_cdd_to_cog = {}
     for line in open(cdd_to_cog, "r"):
         cog, cdd = line.split()
@@ -313,7 +315,7 @@ def load_cog(params, filelist, db_file, cdd_to_cog):
 def load_BBH_phylogenies(kwargs, lst_orthogroups, db_file):
     import ete3
 
-    db = db_utils.DB.load_db(db_file, kwargs)
+    db = DB.load_db(db_file, kwargs)
     data = []
 
     for tree in lst_orthogroups:
@@ -331,7 +333,7 @@ def load_gene_phylogenies(kwargs, og_summary, lst_orthogroups, db_file):
     """
     import ete3
 
-    db = db_utils.DB.load_db(db_file, kwargs)
+    db = DB.load_db(db_file, kwargs)
     hsh_ogs = {}
     for tree in lst_orthogroups:
         t = ete3.Tree(tree)
@@ -353,7 +355,7 @@ def load_gene_phylogenies(kwargs, og_summary, lst_orthogroups, db_file):
 
 def load_reference_phylogeny(kwargs, tree, db_file):
     import ete3
-    db = db_utils.DB.load_db(db_file, kwargs)
+    db = DB.load_db(db_file, kwargs)
 
     newick_file = open(tree, "r")
     newick_string = newick_file.readline()
@@ -401,7 +403,7 @@ def get_gen_stats(gbk_list):
 
 
 def load_genomes_info(kwargs, gbk_list, checkm_results, db_file):
-    db = db_utils.DB.load_db(db_file, kwargs)
+    db = DB.load_db(db_file, kwargs)
     tab = pd.read_table(checkm_results)
 
     hsh_taxid_to_gen_stats = get_gen_stats(gbk_list)
@@ -441,7 +443,7 @@ def parse_pfam_entry(file_iter):
 
 
 def load_pfam(params, pfam_files, db, pfam_def_file):
-    db = db_utils.DB.load_db(db, params)
+    db = DB.load_db(db, params)
 
     db.create_pfam_hits_table()
     pfam_ids = set()
@@ -519,7 +521,7 @@ def parse_swissprot_id(to_parse):
 
 
 def load_swissprot(params, blast_results, db_name, swissprot_fasta):
-    db = db_utils.DB.load_db(db_name, params)
+    db = DB.load_db(db_name, params)
     hsh_swissprot_id = SwissProtIdCount()
     db.create_swissprot_tables()
 
@@ -562,7 +564,7 @@ def simplify_ko(raw_ko):
 # Several KO marked as significant can be assigned to the same locus
 # only take the hit with the lowest evalue (the first in the list)
 def load_KO(params, ko_files, db_name):
-    db = db_utils.DB.load_db(db_name, params)
+    db = DB.load_db(db_name, params)
     data = []
     for ko_file in ko_files:
         curr_hsh = None
@@ -592,7 +594,7 @@ def load_KO(params, ko_files, db_name):
 
 
 def load_module_completeness(params, db_name):
-    db = db_utils.DB.load_db(db_name, params)
+    db = DB.load_db(db_name, params)
     all_genomes = db.get_genomes_description().description.to_dict()
 
     db.create_module_completeness_table()
@@ -649,7 +651,7 @@ def format_pathway(pat):
 
 
 def setup_chlamdb_search_index(params, db_name, index_name):
-    db = db_utils.DB.load_db(db_name, params)
+    db = DB.load_db(db_name, params)
     os.mkdir(index_name)
 
     has_cog = params.get("cog", False)
