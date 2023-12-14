@@ -5,7 +5,13 @@ asset*
 .nextflow*
 singularity/
 work/
-zdb/
+zdb/results
+zdb/assets
+zdb/gunicorn/gunicorn.log
+zdb/gunicorn/gunicorn.pid
+zdb/nginx/*.log
+zdb/nginx/nginx_curr.config
+zdb/nginx/var
 zdb_ref/
 env
 docs/_build/
