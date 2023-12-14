@@ -305,6 +305,35 @@ def load_cog(params, filelist, db_file, cdd_to_cog):
     db.commit()
 
 
+def amr_hit_to_db_entry(hit):
+    columns = ["Gene symbol",
+               "Sequence name",
+               "Scope",
+               "Element type",
+               "Element subtype",
+               "Class",
+               "Subclass",
+               "% Coverage of reference sequence",
+               "% Identity to reference sequence",
+               "Accession of closest sequence",
+               "Name of closest sequence"]
+    entry = [hsh_from_s(hit["Protein identifier"][len("CRC-"):])]
+    entry.extend([hit[column] for column in columns])
+    return entry
+
+
+def load_amr(params, filelist, db_file):
+    db = DB.load_db(db_file, params)
+
+    data = []
+    for chunk in filelist:
+        amr_hits = pd.read_csv(chunk, sep="\t", header=0)
+        data.extend(amr_hit_to_db_entry(hit) for i, hit in amr_hits.iterrows())
+    db.load_amr_hits(data)
+    db.set_status_in_config_table("AMR", 1)
+    db.commit()
+
+
 # Note: the trees are stored in files with name formatted as:
 # OGN_nr_hits_mafft.nwk. To retrieve the orthogroup, parse the filename
 # and convert it to int.
