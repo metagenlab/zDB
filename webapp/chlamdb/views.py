@@ -3127,14 +3127,14 @@ def format_gene(gene):
 
 def format_taxid_to_ncbi(organism, taxid):
     val = (
-        f"""<a href="https: //www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={taxid}" target="_top">"""
+        f"""<a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={taxid}" target="_top">"""
         f"""{organism}</a>"""
     )
     return val
 
 
 def format_refseqid_to_ncbi(seqid):
-    return f"<a href=\"http: //www.ncbi.nlm.nih.gov/protein/{seqid}\">{seqid}</a>"
+    return f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{seqid}\">{seqid}</a>"
 
 
 def locus_tab_swissprot_hits(db, seqid):
