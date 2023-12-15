@@ -22,3 +22,23 @@ class DB(db_utils.DB):
         )
         self.server.adaptor.execute(sql)
         self.load_data_into_table("amr_hits", data)
+
+    def get_amr_hits(self, ids):
+        """
+        For now we limit that search to AMR type
+        """
+
+        columns = ("scope", "type", "class", "subclass", "coverage",
+                   "identity", "closest_seq")
+
+        query = (
+            f"SELECT {', '.join(f'amr.{col}' for col in columns)} "
+            "FROM amr_hits AS amr "
+            "INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = amr.hsh "
+            f"WHERE hsh.seqid IN ({', '.join(str(el) for el in ids)});"
+        )
+
+        results = self.server.adaptor.execute_and_fetchall(query)
+
+        df = DB.to_pandas_frame(results, columns)
+        return df

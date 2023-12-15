@@ -1422,6 +1422,21 @@ def og_tab_get_kegg_annot(db, seqids, from_taxid=None):
     }
 
 
+def og_tab_get_amr_annot(db, seqids):
+    amr_hits = db.get_amr_hits(seqids)
+    if amr_hits.empty:
+        return {}
+
+    col_titles = {"closest_seq": "Closest Sequence"}
+
+    amr_hits["closest_seq"] = amr_hits["closest_seq"].map(format_refseqid_to_ncbi)
+    return {
+        "amr_entries": amr_hits.values,
+        "amr_header": [col_titles.get(col, col.capitalize())
+                       for col in amr_hits.columns]
+    }
+
+
 def og_tab_get_cog_annot(db, seqids):
     cog_hits = db.get_cog_hits(seqids, indexing="seqid", search_on="seqid")
 
@@ -1558,7 +1573,7 @@ def orthogroup(request, og):
             product = "-"
         product_annotations.append([index + 1, product, cnt])
 
-    swissprot, cog_ctx, kegg_ctx, pfam_ctx = {}, {}, {}, {}
+    swissprot, cog_ctx, kegg_ctx, pfam_ctx, amr_ctx = {}, {}, {}, {}, {}
     best_hit_phylo = {}
     if optional2status.get("COG", False):
         cog_ctx = og_tab_get_cog_annot(db, annotations.index.tolist())
@@ -1580,6 +1595,9 @@ def orthogroup(request, og):
     if optional2status.get("BBH_phylogenies", False):
         best_hit_phylo = tab_og_best_hits(db, og_id)
 
+    if optional2status.get("AMR", False):
+        amr_ctx = og_tab_get_amr_annot(db, annotations.index.tolist())
+
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
     homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms, og=og_id)
@@ -1593,7 +1611,8 @@ def orthogroup(request, og):
         **homolog_tab_ctx,
         **length_tab_ctx,
         **og_conserv_ctx, **best_hit_phylo,
-        **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx, **swissprot
+        **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx, **swissprot,
+        **amr_ctx
     }
     return render(request, "chlamdb/og.html", my_locals(context))
 
@@ -1852,7 +1871,7 @@ def locusx(request, locus=None, menu=True):
         homolog_tab_ctx = {"n_genomes": "1 genome"}
         og_phylogeny_ctx = {}
 
-    kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
+    kegg_ctx, cog_ctx, pfam_ctx, amr_ctx = {}, {}, {}, {}
     diamond_matches_ctx = {}
     swissprot_ctx = {}
     best_hit_phylo = {}
@@ -1874,6 +1893,9 @@ def locusx(request, locus=None, menu=True):
 
     if optional2status.get("BBH_phylogenies", False):
         best_hit_phylo = tab_og_best_hits(db, og_id, locus=locus)
+
+    if optional2status.get("AMR", False):
+        amr_ctx = og_tab_get_amr_annot(db, [seqid])
 
     context = {
         "valid_id": valid_id,
@@ -1898,7 +1920,8 @@ def locusx(request, locus=None, menu=True):
         **genomic_region_ctx,
         **diamond_matches_ctx,
         **swissprot_ctx,
-        **best_hit_phylo
+        **best_hit_phylo,
+        **amr_ctx
     }
     return render(request, 'chlamdb/locus.html', my_locals(context))
 

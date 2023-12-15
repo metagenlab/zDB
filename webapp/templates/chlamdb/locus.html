@@ -415,6 +415,33 @@
 						</div>
 					  {% endif %}
 
+					 {% if amr_entries|length > 0 %}
+						<div class="row">
+						  <div class="panel panel-default">
+							<div class="panel-heading">
+							  <h3 class="panel-title">Antibiotic resistance annotation(s)</h3>
+							</div>
+							<table class="table table-striped" style="width: 100%">
+								<thead>
+								  <tr>
+									  {% for entry in amr_header %}
+									  	<th> {{entry|safe}} </th>
+									  {% endfor %}
+								  </tr>
+								</thead>
+								<tbody>
+									{% for row in amr_entries %}
+										<tr>
+											{% for e in row %}
+												<td> {{e|safe}}</td>
+											{% endfor %}
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						  </div>
+						</div>
+					  {% endif %}
                     </div> <!-- second column -->
                 </div> <!-- first tab -->
 
