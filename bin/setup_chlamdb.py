@@ -652,13 +652,13 @@ def load_module_completeness(params, db_name):
 def format_cog(cog_n):
     if pd.isna(cog_n):
         return None
-    return f"COG{int(cog_n): 04}"
+    return f"COG{int(cog_n):04}"
 
 
 def format_ko(ko_n):
     if pd.isna(ko_n):
         return None
-    return f"K{int(ko_n): 05}"
+    return f"K{int(ko_n):05}"
 
 
 def format_og(og_n):
@@ -668,15 +668,15 @@ def format_og(og_n):
 def format_pfam(pfam_n):
     if pd.isna(pfam_n):
         return None
-    return f"PF{int(pfam_n): 05}"
+    return f"PF{int(pfam_n):05}"
 
 
 def format_module(mod):
-    return f"M{mod: 05d}"
+    return f"M{mod:05d}"
 
 
 def format_pathway(pat):
-    return f"map{pat: 05d}"
+    return f"map{pat:05d}"
 
 
 def setup_chlamdb_search_index(params, db_name, index_name):

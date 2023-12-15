@@ -502,7 +502,7 @@ def venn_orthogroup(request):
 
 def format_pfam(pfam_id, base=None, to_url=False):
     if base is None:
-        fmt_entry = f"PF{pfam_id: 04d}"
+        fmt_entry = f"PF{pfam_id:04d}"
     else:
         fmt_entry = base
     if to_url:
@@ -693,7 +693,7 @@ def extract_pfam(request, classification="taxon_id"):
 
 def format_ko(ko_id, as_url=False, base=None):
     if base is None:
-        base = f"K{int(ko_id): 05d}"
+        base = f"K{int(ko_id):05d}"
     if not as_url:
         return base
     return f"<a href=\"/fam_ko/{base}\">{base}</a>"
@@ -710,9 +710,9 @@ def format_ko_path(hsh_pathways, ko, as_list=False, with_taxid=None):
             return []
         return "-"
     if with_taxid is None:
-        fmt_lst = (f"<a href=\"/KEGG_mapp_ko/map{i: 05d}\">{d}</a>" for i, d in pathways)
+        fmt_lst = (f"<a href=\"/KEGG_mapp_ko/map{i:05d}\">{d}</a>" for i, d in pathways)
     else:
-        fmt_lst = (f"<a href=\"/KEGG_mapp_ko/map{i: 05d}/{with_taxid}\">{d}</a>" for i, d in pathways)
+        fmt_lst = (f"<a href=\"/KEGG_mapp_ko/map{i:05d}/{with_taxid}\">{d}</a>" for i, d in pathways)
 
     if as_list:
         return list(fmt_lst)
@@ -721,9 +721,9 @@ def format_ko_path(hsh_pathways, ko, as_list=False, with_taxid=None):
 
 def format_ko_module(module_id, module_desc=None):
     if module_desc is None:
-        return f"<a href=\"/KEGG_module_map/M{module_id: 05d}\">M{module_id: 05d}</a>"
+        return f"<a href=\"/KEGG_module_map/M{module_id:05d}\">M{module_id:05d}</a>"
     else:
-        return f"<a href=\"/KEGG_module_map/M{module_id: 05d}\">{module_desc}</a>"
+        return f"<a href=\"/KEGG_module_map/M{module_id:05d}\">{module_desc}</a>"
 
 
 def format_ko_modules(hsh_modules, ko):
@@ -925,12 +925,12 @@ def extract_cog(request):
 
     # Code to generate the barchart diagrams
     cat_map_str = ",".join([f"\"{func}\": \"{descr}\"" for func, descr in cogs_funct.items()])
-    category_map = f"var category_description = {{{cat_map_str}}}"
+    category_map = f"var category_description = {{{cat_map_str}}};"
     ttl_sel = sum([c1 for func, (c1, c2) in cat_count.items()])
     ttl_all = sum([c2 for func, (c1, c2) in cat_count.items()])
 
     cat_count_comp = ",".join([f"\"{func}\": [\"{c2}\", \"{c1}\"]" for func, (c1, c2) in cat_count.items()])
-    category_count_complete = f"var category_count_complete = {{{cat_count_comp}}}"
+    category_count_complete = f"var category_count_complete = {{{cat_count_comp}}};"
 
     serie_selection_val = [str(round(float(c1) / ttl_sel, 2)) for func, (c1, c2) in cat_count.items()]
     serie_all_val = [str(round(float(c2) / ttl_all, 2)) for func, (c1, c2) in cat_count.items()]
@@ -978,7 +978,7 @@ def venn_ko(request):
     ko2description = []
     for ko, ko_desc in ko_descriptions.items():
         cleaned_desc = escape_quotes(ko_desc)
-        ko_item = f"h[{to_s(format_ko(ko))}] = [\"{cleaned_desc}\"]"
+        ko_item = f"h[{to_s(format_ko(ko))}] = [\"{cleaned_desc}\"];"
         ko2description.append(ko_item)
     ko2description = "\n".join(ko2description)
     envoi_venn = True
@@ -987,7 +987,7 @@ def venn_ko(request):
 
 def format_cog(cog_id, as_url=False, base=None):
     if base is None:
-        base = f"COG{int(cog_id): 04d}"
+        base = f"COG{int(cog_id):04d}"
     if as_url is False:
         return base
     return f"<a href=\"/fam_cog/{base}\">{base}</a>"
@@ -1237,10 +1237,10 @@ def tab_lengths(n_homologues, annotations):
 
     lengths = annotations["length"]
     max_protein_length = lengths.max()
-    std_protein_length = f"{lengths.std(): .1f}"
+    std_protein_length = f"{lengths.std():.1f}"
     min_protein_length = lengths.min()
-    mean_protein_length = f"{lengths.mean(): .1f}"
-    median_protein_length = f"{lengths.median(): .1f}"
+    mean_protein_length = f"{lengths.mean():.1f}"
+    median_protein_length = f"{lengths.median():.1f}"
     if len(lengths.unique()) > 1:
         fig1 = ff.create_distplot([lengths.tolist()], ["Sequence length"], bin_size=20)
         fig1.update_xaxes(range=[0, max_protein_length])
