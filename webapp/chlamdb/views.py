@@ -1782,7 +1782,7 @@ def tab_get_refseq_homologs(db, seqid):
     header = ["Refseq accession", "Evalue", "Score", "ID(%)", "# gaps", "Len", "Description", "Organism"]
     entries = []
     for match_id, data in all_infos.iterrows():
-        to_ncbi = f"<a href=\"http: //www.ncbi.nlm.nih.gov/protein/{data.accession}\">{data.accession}</a>"
+        to_ncbi = format_refseqid_to_ncbi(data.accession)
         entries.append((to_ncbi, data.evalue, data.bitscore,
                         data.pident, data.gaps, data.length, data.description, data.organism))
     return {"n_refseq_homologs": len(refseq_hits),
@@ -3131,6 +3131,10 @@ def format_taxid_to_ncbi(organism, taxid):
         f"""{organism}</a>"""
     )
     return val
+
+
+def format_refseqid_to_ncbi(seqid):
+    return f"<a href=\"http: //www.ncbi.nlm.nih.gov/protein/{seqid}\">{seqid}</a>"
 
 
 def locus_tab_swissprot_hits(db, seqid):
