@@ -3878,6 +3878,48 @@ def kegg_module(request):
     return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
 
 
+class TabularComparisonViewBase(View):
+
+    template = 'chlamdb/tabular_comparison.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        biodb_path = settings.BIODB_DB_PATH
+        self.db = DB.load_db_from_name(biodb_path)
+        self.page_title = page2title[self.name]
+        self.comp_metabo_form = make_metabo_from(self.db)
+        self.show_comparison_table = False
+        return super(TabularComparisonViewBase, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        self.form = self.comp_metabo_form()
+        return render(request, self.template, self.context)
+
+    def post(self, request, *args, **kwargs):
+        self.form = self.comp_metabo_form(request.POST)
+        if self.form.is_valid():
+            self.show_comparison_table = True
+            self.set_table_data()
+
+        return render(request, self.template, self.context)
+
+    @property
+    def context(self):
+        context = {
+            "page_title": self.page_title,
+            "form": self.form,
+            "show_comparison_table": self.show_comparison_table,
+            }
+        if self.show_comparison_table:
+            context["table_headers"] = self.table_headers
+            context["table_rows"] = self.table_rows
+            context["table_title"] = self.table_title
+            context["table_help"] = self.table_help
+        return my_locals(context)
+
+    def set_table_data(self):
+        raise NotImplementedError()
+
+
 def module_comparison(request):
     page_title = page2title["module_comparison"]
 
@@ -4066,9 +4108,8 @@ def orthogroup_comparison(request):
     return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
 
 
-class KoComparisonView(View):
+class KoComparisonView(TabularComparisonViewBase):
 
-    template = 'chlamdb/ko_comp.html'
     name = "ko_comparison"
 
     table_help = """
@@ -4080,26 +4121,6 @@ class KoComparisonView(View):
     <br>Click on the Ko entry and list the Ko modules and pathways of which it
     is part.
     """
-
-    def dispatch(self, request, *args, **kwargs):
-        biodb_path = settings.BIODB_DB_PATH
-        self.db = DB.load_db_from_name(biodb_path)
-        self.page_title = page2title[self.name]
-        self.comp_metabo_form = make_metabo_from(self.db)
-        self.show_comparison_table = False
-        return super(KoComparisonView, self).dispatch(request, *args, **kwargs)
-
-    def get(self, request, *args, **kwargs):
-        self.form = self.comp_metabo_form()
-        return render(request, self.template, self.context)
-
-    def post(self, request, *args, **kwargs):
-        self.form = self.comp_metabo_form(request.POST)
-        if self.form.is_valid():
-            self.show_comparison_table = True
-            self.set_table_data()
-
-        return render(request, self.template, self.context)
 
     def set_table_data(self):
         include = self.form.get_choices()
@@ -4124,20 +4145,6 @@ class KoComparisonView(View):
         self.table_headers = ["KO", "Annot", "tot"]
         self.table_headers.extend(taxon_list)
         return
-
-    @property
-    def context(self):
-        context = {
-            "page_title": self.page_title,
-            "form": self.form,
-            "show_comparison_table": self.show_comparison_table,
-            }
-        if self.show_comparison_table:
-            context["table_headers"] = self.table_headers
-            context["table_rows"] = self.table_rows
-            context["table_title"] = self.table_title
-            context["table_help"] = self.table_help
-        return my_locals(context)
 
     @property
     def table_title(self):
