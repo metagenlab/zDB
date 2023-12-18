@@ -4068,21 +4068,24 @@ def orthogroup_comparison(request):
 
 class KoComparisonView(View):
 
+    template = 'chlamdb/ko_comp.html'
+    name = "ko_comparison"
+
     def dispatch(self, request, *args, **kwargs):
         biodb_path = settings.BIODB_DB_PATH
         self.db = DB.load_db_from_name(biodb_path)
-        self.page_title = page2title["ko_comparison"]
+        self.page_title = page2title[self.name]
         self.comp_metabo_form = make_metabo_from(self.db)
         return super(KoComparisonView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         form = self.comp_metabo_form()
-        return render(request, 'chlamdb/ko_comp.html', self.context(locals()))
+        return render(request, self.template, self.context(locals()))
 
     def post(self, request, *args, **kwargs):
         form = self.comp_metabo_form(request.POST)
         if not form.is_valid():
-            return render(request, 'chlamdb/ko_comp.html', self.context(locals()))
+            return render(request, self.template, self.context(locals()))
 
         include = form.get_choices()
         mat_include = self.db.get_ko_count(include).unstack(level=0, fill_value=0)
@@ -4102,7 +4105,7 @@ class KoComparisonView(View):
         taxon_list = [hsh_gen_desc[int(col)] for col in mat_include.columns.values]
         n_ko = len(mat_include.index.tolist())
         envoi_comp = True
-        return render(request, 'chlamdb/ko_comp.html', self.context(locals()))
+        return render(request, self.template, self.context(locals()))
 
     def context(self, data):
         return my_locals({"page_title": self.page_title, **data})
