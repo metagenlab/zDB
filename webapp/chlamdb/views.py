@@ -87,6 +87,7 @@ page2title = {
     'entry_list_ko': 'Comparisons: Kegg Orthologs (KO)',
     'entry_list_cog': 'Comparisons: Clusters of Orthologous groups (COGs)',
     'ko_comparison': 'Comparisons: Kegg Orthologs (KO)',
+    'pfam_comparison': 'Comparisons: PFAM domains',
     'module_barchart': 'Comparisons: Kegg Orthologs (KO)',
     'blast': 'Homology search: Blast',
     'plot_region': 'Genome alignments: Plot region',
@@ -3982,7 +3983,7 @@ def module_comparison(request):
 
 def pfam_comparison(request):
     db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    page_title = page2title["cog_barchart"]
+    page_title = page2title["pfam_comparison"]
 
     comp_metabo_form = make_metabo_from(db)
     if request.method != 'POST':
