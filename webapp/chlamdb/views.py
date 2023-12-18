@@ -4076,27 +4076,32 @@ class KoComparisonView(View):
         self.db = DB.load_db_from_name(biodb_path)
         self.page_title = page2title[self.name]
         self.comp_metabo_form = make_metabo_from(self.db)
+        self.show_comparison_table = False
         return super(KoComparisonView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        form = self.comp_metabo_form()
-        return render(request, self.template, self.context(locals()))
+        self.form = self.comp_metabo_form()
+        return render(request, self.template, self.context)
 
     def post(self, request, *args, **kwargs):
-        form = self.comp_metabo_form(request.POST)
-        if not form.is_valid():
-            return render(request, self.template, self.context(locals()))
+        self.form = self.comp_metabo_form(request.POST)
+        if self.form.is_valid():
+            self.show_comparison_table = True
+            self.set_table_data()
 
-        include = form.get_choices()
+        return render(request, self.template, self.context)
+
+    def set_table_data(self):
+        include = self.form.get_choices()
         mat_include = self.db.get_ko_count(include).unstack(level=0, fill_value=0)
         mat_include.columns = [col for col in mat_include["count"].columns.values]
 
         ko2annot = self.db.get_ko_desc(mat_include.index.tolist())
         df_ttl = self.db.get_ko_count(mat_include.index.tolist(), search_on="ko_id")
         ko2total_count = df_ttl.groupby("KO").sum()["count"].to_dict()
-        table_rows = []
+        self.table_rows = []
         for key, values in mat_include.iterrows():
-            table_rows.append({
+            self.table_rows.append({
                 "entry_id": format_ko(key),
                 "values": [ko2annot[key], ko2total_count[key]],
                 "coloured_values": values.values.tolist(),
@@ -4104,16 +4109,24 @@ class KoComparisonView(View):
 
         hsh_gen_desc = self.db.get_genomes_description().description.to_dict()
         taxon_list = [hsh_gen_desc[int(col)] for col in mat_include.columns.values]
-        n_ko = len(mat_include.index.tolist())
-        envoi_comp = True
+        self.n_ko = len(mat_include.index.tolist())
 
-        table_headers = ["KO", "Annot", "tot"]
-        table_headers.extend(taxon_list)
+        self.table_headers = ["KO", "Annot", "tot"]
+        self.table_headers.extend(taxon_list)
+        return
 
-        return render(request, self.template, self.context(locals()))
-
-    def context(self, data):
-        return my_locals({"page_title": self.page_title, **data})
+    @property
+    def context(self):
+        context = {
+            "page_title": self.page_title,
+            "form": self.form,
+            "show_comparison_table": self.show_comparison_table,
+            }
+        if self.show_comparison_table:
+            context["table_headers"] = self.table_headers
+            context["table_rows"] = self.table_rows
+            context["n_ko"] = self.n_ko
+        return my_locals(context)
 
 
 def faq(request):
