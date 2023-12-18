@@ -39,15 +39,13 @@
 
                           <div class="row" style="padding-top:30px ;background-color: rgba(245, 245, 245, 0.986); margin-top: 1em;" >
                                 
-                      <h4>Number of KO present at least oncen in one of the selected genomes: {{n_ko}}</h4>
+                      <h4>{{table_title}}</h4>
                              <div class="panel panel-success" style="margin: 1em;">
                                  <div class="panel-heading" style="width:100%;">
                                      <h5 class="panel-title">Help to interpret the results</h5>
                                  </div>
                                  <p style="margin: 10px 10px 10px 10px">
-                                    The ouput table contains the number of homologs in the shared Kegg Orthologs of the selected genomes and the total number of homologs of each Kegg Orthologs identified in the whole collection. Interesting for comparing the size of Kegg Orthologs within genomes.
-                                    <br> Homolog counts can be reordrered by clicking on column headers.<br>
-                                    <br>Click on the Ko entry and list the Ko modules and pathways of which it is part.
+                                    {{table_help|safe}}
                                  </p>
                              </div>
                             </div>

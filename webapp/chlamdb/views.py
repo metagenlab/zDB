@@ -4071,6 +4071,16 @@ class KoComparisonView(View):
     template = 'chlamdb/ko_comp.html'
     name = "ko_comparison"
 
+    table_help = """
+    The ouput table contains the number of homologs in the shared Kegg
+    Orthologs of the selected genomes and the total number of homologs
+    of each Kegg Orthologs identified in the whole collection. Interesting
+    for comparing the size of Kegg Orthologs within genomes.
+    <br> Homolog counts can be reordrered by clicking on column headers.<br>
+    <br>Click on the Ko entry and list the Ko modules and pathways of which it
+    is part.
+    """
+
     def dispatch(self, request, *args, **kwargs):
         biodb_path = settings.BIODB_DB_PATH
         self.db = DB.load_db_from_name(biodb_path)
@@ -4125,8 +4135,13 @@ class KoComparisonView(View):
         if self.show_comparison_table:
             context["table_headers"] = self.table_headers
             context["table_rows"] = self.table_rows
-            context["n_ko"] = self.n_ko
+            context["table_title"] = self.table_title
+            context["table_help"] = self.table_help
         return my_locals(context)
+
+    @property
+    def table_title(self):
+        return f"Number of KO present at least once in one of the selected genomes: {self.n_ko}"
 
 
 def faq(request):
