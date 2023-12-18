@@ -29,6 +29,7 @@ from Bio.SeqRecord import SeqRecord
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
+from django.views import View
 from ete3 import SeqMotifFace, StackedBarFace, TextFace, Tree, TreeStyle
 from metagenlab_libs import circosjs, db_utils
 from metagenlab_libs.chlamdb import search_bar as sb
@@ -4065,40 +4066,46 @@ def orthogroup_comparison(request):
     return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
 
 
-def ko_comparison(request):
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
-    page_title = page2title["ko_comparison"]
+class KoComparisonView(View):
 
-    comp_metabo_form = make_metabo_from(db)
+    def dispatch(self, request, *args, **kwargs):
+        biodb_path = settings.BIODB_DB_PATH
+        self.db = DB.load_db_from_name(biodb_path)
+        self.page_title = page2title["ko_comparison"]
+        self.comp_metabo_form = make_metabo_from(self.db)
+        return super(KoComparisonView, self).dispatch(request, *args, **kwargs)
 
-    if request.method != "POST":
-        form = comp_metabo_form()
-        return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
+    def get(self, request, *args, **kwargs):
+        form = self.comp_metabo_form()
+        return render(request, 'chlamdb/ko_comp.html', self.context(locals()))
 
-    form = comp_metabo_form(request.POST)
-    if not form.is_valid():
-        return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
+    def post(self, request, *args, **kwargs):
+        form = self.comp_metabo_form(request.POST)
+        if not form.is_valid():
+            return render(request, 'chlamdb/ko_comp.html', self.context(locals()))
 
-    include = form.get_choices()
-    mat_include = db.get_ko_count(include).unstack(level=0, fill_value=0)
-    mat_include.columns = [col for col in mat_include["count"].columns.values]
+        include = form.get_choices()
+        mat_include = self.db.get_ko_count(include).unstack(level=0, fill_value=0)
+        mat_include.columns = [col for col in mat_include["count"].columns.values]
 
-    ko2annot = db.get_ko_desc(mat_include.index.tolist())
-    df_ttl = db.get_ko_count(mat_include.index.tolist(), search_on="ko_id")
-    ko2total_count = df_ttl.groupby("KO").sum()["count"].to_dict()
-    ko2counts = mat_include.to_dict()
-    ko2counts = {}
-    ko2_print = {}
-    for key, values in mat_include.iterrows():
-        ko2counts[key] = values.values.tolist()
-        ko2_print[key] = format_ko(key)
+        ko2annot = self.db.get_ko_desc(mat_include.index.tolist())
+        df_ttl = self.db.get_ko_count(mat_include.index.tolist(), search_on="ko_id")
+        ko2total_count = df_ttl.groupby("KO").sum()["count"].to_dict()
+        ko2counts = mat_include.to_dict()
+        ko2counts = {}
+        ko2_print = {}
+        for key, values in mat_include.iterrows():
+            ko2counts[key] = values.values.tolist()
+            ko2_print[key] = format_ko(key)
 
-    hsh_gen_desc = db.get_genomes_description().description.to_dict()
-    taxon_list = [hsh_gen_desc[int(col)] for col in mat_include.columns.values]
-    n_ko = len(mat_include.index.tolist())
-    envoi_comp = True
-    return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
+        hsh_gen_desc = self.db.get_genomes_description().description.to_dict()
+        taxon_list = [hsh_gen_desc[int(col)] for col in mat_include.columns.values]
+        n_ko = len(mat_include.index.tolist())
+        envoi_comp = True
+        return render(request, 'chlamdb/ko_comp.html', self.context(locals()))
+
+    def context(self, data):
+        return my_locals({"page_title": self.page_title, **data})
 
 
 def faq(request):
