@@ -4094,17 +4094,22 @@ class KoComparisonView(View):
         ko2annot = self.db.get_ko_desc(mat_include.index.tolist())
         df_ttl = self.db.get_ko_count(mat_include.index.tolist(), search_on="ko_id")
         ko2total_count = df_ttl.groupby("KO").sum()["count"].to_dict()
-        ko2counts = mat_include.to_dict()
-        ko2counts = {}
-        ko2_print = {}
+        table_rows = []
         for key, values in mat_include.iterrows():
-            ko2counts[key] = values.values.tolist()
-            ko2_print[key] = format_ko(key)
+            table_rows.append({
+                "entry_id": format_ko(key),
+                "values": [ko2annot[key], ko2total_count[key]],
+                "coloured_values": values.values.tolist(),
+                })
 
         hsh_gen_desc = self.db.get_genomes_description().description.to_dict()
         taxon_list = [hsh_gen_desc[int(col)] for col in mat_include.columns.values]
         n_ko = len(mat_include.index.tolist())
         envoi_comp = True
+
+        table_headers = ["KO", "Annot", "tot"]
+        table_headers.extend(taxon_list)
+
         return render(request, self.template, self.context(locals()))
 
     def context(self, data):

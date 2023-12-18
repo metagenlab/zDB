@@ -61,26 +61,24 @@
                                } </style>
                                   <thead>
                                     <tr>
-                                        <th>KO</th>
-                                        <th>Total count</th>
-                                        {% for taxon in taxon_list %}
-                                        <th>{{taxon}}</th>
+                                        {% for title in table_headers %}
+                                        <th>{{title}}</th>
                                         {% endfor %}
-                                        <th>Annot</th>
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {% for key, values in ko2counts.items %}
-									<tr> <td><a href="{% url 'fam_ko' ko2_print|keyvalue:key %}" target="_top">{{ko2_print|keyvalue:key}}</a></td>
-                                          <td>{{ko2total_count|keyvalue:key}}</td>
-                                          {% for taxon_count in values%}
-                                                {%if taxon_count != 0 %}
-                                                <td data-hist="{{taxon_count}}">{{taxon_count}}</td>
+                                    {% for row in table_rows %}
+									<tr> <td><a href="{% url 'fam_ko' row.entry_id %}" target="_top">{{row.entry_id}}</a></td>
+                                          {% for value in row.values %}
+                                          <td>{{value}}</td>
+                                          {% endfor%}
+                                          {% for value in row.coloured_values %}
+                                                {%if value != 0 %}
+                                                <td data-hist="{{value}}">{{value}}</td>
                                                 {% else %}
-                                                 <td>{{taxon_count}}</td>
+                                                 <td>{{value}}</td>
                                                 {% endif %}
-                                          {% endfor %}
-                                          <td>{{ ko2annot|keyvalue:key }}</td>
+                                          {% endfor%}
                                       </tr>
                                     {% endfor %}
                                   </tbody>
