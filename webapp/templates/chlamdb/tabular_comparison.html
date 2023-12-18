@@ -22,12 +22,12 @@
             <div class="row">
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
-                 {% include "chlamdb/extract_nav_tabs_template.html" with type="ko" active_tab="comp" %}
+                 {% include "chlamdb/extract_nav_tabs_template.html" with type=view_type active_tab="comp" %}
 
                   <br>
                   <p class="page-title"><b>Size of shared Kegg Orthologs </b><a href="/docs/index.html" id="show-option" title="Compare the size of the orthogroup shared by selected genomes (targets)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
                 </div>
-                      <form action='{% url "ko_comparison" %}' method="post">
+                      <form action='{% url view_name %}' method="post">
                           {% csrf_token %}
                           {{ form.as_p }}
                           <input type="submit" value="Submit" />
@@ -66,7 +66,7 @@
                                   </thead>
                                   <tbody>
                                     {% for row in table_rows %}
-									<tr> <td><a href="{% url 'fam_ko' row.entry_id %}" target="_top">{{row.entry_id}}</a></td>
+									<tr> <td><a href="{% url entry_view_name row.entry_id %}" target="_top">{{row.entry_id}}</a></td>
                                           {% for value in row.values %}
                                           <td>{{value}}</td>
                                           {% endfor%}

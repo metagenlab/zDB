@@ -3885,7 +3885,7 @@ class TabularComparisonViewBase(View):
     def dispatch(self, request, *args, **kwargs):
         biodb_path = settings.BIODB_DB_PATH
         self.db = DB.load_db_from_name(biodb_path)
-        self.page_title = page2title[self.name]
+        self.page_title = page2title[self.view_name]
         self.comp_metabo_form = make_metabo_from(self.db)
         self.show_comparison_table = False
         return super(TabularComparisonViewBase, self).dispatch(request, *args, **kwargs)
@@ -3903,11 +3903,22 @@ class TabularComparisonViewBase(View):
         return render(request, self.template, self.context)
 
     @property
+    def view_name(self):
+        return f"{self.view_type}_comparison"
+
+    @property
+    def entry_view_name(self):
+        return f"fam_{self.view_type}"
+
+    @property
     def context(self):
         context = {
             "page_title": self.page_title,
             "form": self.form,
             "show_comparison_table": self.show_comparison_table,
+            "view_name": self.view_name,
+            "view_type": self.view_type,
+            "entry_view_name": self.entry_view_name,
             }
         if self.show_comparison_table:
             context["table_headers"] = self.table_headers
@@ -4110,7 +4121,7 @@ def orthogroup_comparison(request):
 
 class KoComparisonView(TabularComparisonViewBase):
 
-    name = "ko_comparison"
+    view_type = "ko"
 
     table_help = """
     The ouput table contains the number of homologs in the shared Kegg
