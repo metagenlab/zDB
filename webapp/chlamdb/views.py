@@ -2154,10 +2154,6 @@ def fam_cog(request, cog_id):
     return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
 
-def format_pathway(pat_id):
-    return f"map{pat_id:05d}"
-
-
 def format_module(mod_id, base=None, to_url=False):
     if base is None:
         formated = f"M{mod_id:05d}"
