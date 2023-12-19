@@ -3929,7 +3929,25 @@ class TabularComparisonViewBase(View):
         return my_locals(context)
 
     def set_table_data(self):
-        raise NotImplementedError()
+        self.targets = self.form.get_choices()
+        self.n_selected = len(self.targets)
+
+        hash_to_taxon_dict = self.db.get_genomes_description().description.to_dict()
+        taxon_list = [hash_to_taxon_dict[target_id] for target_id in self.targets]
+        self.table_headers = self.base_info_headers + taxon_list
+
+        self.table_rows = self.get_table_rows()
+        self.n_rows = len(self.table_rows)
+
+    def get_table_rows(self):
+        raise NotImplementedError
+
+    @property
+    def table_title(self):
+        return "Number of {} present at least once in 1 of the {} selected "\
+               "genomes: <strong>{}</strong>".format(self.compared_obj_name,
+                                                     self.n_selected,
+                                                     self.n_rows)
 
 
 def module_comparison(request):
@@ -3984,6 +4002,7 @@ def module_comparison(request):
 class PfamComparisonView(TabularComparisonViewBase):
 
     view_type = "pfam"
+    base_info_headers = ["Domain ID", "Description", "nDomain"]
 
     table_help = """
     The ouput table contains the list of shared Pfam domains and the number of
@@ -3994,30 +4013,23 @@ class PfamComparisonView(TabularComparisonViewBase):
     corresponding Pfam entry.
     """
 
-    def set_table_data(self):
-        all_targets = self.form.get_choices()
-        genomes = self.db.get_genomes_description().description.to_dict()
+    compared_obj_name = "domains"
 
-        pfam_hits = self.db.get_pfam_hits(ids=all_targets)
-        pfam_defs = self.db.get_pfam_def(pfam_hits.index.tolist(), add_ttl_count=True)
+    def get_table_rows(self):
+        pfam_hits = self.db.get_pfam_hits(ids=self.targets)
+        pfam_defs = self.db.get_pfam_def(pfam_hits.index.tolist(),
+                                         add_ttl_count=True)
 
-        self.table_rows = []
+        table_rows = []
         for key, values in pfam_hits.iterrows():
             entry_infos = pfam_defs.loc[key]
-            base_infos = [format_pfam(key, to_url=True), entry_infos["def"], entry_infos.ttl_cnt]
-            self.table_rows.append({
+            base_infos = [format_pfam(key, to_url=True), entry_infos["def"],
+                          entry_infos.ttl_cnt]
+            table_rows.append({
                 "values": base_infos + values.values.tolist(),
                 })
 
-        taxon_list = [genomes[int(col)] for col in pfam_hits.columns.values]
-        self.n_selected = len(taxon_list)
-        self.n_rows = len(self.table_rows)
-        self.table_headers = ["Domain ID", "Description", "nDomain"]
-        self.table_headers.extend(taxon_list)
-
-    @property
-    def table_title(self):
-        return f"Number of domains at least present 1 time in 1 of the {self.n_selected} selected genomes: <strong>{self.n_rows}</strong>"
+        return table_rows
 
 
 def cog_comparison(request):
@@ -4136,33 +4148,24 @@ class KoComparisonView(TabularComparisonViewBase):
     is part.
     """
 
-    def set_table_data(self):
-        include = self.form.get_choices()
-        mat_include = self.db.get_ko_count(include).unstack(level=0, fill_value=0)
-        mat_include.columns = [col for col in mat_include["count"].columns.values]
+    base_info_headers = ["KO", "Annot", "tot"]
+    compared_obj_name = "KO"
 
-        ko2annot = self.db.get_ko_desc(mat_include.index.tolist())
-        df_ttl = self.db.get_ko_count(mat_include.index.tolist(), search_on="ko_id")
+    def get_table_rows(self):
+        hits = self.db.get_ko_count(self.targets).unstack(level=0, fill_value=0)
+        hits.columns = [col for col in hits["count"].columns.values]
+
+        ko2annot = self.db.get_ko_desc(hits.index.tolist())
+        df_ttl = self.db.get_ko_count(hits.index.tolist(), search_on="ko_id")
         ko2total_count = df_ttl.groupby("KO").sum()["count"].to_dict()
-        self.table_rows = []
-        for key, values in mat_include.iterrows():
-            self.table_rows.append({
+        table_rows = []
+        for key, values in hits.iterrows():
+            table_rows.append({
                 "entry_id": format_ko(key),
                 "values": [ko2annot[key], ko2total_count[key]],
                 "coloured_values": values.values.tolist(),
                 })
-
-        hsh_gen_desc = self.db.get_genomes_description().description.to_dict()
-        taxon_list = [hsh_gen_desc[int(col)] for col in mat_include.columns.values]
-        self.n_ko = len(mat_include.index.tolist())
-
-        self.table_headers = ["KO", "Annot", "tot"]
-        self.table_headers.extend(taxon_list)
-        return
-
-    @property
-    def table_title(self):
-        return f"Number of KO present at least once in one of the selected genomes: {self.n_ko}"
+        return table_rows
 
 
 def faq(request):
