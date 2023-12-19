@@ -89,7 +89,7 @@ urlpatterns = [
     re_path(r'^pfam_comparison', views.PfamComparisonView.as_view(), name="pfam_comparison"),
     re_path(r'^cog_comparison', views.CogComparisonView.as_view(), name="cog_comparison"),
     re_path(r'^ko_comparison', views.KoComparisonView.as_view(), name="ko_comparison"),
-    re_path(r'^orthogroup_comparison', views.orthogroup_comparison,
+    re_path(r'^orthogroup_comparison', views.OrthogroupComparisonView.as_view(),
             name="orthogroup_comparison"),
     re_path(r'^about$', views.about, name="about"),
     re_path(r'^help', views.help, name="help"),

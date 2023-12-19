@@ -4091,48 +4091,42 @@ class CogComparisonView(TabularComparisonViewBase):
         return [{"values": row} for i, row in combined_df[ordered_cols].iterrows()]
 
 
-def orthogroup_comparison(request):
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
-    page_title = page2title[f"orthogroup_comparison"]
+class OrthogroupComparisonView(TabularComparisonViewBase):
 
-    comp_metabo_form = make_metabo_from(db)
-    if request.method != 'POST':
-        form = comp_metabo_form(request.POST)
-        return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
+    view_type = "orthogroup"
+    base_info_headers = ["Orthogroup", "Annotaion"]
 
-    form = comp_metabo_form(request.POST)
-    if not form.is_valid():
-        return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
+    table_help = """
+    The ouput table contains the number of homologs in the shared orthogroups
+    of the selected genomes. Interesting for comparing the size of orthogroups
+    within genomes.
+    <br> Homolog counts can be reordrered by clicking on column headers.<br>
+    <br>Click on Orthologous group to get all the homologs identified in the
+    database and the phylogenetic profile.
+    """
 
-    try:
-        all_targets = form.get_choices()
-    except Exception:
-        # TODO: add error message
-        return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
+    compared_obj_name = "orthogroups"
 
-    genomes = db.get_genomes_description().description.to_dict()
-    og_count = db.get_og_count(all_targets)
-    og_count.columns = [genomes[int(col)] for col in og_count.columns]
-    annotations = db.get_genes_from_og(orthogroups=og_count.index.tolist(),
-                                       taxon_ids=all_targets, terms=["product"])
+    def get_table_rows(self):
+        og_count = self.db.get_og_count(self.targets)
+        annotations = self.db.get_genes_from_og(
+            orthogroups=og_count.index.tolist(),
+            taxon_ids=self.targets, terms=["product"])
 
-    products = annotations.groupby("orthogroup")["product"].apply(list)
-    n_orthogroups = len(og_count.index)
+        products = annotations.groupby("orthogroup")["product"].apply(list)
 
-    og_data = []
-    for og, items in og_count.iterrows():
-        piece = [format_orthogroup(og)]
-        piece.append(items.tolist())
-        if og in products.index:
-            piece.append(format_lst_to_html(products.loc[og]))
-        else:
-            piece.append("-")
-        og_data.append(piece)
+        og_data = []
+        for og, items in og_count.iterrows():
+            row = {"values": [format_orthogroup(og, to_url=True)]}
+            if og in products.index:
+                row["values"].append(format_lst_to_html(products.loc[og]))
+            else:
+                row["values"].append("-")
+            row["coloured_values"] = items
 
-    genomes_list = og_count.columns.tolist()
-    envoi_comp = True
-    return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
+            og_data.append(row)
+
+        return og_data
 
 
 class KoComparisonView(TabularComparisonViewBase):
