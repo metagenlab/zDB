@@ -3905,10 +3905,6 @@ class TabularComparisonViewBase(View):
         return f"{self.view_type}_comparison"
 
     @property
-    def entry_view_name(self):
-        return f"fam_{self.view_type}"
-
-    @property
     def context(self):
         context = {
             "page_title": self.page_title,
@@ -3916,7 +3912,6 @@ class TabularComparisonViewBase(View):
             "show_comparison_table": self.show_comparison_table,
             "view_name": self.view_name,
             "view_type": self.view_type,
-            "entry_view_name": self.entry_view_name,
             }
         if self.show_comparison_table:
             context["table_headers"] = self.table_headers
@@ -4152,8 +4147,7 @@ class KoComparisonView(TabularComparisonViewBase):
         table_rows = []
         for key, values in hits.iterrows():
             table_rows.append({
-                "entry_id": format_ko(key),
-                "values": [ko2annot[key], ko2total_count[key]],
+                "values": [format_ko(key, as_url=True), ko2annot[key], ko2total_count[key]],
                 "coloured_values": values.values.tolist(),
                 })
         return table_rows
