@@ -3889,6 +3889,7 @@ class TabularComparisonViewBase(View):
         self.page_title = page2title[self.view_name]
         self.comp_metabo_form = make_metabo_from(self.db)
         self.show_comparison_table = False
+        self._hash_to_taxon_dict = None
         return super(TabularComparisonViewBase, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
@@ -3928,12 +3929,18 @@ class TabularComparisonViewBase(View):
             context["table_help"] = self.table_help
         return my_locals(context)
 
+    @property
+    def hash_to_taxon_dict(self):
+        if self._hash_to_taxon_dict is None:
+            self._hash_to_taxon_dict = self.db.get_genomes_description().description.to_dict()
+        return self._hash_to_taxon_dict
+
     def set_table_data(self):
         self.targets = self.form.get_choices()
         self.n_selected = len(self.targets)
 
-        hash_to_taxon_dict = self.db.get_genomes_description().description.to_dict()
-        taxon_list = [hash_to_taxon_dict[target_id] for target_id in self.targets]
+        taxon_list = [self.hash_to_taxon_dict[target_id]
+                      for target_id in self.targets]
         self.table_headers = self.base_info_headers + taxon_list
 
         self.table_rows = self.get_table_rows()
@@ -4032,62 +4039,56 @@ class PfamComparisonView(TabularComparisonViewBase):
         return table_rows
 
 
-def cog_comparison(request):
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    page_title = page2title["cog_comparison"]
+class CogComparisonView(TabularComparisonViewBase):
 
-    comp_metabo_form = make_metabo_from(db)
-    if request.method != 'POST':
-        form = comp_metabo_form(request.POST)
-        return render(request, 'chlamdb/cog_comp.html', my_locals(locals()))
+    view_type = "cog"
+    base_info_headers = ["COG accession", "Description", "# complete DB", "# genomes"]
 
-    form = comp_metabo_form(request.POST)
-    if not form.is_valid():
-        return render(request, 'chlamdb/cog_comp.html', my_locals(locals()))
+    table_help = """
+    The ouput table contains the list of COG annotated in selected genomes and
+    the number of times each of them was identified in each genome.
+    <br>Click on COG accession to get detailed phylogenetic profile of the
+    corresponding COG entry.
+    """
 
-    try:
-        all_targets = form.get_choices()
-    except Exception:
-        # TODO: add error message
-        return render(request, 'chlamdb/cog_comp.html', my_locals(locals()))
+    compared_obj_name = "COG"
 
-    genomes = db.get_genomes_description().description.to_dict()
-    cog_hits = db.get_cog_hits(ids=all_targets, search_on="taxid", indexing="taxid")
+    def get_table_rows(self):
+        cog_hits = self.db.get_cog_hits(
+            ids=self.targets, search_on="taxid", indexing="taxid")
+        # retrieve entry list
+        cog_all = self.db.get_cog_hits(
+            ids=list(self.hash_to_taxon_dict.keys()),
+            search_on="taxid",
+            indexing="taxid")
 
-    # retrieve entry list
-    cog_all = db.get_cog_hits(list(genomes.keys()),
-                              search_on="taxid",
-                              indexing="taxid")
+        # count frequency and n genomes
+        cog_count = cog_all.sum(axis=1)
+        cog_freq = cog_all[cog_all > 0].count(axis=1)
+        cog_freq = cog_freq.loc[cog_hits.index]
+        cog_count = cog_count.loc[cog_hits.index]
+        # retrieve annotations
+        cogs_summaries = self.db.get_cog_summaries(
+            cog_hits.index.tolist(), as_df=True, only_cog_desc=True)
 
-    # count frequency and n genomes
-    cog_count = cog_all.sum(axis=1)
-    cog_freq = cog_all[cog_all > 0].count(axis=1)
-    cog_freq = cog_freq.loc[cog_hits.index]
-    cog_count = cog_count.loc[cog_hits.index]
-    # retrieve annotations
-    cogs_summaries = db.get_cog_summaries(cog_hits.index.tolist(), as_df=True, only_cog_desc=True)
+        cog2description = cogs_summaries.description.to_dict()
+        cog_hits["accession"] = [format_cog(cog, as_url=True)
+                                 for cog in cog_hits.index]
+        cog_hits["description"] = [cog2description[cog] if cog in cog2description else '-'
+                                   for cog in cog_hits.index]
 
-    cog2description = cogs_summaries.description.to_dict()
-    cog_hits["accession"] = [format_cog(cog, as_url=True) for cog in cog_hits.index]
-    cog_hits["description"] = [cog2description[cog] if cog in cog2description else '-' for cog in cog_hits.index]
+        # combine into df
+        combined_df = cog_hits.merge(
+            cog_count.rename('count'),
+            left_index=True,
+            right_index=True).merge(
+                cog_freq.rename('freq'),
+                left_index=True,
+                right_index=True).sort_values(["count"], ascending=False)
 
-    # combine into df
-    combined_df = cog_hits.merge(cog_count.rename('count'),
-                                 left_index=True,
-                                 right_index=True).merge(cog_freq.rename('freq'),
-                                                         left_index=True,
-                                                         right_index=True).sort_values(["count"], ascending=False)
-
-    # reorder columns
-    combined_df = combined_df[["accession", "description", "count", "freq"] + all_targets]
-
-    ctx = {
-        "envoi_comp": True,
-        "taxon_list": all_targets,
-        "combined_df": combined_df.reset_index(drop=True),
-        "taxon_id2description": genomes
-    }
-    return render(request, 'chlamdb/cog_comp.html', my_locals(ctx))
+        cols = combined_df.columns.to_list()
+        ordered_cols = cols[self.n_selected:] + cols[:self.n_selected]
+        return [{"values": row} for i, row in combined_df[ordered_cols].iterrows()]
 
 
 def orthogroup_comparison(request):
