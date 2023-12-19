@@ -3918,6 +3918,7 @@ class TabularComparisonViewBase(View):
             context["table_rows"] = self.table_rows
             context["table_title"] = self.table_title
             context["table_help"] = self.table_help
+            context["first_coloured_row"] = self.first_coloured_row
         return my_locals(context)
 
     @property
@@ -3946,6 +3947,10 @@ class TabularComparisonViewBase(View):
                "genomes: <strong>{}</strong>".format(self.compared_obj_name,
                                                      self.n_selected,
                                                      self.n_rows)
+
+    @property
+    def first_coloured_row(self):
+        return len(self.base_info_headers)
 
 
 def module_comparison(request):
@@ -4023,9 +4028,7 @@ class PfamComparisonView(TabularComparisonViewBase):
             entry_infos = pfam_defs.loc[key]
             base_infos = [format_pfam(key, to_url=True), entry_infos["def"],
                           entry_infos.ttl_cnt]
-            table_rows.append({
-                "values": base_infos + values.values.tolist(),
-                })
+            table_rows.append(base_infos + values.values.tolist())
 
         return table_rows
 
@@ -4079,7 +4082,11 @@ class CogComparisonView(TabularComparisonViewBase):
 
         cols = combined_df.columns.to_list()
         ordered_cols = cols[self.n_selected:] + cols[:self.n_selected]
-        return [{"values": row} for i, row in combined_df[ordered_cols].iterrows()]
+        return combined_df[ordered_cols].values
+
+    @property
+    def first_coloured_row(self):
+        return 4
 
 
 class OrthogroupComparisonView(TabularComparisonViewBase):
@@ -4108,12 +4115,12 @@ class OrthogroupComparisonView(TabularComparisonViewBase):
 
         og_data = []
         for og, items in og_count.iterrows():
-            row = {"values": [format_orthogroup(og, to_url=True)]}
+            row = [format_orthogroup(og, to_url=True)]
             if og in products.index:
-                row["values"].append(format_lst_to_html(products.loc[og]))
+                row.append(format_lst_to_html(products.loc[og]))
             else:
-                row["values"].append("-")
-            row["coloured_values"] = items
+                row.append("-")
+            row.extend(items)
 
             og_data.append(row)
 
@@ -4146,10 +4153,9 @@ class KoComparisonView(TabularComparisonViewBase):
         ko2total_count = df_ttl.groupby("KO").sum()["count"].to_dict()
         table_rows = []
         for key, values in hits.iterrows():
-            table_rows.append({
-                "values": [format_ko(key, as_url=True), ko2annot[key], ko2total_count[key]],
-                "coloured_values": values.values.tolist(),
-                })
+            row = [format_ko(key, as_url=True), ko2annot[key], ko2total_count[key]]
+            row.extend(values.values)
+            table_rows.append(row)
         return table_rows
 
 

@@ -67,16 +67,17 @@
                                   <tbody>
                                     {% for row in table_rows %}
 									                    <tr>
-                                          {% for value in row.values %}
-                                          <td>{{value|safe}}</td>
-                                          {% endfor%}
-                                          {% for value in row.coloured_values %}
-                                                {%if value != 0 %}
-                                                <td data-hist="{{value}}">{{value}}</td>
-                                                {% else %}
-                                                 <td>{{value}}</td>
-                                                {% endif %}
-                                          {% endfor%}
+                                        {% for value in row %}
+                                          {% if forloop.counter0 < first_coloured_row %}
+                                            <td>{{value|safe}}</td>
+                                          {% else %}
+                                            {%if value != 0 %}
+                                              <td data-hist="{{value}}">{{value}}</td>
+                                            {% else %}
+                                              <td>{{value}}</td>
+                                            {% endif %}
+                                          {% endif %}
+                                        {% endfor%}
                                       </tr>
                                     {% endfor %}
                                   </tbody>
