@@ -3981,41 +3981,43 @@ def module_comparison(request):
     return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
 
 
-def pfam_comparison(request):
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    page_title = page2title["pfam_comparison"]
+class PfamComparisonView(TabularComparisonViewBase):
 
-    comp_metabo_form = make_metabo_from(db)
-    if request.method != 'POST':
-        form = comp_metabo_form(request.POST)
-        return render(request, 'chlamdb/pfam_comp.html', my_locals(locals()))
+    view_type = "pfam"
 
-    form = comp_metabo_form(request.POST)
-    if not form.is_valid():
-        return render(request, 'chlamdb/pfam_comp.html', my_locals(locals()))
+    table_help = """
+    The ouput table contains the list of shared Pfam domains and the number of
+    times each of them was identified in the selected genomes.
+    <br>nDomain: total number of occurence of this domain in the
+    complete database.
+    <br>Click on Pfam accession to get detailed phylogenetic profile of the
+    corresponding Pfam entry.
+    """
 
-    try:
-        all_targets = form.get_choices()
-    except Exception:
-        # TODO: add error message
-        return render(request, 'chlamdb/pfam_comp.html', my_locals(locals()))
+    def set_table_data(self):
+        all_targets = self.form.get_choices()
+        genomes = self.db.get_genomes_description().description.to_dict()
 
-    genomes = db.get_genomes_description().description.to_dict()
+        pfam_hits = self.db.get_pfam_hits(ids=all_targets)
+        pfam_defs = self.db.get_pfam_def(pfam_hits.index.tolist(), add_ttl_count=True)
 
-    pfam_hits = db.get_pfam_hits(ids=all_targets)
-    pfam_defs = db.get_pfam_def(pfam_hits.index.tolist(), add_ttl_count=True)
-    data = []
-    for pfam, entry_data in pfam_hits.iterrows():
-        entry_infos = pfam_defs.loc[pfam]
-        base_infos = [format_pfam(pfam, to_url=True), entry_infos["def"], entry_infos.ttl_cnt]
-        data.append(base_infos + entry_data.values.tolist())
-    ctx = {
-        "envoi_comp": True,
-        "taxon_list": pfam_hits.columns.tolist(),
-        "pfam2data": data,
-        "taxon_id2description": genomes
-    }
-    return render(request, 'chlamdb/pfam_comp.html', my_locals(ctx))
+        self.table_rows = []
+        for key, values in pfam_hits.iterrows():
+            entry_infos = pfam_defs.loc[key]
+            base_infos = [format_pfam(key, to_url=True), entry_infos["def"], entry_infos.ttl_cnt]
+            self.table_rows.append({
+                "values": base_infos + values.values.tolist(),
+                })
+
+        taxon_list = [genomes[int(col)] for col in pfam_hits.columns.values]
+        self.n_selected = len(taxon_list)
+        self.n_rows = len(self.table_rows)
+        self.table_headers = ["Domain ID", "Description", "nDomain"]
+        self.table_headers.extend(taxon_list)
+
+    @property
+    def table_title(self):
+        return f"Number of domains at least present 1 time in 1 of the {self.n_selected} selected genomes: <strong>{self.n_rows}</strong>"
 
 
 def cog_comparison(request):

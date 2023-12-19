@@ -86,7 +86,7 @@ urlpatterns = [
     re_path(r'^kegg_module/$', views.kegg_module, name="kegg_module"),
     re_path(r'^module_comparison/$', views.module_comparison,
             name="module_comparison"),
-    re_path(r'^pfam_comparison', views.pfam_comparison, name="pfam_comparison"),
+    re_path(r'^pfam_comparison', views.PfamComparisonView.as_view(), name="pfam_comparison"),
     re_path(r'^cog_comparison', views.cog_comparison, name="cog_comparison"),
     re_path(r'^ko_comparison', views.KoComparisonView.as_view(), name="ko_comparison"),
     re_path(r'^orthogroup_comparison', views.orthogroup_comparison,
