@@ -8,6 +8,11 @@ class DB(db_utils.DB):
         db = super(DB, cls).load_db(db_file, params)
         return cls(db.server, db.db_name)
 
+    @classmethod
+    def load_db_from_name(cls, db_name, db_type="sqlite"):
+        db = super(DB, cls).load_db_from_name(db_name, db_type)
+        return cls(db.server, db.db_name)
+
     def load_amr_hits(self, data):
         sql = (
             "CREATE TABLE amr_hits (hsh INTEGER, gene varchar(20), seq_name tinytext, "
@@ -23,7 +28,7 @@ class DB(db_utils.DB):
         self.server.adaptor.execute(sql)
         self.load_data_into_table("amr_hits", data)
 
-    def get_amr_hits(self, ids):
+    def get_amr_hits_from_seqids(self, ids):
         """
         For now we limit that search to AMR type
         """
@@ -42,3 +47,23 @@ class DB(db_utils.DB):
 
         df = DB.to_pandas_frame(results, columns)
         return df
+
+    def get_amr_hits_from_taxonids(self, ids):
+        """
+        For now we limit that search to AMR type
+        """
+
+        columns = ("bioentry.taxon_id", "type", "class", "subclass", "gene",
+                   "seq_name", "scope", "coverage", "identity")
+
+        query = (
+            f"SELECT {', '.join(columns)} "
+            "FROM amr_hits "
+            "INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = amr_hits.hsh "
+            "INNER JOIN seqfeature ON hsh.seqid = seqfeature.seqfeature_id "
+            "INNER JOIN bioentry ON seqfeature.bioentry_id = bioentry.bioentry_id "
+            f"WHERE bioentry.taxon_id IN ({', '.join(str(el) for el in ids)});"
+        )
+
+        results = self.server.adaptor.execute_and_fetchall(query)
+        return DB.to_pandas_frame(results, columns)

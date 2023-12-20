@@ -67,17 +67,21 @@
                                   <tbody>
                                     {% for row in table_rows %}
 									                    <tr>
-                                        {% for value in row %}
+                                        {% for value in row|slice_up_to:n_data_columns %}
                                           {% if forloop.counter0 < first_coloured_row %}
                                             <td>{{value|safe}}</td>
                                           {% else %}
-                                            {%if value != 0 %}
-                                              <td data-hist="{{value}}">{{value}}</td>
-                                            {% else %}
-                                              <td>{{value}}</td>
-                                            {% endif %}
+                                            {% with color_i=forloop.counter0|add:hist_colour_index_shift %}
+                                              {% with colour=row|return_item:color_i %}
+                                                {% if colour != 0 %}
+                                                  <td data-hist="{{colour}}">{{value}}</td>
+                                                {% else %}
+                                                  <td>{{value}}</td>
+                                                {% endif %}
+                                              {% endwith %}
+                                            {% endwith %}
                                           {% endif %}
-                                        {% endfor%}
+                                        {% endfor %}
                                       </tr>
                                     {% endfor %}
                                   </tbody>

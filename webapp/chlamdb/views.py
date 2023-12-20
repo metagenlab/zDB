@@ -88,6 +88,7 @@ page2title = {
     'entry_list_cog': 'Comparisons: Clusters of Orthologous groups (COGs)',
     'ko_comparison': 'Comparisons: Kegg Orthologs (KO)',
     'pfam_comparison': 'Comparisons: PFAM domains',
+    'amr_comparison': 'Comparisons: Antimicrobial Resistance',
     'module_barchart': 'Comparisons: Kegg Orthologs (KO)',
     'blast': 'Homology search: Blast',
     'plot_region': 'Genome alignments: Plot region',
@@ -1404,7 +1405,7 @@ def og_tab_get_kegg_annot(db, seqids, from_taxid=None):
 
 
 def og_tab_get_amr_annot(db, seqids):
-    amr_hits = db.get_amr_hits(seqids)
+    amr_hits = db.get_amr_hits_from_seqids(seqids)
     if amr_hits.empty:
         return {}
 
@@ -3878,6 +3879,7 @@ def kegg_module(request):
 class TabularComparisonViewBase(View):
 
     template = 'chlamdb/tabular_comparison.html'
+    hist_colour_index_shift = 0
 
     def dispatch(self, request, *args, **kwargs):
         biodb_path = settings.BIODB_DB_PATH
@@ -3919,6 +3921,9 @@ class TabularComparisonViewBase(View):
             context["table_title"] = self.table_title
             context["table_help"] = self.table_help
             context["first_coloured_row"] = self.first_coloured_row
+            context["n_data_columns"] = len(self.base_info_headers) + \
+                len(self.targets)
+            context["hist_colour_index_shift"] = self.hist_colour_index_shift
         return my_locals(context)
 
     @property
@@ -3939,6 +3944,12 @@ class TabularComparisonViewBase(View):
         self.n_rows = len(self.table_rows)
 
     def get_table_rows(self):
+        """This method should return an iteratable object with each iteration
+        yielding a row of the table. Apart from the data, rows can contain
+        values used to color the cells, these are stored in the rows after
+        the data and will be matched to the corresponding data value with a
+        shift in index (row[i] colored by row[i + hist_colour_index_shift]).
+        """
         raise NotImplementedError
 
     @property
@@ -4157,6 +4168,50 @@ class KoComparisonView(TabularComparisonViewBase):
             row.extend(values.values)
             table_rows.append(row)
         return table_rows
+
+
+class AmrComparisonView(TabularComparisonViewBase):
+
+    view_type = "amr"
+
+    table_help = """
+    The ouput table contains the number of times a given AMR gene appears
+    in the selected genomes, color coded according to the quality
+    (coverage*identity) of the best hit for that genome.
+
+    <br> Note that genes are split into "core" and "plus" scopes, where
+    "core" proteins are expected to have an effect on resistance while
+    "plus" proteins are included with a less stringent criteria.<br>
+    <br> Counts can be reordrered by clicking on column headers.<br>
+    """
+
+    base_info_headers = ["Gene", "scope", "Class", "Subclass", "Annotation"]
+    compared_obj_name = "AMR"
+
+    def get_table_rows(self):
+        hits = self.db.get_amr_hits_from_taxonids(self.targets)
+
+        table_rows = []
+        hits["quality"] = hits["coverage"] * hits["identity"] / 10000
+        for gene, data in hits.groupby("gene"):
+            row = [gene,
+                   data.iloc[0]["scope"],
+                   data.iloc[0]["class"],
+                   data.iloc[0]["subclass"],
+                   data.iloc[0]["seq_name"]]
+            taxonids = data["bioentry.taxon_id"]
+            values = [len(taxonids[taxonids == target_id])
+                      for target_id in self.targets]
+            colours = [data[taxonids == target_id]["quality"].max() if value
+                       else 0 for value, target_id in zip(values, self.targets)]
+            row.extend(values)
+            row.extend(colours)
+            table_rows.append(row)
+        return table_rows
+
+    @property
+    def hist_colour_index_shift(self):
+        return len(self.targets)
 
 
 def faq(request):

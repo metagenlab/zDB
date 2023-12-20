@@ -91,6 +91,7 @@ urlpatterns = [
     re_path(r'^ko_comparison', views.KoComparisonView.as_view(), name="ko_comparison"),
     re_path(r'^orthogroup_comparison', views.OrthogroupComparisonView.as_view(),
             name="orthogroup_comparison"),
+    re_path(r'^amr_comparison', views.AmrComparisonView.as_view(), name="amr_comparison"),
     re_path(r'^about$', views.about, name="about"),
     re_path(r'^help', views.help, name="help"),
     re_path(r'^fam_pfam/(PF[0-9]+)$', views.fam_pfam, name="fam_pfam"),
