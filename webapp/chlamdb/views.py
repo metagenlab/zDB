@@ -45,6 +45,7 @@ from chlamdb.forms import (make_blast_form, make_circos_form,
                            make_module_overview_form,
                            make_pathway_overview_form, make_plot_form,
                            make_single_genome_form, make_venn_from)
+from chlamdb.utils import safe_replace
 
 # could also be extended to cache the results of frequent queries
 # (e.g. taxid -> organism name) to avoid db queries
@@ -4208,8 +4209,8 @@ class AmrComparisonView(TabularComparisonViewBase):
         for gene, data in hits.groupby("gene"):
             row = [gene,
                    data.iloc[0]["scope"],
-                   data.iloc[0]["class"],
-                   data.iloc[0]["subclass"],
+                   safe_replace(data.iloc[0]["class"], "/", " / "),
+                   safe_replace(data.iloc[0]["subclass"], "/", " / "),
                    data.iloc[0]["seq_name"]]
             taxonids = data["bioentry.taxon_id"]
             values = [len(taxonids[taxonids == target_id])
