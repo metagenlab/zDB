@@ -25,7 +25,7 @@
                  {% include "chlamdb/extract_nav_tabs_template.html" with type=view_type active_tab="comp" %}
 
                   <br>
-                  <p class="page-title"><b>Size of shared Kegg Orthologs </b><a href="/docs/index.html" id="show-option" title="Compare the size of the orthogroup shared by selected genomes (targets)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                  <p class="page-title"><b>{{form_title}} </b><a href="/docs/index.html" id="show-option" title="{{form_help}}"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
                 </div>
                       <form action='{% url view_name %}' method="post">
                           {% csrf_token %}

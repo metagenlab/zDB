@@ -3910,6 +3910,8 @@ class TabularComparisonViewBase(View):
     def context(self):
         context = {
             "page_title": self.page_title,
+            "form_title": self.form_title,
+            "form_help": self.form_help,
             "form": self.form,
             "show_comparison_table": self.show_comparison_table,
             "view_name": self.view_name,
@@ -3958,6 +3960,16 @@ class TabularComparisonViewBase(View):
                "genomes: <strong>{}</strong>".format(self.compared_obj_name,
                                                      self.n_selected,
                                                      self.n_rows)
+
+    @property
+    def form_title(self):
+        return "Compare the distribution of shared {}.".format(
+            self.compared_obj_name)
+
+    @property
+    def form_help(self):
+        return "Compare the size of the {} shared by selected genomes (targets).".format(
+            self.compared_obj_name)
 
     @property
     def first_coloured_row(self):
