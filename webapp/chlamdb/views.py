@@ -1658,30 +1658,52 @@ class LocusHeatmapColumn(SimpleColorColumn):
 
 
 def get_sequence(db, seqid, flanking=0):
-    loc = db.get_gene_loc([seqid]) #, as_hash=False)
+    loc = db.get_gene_loc([seqid], as_hash=False)
     bioentry, accession, length, seq = db.get_bioentry_list(seqid, search_on="seqid")
 
-    strand, start, stop = loc[seqid]
-    start -= 1
+    if len(loc) == 2:
+        # Need to handle the special case where a gene is overlapping both ends
+        # of a circular contig.
+        # This code assumes that the gene overlaps both ends of a circular contig
+        # and won't work otherwise
+        loc0 = loc.loc[0]
+        loc1 = loc.loc[1]
+        if loc0.strand != loc1.strand:
+            raise Exception("Unsupported case of fragment gene on different strands")
 
-    if start < 50:
-        start_w_flank = 0
-        red_start = start
+        _, strand, start, stop = (int(i) for i in loc0.tolist())
+        if start==1:
+            fet1 = SeqFeature(FeatureLocation(start-1, stop+flanking, strand=strand))
+            fet0 = SeqFeature(FeatureLocation(int(loc1.start-flanking-1), int(loc1.end), strand=strand))
+        else:
+            fet0 = SeqFeature(FeatureLocation(start-1-flanking, stop, strand=strand))
+            fet1 = SeqFeature(FeatureLocation(int(loc1.start)-1, int(loc1.end)+flanking, strand=strand))
+        extracted0 = fet0.extract(seq)
+        extracted1 = fet1.extract(seq)
+        extracted = extracted0+extracted1
+        red_start = flanking
+        red_stop = len(extracted0)+(fet1.location.end-fet1.location.start-flanking)
+    elif len(loc) == 1:
+        _, strand, start, stop = (int(i) for i in loc.loc[0].tolist())
+        start -= 1
+        if start < 50:
+            start_w_flank = 0
+            red_start = start
+        else:
+            start_w_flank = start - flanking
+            red_start = 50
+
+        if stop + flanking > len(seq):
+            stop_w_flank = len(seq) - 1
+        else:
+            stop_w_flank = stop + flanking
+        red_stop = red_start + stop - start
+        fet = SeqFeature(FeatureLocation(start_w_flank, stop_w_flank, strand=strand))
+        extracted = fet.extract(seq)
     else:
-        start_w_flank = start - flanking
-        red_start = 50
-
-    if stop + flanking > len(seq):
-        stop_w_flank = len(seq) - 1
-    else:
-        stop_w_flank = stop + flanking
-    red_stop = red_start + stop - start
-    fet = SeqFeature(FeatureLocation(start_w_flank, stop_w_flank, strand=strand))
-    extracted = fet.extract(seq)
-
+        raise Exception("Unsupported case of fragmented gene")
     return extracted[0:red_start] + "<font color='red'>" + \
         extracted[red_start:red_stop] + "</font>" + extracted[red_stop:]
-
 
 def tab_get_pfam_annot(db, seqid):
     pfam_hits = db.get_pfam_hits_info(seqid)
