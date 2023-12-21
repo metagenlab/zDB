@@ -168,7 +168,8 @@ nr_seqs.splitFasta( by: 300, file: "chunk_" )
         to_blast_swissprot
         to_diamond_refseq
         to_kofamscan
-        to_pfam_scan }
+        to_pfam_scan
+        to_amr_scan }
 
 
 if(params.pfam) {
@@ -599,6 +600,29 @@ if(params.ko) {
 }
 
 
+if(params.amr) {
+
+    process execute_amrscan {
+      container "$params.ncbi_amr_container"
+      conda "$baseDir/conda/ncbi_amr.yaml"
+
+      input:
+      file(seq) from to_amr_scan
+
+      output:
+          file "amrfinder_results*.tab" into amr_table
+
+      script:
+      n = seq.name
+      """
+      amrfinder --plus -p ${n} > amrfinder_results_${n}.tab
+      """
+    }
+} else {
+    Channel.value("void").set { amr_table }
+}
+
+
 process setup_db {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
@@ -887,7 +911,7 @@ process load_swissprot_hits_into_db {
         file swissprot_db from Channel.fromPath("$params.swissprot_db/swissprot.fasta")
 
     output:
-        file db into to_create_index
+        file db into to_load_amr_db
 
     script:
     if(params.blast_swissprot)
@@ -904,6 +928,34 @@ process load_swissprot_hits_into_db {
     """
         echo \"Not supposed to load swissprot hits, passing\"
     """
+}
+
+process load_amr_into_db {
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
+    input:
+        file collected_amr_files from amr_table.collect()
+        file db from to_load_amr_db
+
+    output:
+        file db into to_create_index
+
+    script:
+    if(params.amr)
+        """
+        #!/usr/bin/env python
+
+        import setup_chlamdb
+
+        kwargs = ${gen_python_args()}
+        amr_files = "${collected_amr_files}".split()
+        setup_chlamdb.load_amr(kwargs, amr_files, "$db")
+        """
+    else
+        """
+        echo \"Not supposed to load COG, passing\"
+        """
 }
 
 

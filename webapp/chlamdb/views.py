@@ -3,71 +3,51 @@
 # todo circos gc file curently written in home directory, move it to other place
 # todo save temp files in temp folder
 
-import seaborn as sns
-import numpy as np
-import pandas as pd
-import matplotlib.colors as mpl_col
-
 import collections
-import string
-import random
 import os
-import time
+import random
 import re
-
-import bibtexparser
-
+import string
+import time
 from io import StringIO
 from tempfile import NamedTemporaryFile
 
-
-from django.http import HttpResponseRedirect
-from django.http import HttpResponse
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.conf import settings
-
-from chlamdb.forms import make_plot_form
-from chlamdb.forms import make_circos_form
-from chlamdb.forms import make_blast_form
-from chlamdb.forms import make_extract_form
-from chlamdb.forms import make_metabo_from
-from chlamdb.forms import make_module_overview_form
-from chlamdb.forms import make_pathway_overview_form
-from chlamdb.forms import make_venn_from
-from chlamdb.forms import make_single_genome_form
-
-from metagenlab_libs import db_utils
-from metagenlab_libs.ete_phylo import EteTree
-from metagenlab_libs.ete_phylo import SimpleColorColumn
-from metagenlab_libs.ete_phylo import ModuleCompletenessColumn
-from metagenlab_libs.ete_phylo import KOAndCompleteness
-from metagenlab_libs.ete_phylo import Column
-from metagenlab_libs.KO_module import ModuleParser
-from metagenlab_libs.chlamdb import search_bar as sb
-from metagenlab_libs import circosjs
-
-
-from Bio.Blast.Applications import NcbiblastpCommandline
-from Bio.Blast.Applications import NcbiblastnCommandline
-from Bio.Blast.Applications import NcbitblastnCommandline
-from Bio.Blast.Applications import NcbiblastxCommandline
-from Bio.Blast import NCBIXML
-from Bio.SeqRecord import SeqRecord
-from Bio.SeqFeature import SeqFeature, FeatureLocation
-from Bio.Seq import reverse_complement, translate
-from Bio.Seq import Seq
+import bibtexparser
+import matplotlib.colors as mpl_col
+import numpy as np
+import pandas as pd
+import seaborn as sns
 from Bio import SeqIO
-
-
-from ete3 import Tree
-from ete3 import TextFace, StackedBarFace, SeqMotifFace, TreeStyle
+from Bio.Blast import NCBIXML
+from Bio.Blast.Applications import (NcbiblastnCommandline,
+                                    NcbiblastpCommandline,
+                                    NcbiblastxCommandline,
+                                    NcbitblastnCommandline)
+from Bio.Seq import Seq, reverse_complement, translate
+from Bio.SeqFeature import FeatureLocation, SeqFeature
+from Bio.SeqRecord import SeqRecord
+from django.conf import settings
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import render
+from ete3 import SeqMotifFace, StackedBarFace, TextFace, Tree, TreeStyle
+from metagenlab_libs import circosjs, db_utils
+from metagenlab_libs.chlamdb import search_bar as sb
+from metagenlab_libs.ete_phylo import (Column, EteTree, KOAndCompleteness,
+                                       ModuleCompletenessColumn,
+                                       SimpleColorColumn)
+from metagenlab_libs.KO_module import ModuleParser
 from reportlab.lib import colors
+from zdb.database.database import DB
 
+from chlamdb.forms import (make_blast_form, make_circos_form,
+                           make_extract_form, make_metabo_from,
+                           make_module_overview_form,
+                           make_pathway_overview_form, make_plot_form,
+                           make_single_genome_form, make_venn_from)
 
 # could also be extended to cache the results of frequent queries
 # (e.g. taxid -> organism name) to avoid db queries
-with db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
+with DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
     hsh_config = db.get_config_table(ret_mandatory=True)
     optional2status = {name: value for name,
                        (mandatory, value) in hsh_config.items() if not mandatory}
@@ -142,8 +122,8 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase +
 
 
 def extract_alphanumeric(input_string):
-    from string import ascii_letters, digits
     import string
+    from string import ascii_letters, digits
     return "".join([ch for ch in input_string if ch in (ascii_letters + digits + '_-.')])
 
 
@@ -202,7 +182,7 @@ class StackedBarColumn(Column):
 
 def home(request):
     biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = DB.load_db_from_name(biodb_path)
 
     genomes_data = db.get_genomes_infos()
     genomes_descr = db.get_genomes_description()
@@ -323,7 +303,7 @@ def get_table_details(db, annotations):
 
 def extract_orthogroup(request):
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = DB.load_db(biodb, settings.BIODB_CONF)
 
     page_title = page2title["extract_orthogroup"]
 
@@ -449,7 +429,7 @@ def extract_orthogroup(request):
 
 def venn_orthogroup(request):
     biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = DB.load_db_from_name(biodb_path)
     page_title = page2title["venn_orthogroup"]
 
     venn_form_class = make_venn_from(db, limit=6)
@@ -501,7 +481,7 @@ def venn_orthogroup(request):
 
 def format_pfam(pfam_id, base=None, to_url=False):
     if base is None:
-        fmt_entry = f"PF{pfam_id: 04d}"
+        fmt_entry = f"PF{pfam_id:04d}"
     else:
         fmt_entry = base
     if to_url:
@@ -522,7 +502,7 @@ def index_comp(request, type):
 
 
 def entry_list_ko(request,):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     page_title = page2title["entry_list_ko"]
 
     # retrieve taxid list
@@ -555,7 +535,7 @@ def entry_list_ko(request,):
 
 
 def entry_list_cog(request,):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     page_title = page2title["entry_list_cog"]
     # retrieve taxid list
     genomes_data = db.get_genomes_infos()
@@ -584,7 +564,7 @@ def entry_list_cog(request,):
 
 
 def entry_list_pfam(request,):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     page_title = page2title["entry_list_pfam"]
     # retrieve taxid list
     genomes_data = db.get_genomes_infos()
@@ -616,7 +596,7 @@ def entry_list_pfam(request,):
 
 
 def extract_pfam(request, classification="taxon_id"):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     page_title = page2title["extract_pfam"]
 
     extract_form_class = make_extract_form(db, "extract_pfam", plasmid=True, label="Pfam domains")
@@ -692,7 +672,7 @@ def extract_pfam(request, classification="taxon_id"):
 
 def format_ko(ko_id, as_url=False, base=None):
     if base is None:
-        base = f"K{int(ko_id): 05d}"
+        base = f"K{int(ko_id):05d}"
     if not as_url:
         return base
     return f"<a href=\"/fam_ko/{base}\">{base}</a>"
@@ -709,9 +689,9 @@ def format_ko_path(hsh_pathways, ko, as_list=False, with_taxid=None):
             return []
         return "-"
     if with_taxid is None:
-        fmt_lst = (f"<a href=\"/KEGG_mapp_ko/map{i: 05d}\">{d}</a>" for i, d in pathways)
+        fmt_lst = (f"<a href=\"/KEGG_mapp_ko/map{i:05d}\">{d}</a>" for i, d in pathways)
     else:
-        fmt_lst = (f"<a href=\"/KEGG_mapp_ko/map{i: 05d}/{with_taxid}\">{d}</a>" for i, d in pathways)
+        fmt_lst = (f"<a href=\"/KEGG_mapp_ko/map{i:05d}/{with_taxid}\">{d}</a>" for i, d in pathways)
 
     if as_list:
         return list(fmt_lst)
@@ -720,9 +700,9 @@ def format_ko_path(hsh_pathways, ko, as_list=False, with_taxid=None):
 
 def format_ko_module(module_id, module_desc=None):
     if module_desc is None:
-        return f"<a href=\"/KEGG_module_map/M{module_id: 05d}\">M{module_id: 05d}</a>"
+        return f"<a href=\"/KEGG_module_map/M{module_id:05d}\">M{module_id:05d}</a>"
     else:
-        return f"<a href=\"/KEGG_module_map/M{module_id: 05d}\">{module_desc}</a>"
+        return f"<a href=\"/KEGG_module_map/M{module_id:05d}\">{module_desc}</a>"
 
 
 def format_ko_modules(hsh_modules, ko):
@@ -733,7 +713,7 @@ def format_ko_modules(hsh_modules, ko):
 
 
 def extract_ko(request):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     page_title = page2title["extract_ko"]
 
     extract_form_class = make_extract_form(db, "extract_ko", plasmid=True, label="Kegg Orthologs")
@@ -801,7 +781,7 @@ def extract_ko(request):
 
 def venn_pfam(request):
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = DB.load_db(biodb, settings.BIODB_CONF)
     page_title = page2title["venn_pfam"]
 
     venn_form_class = make_venn_from(db, label="PFAM domain", limit=6, action="venn_pfam")
@@ -841,7 +821,7 @@ def venn_pfam(request):
 
 
 def extract_cog(request):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     extract_form_class = make_extract_form(db, "extract_cog", plasmid=True, label="COG")
     page_title = page2title["extract_cog"]
 
@@ -924,12 +904,12 @@ def extract_cog(request):
 
     # Code to generate the barchart diagrams
     cat_map_str = ",".join([f"\"{func}\": \"{descr}\"" for func, descr in cogs_funct.items()])
-    category_map = f"var category_description = {{{cat_map_str}}}"
+    category_map = f"var category_description = {{{cat_map_str}}};"
     ttl_sel = sum([c1 for func, (c1, c2) in cat_count.items()])
     ttl_all = sum([c2 for func, (c1, c2) in cat_count.items()])
 
     cat_count_comp = ",".join([f"\"{func}\": [\"{c2}\", \"{c1}\"]" for func, (c1, c2) in cat_count.items()])
-    category_count_complete = f"var category_count_complete = {{{cat_count_comp}}}"
+    category_count_complete = f"var category_count_complete = {{{cat_count_comp}}};"
 
     serie_selection_val = [str(round(float(c1) / ttl_sel, 2)) for func, (c1, c2) in cat_count.items()]
     serie_all_val = [str(round(float(c2) / ttl_all, 2)) for func, (c1, c2) in cat_count.items()]
@@ -945,7 +925,7 @@ def extract_cog(request):
 
 def venn_ko(request):
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = DB.load_db(biodb, settings.BIODB_CONF)
     page_title = page2title["venn_ko"]
 
     venn_form_class = make_venn_from(db, limit=6)
@@ -977,7 +957,7 @@ def venn_ko(request):
     ko2description = []
     for ko, ko_desc in ko_descriptions.items():
         cleaned_desc = escape_quotes(ko_desc)
-        ko_item = f"h[{to_s(format_ko(ko))}] = [\"{cleaned_desc}\"]"
+        ko_item = f"h[{to_s(format_ko(ko))}] = [\"{cleaned_desc}\"];"
         ko2description.append(ko_item)
     ko2description = "\n".join(ko2description)
     envoi_venn = True
@@ -986,7 +966,7 @@ def venn_ko(request):
 
 def format_cog(cog_id, as_url=False, base=None):
     if base is None:
-        base = f"COG{int(cog_id): 04d}"
+        base = f"COG{int(cog_id):04d}"
     if as_url is False:
         return base
     return f"<a href=\"/fam_cog/{base}\">{base}</a>"
@@ -1008,7 +988,7 @@ def venn_cog(request, sep_plasmids=False):
     """
 
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = DB.load_db(biodb, settings.BIODB_CONF)
     page_title = page2title["venn_cog"]
 
     display_form = True
@@ -1056,7 +1036,7 @@ def venn_cog(request, sep_plasmids=False):
 
 def genomes(request):
     biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = DB.load_db_from_name(biodb_path)
     page_title = page2title["genomes"]
     genomes_data = db.get_genomes_infos()
     genomes_descr = db.get_genomes_description()
@@ -1117,7 +1097,7 @@ def extract_contigs(request, genome):
     page_title = page2title["extract_contigs"]
 
     taxid = int(genome)
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
 
     descr = db.get_genomes_description().description.to_dict()
     prot_infos = db.get_proteins_info([taxid], search_on="taxid",
@@ -1236,10 +1216,10 @@ def tab_lengths(n_homologues, annotations):
 
     lengths = annotations["length"]
     max_protein_length = lengths.max()
-    std_protein_length = f"{lengths.std(): .1f}"
+    std_protein_length = f"{lengths.std():.1f}"
     min_protein_length = lengths.min()
-    mean_protein_length = f"{lengths.mean(): .1f}"
-    median_protein_length = f"{lengths.median(): .1f}"
+    mean_protein_length = f"{lengths.mean():.1f}"
+    median_protein_length = f"{lengths.median():.1f}"
     if len(lengths.unique()) > 1:
         fig1 = ff.create_distplot([lengths.tolist()], ["Sequence length"], bin_size=20)
         fig1.update_xaxes(range=[0, max_protein_length])
@@ -1421,6 +1401,22 @@ def og_tab_get_kegg_annot(db, seqids, from_taxid=None):
     }
 
 
+def og_tab_get_amr_annot(db, seqids):
+    amr_hits = db.get_amr_hits(seqids)
+    if amr_hits.empty:
+        return {}
+
+    col_titles = {"closest_seq": "Closest Sequence"}
+
+    amr_hits["closest_seq"] = amr_hits["closest_seq"].map(format_refseqid_to_ncbi)
+    amr_hits["gene"] = amr_hits[["gene", "hmm_id"]].apply(format_gene_to_ncbi_hmm, axis=1)
+    return {
+        "amr_entries": amr_hits.values,
+        "amr_header": [col_titles.get(col, col.capitalize())
+                       for col in amr_hits.columns]
+    }
+
+
 def og_tab_get_cog_annot(db, seqids):
     cog_hits = db.get_cog_hits(seqids, indexing="seqid", search_on="seqid")
 
@@ -1527,7 +1523,7 @@ def orthogroup(request, og):
         valid_id = True
 
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = DB.load_db(biodb, settings.BIODB_CONF)
 
     og_counts = db.get_og_count([og_id], search_on="orthogroup")
 
@@ -1557,7 +1553,7 @@ def orthogroup(request, og):
             product = "-"
         product_annotations.append([index + 1, product, cnt])
 
-    swissprot, cog_ctx, kegg_ctx, pfam_ctx = {}, {}, {}, {}
+    swissprot, cog_ctx, kegg_ctx, pfam_ctx, amr_ctx = {}, {}, {}, {}, {}
     best_hit_phylo = {}
     if optional2status.get("COG", False):
         cog_ctx = og_tab_get_cog_annot(db, annotations.index.tolist())
@@ -1579,6 +1575,9 @@ def orthogroup(request, og):
     if optional2status.get("BBH_phylogenies", False):
         best_hit_phylo = tab_og_best_hits(db, og_id)
 
+    if optional2status.get("AMR", False):
+        amr_ctx = og_tab_get_amr_annot(db, annotations.index.tolist())
+
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
     homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms, og=og_id)
@@ -1592,7 +1591,8 @@ def orthogroup(request, og):
         **homolog_tab_ctx,
         **length_tab_ctx,
         **og_conserv_ctx, **best_hit_phylo,
-        **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx, **swissprot
+        **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx, **swissprot,
+        **amr_ctx
     }
     return render(request, "chlamdb/og.html", my_locals(context))
 
@@ -1781,7 +1781,7 @@ def tab_get_refseq_homologs(db, seqid):
     header = ["Refseq accession", "Evalue", "Score", "ID(%)", "# gaps", "Len", "Description", "Organism"]
     entries = []
     for match_id, data in all_infos.iterrows():
-        to_ncbi = f"<a href=\"http: //www.ncbi.nlm.nih.gov/protein/{data.accession}\">{data.accession}</a>"
+        to_ncbi = format_refseqid_to_ncbi(data.accession)
         entries.append((to_ncbi, data.evalue, data.bitscore,
                         data.pident, data.gaps, data.length, data.description, data.organism))
     return {"n_refseq_homologs": len(refseq_hits),
@@ -1791,7 +1791,7 @@ def tab_get_refseq_homologs(db, seqid):
 
 def locusx(request, locus=None, menu=True):
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = DB.load_db(biodb, settings.BIODB_CONF)
 
     if locus is None:
         return render(request, 'chlamdb/locus.html', my_locals({"valid_id": False}))
@@ -1851,7 +1851,7 @@ def locusx(request, locus=None, menu=True):
         homolog_tab_ctx = {"n_genomes": "1 genome"}
         og_phylogeny_ctx = {}
 
-    kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
+    kegg_ctx, cog_ctx, pfam_ctx, amr_ctx = {}, {}, {}, {}
     diamond_matches_ctx = {}
     swissprot_ctx = {}
     best_hit_phylo = {}
@@ -1873,6 +1873,9 @@ def locusx(request, locus=None, menu=True):
 
     if optional2status.get("BBH_phylogenies", False):
         best_hit_phylo = tab_og_best_hits(db, og_id, locus=locus)
+
+    if optional2status.get("AMR", False):
+        amr_ctx = og_tab_get_amr_annot(db, [seqid])
 
     context = {
         "valid_id": valid_id,
@@ -1897,7 +1900,8 @@ def locusx(request, locus=None, menu=True):
         **genomic_region_ctx,
         **diamond_matches_ctx,
         **swissprot_ctx,
-        **best_hit_phylo
+        **best_hit_phylo,
+        **amr_ctx
     }
     return render(request, 'chlamdb/locus.html', my_locals(context))
 
@@ -1926,7 +1930,7 @@ def search_suggest(request,):
 
 
 def search_bar(request):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     option2status = db.get_config_table()
     index = sb.ChlamdbIndex.use_index(settings.SEARCH_INDEX)
     user_query = request.GET.get("search2")
@@ -2113,7 +2117,7 @@ def fam_cog(request, cog_id):
     page_title = page2title["fam_cog"]
 
     biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = DB.load_db_from_name(biodb_path)
     cog_id = int(cog_id[3:])
 
     if request.method != "GET":
@@ -2167,7 +2171,7 @@ def fam_ko(request, ko_str):
     page_title = page2title["fam_ko"]
 
     ko_id = int(ko_str[len("K"):])
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
 
     df_ko_hits = db.get_ko_hits([ko_id], search_on="ko", indexing="seqid", keep_taxid=True)
     seqids = df_ko_hits.index.tolist()
@@ -2215,7 +2219,7 @@ def fam_pfam(request, pfam):
     except Exception:
         return render(request, 'chlamdb/fam.html', my_locals(context))
 
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     pfam_hits = db.get_pfam_hits([pfam_id], search_on="pfam", indexing="seqid", keep_taxid=True)
     seqids = pfam_hits.seqid.unique().tolist()
     orthogroups = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
@@ -2246,7 +2250,7 @@ def COG_phylo_heatmap(request, frequency):
         return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
     freq = frequency != "False"
 
-    db = db_utils.DB.load_db_from_name(biodb)
+    db = DB.load_db_from_name(biodb)
     tree = db.get_reference_phylogeny()
     descr = db.get_genomes_description()
     all_taxids = descr.index.tolist()
@@ -2311,7 +2315,7 @@ def KEGG_module_map(request, module_name):
 
     if request.method != "GET":
         return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
 
     try:
         module_id = int(module_name[len("M"):])
@@ -2461,7 +2465,7 @@ def extract_map(db, request):
 def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
     page_title = page2title["KEGG_mapp_ko"]
 
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
 
     if map_name is None:
         try:
@@ -2535,7 +2539,7 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
 
 def get_cog(request, taxon_id, category):
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb)
+    db = DB.load_db_from_name(biodb)
 
     cog_hits = db.get_cog_hits([int(taxon_id)], indexing="seqid", search_on="taxid")
     cog_ids = cog_hits.cog.unique().tolist()
@@ -2567,7 +2571,7 @@ def cog_venn_subset(request, category):
     # Note: add error handling
 
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = DB.load_db(biodb, settings.BIODB_CONF)
 
     targets = [int(i) for i in request.GET.getlist('h')]
     if len(targets) > 5:
@@ -2607,7 +2611,7 @@ def cog_venn_subset(request, category):
 
 def ko_venn_subset(request, category):
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = DB.load_db(biodb, settings.BIODB_CONF)
 
     category = category.replace("+", " ")
     try:
@@ -2657,7 +2661,7 @@ def module_cat_info(request, taxid, category):
     # in the category list to avoid multiple string comparison
 
     biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb_path, settings.BIODB_CONF)
+    db = DB.load_db(biodb_path, settings.BIODB_CONF)
 
     organisms = db.get_genomes_description().description.to_dict()
     taxid = int(taxid)
@@ -2705,7 +2709,7 @@ def js_bioentries_to_description(hsh):
 
 def module_barchart(request):
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = DB.load_db(biodb, settings.BIODB_CONF)
     page_title = page2title["module_barchart"]
 
     venn_form_class = make_venn_from(db)
@@ -2792,7 +2796,7 @@ def cog_barchart(request):
     page_title = page2title["cog_barchart"]
 
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb)
+    db = DB.load_db_from_name(biodb)
     venn_form_class = make_venn_from(db)
 
     if request.method != 'POST':
@@ -2872,7 +2876,7 @@ def cog_barchart(request):
 
 def pan_genome(request, type):
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb)
+    db = DB.load_db_from_name(biodb)
     page_title = page2title[f"pan_genome_{type}"]
     venn_form_class = make_venn_from(db, plasmid=False)
 
@@ -3006,7 +3010,7 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
 # for now, simplified the tblastn output to the same output as the
 # other blast versions. May be re-introduced in future versions
 def blast(request):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     page_title = page2title["blast"]
     blast_form_class = make_blast_form(db)
 
@@ -3126,10 +3130,23 @@ def format_gene(gene):
 
 def format_taxid_to_ncbi(organism, taxid):
     val = (
-        f"""<a href="https: //www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={taxid}" target="_top">"""
+        f"""<a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={taxid}" target="_top">"""
         f"""{organism}</a>"""
     )
     return val
+
+
+def format_refseqid_to_ncbi(seqid):
+    return f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{seqid}\">{seqid}</a>"
+
+
+def format_gene_to_ncbi_hmm(gene_and_hmmid):
+    gene, hmm_id = gene_and_hmmid
+    if hmm_id:
+        # The hmm_id contains a version number, which is not in the ncbi URL.
+        hmm_id = hmm_id.rsplit(".", 1)[0]
+        return f"<a href=\"https://www.ncbi.nlm.nih.gov/genome/annotation_prok/evidence/{hmm_id}\">{gene}</a>"  # noqa
+    return gene
 
 
 def locus_tab_swissprot_hits(db, seqid):
@@ -3178,7 +3195,7 @@ def coalesce_regions(genomic_regions, seqids):
 
 def plot_region(request):
     max_region_size = 20000
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     page_title = page2title["plot_region"]
     form_class = make_plot_form(db)
 
@@ -3334,7 +3351,7 @@ def plot_region(request):
 
 def circos_main(request):
     biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = DB.load_db_from_name(biodb_path)
 
     if request.method == 'POST':
 
@@ -3388,7 +3405,7 @@ def circos_main(request):
 
 def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = DB.load_db_from_name(biodb_path)
 
     if highlight_og:
         df_genes = db.get_genes_from_og(highlight_og, taxon_ids=[reference_taxon], terms=["locus_tag"])
@@ -3487,7 +3504,7 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
 def circos(request):
 
     biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = DB.load_db_from_name(biodb_path)
     page_title = page2title["circos"]
 
     circos_form_class = make_circos_form(db)
@@ -3529,7 +3546,7 @@ def plot_heatmap(request, type):
     page_title = page2title[f"plot_heatmap_{type}"]
 
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb)
+    db = DB.load_db_from_name(biodb)
     form_class = make_venn_from(db)
 
     if request.method != "POST":
@@ -3611,7 +3628,7 @@ def format_pathway(path_id, base=None, to_url=False, taxid=None):
 
 def kegg_genomes(request):
 
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     single_genome_form = make_single_genome_form(db)
     hsh_organisms = db.get_genomes_description().description.to_dict()
     if request.method != "POST":
@@ -3656,7 +3673,7 @@ def kegg_genomes(request):
 def kegg_genomes_modules(request):
     page_title = page2title["kegg_genomes_modules"]
 
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     single_genome_form = make_single_genome_form(db)
     hsh_organisms = db.get_genomes_description().description.to_dict()
     if request.method != "POST":
@@ -3700,7 +3717,7 @@ def kegg_genomes_modules(request):
 def kegg(request):
     page_title = page2title["kegg"]
 
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     module_overview_form = make_module_overview_form(db)
     form_cat = module_overview_form(request.POST)
     form_cat = module_overview_form()
@@ -3728,7 +3745,7 @@ def kegg_module_subcat(request):
     page_title = page2title["kegg_module_subcat"]
 
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = DB.load_db(biodb, settings.BIODB_CONF)
 
     module_overview_form = make_module_overview_form(db, True)
     if request.method != "POST":
@@ -3798,7 +3815,7 @@ def kegg_module(request):
     page_title = page2title["kegg_module"]
 
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = DB.load_db(biodb, settings.BIODB_CONF)
     module_overview_form = make_module_overview_form(db)
     if request.method != "POST":
         form = module_overview_form()
@@ -3864,7 +3881,7 @@ def module_comparison(request):
     page_title = page2title["module_comparison"]
 
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    db = DB.load_db(biodb, settings.BIODB_CONF)
     comp_metabo_form = make_metabo_from(db)
 
     if request.method != "POST":
@@ -3910,7 +3927,7 @@ def module_comparison(request):
 
 
 def pfam_comparison(request):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     page_title = page2title["cog_barchart"]
 
     comp_metabo_form = make_metabo_from(db)
@@ -3947,7 +3964,7 @@ def pfam_comparison(request):
 
 
 def cog_comparison(request):
-    db = db_utils.DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     page_title = page2title["cog_comparison"]
 
     comp_metabo_form = make_metabo_from(db)
@@ -4006,7 +4023,7 @@ def cog_comparison(request):
 
 def orthogroup_comparison(request):
     biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = DB.load_db_from_name(biodb_path)
     page_title = page2title[f"orthogroup_comparison"]
 
     comp_metabo_form = make_metabo_from(db)
@@ -4050,7 +4067,7 @@ def orthogroup_comparison(request):
 
 def ko_comparison(request):
     biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = DB.load_db_from_name(biodb_path)
     page_title = page2title["ko_comparison"]
 
     comp_metabo_form = make_metabo_from(db)
@@ -4093,7 +4110,7 @@ def phylogeny(request):
     page_title = page2title["phylogeny_intro"]
 
     biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = DB.load_db_from_name(biodb_path)
 
     genomes_data = db.get_genomes_infos()
     genomes_descr = db.get_genomes_description()
@@ -4149,7 +4166,7 @@ def genomes_intro(request):
     page_title = page2title["genomes_intro"]
 
     biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = DB.load_db_from_name(biodb_path)
 
     genomes_data = db.get_genomes_infos()
     genomes_descr = db.get_genomes_description()

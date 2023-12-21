@@ -3,6 +3,7 @@ import os
 import sys
 import django
 
+sys.path.append("../")
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings.settings")
