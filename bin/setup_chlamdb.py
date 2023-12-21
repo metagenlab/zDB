@@ -1,20 +1,12 @@
 import os
-import sys
 import re
-
-from metagenlab_libs import db_utils
-from metagenlab_libs.chlamdb import search_bar
-from metagenlab_libs import KO_module
+import sys
+from collections import defaultdict, namedtuple
 
 import pandas as pd
-
-from Bio import SeqIO
-from Bio import AlignIO
-from Bio import SeqUtils
-
-from collections import namedtuple
-from collections import defaultdict
-
+from Bio import AlignIO, SeqIO, SeqUtils
+from metagenlab_libs import KO_module, db_utils
+from metagenlab_libs.chlamdb import search_bar
 from zdb.database.database import DB
 
 

@@ -3,68 +3,47 @@
 # todo circos gc file curently written in home directory, move it to other place
 # todo save temp files in temp folder
 
-import seaborn as sns
-import numpy as np
-import pandas as pd
-import matplotlib.colors as mpl_col
-
 import collections
-import string
-import random
 import os
-import time
+import random
 import re
-
-import bibtexparser
-
+import string
+import time
 from io import StringIO
 from tempfile import NamedTemporaryFile
 
-
-from django.http import HttpResponseRedirect
-from django.http import HttpResponse
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.conf import settings
-
-from chlamdb.forms import make_plot_form
-from chlamdb.forms import make_circos_form
-from chlamdb.forms import make_blast_form
-from chlamdb.forms import make_extract_form
-from chlamdb.forms import make_metabo_from
-from chlamdb.forms import make_module_overview_form
-from chlamdb.forms import make_pathway_overview_form
-from chlamdb.forms import make_venn_from
-from chlamdb.forms import make_single_genome_form
-
-from metagenlab_libs import db_utils
-from metagenlab_libs.ete_phylo import EteTree
-from metagenlab_libs.ete_phylo import SimpleColorColumn
-from metagenlab_libs.ete_phylo import ModuleCompletenessColumn
-from metagenlab_libs.ete_phylo import KOAndCompleteness
-from metagenlab_libs.ete_phylo import Column
-from metagenlab_libs.KO_module import ModuleParser
-from metagenlab_libs.chlamdb import search_bar as sb
-from metagenlab_libs import circosjs
-
-
-from Bio.Blast.Applications import NcbiblastpCommandline
-from Bio.Blast.Applications import NcbiblastnCommandline
-from Bio.Blast.Applications import NcbitblastnCommandline
-from Bio.Blast.Applications import NcbiblastxCommandline
-from Bio.Blast import NCBIXML
-from Bio.SeqRecord import SeqRecord
-from Bio.SeqFeature import SeqFeature, FeatureLocation
-from Bio.Seq import reverse_complement, translate
-from Bio.Seq import Seq
+import bibtexparser
+import matplotlib.colors as mpl_col
+import numpy as np
+import pandas as pd
+import seaborn as sns
 from Bio import SeqIO
-
+from Bio.Blast import NCBIXML
+from Bio.Blast.Applications import (NcbiblastnCommandline,
+                                    NcbiblastpCommandline,
+                                    NcbiblastxCommandline,
+                                    NcbitblastnCommandline)
+from Bio.Seq import Seq, reverse_complement, translate
+from Bio.SeqFeature import FeatureLocation, SeqFeature
+from Bio.SeqRecord import SeqRecord
+from django.conf import settings
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import render
+from ete3 import SeqMotifFace, StackedBarFace, TextFace, Tree, TreeStyle
+from metagenlab_libs import circosjs, db_utils
+from metagenlab_libs.chlamdb import search_bar as sb
+from metagenlab_libs.ete_phylo import (Column, EteTree, KOAndCompleteness,
+                                       ModuleCompletenessColumn,
+                                       SimpleColorColumn)
+from metagenlab_libs.KO_module import ModuleParser
+from reportlab.lib import colors
 from zdb.database.database import DB
 
-from ete3 import Tree
-from ete3 import TextFace, StackedBarFace, SeqMotifFace, TreeStyle
-from reportlab.lib import colors
-
+from chlamdb.forms import (make_blast_form, make_circos_form,
+                           make_extract_form, make_metabo_from,
+                           make_module_overview_form,
+                           make_pathway_overview_form, make_plot_form,
+                           make_single_genome_form, make_venn_from)
 
 # could also be extended to cache the results of frequent queries
 # (e.g. taxid -> organism name) to avoid db queries
@@ -143,8 +122,8 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase +
 
 
 def extract_alphanumeric(input_string):
-    from string import ascii_letters, digits
     import string
+    from string import ascii_letters, digits
     return "".join([ch for ch in input_string if ch in (ascii_letters + digits + '_-.')])
 
 
