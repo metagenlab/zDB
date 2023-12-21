@@ -11,6 +11,7 @@ zDB documentation
 
    methods/annotation.rst
    tutorial/website.rst
+   CHANGELOG.md
 
 zDB github page
 ===============
