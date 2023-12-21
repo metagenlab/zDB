@@ -76,14 +76,14 @@ get_files
 process check_gbk {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
-    publishDir "${params.results_dir}/blast_DB/$workflow.runName/gbk"
 
 	input:
-	    file gbk from gbk_from_local_assembly.collect()
+        file gbk from gbk_from_local_assembly.collect()
         file input_file from parse_input
 
 	output:
 	    path "filtered/*" into checked_gbks
+            path "filtered" into to_cleanup_gbks
 
 	script:
 	"""
@@ -122,8 +122,8 @@ process convert_gbk {
     import annotations
 
     annotations.convert_gbk_to_fasta("${edited_gbk}", "${edited_gbk.baseName}.faa")
-    annotations.convert_gbk_to_fna("${edited_gbk}", "${edited_gbk.baseName}.ffn")
-    annotations.convert_gbk_to_fasta("${edited_gbk}", "${edited_gbk.baseName}.fna",
+    annotations.convert_gbk_to_fna("${edited_gbk}", "${edited_gbk.baseName}.fna")
+    annotations.convert_gbk_to_fasta("${edited_gbk}", "${edited_gbk.baseName}.ffn",
         output_fmt="fna", keep_pseudo=True)
   """
 }
@@ -168,7 +168,8 @@ nr_seqs.splitFasta( by: 300, file: "chunk_" )
         to_blast_swissprot
         to_diamond_refseq
         to_kofamscan
-        to_pfam_scan }
+        to_pfam_scan
+        to_amr_scan }
 
 
 if(params.pfam) {
@@ -214,7 +215,7 @@ fna_files_SEQ_2.mix(faa_files_SEQ_2, ffn_files_seq_2, merged_ffn_makeblastdb,
 process makeblastdb {
     container "$params.blast_container"
     conda "$baseDir/conda/blast.yaml"
-    publishDir "${params.results_dir}/blast_DB/$workflow.runName/${file_type}", mode: 'move'
+    publishDir "${params.results_dir}/blast_DB/$workflow.runName/${file_type}", mode: 'copy'
 
     input:
         file(input_file) from to_makeblastdb
@@ -599,6 +600,29 @@ if(params.ko) {
 }
 
 
+if(params.amr) {
+
+    process execute_amrscan {
+      container "$params.ncbi_amr_container"
+      conda "$baseDir/conda/ncbi_amr.yaml"
+
+      input:
+      file(seq) from to_amr_scan
+
+      output:
+          file "amrfinder_results*.tab" into amr_table
+
+      script:
+      n = seq.name
+      """
+      amrfinder --plus -p ${n} > amrfinder_results_${n}.tab
+      """
+    }
+} else {
+    Channel.value("void").set { amr_table }
+}
+
+
 process setup_db {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
@@ -630,7 +654,7 @@ process load_base_db {
 
     input:
         file db_base
-		file gbks from to_load_gbk_into_db
+	file gbks from to_load_gbk_into_db
         file orthofinder from to_load_orthofinder_in_db
         file alignments from to_load_alignment.collect()
         file nr_mapping_file from nr_mapping_to_db_setup
@@ -887,7 +911,7 @@ process load_swissprot_hits_into_db {
         file swissprot_db from Channel.fromPath("$params.swissprot_db/swissprot.fasta")
 
     output:
-        file db into to_create_index
+        file db into to_load_amr_db
 
     script:
     if(params.blast_swissprot)
@@ -904,6 +928,34 @@ process load_swissprot_hits_into_db {
     """
         echo \"Not supposed to load swissprot hits, passing\"
     """
+}
+
+process load_amr_into_db {
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
+    input:
+        file collected_amr_files from amr_table.collect()
+        file db from to_load_amr_db
+
+    output:
+        file db into to_create_index
+
+    script:
+    if(params.amr)
+        """
+        #!/usr/bin/env python
+
+        import setup_chlamdb
+
+        kwargs = ${gen_python_args()}
+        amr_files = "${collected_amr_files}".split()
+        setup_chlamdb.load_amr(kwargs, amr_files, "$db")
+        """
+    else
+        """
+        echo \"Not supposed to load COG, passing\"
+        """
 }
 
 
@@ -937,10 +989,12 @@ process cleanup {
         file db from to_db_cleanup
         file alignments from to_alignment_gather
         file results_dir from Channel.fromPath("${params.results_dir}", type: "dir")
+	    file gbks from to_cleanup_gbks
 
     script:
     custom_run_name=(params.name)?params.name:""
     db_path="${results_dir}/db/$workflow.runName"
+    gbk_dir="${results_dir}/blast_DB/$workflow.runName/gbk"
     """
     mv $db_path ${db_path}_backup
     mv \$(readlink ${db_path}_backup) $db_path
@@ -949,6 +1003,11 @@ process cleanup {
     if [ ! -d "${results_dir}/search_index" ]; then
         mkdir ${results_dir}/search_index/
     fi
+
+    mkdir -p "${gbk_dir}"
+    for gbk in filtered/*.gb*; do
+	cp \$gbk ${gbk_dir}
+    done
 
     mv \$(readlink $index) ${results_dir}/search_index/index_${workflow.runName}
 

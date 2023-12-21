@@ -351,7 +351,7 @@ elif [[ "$1" == "webapp" ]]; then
 		conda_prefix="$NEXTFLOW_DIR/conda-env/webapp"
 		if [[ ! -e "$conda_prefix" ]]; then
 			echo "Building conda environment..."
-			conda env create --prefix $conda_prefix -f $NEXTFLOW_DIR/conda/webapp.yaml &> conda_log
+			mamba env create --prefix $conda_prefix -f $NEXTFLOW_DIR/conda/webapp.yaml &> conda_log
 			if [[ $? -eq 0 ]]; then
 				echo "Done"
 			else
@@ -466,6 +466,10 @@ elif [[ "$1" == "run" ]]; then
 				args="${args} --core_missing=$n_missing"
 				shift
 				;;
+			--amr)
+				args="${args} --amr"
+				shift
+				;;
 			--cog)
 				args="${args} --cog"
 				shift
@@ -501,6 +505,7 @@ elif [[ "$1" == "run" ]]; then
 				echo " --conda: use conda environments instead of singularity"
 				echo " --name: run name (defaults to the name given by nextflow)"
 				echo "         the latest completed run is also named latest"
+				echo " --amr: perform amr (antibiotic resistance) annotation"
 				echo " --cog: perform cog annotation"
 				echo " --ko: perform ko (metabolism) annotation"
 				echo " --pfam: peform PFAM domain annotation"

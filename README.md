@@ -13,20 +13,10 @@ Several analyses are currently supported, with more to come:
 
 All the results are stored either in a SQLite database or directly as files and displayed in the web application. Interactive visualizations facilitates the comparison of gene content and static figure can be downloaded for publication. 
 
+## Demo of the webapp
 
-## Changelog
+- https://zdb.metagenlab.ch/
 
-v1.1.1 (april 2023):
- - several fixes with conda environments
-
-v1.0.8 (february 2023):
-- added support for dockers and conda
-- several bugfixes
-
-v1.0.5 (december 2022): 
-- added a ```--resume``` option to ```zdb run```
-- added a name field in the input csv file
-- genbank files with other extensions are now accepted by the pipeline
 
 ## Installation
 
@@ -34,7 +24,7 @@ v1.0.5 (december 2022):
 
 zDB can be installed from conda with the following command
 ```
-conda install zdb -c metagenlab -c bioconda
+conda install zdb -c bioconda
 ```
 For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
 
@@ -62,6 +52,10 @@ NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
 and replace it by the directory where you downloaded the project (this should point to the directory where zdb's nextflow.config is located).
 Add zdb's bin directory to PATH and voila, zdb should run smoothly.
 
+Note that zDB depends on nextflow (version 22.10 or lower) and singularity, so you'll need to install these packages, e.g. with conda:
+- install nextflow `conda install nextflow=22.10 -c bioconda`
+- install singularity `conda install singularity=3.8.4 -c conda-forge`
+
 ## Overview
 
 Several subcommands are available:
@@ -86,7 +80,7 @@ tar xvf test_dataset.tar.gz
 
 For a minimal database (assuming that singularity is installed):
 ```
-conda install zdb -c metagenlab -c bioconda
+conda install zdb -c bioconda
 zdb run --input=input.csv --name=simple_run # runs the analysis
 zdb webapp --name=simple_run # Launches the webapp on simple run
 ```
@@ -94,14 +88,14 @@ The minimal database should take around 5 minutes to complete in a recent Deskto
 
 To do the same in conda environments:
 ```
-conda install zdb -c metagenlab -c bioconda
+conda install zdb -c bioconda
 zdb run --input=input.csv --name=simple_run_conda --conda # runs the analysis
 zdb webapp --conda --name=simple_run_conda # Launches the webapp on the latest run
 ```
 
 To have a more complete set of analyses (includes cog and pfam annotation):
 ```
-conda install zdb -c metagenlab -c bioconda
+conda install zdb -c bioconda
 zdb setup --pfam --cog --conda
 zdb run --input=input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
 zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
@@ -190,11 +184,11 @@ The following options can be used:
 ```
 --port=PORT_NUMBER      the port the application will be listening to, 8080 by default.
 --name=RUN_NAME     when nextflow runs. If not specified, will default to the last successful run (latest).
---allowed_hosts=HOSTS   the name of the host or the ip address of the server. If not specified, will default to the ip addresses of the current host.
+--allowed_host=HOSTS   the name of the host or the ip address of the server. If not specified, will default to the ip addresses of the current host.
 ```
 
 By default, the webserver will be run in a singularity container. It can also be run in a conda environment by setting the ```--conda``` flag or in docker by setting the ```docker``` flag.
-For MacOSX users, we advise to run the webapp in docker containers, setting --allowed_hosts=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
+For MacOSX users, we advise to run the webapp in docker containers, setting --allowed_host=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
 
 ```
 zdb webapp --docker --name=simple_run_docker # Launches the webapp using docker 
@@ -229,7 +223,7 @@ Modify the 8000 to the same number you attributed to the port number of gunicorn
 
 **Running the webapp on a MacOSX**
 
-Please run the webapp in docker containers, setting --allowed_hosts=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
+Please run the webapp in docker containers, setting --allowed_host=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
 
 
 ## Importing and exporting results
@@ -241,7 +235,7 @@ The web server can then be started as if the analysis had been run locally.
 
 
 ## Bugs and feature requests
-Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/annotation_pipeline_nextflow/issues).
+Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/zDB/issues).
 
 We already have several idea to improve the tool:
 - make it possible to add or remove genomes in an existing database

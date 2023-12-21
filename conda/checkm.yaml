@@ -3,4 +3,4 @@ channels:
     - bioconda
     - metagenlab
 dependencies:
-    - checkm-genome=1.2.2
+    - checkm-genome=1.2.1
