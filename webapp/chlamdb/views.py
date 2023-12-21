@@ -1430,6 +1430,7 @@ def og_tab_get_amr_annot(db, seqids):
     col_titles = {"closest_seq": "Closest Sequence"}
 
     amr_hits["closest_seq"] = amr_hits["closest_seq"].map(format_refseqid_to_ncbi)
+    amr_hits["gene"] = amr_hits[["gene", "hmm_id"]].apply(format_gene_to_ncbi_hmm, axis=1)
     return {
         "amr_entries": amr_hits.values,
         "amr_header": [col_titles.get(col, col.capitalize())
@@ -3158,6 +3159,15 @@ def format_taxid_to_ncbi(organism, taxid):
 
 def format_refseqid_to_ncbi(seqid):
     return f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{seqid}\">{seqid}</a>"
+
+
+def format_gene_to_ncbi_hmm(gene_and_hmmid):
+    gene, hmm_id = gene_and_hmmid
+    if hmm_id:
+        # The hmm_id contains a version number, which is not in the ncbi URL.
+        hmm_id = hmm_id.rsplit(".", 1)[0]
+        return f"<a href=\"https://www.ncbi.nlm.nih.gov/genome/annotation_prok/evidence/{hmm_id}\">{gene}</a>"  # noqa
+    return gene
 
 
 def locus_tab_swissprot_hits(db, seqid):

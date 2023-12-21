@@ -316,7 +316,8 @@ def amr_hit_to_db_entry(hit):
                "% Coverage of reference sequence",
                "% Identity to reference sequence",
                "Accession of closest sequence",
-               "Name of closest sequence"]
+               "Name of closest sequence",
+               "HMM id"]
     entry = [hsh_from_s(hit["Protein identifier"][len("CRC-"):])]
     entry.extend([hit[column] for column in columns])
     return entry
