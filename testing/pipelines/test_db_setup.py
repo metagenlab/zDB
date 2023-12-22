@@ -59,8 +59,9 @@ class TestDBSetupPipeline(BaseTestCase):
         execution = self.execute_pipeline()
         self.assert_success(execution)
 
-        self.assertEqual([proc.name for proc in execution.process_executions],
-                         ["download_pfam_db", "prepare_hmm"])
+        self.assertEqual(
+            [proc.name for proc in execution.process_executions],
+            ["setup_pfam_db:download_pfam_db", "setup_pfam_db:prepare_hmm"])
 
         download_process = execution.process_executions[0]
         self.assert_created_files(download_process,
@@ -80,8 +81,9 @@ class TestDBSetupPipeline(BaseTestCase):
         execution = self.execute_pipeline()
         self.assert_success(execution)
 
-        self.assertEqual([proc.name for proc in execution.process_executions],
-                         ["download_cog_cdd", "setup_cog_cdd"])
+        self.assertEqual(
+            [proc.name for proc in execution.process_executions],
+            ["setup_cogg_db:download_cog_cdd", "setup_cogg_db:setup_cog_cdd"])
 
         download_process = execution.process_executions[0]
         self.assertIn("Cog.pn", os.listdir(download_process.path))
@@ -104,7 +106,7 @@ class TestDBSetupPipeline(BaseTestCase):
         self.assert_success(execution)
 
         self.assertEqual([proc.name for proc in execution.process_executions],
-                         ["download_ko_profiles"])
+                         ["setup_ko_db:download_ko_profiles"])
 
         # Files are moved to db directory
         db_dir = os.path.join(self.db_dir.name, "kegg")
@@ -120,7 +122,8 @@ class TestDBSetupPipeline(BaseTestCase):
         self.assert_success(execution)
 
         self.assertEqual([proc.name for proc in execution.process_executions],
-                         ["download_swissprot", "prepare_swissprot"])
+                         ["setup_swissprot_db:download_swissprot",
+                          "setup_swissprot_db:prepare_swissprot"])
 
         download_process = execution.process_executions[0]
         self.assert_created_files(download_process, ["swissprot.fasta"])
