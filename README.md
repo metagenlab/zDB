@@ -203,6 +203,23 @@ To access the webapp, type either 155.105.138.249:8080 or 172.17.0.1:8080 on you
 If you do not remember which runs are available, you can list them with the ```zdb list_runs``` command.
 
 
+## Importing and exporting results
+
+As the analysis may be run on a server or on an HPC cluster, the results may need to be exported to start a web application on a different machine.
+
+This can be done with the ```zdb export``` command with a run name as parameter. This will create a compressed archive containing all the necessary results. The archive can then be transferred to a different machine and unpacked, either manually or with the ```zdb import``` command.
+The web server can then be started as if the analysis had been run locally.
+
+
+## Bugs and feature requests
+Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/zDB/issues).
+
+We already have several idea to improve the tool:
+- make it possible to add or remove genomes in an existing database
+- use d3.js to draw interactive phylogenetic trees
+- add new annotations, in particular, we've already received some requests for antibiotic resistance and virulence
+
+But we're definitely open for suggestions and contributions.
 
 ### Known issues
 
@@ -224,22 +241,3 @@ Modify the 8000 to the same number you attributed to the port number of gunicorn
 **Running the webapp on a MacOSX**
 
 Please run the webapp in docker containers, setting --allowed_host=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
-
-
-## Importing and exporting results
-
-As the analysis may be run on a server or on an HPC cluster, the results may need to be exported to start a web application on a different machine.
-
-This can be done with the ```zdb export``` command with a run name as parameter. This will create a compressed archive containing all the necessary results. The archive can then be transferred to a different machine and unpacked, either manually or with the ```zdb import``` command.
-The web server can then be started as if the analysis had been run locally.
-
-
-## Bugs and feature requests
-Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/zDB/issues).
-
-We already have several idea to improve the tool:
-- make it possible to add or remove genomes in an existing database
-- use d3.js to draw interactive phylogenetic trees
-- add new annotations, in particular, we've already received some requests for antibiotic resistance and virulence
-
-But we're definitely open for suggestions and contributions.
