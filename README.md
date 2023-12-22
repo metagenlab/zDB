@@ -241,3 +241,27 @@ Modify the 8000 to the same number you attributed to the port number of gunicorn
 **Running the webapp on a MacOSX**
 
 Please run the webapp in docker containers, setting --allowed_host=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
+
+## Developping zDB
+
+### Setting up for local development
+
+First you'll need to [install zDB from source](#zdb-installation-from-sources).
+As zDB strongly depends on [metagenlabl_libs](https://github.com/metagenlab/metagenlab_libs), you might also want to have that library from source. For that you can simply clone the repository and then modify the [nextflow.config](https://github.com/metagenlab/zDB/blob/master/nextflow.config#L113) file so that the `PYTHONPATH` includes the path to your `metagenlabl_libs` folder, e.g.:
+```
+PYTHONPATH = "$baseDir/bin:/path/to/metagenlab_libs"
+```
+
+### Testing
+The nextflow pipeline is tested using a python integration of nextflow [nextflow.py](https://github.com/goodwright/nextflow.py) and standard [unittests](https://docs.python.org/3/library/unittest.html). You'll therefore need to install [nextflow.py](https://github.com/goodwright/nextflow.py).
+
+To run the tests, you can then simply call
+```
+python -m unittest
+```
+
+Careful though as the nextflow pipeline tests download large volumes of data (tens of GBs), as they actually setup the zDB reference databases.
+
+### Contributing
+
+If you want to contribute, feel free to open a PR describing your changes and make sure the tests still pass and request a review from one of the developers ([tpillone](https://github.com/tpillone), [bkm](https://github.com/bkm) or [njohner](https://github.com/njohner))
