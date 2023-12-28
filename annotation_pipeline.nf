@@ -62,31 +62,20 @@ def gen_python_args() {
 
 str_pythonized_params = gen_python_args()
 
-
-Channel.fromPath(params.input)
-    .into { get_files
-            parse_input }
-
-get_files
-    .splitCsv(header: true, strip: true)
-    .map { row -> file(row.file) }
-    .set { gbk_from_local_assembly }
-
-
 process check_gbk {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
-	input:
-        file gbk from gbk_from_local_assembly.collect()
-        file input_file from parse_input
+    input:
+        path gbk
+        path input_file
 
-	output:
-	    path "filtered/*" into checked_gbks
-            path "filtered" into to_cleanup_gbks
+    output:
+        path "filtered/*"
+        path "filtered"
 
-	script:
-	"""
+    script:
+    """
         #!/usr/bin/env python
         import annotations
         import os
@@ -94,27 +83,20 @@ process check_gbk {
         os.mkdir("filtered")
 
         annotations.check_gbk("$input_file")
-	"""
+    """
 }
-
-
-checked_gbks.into {
-    to_load_gbk_into_db
-    to_convert_gbk
-}
-
 
 process convert_gbk {
   container "$params.annotation_container"
   conda "$baseDir/conda/annotation.yaml"
 
   input:
-      file edited_gbk from to_convert_gbk.flatten()
+      path edited_gbk
 
   output:
-      file "*.faa" into faa_files
-      file "*.ffn" into ffn_files_seq
-      file "*.fna" into fna_files_SEQ
+      path "*.faa"
+      path "*.ffn"
+      path "*.fna"
 
   script:
   """
@@ -129,88 +111,46 @@ process convert_gbk {
 }
 
 
-faa_files.into{ faa_locus1; faa_locus2; faa_files_SEQ }
-faa_locus2.collectFile(name: 'merged.faa', newLine: true)
-    .set { to_get_nr_sequences }
-
-faa_locus1.into { faa_genomes1
-                  faa_genomes2
-                  faa_genomes3
-                  faa_genomes4
-                  to_checkm }
-
 process get_nr_sequences {
   container "$params.annotation_container"
   conda "$baseDir/conda/annotation.yaml"
 
   input:
-    file(seq) from to_get_nr_sequences
-    file genome_list from faa_genomes4.collect()
+    path(seq)
+    path genome_list
 
   output:
 
-  file 'nr.faa' into nr_seqs
-  file 'nr_mapping.tab' into nr_mapping_to_db_setup
+  path 'nr.faa'
+  path 'nr_mapping.tab'
 
   script:
   fasta_file = seq.name
   """
-	#!/usr/bin/env python
-	
-	import annotations
-	annotations.get_nr_sequences("${fasta_file}", "${genome_list}".split())
+    #!/usr/bin/env python
+
+    import annotations
+    annotations.get_nr_sequences("${fasta_file}", "${genome_list}".split())
   """
 }
 
 
-nr_seqs.splitFasta( by: 300, file: "chunk_" )
-.into { to_rpsblast_COG
-        to_blast_swissprot
-        to_diamond_refseq
-        to_kofamscan
-        to_pfam_scan
-        to_amr_scan }
+process pfam_scan {
+    container "$params.pfam_scan_container"
+    conda "$baseDir/conda/pfam_scan.yaml"
 
+    input:
+        tuple (path(pfam_db), path(faa_chunk) )
 
-if(params.pfam) {
-    Channel.fromPath("${params.pfam_db}", type: "dir").set { pfam_db }
+    output:
+        path pfam_result_file
 
-    pfam_db.combine(to_pfam_scan).set { to_pfam_scan_combined }
-
-    process pfam_scan {
-        container "$params.pfam_scan_container"
-        conda "$baseDir/conda/pfam_scan.yaml"
-
-        input:
-            tuple (file(pfam_db), file(faa_chunk) ) from to_pfam_scan_combined
-            // file faa_chunk from to_pfam_scan
-            // file pfam_db from Channel.fromPath("${params.pfam_db}", type: "dir")
-
-        output:
-            file pfam_result_file into pfam_results
-
-        script:
-        pfam_result_file="${faa_chunk}_results"
-        """
-            pfam_scan.pl -f $faa_chunk -d pfam > $pfam_result_file
-        """
-    }
-} else {
-    Channel.value("void").set { pfam_results }
+    script:
+    pfam_result_file="${faa_chunk}_results"
+    """
+        pfam_scan.pl -f $faa_chunk -d pfam > $pfam_result_file
+    """
 }
-
-
-fna_files_SEQ.into {fna_files_SEQ_1; fna_files_SEQ_2}
-faa_files_SEQ.into {faa_files_SEQ_1; faa_files_SEQ_2}
-ffn_files_seq.into {ffn_files_seq_1; ffn_files_seq_2}
-
-faa_files_SEQ_1.collectFile(name: 'merged.faa', newLine: true).set { merged_faa_makeblastdb }
-fna_files_SEQ_1.collectFile(name: "merged.fna", newLine: true).set { merged_fna_makeblastdb }
-ffn_files_seq_1.collectFile(name: 'merged.ffn', newLine: true).set { merged_ffn_makeblastdb }
-
-fna_files_SEQ_2.mix(faa_files_SEQ_2, ffn_files_seq_2, merged_ffn_makeblastdb,
-                    merged_fna_makeblastdb, merged_faa_makeblastdb).set { to_makeblastdb }
-
 
 process makeblastdb {
     container "$params.blast_container"
@@ -218,11 +158,11 @@ process makeblastdb {
     publishDir "${params.results_dir}/blast_DB/$workflow.runName/${file_type}", mode: 'copy'
 
     input:
-        file(input_file) from to_makeblastdb
+        path(input_file)
 
     output:
-        file "${input_file.baseName}*"
-        file input_file
+        path "${input_file.baseName}*"
+        path input_file
 
     script:
     file_type="${input_file.extension}"
@@ -239,12 +179,12 @@ process prepare_orthofinder {
   conda "$baseDir/conda/orthofinder.yaml"
 
   input:
-    file genome_list from faa_genomes1.collect()
+    path genome_list
 
   output:
-    file "OrthoFinder/Results_$params.orthofinder_output_dir/WorkingDirectory/Species*.fa" into species_fasta
-    file "OrthoFinder/Results_$params.orthofinder_output_dir/WorkingDirectory/BlastDBSpecies*.phr" into species_blastdb
-    path "OrthoFinder/Results_$params.orthofinder_output_dir/" into result_dir
+    path "OrthoFinder/Results_$params.orthofinder_output_dir/WorkingDirectory/Species*.fa"
+    path "OrthoFinder/Results_$params.orthofinder_output_dir/WorkingDirectory/BlastDBSpecies*.phr"
+    path "OrthoFinder/Results_$params.orthofinder_output_dir/"
 
   script:
   """
@@ -252,19 +192,18 @@ process prepare_orthofinder {
   """
 }
 
-
 process blast_orthofinder {
   container "$params.orthofinder_container"
   conda "$baseDir/conda/orthofinder.yaml"
 
   input:
-  file complete_dir from result_dir
-  each seq from species_fasta
-  each blastdb from species_blastdb
+  path complete_dir
+  each seq
+  each blastdb
 
   output:
-  file "${complete_dir.baseName}/WorkingDirectory/Blast${species_1}_${species_2}.txt" into blast_results
-  
+  path "${complete_dir.baseName}/WorkingDirectory/Blast${species_1}_${species_2}.txt"
+
 
   script:
   blastdb_name = blastdb.getBaseName()
@@ -278,7 +217,6 @@ process blast_orthofinder {
   """
 }
 
-
 process orthofinder_main {
   container "$params.orthofinder_container"
   conda "$baseDir/conda/orthofinder.yaml"
@@ -286,47 +224,40 @@ process orthofinder_main {
   cpus 2
 
   input:
-  file complete_dir from result_dir
-  val blast_results from blast_results.collect()
+  path complete_dir
+  val blast_results
 
   output:
   // for some reason, executing orthofinder on previous blast results makes it change directory
   // and output its results in the new directory... TODO : fixit!
-  file "Results_$params.orthofinder_output_dir/WorkingDirectory/OrthoFinder/Results_$params.orthofinder_output_dir/Orthogroups/Orthogroups.txt" into orthogroups
-  file "Results_$params.orthofinder_output_dir/WorkingDirectory/OrthoFinder/Results_$params.orthofinder_output_dir/Orthogroups/Orthogroups_SingleCopyOrthologues.txt" into singletons
+  path "Results_$params.orthofinder_output_dir/WorkingDirectory/OrthoFinder/Results_$params.orthofinder_output_dir/Orthogroups/Orthogroups.txt"
+  path "Results_$params.orthofinder_output_dir/WorkingDirectory/OrthoFinder/Results_$params.orthofinder_output_dir/Orthogroups/Orthogroups_SingleCopyOrthologues.txt"
 
   script:
   """
   orthofinder -og -t ${task.cpus} -a ${task.cpus} \
-	-b ./Results_$params.orthofinder_output_dir/WorkingDirectory/ > of_grouping.txt \
-	-n "$params.orthofinder_output_dir"
+    -b ./Results_$params.orthofinder_output_dir/WorkingDirectory/ > of_grouping.txt \
+    -n "$params.orthofinder_output_dir"
   """
 }
-
-orthogroups
-.into { orthogroups_1
-        orthogroups_2
-        to_load_orthofinder_in_db }
-
 
 process orthogroups2fasta {
   container "$params.annotation_container"
   conda "$baseDir/conda/annotation.yaml"
 
   input:
-  file 'Orthogroups.txt' from orthogroups_1
-  file genome_list from faa_genomes2.collect()
+  path 'Orthogroups.txt'
+  path genome_list
 
   output:
-  file "*faa" into orthogroups_fasta
+  path "*faa"
 
   """
-	#!/usr/bin/env python
-	import annotations
-	annotations.orthogroups_to_fasta("$genome_list")
+    #!/usr/bin/env python
+    import annotations
+    annotations.orthogroups_to_fasta("$genome_list")
   """
 }
-
 
 process align_with_mafft {
   container "$params.mafft_container"
@@ -334,10 +265,10 @@ process align_with_mafft {
   publishDir "${params.results_dir}/alignments/$workflow.runName", mode: "copy"
 
   input:
-      file og from orthogroups_fasta.toSortedList().flatten().collate(20)
+      path og
 
   output:
-      file "*_mafft.faa" into mafft_alignments
+      path "*_mafft.faa"
 
   script:
   """
@@ -348,33 +279,22 @@ process align_with_mafft {
   """
 }
 
-
-mafft_alignments.into { to_identity_calculation; to_phylogeny; to_cleanup }
-
-to_cleanup.collect().set { to_alignment_gather }
-to_phylogeny.collect().into { all_alignments_3; all_alignments_4 }
-
-
-to_identity_calculation.toSortedList().flatten().collate(50).
-    set { to_identity_calculation_split }
-
-
 process identity_calculation {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
-    
+
     input:
-        file input_fasta from to_identity_calculation_split
+        path input_fasta
 
     output:
-        file "*${suffix}" into to_load_alignment
+        path "*${suffix}"
 
     script:
     suffix = "_ident.csv"
     """
     #!/usr/bin/env python
     import annotations
-    
+
     input_fasta = "${input_fasta}".split()
     for file in input_fasta:
         output_filename = file+"${suffix}"
@@ -382,23 +302,16 @@ process identity_calculation {
     """
 }
 
-
-all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.set { alignement_larger_than_2_seqs }
-
-
-alignement_larger_than_2_seqs.toSortedList().flatten().collate(50).set { to_fasttree_orthogroups }
-
-
 process orthogroups_phylogeny_with_fasttree3 {
   container "$params.fasttree_container"
   conda "$baseDir/conda/fasttree.yaml"
   publishDir "${params.results_dir}/gene_phylogenies/$workflow.runName"
 
   input:
-    file og from to_fasttree_orthogroups
+    path og
 
   output:
-    file "*.nwk" into gene_phylogeny
+    path "*.nwk"
 
   script:
   """
@@ -408,22 +321,18 @@ process orthogroups_phylogeny_with_fasttree3 {
   """
 }
 
-
-gene_phylogeny.collect().set { all_og_phylogeny }
-
-
 process get_core_orthogroups {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
   input:
-  file 'Orthogroups.txt' from orthogroups
-  file genomes_list from faa_genomes3.collect()
-  file fasta_files from all_alignments_3.collect()
+  path 'Orthogroups.txt'
+  path genomes_list
+  path fasta_files
 
   output:
-  file '*_taxon_ids.faa' into core_orthogroups
-  file "orthogroups_summary_info.tsv" into og_summary
+  path '*_taxon_ids.faa'
+  path "orthogroups_summary_info.tsv"
 
   script:
 
@@ -435,17 +344,16 @@ process get_core_orthogroups {
   """
 }
 
-
 // TODO: merge with get_core_orthogroups
 process concatenate_core_orthogroups {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
   input:
-  file core_groups from core_orthogroups.collect()
+  path core_groups
 
   output:
-  file 'msa.faa' into core_msa
+  path 'msa.faa'
 
   script:
 
@@ -458,17 +366,16 @@ process concatenate_core_orthogroups {
   """
 }
 
-
 process build_core_phylogeny_with_fasttree {
   container "$params.fasttree_container"
   conda "$baseDir/conda/fasttree.yaml"
   publishDir "${params.results_dir}/gene_phylogenies/$workflow.runName"
 
   input:
-  file 'msa.faa' from core_msa
+  path 'msa.faa'
 
   output:
-    file 'core_genome_phylogeny.nwk' into core_genome_phylogeny
+    path 'core_genome_phylogeny.nwk'
 
   script:
   '''
@@ -476,152 +383,113 @@ process build_core_phylogeny_with_fasttree {
   '''
 }
 
-
 process checkm_analyse {
   container "$params.checkm_container"
   conda "$baseDir/conda/checkm.yaml"
 
   input:
-  file genome_list from to_checkm.collect()
+  path genome_list
 
   output:
-    file "checkm_results.tab" into checkm_table
+    path "checkm_results.tab"
   """
   checkm taxonomy_wf ${params.checkm_args} -x faa . checkm_results --tab_table  \
         --genes -f checkm_results.tab
   """
 }
 
+process rpsblast_COG {
+  container "$params.blast_container"
+  conda "$baseDir/conda/blast.yaml"
 
-if(params.cog) {
+  input:
+    tuple (file(cog_db), file(seq))
 
-    Channel.fromPath("$params.cog_db", type: "dir").set { to_cog_multi }
-    to_cog_multi.combine(to_rpsblast_COG).set { to_rpsblast_COG_multi }
-    
-    process rpsblast_COG {
-      container "$params.blast_container"
-      conda "$baseDir/conda/blast.yaml"
+  output:
+  path result_file
 
-      input:
-        tuple (file(cog_db), file(seq)) from to_rpsblast_COG_multi
-
-      output:
-      file result_file into COG_to_load_db
-
-      script:
-      n = seq.name
-      result_file = "${n}.tab"
-      """
-      rpsblast -db cog/cog_db -query $seq -outfmt 6 -evalue 0.001 \
-                -num_threads ${task.cpus} > ${result_file}
-      """
-    }
-} else {
-    Channel.value("void").set { COG_to_load_db }
+  script:
+  n = seq.name
+  result_file = "${n}.tab"
+  """
+  rpsblast -db cog/cog_db -query $seq -outfmt 6 -evalue 0.001 \
+            -num_threads ${task.cpus} > ${result_file}
+  """
 }
 
+process blast_swissprot {
+  container "$params.blast_container"
+  conda "$baseDir/conda/blast.yaml"
 
-if (params.blast_swissprot) {
+  input:
+      tuple (file(swissprot_db), file(seq))
 
-    Channel.fromPath("$params.swissprot_db", type: "dir").set { to_swissprot_multi }
-    to_swissprot_multi.combine(to_blast_swissprot).set { to_blast_swissprot_multi }
+  output:
+      path '*tab'
 
-    process blast_swissprot {
-      container "$params.blast_container"
-      conda "$baseDir/conda/blast.yaml"
+  script:
 
-      input:
-          tuple (file(swissprot_db), file(seq)) from to_blast_swissprot_multi
-
-      output:
-          file '*tab' into swissprot_blast
-
-      script:
-
-      n = seq.name
-      """
-      blastp -db $swissprot_db/swissprot.fasta -query ${n} \
-                -outfmt 6 -evalue 0.001 > ${n}.tab
-      """
-    }
-} else {
-    Channel.value("void").set { swissprot_blast }
+  n = seq.name
+  """
+  blastp -db $swissprot_db/swissprot.fasta -query ${n} \
+            -outfmt 6 -evalue 0.001 > ${n}.tab
+  """
 }
 
-if(params.diamond_refseq) {
-    process diamond_refseq {
-      container "$params.diamond_container"
+process diamond_refseq {
+  container "$params.diamond_container"
 
-      input:
-      file(seq) from to_diamond_refseq
+  input:
+  file(seq)
 
-      output:
-      file '*tab' into refseq_diamond
+  output:
+  path '*tab'
 
-      script:
+  script:
 
-      n = seq.name
-      """
-      # new version of the database
-      diamond blastp -p ${task.cpus} -d $params.refseq_db/merged_refseq.dmnd \
-            -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
-      """
-    }
-
-    refseq_diamond.collectFile().set { refseq_diamond_results_sqlitedb }
+  n = seq.name
+  """
+  # new version of the database
+  diamond blastp -p ${task.cpus} -d $params.refseq_db/merged_refseq.dmnd \
+        -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
+  """
 }
 
+process execute_kofamscan {
+  container "$params.kegg_container"
+  conda "$baseDir/conda/kofamscan.yaml"
 
-if(params.ko) {
+  input:
+    tuple (file(ko_db), file(seq))
 
-    Channel.fromPath("$params.ko_db", type: "dir").set { to_ko_multi }
-    to_ko_multi.combine(to_kofamscan).set { to_kofamscan_multi }
-    
-    process execute_kofamscan {
-      container "$params.kegg_container"
-      conda "$baseDir/conda/kofamscan.yaml"
+  output:
+      path '*tab'
 
-      input:
-        tuple (file(ko_db), file(seq)) from to_kofamscan_multi
+  script:
+  n = seq.name
 
-      output:
-          file '*tab' into to_load_KO
-
-      script:
-      n = seq.name
-
-      """
-      exec_annotation ${n} -p ${ko_db}/profiles/prokaryote.hal \
-            -k ${ko_db}/ko_list --cpu ${task.cpus} -o ${n}.tab
-      """
-    }
-} else {
-    Channel.value("void").set { to_load_KO }
+  """
+  exec_annotation ${n} -p ${ko_db}/profiles/prokaryote.hal \
+        -k ${ko_db}/ko_list --cpu ${task.cpus} -o ${n}.tab
+  """
 }
 
+process execute_amrscan {
+  container "$params.ncbi_amr_container"
+  conda "$baseDir/conda/ncbi_amr.yaml"
 
-if(params.amr) {
+  input:
+  file(seq)
 
-    process execute_amrscan {
-      container "$params.ncbi_amr_container"
-      conda "$baseDir/conda/ncbi_amr.yaml"
+  output:
+      file "amrfinder_results*.tab"
 
-      input:
-      file(seq) from to_amr_scan
-
-      output:
-          file "amrfinder_results*.tab" into amr_table
-
-      script:
-      n = seq.name
-      """
-      amrfinder --plus -p ${n} > amrfinder_results_${n}.tab
-      """
-    }
-} else {
-    Channel.value("void").set { amr_table }
+  script:
+  n = seq.name
+  """
+  amrfinder --plus -p ${n} > amrfinder_results_${n}.tab
+  """
 }
-
 
 process setup_db {
     container "$params.annotation_container"
@@ -630,10 +498,10 @@ process setup_db {
     publishDir "${params.results_dir}/db"
 
     input:
-        file base_dir from Channel.fromPath("${params.zdb.file}")
+        path base_dir
 
     output:
-        file output_file into db_base
+        path output_file
 
     script:
     output_file = "$workflow.runName"
@@ -641,7 +509,6 @@ process setup_db {
     cp $base_dir $output_file
     """
 }
-
 
 process load_base_db {
     container "$params.annotation_container"
@@ -653,18 +520,18 @@ process load_base_db {
     beforeScript "ulimit -Ss unlimited"
 
     input:
-        file db_base
-	file gbks from to_load_gbk_into_db
-        file orthofinder from to_load_orthofinder_in_db
-        file alignments from to_load_alignment.collect()
-        file nr_mapping_file from nr_mapping_to_db_setup
-        file checkm_results from checkm_table
-        file core_phylogeny from core_genome_phylogeny
-        file og_phylogenies_list from all_og_phylogeny
-        file og_summary
+        path db_base
+        path gbks
+        path orthofinder
+        path alignments
+        path nr_mapping_file
+        path checkm_results
+        path core_phylogeny
+        path og_phylogenies_list
+        path og_summary
 
     output:
-        file db_name into db_gen
+        path db_name
 
     script:
     db_name="$db_base"
@@ -672,7 +539,7 @@ process load_base_db {
     #!/usr/bin/env python
 
     import setup_chlamdb
-    
+
     kwargs = ${gen_python_args()}
     gbk_list = "${gbks}".split()
     alignments_lst = "$alignments".split()
@@ -701,45 +568,38 @@ process load_base_db {
     """
 }
 
+process load_refseq_results {
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+    input:
+        path diamond_tsv_list
+        path curr_db
 
-if(!params.diamond_refseq) {
-    db_gen.set { to_load_BBH_phylo }
-    Channel.empty().set { diamond_best_hits }
-} else {
-    process load_refseq_results {
-        container "$params.annotation_container"
-        conda "$baseDir/conda/annotation.yaml"
-        input:
-            file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
-            file curr_db from db_gen
+    output:
+        path "*_nr_hits.faa"
+        path curr_db
 
-        output:
-            file "*_nr_hits.faa" into diamond_best_hits
-            file curr_db into to_load_BBH_phylo
+    script:
+    """
+    #!/usr/bin/env python
+    # small modif'
+    import setup_chlamdb
 
-        script:
-        """
-        #!/usr/bin/env python
-        # small modif'
-        import setup_chlamdb
-        
-        kwargs = ${gen_python_args()}
-        diamond_tab_files = "$diamond_tsv_list".split()
-        setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files, "$curr_db")
-        """
-    }
+    kwargs = ${gen_python_args()}
+    diamond_tab_files = "$diamond_tsv_list".split()
+    setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files, "$curr_db")
+    """
 }
-
 
 process align_refseq_BBH_with_mafft {
   container "$params.mafft_container"
   conda "$baseDir/conda/mafft.yaml"
 
   input:
-    file og from diamond_best_hits.flatten().collate( 20 )
+    path og
 
   output:
-  file "*_mafft.faa" into mafft_alignments_refseq_BBH
+  path "*_mafft.faa"
 
   script:
   """
@@ -750,16 +610,15 @@ process align_refseq_BBH_with_mafft {
   """
 }
 
-
 process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   container "$params.fasttree_container"
   conda "$baseDir/conda/fasttree.yaml"
 
   input:
-    file og from mafft_alignments_refseq_BBH
+    path og
 
   output:
-    file "*.nwk" into BBH_phylogenies
+    path "*.nwk"
 
   script:
   """
@@ -770,24 +629,16 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   """
 }
 
-BBH_phylogenies.collect().set { BBH_phylogenies_to_db }
-
-
-if(!params.diamond_refseq) {
-    Channel.value("dummy").set { BBH_phylogenies_to_db }
-}
-
-
 process load_BBH_phylogenies {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
     input:
-        file db from to_load_BBH_phylo
-        file BBH_phylogeny_trees from BBH_phylogenies_to_db
+        path db
+        path BBH_phylogeny_trees
 
     output:
-        file db into to_load_COG
+        path db
 
     script:
 
@@ -808,26 +659,25 @@ process load_BBH_phylogenies {
     """
 }
 
-
 process load_COG_into_db {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
     input:
-        file db from to_load_COG
-        file cog_file from COG_to_load_db.collect()
-        file cdd_to_cog from Channel.fromPath("$params.cog_db/cdd_to_cog")
+        path db
+        path cog_file
+        path cdd_to_cog
 
     output:
-        file db into to_load_KO_db
-    
+        path db
+
     script:
     if(params.cog)
         """
         #!/usr/bin/env python
 
         import setup_chlamdb
-        
+
         kwargs = ${gen_python_args()}
         cog_files = "${cog_file}".split()
         setup_chlamdb.load_cog(kwargs, cog_files, "$db", "$cdd_to_cog")
@@ -838,17 +688,16 @@ process load_COG_into_db {
         """
 }
 
-
 process load_KO_into_db {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
     input:
-        file KO_results from to_load_KO.collect()
-        file db from to_load_KO_db
+        path KO_results
+        path db
 
     output:
-        file db into to_pfam_db
+        path db
 
     script:
     if(params.ko)
@@ -870,18 +719,17 @@ process load_KO_into_db {
         """
 }
 
-
 process load_PFAM_info_db {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
     input:
-        file db from to_pfam_db
-        file pfam_annot from pfam_results.collect()
-        file pfam_dat from Channel.fromPath("$params.pfam_db/Pfam-A.hmm.dat")
+        path db
+        path pfam_annot
+        path pfam_dat
 
     output:
-        file db into to_load_swissprot_hits
+        path db
 
     script:
     if(params.pfam)
@@ -900,18 +748,17 @@ process load_PFAM_info_db {
         """
 }
 
-
 process load_swissprot_hits_into_db {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
     input:
-        file db from to_load_swissprot_hits
-        file blast_results from swissprot_blast.collect()
-        file swissprot_db from Channel.fromPath("$params.swissprot_db/swissprot.fasta")
+        path db
+        path blast_results
+        path swissprot_db
 
     output:
-        file db into to_load_amr_db
+        path db
 
     script:
     if(params.blast_swissprot)
@@ -935,11 +782,11 @@ process load_amr_into_db {
     conda "$baseDir/conda/annotation.yaml"
 
     input:
-        file collected_amr_files from amr_table.collect()
-        file db from to_load_amr_db
+        file collected_amr_files
+        file db
 
     output:
-        file db into to_create_index
+        file db
 
     script:
     if(params.amr)
@@ -958,17 +805,16 @@ process load_amr_into_db {
         """
 }
 
-
 process create_chlamdb_search_index {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
     input:
-        file db from to_create_index
+        path db
 
     output:
-        file index_name into to_index_cleanup
-        file db into to_db_cleanup
+        path index_name
+        path db
 
     script:
     // add a prefix to differentiate it from the db
@@ -982,14 +828,13 @@ process create_chlamdb_search_index {
     """
 }
 
-
 process cleanup {
     input:
-        file index from to_index_cleanup
-        file db from to_db_cleanup
-        file alignments from to_alignment_gather
-        file results_dir from Channel.fromPath("${params.results_dir}", type: "dir")
-	    file gbks from to_cleanup_gbks
+        path index
+        path db
+        path alignments
+        path results_dir
+        path gbks
 
     script:
     custom_run_name=(params.name)?params.name:""
@@ -1006,7 +851,7 @@ process cleanup {
 
     mkdir -p "${gbk_dir}"
     for gbk in filtered/*.gb*; do
-	cp \$gbk ${gbk_dir}
+    cp \$gbk ${gbk_dir}
     done
 
     mv \$(readlink $index) ${results_dir}/search_index/index_${workflow.runName}
@@ -1023,6 +868,150 @@ process cleanup {
     """
 }
 
+workflow {
+    Channel.fromPath(params.input)
+        .set { input_file }
+
+    input_file
+        .splitCsv(header: true, strip: true)
+        .map { row -> file(row.file) }
+        .set { gbk_files }
+
+    (checked_gbks, to_cleanup_gbks) = check_gbk(gbk_files.collect(), input_file)
+
+    (faa_files, ffn_files_seq, fna_files_SEQ) = convert_gbk(checked_gbks.flatten())
+
+    merged_faa_files = faa_files.collectFile(name: 'merged.faa', newLine: true)
+
+    (nr_seqs, nr_mapping_to_db_setup) = get_nr_sequences(merged_faa_files, faa_files.collect())
+
+    split_nr_seqs = nr_seqs.splitFasta( by: 300, file: "chunk_" )
+
+    if(params.pfam) {
+        Channel.fromPath("${params.pfam_db}", type: "dir").set { pfam_db }
+        pfam_db.combine(split_nr_seqs).set { to_pfam_scan_combined }
+
+        pfam_results = pfam_scan(to_pfam_scan_combined)
+    } else {
+    Channel.value("void").set { pfam_results }
+    }
+
+    fna_files_SEQ.collectFile(name: "merged.fna", newLine: true).set { merged_fna_makeblastdb }
+    ffn_files_seq.collectFile(name: 'merged.ffn', newLine: true).set { merged_ffn_makeblastdb }
+
+    fna_files_SEQ.mix(faa_files, ffn_files_seq, merged_ffn_makeblastdb,
+                      merged_fna_makeblastdb, merged_faa_files).set { to_makeblastdb }
+
+    makeblastdb(to_makeblastdb)
+
+    (species_fasta, species_blastdb, result_dir) = prepare_orthofinder(faa_files.collect())
+    blast_results = blast_orthofinder(result_dir, species_fasta, species_blastdb)
+    (orthogroups, singletons) = orthofinder_main(result_dir, blast_results.collect())
+
+    orthogroups_fasta = orthogroups2fasta(orthogroups, faa_files.collect())
+
+    mafft_alignments = align_with_mafft(orthogroups_fasta.toSortedList().flatten().collate(20))
+
+    mafft_alignments.toSortedList().flatten().collate(50).set { to_identity_calculation_split }
+
+    to_load_alignment = identity_calculation(to_identity_calculation_split)
+
+
+    mafft_alignments.collect().flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.set { alignement_larger_than_2_seqs }
+    alignement_larger_than_2_seqs.toSortedList().flatten().collate(50).set { to_fasttree_orthogroups }
+    gene_phylogeny = orthogroups_phylogeny_with_fasttree3(to_fasttree_orthogroups)
+
+
+    (core_orthogroups, og_summary) = get_core_orthogroups(orthogroups, faa_files.collect(), mafft_alignments.collect())
+
+    core_msa = concatenate_core_orthogroups(core_orthogroups.collect())
+
+    core_genome_phylogeny = build_core_phylogeny_with_fasttree(core_msa)
+
+    checkm_table = checkm_analyse(faa_files.collect())
+
+
+    if(params.cog) {
+
+        Channel.fromPath("$params.cog_db", type: "dir").set { to_cog_multi }
+        to_cog_multi.combine(split_nr_seqs).set { to_rpsblast_COG_multi }
+
+        COG_to_load_db = rpsblast_COG(to_rpsblast_COG_multi)
+    } else {
+        Channel.value("void").set { COG_to_load_db }
+    }
+
+    if (params.blast_swissprot) {
+
+        Channel.fromPath("$params.swissprot_db", type: "dir").set { to_swissprot_multi }
+        to_swissprot_multi.combine(split_nr_seqs).set { to_blast_swissprot_multi }
+
+        swissprot_blast = blast_swissprot(to_blast_swissprot_multi)
+
+    } else {
+        Channel.value("void").set { swissprot_blast }
+    }
+
+    if(params.diamond_refseq) {
+        refseq_diamond = diamond_refseq(split_nr_seqs)
+        refseq_diamond.collectFile().set { refseq_diamond_results_sqlitedb }
+    }
+
+    if(params.ko) {
+
+        Channel.fromPath("$params.ko_db", type: "dir").set { to_ko_multi }
+        to_ko_multi.combine(split_nr_seqs).set { to_kofamscan_multi }
+
+        to_load_KO = execute_kofamscan(to_kofamscan_multi)
+
+    } else {
+        Channel.value("void").set { to_load_KO }
+    }
+
+    if(params.amr) {
+        amr_table = execute_amrscan(split_nr_seqs)
+    } else {
+        Channel.value("void").set { amr_table }
+    }
+
+    db_base = setup_db(Channel.fromPath("${params.zdb.file}"))
+
+    db_gen = load_base_db(db_base, checked_gbks, orthogroups, to_load_alignment.collect(), nr_mapping_to_db_setup, checkm_table, core_genome_phylogeny, gene_phylogeny.collect(), og_summary)
+
+    if(!params.diamond_refseq) {
+        db_gen.set { to_load_BBH_phylo }
+        Channel.empty().set { diamond_best_hits }
+    } else {
+
+        diamond_best_hits, to_load_BBH_phylo = load_refseq_results(refseq_diamond_results_sqlitedb.collect(), db_gen)
+
+    }
+
+    mafft_alignments_refseq_BBH = align_refseq_BBH_with_mafft(diamond_best_hits.flatten().collate( 20 ))
+
+    BBH_phylogenies = orthogroup_refseq_BBH_phylogeny_with_fasttree(mafft_alignments_refseq_BBH)
+
+    BBH_phylogenies.collect().set { BBH_phylogenies_to_db }
+    if(!params.diamond_refseq) {
+        Channel.value("dummy").set { BBH_phylogenies_to_db }
+    }
+
+    to_load_COG = load_BBH_phylogenies(to_load_BBH_phylo, BBH_phylogenies_to_db)
+
+    to_load_KO_db = load_COG_into_db(to_load_COG, COG_to_load_db.collect(), Channel.fromPath("$params.cog_db/cdd_to_cog"))
+
+    to_pfam_db = load_KO_into_db(to_load_KO.collect(), to_load_KO_db)
+
+    to_load_swissprot_hits = load_PFAM_info_db(to_pfam_db, pfam_results.collect(), Channel.fromPath("$params.pfam_db/Pfam-A.hmm.dat"))
+
+    to_load_amr_db = load_swissprot_hits_into_db(to_load_swissprot_hits, swissprot_blast.collect(), Channel.fromPath("$params.swissprot_db/swissprot.fasta"))
+
+    to_create_index = load_amr_into_db(amr_table.collect(), to_load_amr_db)
+
+    to_index_cleanup, to_db_cleanup = create_chlamdb_search_index(to_create_index)
+
+    cleanup(to_index_cleanup, to_db_cleanup, mafft_alignments.collect(), Channel.fromPath("${params.results_dir}", type: "dir"), to_cleanup_gbks)
+}
 
 workflow.onComplete {
     println "Annotation pipeline completed"
