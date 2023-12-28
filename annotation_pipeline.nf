@@ -5,6 +5,7 @@
  * - Trestan Pillonel <trestan.pillonel@gmail.com>
  * - Alessia Carrara
  * - Bastian Marquis
+ * - Niklaus Johner
  */
 
 
@@ -21,7 +22,7 @@ def gen_arg_string_m(String name, Map m) {
 }
 
 // really ugly, but since nextflow does not allow
-// multiple function with the same name but different signature, 
+// multiple function with the same name but different signature,
 // this is the only solution
 def gen_arg_string(String s, Object o) {
     prefix = "\"" + s + "\" : "
@@ -856,13 +857,6 @@ workflow {
 
     split_nr_seqs = nr_seqs.splitFasta( by: 300, file: "chunk_" )
 
-    if(params.pfam) {
-        Channel.fromPath("${params.pfam_db}", type: "dir").set { pfam_db }
-        pfam_db.combine(split_nr_seqs).set { to_pfam_scan_combined }
-
-        pfam_results = pfam_scan(to_pfam_scan_combined)
-    }
-
     fna_files_SEQ.collectFile(name: "merged.fna", newLine: true).set { merged_fna_makeblastdb }
     ffn_files_seq.collectFile(name: 'merged.ffn', newLine: true).set { merged_ffn_makeblastdb }
 
@@ -897,76 +891,52 @@ workflow {
 
     checkm_table = checkm_analyse(faa_files.collect())
 
+    db = setup_db(Channel.fromPath("${params.zdb.file}"))
+    db = load_base_db(db, checked_gbks, orthogroups, to_load_alignment.collect(), nr_mapping_to_db_setup, checkm_table, core_genome_phylogeny, gene_phylogeny.collect(), og_summary)
+
+    if(params.pfam) {
+        Channel.fromPath("${params.pfam_db}", type: "dir").set { pfam_db }
+        pfam_db.combine(split_nr_seqs).set { to_pfam_scan_combined }
+        pfam_results = pfam_scan(to_pfam_scan_combined)
+        db = load_PFAM_info_db(db, pfam_results.collect(), Channel.fromPath("$params.pfam_db/Pfam-A.hmm.dat"))
+    }
 
     if(params.cog) {
-
         Channel.fromPath("$params.cog_db", type: "dir").set { to_cog_multi }
         to_cog_multi.combine(split_nr_seqs).set { to_rpsblast_COG_multi }
-
         COG_to_load_db = rpsblast_COG(to_rpsblast_COG_multi)
+        db = load_COG_into_db(db, COG_to_load_db.collect(), Channel.fromPath("$params.cog_db/cdd_to_cog"))
     }
 
     if (params.blast_swissprot) {
-
         Channel.fromPath("$params.swissprot_db", type: "dir").set { to_swissprot_multi }
         to_swissprot_multi.combine(split_nr_seqs).set { to_blast_swissprot_multi }
-
         swissprot_blast = blast_swissprot(to_blast_swissprot_multi)
+        db = load_swissprot_hits_into_db(db, swissprot_blast.collect(), Channel.fromPath("$params.swissprot_db/swissprot.fasta"))
     }
 
     if(params.diamond_refseq) {
         refseq_diamond = diamond_refseq(split_nr_seqs)
         refseq_diamond.collectFile().set { refseq_diamond_results_sqlitedb }
+        (diamond_best_hits, db) = load_refseq_results(refseq_diamond_results_sqlitedb.collect(), db_gen)
+        mafft_alignments_refseq_BBH = align_refseq_BBH_with_mafft(diamond_best_hits.flatten().collate( 20 ))
+        BBH_phylogenies = orthogroup_refseq_BBH_phylogeny_with_fasttree(mafft_alignments_refseq_BBH)
+        db = load_BBH_phylogenies(db, BBH_phylogenies.collect())
     }
 
     if(params.ko) {
-
         Channel.fromPath("$params.ko_db", type: "dir").set { to_ko_multi }
         to_ko_multi.combine(split_nr_seqs).set { to_kofamscan_multi }
-
         to_load_KO = execute_kofamscan(to_kofamscan_multi)
+        db = load_KO_into_db(to_load_KO.collect(), db)
     }
 
     if(params.amr) {
         amr_table = execute_amrscan(split_nr_seqs)
-    }
-
-    db_base = setup_db(Channel.fromPath("${params.zdb.file}"))
-
-    db = load_base_db(db_base, checked_gbks, orthogroups, to_load_alignment.collect(), nr_mapping_to_db_setup, checkm_table, core_genome_phylogeny, gene_phylogeny.collect(), og_summary)
-
-    if(params.diamond_refseq) {
-        (diamond_best_hits, db) = load_refseq_results(refseq_diamond_results_sqlitedb.collect(), db_gen)
-        mafft_alignments_refseq_BBH = align_refseq_BBH_with_mafft(diamond_best_hits.flatten().collate( 20 ))
-        BBH_phylogenies = orthogroup_refseq_BBH_phylogeny_with_fasttree(mafft_alignments_refseq_BBH)
-    }
-
-    if(params.diamond_refseq) {
-        db = load_BBH_phylogenies(db, BBH_phylogenies.collect())
-    }
-
-    if(params.cog) {
-        db = load_COG_into_db(db, COG_to_load_db.collect(), Channel.fromPath("$params.cog_db/cdd_to_cog"))
-    }
-
-    if(params.ko) {
-        db = load_KO_into_db(to_load_KO.collect(), db)
-    }
-
-    if(params.pfam) {
-        db = load_PFAM_info_db(db, pfam_results.collect(), Channel.fromPath("$params.pfam_db/Pfam-A.hmm.dat"))
-    }
-
-    if(params.blast_swissprot) {
-        db = load_swissprot_hits_into_db(db, swissprot_blast.collect(), Channel.fromPath("$params.swissprot_db/swissprot.fasta"))
-    }
-
-    if(params.amr) {
         db = load_amr_into_db(amr_table.collect(), db)
     }
 
     (to_index_cleanup, to_db_cleanup) = create_chlamdb_search_index(db)
-
     cleanup(to_index_cleanup, to_db_cleanup, mafft_alignments.collect(), Channel.fromPath("${params.results_dir}", type: "dir"), to_cleanup_gbks)
 }
 
