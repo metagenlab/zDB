@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from Bio import Entrez
+
 Entrez.email = "trestan.pillonel@unil.ch"
 
 
@@ -10,15 +11,6 @@ def _chunks(lst, n):
 
 def download_refseq_assemblies(id_list, complete=True):
     import taxid2genomes
-    import os
-
-    # handle = Entrez.esearch(db="assembly", term='txid%s[Organism:exp] AND
-    #                         ("reference genome"[filter])' % ncbi_taxon, retmax=100000)
-
-    # record = Entrez.read(handle)
-    # id_list = record['IdList']
-    # print len(id_list)
-    local_dir = os.getcwd()
 
     for n, id in enumerate(id_list):
         print('download %s out of %s: %s ...' % (n + 1, len(id_list), id))
@@ -296,6 +288,7 @@ def taxon2genome_subset(ncbi_taxon,
 
     if get_complete_assembly_list:
         import taxid2genomes
+
         # get complete assembly list
         print_assembly_table = taxid2genomes.get_taxi2assembly_accession(
             ncbi_taxon,
