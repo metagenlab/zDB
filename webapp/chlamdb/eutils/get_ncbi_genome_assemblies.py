@@ -150,7 +150,6 @@ def make_random_genome_selection(taxon_id2classification,
     :return:
     '''
 
-    import random
     clade2taxons = {}
     # for each clade of the rank, get list of taxons
     print('number of unique taxids: %s' % (len(taxon_id2classification)))
