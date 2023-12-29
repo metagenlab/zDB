@@ -255,12 +255,21 @@ PYTHONPATH = "$baseDir/bin:/path/to/metagenlab_libs"
 ### Testing
 The nextflow pipeline is tested using a python integration of nextflow [nextflow.py](https://github.com/goodwright/nextflow.py) and standard [unittests](https://docs.python.org/3/library/unittest.html). You'll therefore need to install [nextflow.py](https://github.com/goodwright/nextflow.py).
 
-To run the tests, you can then simply call
+To run the tests you need a python environment with the required dependencies:
+```
+conda env create -f conda/testing.yaml
+conda activate testing
+pip install nextflowpy
+```
+
+You can then simply call
 ```
 python -m unittest
 ```
 
-Careful though as the nextflow pipeline tests download large volumes of data (tens of GBs), as they actually setup the zDB reference databases.
+Careful though with the nextflow pipeline tests:
+- The test_db_setup module will download large volumes of data (tens of GBs), as the tests actually setup the zDB reference databases.
+- The test_annotation_pipeline module expects you to have setup the reference databases.
 
 ### Contributing
 
