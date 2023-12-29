@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from django import forms
-
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Row, Column, Fieldset
+from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
+from django import forms
 
 choices = []
 
@@ -345,7 +344,6 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
             return self.extract_choices((int(i) for i in self.cleaned_data["no_orthologs_in"]))
 
         def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
             self.helper = FormHelper()
             self.helper.form_method = 'post'
             self.helper.form_action = action
