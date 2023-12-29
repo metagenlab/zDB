@@ -4,7 +4,6 @@
 # todo save temp files in temp folder
 
 import collections
-import os
 import random
 import re
 import string
@@ -23,11 +22,11 @@ from Bio.Blast.Applications import (NcbiblastnCommandline,
                                     NcbiblastpCommandline,
                                     NcbiblastxCommandline,
                                     NcbitblastnCommandline)
-from Bio.Seq import Seq, reverse_complement, translate
+from Bio.Seq import Seq
 from Bio.SeqFeature import FeatureLocation, SeqFeature
 from Bio.SeqRecord import SeqRecord
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
 from ete3 import SeqMotifFace, StackedBarFace, TextFace, Tree, TreeStyle
@@ -126,7 +125,6 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase +
 
 
 def extract_alphanumeric(input_string):
-    import string
     from string import ascii_letters, digits
     return "".join([ch for ch in input_string if ch in (ascii_letters + digits + '_-.')])
 
@@ -1744,7 +1742,6 @@ def locusx_genomic_region(db, seqid, window):
     bioentry, _, _, _ = db.get_bioentry_list(seqid, search_on="seqid")
     contig_size = db.get_contig_size(bioentry)
 
-    hsh_organism = db.get_organism([seqid], id_type="seqid")
     infos = db.get_proteins_info(df_seqids.index.tolist(),
                                  to_return=["gene", "locus_tag", "product"], as_df=True,
                                  inc_non_CDS=True, inc_pseudo=True)
@@ -1926,8 +1923,6 @@ def search_suggest(request,):
          "value": f"{i.name}: {i.description}"}
         for i in results
     ]
-    # data = [f"{i.name} ({i.entry_type})" for i in results]
-    mimetype = "application/json"
     return JsonResponse(data, safe=False)
 
 # NOTE: should refactor this code to avoid duplicated code
@@ -1945,7 +1940,6 @@ def search_bar(request):
         ctx = {"search_failed": True, "search_term": user_query}
         return render(request, "chlamdb/search.html", my_locals(ctx))
 
-    search_results = []
     has_ko = option2status.get("KEGG", False)
     has_cog = option2status.get("COG", False)
     has_pfam = option2status.get("pfam", False)
@@ -1988,7 +1982,6 @@ def search_bar(request):
     pfam_headers = ["PFAM domain", "Description"]
     pat_headers = ["KEGG Pathway", "Description"]
     mod_headers = ["KEGG Module", "Description"]
-    insert_index = 4
     ctx = {"search_term": user_query,
            "gene_active": gene_active,
            "cogs_active": cogs_active,
@@ -3151,7 +3144,6 @@ def format_gene_to_ncbi_hmm(gene_and_hmmid):
 
 def locus_tab_swissprot_hits(db, seqid):
     swissprot_homologs = db.get_swissprot_homologs([seqid])
-    transl = db.get_translation(seqid)
 
     blast_data = []
     header = ["Swissprot accession", "Eval", "Score", "ID (%)", "N gaps",
@@ -3352,7 +3344,6 @@ def plot_region(request):
 def circos_main(request):
     biodb_path = settings.BIODB_DB_PATH
     db = DB.load_db_from_name(biodb_path)
-
     if request.method == 'POST':
 
         reference_taxon = request.POST["reference_taxid"]
@@ -3446,7 +3437,6 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
                                          .sort_values(ascending=False)
     locus2seqfeature_id = db.get_hsh_locus_to_seqfeature_id()
     seqfeature_id2locus_tag = {value: key for key, value in locus2seqfeature_id.items()}
-    heatmap_data_list = {}
     # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
     # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
     # join on seqfeature id
@@ -3502,7 +3492,6 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
 
 
 def circos(request):
-
     biodb_path = settings.BIODB_DB_PATH
     db = DB.load_db_from_name(biodb_path)
     page_title = page2title["circos"]

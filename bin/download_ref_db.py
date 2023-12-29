@@ -59,8 +59,6 @@ parser.add_argument("--download_refseq", nargs="?", const="databases/refseq/", d
 
 args = vars(parser.parse_args())
 
-threads = []
-
 
 if args.get("download_refseq", False):
     download_dir = args["download_refseq"]

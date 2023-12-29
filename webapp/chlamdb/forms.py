@@ -27,7 +27,6 @@ def get_accessions(db, all=False, plasmid=False):
             accession_choices.append((index, data.description + " plasmid"))
             reverse_index.append((taxid, True))
             index += 1
-            is_plasmid = True
 
     if all:
         accession_choices = [["all", "all"]] + accession_choices
