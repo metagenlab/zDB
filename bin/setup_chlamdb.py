@@ -106,20 +106,6 @@ def get_prot(refseq_file, hsh_accession):
         hsh_accession[accession] = record
 
 
-def get_taxids(ncbi_tax_file, hsh_accession_to_taxid):
-    line_iter = open(ncbi_tax_file, "r")
-
-    # pass header
-    next(line_iter)
-    for line in open(ncbi_tax_file, "r"):
-        end_of_accession = line.index("\t")
-        accession = line[:end_of_accession]
-        if accession not in hsh_accession_to_taxid:
-            continue
-        tokens = line.split("\t")
-        hsh_accession_to_taxid[accession] = int(tokens[2])
-
-
 def remove_accession_version(accession):
     return accession.split(".")[0]
 
