@@ -124,11 +124,6 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase +
     return ''.join(random.choice(chars) for _ in range(size))
 
 
-def extract_alphanumeric(input_string):
-    from string import ascii_letters, digits
-    return "".join([ch for ch in input_string if ch in (ascii_letters + digits + '_-.')])
-
-
 def help(request):
     return render(request, 'chlamdb/help.html', my_locals(locals()))
 

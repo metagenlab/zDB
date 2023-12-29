@@ -571,10 +571,6 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta):
     db.commit()
 
 
-def simplify_ko(raw_ko):
-    return int(raw_ko[len("ko:K"):])
-
-
 # NOTE:
 # Several KO marked as significant can be assigned to the same locus
 # only take the hit with the lowest evalue (the first in the list)

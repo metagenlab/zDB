@@ -213,13 +213,6 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
                 taxids.append(taxid)
             return taxids
 
-        def clean_venn(self):
-            value = self.cleaned_data['targets']
-            if len(value) > 6:
-                raise forms.ValidationError(
-                    "You can't select more than 6 items.")
-            return value
-
     return VennForm
 
 

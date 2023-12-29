@@ -12,22 +12,6 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
-def count_missing_locus_tags(gbk_record):
-    count_CDS = 0
-    count_no_locus = 0
-    for feature in gbk_record.features:
-        if feature.type == 'CDS':
-            count_CDS += 1
-            if "locus_tag" not in feature.qualifiers:
-                count_no_locus += 1
-    return count_no_locus, count_CDS
-
-
-def is_annotated(gbk_record):
-    return not (len(gbk_record.features) == 1
-                and gbk_record.features[0].type == 'source')
-
-
 def orthogroups_to_fasta(genomes_list):
     fasta_list = genomes_list.split(' ')
 
