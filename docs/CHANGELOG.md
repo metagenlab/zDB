@@ -5,6 +5,15 @@ Versions are of the form MAJOR.MINOR.PATCH and this changelog tries to conform
 to [Common Changelog](https://common-changelog.org)
 
 
+## unreleased
+
+### Changed
+- Add CHANGELOG file. ([#25](https://github.com/metagenlab/zDB/pull/25)) (Niklaus Johner)
+
+### Added
+- Add antimicrobial resistance annotations. ([#23](https://github.com/metagenlab/zDB/pull/23)) (Niklaus Johner)
+
+
 ## 1.2.1 - 2023-10-16
 
 ### Changed
@@ -20,7 +29,7 @@ to [Common Changelog](https://common-changelog.org)
 ### Fixed
 
 - Fix issue for genome file download ([#16](https://github.com/metagenlab/zDB/pull/16)) (Trestan Pillonel)
-- Fix file extensions in annotation pipeline ([#17](https://github.com/metagenlab/zDB/pull/17)) (Thomas Kozy)
+- Fix file extensions in annotation pipeline ([#17](https://github.com/metagenlab/zDB/pull/17)) (Thomas Kozusnik)
 
 
 ## 1.1.1 - 2023-05-16
