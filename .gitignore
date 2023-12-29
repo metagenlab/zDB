@@ -14,3 +14,7 @@ zdb/nginx/var
 zdb_ref/
 env
 docs/_build/
+testing/pipelines/rc.txt
+testing/pipelines/stderr.txt
+testing/pipelines/stdout.txt
+testing/pipelines/zdb
