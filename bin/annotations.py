@@ -1,21 +1,10 @@
-from Bio import Entrez, SeqIO
-from Bio.SeqUtils import CheckSum
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord
-from Bio.SeqFeature import SeqFeature, FeatureLocation, ExactPosition
-from Bio import AlignIO
-from Bio.Align import MultipleSeqAlignment
-
-# import setup_chlamdb
+import os
+from collections import defaultdict, namedtuple
 
 import pandas as pd
-import itertools
-import sys
-import re
-import os
-
-from collections import defaultdict
-from collections import namedtuple
+from Bio import AlignIO, SeqIO
+from Bio.Align import MultipleSeqAlignment
+from Bio.SeqUtils import CheckSum
 
 
 def chunks(lst, n):
