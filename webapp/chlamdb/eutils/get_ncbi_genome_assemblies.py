@@ -127,6 +127,7 @@ def write_assembly_table(taxid2assemblies,
                 family,
                 genus)
             )
+    o.close()
 
 
 def make_random_genome_selection(taxon_id2classification,

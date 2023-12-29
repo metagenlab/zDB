@@ -45,8 +45,8 @@ def orthogroups_to_fasta(genomes_list):
             if len(groups) > 1:
                 new_fasta = [sequence_data[i] for i in groups]
                 out_path = "%s.faa" % group_name
-                out_handle = open(out_path, "w")
-                SeqIO.write(new_fasta, out_handle, "fasta")
+                with open(out_path, "w") as out_handle:
+                    SeqIO.write(new_fasta, out_handle, "fasta")
 
 
 def gen_new_locus_tag(hsh_prev_values):
@@ -295,6 +295,7 @@ def convert_gbk_to_fasta(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=Fal
 
                 edited_records.write(">%s %s\n%s\n" % (locus_tag,
                                                        record.description, data))
+    edited_records.close()
 
 
 def convert_gbk_to_fna(gbf_file, fna_contigs):
@@ -305,6 +306,7 @@ def convert_gbk_to_fna(gbf_file, fna_contigs):
     for record in records:
         edited_records.write(">%s %s\n%s\n" %
                              (record.name, record.description, record.seq))
+    edited_records.close()
 
 
 # all faa files are merged into fasta_file
@@ -358,6 +360,8 @@ def get_nr_sequences(fasta_file, genomes_list):
                 updated_records.append(record)
 
     SeqIO.write(updated_records, nr_fasta, "fasta")
+    nr_fasta.close()
+    nr_mapping.close()
 
 
 # This function parses the result of orthofinder/orthoMCL,

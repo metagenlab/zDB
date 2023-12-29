@@ -30,6 +30,7 @@ def parse_orthofinder_output_file(output_file):
         for locus in tokens[1:]:
             assert locus not in protein_id2orthogroup_id
             protein_id2orthogroup_id[locus] = group
+    parsing.close()
     return protein_id2orthogroup_id
 
 
@@ -227,16 +228,17 @@ def load_seq_hashes(args, nr_mapping, db_file):
     hsh_locus_to_id = db.get_hsh_locus_to_seqfeature_id(only_CDS=True)
 
     to_load_hsh_to_seqid = {}
-    for line in open(nr_mapping, "r"):
-        record_id, hsh, genome = line.split("\t")
-        seqfeature_id = hsh_locus_to_id[record_id]
+    with open(nr_mapping, "r") as nr_file:
+        for line in nr_file:
+            record_id, hsh, genome = line.split("\t")
+            seqfeature_id = hsh_locus_to_id[record_id]
 
-        short_hsh = hsh[len("CRC-"):]
-        int_from_64b_hash = hsh_from_s(short_hsh)
-        if int_from_64b_hash not in to_load_hsh_to_seqid:
-            to_load_hsh_to_seqid[int_from_64b_hash] = [seqfeature_id]
-        else:
-            to_load_hsh_to_seqid[int_from_64b_hash].append(seqfeature_id)
+            short_hsh = hsh[len("CRC-"):]
+            int_from_64b_hash = hsh_from_s(short_hsh)
+            if int_from_64b_hash not in to_load_hsh_to_seqid:
+                to_load_hsh_to_seqid[int_from_64b_hash] = [seqfeature_id]
+            else:
+                to_load_hsh_to_seqid[int_from_64b_hash].append(seqfeature_id)
 
     to_load = []
     for hsh_64b, seqids in to_load_hsh_to_seqid.items():
@@ -257,11 +259,12 @@ def load_alignments_results(args, identity_csvs, db_file):
     for identity_csv in identity_csvs:
         orthogroup = get_og_id(identity_csv.split("_")[0])
         matrix = []
-        for line in open(identity_csv, "r"):
-            lt1, lt2, ident, le = line.split(",")
-            id1 = locus_to_feature_id[lt1]
-            id2 = locus_to_feature_id[lt2]
-            matrix.append((orthogroup, id1, id2, float(ident)))
+        with open(identity_csv, "r") as csv_file:
+            for line in csv_file:
+                lt1, lt2, ident, le = line.split(",")
+                id1 = locus_to_feature_id[lt1]
+                id2 = locus_to_feature_id[lt2]
+                matrix.append((orthogroup, id1, id2, float(ident)))
         db.load_og_matrix(matrix)
     db.create_og_matrix_indices()
     db.set_status_in_config_table("orthogroup_alignments", 1)
@@ -271,9 +274,10 @@ def load_alignments_results(args, identity_csvs, db_file):
 def load_cog(params, filelist, db_file, cdd_to_cog):
     db = DB.load_db(db_file, params)
     hsh_cdd_to_cog = {}
-    for line in open(cdd_to_cog, "r"):
-        cog, cdd = line.split()
-        hsh_cdd_to_cog[int(cdd)] = int(cog)
+    with open(cdd_to_cog, "r") as cdd_to_cog_file:
+        for line in cdd_to_cog_file:
+            cog, cdd = line.split()
+            hsh_cdd_to_cog[int(cdd)] = int(cog)
 
     data = []
     for chunk in filelist:
@@ -361,12 +365,13 @@ def load_gene_phylogenies(kwargs, og_summary, lst_orthogroups, db_file):
         hsh_ogs[og_id] = t.write()
 
     data = []
-    for line in open(og_summary, "r"):
-        og, is_core, og_size, num_genomes = line.split("\t")
-        og_id = int(og.split("_")[0][2:])
-        newick = hsh_ogs.get(og_id, "")
-        data.append((og_id, newick, int(is_core),
-                    int(og_size), int(num_genomes)))
+    with open(og_summary, "r") as og_file:
+        for line in og_file:
+            og, is_core, og_size, num_genomes = line.split("\t")
+            og_id = int(og.split("_")[0][2:])
+            newick = hsh_ogs.get(og_id, "")
+            data.append((og_id, newick, int(is_core),
+                        int(og_size), int(num_genomes)))
 
     db.create_gene_phylogeny_table(data)
     db.set_status_in_config_table("gene_phylogenies", 1)
@@ -377,8 +382,9 @@ def load_reference_phylogeny(kwargs, tree, db_file):
     import ete3
     db = DB.load_db(db_file, kwargs)
 
-    newick_file = open(tree, "r")
-    newick_string = newick_file.readline()
+    with open(tree, "r") as newick_file:
+        newick_string = newick_file.readline()
+
     hsh_filename_to_taxon = db.get_filenames_to_taxon_id()
 
     # convert leaf names to taxon_id instead of filename
@@ -469,18 +475,19 @@ def load_pfam(params, pfam_files, db, pfam_def_file):
     pfam_ids = set()
     for pfam in pfam_files:
         entries = []
-        for line in open(pfam, "r"):
-            if len(line) < len("CRC-") or line[0:len("CRC-")] != "CRC-":
-                continue
+        with open(pfam, "r") as pfam_file:
+            for line in pfam_file:
+                if len(line) < len("CRC-") or line[0:len("CRC-")] != "CRC-":
+                    continue
 
-            tokens = line.split()
-            hsh_i = simplify_hash(tokens[0])
-            start = int(tokens[1])
-            end = int(tokens[2])
-            pfam_raw_str = tokens[5].split(".")[0]
-            pfam_i = int(pfam_raw_str[len("PF"):])
-            entries.append((hsh_i, pfam_i, start, end))
-            pfam_ids.add(pfam_i)
+                tokens = line.split()
+                hsh_i = simplify_hash(tokens[0])
+                start = int(tokens[1])
+                end = int(tokens[2])
+                pfam_raw_str = tokens[5].split(".")[0]
+                pfam_i = int(pfam_raw_str[len("PF"):])
+                entries.append((hsh_i, pfam_i, start, end))
+                pfam_ids.add(pfam_i)
 
         db.load_data_into_table("pfam_hits", entries)
     db.commit()
@@ -491,6 +498,7 @@ def load_pfam(params, pfam_files, db, pfam_def_file):
         if entry.accession not in pfam_ids:
             continue
         pfam_entries.append([entry.accession, entry.description])
+    pfam_def_file_iter.close()
     db.create_pfam_def_table(pfam_entries)
     db.set_status_in_config_table("pfam", 1)
     db.commit()
@@ -551,14 +559,15 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta):
     # spares memory).
     for blast_file in blast_results:
         data = []
-        for line in open(blast_file, "r"):
-            crc, prot_id, perid, leng, n_mis, n_gap, qs, qe, ss, se, e, score = line.split()
-            hsh = simplify_hash(crc)
-            # swissprot accession in the format x|prot_id|org
-            _, prot_id, _ = parse_swissprot_id(prot_id)
-            db_prot_id = hsh_swissprot_id[prot_id]
-            data.append((hsh, db_prot_id, float(e), int(float(score)),
-                         int(float(perid)), int(n_gap), int(leng)))
+        with open(blast_file, "r") as blast_fh:
+            for line in blast_fh:
+                crc, prot_id, perid, leng, n_mis, n_gap, qs, qe, ss, se, e, score = line.split()
+                hsh = simplify_hash(crc)
+                # swissprot accession in the format x|prot_id|org
+                _, prot_id, _ = parse_swissprot_id(prot_id)
+                db_prot_id = hsh_swissprot_id[prot_id]
+                data.append((hsh, db_prot_id, float(e), int(float(score)),
+                             int(float(perid)), int(n_gap), int(leng)))
         db.load_swissprot_hits(data)
 
     swiss_prot_defs = []
@@ -588,26 +597,27 @@ def load_KO(params, ko_files, db_name):
     data = []
     for ko_file in ko_files:
         curr_hsh = None
-        for ko_line in open(ko_file, "r"):
-            tokens = ko_line.split()
-            # ignore all but the best hits
-            if tokens[0] != "*":
-                continue
-            crc_raw, ko_str, thrs_str, score_str, evalue_str, * \
-                descr = tokens[1:]
-            hsh = simplify_hash(crc_raw)
-            if hsh == curr_hsh:
-                # skip the entries that were classified as significant, but
-                # with a higher e-value
-                continue
-            else:
-                curr_hsh = hsh
-            ko = get_ko_id(ko_str)
-            thrs = float(thrs_str)
-            score = float(score_str)
-            evalue = float(evalue_str)
-            entry = [hsh, ko, thrs, score, evalue]
-            data.append(entry)
+        with open(ko_file, "r") as ko_fh:
+            for ko_line in ko_fh:
+                tokens = ko_line.split()
+                # ignore all but the best hits
+                if tokens[0] != "*":
+                    continue
+                crc_raw, ko_str, thrs_str, score_str, evalue_str, * \
+                    descr = tokens[1:]
+                hsh = simplify_hash(crc_raw)
+                if hsh == curr_hsh:
+                    # skip the entries that were classified as significant, but
+                    # with a higher e-value
+                    continue
+                else:
+                    curr_hsh = hsh
+                ko = get_ko_id(ko_str)
+                thrs = float(thrs_str)
+                score = float(score_str)
+                evalue = float(evalue_str)
+                entry = [hsh, ko, thrs, score, evalue]
+                data.append(entry)
     db.load_ko_hits(data)
     db.set_status_in_config_table("KEGG", 1)
     db.commit()

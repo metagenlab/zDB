@@ -462,6 +462,7 @@ def accession2assembly(accession):
                                                                          Similarity)
 
     f.write(line.encode("utf-8"))
+    f.close()
 
 
 def download_assembly(assembly_gi, out_dir, complete=False):
@@ -597,6 +598,7 @@ def bioproject2assemblies(accession, complete=False):
         dw = download_assembly(one_assembly, local_dir, complete)
         if dw:
             f.write(dw.encode("utf-8"))
+    f.close()
 
 
 if __name__ == '__main__':
