@@ -41,12 +41,12 @@
                   <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'genomes' %}" ><b>Genomes</b></a></li>
                   <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'phylogeny' %}" ><b>Phylogeny</b></a></li>
                   <hr class="line-menu">
-                  <li class="analyses"><b>Analyses</b></a></li>
-                  <li class="sidebar-dropdown" ><p> Homology search</p> 
+                  <li class="analyses"><b>Analyses</b></li>
+                  <li class="sidebar-dropdown" ><p> Homology search</p></li>
                   <li class="analyses_intra" ><a href="{% url 'blast' %}">Blast</a></li>
-                  <li class="sidebar-dropdown" ><p> Orthology</p> 
-                  <li class="analyses_intra"><a href="{% url 'index_comp' 'orthology' %}">Orthogroups</a></il>
-                   <li class="sidebar-dropdown" ><p> Annotations</p> 
+                  <li class="sidebar-dropdown" ><p> Orthology</p></li>
+                  <li class="analyses_intra"><a href="{% url 'index_comp' 'orthology' %}">Orthogroups</a></li>
+                  <li class="sidebar-dropdown" ><p> Annotations</p></li>
                   {% if optional2status|keyvalue:"COG" == 1 %}
                   <li class="analyses_intra" ><a   href="{% url 'index_comp' 'COG' %}">COGs</a></li>
                   {% endif %}
@@ -61,7 +61,7 @@
               <li class="analyses_intra"><a   href="{% url 'plot_region' %}">Plot region</a></li>
               <li class="analyses_intra"><a   href="{% url 'circos' %}">Circos</a></li>
               {% if optional2status|keyvalue:"KEGG" %}
-          <li  class="sidebar-dropdown" ><p>Metabolism</p>
+          <li  class="sidebar-dropdown" ><p>Metabolism</p></li>
           <li class="analyses_intra"><a    href="{% url 'kegg' %}">Kegg based</a></li>
                 {% endif %}
 
@@ -69,7 +69,8 @@
           <li class="sidebar-nav-item"><a  href="{% url 'FAQ' %}"><b>FAQ</b></a></li>
           <li class="sidebar-nav-item"><a  href='https://zdb.readthedocs.io/en/latest/'target="_blank"><b>Documentation</b></a></li>
           <li class="sidebar-nav-item"><a   href="{% url 'about' %}"><b>References</b></a></li>
-          <li class="sidebar-nav-item" style="margin-bottom: 5em"><a href="https://github.com/metagenlab/annotation_pipeline_nextflow"><i class="fab fa-github" ></i><b> Project and contacts</b></a></li> 
+          <li class="sidebar-nav-item" style="margin-bottom: 5em"><a href="https://github.com/metagenlab/annotation_pipeline_nextflow"><i class="fab fa-github" ></i><b> Project and contacts</b></a></li>
+        </li>
             
 
 
@@ -77,8 +78,6 @@
         </ul>
     </div> <!-- /.container-fluid -->
   </div> <!-- /#sidebar-wrapper -->
-
-</div>
 
 <script>
 

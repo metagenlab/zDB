@@ -113,3 +113,13 @@ class TestViews(SimpleTestCase):
             all_patterns - covered_patterns,
             "Some patterns are not covered in the tests: please add them to "
             "one of broken_views, untested_patterns or urls")
+
+    def test_all_views_render_valid_html(self):
+        for url in urls:
+            resp = self.client.get(url)
+            try:
+                self.assertContains(resp, "", html=True)
+            except Exception as exc:
+                print(f"\n\nInvalid html for {url}")
+                print(f"Templates {[el.name for el in resp.templates]}\n\n")
+                raise exc

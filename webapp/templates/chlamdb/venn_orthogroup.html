@@ -7,6 +7,7 @@
 {% load crispy_forms_tags %}
 </head>
 
+<body>
 <div class="container-fluid" id="main_container">
   <div class="row">
     <div id="wrapper">
@@ -17,14 +18,14 @@
                {% include "chlamdb/extract_nav_tabs_template.html" with type="orthology" active_tab="venn" %}
 
              <br>
-                <p class="page-title"><b>Visual representation of unique and shared orthogroups among selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank"  title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                <p class="page-title"><b>Visual representation of unique and shared orthogroups among selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank"  title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
 
                         {% block content %}
 						{% csrf_token %}
 						{% crispy form_venn %}
                         {% endblock %}
 
-                </div>
+            </div>
 
 
                 {% if envoi_venn %}
@@ -41,12 +42,10 @@
                         </p>
                     </div>
                     {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=orthogroup2description %}
-                    </div>
                 </div>
-            {% endif %}
-            </div>
+                {% endif %}
+          </div>
         </div>
-      </div>
     </div>
   </div>
 </div>

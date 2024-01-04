@@ -8,6 +8,7 @@
 
 </head>
 
+<body>
 <div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
@@ -18,7 +19,7 @@
              {% include "chlamdb/extract_nav_tabs_template.html" with type="Pfam" active_tab="venn" %}
 
             <br>
-            <p class="page-title"><b>Visual representation of unique and shared Pfam domains among selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+            <p class="page-title"><b>Visual representation of unique and shared Pfam domains among selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
 
                     {% block content %}
                     <form action='{% url "venn_pfam" %}' method="post">

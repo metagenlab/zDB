@@ -14,419 +14,416 @@
 </head>
 <body>
 
-    <div class="container-fluid" id="main_container">
-      <div class="row">
-        <div id="wrapper">
-            <div id="page-content-wrapper">
-              <div class="row">
-                <div class="col-lg-12">
-                   {% include "chlamdb/menu.html" %}
+<div class="container-fluid" id="main_container">
+  <div class="row">
+    <div id="wrapper">
+      <div id="page-content-wrapper">
+        <div class="row">
+          <div class="col-lg-12">
+            {% include "chlamdb/menu.html" %}
                   
-                </div>
-                </div>
-                            <p class="page-title"><b>
-                             {% if type == 'cog'%}
-                             {{ fam }}
-                             {% elif type == 'pfam' %}
-                             {{ fam }}
-                             
-                             <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#cog-pfam-annotation-summary" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></b></center>
-
-                
-                             {% elif type == 'ko' %}
-                             {{ fam }}
-                             
-                             <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#kegg-module-overview-page" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></b></p></center>
-                            {% endif %}
-                            <hr class="lines-home">
-
-                  
-
-                  {% if no_match %}
-                          <div class="alert alert-warning" role="alert" style="width:50%"><a>{{fam}} not present in the database</a>
-                 {% else %}
-
-				 <div class="panel panel-success" style="width:100%; top: 200px; float: left;">
-					<div class="panel-heading" style="width:100%">
-					  <h3 class="panel-title">Help to interpret the results</h3>
-					</div>
-					<p style="margin: 10px 10px 10px 10px; line-height: 180%">Three outputs have been generated:
-						<br> <b>General</b>:  this result contains the description and frequency of the selected
-                        {% if type == 'cog'%}
-                        COG entry
-                        {% elif type == 'ko' %}
-                        Kegg Ortholog
-                        {% elif type == 'pfam' %}
-                        Pfam domain
-                        {% endif %} 
-                        {{ fam }}, of which KO pathways and KO modules it is part. Additionally, its occurence in the database is reported.
-                        <br><b> Proteins list</b>: list of occurences of the
-                        {% if type == 'ko'%}
-                COG entry
-                {% elif type == 'ko' %}
-                Kegg Ortholog
-                {% elif type == 'pfam' %}
-                Pfam domain
-                {% endif %} 
-                        within the database. {{ all_locus_data|length }} occurences are identified.
-                        The table reports the orthogroup, the organism in which each occurrence has been found, and the locus tag enriched by start and stop position, strand, gene name and product.
-                    <br>Clicking on the Ortohgroup name or locus you will be redirected to further info.
-					  <br><b> Profiles</b>: Phylogenetic tree annotated with
-                      <br>- the presence of the
-          {% if type == 'cog'%}
-          COG entry(ies)
-          {% elif type == 'ko' %}
-          Kegg Ortholog(s)
-          {% elif type == 'pfam' %}
-          Pfam domain(s)
-          {% endif %} of interest within all the genomes of the database (first column)
-                      <br>- the size of the orthogroup(s) in which the reported
-          {% if type == 'cog'%}
-          COG entry
-          {% elif type == 'ko' %}
-          Ko entry
-          {% elif type == 'pfam' %}
-          Pfam domain
-          {% endif %}  has been clustered.
-                        <br>In red the <font size="2" color="red">{{type}} with positive hit(s)</font> in the corresponding genome.
-                        <br>In green <font size="2" color="green">the discrepencies between orthogroup clustering and {{type}} prediction</font>.
-                        Green homologs (same orthogroup) <strong>are not</strong> positive hit(s) for the considered {{type}}.
-                        <br><br>Variations within orthogroups may be due to the clustering of multi domain proteins or because of erroneous homolog clustering or {{type}} prediction. </p>
-				  </div>
-             
-
-                                  
-                              <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                                  <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
-                                  <li><a href="#tab2" data-toggle="tab">Protein list</a></li>
-                                  <li><a href="#tab3" data-toggle="tab">Profile</a></li>
-                              </ul>
-                              
-                            <div id="my-tab-content" class="tab-content" style="margin-top: 1em;">
-                                    <div class="tab-pane active" id="tab1">
-                                        <div class="col-md-12 col-lg-10" style="padding-right:30px;">
-                                            <div class="row">
-                                                <div class="panel panel-default">
-                                                    <div class="panel-heading">
-                                                        <h3 class="panel-title">Description</h3>
-                                                    </div>
-                                                    <table class="table table-striped" style="width: 100%">
-                                                        {% if type == 'pfam' %}
-
-                                                            <tr>
-                                                                <th>External link</th>
-                                                                <td><a href="http://pfam.xfam.org/family/{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
-                                                            </tr>
-
-                                                        {% elif type == 'interpro' %}
-                                                            <tr>
-                                                                <th>External link</th>
-                                                                <td><a href="http://www.ebi.ac.uk/interpro/entry/{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
-                                                            </tr>
-
-                                                        {% elif type == 'ko' %}
-                                                            <tr>
-                                                                <th>External link</th>
-                                                                <td><a href="http://www.genome.jp/dbget-bin/www_bget?{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
-                                                            </tr>
-
-                                                        {% elif type == 'EC' %}
-                                                            <tr>
-                                                                <th>External link</th>
-                                                                <td><a href="{{ external_link }}" target="_blank">  {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
-                                                            </tr>
-
-                                                        {% endif %}
-
-
-
-                                                        {% if type == 'EC' %}
-            
-                                                                {% for key, value in info%}
-                                                                    <tr>
-                                                                        
-                                                                        <th>{{key}}</th>
-                                                                        {% if key == "prosite"%}
-                                                                            <td><a href="https://prosite.expasy.org/{{value}}">{{value}}</a></td>
-                                                                        {% else %}
-                                                                            <td>{{value}}</td>
-                                                                        {% endif %}
-                                                                        
-                                                                    </tr>
-                                                                {% endfor %}
-
-                                                                <tr>
-                                                                        <th>{{key}}</th>
-                                                                        <td>{{value}}</td>
-                                                                </tr>
-       
-                                                        {% elif type == 'ko'%}
-        
-                                                            <tr>
-                                                                <th style="width:160px">Accession</th>
-                                                                <td>{{ fam }}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <th style="width:160px">Description</th>
-                                                                <td>{{ ko_desc }}</td>
-                                                            </tr>
-        
-        
-                                                        {% elif fam_interpro %}
-        
-                                                            <tr>
-                                                                <th style="width:160px">Signature accession</th>
-                                                                {% if type == "PANTHER" %}
-                                                                    <td><a href="http://www.pantherdb.org/panther/family.do?clsAccession={{info.0}}">{{ info.0 }}</a></td>
-                                                                {% elif type == "CDD" %}
-                                                                    <td><a href="https://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{info.0}}">{{ info.0 }}</a></td>
-                                                                {% elif type == "Pfam" %}
-                                                                    <td><a href="http://pfam.xfam.org/family/{{info.0}}">{{ info.0 }}</a></td>
-                                                                    {% elif type == "PRINTS" %}
-                                                                    <td><a href="http://130.88.97.239/cgi-bin/dbbrowser/sprint/searchprintss.cgi?prints_accn={{info.0}}&display_opts=Prints&category=None&queryform=false&regexpr=off">{{ info.0 }}</a></td>
-                                                                    {% elif type == "TIGRFAM" %}
-                                                                    <td><a href="http://tigrfams.jcvi.org/cgi-bin/HmmReportPage.cgi?acc={{info.0}}">{{ info.0 }}</a></td>
-                                                                    {% elif type == "Hamap" %}
-                                                                    <td><a href="https://hamap.expasy.org/signature/{{info.0}}">{{ info.0 }}</a></td>
-                                                                    {% elif type == "Gene3D" %}
-                                                                    <td><a href="http://www.cathdb.info/version/latest/superfamily/{{Gene3D_acc}}">{{ info.0 }}</a></td>
-                                                                    {% elif type == "SUPERFAMILY" %}
-                                                                    <td><a href="http://supfam.org/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{info.0}}">{{ info.0 }}</a></td>
-                                                                    {% elif type == "SMART" %}
-                                                                    <td><a href="http://smart.embl-heidelberg.de/smart/do_annotation.pl?DOMAIN={{info.0}}">{{ info.0 }}</a></td>
-                                                                    {% elif type == "ProSitePatterns" %}
-                                                                    <td><a href="https://prosite.expasy.org/{{info.0}}">{{ info.0 }}</a></td>
-                                                            
-                                                                    {% else %}
-                                                                    <td>{{ info.0 }} {{ info.1 }}</td>
-                                                                {% endif %}
-                                                            </tr>
-
-                                                            {% if info.1 != "0" %}
-                                                                <tr>
-                                                                    <th style="width:160px">Signature description</th>
-                                                                    <td> {{ info.1 }}</td>
-                                                                </tr>
-                                                            {% else %}
-                                                                <tr>
-                                                                    <th style="width:160px">Signature description</th>
-                                                                    <td> N/A </td>
-                                                                </tr>
-                                                            {% endif %}
-
-														{% elif type == "cog" %}
-                                                            <tr>
-                                                                <th style="width:160px">Description</th>
-                                                                <td> {{ info.1 }} </td>
-                                                            </tr>
-															<tr>
-                                                                <th style="width:160px">Function(s)</th>
-																<td> {{info.0|safe}}</td>
-															</tr>
-            
-                                                        {% else %}
-                                                            <tr>
-                                                                <th style="width:160px">Description</th>
-                                                                <td> {{ info.0 }} {{ info.1 }} </td>
-                                                            </tr>
-                                                        {% endif %}
-                                                    </table>
-                                                </div>
-                                            </div>
-                                            {% if type == 'ko'%}
-
-                                                <div class="row">
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h3 class="panel-title">KO part of <strong>{{pathway_data|length }} pathways</strong></h3>
-                                                        </div>
-                                                        {% if pathway_data|length > 0 %}
-                                                            <table class="table table-striped" style="width: 100%">
-                                                                <tbody>
-                                                                    {% for path in pathway_data %}
-
-                                                                    <tr>
-                                                                        <td>{{path|safe}}</td>
-                                                                    </tr>
-
-                                                                    {% endfor %}
-                                                                </tbody>
-                                                            </table>
-                                                        {% endif %}
-
-                                                            <div class="panel-heading">
-                                                                    <h3 class="panel-title">KO part of <strong>{{module_data|length }} modules </strong></h3>
-                                                            </div>
-                                                                {% if module_data|length > 0 %}
-                                                                    <table class="table table-striped" style="width: 100%">
-                                                                        <tbody>
-                                                                            {% for path in module_data %}
-                                                                                <tr>
-                                                                                    <td>{{path.0|safe}}</td>
-                                                                                    <td>{{path.1}}</td>
-                                                                                    <td>{{path.2}}</td>
-                                                                                </tr>
-                                                                            {% endfor %}
-                                                                        </tbody>
-                                                                    </table>
-                                                                {% endif %}
-
-                                                    </div>
-                                                </div>
-
-
-
-                                            {% endif %}
-
-
-                                            {% if type == 'EC'%}
-
-                                                <div class="row">
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading">
-                                                            <h3 class="panel-title">EC part of <strong>{{pathway_data|length }} pathways</strong></h3>
-                                                        </div>
-                                                        {% if pathway_data|length > 0 %}
-                                                            <table class="table table-striped" style="width: 100%">
-                                                                <tbody>
-                                                                    {% for path in pathway_data %}
-                                                                    <tr>
-                                                                        <td style="width:160px"><a href="{% url 'KEGG_mapp_ko' path.0 %}">{{path.0}}</a></td>
-                                                                        <td>{{path.1}}</td>
-                                                                    </tr>
-                                                                    {% endfor %}
-                                                                </tbody>
-                                                            </table>
-                                                        {% endif %}
-                                                    </div>
-                                                </div>
-
-                                                {% if associated_ko|length > 0 %}
-
-                                                <div class="row">
-                                                        <div class="panel panel-default">
-                                                            <div class="panel-heading">
-                                                                <h3 class="panel-title">Kegg Orthologs</h3></strong></h3>
-                                                            </div>
-                                                                <table class="table table-striped" style="width: 100%">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th>Accession</th>
-                                                                            <th>Description</th>
-                                                                            <th>Frequency in the database</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {% for ko in associated_ko %}
-                                                                        <tr>
-                                                                            {% with ko2freq|keyvalue:ko.0 as freq%}
-                                                                                {% if freq > 0%}
-                                                                                    <td style="width:160px"><a href="{% url 'fam' ko.0 "ko" %}">{{ko.0}}</a></td>
-                                                                                    <td>{{ko.1}}</td>
-                                                                                    <td>{{ freq }}</td>
-                                                                                {% else %}
-                                                                                    <td style="width:160px">{{ko.0}}</td>
-                                                                                    <td>{{ko.1}}</td>
-                                                                                    <td>-</td>
-                                                                                {% endif %}
-
-                                                                             {% endwith %}
-                                                                        </tr>
-                                                                        {% endfor %}
-                                                                    </tbody>
-                                                                </table>
-                                                        </div>
-                                                    </div>
-                                                {% endif %}
-
-                                            {% endif %}
-
-                                            <div class="row">
-                                                <div class="panel panel-default">
-                                                    <div class="panel-heading">
-                                                        <h3 class="panel-title">Occurence in the database</h3>
-                                                    </div>
-                                                        <table class="table table-striped" style="width: 100%">
-
-                                                            <tr>
-                                                                <td>{{ fam }} is associated with <strong>{{ all_locus_data|length }} different proteins</strong> (see tab "<a href="#tab2" data-toggle="tab">Protein list</a>" and "<a href="#tab3" data-toggle="tab">Profile</a>")</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td> The {{ all_locus_data|length }} proteins are classified into <strong>{{ group_count|length }} different orthogroup(s)</strong></td>
-                                                            </tr>                                                        
-                                                        </table>
-                                                        <div style="padding-left:40px">
-                                                            <ul style="list-style-type:disc;">
-																{% for group in group_count %}
-																<li>{{group|safe}}</li>
-																{% endfor %}
-                                                            </ul>
-                                                        </div>
-                                                </div>
-                                            </div>
-
-
-                                        </div>
-
-
-                                  </div>
-
-                                  <div class="tab-pane" id="tab2">
-                                        <table id="fam_table">
-                                            <thead>
-                                                <tr>
-                                                    <th>#</th>
-                                                    <th>Orthogroup</th>
-                                                    <th>Locus</th>
-                                                    <th>Start</th>
-                                                    <th>Stop</th>
-                                                    <th>S.</th>
-                                                    <th>Gene</th>
-                                                    <th>Product</th>
-                                                    <th>Organism</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for values in all_locus_data %}
-                                                    <tr>
-                                                        <td>{{values.0}}</td>
-                                                        <td>{{values.1|safe}}</td>
-                                                        <td><a href='{% url "locusx" values.2 True %}' target="_top">{{values.2}}</a></td>
-                                                        <td>{{values.4}}</td>
-                                                        <td>{{values.5}}</td>
-                                                        <td>{{values.6}}</td>
-                                                        <td>{{values.7}}</td>
-                                                        <td>{{values.8}}</td>
-                                                        <td>{{values.9}}</td>
-                                                    </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                  </div>
-
-                                  <div class="tab-pane" id="tab66" style="height:100%">
-                                          <iframe name="orthoIDframe2" id="orthoIDframe2" scrolling="no" width="100%" height="2800px"></iframe>
-                                  </div>
-
-                                  <div class="tab-pane" id="tab3">
-                                       <div class="row">
-										   <a download="profile_{{fam}}.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
-                                           <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
-                                       </div>
-                                  </div>
-                                </div> <!--tabs-->
-                     </div>
-                 {% endif %}
           </div>
         </div>
+        <p class="page-title"><b>
+
+          {% if type == 'cog'%}
+            {{ fam }}
+
+          {% elif type == 'pfam' %}
+            {{ fam }}
+
+            <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#cog-pfam-annotation-summary" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
+
+          {% elif type == 'ko' %}
+            {{ fam }}
+
+            <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#kegg-module-overview-page" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
+          {% endif %}
+
+        </b></p>
+
+        <hr class="lines-home">
+        {% if no_match %}
+          <div class="alert alert-warning" role="alert" style="width:50%"><a>{{fam}} not present in the database</a></div>
+
+        {% else %}
+				  <div class="panel panel-success" style="width:100%; top: 200px; float: left;">
+				    <div class="panel-heading" style="width:100%">
+					  <h3 class="panel-title">Help to interpret the results</h3>
+					  </div>
+  					<p style="margin: 10px 10px 10px 10px; line-height: 180%">Three outputs have been generated:
+  						<br> <b>General</b>:  this result contains the description and frequency of the selected
+
+              {% if type == 'cog'%}
+                COG entry
+              {% elif type == 'ko' %}
+                Kegg Ortholog
+              {% elif type == 'pfam' %}
+                Pfam domain
+              {% endif %}
+
+              {{ fam }}, of which KO pathways and KO modules it is part. Additionally, its occurence in the database is reported.
+              <br> <b>Proteins list</b>: list of occurences of the
+
+              {% if type == 'ko'%}
+                COG entry
+              {% elif type == 'ko' %}
+                Kegg Ortholog
+              {% elif type == 'pfam' %}
+                Pfam domain
+              {% endif %}
+
+              within the database. {{ all_locus_data|length }} occurences are identified.
+              The table reports the orthogroup, the organism in which each occurrence has been found, and the locus tag enriched by start and stop position, strand, gene name and product.
+              <br>Clicking on the Ortohgroup name or locus you will be redirected to further info.
+  					  <br><b> Profiles</b>: Phylogenetic tree annotated with
+              <br>- the presence of the
+
+              {% if type == 'cog'%}
+                COG entry(ies)
+              {% elif type == 'ko' %}
+                Kegg Ortholog(s)
+              {% elif type == 'pfam' %}
+                Pfam domain(s)
+              {% endif %} of interest within all the genomes of the database (first column)
+
+              <br>- the size of the orthogroup(s) in which the reported
+
+              {% if type == 'cog'%}
+                COG entry
+              {% elif type == 'ko' %}
+                Ko entry
+              {% elif type == 'pfam' %}
+                Pfam domain
+              {% endif %} has been clustered.
+
+              <br>In red the <font size="2" color="red">{{type}} with positive hit(s)</font> in the corresponding genome.
+              <br>In green <font size="2" color="green">the discrepencies between orthogroup clustering and {{type}} prediction</font>.
+              Green homologs (same orthogroup) <strong>are not</strong> positive hit(s) for the considered {{type}}.
+              <br><br>Variations within orthogroups may be due to the clustering of multi domain proteins or because of erroneous homolog clustering or {{type}} prediction.
+            </p>
+				  </div>
+
+          <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+              <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
+              <li><a href="#tab2" data-toggle="tab">Protein list</a></li>
+              <li><a href="#tab3" data-toggle="tab">Profile</a></li>
+          </ul>
+
+          <div id="my-tab-content" class="tab-content" style="margin-top: 1em;">
+            <div class="tab-pane active" id="tab1">
+              <div class="col-md-12 col-lg-10" style="padding-right:30px;">
+                <div class="row">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h3 class="panel-title">Description</h3>
+                    </div>
+                    <table class="table table-striped" style="width: 100%">
+                      {% if type == 'pfam' %}
+                        <tr>
+                          <th>External link</th>
+                          <td><a href="http://pfam.xfam.org/family/{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
+                        </tr>
+
+                      {% elif type == 'interpro' %}
+                        <tr>
+                          <th>External link</th>
+                          <td><a href="http://www.ebi.ac.uk/interpro/entry/{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
+                        </tr>
+
+                      {% elif type == 'ko' %}
+                        <tr>
+                          <th>External link</th>
+                          <td><a href="http://www.genome.jp/dbget-bin/www_bget?{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
+                        </tr>
+
+                      {% elif type == 'EC' %}
+                        <tr>
+                          <th>External link</th>
+                          <td><a href="{{ external_link }}" target="_blank">  {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
+                        </tr>
+
+                      {% endif %}
+
+                      {% if type == 'EC' %}
+                        {% for key, value in info%}
+                          <tr>
+                            <th>{{key}}</th>
+                            {% if key == "prosite"%}
+                              <td><a href="https://prosite.expasy.org/{{value}}">{{value}}</a></td>
+                            {% else %}
+                              <td>{{value}}</td>
+                            {% endif %}
+                          </tr>
+                        {% endfor %}
+
+                        <tr>
+                          <th>{{key}}</th>
+                          <td>{{value}}</td>
+                        </tr>
+
+                      {% elif type == 'ko'%}
+                        <tr>
+                          <th style="width:160px">Accession</th>
+                          <td>{{ fam }}</td>
+                        </tr>
+                        <tr>
+                          <th style="width:160px">Description</th>
+                          <td>{{ ko_desc }}</td>
+                        </tr>
+
+                      {% elif fam_interpro %}
+                        <tr>
+                          <th style="width:160px">Signature accession</th>
+                          {% if type == "PANTHER" %}
+                            <td><a href="http://www.pantherdb.org/panther/family.do?clsAccession={{info.0}}">{{ info.0 }}</a></td>
+                          {% elif type == "CDD" %}
+                            <td><a href="https://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{info.0}}">{{ info.0 }}</a></td>
+                          {% elif type == "Pfam" %}
+                            <td><a href="http://pfam.xfam.org/family/{{info.0}}">{{ info.0 }}</a></td>
+                          {% elif type == "PRINTS" %}
+                            <td><a href="http://130.88.97.239/cgi-bin/dbbrowser/sprint/searchprintss.cgi?prints_accn={{info.0}}&display_opts=Prints&category=None&queryform=false&regexpr=off">{{ info.0 }}</a></td>
+                          {% elif type == "TIGRFAM" %}
+                            <td><a href="http://tigrfams.jcvi.org/cgi-bin/HmmReportPage.cgi?acc={{info.0}}">{{ info.0 }}</a></td>
+                          {% elif type == "Hamap" %}
+                            <td><a href="https://hamap.expasy.org/signature/{{info.0}}">{{ info.0 }}</a></td>
+                          {% elif type == "Gene3D" %}
+                            <td><a href="http://www.cathdb.info/version/latest/superfamily/{{Gene3D_acc}}">{{ info.0 }}</a></td>
+                          {% elif type == "SUPERFAMILY" %}
+                            <td><a href="http://supfam.org/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{info.0}}">{{ info.0 }}</a></td>
+                          {% elif type == "SMART" %}
+                            <td><a href="http://smart.embl-heidelberg.de/smart/do_annotation.pl?DOMAIN={{info.0}}">{{ info.0 }}</a></td>
+                          {% elif type == "ProSitePatterns" %}
+                            <td><a href="https://prosite.expasy.org/{{info.0}}">{{ info.0 }}</a></td>
+                          {% else %}
+                            <td>{{ info.0 }} {{ info.1 }}</td>
+                          {% endif %}
+                        </tr>
+
+                        {% if info.1 != "0" %}
+                          <tr>
+                            <th style="width:160px">Signature description</th>
+                            <td> {{ info.1 }}</td>
+                          </tr>
+                        {% else %}
+                          <tr>
+                            <th style="width:160px">Signature description</th>
+                            <td> N/A </td>
+                          </tr>
+                        {% endif %}
+
+							        {% elif type == "cog" %}
+                        <tr>
+                          <th style="width:160px">Description</th>
+                          <td> {{ info.1 }} </td>
+                        </tr>
+												<tr>
+                          <th style="width:160px">Function(s)</th>
+													<td> {{info.0|safe}}</td>
+												</tr>
+            
+                      {% else %}
+                        <tr>
+                          <th style="width:160px">Description</th>
+                          <td> {{ info.0 }} {{ info.1 }} </td>
+                        </tr>
+                      {% endif %}
+                    </table>
+                  </div>
+                </div>
+
+                {% if type == 'ko'%}
+                  <div class="row">
+                    <div class="panel panel-default">
+                      <div class="panel-heading">
+                        <h3 class="panel-title">KO part of <strong>{{pathway_data|length }} pathways</strong></h3>
+                      </div>
+
+                      {% if pathway_data|length > 0 %}
+                        <table class="table table-striped" style="width: 100%">
+                          <tbody>
+
+                            {% for path in pathway_data %}
+                              <tr>
+                                <td>{{path|safe}}</td>
+                              </tr>
+                            {% endfor %}
+
+                          </tbody>
+                        </table>
+                      {% endif %}
+
+                      <div class="panel-heading">
+                        <h3 class="panel-title">KO part of <strong>{{module_data|length }} modules </strong></h3>
+                      </div>
+
+                      {% if module_data|length > 0 %}
+                        <table class="table table-striped" style="width: 100%">
+                          <tbody>
+
+                            {% for path in module_data %}
+                              <tr>
+                                <td>{{path.0|safe}}</td>
+                                <td>{{path.1}}</td>
+                                <td>{{path.2}}</td>
+                              </tr>
+                            {% endfor %}
+
+                          </tbody>
+                        </table>
+                      {% endif %}
+
+                    </div>
+                  </div>
+                {% endif %}
+
+                {% if type == 'EC'%}
+                  <div class="row">
+                    <div class="panel panel-default">
+                      <div class="panel-heading">
+                        <h3 class="panel-title">EC part of <strong>{{pathway_data|length }} pathways</strong></h3>
+                      </div>
+                      {% if pathway_data|length > 0 %}
+                        <table class="table table-striped" style="width: 100%">
+                          <tbody>
+
+                            {% for path in pathway_data %}
+                              <tr>
+                                <td style="width:160px"><a href="{% url 'KEGG_mapp_ko' path.0 %}">{{path.0}}</a></td>
+                                <td>{{path.1}}</td>
+                              </tr>
+                            {% endfor %}
+
+                          </tbody>
+                        </table>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  {% if associated_ko|length > 0 %}
+                    <div class="row">
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <h3 class="panel-title">Kegg Orthologs</h3>
+                        </div>
+                        <table class="table table-striped" style="width: 100%">
+                          <thead>
+                            <tr>
+                              <th>Accession</th>
+                              <th>Description</th>
+                              <th>Frequency in the database</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+
+                            {% for ko in associated_ko %}
+                              <tr>
+                                {% with ko2freq|keyvalue:ko.0 as freq%}
+
+                                  {% if freq > 0%}
+                                    <td style="width:160px"><a href="{% url 'fam' ko.0 "ko" %}">{{ko.0}}</a></td>
+                                    <td>{{ko.1}}</td>
+                                    <td>{{ freq }}</td>
+                                  {% else %}
+                                    <td style="width:160px">{{ko.0}}</td>
+                                    <td>{{ko.1}}</td>
+                                    <td>-</td>
+                                  {% endif %}
+
+                                {% endwith %}
+                              </tr>
+                            {% endfor %}
+
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  {% endif %}
+
+                {% endif %}
+
+                <div class="row">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Occurence in the database</h3>
+                    </div>
+
+                    <table class="table table-striped" style="width: 100%">
+                      <tr>
+                        <td>{{ fam }} is associated with <strong>{{ all_locus_data|length }} different proteins</strong> (see tab "<a href="#tab2" data-toggle="tab">Protein list</a>" and "<a href="#tab3" data-toggle="tab">Profile</a>")</td>
+                      </tr>
+                      <tr>
+                        <td> The {{ all_locus_data|length }} proteins are classified into <strong>{{ group_count|length }} different orthogroup(s)</strong></td>
+                      </tr>
+                    </table>
+
+                    <div style="padding-left:40px">
+                      <ul style="list-style-type:disc;">
+												{% for group in group_count %}
+													<li>{{group|safe}}</li>
+												{% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="tab-pane" id="tab2">
+              <table id="fam_table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Orthogroup</th>
+                    <th>Locus</th>
+                    <th>Start</th>
+                    <th>Stop</th>
+                    <th>S.</th>
+                    <th>Gene</th>
+                    <th>Product</th>
+                    <th>Organism</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for values in all_locus_data %}
+                    <tr>
+                      <td>{{values.0}}</td>
+                      <td>{{values.1|safe}}</td>
+                      <td><a href='{% url "locusx" values.2 True %}' target="_top">{{values.2}}</a></td>
+                      <td>{{values.4}}</td>
+                      <td>{{values.5}}</td>
+                      <td>{{values.6}}</td>
+                      <td>{{values.7}}</td>
+                      <td>{{values.8}}</td>
+                      <td>{{values.9}}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="tab-pane" id="tab66" style="height:100%">
+              <iframe name="orthoIDframe2" id="orthoIDframe2" scrolling="no" width="100%" height="2800px"></iframe>
+            </div>
+
+            <div class="tab-pane" id="tab3">
+              <div class="row">
+                <a download="profile_{{fam}}.svg" class="btn" href="{% static asset_path %}"> <i class="fa fa-download"></i> Download SVG
+                </a>
+                <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
+              </div>
+            </div>
+          </div> <!--tabs-->
+        {% endif %}
       </div>
     </div>
   </div>
 </div>
-</div>
-
 </body>
+
 {% include "chlamdb/style_menu.html" %}
+
 <script>
 
 // Javascript to enable link to tab

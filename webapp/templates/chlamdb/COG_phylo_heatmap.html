@@ -28,7 +28,7 @@
                                 {% elif freq == "True" %}
                                 Heatmap of frequency of genes identifed in each COG category
                                 {% endif %}
-                            </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#additional-plots-for-kegg-orthologs-and-cluster-of-orthologous-groups-cogs" id="show-option" target="_blank"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                            </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#additional-plots-for-kegg-orthologs-and-cluster-of-orthologous-groups-cogs" id="show-option" target="_blank"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
           
                            
                               <div class="panel panel-success">
@@ -42,13 +42,12 @@
                                     Phylogenetic tree annotated with the frequency of genes distributed in each COG category over the total amount of genes of each genome. Colors are used to easily interpret the increment or decrement of members in each category within the whole collections.
                                     {% endif %}
                                 </p>
-                              </div>
                             </div>
+                        </div>
 
-                            <div class="tab-pane" id="tab2">
-                                <object style="max-width:90%; padding-top: 2em;" type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
-							    <a download="cog_heatmap.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
-                            </div>
+                        <div class="tab-pane" id="tab2">
+                            <object style="max-width:90%; padding-top: 2em;" type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
+						    <a download="cog_heatmap.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
                         </div>
                     </div>
                 </div>

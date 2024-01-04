@@ -7,7 +7,7 @@
   {% include "chlamdb/header.html" %}
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.48.1/plotly.min.js"></script>
 </head>
-
+<body>
 <div class="container-fluid" id="main_container">
   <div class="row">
     <div id="wrapper">
@@ -31,7 +31,7 @@
                         Kegg orthologous groups (KO)
                     {% elif type == 'orthology' %}
                         orthologous groups
-                    {% endif %}</b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option"  target="_blank"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                    {% endif %}</b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option"  target="_blank"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
                 
 
 			{% if error %}
@@ -86,11 +86,8 @@
 
                 <table class="sortable table" id="table_pfam" style="width: 90%; margin-left: 1em;"></table> 
                 {{html_plot|safe}}
-               </div>
-            </div>
 			{% endif %}
 
-         </div>
        </div>
       </div>
     </div>

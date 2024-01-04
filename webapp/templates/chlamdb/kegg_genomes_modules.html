@@ -33,14 +33,14 @@
                               {% endfor %}
                               </tr>
                         </thead>
-                        <body>
+                        <tbody>
+                          {% for line in entries %}
                             <tr>
-                            {% for line in entries %}
                               {% for value in line %}
                                   <td> {{value|safe}} </td>
                               {% endfor %}
                             </tr>
-                            {% endfor %}
+                          {% endfor %}
                         </tbody>
                     </table>
                </div>
