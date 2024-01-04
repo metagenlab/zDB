@@ -2,12 +2,6 @@ from chlamdb.urls import urlpatterns
 from django.test import SimpleTestCase
 from django.urls import resolve
 
-broken_patterns = {
-    '^extract_orthogroup/([a-zA-Z0-9_]+)$$',
-    '^extract_cog/([a-zA-Z0-9_]+)$$',
-    '^extract_ko/([a-zA-Z0-9_]+)$',
-    }
-
 broken_views = [
     '/orthogroup_list_cog_barchart/',
     '/orthogroup_list_cog_barchart/True/',
@@ -114,8 +108,8 @@ class TestViews(SimpleTestCase):
         for url in broken_views:
             tested_patterns.add(resolve(url.rsplit("?")[0]).route)
 
-        covered_patterns = tested_patterns | broken_patterns | untested_patterns
+        covered_patterns = tested_patterns | untested_patterns
         self.assertFalse(
             all_patterns - covered_patterns,
             "Some patterns are not covered in the tests: please add them to "
-            "one of broken_patterns, broken_views, untested_patterns or urls")
+            "one of broken_views, untested_patterns or urls")

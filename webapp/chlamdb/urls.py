@@ -1,9 +1,9 @@
 
-from . import views
-
+from django.urls import re_path
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
-from django.urls import re_path
+
+from . import views
 
 favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
@@ -55,12 +55,8 @@ urlpatterns = [
     re_path(r'^blast/$', views.blast, name="blast"),
     re_path(r'^extract_orthogroup/$', views.extract_orthogroup,
             name="extract_orthogroup"),
-    re_path(r'^extract_orthogroup/([a-zA-Z0-9_]+)$$',
-            views.extract_orthogroup, name="extract_orthogroup"),
     re_path(r'^venn_orthogroup/$', views.venn_orthogroup,
             name="venn_orthogroup"),
-    re_path(r'^extract_cog/([a-zA-Z0-9_]+)$$',
-            views.extract_cog, name="extract_cog"),
     re_path(r'^extract_cog/$', views.extract_cog, name="extract_cog"),
     re_path(r'^venn_cog/$', views.venn_cog, name="venn_cog"),
     re_path(r'^cog_venn_subset/([A-Z])$',
@@ -71,8 +67,6 @@ urlpatterns = [
     re_path(r'^extract_pfam/([a-zA-Z0-9_]+)$',
             views.extract_pfam, name="extract_pfam"),
     re_path(r'^extract_ko/$', views.extract_ko, name="extract_ko"),
-    re_path(r'^extract_ko/([a-zA-Z0-9_]+)$',
-            views.extract_ko, name="extract_ko"),
     re_path(r'^venn_pfam/$', views.venn_pfam, name="venn_pfam"),
     re_path(r'^KEGG_mapp_ko$', views.KEGG_mapp_ko, name="KEGG_mapp_ko"),
     re_path(r'^KEGG_mapp_ko/([a-zA-Z0-9_\.]+)$',
