@@ -88,7 +88,7 @@ urls = [
 ]
 
 
-class TestViews(SimpleTestCase):
+class TestViewsAreHealthy(SimpleTestCase):
 
     def test_no_broken_views(self):
         for url in urls:
@@ -123,3 +123,67 @@ class TestViews(SimpleTestCase):
                 print(f"\n\nInvalid html for {url}")
                 print(f"Templates {[el.name for el in resp.templates]}\n\n")
                 raise exc
+
+
+class TestViewsContent(SimpleTestCase):
+
+    def assertNoPlot(self, resp):
+        self.assertNotIn("envoi", resp.context.keys())
+        self.assertNotContains(resp, '<div class="panel panel-success"')
+        self.assertNotContains(resp, "Help to interpret the results")
+
+    def assertPlot(self, resp):
+        self.assertIn("envoi", resp.context.keys())
+        self.assertContains(resp, '<div class="panel panel-success"')
+        self.assertContains(resp, "Help to interpret the results")
+
+    def assertTitle(self, resp, title):
+        self.assertContains(
+            resp, f'<p class="home-title">{title}</p>', html=True)
+
+    def test_home_page(self):
+        resp = self.client.get("/home")
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/home.html')
+        self.assertEqual(3, resp.context["number_of_files"])
+        self.assertContains(resp, "A comparative genomics database", html=True)
+        self.assertContains(resp, '<a href="/genomes" ><b>Genomes</b></a>', html=True)
+        self.assertContains(resp, '<a href="/phylogeny"><b>Phylogeny</b></a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/blast/"><span class="link"></span> Blast </a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/orthology"><span class="link"></span>Orthogroups</a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/COG"><span class="link"></span>COGs</a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/ko"><span class="link"></span>Kegg Orthologs</a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/Pfam"><span class="link"></span>Pfam domains</a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/circos/"><span class="link"></span>Plot region</a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/circos/"><span class="link"></span>Circos</a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/kegg/"><span class="link"></span>Kegg based</a>', html=True)
+
+    def test_cog_barchart(self):
+        resp = self.client.get("/cog_barchart/")
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/cog_barplot.html')
+        self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
+        self.assertNoPlot(resp)
+        self.assertContains(resp, "Distribution of COGs within COG categories")
+
+        resp = self.client.post("/cog_barchart/", data={"targets": ["0", "1"]})
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/cog_barplot.html')
+        self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
+        self.assertPlot(resp)
+        self.assertContains(resp, "Distribution of COGs within COG categories")
+
+    def test_pan_genome_cog(self):
+        resp = self.client.get("/pan_genome/COG")
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
+        self.assertEqual("COG", resp.context["type"])
+        self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
+        self.assertNoPlot(resp)
+
+        resp = self.client.post("/pan_genome/COG", data={"targets": ["0", "1"]})
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
+        self.assertEqual("COG", resp.context["type"])
+        self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
+        self.assertPlot(resp)
