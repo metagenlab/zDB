@@ -92,6 +92,8 @@ page2title = {
     'ko_comparison': 'Comparisons: Kegg Orthologs (KO)',
     'pfam_comparison': 'Comparisons: PFAM domains',
     'amr_comparison': 'Comparisons: Antimicrobial Resistance',
+    'amr_class_comparison': 'Comparisons: Antimicrobial Resistance',
+    'amr_subclass_comparison': 'Comparisons: Antimicrobial Resistance',
     'module_barchart': 'Comparisons: Kegg Orthologs (KO)',
     'blast': 'Homology search: Blast',
     'plot_region': 'Genome alignments: Plot region',
@@ -4274,6 +4276,32 @@ class AmrGeneComparisonView(TabularComparisonViewBase):
     @property
     def hist_colour_index_shift(self):
         return len(self.targets)
+
+
+class AmrClassComparisonView(AmrGeneComparisonView):
+
+    base_info_headers = ["Class"]
+    group_by = "class"
+
+    def get_row_data(self, groupid, data):
+        return [groupid]
+
+    @property
+    def view_name(self):
+        return f"{self.view_type}_class_comparison"
+
+
+class AmrSubclassComparisonView(AmrGeneComparisonView):
+
+    base_info_headers = ["Subclass", "Class"]
+    group_by = "subclass"
+
+    def get_row_data(self, groupid, data):
+        return [groupid, safe_replace(data.iloc[0]["class"], "/", " / ")]
+
+    @property
+    def view_name(self):
+        return f"{self.view_type}_subclass_comparison"
 
 
 def faq(request):
