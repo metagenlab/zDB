@@ -204,6 +204,9 @@ class TabularViewTestMixin():
         self.assertContains(
             resp, f'<p class="home-title">{title}</p>', html=True)
 
+    def assertNav(self, resp):
+        self.assertContains(resp, "<nav>")
+
     def assertNoCompTable(self, resp):
         self.assertFalse(resp.context.get("show_comparison_table", False))
         self.assertNotContains(resp, self.table_html)
@@ -228,6 +231,7 @@ class TabularViewTestMixin():
         self.assertPageTitle(resp, self.page_title)
         self.assertSelection(resp)
         self.assertNoCompTable(resp)
+        self.assertNav(resp)
 
         resp = self.client.post(self.tab_comp_view,
                                 data={"targets": ["0", "1"]})
@@ -236,6 +240,7 @@ class TabularViewTestMixin():
         self.assertPageTitle(resp, self.page_title)
         self.assertSelection(resp, selected=True)
         self.assertCompTable(resp)
+        self.assertNav(resp)
 
 
 class TestPfamViews(SimpleTestCase, TabularViewTestMixin):
