@@ -71,7 +71,9 @@ urls = [
     '/cog_comparison',
     '/ko_comparison',
     '/orthogroup_comparison',
-    '/amr_comparison',
+    '/amr_gene_comparison',
+    '/amr_class_comparison',
+    '/amr_subclass_comparison',
     '/about',
     '/help',
     '/fam_pfam/PF10423',
@@ -262,7 +264,23 @@ class TestCOGViews(SimpleTestCase, TabularViewTestMixin):
 
 class TestAMRViews(SimpleTestCase, TabularViewTestMixin):
 
-    view_type = "amr"
+    view_type = "amr_gene"
+    page_title = "Comparisons: Antimicrobial Resistance"
+
+    pass
+
+
+class TestAMRClassComparisonViews(SimpleTestCase, TabularViewTestMixin):
+
+    view_type = "amr_class"
+    page_title = "Comparisons: Antimicrobial Resistance"
+
+    pass
+
+
+class TestAMRSubclassComparisonViews(SimpleTestCase, TabularViewTestMixin):
+
+    view_type = "amr_subclass"
     page_title = "Comparisons: Antimicrobial Resistance"
 
     pass
