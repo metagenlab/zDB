@@ -9,6 +9,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Changed
 
+- Configure repository to publish the docs to [readthedocs](https://zdb.readthedocs.io)
 - Port nextflow pipelines to DSL2 language. ([#26](https://github.com/metagenlab/zDB/pull/26)) (Niklaus Johner)
 - Add CHANGELOG file. ([#25](https://github.com/metagenlab/zDB/pull/25)) (Niklaus Johner)
 
