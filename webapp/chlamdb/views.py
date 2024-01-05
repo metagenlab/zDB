@@ -3949,7 +3949,7 @@ class TabularComparisonViewBase(View):
 
     @property
     def view_name(self):
-        return f"{self.view_type}_comparison"
+        return f"{self.view_type.lower()}_comparison"
 
     @property
     def context(self):
@@ -4073,7 +4073,7 @@ def module_comparison(request):
 
 class PfamComparisonView(TabularComparisonViewBase):
 
-    view_type = "pfam"
+    view_type = "Pfam"
     base_info_headers = ["Domain ID", "Description", "nDomain"]
 
     table_help = """
@@ -4104,7 +4104,7 @@ class PfamComparisonView(TabularComparisonViewBase):
 
 class CogComparisonView(TabularComparisonViewBase):
 
-    view_type = "cog"
+    view_type = "COG"
     base_info_headers = ["COG accession", "Description", "# complete DB", "# genomes"]
 
     table_help = """
