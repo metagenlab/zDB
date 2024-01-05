@@ -3924,6 +3924,7 @@ class TabularComparisonViewBase(View):
 
     template = 'chlamdb/tabular_comparison.html'
     hist_colour_index_shift = 0
+    tab_name = "comp"
 
     def dispatch(self, request, *args, **kwargs):
         biodb_path = settings.BIODB_DB_PATH
@@ -3958,6 +3959,7 @@ class TabularComparisonViewBase(View):
             "form_help": self.form_help,
             "form": self.form,
             "show_comparison_table": self.show_comparison_table,
+            "tab_name": self.tab_name,
             "view_name": self.view_name,
             "view_type": self.view_type,
             }
@@ -4276,6 +4278,10 @@ class AmrClassComparisonView(TabularComparisonViewBase):
     @property
     def view_name(self):
         return f"{self.view_type}_{self.group_by}_comparison"
+
+    @property
+    def tab_name(self):
+        return f"{self.group_by}_comp"
 
 
 class AmrGeneComparisonView(AmrClassComparisonView):

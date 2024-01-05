@@ -67,5 +67,13 @@
             <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'orthology' %}">Accumulation/rarefaction plot </a></li>
         </ul>
     </nav>
+{% elif type == 'amr' %}
+    <nav>
+        <ul id="tabs_main" class="nav nav-tabs">
+            <li class={% if active_tab == "gene_comp" %}"active"{%endif%}><a href="{% url 'amr_gene_comparison' %}">Gene presence/absence table</a></li>
+            <li class={% if active_tab == "class_comp" %}"active"{%endif%}><a href="{% url 'amr_class_comparison' %}">Class presence/absence table</a></li>
+            <li class={% if active_tab == "subclass_comp" %}"active"{%endif%}><a href="{% url 'amr_subclass_comparison' %}">Subclass presence/absence table</a></li>
+        </ul>
+    </nav>
 {% endif %}
 
