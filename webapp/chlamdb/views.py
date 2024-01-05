@@ -4230,31 +4230,27 @@ class KoComparisonView(TabularComparisonViewBase):
         return table_rows
 
 
-class AmrGeneComparisonView(TabularComparisonViewBase):
+class AmrClassComparisonView(TabularComparisonViewBase):
 
     view_type = "amr"
+    compared_obj_name = "AMR"
 
-    table_help = """
-    The ouput table contains the number of times a given AMR gene appears
+    base_info_headers = ["Class"]
+    group_by = "class"
+
+    _table_help = """
+    The ouput table contains the number of times a given AMR {} appears
     in the selected genomes, color coded according to the quality
-    (coverage*identity) of the best hit for that genome.
-
-    <br> Note that genes are split into "core" and "plus" scopes, where
-    "core" proteins are expected to have an effect on resistance while
-    "plus" proteins are included with a less stringent criteria.<br>
+    (coverage*identity) of the best hit for that genome.<br>
     <br> Counts can be reordrered by clicking on column headers.<br>
     """
 
-    base_info_headers = ["Gene", "scope", "Class", "Subclass", "Annotation"]
-    compared_obj_name = "AMR"
-    group_by = "gene"
+    @property
+    def table_help(self):
+        return self._table_help.format(self.group_by)
 
     def get_row_data(self, groupid, data):
-        return [format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
-                data.iloc[0]["scope"],
-                safe_replace(data.iloc[0]["class"], "/", " / "),
-                safe_replace(data.iloc[0]["subclass"], "/", " / "),
-                data.iloc[0]["seq_name"]]
+        return [groupid]
 
     def get_table_rows(self):
         hits = self.db.get_amr_hits_from_taxonids(self.targets)
@@ -4282,16 +4278,30 @@ class AmrGeneComparisonView(TabularComparisonViewBase):
         return f"{self.view_type}_{self.group_by}_comparison"
 
 
-class AmrClassComparisonView(AmrGeneComparisonView):
+class AmrGeneComparisonView(AmrClassComparisonView):
 
-    base_info_headers = ["Class"]
-    group_by = "class"
+    base_info_headers = ["Gene", "scope", "Class", "Subclass", "Annotation"]
+    group_by = "gene"
+
+    _scope_hint = """
+    <br> Note that genes are split into "core" and "plus" scopes, where
+    "core" proteins are expected to have an effect on resistance while
+    "plus" proteins are included with a less stringent criteria.<br>
+    """
+
+    @property
+    def table_help(self):
+        return self._table_help.format(self.group_by) + self._scope_hint
 
     def get_row_data(self, groupid, data):
-        return [groupid]
+        return [format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
+                data.iloc[0]["scope"],
+                safe_replace(data.iloc[0]["class"], "/", " / "),
+                safe_replace(data.iloc[0]["subclass"], "/", " / "),
+                data.iloc[0]["seq_name"]]
 
 
-class AmrSubclassComparisonView(AmrGeneComparisonView):
+class AmrSubclassComparisonView(AmrClassComparisonView):
 
     base_info_headers = ["Subclass", "Class"]
     group_by = "subclass"
