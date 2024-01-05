@@ -203,6 +203,23 @@ To access the webapp, type either 155.105.138.249:8080 or 172.17.0.1:8080 on you
 If you do not remember which runs are available, you can list them with the ```zdb list_runs``` command.
 
 
+## Importing and exporting results
+
+As the analysis may be run on a server or on an HPC cluster, the results may need to be exported to start a web application on a different machine.
+
+This can be done with the ```zdb export``` command with a run name as parameter. This will create a compressed archive containing all the necessary results. The archive can then be transferred to a different machine and unpacked, either manually or with the ```zdb import``` command.
+The web server can then be started as if the analysis had been run locally.
+
+
+## Bugs and feature requests
+Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/zDB/issues).
+
+We already have several idea to improve the tool:
+- make it possible to add or remove genomes in an existing database
+- use d3.js to draw interactive phylogenetic trees
+- add new annotations, in particular, we've already received some requests for antibiotic resistance and virulence
+
+But we're definitely open for suggestions and contributions.
 
 ### Known issues
 
@@ -225,21 +242,35 @@ Modify the 8000 to the same number you attributed to the port number of gunicorn
 
 Please run the webapp in docker containers, setting --allowed_host=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
 
+## Developping zDB
 
-## Importing and exporting results
+### Setting up for local development
 
-As the analysis may be run on a server or on an HPC cluster, the results may need to be exported to start a web application on a different machine.
+First you'll need to [install zDB from source](#zdb-installation-from-sources).
+As zDB strongly depends on [metagenlabl_libs](https://github.com/metagenlab/metagenlab_libs), you might also want to have that library from source. For that you can simply clone the repository and then modify the [nextflow.config](https://github.com/metagenlab/zDB/blob/master/nextflow.config#L113) file so that the `PYTHONPATH` includes the path to your `metagenlabl_libs` folder, e.g.:
+```
+PYTHONPATH = "$baseDir/bin:/path/to/metagenlab_libs"
+```
 
-This can be done with the ```zdb export``` command with a run name as parameter. This will create a compressed archive containing all the necessary results. The archive can then be transferred to a different machine and unpacked, either manually or with the ```zdb import``` command.
-The web server can then be started as if the analysis had been run locally.
+### Testing
+The nextflow pipeline is tested using a python integration of nextflow [nextflow.py](https://github.com/goodwright/nextflow.py) and standard [unittests](https://docs.python.org/3/library/unittest.html). You'll therefore need to install [nextflow.py](https://github.com/goodwright/nextflow.py).
 
+To run the tests you need a python environment with the required dependencies:
+```
+conda env create -f conda/testing.yaml
+conda activate testing
+pip install nextflowpy
+```
 
-## Bugs and feature requests
-Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/zDB/issues).
+You can then simply call
+```
+python -m unittest
+```
 
-We already have several idea to improve the tool:
-- make it possible to add or remove genomes in an existing database
-- use d3.js to draw interactive phylogenetic trees
-- add new annotations, in particular, we've already received some requests for antibiotic resistance and virulence
+Careful though with the nextflow pipeline tests:
+- The test_db_setup module will download large volumes of data (tens of GBs), as the tests actually setup the zDB reference databases.
+- The test_annotation_pipeline module expects you to have setup the reference databases.
 
-But we're definitely open for suggestions and contributions.
+### Contributing
+
+If you want to contribute, feel free to open a PR describing your changes and make sure the tests still pass and request a review from one of the developers ([tpillone](https://github.com/tpillone), [bkm](https://github.com/bkm) or [njohner](https://github.com/njohner))
