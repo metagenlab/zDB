@@ -4099,7 +4099,7 @@ class CogComparisonView(TabularComparisonViewBase):
 
 class OrthogroupComparisonView(TabularComparisonViewBase):
 
-    view_type = "orthogroup"
+    view_type = "orthology"
     base_info_headers = ["Orthogroup", "Annotaion"]
 
     table_help = """
@@ -4112,6 +4112,10 @@ class OrthogroupComparisonView(TabularComparisonViewBase):
     """
 
     compared_obj_name = "orthogroups"
+
+    @property
+    def view_name(self):
+        return "orthogroup_comparison"
 
     def get_table_rows(self):
         og_count = self.db.get_og_count(self.targets)

@@ -18,6 +18,10 @@ to [Common Changelog](https://common-changelog.org)
 - Add unitesting for pipelines. ([#26](https://github.com/metagenlab/zDB/pull/26)) (Niklaus Johner)
 - Add antimicrobial resistance annotations. ([#23](https://github.com/metagenlab/zDB/pull/23)) (Niklaus Johner)
 
+### Fixed
+
+- Fix orthogroup comparison view navigation tabs. ([#30](https://github.com/metagenlab/zDB/pull/30)) (Niklaus Johner)
+
 
 ## 1.2.1 - 2023-10-16
 
