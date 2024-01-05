@@ -91,7 +91,7 @@ page2title = {
     'entry_list_cog': 'Comparisons: Clusters of Orthologous groups (COGs)',
     'ko_comparison': 'Comparisons: Kegg Orthologs (KO)',
     'pfam_comparison': 'Comparisons: PFAM domains',
-    'amr_comparison': 'Comparisons: Antimicrobial Resistance',
+    'amr_gene_comparison': 'Comparisons: Antimicrobial Resistance',
     'amr_class_comparison': 'Comparisons: Antimicrobial Resistance',
     'amr_subclass_comparison': 'Comparisons: Antimicrobial Resistance',
     'module_barchart': 'Comparisons: Kegg Orthologs (KO)',
@@ -4277,6 +4277,10 @@ class AmrGeneComparisonView(TabularComparisonViewBase):
     def hist_colour_index_shift(self):
         return len(self.targets)
 
+    @property
+    def view_name(self):
+        return f"{self.view_type}_{self.group_by}_comparison"
+
 
 class AmrClassComparisonView(AmrGeneComparisonView):
 
@@ -4286,10 +4290,6 @@ class AmrClassComparisonView(AmrGeneComparisonView):
     def get_row_data(self, groupid, data):
         return [groupid]
 
-    @property
-    def view_name(self):
-        return f"{self.view_type}_class_comparison"
-
 
 class AmrSubclassComparisonView(AmrGeneComparisonView):
 
@@ -4298,10 +4298,6 @@ class AmrSubclassComparisonView(AmrGeneComparisonView):
 
     def get_row_data(self, groupid, data):
         return [groupid, safe_replace(data.iloc[0]["class"], "/", " / ")]
-
-    @property
-    def view_name(self):
-        return f"{self.view_type}_subclass_comparison"
 
 
 def faq(request):
