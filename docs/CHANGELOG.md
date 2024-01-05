@@ -15,13 +15,14 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add AMR tabular comparison views. ([#24](https://github.com/metagenlab/zDB/pull/24), [#31](https://github.com/metagenlab/zDB/pull/31)) (Niklaus Johner)
 - Add integration tests for pipelines and views. ([#29](https://github.com/metagenlab/zDB/pull/29)) (Niklaus Johner)
 - Add unitesting for pipelines. ([#26](https://github.com/metagenlab/zDB/pull/26)) (Niklaus Johner)
 - Add antimicrobial resistance annotations. ([#23](https://github.com/metagenlab/zDB/pull/23)) (Niklaus Johner)
 
 ### Fixed
 
-- Fix orthogroup comparison view navigation tabs. ([#30](https://github.com/metagenlab/zDB/pull/30)) (Niklaus Johner)
+- Fix tabular comparison views navigation tabs. ([#30](https://github.com/metagenlab/zDB/pull/30), [#31](https://github.com/metagenlab/zDB/pull/31)) (Niklaus Johner)
 
 
 ## 1.2.1 - 2023-10-16
