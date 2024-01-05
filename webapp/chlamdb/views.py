@@ -4250,7 +4250,7 @@ class AmrGeneComparisonView(TabularComparisonViewBase):
     group_by = "gene"
 
     def get_row_data(self, groupid, data):
-        return [groupid,
+        return [format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
                 data.iloc[0]["scope"],
                 safe_replace(data.iloc[0]["class"], "/", " / "),
                 safe_replace(data.iloc[0]["subclass"], "/", " / "),

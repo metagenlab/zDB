@@ -2444,7 +2444,7 @@ class DB:
         """
 
         columns = ("bioentry.taxon_id", "type", "class", "subclass", "gene",
-                   "seq_name", "scope", "coverage", "identity")
+                   "seq_name", "scope", "coverage", "identity", "hmm_id")
 
         query = (
             f"SELECT {', '.join(columns)} "
