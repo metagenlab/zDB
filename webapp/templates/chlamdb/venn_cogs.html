@@ -26,8 +26,9 @@
 	</script>
 
 {% load crispy_forms_tags %}
-<head>
+</head>
 
+<body>
   <div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
@@ -38,7 +39,7 @@
                  {% if display_form %}
                     {% include "chlamdb/extract_nav_tabs_template.html" with type="COG" active_tab="venn" %}
                     <br>
-                    <p class="page-title"><b>Visual representation of unique and shared COGs among selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank"  title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle"  style="size: 5em;" ></i></a></p></center>
+                    <p class="page-title"><b>Visual representation of unique and shared COGs among selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank"  title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle"  style="size: 5em;" ></i></a></p>
     
 
                       {% block content %}
@@ -48,11 +49,11 @@
                       </form>
                       {% endblock %}
 
-                    </div>
                  {% endif %}
+              </div>
 
-               {% if envoi_venn %}
-               <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986)">
+              {% if envoi_venn %}
+              <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986)">
               <div class="panel panel-success" style="margin: 1em;"  >
                 <div class="panel-heading" style="width:100%">
                   <h5 class="panel-title">Help to interpret the results</h5>
@@ -65,11 +66,11 @@
                 </p>
               </div>
                   {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=cog2description %}
-
-              {% endif %}
               </div>
+              {% endif %}
+
+            </div>
           </div>
-        </div>
       </div>
     </div>
   </div>

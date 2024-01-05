@@ -32,7 +32,7 @@
 
 			<p class="page-title"><b>
 				Orthogroup:{{og}}
-				<a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#orthogroup-annotation-summary" id="show-option" target="_blank" title="Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></b></p></center>
+				<a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#orthogroup-annotation-summary" id="show-option" target="_blank" title="Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></b></p>
 			   <hr class="lines-home">
 
 	  {% if not valid_id %}
@@ -77,7 +77,7 @@
 			  <br>
 				<p class="page-title"><b>
 				Phylogeny of {{og}} {{root}}
-				</b></p></center>
+				</b></p>
 				<div>
 				  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
 				  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
@@ -93,7 +93,7 @@
 			<br>
 			<p class="page-title"><b>
 				Phylogeny of the RefSeq best hits of {{og}}
-			   </b></p></center>
+			   </b></p>
 				<div>
 				  <object type="image/svg+xml" data="{% static best_hits_phylogeny %}"></object>
 				  <a download="profile.svg" class="btn" href="{% static best_hits_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>

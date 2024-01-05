@@ -23,7 +23,7 @@
                  {% include "chlamdb/extract_nav_tabs_template.html" with type="COG" active_tab="bar" %}
 
                   <br>
-                  <p class="page-title"><b>Distribution of COGs within COG categories </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#additional-plots-for-kegg-orthologs-and-cluster-of-orthologous-groups-cogs" id="show-option"  ><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                  <p class="page-title"><b>Distribution of COGs within COG categories </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#additional-plots-for-kegg-orthologs-and-cluster-of-orthologous-groups-cogs" id="show-option"  ><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
   
               <form action='{% url "cog_barchart"  %}' method="post">
                   {% csrf_token %}
@@ -47,6 +47,7 @@
                  - Click on labels to get venn diagram of the category (max 6 species will be diplayed).
                   
                 </p>
+              </div>
               </div>
 
 
@@ -249,8 +250,6 @@
 
               {% endif %}
 
-              </div>
-          </div>
         </div>
       </div>
     </div>

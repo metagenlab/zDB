@@ -164,6 +164,9 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.nf_params["ko"] = "true"
         self.nf_params["blast_swissprot"] = "true"
         self.nf_params["cog"] = "true"
+        # set custom run name for use in webapp testing
+        self.nf_params["name"] = "_webapp_testing"
+
         execution = self.execute_pipeline()
         self.assert_success(execution)
         self.load_db(execution)

@@ -8,10 +8,13 @@ to [Common Changelog](https://common-changelog.org)
 ## unreleased
 
 ### Changed
+
 - Port nextflow pipelines to DSL2 language. ([#26](https://github.com/metagenlab/zDB/pull/26)) (Niklaus Johner)
 - Add CHANGELOG file. ([#25](https://github.com/metagenlab/zDB/pull/25)) (Niklaus Johner)
 
 ### Added
+
+- Add integration tests for pipelines and views. ([#29](https://github.com/metagenlab/zDB/pull/29)) (Niklaus Johner)
 - Add unitesting for pipelines. ([#26](https://github.com/metagenlab/zDB/pull/26)) (Niklaus Johner)
 - Add antimicrobial resistance annotations. ([#23](https://github.com/metagenlab/zDB/pull/23)) (Niklaus Johner)
 
