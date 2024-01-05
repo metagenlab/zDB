@@ -16,7 +16,6 @@ def remove_spaces(value):
 @register.filter
 def return_item(lst, i):
     try:
-        print(i)
         return lst[i]
     except Exception:
         return None
