@@ -4228,7 +4228,7 @@ class KoComparisonView(TabularComparisonViewBase):
         return table_rows
 
 
-class AmrComparisonView(TabularComparisonViewBase):
+class AmrGeneComparisonView(TabularComparisonViewBase):
 
     view_type = "amr"
 
@@ -4245,18 +4245,22 @@ class AmrComparisonView(TabularComparisonViewBase):
 
     base_info_headers = ["Gene", "scope", "Class", "Subclass", "Annotation"]
     compared_obj_name = "AMR"
+    group_by = "gene"
+
+    def get_row_data(self, groupid, data):
+        return [groupid,
+                data.iloc[0]["scope"],
+                safe_replace(data.iloc[0]["class"], "/", " / "),
+                safe_replace(data.iloc[0]["subclass"], "/", " / "),
+                data.iloc[0]["seq_name"]]
 
     def get_table_rows(self):
         hits = self.db.get_amr_hits_from_taxonids(self.targets)
 
         table_rows = []
         hits["quality"] = hits["coverage"] * hits["identity"] / 10000
-        for gene, data in hits.groupby("gene"):
-            row = [gene,
-                   data.iloc[0]["scope"],
-                   safe_replace(data.iloc[0]["class"], "/", " / "),
-                   safe_replace(data.iloc[0]["subclass"], "/", " / "),
-                   data.iloc[0]["seq_name"]]
+        for groupid, data in hits.groupby(self.group_by):
+            row = self.get_row_data(groupid, data)
             taxonids = data["bioentry.taxon_id"]
             values = [len(taxonids[taxonids == target_id])
                       for target_id in self.targets]
