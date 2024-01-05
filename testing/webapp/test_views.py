@@ -186,3 +186,91 @@ class TestViewsContent(SimpleTestCase):
         self.assertEqual("COG", resp.context["type"])
         self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
         self.assertPlot(resp)
+
+
+class TabularViewTestMixin():
+
+    selection_html = """
+        <option value="0" {0}>Klebsiella pneumoniae R6724_16313</option>
+        <option value="1" {0}>Klebsiella pneumoniae R6726_16314</option>
+        <option value="2">Klebsiella pneumoniae R6728_16315</option>
+        """
+
+    table_html = '<table class="hover" id="mytable"  style="padding-top: 1em;">'
+
+    def assertPageTitle(self, resp, title):
+        self.assertContains(
+            resp, f'<p class="home-title">{title}</p>', html=True)
+
+    def assertNoCompTable(self, resp):
+        self.assertFalse(resp.context.get("show_comparison_table", False))
+        self.assertNotContains(resp, self.table_html)
+
+    def assertCompTable(self, resp):
+        self.assertTrue(resp.context.get("show_comparison_table", False))
+        self.assertContains(resp, self.table_html)
+
+    def assertSelection(self, resp, selected=False):
+        expected = self.selection_html.format(
+            'selected=""' if selected else '')
+        self.assertContains(resp, expected, html=True)
+
+    @property
+    def tab_comp_view(self):
+        return f"/{self.view_type}_comparison"
+
+    def test_tabular_comparison_view(self):
+        resp = self.client.get(self.tab_comp_view)
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/tabular_comparison.html')
+        self.assertPageTitle(resp, self.page_title)
+        self.assertSelection(resp)
+        self.assertNoCompTable(resp)
+
+        resp = self.client.post(self.tab_comp_view,
+                                data={"targets": ["0", "1"]})
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/tabular_comparison.html')
+        self.assertPageTitle(resp, self.page_title)
+        self.assertSelection(resp, selected=True)
+        self.assertCompTable(resp)
+
+
+class TestPfamViews(SimpleTestCase, TabularViewTestMixin):
+
+    view_type = "pfam"
+    page_title = "Comparisons: PFAM domains"
+
+    pass
+
+
+class TestKOViews(SimpleTestCase, TabularViewTestMixin):
+
+    view_type = "ko"
+    page_title = "Comparisons: Kegg Orthologs (KO)"
+
+    pass
+
+
+class TestCOGViews(SimpleTestCase, TabularViewTestMixin):
+
+    view_type = "cog"
+    page_title = "Comparisons: Clusters of Orthologous groups (COGs)"
+
+    pass
+
+
+class TestAMRViews(SimpleTestCase, TabularViewTestMixin):
+
+    view_type = "amr"
+    page_title = "Comparisons: Antimicrobial Resistance"
+
+    pass
+
+
+class TestOrthogroupViews(SimpleTestCase, TabularViewTestMixin):
+
+    view_type = "orthogroup"
+    page_title = "Comparisons: orthologous groups"
+
+    pass
