@@ -4,8 +4,6 @@
 import os
 import secrets
 
-from django.forms.utils import flatatt
-
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 SECURE_CONTENT_TYPE_NOSNIFF = False

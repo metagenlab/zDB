@@ -1,10 +1,6 @@
-from django.views.generic.base import RedirectView
-import chlamdb
-from django.urls import include, path, re_path
-# import autocomplete_light
-# autocomplete_light.autodiscover()
-
 from django.contrib import admin
+from django.urls import include, re_path
+
 admin.autodiscover()
 
 urlpatterns = [

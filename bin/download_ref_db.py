@@ -1,14 +1,9 @@
 #!/usr/bin/env python
-
-
-import ftplib
-import re
-import io
-import os
-import threading
-import time
 import argparse
-import gzip
+import ftplib
+import os
+import re
+import time
 
 
 def download_refseq(download_dir, n_retry=10):
@@ -63,8 +58,6 @@ parser.add_argument("--download_refseq", nargs="?", const="databases/refseq/", d
 
 
 args = vars(parser.parse_args())
-
-threads = []
 
 
 if args.get("download_refseq", False):

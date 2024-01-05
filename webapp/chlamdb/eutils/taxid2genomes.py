@@ -9,10 +9,13 @@
 # Date: 01.2015
 # ---------------------------------------------------------------------------
 
-from Bio import Entrez, SeqIO
 import os
 import re
 from ftplib import FTP
+
+import urllib2
+from Bio import Entrez
+
 import download_from_ftp
 
 Entrez.email = "trestan.pillonel@unil.ch"
@@ -101,16 +104,12 @@ def get_taxi2assembly_accession(ncbi_taxon,
                     urlok = False
         try:
             assembly_record = Entrez.read(handle_assembly, validate=False)
-        except Bio.Entrez.Parser.CorruptedXMLError:
+        except Entrez.Parser.CorruptedXMLError:
             print('assembly:', one_assembly)
         # print assembly_record['DocumentSummarySet']
         AssemblyName = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['AssemblyName']
         RefSeq = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Synonym']['RefSeq']
         Genbank = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Synonym']['Genbank']
-        try:
-            NCBIReleaseDate = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['NCBIReleaseDate']
-        except KeyError:
-            NCBIReleaseDate = '-'
         contig_count = re.findall(
             '<Stat category="contig_count" sequence_tag="all">([^<]*)<',
             assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0]
@@ -181,7 +180,7 @@ def get_complete_genomes_data(ncbi_taxon,
                     urlok = False
         try:
             assembly_record = Entrez.read(handle_assembly, validate=False)
-        except Bio.Entrez.Parser.CorruptedXMLError:
+        except Entrez.Parser.CorruptedXMLError:
             print('assembly:', one_assembly)
 
         LastMajorReleaseAccession = assembly_record['DocumentSummarySet'][
@@ -462,6 +461,7 @@ def accession2assembly(accession):
                                                                          Similarity)
 
     f.write(line.encode("utf-8"))
+    f.close()
 
 
 def download_assembly(assembly_gi, out_dir, complete=False):
@@ -597,6 +597,7 @@ def bioproject2assemblies(accession, complete=False):
         dw = download_assembly(one_assembly, local_dir, complete)
         if dw:
             f.write(dw.encode("utf-8"))
+    f.close()
 
 
 if __name__ == '__main__':

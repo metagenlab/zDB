@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from django import forms
-
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Row, Column, Fieldset
+from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
+from django import forms
 
 choices = []
 
@@ -28,7 +27,6 @@ def get_accessions(db, all=False, plasmid=False):
             accession_choices.append((index, data.description + " plasmid"))
             reverse_index.append((taxid, True))
             index += 1
-            is_plasmid = True
 
     if all:
         accession_choices = [["all", "all"]] + accession_choices
@@ -215,13 +213,6 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
                 taxids.append(taxid)
             return taxids
 
-        def clean_venn(self):
-            value = self.cleaned_data['targets']
-            if len(value) > 6:
-                raise forms.ValidationError(
-                    "You can't select more than 6 items.")
-            return value
-
     return VennForm
 
 
@@ -345,7 +336,6 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
             return self.extract_choices((int(i) for i in self.cleaned_data["no_orthologs_in"]))
 
         def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
             self.helper = FormHelper()
             self.helper.form_method = 'post'
             self.helper.form_action = action
