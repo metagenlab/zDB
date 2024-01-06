@@ -5,10 +5,8 @@ from collections import defaultdict, namedtuple
 
 import pandas as pd
 from Bio import AlignIO, SeqIO, SeqUtils
-from metagenlab_libs import KO_module, db_utils
-from metagenlab_libs.chlamdb import search_bar
-from zdb.database.database import DB
 
+from webapp.lib import KO_module, db_utils, search_bar
 
 # assumes orthofinder named: OG000N
 # returns the N as int

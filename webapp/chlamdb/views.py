@@ -30,14 +30,17 @@ from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from ete3 import SeqMotifFace, StackedBarFace, TextFace, Tree, TreeStyle
-from metagenlab_libs import circosjs, db_utils
-from metagenlab_libs.chlamdb import search_bar as sb
-from metagenlab_libs.ete_phylo import (Column, EteTree, KOAndCompleteness,
+
+import circosjs
+
+from lib import search_bar as sb
+from lib.db_utils import (DB, NoPhylogenyException)
+from lib.ete_phylo import (Column, EteTree, KOAndCompleteness,
                                        ModuleCompletenessColumn,
                                        SimpleColorColumn)
-from metagenlab_libs.KO_module import ModuleParser
+from lib.KO_module import ModuleParser
+
 from reportlab.lib import colors
-from zdb.database.database import DB
 
 from chlamdb.forms import (make_blast_form, make_circos_form,
                            make_extract_form, make_metabo_from,
@@ -1569,7 +1572,7 @@ def orthogroup(request, og):
 
     try:
         og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
-    except db_utils.NoPhylogenyException:
+    except NoPhylogenyException:
         og_phylogeny_ctx = {}
 
     if optional2status.get("BBH_phylogenies", False):
@@ -1902,7 +1905,7 @@ def locusx(request, locus=None, menu=True):
         homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
         try:
             og_phylogeny_ctx = tab_og_phylogeny(db, og_id, compare_to=seqid)
-        except db_utils.NoPhylogenyException:
+        except NoPhylogenyException:
             og_phylogeny_ctx = {}
     else:
         og_conserv_ctx = {}
