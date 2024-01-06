@@ -31,7 +31,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from ete3 import SeqMotifFace, StackedBarFace, TextFace, Tree, TreeStyle
 
-import circosjs
+import chlamdb.circosjs
 
 from lib import search_bar as sb
 from lib.db_utils import (DB, NoPhylogenyException)
@@ -2199,12 +2199,12 @@ def fam_cog(request, cog_id):
 
 
 def format_pathway(pat_id):
-    return f"map{pat_id: 05d}"
+    return f"map{pat_id:05d}"
 
 
 def format_module(mod_id, base=None, to_url=False):
     if base is None:
-        formated = f"M{mod_id: 05d}"
+        formated = f"M{mod_id:05d}"
     else:
         formated = base
 
@@ -3664,7 +3664,7 @@ def plot_heatmap(request, type):
 
 def format_pathway(path_id, base=None, to_url=False, taxid=None):
     if base is None:
-        base_string = f"map{path_id: 05d}"
+        base_string = f"map{path_id:05d}"
     else:
         base_string = base
 

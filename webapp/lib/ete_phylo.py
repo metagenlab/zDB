@@ -7,7 +7,7 @@ from matplotlib.colors import rgb2hex
 
 import math
 
-import colors
+from lib import colors
 
 def layout(node):
     return
@@ -369,7 +369,7 @@ class EteTool():
                     continuous_scale=False,
                     show_text=False):
         
-        from colors import get_continuous_scale
+        from lib.colors import get_continuous_scale
         
         self._add_header(header_name)
                 
@@ -549,7 +549,7 @@ class EteTool():
                       header_name,
                       color_scale=False):
         
-        from colors import get_categorical_color_scale
+        from lib.colors import get_categorical_color_scale
         
         if color_scale:
             value2color = get_categorical_color_scale(taxon2text.values())
@@ -802,8 +802,8 @@ class EteToolCompact():
                     scale_type="continuous",
                     palette=False):
         
-        from colors import get_categorical_color_scale
-        from colors import get_continuous_scale
+        from lib.colors import get_categorical_color_scale
+        from lib.colors import get_continuous_scale
         
         if scale_type == "continuous":
             scale = get_continuous_scale(taxon2value.values())
