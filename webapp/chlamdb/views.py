@@ -1865,10 +1865,11 @@ def locusx(request, locus=None, menu=True):
 
     page_title = f'Locus tag: {locus}'
     sequence = get_sequence(db, seqid, flanking=50)
-    all_infos, wd_start, wd_end = locusx_genomic_region(db, seqid, window=8000)
+    window_size = 8000
+    all_infos, wd_start, wd_end = locusx_genomic_region(db, seqid, window=window_size)
     region_js = genomic_region_df_to_js(all_infos, wd_start, wd_end)
     genomic_region_ctx = {"genomic_region": region_js,
-            "window_size": 8000*2}
+            "window_size": window_size*2}
     general_tab = tab_general(db, seqid)
 
     if feature_type!="CDS" or is_pseudogene:

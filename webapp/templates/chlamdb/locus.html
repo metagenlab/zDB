@@ -289,58 +289,51 @@
                         </div> <!-- fluid container -->
                       </div> <!-- first column -->
                       <div class="col-md-12 col-lg-8">
-
-						  <div class=row>
-						<div class="panel panel-default">
-							  <div class="panel-heading">
-								<h3 class="panel-title">Genomic region</h3>
-							  </div>
-                            <div class="row" style="height:100px; display:flex; justify-content:center; align-items:center; margin-bottom:30px">
-				<div id="test_d3_genomic_region">
-				</div>
+                        <div class=row>
+                          <div class="panel panel-default">
+                            <div class="panel-heading">
+                              <h3 class="panel-title">Genomic region</h3>
                             </div>
+                            <div class="row" style="height:100px; display:flex; justify-content:center; align-items:center; margin-bottom:30px" id="genomic_region_rect">
+                              <div id="genomic_region">
+                              </div>
+                            </div>
+                          </div>
+			</div>
 
+			{%if ko_pathway_data or ko_module_data %}
+			  <div class="row">
+				<div class="panel panel-default">
+				  <div class="panel-heading">
+					<h3 class="panel-title">Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and KofamScan"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+				  </div>
+				  <table class="table table-striped" style="width: 100%">
 
-						  </div>
-						  </div>
+				  {%if ko_pathway_data %}
+					  {% for pathway in ko_pathway_data %}
+						  <tr>
+							  <td>Pathway</td>
+							  <td><a href="{% url 'KEGG_mapp_ko' pathway.1 %}" target="_top">{{pathway.1}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+							  <td>{{pathway.2}}</td>
+							  <td>{{pathway.3}}</td>
+						  </tr>
+					  {% endfor %}
+				  {% endif %}
+				  {%if ko_module_data %}
+					  {% for module in ko_module_data %}
+						  <tr>
+							  <td>Module</td>
+							  <td><a href="{% url 'KEGG_module_map' module.0 %}" target="_top">{{module.0}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
+							  <td>{{module.1}}</td>
+							  <td>{{module.2}}</td>
+						  </tr>
+					  {% endfor %}
+				  {% endif %}
+				  </table>
+				</div>
+			  </div>
 
-					{%if ko_pathway_data or ko_module_data %}
-					  <div class="row">
-						<div class="panel panel-default">
-						  <div class="panel-heading">
-							<h3 class="panel-title">Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and KofamScan"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
-						  </div>
-						  <table class="table table-striped" style="width: 100%">
-
-							  {%if ko_pathway_data %}
-
-								  {% for pathway in ko_pathway_data %}
-									  <tr>
-										  <td>Pathway</td>
-										  <td><a href="{% url 'KEGG_mapp_ko' pathway.1 %}" target="_top">{{pathway.1}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-										  <td>{{pathway.2}}</td>
-										  <td>{{pathway.3}}</td>
-									  </tr>
-								  {% endfor %}
-
-
-							  {% endif %}
-							  {%if ko_module_data %}
-
-								  {% for module in ko_module_data %}
-									  <tr>
-										  <td>Module</td>
-										  <td><a href="{% url 'KEGG_module_map' module.0 %}" target="_top">{{module.0}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
-										  <td>{{module.1}}</td>
-										  <td>{{module.2}}</td>
-									  </tr>
-								  {% endfor %}
-							  {% endif %}
-						  </table>
-						</div>
-					  </div>
-
-					{% endif %}
+			{% endif %}
 
 					 {% if cog_entries|length > 0 %}
 						<div class="row">
@@ -638,12 +631,13 @@ $('.dropdown-toggle').dropdown()
 
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 
+var genomic_region = {{genomic_region|safe}};
+var genomic_region_rect = document.querySelector("#genomic_region_rect")
+		.getBoundingClientRect();
+var genomic_width = genomic_region_rect.right-genomic_region_rect.left;
 
-var genomic_region = {{genomic_region|safe}} ;
-var window_size = {{window_size}};
-
-createGenomicRegion(d3.select("#test_d3_genomic_region"), "genomic_region", [genomic_region],
-	0, ["{{locus_tag}}"], window_size);
+createGenomicRegion(d3.select("#genomic_region"), genomic_width*.8, "genomic_region", [genomic_region],
+		0, ["{{locus_tag}}"], {{window_size}});
 
 </script>
 

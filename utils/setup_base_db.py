@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # This script is used to generate the skeleton of the database
-# used by chlamdb. The entries will be filled by the annotation
+# used by zdb. The entries will be filled by the annotation
 # pipeline.
 # 
 # For now, this script creates a new mysql database and creates
