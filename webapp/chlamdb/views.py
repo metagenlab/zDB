@@ -472,13 +472,16 @@ class ComparisonIndexView(View):
         "pfam": "Pfam domains",
         "ko": "Kegg Orthologs",
         "orthology": "Orthologous groups",
+        "amr": "AMR"
     }
 
     @property
     def boxes(self):
         boxes = ["entry-list", "extraction", "venn",
                  "tabular-comparison", "heatmap", "accumulation-rarefaction"]
-        if self.comp_type == "orthology":
+        if self.comp_type == "amr":
+            boxes = ["tabular-comparison"]
+        elif self.comp_type == "orthology":
             boxes.remove("entry-list")
         elif self.comp_type == "ko":
             boxes.append("barcharts")
