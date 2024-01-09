@@ -63,16 +63,16 @@ title2page = {
     'Comparisons: Antimicrobial Resistance': [
         'amr_class_comparison', 'amr_gene_comparison', 'amr_subclass_comparison'],
     'Comparisons: Clusters of Orthologous groups (COGs)': [
-        'cog_barchart', 'index_comp_COG', 'COG_phylo_heatmap',
+        'cog_barchart', 'index_comp_cog', 'cog_phylo_heatmap',
         'cog_comparison', 'entry_list_cog', 'extract_cog', 'heatmap_COG',
-        'pan_genome_COG', 'plot_heatmap_COG', 'venn_cog'],
+        'pan_genome_cog', 'plot_heatmap_cog', 'venn_cog'],
     'Comparisons: Kegg Orthologs (KO)': [
         'entry_list_ko', 'extract_ko', 'heatmap_ko', 'index_comp_ko',
         'ko_comparison', 'module_barchart', 'pan_genome_ko', 'plot_heatmap_ko',
         'venn_ko'],
     'Comparisons: PFAM domains': [
-        'entry_list_pfam', 'extract_pfam', 'heatmap_pfam', 'pan_genome_Pfam',
-        'pfam_comparison', 'venn_pfam', 'index_comp_Pfam', 'plot_heatmap_Pfam'],
+        'entry_list_pfam', 'extract_pfam', 'heatmap_pfam', 'pan_genome_pfam',
+        'pfam_comparison', 'venn_pfam', 'index_comp_pfam', 'plot_heatmap_pfam'],
     'Comparisons: orthologous groups': [
         'extract_orthogroup', 'heatmap_orthogroup', 'index_comp_orthology',
         'orthogroup_comparison', 'pan_genome_orthology', 'plot_heatmap_orthology',
@@ -2263,13 +2263,13 @@ def fam_pfam(request, pfam):
     return render(request, 'chlamdb/fam.html', my_locals(context))
 
 
-def COG_phylo_heatmap(request, frequency):
+def cog_phylo_heatmap(request, frequency):
     biodb = settings.BIODB_DB_PATH
 
-    page_title = page2title["COG_phylo_heatmap"]
+    page_title = page2title["cog_phylo_heatmap"]
 
     if request.method != "GET":
-        return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
+        return render(request, 'chlamdb/cog_phylo_heatmap.html', my_locals(locals()))
     freq = frequency != "False"
 
     db = DB.load_db_from_name(biodb)
@@ -2321,7 +2321,7 @@ def COG_phylo_heatmap(request, frequency):
     asset_path = f"/temp/COG_tree_{freq}.svg"
     e_tree.render(path, dpi=600)
     envoi = True
-    return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
+    return render(request, 'chlamdb/cog_phylo_heatmap.html', my_locals(locals()))
 
 
 class KOModuleChooser:
@@ -2913,7 +2913,7 @@ def pan_genome(request, type):
         return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
     taxids = form.get_taxids()
 
-    if type == "COG":
+    if type == "cog":
         df_hits = db.get_cog_hits(taxids, search_on="taxid", indexing="taxid")
         type_txt = "COG orthologs"
     elif type == "orthology":
@@ -2922,7 +2922,7 @@ def pan_genome(request, type):
     elif type == "ko":
         df_hits = db.get_ko_hits(taxids, search_on="taxid")
         type_txt = "KEGG orthologs"
-    elif type == "Pfam":
+    elif type == "pfam":
         df_hits = db.get_pfam_hits(taxids, search_on="taxid")
         type_txt = "PFAM domains"
     else:
@@ -3592,7 +3592,7 @@ def plot_heatmap(request, type):
                "form_venn": form_venn, "error_message": error_message, "page_title": page_title}
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(ctx))
 
-    if type == "COG":
+    if type == "cog":
         mat = db.get_cog_hits(taxon_ids, indexing="taxid", search_on="taxid")
         mat.index = [format_cog(i) for i in mat.index]
     elif type == "orthology":
@@ -3601,7 +3601,7 @@ def plot_heatmap(request, type):
     elif type == "ko":
         mat = db.get_ko_hits(taxon_ids)
         mat.index = [format_ko(i) for i in mat.index]
-    elif type == "Pfam":
+    elif type == "pfam":
         mat = db.get_pfam_hits(taxon_ids)
         mat.index = [format_pfam(i) for i in mat.index]
     else:
@@ -3930,7 +3930,7 @@ class TabularComparisonViewBase(View):
 
     @property
     def view_name(self):
-        return f"{self.view_type.lower()}_comparison"
+        return f"{self.view_type}_comparison"
 
     @property
     def context(self):
@@ -4054,7 +4054,7 @@ def module_comparison(request):
 
 class PfamComparisonView(TabularComparisonViewBase):
 
-    view_type = "Pfam"
+    view_type = "pfam"
     base_info_headers = ["Domain ID", "Description", "nDomain"]
 
     table_help = """
@@ -4085,7 +4085,7 @@ class PfamComparisonView(TabularComparisonViewBase):
 
 class CogComparisonView(TabularComparisonViewBase):
 
-    view_type = "COG"
+    view_type = "cog"
     base_info_headers = ["COG accession", "Description", "# complete DB", "# genomes"]
 
     table_help = """

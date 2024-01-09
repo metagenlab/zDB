@@ -112,13 +112,13 @@
                                     <br>  
                                     <div class= "col-md-4 col-sm-7">
                                           {% if optional2status|keyvalue:"COG" == 1 %}
-                                          <button type="button_analyses" class="fill" ><a class="link_boxes"  href="{% url 'index_comp' 'COG' %}"><span class="link"></span>COGs</a></button>
+                                          <button type="button_analyses" class="fill" ><a class="link_boxes"  href="{% url 'index_comp' 'cog' %}"><span class="link"></span>COGs</a></button>
                                           {% endif %}
                                           {% if optional2status|keyvalue:"KEGG" %}
                                           <button type="button_analyses" class="fill" ><a class="link_boxes" href="{% url 'index_comp' 'ko' %}">  <span class="link"></span>Kegg Orthologs</a></button>
                                           {% endif %}
                                           {% if optional2status|keyvalue:"pfam" == 1 %}
-                                          <button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'index_comp' 'Pfam' %}">  <span class="link"></span>Pfam domains</a></button>
+                                          <button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'index_comp' 'pfam' %}">  <span class="link"></span>Pfam domains</a></button>
                                           {% endif %}
                                     </div>
                                   </div>

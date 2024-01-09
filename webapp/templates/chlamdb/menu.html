@@ -48,10 +48,10 @@
                   <li class="analyses_intra"><a href="{% url 'index_comp' 'orthology' %}">Orthogroups</a></li>
                   <li class="sidebar-dropdown" ><p> Annotations</p></li>
                   {% if optional2status|keyvalue:"COG" == 1 %}
-                  <li class="analyses_intra" ><a   href="{% url 'index_comp' 'COG' %}">COGs</a></li>
+                  <li class="analyses_intra" ><a   href="{% url 'index_comp' 'cog' %}">COGs</a></li>
                   {% endif %}
                   {% if optional2status|keyvalue:"pfam" == 1 %}
-                  <li class="analyses_intra"><a   href="{% url 'index_comp' 'Pfam' %}">Pfam domains</a></li>
+                  <li class="analyses_intra"><a   href="{% url 'index_comp' 'pfam' %}">Pfam domains</a></li>
                   {% endif %}
                   {% if optional2status|keyvalue:"KEGG" == 1 %}
                   <li class="analyses_intra" ><a   href="{% url 'index_comp' 'ko' %}">Kegg Orthologs</a></li>
