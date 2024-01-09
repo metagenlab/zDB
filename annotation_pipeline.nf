@@ -1026,5 +1026,5 @@ process cleanup {
 
 workflow.onComplete {
     println "Annotation pipeline completed"
-    println "You may now start the web server by running the start_webserver script"
+    println "You may now start the web server with the zdb webapp command"
 }

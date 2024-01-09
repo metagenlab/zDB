@@ -6,7 +6,10 @@ from collections import defaultdict, namedtuple
 import pandas as pd
 from Bio import AlignIO, SeqIO, SeqUtils
 
-from webapp.lib import KO_module, db_utils, search_bar
+from db_utils import DB
+
+import KO_module
+import search_bar
 
 # assumes orthofinder named: OG000N
 # returns the N as int
