@@ -1786,7 +1786,7 @@ def locusx_genomic_region(db, seqid, window):
         df_seqids_circled.start_pos -= diff
         df_seqids_circled.end_pos -= diff
         df_seqids = pd.concat([df_seqids_circled, df_seqids_same])
-        window_stop += -window_start
+        window_stop -= window_start
         window_start = 0
     elif window_stop > contig_size:
         # circular contig

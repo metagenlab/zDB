@@ -7,7 +7,6 @@ broken_views = [
     '/orthogroup_list_cog_barchart/True/',
     '/circos_main/',
     '/genomes_intro/',
-    '/hydropathy/CHUV_00025'
 ]
 
 untested_patterns = {
