@@ -14,68 +14,115 @@
       <div class="header" >
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
-            <a class="navbar-brand" style="color:#003c58; font-size: 1.5em;" href="{% url 'home' %}">zDB</a>
-            <a href="#menu-toggle"  id="menu-toggle" style="margin-top:0.1em; margin-right: 0em; font-size: 2.5em" > <i class="fa fa-bars "  style="font-size:0.8em !Important;" aria-hidden="true" aria-hidden="true"></i></a>
+          <a class="navbar-brand" style="color:#003c58; font-size: 1.5em;" href="{% url 'home' %}">zDB</a>
+          <a href="#menu-toggle"  id="menu-toggle" style="margin-top:0.1em; margin-right: 0em; font-size: 2.5em" > <i class="fa fa-bars "  style="font-size:0.8em !Important;" aria-hidden="true" aria-hidden="true"></i></a>
         </div>
         <div style="padding-left:250px">
           <div id="page_title" class="navbar-brand"><p class="home-title">{{page_title}}</p></div>
         </div>
       </div> <!-- /.container-fluid -->
     </nav>
-
-
     
     <div class="sidenav" id="menu_box" >      <!-- Sidebar -->
-          <ul class="sidebar-nav" >
-              <li class="sidebar-brand">
-                <nav id="sidebar-wrapper">
-                  <li><form class="example" role="search" action='{% url "search_bar" %}' method="GET" >
-                    <button type="submit"><i class="fa fa-search"></i></button>
-                    <div class="ui-widget">
-                      <input type="text" placeholder="Gene, product, orthogroup, COG, KEGG id, ..."  name="search2" id="searchbar">
-                    </div>
-                    
-                  </form></li>
-               
-                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'home' %}#home"><b>Home</b></a></li>
-                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'genomes' %}" ><b>Genomes</b></a></li>
-                  <li class="sidebar-nav-item" id="menu_element"><a href="{% url 'phylogeny' %}" ><b>Phylogeny</b></a></li>
-                  <hr class="line-menu">
-                  <li class="analyses"><b>Analyses</b></li>
-                  <li class="sidebar-dropdown" ><p> Homology search</p></li>
-                  <li class="analyses_intra" ><a href="{% url 'blast' %}">Blast</a></li>
-                  <li class="sidebar-dropdown" ><p> Orthology</p></li>
-                  <li class="analyses_intra"><a href="{% url 'index_comp' 'orthology' %}">Orthogroups</a></li>
-                  <li class="sidebar-dropdown" ><p> Annotations</p></li>
-                  {% if optional2status|keyvalue:"COG" == 1 %}
-                  <li class="analyses_intra" ><a   href="{% url 'index_comp' 'cog' %}">COGs</a></li>
-                  {% endif %}
-                  {% if optional2status|keyvalue:"pfam" == 1 %}
-                  <li class="analyses_intra"><a   href="{% url 'index_comp' 'pfam' %}">Pfam domains</a></li>
-                  {% endif %}
-                  {% if optional2status|keyvalue:"KEGG" == 1 %}
-                  <li class="analyses_intra" ><a   href="{% url 'index_comp' 'ko' %}">Kegg Orthologs</a></li>
-                  {% endif %}
-                  
-        <li class="sidebar-dropdown" ><p> Genome alignments</p>
-              <li class="analyses_intra"><a   href="{% url 'plot_region' %}">Plot region</a></li>
-              <li class="analyses_intra"><a   href="{% url 'circos' %}">Circos</a></li>
-              {% if optional2status|keyvalue:"KEGG" %}
-          <li  class="sidebar-dropdown" ><p>Metabolism</p></li>
-          <li class="analyses_intra"><a    href="{% url 'kegg' %}">Kegg based</a></li>
-                {% endif %}
+      <ul class="sidebar-nav" >
+        <li class="sidebar-brand">
+          <nav id="sidebar-wrapper">
+            <li>
+              <form class="example" role="search" action='{% url "search_bar" %}' method="GET" >
+                <button type="submit"><i class="fa fa-search"></i></button>
+                <div class="ui-widget">
+                  <input type="text" placeholder="Gene, product, orthogroup, COG, KEGG id, ..."  name="search2" id="searchbar">
+                </div>
+              </form>
+            </li>
 
-          <hr class="line-menu">
-          <li class="sidebar-nav-item"><a  href="{% url 'FAQ' %}"><b>FAQ</b></a></li>
-          <li class="sidebar-nav-item"><a  href='https://zdb.readthedocs.io/en/latest/'target="_blank"><b>Documentation</b></a></li>
-          <li class="sidebar-nav-item"><a   href="{% url 'about' %}"><b>References</b></a></li>
-          <li class="sidebar-nav-item" style="margin-bottom: 5em"><a href="https://github.com/metagenlab/annotation_pipeline_nextflow"><i class="fab fa-github" ></i><b> Project and contacts</b></a></li>
+            <li class="sidebar-nav-item" id="menu_element">
+              <a href="{% url 'home' %}#home"><b>Home</b></a>
+            </li>
+
+            <li class="sidebar-nav-item" id="menu_element">
+              <a href="{% url 'genomes' %}" ><b>Genomes</b></a>
+            </li>
+
+            <li class="sidebar-nav-item" id="menu_element">
+              <a href="{% url 'phylogeny' %}" ><b>Phylogeny</b></a>
+            </li>
+
+            <hr class="line-menu">
+
+            <li class="analyses">
+              <b>Analyses</b>
+            </li>
+
+            <li class="sidebar-dropdown" >
+              <p> Homology search</p>
+            </li>
+            <li class="analyses_intra" >
+              <a href="{% url 'blast' %}">Blast</a>
+            </li>
+
+            <li class="sidebar-dropdown" >
+              <p> Orthology</p>
+            </li>
+            <li class="analyses_intra">
+              <a href="{% url 'index_comp' 'orthology' %}">Orthogroups</a>
+            </li>
+
+            <li class="sidebar-dropdown" >
+              <p> Annotations</p>
+            </li>
+            {% if optional2status|keyvalue:"COG" == 1 %}
+              <li class="analyses_intra" >
+                <a   href="{% url 'index_comp' 'cog' %}">COGs</a>
+              </li>
+            {% endif %}
+            {% if optional2status|keyvalue:"pfam" == 1 %}
+              <li class="analyses_intra">
+                <a   href="{% url 'index_comp' 'pfam' %}">Pfam domains</a>
+              </li>
+            {% endif %}
+            {% if optional2status|keyvalue:"KEGG" == 1 %}
+              <li class="analyses_intra" >
+                <a   href="{% url 'index_comp' 'ko' %}">Kegg Orthologs</a>
+              </li>
+            {% endif %}
+
+            <li class="sidebar-dropdown" >
+              <p> Genome alignments</p>
+            </li>
+            <li class="analyses_intra">
+              <a   href="{% url 'plot_region' %}">Plot region</a>
+            </li>
+            <li class="analyses_intra">
+              <a   href="{% url 'circos' %}">Circos</a>
+            </li>
+
+            {% if optional2status|keyvalue:"KEGG" %}
+              <li  class="sidebar-dropdown" >
+                <p>Metabolism</p>
+              </li>
+              <li class="analyses_intra">
+                <a    href="{% url 'kegg' %}">Kegg based</a>
+              </li>
+            {% endif %}
+
+            <hr class="line-menu">
+
+            <li class="sidebar-nav-item">
+              <a  href="{% url 'FAQ' %}"><b>FAQ</b></a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a  href='https://zdb.readthedocs.io/en/latest/'target="_blank"><b>Documentation</b></a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a   href="{% url 'about' %}"><b>References</b></a>
+            </li>
+            <li class="sidebar-nav-item" style="margin-bottom: 5em">
+              <a href="https://github.com/metagenlab/annotation_pipeline_nextflow"><i class="fab fa-github" ></i><b> Project and contacts</b></a>
+            </li>
+          </nav >
         </li>
-            
-
-
-
-        </ul>
+      </ul>
     </div> <!-- /.container-fluid -->
   </div> <!-- /#sidebar-wrapper -->
 
