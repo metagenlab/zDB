@@ -57,7 +57,7 @@ with DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
 title2page = {
     'COG Ortholog': ['fam_cog'],
     'Comparisons: Antimicrobial Resistance': [
-        'amr_class_comparison', 'amr_gene_comparison', 'amr_subclass_comparison'],
+        'amr_comparison', 'index_comp_amr'],
     'Comparisons: Clusters of Orthologous groups (COGs)': [
         'cog_barchart', 'index_comp_cog', 'cog_phylo_heatmap',
         'cog_comparison', 'entry_list_cog', 'extract_cog', 'heatmap_COG',
@@ -3932,10 +3932,13 @@ class TabularComparisonViewBase(View):
         biodb_path = settings.BIODB_DB_PATH
         self.db = DB.load_db_from_name(biodb_path)
         self.page_title = page2title[self.view_name]
-        self.comp_metabo_form = make_metabo_from(self.db)
+        self.comp_metabo_form = self.make_metabo_from()
         self.show_comparison_table = False
         self._hash_to_taxon_dict = None
         return super(TabularComparisonViewBase, self).dispatch(request, *args, **kwargs)
+
+    def make_metabo_from(self):
+        return make_metabo_from(self.db)
 
     def get(self, request, *args, **kwargs):
         self.form = self.comp_metabo_form()
@@ -3945,6 +3948,9 @@ class TabularComparisonViewBase(View):
         self.form = self.comp_metabo_form(request.POST)
         if self.form.is_valid():
             self.show_comparison_table = True
+            self.targets = self.form.get_choices()
+            if "comp_type" in self.form.cleaned_data:
+                self.comp_type = self.form.cleaned_data["comp_type"]
             self.set_table_data()
 
         return render(request, self.template, self.context)
@@ -3983,7 +3989,6 @@ class TabularComparisonViewBase(View):
         return self._hash_to_taxon_dict
 
     def set_table_data(self):
-        self.targets = self.form.get_choices()
         self.n_selected = len(self.targets)
 
         taxon_list = [self.hash_to_taxon_dict[target_id]
@@ -4234,13 +4239,10 @@ class KoComparisonView(TabularComparisonViewBase):
         return table_rows
 
 
-class AmrClassComparisonView(TabularComparisonViewBase):
+class AmrComparisonView(TabularComparisonViewBase):
 
     view_type = "amr"
     compared_obj_name = "AMR"
-
-    base_info_headers = ["Class"]
-    group_by = "class"
 
     _table_help = """
     The ouput table contains the number of times a given AMR {} appears
@@ -4249,19 +4251,55 @@ class AmrClassComparisonView(TabularComparisonViewBase):
     <br> Counts can be reordrered by clicking on column headers.<br>
     """
 
+    _scope_hint = """
+    <br> Note that genes are split into "core" and "plus" scopes, where
+    "core" proteins are expected to have an effect on resistance while
+    "plus" proteins are included with a less stringent criteria.<br>
+    """
+
+    def make_metabo_from(self):
+        return make_metabo_from(self.db, add_amr_choices=True)
+
+    @property
+    def base_info_headers(self):
+        if self.comp_type == "gene":
+            return ["Gene", "scope", "Class", "Subclass", "Annotation"]
+        elif self.comp_type == "subclass":
+            return ["Subclass", "Class"]
+        elif self.comp_type == "class":
+            return ["Class"]
+
     @property
     def table_help(self):
-        return self._table_help.format(self.group_by)
+        if self.comp_type == "gene":
+            return self._table_help.format(self.comp_type) + self._scope_hint
+        else:
+            return self._table_help.format(self.comp_type)
 
     def get_row_data(self, groupid, data):
-        return [groupid]
+        if self.comp_type == "class":
+            return [groupid]
+        elif self.comp_type == "subclass":
+            return [
+                format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
+                data.iloc[0]["scope"],
+                safe_replace(data.iloc[0]["class"], "/", " / "),
+                safe_replace(data.iloc[0]["subclass"], "/", " / "),
+                data.iloc[0]["seq_name"]]
+        elif self.comp_type == "gene":
+            return [
+                format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
+                data.iloc[0]["scope"],
+                safe_replace(data.iloc[0]["class"], "/", " / "),
+                safe_replace(data.iloc[0]["subclass"], "/", " / "),
+                data.iloc[0]["seq_name"]]
 
     def get_table_rows(self):
         hits = self.db.get_amr_hits_from_taxonids(self.targets)
 
         table_rows = []
         hits["quality"] = hits["coverage"] * hits["identity"] / 10000
-        for groupid, data in hits.groupby(self.group_by):
+        for groupid, data in hits.groupby(self.comp_type):
             row = self.get_row_data(groupid, data)
             taxonids = data["bioentry.taxon_id"]
             values = [len(taxonids[taxonids == target_id])
@@ -4276,46 +4314,6 @@ class AmrClassComparisonView(TabularComparisonViewBase):
     @property
     def hist_colour_index_shift(self):
         return len(self.targets)
-
-    @property
-    def view_name(self):
-        return f"{self.view_type}_{self.group_by}_comparison"
-
-    @property
-    def tab_name(self):
-        return f"{self.group_by}_comp"
-
-
-class AmrGeneComparisonView(AmrClassComparisonView):
-
-    base_info_headers = ["Gene", "scope", "Class", "Subclass", "Annotation"]
-    group_by = "gene"
-
-    _scope_hint = """
-    <br> Note that genes are split into "core" and "plus" scopes, where
-    "core" proteins are expected to have an effect on resistance while
-    "plus" proteins are included with a less stringent criteria.<br>
-    """
-
-    @property
-    def table_help(self):
-        return self._table_help.format(self.group_by) + self._scope_hint
-
-    def get_row_data(self, groupid, data):
-        return [format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
-                data.iloc[0]["scope"],
-                safe_replace(data.iloc[0]["class"], "/", " / "),
-                safe_replace(data.iloc[0]["subclass"], "/", " / "),
-                data.iloc[0]["seq_name"]]
-
-
-class AmrSubclassComparisonView(AmrClassComparisonView):
-
-    base_info_headers = ["Subclass", "Class"]
-    group_by = "subclass"
-
-    def get_row_data(self, groupid, data):
-        return [groupid, safe_replace(data.iloc[0]["class"], "/", " / ")]
 
 
 def faq(request):

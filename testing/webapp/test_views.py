@@ -71,9 +71,7 @@ urls = [
     '/cog_comparison',
     '/ko_comparison',
     '/orthogroup_comparison',
-    '/amr_gene_comparison',
-    '/amr_class_comparison',
-    '/amr_subclass_comparison',
+    '/amr_comparison',
     '/about',
     '/help',
     '/fam_pfam/PF10423',
@@ -224,6 +222,10 @@ class TabularViewTestMixin():
     def tab_comp_view(self):
         return f"/{self.view_type}_comparison"
 
+    @property
+    def tab_comp_form_data(self):
+        return {"targets": ["0", "1"]}
+
     def test_tabular_comparison_view(self):
         resp = self.client.get(self.tab_comp_view)
         self.assertEqual(200, resp.status_code)
@@ -234,7 +236,7 @@ class TabularViewTestMixin():
         self.assertNav(resp)
 
         resp = self.client.post(self.tab_comp_view,
-                                data={"targets": ["0", "1"]})
+                                data=self.tab_comp_form_data)
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/tabular_comparison.html')
         self.assertPageTitle(resp, self.page_title)
@@ -269,26 +271,12 @@ class TestCOGViews(SimpleTestCase, TabularViewTestMixin):
 
 class TestAMRViews(SimpleTestCase, TabularViewTestMixin):
 
-    view_type = "amr_gene"
+    view_type = "amr"
     page_title = "Comparisons: Antimicrobial Resistance"
 
-    pass
-
-
-class TestAMRClassComparisonViews(SimpleTestCase, TabularViewTestMixin):
-
-    view_type = "amr_class"
-    page_title = "Comparisons: Antimicrobial Resistance"
-
-    pass
-
-
-class TestAMRSubclassComparisonViews(SimpleTestCase, TabularViewTestMixin):
-
-    view_type = "amr_subclass"
-    page_title = "Comparisons: Antimicrobial Resistance"
-
-    pass
+    @property
+    def tab_comp_form_data(self):
+        return {"targets": ["0", "1"], "comp_type": "gene"}
 
 
 class TestOrthogroupViews(SimpleTestCase, TabularViewTestMixin):
