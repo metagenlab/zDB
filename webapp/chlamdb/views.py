@@ -471,14 +471,15 @@ def format_pfam(pfam_id, base=None, to_url=False):
 
 def index_comp(request, type):
     page_title = page2title[f"index_comp_{type}"]
+    context = my_locals({"page_title": page_title})
     if type == 'Pfam':
-        return render(request, 'chlamdb/index_pfam.html', my_locals(locals()))
+        return render(request, 'chlamdb/index_pfam.html', context)
     if type == 'COG':
-        return render(request, 'chlamdb/index_cog.html', my_locals(locals()))
+        return render(request, 'chlamdb/index_cog.html', context)
     if type == 'ko':
-        return render(request, 'chlamdb/index_ko.html', my_locals(locals()))
+        return render(request, 'chlamdb/index_ko.html', context)
     if type == 'orthology':
-        return render(request, 'chlamdb/index_orthology.html', my_locals(locals()))
+        return render(request, 'chlamdb/index_orthology.html', context)
 
 
 def entry_list_ko(request,):
