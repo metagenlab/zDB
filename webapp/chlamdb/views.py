@@ -469,16 +469,16 @@ def format_pfam(pfam_id, base=None, to_url=False):
     return fmt_entry
 
 
-def index_comp(request, type):
-    page_title = page2title[f"index_comp_{type}"]
+def index_comp(request, comp_type):
+    page_title = page2title[f"index_comp_{comp_type}"]
     context = my_locals({"page_title": page_title})
-    if type == 'Pfam':
+    if comp_type == 'Pfam':
         return render(request, 'chlamdb/index_pfam.html', context)
-    if type == 'COG':
+    if comp_type == 'COG':
         return render(request, 'chlamdb/index_cog.html', context)
-    if type == 'ko':
+    if comp_type == 'ko':
         return render(request, 'chlamdb/index_ko.html', context)
-    if type == 'orthology':
+    if comp_type == 'orthology':
         return render(request, 'chlamdb/index_orthology.html', context)
 
 
