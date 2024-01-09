@@ -4,7 +4,6 @@
 # todo save temp files in temp folder
 
 import collections
-import os
 import random
 import re
 import string
@@ -23,12 +22,13 @@ from Bio.Blast.Applications import (NcbiblastnCommandline,
                                     NcbiblastpCommandline,
                                     NcbiblastxCommandline,
                                     NcbitblastnCommandline)
-from Bio.Seq import Seq, reverse_complement, translate
+from Bio.Seq import Seq
 from Bio.SeqFeature import FeatureLocation, SeqFeature
 from Bio.SeqRecord import SeqRecord
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.views import View
 from ete3 import SeqMotifFace, StackedBarFace, TextFace, Tree, TreeStyle
 
 import chlamdb.circosjs
@@ -47,6 +47,7 @@ from chlamdb.forms import (make_blast_form, make_circos_form,
                            make_module_overview_form,
                            make_pathway_overview_form, make_plot_form,
                            make_single_genome_form, make_venn_from)
+from chlamdb.utils import safe_replace
 
 # could also be extended to cache the results of frequent queries
 # (e.g. taxid -> organism name) to avoid db queries
@@ -89,6 +90,8 @@ page2title = {
     'entry_list_ko': 'Comparisons: Kegg Orthologs (KO)',
     'entry_list_cog': 'Comparisons: Clusters of Orthologous groups (COGs)',
     'ko_comparison': 'Comparisons: Kegg Orthologs (KO)',
+    'pfam_comparison': 'Comparisons: PFAM domains',
+    'amr_comparison': 'Comparisons: Antimicrobial Resistance',
     'module_barchart': 'Comparisons: Kegg Orthologs (KO)',
     'blast': 'Homology search: Blast',
     'plot_region': 'Genome alignments: Plot region',
@@ -124,12 +127,6 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase +
     return ''.join(random.choice(chars) for _ in range(size))
 
 
-def extract_alphanumeric(input_string):
-    import string
-    from string import ascii_letters, digits
-    return "".join([ch for ch in input_string if ch in (ascii_letters + digits + '_-.')])
-
-
 def help(request):
     return render(request, 'chlamdb/help.html', my_locals(locals()))
 
@@ -142,13 +139,13 @@ def about(request):
     entry_list = []
 
     for entry in bib_database.entries:
-        string = ("<b>%s</b></br> %s, %s, %s(%s):%s, %s" % (re.sub('[{}]', '', entry["title"]),
-                                                            entry["author"],
-                                                            entry["journal"],
-                                                            entry["volume"],
-                                                            entry["number"],
-                                                            entry["pages"],
-                                                            entry["year"],
+        string = ("<b>%s</b><br> %s, %s, %s(%s):%s, %s" % (re.sub('[{}]', '', entry["title"]),
+                                                           entry["author"],
+                                                           entry["journal"],
+                                                           entry["volume"],
+                                                           entry["number"],
+                                                           entry["pages"],
+                                                           entry["year"],
                                                             ))
         url = entry["url"]
         entry_list.append([string, url])
@@ -1405,7 +1402,7 @@ def og_tab_get_kegg_annot(db, seqids, from_taxid=None):
 
 
 def og_tab_get_amr_annot(db, seqids):
-    amr_hits = db.get_amr_hits(seqids)
+    amr_hits = db.get_amr_hits_from_seqids(seqids)
     if amr_hits.empty:
         return {}
 
@@ -1984,8 +1981,6 @@ def search_suggest(request,):
          "value": f"{i.name}: {i.description}"}
         for i in results
     ]
-    # data = [f"{i.name} ({i.entry_type})" for i in results]
-    mimetype = "application/json"
     return JsonResponse(data, safe=False)
 
 # NOTE: should refactor this code to avoid duplicated code
@@ -2003,7 +1998,6 @@ def search_bar(request):
         ctx = {"search_failed": True, "search_term": user_query}
         return render(request, "chlamdb/search.html", my_locals(ctx))
 
-    search_results = []
     has_ko = option2status.get("KEGG", False)
     has_cog = option2status.get("COG", False)
     has_pfam = option2status.get("pfam", False)
@@ -2046,7 +2040,6 @@ def search_bar(request):
     pfam_headers = ["PFAM domain", "Description"]
     pat_headers = ["KEGG Pathway", "Description"]
     mod_headers = ["KEGG Module", "Description"]
-    insert_index = 4
     ctx = {"search_term": user_query,
            "gene_active": gene_active,
            "cogs_active": cogs_active,
@@ -2197,10 +2190,6 @@ def fam_cog(request, cog_id):
     menu = True
     envoi = True
     return render(request, 'chlamdb/fam.html', my_locals(locals()))
-
-
-def format_pathway(pat_id):
-    return f"map{pat_id:05d}"
 
 
 def format_module(mod_id, base=None, to_url=False):
@@ -3198,7 +3187,6 @@ def format_gene_to_ncbi_hmm(gene_and_hmmid):
 
 def locus_tab_swissprot_hits(db, seqid):
     swissprot_homologs = db.get_swissprot_homologs([seqid])
-    transl = db.get_translation(seqid)
 
     blast_data = []
     header = ["Swissprot accession", "Eval", "Score", "ID (%)", "N gaps",
@@ -3404,7 +3392,6 @@ def plot_region(request):
 def circos_main(request):
     biodb_path = settings.BIODB_DB_PATH
     db = DB.load_db_from_name(biodb_path)
-
     if request.method == 'POST':
 
         reference_taxon = request.POST["reference_taxid"]
@@ -3498,7 +3485,6 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
                                          .sort_values(ascending=False)
     locus2seqfeature_id = db.get_hsh_locus_to_seqfeature_id()
     seqfeature_id2locus_tag = {value: key for key, value in locus2seqfeature_id.items()}
-    heatmap_data_list = {}
     # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
     # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
     # join on seqfeature id
@@ -3554,7 +3540,6 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
 
 
 def circos(request):
-
     biodb_path = settings.BIODB_DB_PATH
     db = DB.load_db_from_name(biodb_path)
     page_title = page2title["circos"]
@@ -3929,6 +3914,106 @@ def kegg_module(request):
     return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
 
 
+class TabularComparisonViewBase(View):
+
+    template = 'chlamdb/tabular_comparison.html'
+    hist_colour_index_shift = 0
+
+    def dispatch(self, request, *args, **kwargs):
+        biodb_path = settings.BIODB_DB_PATH
+        self.db = DB.load_db_from_name(biodb_path)
+        self.page_title = page2title[self.view_name]
+        self.comp_metabo_form = make_metabo_from(self.db)
+        self.show_comparison_table = False
+        self._hash_to_taxon_dict = None
+        return super(TabularComparisonViewBase, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        self.form = self.comp_metabo_form()
+        return render(request, self.template, self.context)
+
+    def post(self, request, *args, **kwargs):
+        self.form = self.comp_metabo_form(request.POST)
+        if self.form.is_valid():
+            self.show_comparison_table = True
+            self.set_table_data()
+
+        return render(request, self.template, self.context)
+
+    @property
+    def view_name(self):
+        return f"{self.view_type}_comparison"
+
+    @property
+    def context(self):
+        context = {
+            "page_title": self.page_title,
+            "form_title": self.form_title,
+            "form_help": self.form_help,
+            "form": self.form,
+            "show_comparison_table": self.show_comparison_table,
+            "view_name": self.view_name,
+            "view_type": self.view_type,
+            }
+        if self.show_comparison_table:
+            context["table_headers"] = self.table_headers
+            context["table_rows"] = self.table_rows
+            context["table_title"] = self.table_title
+            context["table_help"] = self.table_help
+            context["first_coloured_row"] = self.first_coloured_row
+            context["n_data_columns"] = len(self.base_info_headers) + \
+                len(self.targets)
+            context["hist_colour_index_shift"] = self.hist_colour_index_shift
+        return my_locals(context)
+
+    @property
+    def hash_to_taxon_dict(self):
+        if self._hash_to_taxon_dict is None:
+            self._hash_to_taxon_dict = self.db.get_genomes_description().description.to_dict()
+        return self._hash_to_taxon_dict
+
+    def set_table_data(self):
+        self.targets = self.form.get_choices()
+        self.n_selected = len(self.targets)
+
+        taxon_list = [self.hash_to_taxon_dict[target_id]
+                      for target_id in self.targets]
+        self.table_headers = self.base_info_headers + taxon_list
+
+        self.table_rows = self.get_table_rows()
+        self.n_rows = len(self.table_rows)
+
+    def get_table_rows(self):
+        """This method should return an iteratable object with each iteration
+        yielding a row of the table. Apart from the data, rows can contain
+        values used to color the cells, these are stored in the rows after
+        the data and will be matched to the corresponding data value with a
+        shift in index (row[i] colored by row[i + hist_colour_index_shift]).
+        """
+        raise NotImplementedError
+
+    @property
+    def table_title(self):
+        return "Number of {} present at least once in 1 of the {} selected "\
+               "genomes: <strong>{}</strong>".format(self.compared_obj_name,
+                                                     self.n_selected,
+                                                     self.n_rows)
+
+    @property
+    def form_title(self):
+        return "Compare the distribution of shared {}.".format(
+            self.compared_obj_name)
+
+    @property
+    def form_help(self):
+        return "Compare the size of the {} shared by selected genomes (targets).".format(
+            self.compared_obj_name)
+
+    @property
+    def first_coloured_row(self):
+        return len(self.base_info_headers)
+
+
 def module_comparison(request):
     page_title = page2title["module_comparison"]
 
@@ -3978,179 +4063,209 @@ def module_comparison(request):
     return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
 
 
-def pfam_comparison(request):
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    page_title = page2title["cog_barchart"]
+class PfamComparisonView(TabularComparisonViewBase):
 
-    comp_metabo_form = make_metabo_from(db)
-    if request.method != 'POST':
-        form = comp_metabo_form(request.POST)
-        return render(request, 'chlamdb/pfam_comp.html', my_locals(locals()))
+    view_type = "pfam"
+    base_info_headers = ["Domain ID", "Description", "nDomain"]
 
-    form = comp_metabo_form(request.POST)
-    if not form.is_valid():
-        return render(request, 'chlamdb/pfam_comp.html', my_locals(locals()))
+    table_help = """
+    The ouput table contains the list of shared Pfam domains and the number of
+    times each of them was identified in the selected genomes.
+    <br>nDomain: total number of occurence of this domain in the
+    complete database.
+    <br>Click on Pfam accession to get detailed phylogenetic profile of the
+    corresponding Pfam entry.
+    """
 
-    try:
-        all_targets = form.get_choices()
-    except Exception:
-        # TODO: add error message
-        return render(request, 'chlamdb/pfam_comp.html', my_locals(locals()))
+    compared_obj_name = "domains"
 
-    genomes = db.get_genomes_description().description.to_dict()
+    def get_table_rows(self):
+        pfam_hits = self.db.get_pfam_hits(ids=self.targets)
+        pfam_defs = self.db.get_pfam_def(pfam_hits.index.tolist(),
+                                         add_ttl_count=True)
 
-    pfam_hits = db.get_pfam_hits(ids=all_targets)
-    pfam_defs = db.get_pfam_def(pfam_hits.index.tolist(), add_ttl_count=True)
-    data = []
-    for pfam, entry_data in pfam_hits.iterrows():
-        entry_infos = pfam_defs.loc[pfam]
-        base_infos = [format_pfam(pfam, to_url=True), entry_infos["def"], entry_infos.ttl_cnt]
-        data.append(base_infos + entry_data.values.tolist())
-    ctx = {
-        "envoi_comp": True,
-        "taxon_list": pfam_hits.columns.tolist(),
-        "pfam2data": data,
-        "taxon_id2description": genomes
-    }
-    return render(request, 'chlamdb/pfam_comp.html', my_locals(ctx))
+        table_rows = []
+        for key, values in pfam_hits.iterrows():
+            entry_infos = pfam_defs.loc[key]
+            base_infos = [format_pfam(key, to_url=True), entry_infos["def"],
+                          entry_infos.ttl_cnt]
+            table_rows.append(base_infos + values.values.tolist())
+
+        return table_rows
 
 
-def cog_comparison(request):
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    page_title = page2title["cog_comparison"]
+class CogComparisonView(TabularComparisonViewBase):
 
-    comp_metabo_form = make_metabo_from(db)
-    if request.method != 'POST':
-        form = comp_metabo_form(request.POST)
-        return render(request, 'chlamdb/cog_comp.html', my_locals(locals()))
+    view_type = "cog"
+    base_info_headers = ["COG accession", "Description", "# complete DB", "# genomes"]
 
-    form = comp_metabo_form(request.POST)
-    if not form.is_valid():
-        return render(request, 'chlamdb/cog_comp.html', my_locals(locals()))
+    table_help = """
+    The ouput table contains the list of COG annotated in selected genomes and
+    the number of times each of them was identified in each genome.
+    <br>Click on COG accession to get detailed phylogenetic profile of the
+    corresponding COG entry.
+    """
 
-    try:
-        all_targets = form.get_choices()
-    except Exception:
-        # TODO: add error message
-        return render(request, 'chlamdb/cog_comp.html', my_locals(locals()))
+    compared_obj_name = "COG"
 
-    genomes = db.get_genomes_description().description.to_dict()
-    cog_hits = db.get_cog_hits(ids=all_targets, search_on="taxid", indexing="taxid")
+    def get_table_rows(self):
+        cog_hits = self.db.get_cog_hits(
+            ids=self.targets, search_on="taxid", indexing="taxid")
+        # retrieve entry list
+        cog_all = self.db.get_cog_hits(
+            ids=list(self.hash_to_taxon_dict.keys()),
+            search_on="taxid",
+            indexing="taxid")
 
-    # retrieve entry list
-    cog_all = db.get_cog_hits(list(genomes.keys()),
-                              search_on="taxid",
-                              indexing="taxid")
+        # count frequency and n genomes
+        cog_count = cog_all.sum(axis=1)
+        cog_freq = cog_all[cog_all > 0].count(axis=1)
+        cog_freq = cog_freq.loc[cog_hits.index]
+        cog_count = cog_count.loc[cog_hits.index]
+        # retrieve annotations
+        cogs_summaries = self.db.get_cog_summaries(
+            cog_hits.index.tolist(), as_df=True, only_cog_desc=True)
 
-    # count frequency and n genomes
-    cog_count = cog_all.sum(axis=1)
-    cog_freq = cog_all[cog_all > 0].count(axis=1)
-    cog_freq = cog_freq.loc[cog_hits.index]
-    cog_count = cog_count.loc[cog_hits.index]
-    # retrieve annotations
-    cogs_summaries = db.get_cog_summaries(cog_hits.index.tolist(), as_df=True, only_cog_desc=True)
+        cog2description = cogs_summaries.description.to_dict()
+        cog_hits["accession"] = [format_cog(cog, as_url=True)
+                                 for cog in cog_hits.index]
+        cog_hits["description"] = [cog2description[cog] if cog in cog2description else '-'
+                                   for cog in cog_hits.index]
 
-    cog2description = cogs_summaries.description.to_dict()
-    cog_hits["accession"] = [format_cog(cog, as_url=True) for cog in cog_hits.index]
-    cog_hits["description"] = [cog2description[cog] if cog in cog2description else '-' for cog in cog_hits.index]
+        # combine into df
+        combined_df = cog_hits.merge(
+            cog_count.rename('count'),
+            left_index=True,
+            right_index=True).merge(
+                cog_freq.rename('freq'),
+                left_index=True,
+                right_index=True).sort_values(["count"], ascending=False)
 
-    # combine into df
-    combined_df = cog_hits.merge(cog_count.rename('count'),
-                                 left_index=True,
-                                 right_index=True).merge(cog_freq.rename('freq'),
-                                                         left_index=True,
-                                                         right_index=True).sort_values(["count"], ascending=False)
+        cols = combined_df.columns.to_list()
+        ordered_cols = cols[self.n_selected:] + cols[:self.n_selected]
+        return combined_df[ordered_cols].values
 
-    # reorder columns
-    combined_df = combined_df[["accession", "description", "count", "freq"] + all_targets]
-
-    ctx = {
-        "envoi_comp": True,
-        "taxon_list": all_targets,
-        "combined_df": combined_df.reset_index(drop=True),
-        "taxon_id2description": genomes
-    }
-    return render(request, 'chlamdb/cog_comp.html', my_locals(ctx))
+    @property
+    def first_coloured_row(self):
+        return 4
 
 
-def orthogroup_comparison(request):
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
-    page_title = page2title[f"orthogroup_comparison"]
+class OrthogroupComparisonView(TabularComparisonViewBase):
 
-    comp_metabo_form = make_metabo_from(db)
-    if request.method != 'POST':
-        form = comp_metabo_form(request.POST)
-        return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
+    view_type = "orthology"
+    base_info_headers = ["Orthogroup", "Annotaion"]
 
-    form = comp_metabo_form(request.POST)
-    if not form.is_valid():
-        return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
+    table_help = """
+    The ouput table contains the number of homologs in the shared orthogroups
+    of the selected genomes. Interesting for comparing the size of orthogroups
+    within genomes.
+    <br> Homolog counts can be reordrered by clicking on column headers.<br>
+    <br>Click on Orthologous group to get all the homologs identified in the
+    database and the phylogenetic profile.
+    """
 
-    try:
-        all_targets = form.get_choices()
-    except Exception:
-        # TODO: add error message
-        return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
+    compared_obj_name = "orthogroups"
 
-    genomes = db.get_genomes_description().description.to_dict()
-    og_count = db.get_og_count(all_targets)
-    og_count.columns = [genomes[int(col)] for col in og_count.columns]
-    annotations = db.get_genes_from_og(orthogroups=og_count.index.tolist(),
-                                       taxon_ids=all_targets, terms=["product"])
+    @property
+    def view_name(self):
+        return "orthogroup_comparison"
 
-    products = annotations.groupby("orthogroup")["product"].apply(list)
-    n_orthogroups = len(og_count.index)
+    def get_table_rows(self):
+        og_count = self.db.get_og_count(self.targets)
+        annotations = self.db.get_genes_from_og(
+            orthogroups=og_count.index.tolist(),
+            taxon_ids=self.targets, terms=["product"])
 
-    og_data = []
-    for og, items in og_count.iterrows():
-        piece = [format_orthogroup(og)]
-        piece.append(items.tolist())
-        if og in products.index:
-            piece.append(format_lst_to_html(products.loc[og]))
-        else:
-            piece.append("-")
-        og_data.append(piece)
+        products = annotations.groupby("orthogroup")["product"].apply(list)
 
-    genomes_list = og_count.columns.tolist()
-    envoi_comp = True
-    return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
+        og_data = []
+        for og, items in og_count.iterrows():
+            row = [format_orthogroup(og, to_url=True)]
+            if og in products.index:
+                row.append(format_lst_to_html(products.loc[og]))
+            else:
+                row.append("-")
+            row.extend(items)
+
+            og_data.append(row)
+
+        return og_data
 
 
-def ko_comparison(request):
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
-    page_title = page2title["ko_comparison"]
+class KoComparisonView(TabularComparisonViewBase):
 
-    comp_metabo_form = make_metabo_from(db)
+    view_type = "ko"
 
-    if request.method != "POST":
-        form = comp_metabo_form()
-        return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
+    table_help = """
+    The ouput table contains the number of homologs in the shared Kegg
+    Orthologs of the selected genomes and the total number of homologs
+    of each Kegg Orthologs identified in the whole collection. Interesting
+    for comparing the size of Kegg Orthologs within genomes.
+    <br> Homolog counts can be reordrered by clicking on column headers.<br>
+    <br>Click on the Ko entry and list the Ko modules and pathways of which it
+    is part.
+    """
 
-    form = comp_metabo_form(request.POST)
-    if not form.is_valid():
-        return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
+    base_info_headers = ["KO", "Annot", "tot"]
+    compared_obj_name = "KO"
 
-    include = form.get_choices()
-    mat_include = db.get_ko_count(include).unstack(level=0, fill_value=0)
-    mat_include.columns = [col for col in mat_include["count"].columns.values]
+    def get_table_rows(self):
+        hits = self.db.get_ko_count(self.targets).unstack(level=0, fill_value=0)
+        hits.columns = [col for col in hits["count"].columns.values]
 
-    ko2annot = db.get_ko_desc(mat_include.index.tolist())
-    df_ttl = db.get_ko_count(mat_include.index.tolist(), search_on="ko_id")
-    ko2total_count = df_ttl.groupby("KO").sum()["count"].to_dict()
-    ko2counts = mat_include.to_dict()
-    ko2counts = {}
-    ko2_print = {}
-    for key, values in mat_include.iterrows():
-        ko2counts[key] = values.values.tolist()
-        ko2_print[key] = format_ko(key)
+        ko2annot = self.db.get_ko_desc(hits.index.tolist())
+        df_ttl = self.db.get_ko_count(hits.index.tolist(), search_on="ko_id")
+        ko2total_count = df_ttl.groupby("KO").sum()["count"].to_dict()
+        table_rows = []
+        for key, values in hits.iterrows():
+            row = [format_ko(key, as_url=True), ko2annot[key], ko2total_count[key]]
+            row.extend(values.values)
+            table_rows.append(row)
+        return table_rows
 
-    hsh_gen_desc = db.get_genomes_description().description.to_dict()
-    taxon_list = [hsh_gen_desc[int(col)] for col in mat_include.columns.values]
-    n_ko = len(mat_include.index.tolist())
-    envoi_comp = True
-    return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
+
+class AmrComparisonView(TabularComparisonViewBase):
+
+    view_type = "amr"
+
+    table_help = """
+    The ouput table contains the number of times a given AMR gene appears
+    in the selected genomes, color coded according to the quality
+    (coverage*identity) of the best hit for that genome.
+
+    <br> Note that genes are split into "core" and "plus" scopes, where
+    "core" proteins are expected to have an effect on resistance while
+    "plus" proteins are included with a less stringent criteria.<br>
+    <br> Counts can be reordrered by clicking on column headers.<br>
+    """
+
+    base_info_headers = ["Gene", "scope", "Class", "Subclass", "Annotation"]
+    compared_obj_name = "AMR"
+
+    def get_table_rows(self):
+        hits = self.db.get_amr_hits_from_taxonids(self.targets)
+
+        table_rows = []
+        hits["quality"] = hits["coverage"] * hits["identity"] / 10000
+        for gene, data in hits.groupby("gene"):
+            row = [gene,
+                   data.iloc[0]["scope"],
+                   safe_replace(data.iloc[0]["class"], "/", " / "),
+                   safe_replace(data.iloc[0]["subclass"], "/", " / "),
+                   data.iloc[0]["seq_name"]]
+            taxonids = data["bioentry.taxon_id"]
+            values = [len(taxonids[taxonids == target_id])
+                      for target_id in self.targets]
+            colours = [data[taxonids == target_id]["quality"].max() if value
+                       else 0 for value, target_id in zip(values, self.targets)]
+            row.extend(values)
+            row.extend(colours)
+            table_rows.append(row)
+        return table_rows
+
+    @property
+    def hist_colour_index_shift(self):
+        return len(self.targets)
 
 
 def faq(request):

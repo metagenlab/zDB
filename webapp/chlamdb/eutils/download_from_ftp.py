@@ -3,13 +3,13 @@
 
 # source ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
 
+import ftplib
+import os
 # import tarfile
 # import re
 # from ftplib import FTP
 # import operator
 import sys
-import ftplib
-import os
 
 
 def download_one_file(ftp, path, destination, file_name):
@@ -22,8 +22,8 @@ def download_one_file(ftp, path, destination, file_name):
         print("error: could not change to " + path)
         sys.exit("ending session")
 
-    ftp.retrbinary("RETR " + file_name,
-                   open(os.path.join(destination, file_name), "wb").write)
+    with open(os.path.join(destination, file_name), "wb") as out_file:
+        ftp.retrbinary("RETR " + file_name, out_file.write)
     print(file_name + " downloaded")
 
 
@@ -73,8 +73,9 @@ def download_whole_directory(ftp, path,
                 # print "downloading", file
                 os.chdir(destination)
                 try:
-                    ftp.retrbinary("RETR " + file, open(file, "wb").write)
-                    # print file + " downloaded"
+                    with open(file, "wb") as out_file:
+                        ftp.retrbinary("RETR " + file, out_file.write)
+                        # print file + " downloaded"
                 except ftplib.error_perm:
                     print(ftp.nlst())
                     print(ftp.pwd())
@@ -83,8 +84,9 @@ def download_whole_directory(ftp, path,
             # print "downloading", file
             os.chdir(destination)
             try:
-                ftp.retrbinary("RETR " + file, open(file, "wb").write)
-                # print file + " downloaded"
+                with open(file, "wb") as out_file:
+                    ftp.retrbinary("RETR " + file, out_file.write)
+                    # print file + " downloaded"
             except ftplib.error_perm:
                 print(ftp.nlst())
                 print(ftp.pwd())

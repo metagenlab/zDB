@@ -2425,8 +2425,7 @@ class DB:
         self.server.adaptor.execute(sql)
         self.load_data_into_table("amr_hits", data)
 
-
-    def get_amr_hits(self, ids):
+    def get_amr_hits_from_seqids(self, ids):
         """
         For now we limit that search to AMR type
         """
@@ -2446,6 +2445,25 @@ class DB:
         df = DB.to_pandas_frame(results, columns)
         return df
 
+    def get_amr_hits_from_taxonids(self, ids):
+        """
+        For now we limit that search to AMR type
+        """
+
+        columns = ("bioentry.taxon_id", "type", "class", "subclass", "gene",
+                   "seq_name", "scope", "coverage", "identity")
+
+        query = (
+            f"SELECT {', '.join(columns)} "
+            "FROM amr_hits "
+            "INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = amr_hits.hsh "
+            "INNER JOIN seqfeature ON hsh.seqid = seqfeature.seqfeature_id "
+            "INNER JOIN bioentry ON seqfeature.bioentry_id = bioentry.bioentry_id "
+            f"WHERE bioentry.taxon_id IN ({', '.join(str(el) for el in ids)});"
+        )
+
+        results = self.server.adaptor.execute_and_fetchall(query)
+        return DB.to_pandas_frame(results, columns)
     
     def gen_placeholder_string(self, args):
         return ",".join(self.placeholder for _ in args)

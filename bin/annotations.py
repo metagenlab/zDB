@@ -1,42 +1,15 @@
-from Bio import Entrez, SeqIO
-from Bio.SeqUtils import CheckSum
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord
-from Bio.SeqFeature import SeqFeature, FeatureLocation, ExactPosition
-from Bio import AlignIO
-from Bio.Align import MultipleSeqAlignment
-
-# import setup_chlamdb
+import os
+from collections import defaultdict, namedtuple
 
 import pandas as pd
-import itertools
-import sys
-import re
-import os
-
-from collections import defaultdict
-from collections import namedtuple
+from Bio import AlignIO, SeqIO
+from Bio.Align import MultipleSeqAlignment
+from Bio.SeqUtils import CheckSum
 
 
 def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
-
-
-def count_missing_locus_tags(gbk_record):
-    count_CDS = 0
-    count_no_locus = 0
-    for feature in gbk_record.features:
-        if feature.type == 'CDS':
-            count_CDS += 1
-            if "locus_tag" not in feature.qualifiers:
-                count_no_locus += 1
-    return count_no_locus, count_CDS
-
-
-def is_annotated(gbk_record):
-    return not (len(gbk_record.features) == 1
-                and gbk_record.features[0].type == 'source')
 
 
 def orthogroups_to_fasta(genomes_list):
@@ -56,8 +29,8 @@ def orthogroups_to_fasta(genomes_list):
             if len(groups) > 1:
                 new_fasta = [sequence_data[i] for i in groups]
                 out_path = "%s.faa" % group_name
-                out_handle = open(out_path, "w")
-                SeqIO.write(new_fasta, out_handle, "fasta")
+                with open(out_path, "w") as out_handle:
+                    SeqIO.write(new_fasta, out_handle, "fasta")
 
 
 def gen_new_locus_tag(hsh_prev_values):
@@ -306,6 +279,7 @@ def convert_gbk_to_fasta(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=Fal
 
                 edited_records.write(">%s %s\n%s\n" % (locus_tag,
                                                        record.description, data))
+    edited_records.close()
 
 
 def convert_gbk_to_fna(gbf_file, fna_contigs):
@@ -316,6 +290,7 @@ def convert_gbk_to_fna(gbf_file, fna_contigs):
     for record in records:
         edited_records.write(">%s %s\n%s\n" %
                              (record.name, record.description, record.seq))
+    edited_records.close()
 
 
 # all faa files are merged into fasta_file
@@ -369,6 +344,8 @@ def get_nr_sequences(fasta_file, genomes_list):
                 updated_records.append(record)
 
     SeqIO.write(updated_records, nr_fasta, "fasta")
+    nr_fasta.close()
+    nr_mapping.close()
 
 
 # This function parses the result of orthofinder/orthoMCL,

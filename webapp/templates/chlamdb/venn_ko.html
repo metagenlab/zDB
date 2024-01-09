@@ -17,7 +17,7 @@
    {% include "chlamdb/header.html" %}
 </head>
 
-
+<body>
   <div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
@@ -30,7 +30,7 @@
                   {% include "chlamdb/extract_nav_tabs_template.html" with type="ko" active_tab="venn" %}
 
                   <br>
-                  <p class="page-title"><b>Visual representation of unique and shared KEGG orthologs among selected genomes </b><a href="/docs/index.html" id="show-option" title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+                  <p class="page-title"><b>Visual representation of unique and shared KEGG orthologs among selected genomes </b><a href="/docs/index.html" id="show-option" title="Venn diagramm with a maximum of 6 genomes"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
 
 
 				  <form action="{% url "venn_ko" %}" method="post">
@@ -39,10 +39,10 @@
 					  <input type="submit" name="venn" value="Compare KO" id="venn_button" />
 
 				  </form>
+            {% endif %}
 
+			        </div>
 
-			  </div>
-              {% endif %}
 
                {% if envoi_venn %}
                <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em;">
@@ -58,10 +58,9 @@
               </div>
 
                   {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=ko2description %}
+              </div>
               {% endif %}
 
-
-              </div>
           </div>
         </div>
       </div>

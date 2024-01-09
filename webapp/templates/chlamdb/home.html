@@ -39,14 +39,14 @@
                             <div class="row">
                                   <div class="col-lg-3 col-md-12 col-sm-12" >
                                     <div class="serviceBox_2"  >
-                                        <h3 class="title">The database contains:</a></h3>
+                                        <h3 class="title">The database contains:</h3>
                                         <ul  style="list-style-type:none;">
                                                 {% if number_of_files %}
-                                                <br><li class="summary_data" ><a href="{% url 'genomes' %}" ><b>{{number_of_files}}  </b></a>genomes</h3></li>
+                                                <br><li class="summary_data" ><a href="{% url 'genomes' %}" ><b>{{number_of_files}}  </b></a>genomes</li>
                                                 {% endif %}
                                                 <br>
                                                 {% if number_ort %}
-                                                <br><li class="summary_data"><a href="{% url 'index_comp' 'orthology' %}" ><b>{{number_ort}}  </b></a>orthogroups</h3></li>
+                                                <br><li class="summary_data"><a href="{% url 'index_comp' 'orthology' %}" ><b>{{number_ort}}  </b></a>orthogroups</li>
                                                 {% endif %}
                                                 <br>   
                                         </ul>  
@@ -82,7 +82,8 @@
                                           <div class="service-icon_2">
                                               <span><i class="fa fa-grip-lines"></i></span>
                                           </div>
-                                          <h3 class="title" >Homology search</a></h3> 
+                                          <h3 class="title" >Homology search
+                                          </h3>
                                           <p class="description"> Blast an input sequence against the genomes of the database. You can select among blastn, blastp, or the six-frame translation-based approaches, blastx and tblastn. </p>
                                           <br> 
                                           <div class= "col-md-3 col-sm-6"><button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'blast' %}">  <span class="link"></span> Blast </a></button></div>
@@ -130,7 +131,7 @@
                                     <div class="service-icon_2">
                                         <span><i class="fa fa-circle-notch"></i></span>
                                     </div>
-                                    <h3 class="title">Genome alignments</a></h3>
+                                    <h3 class="title">Genome alignments</h3>
                                     <p class="description"> Generate a clickable version of circos plot indicating the presence/absence of homologous proteins in one or multiple genomes, the GC content and navigate to the description of the locus tags of interest. </p>
                                     <br> 
                                     <p class="description"> Align target genomic regions of two or more genomes and plot them. </p>
@@ -188,7 +189,7 @@
                                             {% endif %}
                                             <dd> - <a href="https://www.uniprot.org/" target="_blank">SwissProt</a> (manually annotated proteins)</dd>
                                           
-                                        <li> Precomputed phylogenetic reconstructions of orthologous groups</dd>
+                                        <li> Precomputed phylogenetic reconstructions of orthologous groups</li>
                                         {% if optional2status|keyvalue:"KEGG" %}
                                         <li> Kegg maps visualization</li>
                                         {% endif %}
@@ -219,9 +220,6 @@
                                   </div>  
                                 </div>    
                                 {% endif %}
-
-
-                                </ul>
                               
                               </div>
                             </div>
@@ -237,8 +235,8 @@
                         <div id="container_boxes">
                             <div id="label">  Citation  </div>
                             <div class="panel-body">
-                              <a href="https://academic.oup.com/nar/advance-article-abstract/doi/10.1093/nar/gkz924/5609527" target="_blank" style="font-size: 1.2em; color:#555;"> <strong> ChlamDB: a comparative genomics database of the phylum <i>Chlamydiae</i> and other members of the <i>Planctomycetes-Verrucomicrobiae-Chlamydiae</i> superphylum </strong></br>
-                              Trestan Pillonel, Florian Tagini, Claire Bertelli, Gilbert Greub </br>
+                              <a href="https://academic.oup.com/nar/advance-article-abstract/doi/10.1093/nar/gkz924/5609527" target="_blank" style="font-size: 1.2em; color:#555;"> <strong> ChlamDB: a comparative genomics database of the phylum <i>Chlamydiae</i> and other members of the <i>Planctomycetes-Verrucomicrobiae-Chlamydiae</i> superphylum </strong><br>
+                              Trestan Pillonel, Florian Tagini, Claire Bertelli, Gilbert Greub <br>
                               Nucleic Acids Research, 2019, https://doi.org/10.1093/nar/gkz924 </a>
                            </div>
                           </div>

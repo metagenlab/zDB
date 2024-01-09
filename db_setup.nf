@@ -1,12 +1,9 @@
 
 
 process download_cog_cdd {
-    when:
-        params.cog
-        
+
     output:
-        file "COG*.smp" into to_make_cdd_profiles
-        file "Cog.pn" into to_make_cdd_profiles_pn
+        tuple path("COG*.smp"), path("Cog.pn")
 
     script:
     """
@@ -23,13 +20,12 @@ process setup_cog_cdd {
     publishDir "$params.cog_db", mode: "move"
 
     input:
-        file smps from to_make_cdd_profiles
-        file pn from to_make_cdd_profiles_pn
+        tuple path(smps), path(pn)
 
     output:
         file "cog_db*"
         file "cdd_to_cog"
-    
+
     script:
     """
     makeprofiledb -title COG -in Cog.pn -out cog_db -threshold 9.82 \
@@ -39,28 +35,16 @@ process setup_cog_cdd {
     """
 }
 
-
-Channel.fromPath("${params.refseq_db}/refseq_nr.fasta"). set { nr_refseq  }
-
-
-/**
- * NOTE: this assumes that the user already downloaded the refseq 
- * database (nr_refseq) and concatenated all the files into a single
- * fasta file called "refseq_nr.fasta".
- */
 process diamond_refseq {
     publishDir "$params.refseq_db", mode: "move"
     container "$params.diamond_container"
 
-    when:
-        params.diamond_refseq
-
     input:
-        file nr_refseq
+        path nr_refseq
 
     output:
-        file "refseq_nr.dmnd"
-        
+        path "refseq_nr.dmnd"
+
     script:
     """
         diamond makedb --in $nr_refseq -d refseq_nr
@@ -70,12 +54,9 @@ process diamond_refseq {
 
 process download_pfam_db {
     publishDir "$params.pfam_db"
-    when:
-        params.pfam
-    
+
     output:
-        file "Pfam-A.hmm" into pfam_hmm
-        file "Pfam-A.hmm.dat" into pfam_defs
+        tuple path("Pfam-A.hmm"), path("Pfam-A.hmm.dat")
 
     script:
     """
@@ -94,14 +75,13 @@ process prepare_hmm {
     publishDir "$params.pfam_db", mode: "copy"
 
     input:
-        file pfam_hmm
-        file pfam_defs
+        tuple path(pfam_hmm), path(pfam_defs)
 
     output:
-        file "${pfam_hmm}.h3*"
-        file "Pfam-A.hmm.dat"
-        file "Pfam-A.hmm"
-    
+        path "${pfam_hmm}.h3*"
+        path "Pfam-A.hmm.dat"
+        path "Pfam-A.hmm"
+
     script:
     """
         hmmpress $pfam_hmm
@@ -112,13 +92,10 @@ process prepare_hmm {
 process download_ko_profiles {
     publishDir "$params.ko_db", mode: "move"
 
-    when:
-        params.ko
-
     output:
-        file "ko_list"
-        file "profiles/*.hmm"
-        file "profiles/prokaryote.hal"
+        path "ko_list"
+        path "profiles/*.hmm"
+        path "profiles/prokaryote.hal"
 
     script:
     version="2022-03-01"
@@ -137,16 +114,13 @@ process download_swissprot {
     // not optimal... might be a bit slow to move
     publishDir "$params.swissprot_db", mode: "copy"
 
-    when:
-        params.blast_swissprot
-
     output:
-        file "swissprot.fasta" into swissprot_fasta
+        path "swissprot.fasta"
 
     script:
     """
     wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
-    gunzip < uniprot_sprot.fasta.gz > swissprot.fasta 
+    gunzip < uniprot_sprot.fasta.gz > swissprot.fasta
     rm uniprot_sprot.fasta.gz
     """
 }
@@ -159,7 +133,7 @@ process prepare_swissprot {
     publishDir "$params.swissprot_db", mode: "move"
 
     input:
-        file swissprot_fasta
+        path swissprot_fasta
 
     output:
         file "*"
@@ -169,4 +143,46 @@ process prepare_swissprot {
     makeblastdb -dbtype prot -in swissprot.fasta
     rm $swissprot_fasta
     """
+}
+
+workflow setup_cogg_db {
+    download_cog_cdd() | setup_cog_cdd
+}
+
+/**
+ * NOTE: this assumes that the user already downloaded the refseq
+ * database (nr_refseq) and concatenated all the files into a single
+ * fasta file called "refseq_nr.fasta".
+ */
+workflow setup_refseq_db {
+    Channel.fromPath("${params.refseq_db}/refseq_nr.fasta") | diamond_refseq
+}
+
+workflow setup_pfam_db {
+    download_pfam_db() | prepare_hmm
+}
+
+workflow setup_ko_db {
+    download_ko_profiles()
+}
+
+workflow setup_swissprot_db {
+    download_swissprot() | prepare_swissprot
+}
+
+workflow {
+    if( params.cog )
+        setup_cogg_db()
+
+    if ( params.diamond_refseq )
+        setup_refseq_db()
+
+    if ( params.pfam )
+        setup_pfam_db()
+
+    if ( params.ko )
+        setup_ko_db()
+
+    if ( params.blast_swissprot )
+        setup_swissprot_db()
 }
