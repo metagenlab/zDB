@@ -31,7 +31,7 @@ from django.shortcuts import render
 from django.views import View
 from ete3 import SeqMotifFace, StackedBarFace, TextFace, Tree, TreeStyle
 
-import chlamdb.circosjs
+import chlamdb.circosjs as circosjs
 
 from lib import search_bar as sb
 from lib.db_utils import (DB, NoPhylogenyException)
@@ -3457,7 +3457,8 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
 
     # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
     df_feature_location = db.get_features_location(
-        reference_taxon, ["CDS", "rRNA", "tRNA"]).set_index(["seqfeature_id"])
+        reference_taxon, search_on="taxon_id",
+        seq_term_names=["CDS", "rRNA", "tRNA"]).set_index(["seqfeature_id"])
 
     # retrieve n_orthologs of list of seqids
 
