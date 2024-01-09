@@ -86,6 +86,11 @@
                 <a   href="{% url 'index_comp' 'ko' %}">Kegg Orthologs</a>
               </li>
             {% endif %}
+            {% if optional2status|keyvalue:"AMR" == 1 %}
+              <li class="analyses_intra" >
+                <a   href="{% url 'index_comp' 'amr' %}">Antimicrobial Resistance</a>
+              </li>
+            {% endif %}
 
             <li class="sidebar-dropdown" >
               <p> Genome alignments</p>
