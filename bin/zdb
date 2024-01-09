@@ -187,7 +187,6 @@ elif [[ "$1" == "webapp" ]]; then
 	dir=$(pwd)
 
 	zdb_folder="${NEXTFLOW_DIR}/webapp/"
-	metagenlab_folder=""
 	debug=false
 	use_dev_server=false
 	singularity_dir="$(pwd)/singularity"
@@ -217,12 +216,6 @@ elif [[ "$1" == "webapp" ]]; then
 				;;
 			--dev_server)
 				use_dev_server=true
-				shift
-				;;
-			--metagenlab_folder=*)
-				# for development purposes
-
-				metagenlab_folder=$(realpath "${i#*=}")
 				shift
 				;;
 			--conda)
@@ -293,11 +286,6 @@ elif [[ "$1" == "webapp" ]]; then
 
 	if [ ! -d "${dir}/zdb/assets" ]; then
 		mkdir ${dir}/zdb/assets
-	fi
-
-	if [ ! -z "${metagenlab_folder}" ]; then
-		bind_path+=("${metagenlab_folder}:${metagenlab_folder}")
-		export PYTHONPATH="$metagenlab_folder"
 	fi
 
 	if [ ! -z "${allowed_host}" ]; then
