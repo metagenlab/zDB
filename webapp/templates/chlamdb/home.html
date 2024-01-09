@@ -108,7 +108,7 @@
                                       <span><i class="fa fa-asterisk"></i></span>
                                     </div>
                                     <h3 class="title">Annotations</h3>
-                                    <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}{% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}{% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.   </p>
+                                    <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}{% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}{% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %}{% if optional2status|keyvalue:"AMR" == 1 %}, Antimicrobial Resistance{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.   </p>
                                     <br>  
                                     <div class= "col-md-4 col-sm-7">
                                           {% if optional2status|keyvalue:"COG" == 1 %}
@@ -119,6 +119,9 @@
                                           {% endif %}
                                           {% if optional2status|keyvalue:"pfam" == 1 %}
                                           <button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'index_comp' 'pfam' %}">  <span class="link"></span>Pfam domains</a></button>
+                                          {% endif %}
+                                          {% if optional2status|keyvalue:"AMR" == 1 %}
+                                          <button type="button_analyses" class="fill" ><a  class="link_boxes"  href="{% url 'index_comp' 'amr' %}">  <span class="link"></span>Antimicrobial Resistance</a></button>
                                           {% endif %}
                                     </div>
                                   </div>
