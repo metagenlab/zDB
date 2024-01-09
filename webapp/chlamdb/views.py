@@ -30,18 +30,14 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
 from ete3 import SeqMotifFace, StackedBarFace, TextFace, Tree, TreeStyle
-
-import chlamdb.circosjs as circosjs
-
 from lib import search_bar as sb
-from lib.db_utils import (DB, NoPhylogenyException)
+from lib.db_utils import DB, NoPhylogenyException
 from lib.ete_phylo import (Column, EteTree, KOAndCompleteness,
-                                       ModuleCompletenessColumn,
-                                       SimpleColorColumn)
+                           ModuleCompletenessColumn, SimpleColorColumn)
 from lib.KO_module import ModuleParser
-
 from reportlab.lib import colors
 
+import chlamdb.circosjs as circosjs
 from chlamdb.forms import (make_blast_form, make_circos_form,
                            make_extract_form, make_metabo_from,
                            make_module_overview_form,
@@ -471,17 +467,42 @@ def format_pfam(pfam_id, base=None, to_url=False):
 
 class ComparisonIndexView(View):
 
-    def get(self, request, comp_type):
-        page_title = page2title[f"index_comp_{comp_type}"]
-        context = my_locals({"page_title": page_title})
-        if comp_type == 'Pfam':
-            return render(request, 'chlamdb/index_pfam.html', context)
-        if comp_type == 'COG':
-            return render(request, 'chlamdb/index_cog.html', context)
-        if comp_type == 'ko':
-            return render(request, 'chlamdb/index_ko.html', context)
-        if comp_type == 'orthology':
-            return render(request, 'chlamdb/index_orthology.html', context)
+    type2objname = {
+        "cog": "COGs",
+        "pfam": "Pfam domains",
+        "ko": "Kegg Orthologs",
+        "orthology": "Orthologous groups",
+    }
+
+    @property
+    def boxes(self):
+        boxes = ["entry-list", "extraction", "venn",
+                 "tabular-comparison", "heatmap", "accumulation-rarefaction"]
+        if self.comp_type == "orthology":
+            boxes.remove("entry-list")
+        elif self.comp_type == "ko":
+            boxes.append("barcharts")
+        elif self.comp_type == "cog":
+            boxes.extend(["barcharts", "heatmap-count", "heatmap-fraction"])
+        return boxes
+
+    def dispatch(self, request, comp_type, *args, **kwargs):
+        self.comp_type = comp_type
+        return super(ComparisonIndexView, self).dispatch(request, *args, **kwargs)
+
+    @property
+    def compared_obj_name(self):
+        return self.type2objname[self.comp_type]
+
+    def get(self, request):
+        page_title = page2title[f"index_comp_{self.comp_type}"]
+        context = my_locals({
+            "page_title": page_title,
+            "compared_obj_name": self.compared_obj_name,
+            "comp_type": self.comp_type,
+            "boxes": self.boxes,
+            })
+        return render(request, 'chlamdb/index_comp.html', context)
 
 
 def entry_list_ko(request,):
