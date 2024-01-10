@@ -91,7 +91,9 @@ page2title = {
     'entry_list_cog': 'Comparisons: Clusters of Orthologous groups (COGs)',
     'ko_comparison': 'Comparisons: Kegg Orthologs (KO)',
     'pfam_comparison': 'Comparisons: PFAM domains',
-    'amr_comparison': 'Comparisons: Antimicrobial Resistance',
+    'amr_gene_comparison': 'Comparisons: Antimicrobial Resistance',
+    'amr_class_comparison': 'Comparisons: Antimicrobial Resistance',
+    'amr_subclass_comparison': 'Comparisons: Antimicrobial Resistance',
     'module_barchart': 'Comparisons: Kegg Orthologs (KO)',
     'blast': 'Homology search: Blast',
     'plot_region': 'Genome alignments: Plot region',
@@ -3922,6 +3924,7 @@ class TabularComparisonViewBase(View):
 
     template = 'chlamdb/tabular_comparison.html'
     hist_colour_index_shift = 0
+    tab_name = "comp"
 
     def dispatch(self, request, *args, **kwargs):
         biodb_path = settings.BIODB_DB_PATH
@@ -3946,7 +3949,7 @@ class TabularComparisonViewBase(View):
 
     @property
     def view_name(self):
-        return f"{self.view_type}_comparison"
+        return f"{self.view_type.lower()}_comparison"
 
     @property
     def context(self):
@@ -3956,6 +3959,7 @@ class TabularComparisonViewBase(View):
             "form_help": self.form_help,
             "form": self.form,
             "show_comparison_table": self.show_comparison_table,
+            "tab_name": self.tab_name,
             "view_name": self.view_name,
             "view_type": self.view_type,
             }
@@ -4069,7 +4073,7 @@ def module_comparison(request):
 
 class PfamComparisonView(TabularComparisonViewBase):
 
-    view_type = "pfam"
+    view_type = "Pfam"
     base_info_headers = ["Domain ID", "Description", "nDomain"]
 
     table_help = """
@@ -4100,7 +4104,7 @@ class PfamComparisonView(TabularComparisonViewBase):
 
 class CogComparisonView(TabularComparisonViewBase):
 
-    view_type = "cog"
+    view_type = "COG"
     base_info_headers = ["COG accession", "Description", "# complete DB", "# genomes"]
 
     table_help = """
@@ -4228,35 +4232,35 @@ class KoComparisonView(TabularComparisonViewBase):
         return table_rows
 
 
-class AmrComparisonView(TabularComparisonViewBase):
+class AmrClassComparisonView(TabularComparisonViewBase):
 
     view_type = "amr"
+    compared_obj_name = "AMR"
 
-    table_help = """
-    The ouput table contains the number of times a given AMR gene appears
+    base_info_headers = ["Class"]
+    group_by = "class"
+
+    _table_help = """
+    The ouput table contains the number of times a given AMR {} appears
     in the selected genomes, color coded according to the quality
-    (coverage*identity) of the best hit for that genome.
-
-    <br> Note that genes are split into "core" and "plus" scopes, where
-    "core" proteins are expected to have an effect on resistance while
-    "plus" proteins are included with a less stringent criteria.<br>
+    (coverage*identity) of the best hit for that genome.<br>
     <br> Counts can be reordrered by clicking on column headers.<br>
     """
 
-    base_info_headers = ["Gene", "scope", "Class", "Subclass", "Annotation"]
-    compared_obj_name = "AMR"
+    @property
+    def table_help(self):
+        return self._table_help.format(self.group_by)
+
+    def get_row_data(self, groupid, data):
+        return [groupid]
 
     def get_table_rows(self):
         hits = self.db.get_amr_hits_from_taxonids(self.targets)
 
         table_rows = []
         hits["quality"] = hits["coverage"] * hits["identity"] / 10000
-        for gene, data in hits.groupby("gene"):
-            row = [gene,
-                   data.iloc[0]["scope"],
-                   safe_replace(data.iloc[0]["class"], "/", " / "),
-                   safe_replace(data.iloc[0]["subclass"], "/", " / "),
-                   data.iloc[0]["seq_name"]]
+        for groupid, data in hits.groupby(self.group_by):
+            row = self.get_row_data(groupid, data)
             taxonids = data["bioentry.taxon_id"]
             values = [len(taxonids[taxonids == target_id])
                       for target_id in self.targets]
@@ -4270,6 +4274,46 @@ class AmrComparisonView(TabularComparisonViewBase):
     @property
     def hist_colour_index_shift(self):
         return len(self.targets)
+
+    @property
+    def view_name(self):
+        return f"{self.view_type}_{self.group_by}_comparison"
+
+    @property
+    def tab_name(self):
+        return f"{self.group_by}_comp"
+
+
+class AmrGeneComparisonView(AmrClassComparisonView):
+
+    base_info_headers = ["Gene", "scope", "Class", "Subclass", "Annotation"]
+    group_by = "gene"
+
+    _scope_hint = """
+    <br> Note that genes are split into "core" and "plus" scopes, where
+    "core" proteins are expected to have an effect on resistance while
+    "plus" proteins are included with a less stringent criteria.<br>
+    """
+
+    @property
+    def table_help(self):
+        return self._table_help.format(self.group_by) + self._scope_hint
+
+    def get_row_data(self, groupid, data):
+        return [format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
+                data.iloc[0]["scope"],
+                safe_replace(data.iloc[0]["class"], "/", " / "),
+                safe_replace(data.iloc[0]["subclass"], "/", " / "),
+                data.iloc[0]["seq_name"]]
+
+
+class AmrSubclassComparisonView(AmrClassComparisonView):
+
+    base_info_headers = ["Subclass", "Class"]
+    group_by = "subclass"
+
+    def get_row_data(self, groupid, data):
+        return [groupid, safe_replace(data.iloc[0]["class"], "/", " / ")]
 
 
 def faq(request):

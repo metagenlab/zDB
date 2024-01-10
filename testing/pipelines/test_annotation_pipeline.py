@@ -159,11 +159,25 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertEqual(19400, self.query("swissprot_defs").count())
         self.assertEqual(29400, self.query("swissprot_hits").count())
 
+    def test_amr_hits(self):
+        self.nf_params["amr"] = "true"
+        execution = self.execute_pipeline()
+        self.assert_success(execution)
+        self.load_db(execution)
+
+        # Let's check that tables were correctly created and filled
+        self.assertItemsEqual(
+            base_tables + ['amr_hits'],
+            self.metadata_obj.tables.keys())
+        self.assert_db_base_table_row_counts()
+        self.assertEqual(2, self.query("amr_hits").count())
+
     def test_full_pipeline(self):
         self.nf_params["pfam"] = "true"
         self.nf_params["ko"] = "true"
         self.nf_params["blast_swissprot"] = "true"
         self.nf_params["cog"] = "true"
+        self.nf_params["amr"] = "true"
         # set custom run name for use in webapp testing
         self.nf_params["name"] = "_webapp_testing"
 
@@ -179,7 +193,8 @@ class TestAnnotationPipeline(BasePipelineTestCase):
             'cog_hits',
             'swissprot_hits',
             'swissprot_defs',
-            'module_completeness'
+            'module_completeness',
+            'amr_hits',
         ]
         self.assertItemsEqual(base_tables + added_tables,
                               self.metadata_obj.tables.keys())
@@ -191,3 +206,4 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertEqual(237, self.query("pfam_table").count())
         self.assertEqual(19400, self.query("swissprot_defs").count())
         self.assertEqual(29400, self.query("swissprot_hits").count())
+        self.assertEqual(2, self.query("amr_hits").count())
