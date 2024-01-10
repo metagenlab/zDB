@@ -1,15 +1,8 @@
-import os
-import sys
-
-from BioSQL import BioSeqDatabase
-from Bio.SeqRecord import SeqRecord #added
-
-from Bio.Seq import Seq
-from Bio.SeqUtils import GC
-
 import sqlite3
-import pandas as pd
 
+import pandas as pd
+from Bio.Seq import Seq
+from BioSQL import BioSeqDatabase
 
 # This file defines a class DB, that encapsulates all the SQL requests
 # necessary to create the zDB database.

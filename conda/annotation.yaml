@@ -7,7 +7,7 @@ dependencies:
     - python=3.9
     - whoosh
     - sqlite
-    - biopython
+    - biopython>=1.8
     - numpy
     - pandas
     - metagenlab_libs
