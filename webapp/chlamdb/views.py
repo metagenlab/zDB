@@ -1777,28 +1777,31 @@ def locusx_genomic_region(db, seqid, window):
         df_seqids = df_seqids[df_seqids.end_pos>window_start]
     elif window_start<0:
         # circular contig
-
         diff = contig_size+window_start
-        df_seqids_circled = df_seqids[(df_seqids.end_pos >= diff)]
-        df_seqids_same = df_seqids[(df_seqids.start_pos <= window_stop)]
-        df_seqids_same.start_pos += -window_start
-        df_seqids_same.end_pos += -window_start
-        df_seqids_circled.start_pos -= diff
-        df_seqids_circled.end_pos -= diff
-        df_seqids = pd.concat([df_seqids_circled, df_seqids_same])
+        mask_circled = (df_seqids.end_pos >= diff)
+        mask_same = (df_seqids.start_pos <= window_stop)
+
+        df_seqids.loc[mask_same, "start_pos"] -= window_start
+        df_seqids.loc[mask_same, "end_pos"] -= window_start
+        df_seqids.loc[mask_circled, "start_pos"] -= diff
+        df_seqids.loc[mask_circled, "end_pos"] -= diff
+        df_seqids = pd.concat([df_seqids.loc[mask_same],
+            df_seqids.loc[mask_circled]])
         window_stop -= window_start
         window_start = 0
     elif window_stop > contig_size:
         # circular contig
-
         diff = window_stop-contig_size
-        df_seqids_same = df_seqids[df_seqids.end_pos >= window_start]
-        df_seqids_circled = df_seqids[df_seqids.start_pos <= diff]
-        df_seqids_same.start_pos -= diff
-        df_seqids_same.end_pos -= diff
-        df_seqids_circled.start_pos += (contig_size-diff)
-        df_seqids_circled.end_pos += (contig_size-diff)
-        df_seqids = pd.concat([df_seqids_circled, df_seqids_same])
+
+        mask_same = (df_seqids.end_pos >= window_start)
+        mask_circled = (df_seqids.start_pos <= diff)
+
+        df_seqids.loc[mask_same, "start_pos"] -= diff
+        df_seqids.loc[mask_same, "end_pos"] -= diff
+        df_seqids.loc[mask_circled, "start_pos"] += (contig_size-diff)
+        df_seqids.loc[mask_circled, "end_pos"] += (contig_size-diff)
+        df_seqids = pd.concat([df_seqids.loc[mask_same],
+            df_seqids.loc[mask_circled]])
         window_start -= diff
         window_stop = contig_size
     else:
