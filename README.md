@@ -288,12 +288,6 @@ You can then run the tests:
 python webapp/manage.py test --settings=settings.testing_settings testing.webapp
 ```
 
-If you need to run the tests with a local checkout of the [metagenlabl_libs](https://github.com/metagenlab/metagenlab_libs) repository you can use the `pythonpath` option:
-
-```
-python webapp/manage.py test --settings=settings.testing_settings --pythonpath=/path/to/metagenlab_libs testing.webapp
-```
-
 Note that these tests will use the database created by the pipeline test `TestAnnotationPipeline.test_full_pipeline`, which therefore needs to have been executed first.
 
 ### Contributing
