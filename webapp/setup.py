@@ -12,9 +12,9 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
 
-    name='chlamdb',
+    name='zdb',
     version='3.0',
-    description='ChlamDB',
+    description='zDB',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/metagenlab/chlamdb',

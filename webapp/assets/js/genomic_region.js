@@ -10,12 +10,13 @@
 //   	strand: either +1 or -1
 //   	locus_tag
 //   highlight: a list of locus tag to highlight in red
-function createGenomicRegion(div, svg_id, regions, connections, highlight, window_size, ident_range) {
+function createGenomicRegion(div, div_width, svg_id, regions, connections, highlight, window_size, ident_range) {
 	const text_field_size = 40;
 	const margin = { top:5, right: 5, bottom:5, left:5 };
 	const max_arrow_size = 350;
 	const arrow_tube_size = 12;
-	const default_width = 600;
+
+	const default_width = div_width;
 	const base_line_width = 2;
 	const regions_vertical_interval = 20;
 	const arrow_height = 30;
@@ -30,10 +31,10 @@ function createGenomicRegion(div, svg_id, regions, connections, highlight, windo
 	var svg = div
 		.append("svg")
 		.attr("id", svg_id)
-		.attr("width",  default_width+margin.right+margin.left)
+		.attr("width",  default_width)
 		.attr("height", total_height+margin.top+margin.bottom)
 		.append("g")
-		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		.attr("transform", "translate(0," + margin.top + ")");
 
 	var Tooltip = div
 		.append("div")
@@ -96,9 +97,16 @@ function createGenomicRegion(div, svg_id, regions, connections, highlight, windo
 		// whose arrow can be completely drawn, discard the other ones.
 		let start=region.start;
 		let end=region.end;
-		let filtered_features = region.features.filter(function(d) {
+		/* let filtered_features = region.features.filter(function(d) {
 			return (d.start<=end-max_arrow_size)&&(d.end>=start+max_arrow_size);
-		});
+		}); */
+	
+		for (let i=0; i<region.features.length;i++) {
+			if(region.features[i].end-start <= max_arrow_size) {
+				region.features[i].start = start;
+			}
+		}
+		let filtered_features = region.features;
 		let locus_to_position = {};
 
 		svg.append("g")
@@ -236,7 +244,7 @@ function createGenomicRegion(div, svg_id, regions, connections, highlight, windo
 		// border lines
 		svg.append("line")
 			.style("stroke", "black")
-			.style("stroke-width", 2)
+			.style("stroke-width", base_line_width)
 			.attr("x1", x_scale(start))
 			.attr("y1", y_scale(0))
 			.attr("x2", x_scale(start))
@@ -245,7 +253,7 @@ function createGenomicRegion(div, svg_id, regions, connections, highlight, windo
 		// border lines
 		svg.append("line")
 			.style("stroke", "black")
-			.style("stroke-width", 2)
+			.style("stroke-width", base_line_width)
 			.attr("x1", x_scale(end))
 			.attr("y1", y_scale(0))
 			.attr("x2", x_scale(end))
@@ -332,12 +340,12 @@ function createGenomicRegion(div, svg_id, regions, connections, highlight, windo
 		let current_region = regions[i];
 		let region_size = current_region.end-current_region.start;
 		let y_base_pos = region_height*i + i*regions_vertical_interval;
-		let ratio = max_region_size/window_size;
-		let this_region_width = ratio*(region_size/max_region_size)*default_width;
-		let blank_space = default_width-this_region_width;
+		let this_region_width = (region_size/max_region_size)*default_width;
+		this_region_width -= 2*base_line_width;
+		let horiz_padding = default_width-this_region_width;
 		let x_scale = d3.scale.linear().
 			domain([current_region.start, current_region.end]).
-			range([blank_space/2, default_width-(blank_space/2)]);
+			range([horiz_padding/2, this_region_width+(horiz_padding/2)]);
 		let y_scale = d3.scale.linear().
 			domain([0, diagram_vertical_size]).
 			range([y_base_pos+text_field_size, y_base_pos+diagram_vertical_size+text_field_size]);

@@ -2,11 +2,13 @@ import os
 from collections import defaultdict, namedtuple
 
 import pandas as pd
-from Bio import SeqIO, SeqUtils
-from metagenlab_libs import KO_module
-from metagenlab_libs.chlamdb import search_bar
-from zdb.database.database import DB
 
+from Bio import AlignIO, SeqIO, SeqUtils
+
+from db_utils import DB
+
+import KO_module
+import search_bar
 
 # assumes orthofinder named: OG000N
 # returns the N as int
