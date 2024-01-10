@@ -956,8 +956,7 @@ def locusx_genomic_region(db, seqid, window):
         df_seqids.loc[mask_same, "end_pos"] -= window_start
         df_seqids.loc[mask_circled, "start_pos"] -= diff
         df_seqids.loc[mask_circled, "end_pos"] -= diff
-        df_seqids = pd.concat([df_seqids.loc[mask_same],
-            df_seqids.loc[mask_circled]])
+        df_seqids = df_seqids.loc[mask_same | mask_circled]
         window_stop -= window_start
         window_start = 0
     elif window_stop > contig_size:
@@ -971,8 +970,7 @@ def locusx_genomic_region(db, seqid, window):
         df_seqids.loc[mask_same, "end_pos"] -= diff
         df_seqids.loc[mask_circled, "start_pos"] += (contig_size-diff)
         df_seqids.loc[mask_circled, "end_pos"] += (contig_size-diff)
-        df_seqids = pd.concat([df_seqids.loc[mask_same],
-            df_seqids.loc[mask_circled]])
+        df_seqids = df_seqids.loc[mask_same | mask_circled]
         window_start -= diff
         window_stop = contig_size
     else:
