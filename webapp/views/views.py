@@ -957,8 +957,16 @@ def locusx_genomic_region(db, seqid, window):
         df_seqids.loc[mask_circled, "start_pos"] -= diff
         df_seqids.loc[mask_circled, "end_pos"] -= diff
         df_seqids = df_seqids.loc[mask_same | mask_circled]
+
         window_stop -= window_start
         window_start = 0
+        min_val = df_seqids["start_pos"].min()
+        if min_val < 0:
+            df_seqids["start_pos"] -= min_val
+            df_seqids["end_pos"] -= min_val
+            window_start -= min_val
+            window_stop -= min_val
+
     elif window_stop > contig_size:
         # circular contig
         diff = window_stop-contig_size
