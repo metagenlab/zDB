@@ -249,10 +249,13 @@ Please run the webapp in docker containers, setting --allowed_host=0.0.0.0 or 12
 ### Setting up for local development
 
 First you'll need to [install zDB from source](#zdb-installation-from-sources).
-As zDB strongly depends on [metagenlabl_libs](https://github.com/metagenlab/metagenlab_libs), you might also want to have that library from source. For that you can simply clone the repository and then modify the [nextflow.config](https://github.com/metagenlab/zDB/blob/master/nextflow.config#L113) file so that the `PYTHONPATH` includes the path to your `metagenlabl_libs` folder, e.g.:
+You can then edit the different source files. Once you're done, use the zdb commands as you would for a normal use. 
+Of note, if you want to modify the webapp code (the Javascript/python/HTML, etc), you can do so on the fly, while the webapp is running.
+We advise to use the --debug and (the hidden) --dev_server flags when testing changes in the webapp :
 ```
-PYTHONPATH = "$baseDir/bin:/path/to/metagenlab_libs"
+zdb webapp --debug --dev_server
 ```
+The changes you make in the web server code will then reflect directly in the web page, with more log available in the console.
 
 ### Testing
 
