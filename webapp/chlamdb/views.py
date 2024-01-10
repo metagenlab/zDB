@@ -508,98 +508,130 @@ class ComparisonIndexView(View):
         return render(request, 'chlamdb/index_comp.html', context)
 
 
-def entry_list_ko(request,):
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    page_title = page2title["entry_list_ko"]
+class EntryListViewBase(View):
 
-    # retrieve taxid list
-    genomes_data = db.get_genomes_infos()
-    taxids = [str(i) for i in genomes_data.index.to_list()]
+    entry_type = None
+    table_headers = None
+    table_data_accessors = None
 
-    # retrieve entry list
-    ko_all = db.get_ko_hits(taxids,
-                            search_on="taxid",
-                            indexing="taxid")
-    # retrieve annotations
-    ko_desc = db.get_ko_desc(ko_all.index.to_list())
-    ko_mod = db.get_ko_modules(ko_all.index.to_list())
-    ko_path = db.get_ko_pathways(ko_all.index.to_list())
+    def get(self, request):
+        page_title = page2title[f"entry_list_{self.entry_type}"]
+        self.db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+        # retrieve taxid list
+        genomes_data = self.db.get_genomes_infos()
+        self.taxids = [str(i) for i in genomes_data.index.to_list()]
 
-    # count frequency and n genomes
-    combined_df = pd.DataFrame(ko_all.sum(axis=1).rename('count'))
-    ko_freq = ko_all[ko_all > 0].count(axis=1).to_dict()
+        table_data = self.get_table_data()
 
-    combined_df["accession"] = [format_ko(ko) for ko in combined_df.index]
-    combined_df["modules"] = [format_ko_modules(ko_mod, ko) if ko in ko_mod else '-' for ko in combined_df.index]
-    combined_df["description"] = [ko_desc[ko] for ko in combined_df.index]
-    combined_df["pathways"] = [format_ko_path(ko_path, ko) if ko in ko_path else '-' for ko in combined_df.index]
-    combined_df["freq"] = [ko_freq[ko] for ko in combined_df.index]
+        context = my_locals({
+            "page_title": page_title,
+            "entry_type": self.entry_type,
+            "table_headers": self.table_headers,
+            "table_data_accessors": self.table_data_accessors,
+            "table_data": table_data,
+            })
+        return render(request, 'chlamdb/entry_list.html', context)
 
-    combined_df = combined_df.sort_values(["count", "freq"], ascending=False)
-
-    # combine into df
-    return render(request, 'chlamdb/entry_list_ko.html', my_locals(locals()))
+    def get_table_data(self):
+        raise NotImplementedError()
 
 
-def entry_list_cog(request,):
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    page_title = page2title["entry_list_cog"]
-    # retrieve taxid list
-    genomes_data = db.get_genomes_infos()
-    taxids = [str(i) for i in genomes_data.index.to_list()]
+class PfamEntryListView(EntryListViewBase):
 
-    # retrieve entry list
-    cog_all = db.get_cog_hits(taxids,
-                              search_on="taxid",
-                              indexing="taxid")
-    # retrieve annotations
-    cogs_summaries = db.get_cog_summaries(cog_all.index.tolist(), as_df=True, only_cog_desc=True)
+    entry_type = "pfam"
+    table_headers = ["Accession", "Description", "Count", "Frequency (n genomes)"]
+    table_data_accessors = ["accession", "def", "count", "freq"]
 
-    # count frequency and n genomes
-    cog_count = cog_all.sum(axis=1)
-    cog_freq = cog_all[cog_all > 0].count(axis=1)
-    cogs_summaries["accession"] = [format_cog(cog) for cog in cogs_summaries.index]
+    def get_table_data(self):
+        # retrieve entry list
+        pfam_all = self.db.get_pfam_hits(self.taxids,
+                                         search_on="taxid",
+                                         indexing="taxid")
+        # retrieve annotations
+        pfam_annot = self.db.get_pfam_def(pfam_all.index.to_list())
 
-    # combine into df
-    combined_df = cogs_summaries.merge(cog_count.rename('count'),
+        # count frequency and n genomes
+        pfam_count = pfam_all.sum(axis=1)
+        pfam_freq = pfam_all[pfam_all > 0].count(axis=1)
+        pfam_annot["accession"] = [format_pfam(pfam, to_url=True)
+                                   for pfam in pfam_annot.index]
+
+        # combine into df
+        combined_df = pfam_annot.merge(pfam_count.rename('count'),
                                        left_index=True,
-                                       right_index=True).merge(cog_freq.rename('freq'),
-                                                               left_index=True,
-                                                               right_index=True).sort_values(["count"], ascending=False)
+                                       right_index=True)\
+                                .merge(pfam_freq.rename('freq'),
+                                       left_index=True,
+                                       right_index=True)\
+                                .sort_values(["count"],
+                                             ascending=False)
 
-    return render(request, 'chlamdb/entry_list_cog.html', my_locals(locals()))
+        return combined_df
 
 
-def entry_list_pfam(request,):
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    page_title = page2title["entry_list_pfam"]
-    # retrieve taxid list
-    genomes_data = db.get_genomes_infos()
-    taxids = [str(i) for i in genomes_data.index.to_list()]
+class KoEntryListView(EntryListViewBase):
 
-    # retrieve entry list
-    pfam_all = db.get_pfam_hits(taxids,
-                                search_on="taxid",
-                                indexing="taxid")
-    # retrieve annotations
-    pfam_annot = db.get_pfam_def(pfam_all.index.to_list())
+    entry_type = "ko"
+    table_headers = ["Accession", "Description", "Modules", "Pathways",
+                     "Count", "Frequency (n genomes)"]
+    table_data_accessors = ["accession", "description", "modules", "pathways",
+                            "count", "freq"]
 
-    # count frequency and n genomes
-    pfam_count = pfam_all.sum(axis=1)
-    pfam_freq = pfam_all[pfam_all > 0].count(axis=1)
-    pfam_annot["accession"] = [format_pfam(pfam) for pfam in pfam_annot.index]
+    def get_table_data(self):
+        # retrieve entry list
+        ko_all = self.db.get_ko_hits(self.taxids,
+                                     search_on="taxid",
+                                     indexing="taxid")
+        # retrieve annotations
+        ko_desc = self.db.get_ko_desc(ko_all.index.to_list())
+        ko_mod = self.db.get_ko_modules(ko_all.index.to_list())
+        ko_path = self.db.get_ko_pathways(ko_all.index.to_list())
 
-    # combine into df
-    combined_df = pfam_annot.merge(pfam_count.rename('count'),
-                                   left_index=True,
-                                   right_index=True)\
-                            .merge(pfam_freq.rename('freq'),
-                                   left_index=True,
-                                   right_index=True)\
-                            .sort_values(["count"],
-                                         ascending=False)
+        # count frequency and n genomes
+        combined_df = pd.DataFrame(ko_all.sum(axis=1).rename('count'))
+        ko_freq = ko_all[ko_all > 0].count(axis=1).to_dict()
 
-    return render(request, 'chlamdb/entry_list_pfam.html', my_locals(locals()))
+        combined_df["accession"] = [format_ko(ko, as_url=True) for ko in combined_df.index]
+        combined_df["modules"] = [format_ko_modules(ko_mod, ko) if ko in ko_mod else '-' for ko in combined_df.index]
+        combined_df["description"] = [ko_desc[ko] for ko in combined_df.index]
+        combined_df["pathways"] = [format_ko_path(ko_path, ko) if ko in ko_path else '-' for ko in combined_df.index]
+        combined_df["freq"] = [ko_freq[ko] for ko in combined_df.index]
+
+        return combined_df.sort_values(["count", "freq"], ascending=False)
+
+
+class CogEntryListView(EntryListViewBase):
+
+    entry_type = "cog"
+    table_headers = ["Accession", "Function", "Description", "Count",
+                     "Frequency (n genomes)"]
+    table_data_accessors = ["accession", "function", "description", "count",
+                            "freq"]
+
+    def get_table_data(self):
+        # retrieve entry list
+        cog_all = self.db.get_cog_hits(self.taxids,
+                                       search_on="taxid",
+                                       indexing="taxid")
+        # retrieve annotations
+        cogs_summaries = self.db.get_cog_summaries(
+            cog_all.index.tolist(), as_df=True, only_cog_desc=True)
+
+        # count frequency and n genomes
+        cog_count = cog_all.sum(axis=1)
+        cog_freq = cog_all[cog_all > 0].count(axis=1)
+        cogs_summaries["accession"] = [format_cog(cog, as_url=True)
+                                       for cog in cogs_summaries.index]
+
+        # combine into df
+        combined_df = cogs_summaries.merge(
+            cog_count.rename('count'),
+            left_index=True,
+            right_index=True).merge(
+                cog_freq.rename('freq'),
+                left_index=True,
+                right_index=True).sort_values(["count"], ascending=False)
+        return combined_df
 
 
 def extract_pfam(request, classification="taxon_id"):
