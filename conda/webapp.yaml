@@ -10,7 +10,7 @@ dependencies:
     - pandas
     - seaborn
     - django>=4
-    - biopython>=1.76
+    - biopython>=1.8
     - matplotlib
     - celery
     - django-crispy-forms=1.14.0
