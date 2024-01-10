@@ -58,65 +58,43 @@ with DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
     missing_mandatory = [name for name, (mandatory, value) in hsh_config.items()
                          if mandatory and not value]
 
-page2title = {
-    'extract_orthogroup': 'Comparisons: orthologous groups',
-    'extract_pfam': 'Comparisons: PFAM domains',
-    'extract_ko': 'Comparisons: Kegg Orthologs (KO)',
-    'extract_cog': 'Comparisons: Clusters of Orthologous groups (COGs)',
-    'venn_orthogroup': 'Comparisons: orthologous groups',
-    'venn_ko': 'Comparisons: Kegg Orthologs (KO)',
-    'venn_pfam': 'Comparisons: Pfam domains',
-    'venn_cog': 'Comparisons: Clusters of Orthologous groups (COGs)',
-    'heatmap_orthogroup': 'Comparisons: orthologous groups',
-    'heatmap_pfam': 'Comparisons: PFAM domains',
-    'heatmap_ko': 'Comparisons: Kegg Orthologs (KO)',
-    'heatmap_COG': 'Comparisons: Clusters of Orthologous groups (COGs)',
-    'pan_genome_orthology': 'Comparisons: orthologous groups',
-    'pan_genome_Pfam': 'Comparisons: PFAM domains',
-    'pan_genome_ko': 'Comparisons: Kegg Orthologs (KO)',
-    'pan_genome_COG': 'Comparisons: Clusters of Orthologous groups (COGs)',
-    'orthogroup_comparison': 'Comparisons: orthologous groups',
-    'plot_heatmap_orthology': 'Comparisons: orthologous groups',
-    'plot_heatmap_ko': 'Comparisons: KEGG orthologs',
-    'plot_heatmap_Pfam': 'Comparisons: Pfam domains ',
-    'plot_heatmap_COG': 'Comparisons: Clusters of Orthologous groups (COGs)',
-    'index_comp_ko': 'Comparisons: KEGG orthologs',
-    'index_comp_Pfam': 'Comparisons: Pfam domains ',
-    'index_comp_COG': 'Comparisons: Clusters of Orthologous groups (COGs) ',
-    'index_comp_orthology': 'Comparisons: orthologous groups',
-    'cog_barchart': 'Comparisons: Clusters of Orthologous groups (COGs) ',
-    'pan_genome_orthology': 'Comparisons: orthologous groups',
-    'entry_list_pfam': 'Comparisons: PFAM domains',
-    'entry_list_ko': 'Comparisons: Kegg Orthologs (KO)',
-    'entry_list_cog': 'Comparisons: Clusters of Orthologous groups (COGs)',
-    'ko_comparison': 'Comparisons: Kegg Orthologs (KO)',
-    'pfam_comparison': 'Comparisons: PFAM domains',
-    'amr_gene_comparison': 'Comparisons: Antimicrobial Resistance',
-    'amr_class_comparison': 'Comparisons: Antimicrobial Resistance',
-    'amr_subclass_comparison': 'Comparisons: Antimicrobial Resistance',
-    'module_barchart': 'Comparisons: Kegg Orthologs (KO)',
-    'blast': 'Homology search: Blast',
-    'plot_region': 'Genome alignments: Plot region',
-    'circos': 'Genome alignments: Circos plot',
-    'cog_comparison': 'Comparisons: Clusters of Orthologous groups (COGs)',
-    'kegg': 'Metabolism: kegg based',
-    'kegg_genomes': 'Kegg metabolic pathways ',
-    'kegg_genomes_modules': 'Metabolism: kegg based',
-    'KEGG_mapp_ko': 'Metabolism: kegg based',
-    'kegg_module': 'Metabolism: kegg based',
-    'kegg_module_subcat': 'Metabolism: kegg based',
-    'module_comparison': 'Metabolism: kegg based',
-    'fam_pfam': 'Pfam domain ',
-    'fam_ko': 'Kegg Ortholog ',
-    'fam_cog': 'COG Ortholog ',
-    'KEGG_module_map': 'Kegg module ',
-    'phylogeny_intro': 'Phylogeny',
-    'genomes_intro': 'Genomes: table of contents',
-    'extract_contigs': 'Genomes: table of contents',
-    'COG_phylo_heatmap': 'Comparisons: Clusters of Orthologous groups (COGs)',
-    'genomes': 'Table of content: Genomes '
-
+title2page = {
+    'COG Ortholog': ['fam_cog'],
+    'Comparisons: Antimicrobial Resistance': [
+        'amr_class_comparison', 'amr_gene_comparison', 'amr_subclass_comparison'],
+    'Comparisons: Clusters of Orthologous groups (COGs)': [
+        'cog_barchart', 'index_comp_COG', 'COG_phylo_heatmap',
+        'cog_comparison', 'entry_list_cog', 'extract_cog', 'heatmap_COG',
+        'pan_genome_COG', 'plot_heatmap_COG', 'venn_cog'],
+    'Comparisons: Kegg Orthologs (KO)': [
+        'entry_list_ko', 'extract_ko', 'heatmap_ko', 'index_comp_ko',
+        'ko_comparison', 'module_barchart', 'pan_genome_ko', 'plot_heatmap_ko',
+        'venn_ko'],
+    'Comparisons: PFAM domains': [
+        'entry_list_pfam', 'extract_pfam', 'heatmap_pfam', 'pan_genome_Pfam',
+        'pfam_comparison', 'venn_pfam', 'index_comp_Pfam', 'plot_heatmap_Pfam'],
+    'Comparisons: orthologous groups': [
+        'extract_orthogroup', 'heatmap_orthogroup', 'index_comp_orthology',
+        'orthogroup_comparison', 'pan_genome_orthology', 'plot_heatmap_orthology',
+        'venn_orthogroup'],
+    'Genome alignments: Circos plot': ['circos'],
+    'Genome alignments: Plot region': ['plot_region'],
+    'Genomes: table of contents': ['extract_contigs', 'genomes_intro'],
+    'Homology search: Blast': ['blast'],
+    'Kegg Ortholog': ['fam_ko'],
+    'Kegg metabolic pathways': ['kegg_genomes'],
+    'Kegg module': ['KEGG_module_map'],
+    'Metabolism: kegg based': [
+        'KEGG_mapp_ko', 'kegg', 'kegg_genomes_modules', 'kegg_module',
+        'kegg_module_subcat', 'module_comparison'],
+    'Pfam domain': ['fam_pfam'],
+    'Phylogeny': ['phylogeny_intro'],
+    'Table of content: Genomes': ['genomes'],
 }
+
+page2title = {}
+for value, keys in title2page.items():
+    page2title.update({key: value for key in keys})
 
 
 def my_locals(local_dico):
