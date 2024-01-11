@@ -480,7 +480,7 @@ class ComparisonIndexView(View):
         boxes = ["entry-list", "extraction", "venn",
                  "tabular-comparison", "heatmap", "accumulation-rarefaction"]
         if self.comp_type == "amr":
-            boxes = ["tabular-comparison"]
+            boxes = ["entry-list", "tabular-comparison"]
         elif self.comp_type == "orthogroup":
             boxes.remove("entry-list")
         elif self.comp_type == "ko":
