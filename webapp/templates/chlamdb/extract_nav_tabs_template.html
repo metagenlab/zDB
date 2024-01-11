@@ -57,14 +57,14 @@
             <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'interpro' %}">Accumulation/rarefaction plot </a></li>
         </ul>
     </nav>
-{% elif type == 'orthology' %}
+{% elif type == 'orthogroup' %}
     <nav>
         <ul id="tabs_main" class="nav nav-tabs">
             <li class={% if active_tab == "det" %}"active"{%endif%}><a href="{% url 'extract_orthogroup' %}">Extract form</a></li>
             <li class={% if active_tab == "venn" %}"active"{%endif%}><a href="{% url 'venn_orthogroup' %}">Venn</a></li>
             <li class={% if active_tab == "comp" %}"active"{%endif%}><a href="{% url 'orthogroup_comparison' %}">Presence/absence table</a></li>
-            <li class={% if active_tab == "heat" %}"active"{%endif%}><a href="{% url 'plot_heatmap' 'orthology' %}">Heatmap</a></li>
-            <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'orthology' %}">Accumulation/rarefaction plot </a></li>
+            <li class={% if active_tab == "heat" %}"active"{%endif%}><a href="{% url 'plot_heatmap' 'orthogroup' %}">Heatmap</a></li>
+            <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'orthogroup' %}">Accumulation/rarefaction plot </a></li>
         </ul>
     </nav>
 {% elif type == 'amr' %}

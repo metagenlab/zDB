@@ -70,8 +70,8 @@ title2page = {
         'entry_list_pfam', 'extract_pfam', 'heatmap_pfam', 'pan_genome_pfam',
         'pfam_comparison', 'venn_pfam', 'index_comp_pfam', 'plot_heatmap_pfam'],
     'Comparisons: orthologous groups': [
-        'extract_orthogroup', 'heatmap_orthogroup', 'index_comp_orthology',
-        'orthogroup_comparison', 'pan_genome_orthology', 'plot_heatmap_orthology',
+        'extract_orthogroup', 'heatmap_orthogroup', 'index_comp_orthogroup',
+        'orthogroup_comparison', 'pan_genome_orthogroup', 'plot_heatmap_orthogroup',
         'venn_orthogroup'],
     'Genome alignments: Circos plot': ['circos'],
     'Genome alignments: Plot region': ['plot_region'],
@@ -471,7 +471,7 @@ class ComparisonIndexView(View):
         "cog": "COGs",
         "pfam": "Pfam domains",
         "ko": "Kegg Orthologs",
-        "orthology": "Orthologous groups",
+        "orthogroup": "Orthologous groups",
         "amr": "AMR"
     }
 
@@ -481,7 +481,7 @@ class ComparisonIndexView(View):
                  "tabular-comparison", "heatmap", "accumulation-rarefaction"]
         if self.comp_type == "amr":
             boxes = ["tabular-comparison"]
-        elif self.comp_type == "orthology":
+        elif self.comp_type == "orthogroup":
             boxes.remove("entry-list")
         elif self.comp_type == "ko":
             boxes.append("barcharts")
@@ -2940,7 +2940,7 @@ def pan_genome(request, type):
     if type == "cog":
         df_hits = db.get_cog_hits(taxids, search_on="taxid", indexing="taxid")
         type_txt = "COG orthologs"
-    elif type == "orthology":
+    elif type == "orthogroup":
         df_hits = db.get_og_count(taxids, search_on="taxid")
         type_txt = "orthologs"
     elif type == "ko":
@@ -3619,7 +3619,7 @@ def plot_heatmap(request, type):
     if type == "cog":
         mat = db.get_cog_hits(taxon_ids, indexing="taxid", search_on="taxid")
         mat.index = [format_cog(i) for i in mat.index]
-    elif type == "orthology":
+    elif type == "orthogroup":
         mat = db.get_og_count(taxon_ids)
         mat.index = [format_orthogroup(i) for i in mat.index]
     elif type == "ko":
@@ -4170,7 +4170,7 @@ class CogComparisonView(TabularComparisonViewBase):
 
 class OrthogroupComparisonView(TabularComparisonViewBase):
 
-    view_type = "orthology"
+    view_type = "orthogroup"
     base_info_headers = ["Orthogroup", "Annotaion"]
 
     table_help = """

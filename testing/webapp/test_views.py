@@ -25,11 +25,11 @@ urls = [
     '/pan_genome/cog',
     '/pan_genome/pfam',
     '/pan_genome/ko',
-    '/pan_genome/orthology',
+    '/pan_genome/orthogroup',
     '/plot_heatmap/cog',
     '/plot_heatmap/pfam',
     '/plot_heatmap/ko',
-    '/plot_heatmap/orthology',
+    '/plot_heatmap/orthogroup',
     '/cog_phylo_heatmap/True',
     '/cog_phylo_heatmap/False',
     '/module_barchart/',
@@ -37,7 +37,7 @@ urls = [
     '/ko_venn_subset/L?h=1&h=2&h=3',
     '/kegg/',
     '/locusx/CHUV_00025/True',
-    '/index_comp/orthology',
+    '/index_comp/orthogroup',
     '/index_comp/cog',
     '/index_comp/pfam',
     '/index_comp/ko',
@@ -149,7 +149,7 @@ class TestViewsContent(SimpleTestCase):
         self.assertContains(resp, '<a href="/genomes" ><b>Genomes</b></a>', html=True)
         self.assertContains(resp, '<a href="/phylogeny"><b>Phylogeny</b></a>', html=True)
         self.assertContains(resp, '<a class="link_boxes" href="/blast/"><span class="link"></span> Blast </a>', html=True)
-        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/orthology"><span class="link"></span>Orthogroups</a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/orthogroup"><span class="link"></span>Orthogroups</a>', html=True)
         self.assertContains(resp, '<a class="link_boxes" href="/index_comp/cog"><span class="link"></span>COGs</a>', html=True)
         self.assertContains(resp, '<a class="link_boxes" href="/index_comp/ko"><span class="link"></span>Kegg Orthologs</a>', html=True)
         self.assertContains(resp, '<a class="link_boxes" href="/index_comp/pfam"><span class="link"></span>Pfam domains</a>', html=True)
