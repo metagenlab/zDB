@@ -57,7 +57,7 @@ with DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
 title2page = {
     'COG Ortholog': ['fam_cog'],
     'Comparisons: Antimicrobial Resistance': [
-        'amr_comparison', 'index_comp_amr'],
+        'amr_comparison', 'index_comp_amr', 'entry_list_amr'],
     'Comparisons: Clusters of Orthologous groups (COGs)': [
         'cog_barchart', 'index_comp_cog', 'cog_phylo_heatmap',
         'cog_comparison', 'entry_list_cog', 'extract_cog', 'heatmap_COG',
@@ -632,6 +632,55 @@ class CogEntryListView(EntryListViewBase):
                 left_index=True,
                 right_index=True).sort_values(["count"], ascending=False)
         return combined_df
+
+
+class AmrEntryListView(EntryListViewBase):
+
+    entry_type = "amr"
+    table_headers = ["Gene", "Description", "Scope", "Type", "Class",
+                     "Subclass", "Count", "Frequency (n genomes)"]
+    table_data_accessors = ["accession", "seq_name", "scope", "type", "class",
+                            "subclass", "count", "freq"]
+
+    def get_table_data(self):
+        # retrieve entry list
+        amr_all = self.db.get_amr_hit_counts(self.taxids,
+                                             search_on="taxid",
+                                             indexing="taxid")
+        # retrieve annotations
+        amr_annotations = self.db.get_amr_descriptions(amr_all.index.tolist())
+
+        gene_annot_counts = amr_annotations.gene.value_counts()
+        for gene in gene_annot_counts[gene_annot_counts > 1].keys():
+            amr_annotations[amr_annotations["gene"] == gene] = \
+                self.aggregate_annotations_for_gene(gene, amr_annotations)
+
+        # count frequency and n genomes
+        combined_df = pd.DataFrame(amr_all.sum(axis=1).rename('count'))
+        freq = amr_all[amr_all > 0].count(axis=1).to_dict()
+
+        # prepare accession
+        amr_annotations["accession"] = amr_annotations[["gene", "hmm_id"]].apply(format_gene_to_ncbi_hmm, axis=1)
+
+        combined_df["freq"] = [freq[gene] for gene in combined_df.index]
+        for col in self.table_data_accessors[:-2]:
+            combined_df[col] = [
+                amr_annotations[amr_annotations.gene == gene].iloc[0][col]
+                for gene in combined_df.index]
+
+        return combined_df.sort_values(["count", "freq"], ascending=False)
+
+    def aggregate_annotations_for_gene(self, gene, annotations):
+        """
+        entries for gene symbols or descriptions are not unique
+        and there can therefore be more than one entry per gene.
+        We concatenante them, it's the best we can do
+        """
+        rows = annotations[annotations.gene == gene]
+        aggregated = []
+        for col in rows.columns:
+            aggregated.append(" || ".join(rows[col].unique()))
+        return aggregated
 
 
 def extract_pfam(request, classification="taxon_id"):

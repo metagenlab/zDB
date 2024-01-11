@@ -40,6 +40,8 @@ urlpatterns = [
     re_path(r'^orthogroup/([a-zA-Z0-9_\.\-]+)',
             views.orthogroup, name="orthogroup"),
     re_path(r'^locusx$', views.locusx, name="locusx"),
+    re_path(r'^entry_list_amr$', views.AmrEntryListView.as_view(),
+            name="entry_list_amr"),
     re_path(r'^entry_list_pfam$', views.PfamEntryListView.as_view(),
             name="entry_list_pfam"),
     re_path(r'^entry_list_cog$', views.CogEntryListView.as_view(),

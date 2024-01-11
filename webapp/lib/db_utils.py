@@ -2457,7 +2457,42 @@ class DB:
 
         results = self.server.adaptor.execute_and_fetchall(query)
         return DB.to_pandas_frame(results, columns)
-    
+
+    def get_amr_hit_counts(self, ids, indexing="taxid", search_on="taxid"):
+        columns = ["bioentry.taxon_id", "gene", "COUNT(*)"]
+
+        plchd = self.gen_placeholder_string(ids)
+        query = (
+            f"SELECT {', '.join(columns)}"
+            "FROM amr_hits "
+            "INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = amr_hits.hsh "
+            "INNER JOIN seqfeature ON hsh.seqid = seqfeature.seqfeature_id "
+            "INNER JOIN bioentry ON seqfeature.bioentry_id = bioentry.bioentry_id "
+            f"WHERE bioentry.taxon_id IN ({plchd})"
+            "GROUP BY gene, bioentry.taxon_id;"
+        )
+
+        results = self.server.adaptor.execute_and_fetchall(query, ids)
+
+        index = ["bioentry.taxon_id", "gene"]
+        df = DB.to_pandas_frame(results, columns)
+        df = df.set_index(index).unstack(level=0, fill_value=0)
+        df.columns = [col for col in df["COUNT(*)"].columns.values]
+        return df
+
+    def get_amr_descriptions(self, gene_ids):
+        columns = ["type", "class", "subclass", "gene", "seq_name", "scope",
+                   "hmm_id"]
+        plchd = self.gen_placeholder_string(gene_ids)
+        query = (
+            f"SELECT DISTINCT {', '.join(columns)} "
+            "FROM amr_hits "
+            f"WHERE gene IN ({plchd});"
+        )
+        results = self.server.adaptor.execute_and_fetchall(query, gene_ids)
+        df = DB.to_pandas_frame(results, columns)
+        return df
+
     def gen_placeholder_string(self, args):
         return ",".join(self.placeholder for _ in args)
 
