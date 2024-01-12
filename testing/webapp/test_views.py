@@ -1,3 +1,5 @@
+import re
+
 from chlamdb.urls import urlpatterns
 from django.test import SimpleTestCase
 from django.urls import resolve
@@ -122,6 +124,16 @@ class TestViewsAreHealthy(SimpleTestCase):
                 print(f"\n\nInvalid html for {url}")
                 print(f"Templates {[el.name for el in resp.templates]}\n\n")
                 raise exc
+
+    def test_all_comparison_views_render_navigation(self):
+
+        comp_pattern = "/extract_[^s]+/|/[^m].+_comparison|/venn_|"\
+                       "/plot_heatmap|/pan_genome|/entry_list"
+        for url in urls:
+            if re.match(comp_pattern, url):
+                resp = self.client.get(url)
+                self.assertContains(resp, "<nav>",
+                                    msg_prefix=f"{url} does not contain navigation")
 
 
 class TestViewsContent(SimpleTestCase):
