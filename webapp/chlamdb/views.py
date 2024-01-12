@@ -279,12 +279,18 @@ def get_table_details(db, annotations):
 
 class ExtractOrthogroupView(View):
 
+    view_type = "orthogroup"
+
+    @property
+    def view_name(self):
+        return f"extract_{self.view_type}"
+
     def dispatch(self, request, *args, **kwargs):
         biodb_path = settings.BIODB_DB_PATH
         self.db = DB.load_db_from_name(biodb_path)
-        self.page_title = page2title["extract_orthogroup"]
+        self.page_title = page2title[self.view_name]
         self.extract_form_class = make_extract_form(
-            self.db, "extract_orthogroup", plasmid=True)
+            self.db, self.view_name, plasmid=True)
 
         return super(ExtractOrthogroupView, self).dispatch(request, *args, **kwargs)
 
