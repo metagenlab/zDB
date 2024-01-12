@@ -352,7 +352,7 @@ class ExtractOrthogroupView(View):
                                        & (excluded_hits == 0))
 
         if self.n_excluded > 0:
-            mat_exclude = self.db.get_og_count(
+            mat_exclude = self.get_hit_counts(
                 self.excluded_taxids, plasmids=self.excluded_plasmids)
             mat_exclude["presence"] = mat_exclude[mat_exclude > 0].count(axis=1)
             mat_exclude["exclude"] = mat_exclude.presence > 0
