@@ -277,7 +277,26 @@ def get_table_details(db, annotations):
     return header, infos
 
 
-class ExtractOrthogroupView(View):
+class ComparisonViewMixin():
+
+    type2objname = {
+        "cog": "COGs",
+        "pfam": "Pfam domains",
+        "ko": "Kegg Orthologs",
+        "orthogroup": "Orthologous groups",
+        "amr": "AMR"
+    }
+
+    @property
+    def compared_obj_name(self):
+        return self.type2objname[self.comp_type]
+
+    @property
+    def page_title(self):
+        return page2title[self.view_name]
+
+
+class ExtractOrthogroupView(View, ComparisonViewMixin):
 
     view_type = "orthogroup"
     template = 'chlamdb/extract_orthogroup.html'
@@ -293,7 +312,6 @@ class ExtractOrthogroupView(View):
     def dispatch(self, request, *args, **kwargs):
         biodb_path = settings.BIODB_DB_PATH
         self.db = DB.load_db_from_name(biodb_path)
-        self.page_title = page2title[self.view_name]
         self.extract_form_class = make_extract_form(
             self.db, self.view_name, plasmid=True)
         return super(ExtractOrthogroupView, self).dispatch(request, *args, **kwargs)
@@ -514,15 +532,7 @@ def format_pfam(pfam_id, base=None, to_url=False):
     return fmt_entry
 
 
-class ComparisonIndexView(View):
-
-    type2objname = {
-        "cog": "COGs",
-        "pfam": "Pfam domains",
-        "ko": "Kegg Orthologs",
-        "orthogroup": "Orthologous groups",
-        "amr": "AMR"
-    }
+class ComparisonIndexView(View, ComparisonViewMixin):
 
     @property
     def boxes(self):
@@ -543,13 +553,12 @@ class ComparisonIndexView(View):
         return super(ComparisonIndexView, self).dispatch(request, *args, **kwargs)
 
     @property
-    def compared_obj_name(self):
-        return self.type2objname[self.comp_type]
+    def view_name(self):
+        return f"index_comp_{self.comp_type}"
 
     def get(self, request):
-        page_title = page2title[f"index_comp_{self.comp_type}"]
         context = my_locals({
-            "page_title": page_title,
+            "page_title": self.page_title,
             "compared_obj_name": self.compared_obj_name,
             "comp_type": self.comp_type,
             "boxes": self.boxes,
