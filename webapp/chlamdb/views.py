@@ -282,6 +282,10 @@ class ExtractOrthogroupView(View):
     view_type = "orthogroup"
 
     @property
+    def get_hits(self):
+        return self.db.get_og_count
+
+    @property
     def view_name(self):
         return f"extract_{self.view_type}"
 
@@ -318,7 +322,7 @@ class ExtractOrthogroupView(View):
             wrong_n_missing = True
             return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
-        og_counts_in = self.db.get_og_count(include_taxids, plasmids=include_plasmids)
+        og_counts_in = self.get_hits(include_taxids, plasmids=include_plasmids)
         if not single_copy:
             og_counts_in["presence"] = og_counts_in[og_counts_in > 0].count(axis=1)
             og_counts_in["selection"] = og_counts_in.presence >= (
@@ -348,7 +352,7 @@ class ExtractOrthogroupView(View):
             no_match = True
             return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
-        count_all_genomes = self.db.get_og_count(selection, search_on="orthogroup")
+        count_all_genomes = self.get_hits(selection, search_on="orthogroup")
         number_orth = count_all_genomes.index
         number_orth = len(number_orth)
 
