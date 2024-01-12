@@ -280,9 +280,10 @@ def get_table_details(db, annotations):
 class ExtractOrthogroupView(View):
 
     view_type = "orthogroup"
+    template = 'chlamdb/extract_orthogroup.html'
 
     @property
-    def get_hits(self):
+    def get_hit_counts(self):
         return self.db.get_og_count
 
     @property
@@ -308,90 +309,97 @@ class ExtractOrthogroupView(View):
 
     def get(self, request, *args, **kwargs):
         self.form = self.extract_form_class()
-        return render(request, 'chlamdb/extract_orthogroup.html', self.get_context())
+        return render(request, self.template, self.get_context())
 
     def post(self, request, *args, **kwargs):
         self.form = self.extract_form_class(request.POST)
         if not self.form.is_valid():
             self.form = self.extract_form_class()
             # add error message in web page
-            return render(request, 'chlamdb/extract_orthogroup.html', self.get_context())
+            return render(request, self.template, self.get_context())
 
-        self.include_taxids, self.include_plasmids = self.form.get_include_choices()
-        self.exclude_taxids, self.exclude_plasmids = self.form.get_exclude_choices()
+        # Extract form data
+        self.included_taxids, self.included_plasmids = self.form.get_include_choices()
+        self.excluded_taxids, self.excluded_plasmids = self.form.get_exclude_choices()
         self.n_missing = self.form.get_n_missing()
         single_copy = "checkbox_single_copy" in request.POST
 
-        self.sum_include_lengths = len(self.include_taxids)
-        if self.include_plasmids is not None:
-            self.sum_include_lengths += len(self.include_plasmids)
+        self.n_included = len(self.included_taxids)
+        if self.included_plasmids is not None:
+            self.n_included += len(self.included_plasmids)
 
-        if self.n_missing >= self.sum_include_lengths:
-            return render(request, 'chlamdb/extract_orthogroup.html',
-                          self.get_context(wrong_n_missing=True))
+        if self.n_missing >= self.n_included:
+            context = self.get_context(wrong_n_missing=True)
+            return render(request, self.template, context)
 
-        og_counts_in = self.get_hits(self.include_taxids, plasmids=self.include_plasmids)
+        self.min_count = self.n_included - self.n_missing
+
+        self.n_excluded = len(self.excluded_taxids)
+        if self.excluded_plasmids is not None:
+            self.n_excluded += len(self.excluded_plasmids)
+
+        # Count hits for selection
+        hit_counts = self.get_hit_counts(self.included_taxids,
+                                         plasmids=self.included_plasmids)
         if not single_copy:
-            og_counts_in["presence"] = og_counts_in[og_counts_in > 0].count(axis=1)
-            og_counts_in["selection"] = og_counts_in.presence >= (
-                self.sum_include_lengths - self.n_missing)
+            hit_counts["presence"] = hit_counts[hit_counts > 0].count(axis=1)
+            hit_counts["selection"] = hit_counts.presence >= self.min_count
         else:
-            og_counts_in["presence"] = og_counts_in[og_counts_in == 1].count(
+            hit_counts["presence"] = hit_counts[hit_counts == 1].count(
                 axis=1)
-            og_counts_in["absence"] = og_counts_in[og_counts_in == 0].count(axis=1)
-            og_counts_in["selection"] = ((og_counts_in.presence >= (self.sum_include_lengths - self.n_missing))
-                                         & (og_counts_in.absence + og_counts_in.presence == self.sum_include_lengths))
+            hit_counts["absence"] = hit_counts[hit_counts == 0].count(axis=1)
+            hit_counts["selection"] = ((hit_counts.presence >= self.min_count)
+                                         & (hit_counts.absence + hit_counts.presence == self.n_included))
 
-        self.sum_exclude_lengths = len(self.exclude_taxids)
-        if self.exclude_plasmids is not None:
-            self.sum_exclude_lengths += len(self.exclude_plasmids)
-        if self.sum_exclude_lengths > 0:
+        if self.n_excluded > 0:
             mat_exclude = self.db.get_og_count(
-                self.exclude_taxids, plasmids=self.exclude_plasmids)
+                self.excluded_taxids, plasmids=self.excluded_plasmids)
             mat_exclude["presence"] = mat_exclude[mat_exclude > 0].count(axis=1)
             mat_exclude["exclude"] = mat_exclude.presence > 0
             neg_index = mat_exclude[mat_exclude.exclude].index
         else:
             neg_index = pd.Index([])
 
-        pos_index = og_counts_in[og_counts_in.selection].index
+        pos_index = hit_counts[hit_counts.selection].index
         self.selection = pos_index.difference(neg_index).tolist()
         if len(self.selection) == 0:
-            return render(request, 'chlamdb/extract_orthogroup.html',
-                          self.get_context(no_match=True))
+            context = self.get_context(no_match=True)
+            return render(request, self.template, context)
 
-        count_all_genomes = self.get_hits(self.selection, search_on="orthogroup")
-        self.number_orth = count_all_genomes.index
-        self.number_orth = len(self.number_orth)
+        # Count hits for all genomes
+        hit_counts_all = self.get_hit_counts(self.selection, search_on="orthogroup")
+        self.n_hits = len(hit_counts_all.index)
 
         if not single_copy:
-            orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(
-                axis=1)
+            hit_counts_all = hit_counts_all[hit_counts_all > 0].count(axis=1)
         else:
-            orthogroup2count_all = count_all_genomes[count_all_genomes == 1].count(
-                axis=1)
-        self.max_n = orthogroup2count_all.max()
+            hit_counts_all = hit_counts_all[hit_counts_all == 1].count(axis=1)
+        self.max_n = hit_counts_all.max()
 
-        context = self.prepare_data(og_counts_in, orthogroup2count_all)
+        context = self.prepare_data(hit_counts, hit_counts_all)
+
         if context is None:
-            return render(request, 'chlamdb/extract_orthogroup.html',
-                          self.get_context(no_match=True))
-        return render(request, 'chlamdb/extract_orthogroup.html', context)
+            context = self.get_context(no_match=True)
+            return render(request, self.template, context)
 
-    def prepare_data(self, og_counts_in, orthogroup2count_all):
-        match_groups_data = []
+        return render(request, self.template, context)
 
-        all_taxids = self.include_taxids
-        if self.include_plasmids is not None:
-            all_taxids += self.include_plasmids
-        annotations = self.db.get_genes_from_og(orthogroups=self.selection, taxon_ids=all_taxids,
-                                           terms=["gene", "product", "locus_tag"])
+    def prepare_data(self, hit_counts, hit_counts_all):
+        data = []
+
+        all_taxids = self.included_taxids
+        if self.included_plasmids is not None:
+            all_taxids += self.included_plasmids
+
+        annotations = self.db.get_genes_from_og(
+            orthogroups=self.selection,
+            taxon_ids=all_taxids,
+            terms=["gene", "product", "locus_tag"])
         if annotations.empty:
             return None
 
         opt_header, optional_annotations = get_optional_annotations(
             self.db, seqids=annotations.index.tolist())
-        details_header, details_data = get_table_details(self.db, annotations)
         annotations = annotations.join(optional_annotations)
         grouped = annotations.groupby("orthogroup")
         genes = grouped["gene"].apply(list)
@@ -405,11 +413,11 @@ class ExtractOrthogroupView(View):
 
         table_headers = ["Orthogroup", "Genes", "Products"]
         table_headers.extend(opt_header)
-        table_headers.extend(
-            [f"Present in {self.sum_include_lengths}", f"Freq complete database (/{self.max_n})"])
+        table_headers.extend([f"Present in {self.n_included}",
+                              f"Freq complete database (/{self.max_n})"])
 
-        for row, count in orthogroup2count_all.items():
-            cnt_in = og_counts_in.presence.loc[row]
+        for row, count in hit_counts_all.items():
+            cnt_in = hit_counts.presence.loc[row]
             g = genes.loc[row]
             gene_data = format_lst_to_html(
                 "-" if pd.isna(entry) else entry for entry in g)
@@ -423,21 +431,23 @@ class ExtractOrthogroupView(View):
                 optional.append(format_lst_to_html(
                     cogs.loc[row], add_count=True, format_func=format_cog_url))
             entry = [column_header, gene_data, prod_data, *optional, cnt_in, count]
-            match_groups_data.append(entry)
+            data.append(entry)
 
         ref_genomes = self.db.get_genomes_description(
-        ).loc[self.include_taxids].reset_index()
+        ).loc[self.included_taxids].reset_index()
+
+        details_header, details_data = get_table_details(self.db, annotations)
 
         context = self.get_context(envoi_extract=True,
                                    n_missing=self.n_missing,
-                                   number_orth=self.number_orth,
+                                   n_hits=self.n_hits,
                                    table_headers=table_headers,
                                    ref_genomes=ref_genomes,
-                                   match_groups_data=match_groups_data,
+                                   match_groups_data=data,
                                    details_header=details_header,
                                    details_data=details_data,
-                                   include_taxids=self.include_taxids,
-                                   exclude_taxids=self.exclude_taxids,
+                                   included_taxids=self.included_taxids,
+                                   excluded_taxids=self.excluded_taxids,
                                    selection=self.selection)
         return context
 
