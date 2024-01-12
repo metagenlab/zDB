@@ -56,7 +56,7 @@ urlpatterns = [
     re_path(r'^orthogroup_list_cog_barchart/([a-zA-Z0-9_]+)/$',
             views.orthogroup_list_cog_barchart, name="orthogroup_list_cog_barchart"),
     re_path(r'^blast/$', views.blast, name="blast"),
-    re_path(r'^extract_orthogroup/$', views.extract_orthogroup,
+    re_path(r'^extract_orthogroup/$', views.ExtractOrthogroupView.as_view(),
             name="extract_orthogroup"),
     re_path(r'^venn_orthogroup/$', views.venn_orthogroup,
             name="venn_orthogroup"),

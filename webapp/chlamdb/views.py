@@ -277,130 +277,134 @@ def get_table_details(db, annotations):
     return header, infos
 
 
-def extract_orthogroup(request):
-    biodb = settings.BIODB_DB_PATH
-    db = DB.load_db(biodb, settings.BIODB_CONF)
+class ExtractOrthogroupView(View):
 
-    page_title = page2title["extract_orthogroup"]
+    def dispatch(self, request, *args, **kwargs):
+        biodb_path = settings.BIODB_DB_PATH
+        self.db = DB.load_db_from_name(biodb_path)
+        self.page_title = page2title["extract_orthogroup"]
+        self.extract_form_class = make_extract_form(
+            self.db, "extract_orthogroup", plasmid=True)
 
-    extract_form_class = make_extract_form(
-        db, "extract_orthogroup", plasmid=True)
-    if request.method != "POST":
-        form = extract_form_class()
+        return super(ExtractOrthogroupView, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        form = self.extract_form_class()
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
-    form = extract_form_class(request.POST)
-    if not form.is_valid():
-        form = extract_form_class()
-        # add error message in web page
-        return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
+    def post(self, request, *args, **kwargs):
+        form = self.extract_form_class(request.POST)
+        if not form.is_valid():
+            form = self.extract_form_class()
+            # add error message in web page
+            return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
-    include_taxids, include_plasmids = form.get_include_choices()
-    exclude_taxids, exclude_plasmids = form.get_exclude_choices()
-    n_missing = form.get_n_missing()
-    single_copy = "checkbox_single_copy" in request.POST
+        include_taxids, include_plasmids = form.get_include_choices()
+        exclude_taxids, exclude_plasmids = form.get_exclude_choices()
+        n_missing = form.get_n_missing()
+        single_copy = "checkbox_single_copy" in request.POST
 
-    sum_include_lengths = len(include_taxids)
-    if include_plasmids is not None:
-        sum_include_lengths += len(include_plasmids)
+        sum_include_lengths = len(include_taxids)
+        if include_plasmids is not None:
+            sum_include_lengths += len(include_plasmids)
 
-    if n_missing >= sum_include_lengths:
-        wrong_n_missing = True
-        return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
+        if n_missing >= sum_include_lengths:
+            wrong_n_missing = True
+            return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
-    og_counts_in = db.get_og_count(include_taxids, plasmids=include_plasmids)
-    if not single_copy:
-        og_counts_in["presence"] = og_counts_in[og_counts_in > 0].count(axis=1)
-        og_counts_in["selection"] = og_counts_in.presence >= (
-            sum_include_lengths - n_missing)
-    else:
-        og_counts_in["presence"] = og_counts_in[og_counts_in == 1].count(
-            axis=1)
-        og_counts_in["absence"] = og_counts_in[og_counts_in == 0].count(axis=1)
-        og_counts_in["selection"] = ((og_counts_in.presence >= (sum_include_lengths - n_missing))
-                                     & (og_counts_in.absence + og_counts_in.presence == sum_include_lengths))
+        og_counts_in = self.db.get_og_count(include_taxids, plasmids=include_plasmids)
+        if not single_copy:
+            og_counts_in["presence"] = og_counts_in[og_counts_in > 0].count(axis=1)
+            og_counts_in["selection"] = og_counts_in.presence >= (
+                sum_include_lengths - n_missing)
+        else:
+            og_counts_in["presence"] = og_counts_in[og_counts_in == 1].count(
+                axis=1)
+            og_counts_in["absence"] = og_counts_in[og_counts_in == 0].count(axis=1)
+            og_counts_in["selection"] = ((og_counts_in.presence >= (sum_include_lengths - n_missing))
+                                         & (og_counts_in.absence + og_counts_in.presence == sum_include_lengths))
 
-    sum_exclude_lengths = len(exclude_taxids)
-    if exclude_plasmids is not None:
-        sum_exclude_lengths += len(exclude_plasmids)
-    if sum_exclude_lengths > 0:
-        mat_exclude = db.get_og_count(
-            exclude_taxids, plasmids=exclude_plasmids)
-        mat_exclude["presence"] = mat_exclude[mat_exclude > 0].count(axis=1)
-        mat_exclude["exclude"] = mat_exclude.presence > 0
-        neg_index = mat_exclude[mat_exclude.exclude].index
-    else:
-        neg_index = pd.Index([])
+        sum_exclude_lengths = len(exclude_taxids)
+        if exclude_plasmids is not None:
+            sum_exclude_lengths += len(exclude_plasmids)
+        if sum_exclude_lengths > 0:
+            mat_exclude = self.db.get_og_count(
+                exclude_taxids, plasmids=exclude_plasmids)
+            mat_exclude["presence"] = mat_exclude[mat_exclude > 0].count(axis=1)
+            mat_exclude["exclude"] = mat_exclude.presence > 0
+            neg_index = mat_exclude[mat_exclude.exclude].index
+        else:
+            neg_index = pd.Index([])
 
-    pos_index = og_counts_in[og_counts_in.selection].index
-    selection = pos_index.difference(neg_index).tolist()
-    if len(selection) == 0:
-        no_match = True
-        return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
+        pos_index = og_counts_in[og_counts_in.selection].index
+        selection = pos_index.difference(neg_index).tolist()
+        if len(selection) == 0:
+            no_match = True
+            return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
-    count_all_genomes = db.get_og_count(selection, search_on="orthogroup")
-    number_orth = count_all_genomes.index
-    number_orth = len(number_orth)
+        count_all_genomes = self.db.get_og_count(selection, search_on="orthogroup")
+        number_orth = count_all_genomes.index
+        number_orth = len(number_orth)
 
-    if not single_copy:
-        orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(
-            axis=1)
-    else:
-        orthogroup2count_all = count_all_genomes[count_all_genomes == 1].count(
-            axis=1)
-    max_n = orthogroup2count_all.max()
-    match_groups_data = []
+        if not single_copy:
+            orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(
+                axis=1)
+        else:
+            orthogroup2count_all = count_all_genomes[count_all_genomes == 1].count(
+                axis=1)
+        max_n = orthogroup2count_all.max()
+        match_groups_data = []
 
-    all_taxids = include_taxids
-    if include_plasmids is not None:
-        all_taxids += include_plasmids
-    annotations = db.get_genes_from_og(orthogroups=selection, taxon_ids=all_taxids,
-                                       terms=["gene", "product", "locus_tag"])
-    if annotations.empty:
-        no_match = True
-        return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
+        all_taxids = include_taxids
+        if include_plasmids is not None:
+            all_taxids += include_plasmids
+        annotations = self.db.get_genes_from_og(orthogroups=selection, taxon_ids=all_taxids,
+                                           terms=["gene", "product", "locus_tag"])
+        if annotations.empty:
+            no_match = True
+            return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
-    opt_header, optional_annotations = get_optional_annotations(
-        db, seqids=annotations.index.tolist())
-    details_header, details_data = get_table_details(db, annotations)
-    annotations = annotations.join(optional_annotations)
-    grouped = annotations.groupby("orthogroup")
-    genes = grouped["gene"].apply(list)
-    products = grouped["product"].apply(list)
+        opt_header, optional_annotations = get_optional_annotations(
+            self.db, seqids=annotations.index.tolist())
+        details_header, details_data = get_table_details(self.db, annotations)
+        annotations = annotations.join(optional_annotations)
+        grouped = annotations.groupby("orthogroup")
+        genes = grouped["gene"].apply(list)
+        products = grouped["product"].apply(list)
 
-    if "COG" in opt_header:
-        cogs = grouped["cog"].apply(list)
-
-    if "KO" in opt_header:
-        kos = grouped["ko"].apply(list)
-
-    table_headers = ["Orthogroup", "Genes", "Products"]
-    table_headers.extend(opt_header)
-    table_headers.extend(
-        [f"Present in {sum_include_lengths}", f"Freq complete database (/{max_n})"])
-
-    for row, count in orthogroup2count_all.items():
-        cnt_in = og_counts_in.presence.loc[row]
-        g = genes.loc[row]
-        gene_data = format_lst_to_html(
-            "-" if pd.isna(entry) else entry for entry in g)
-        prod_data = format_lst_to_html(products.loc[row])
-        column_header = format_orthogroup(row)
-        optional = []
-        if "KO" in opt_header and row in kos:
-            optional.append(format_lst_to_html(
-                kos.loc[row], add_count=True, format_func=format_ko_url))
         if "COG" in opt_header:
-            optional.append(format_lst_to_html(
-                cogs.loc[row], add_count=True, format_func=format_cog_url))
-        entry = [column_header, gene_data, prod_data, *optional, cnt_in, count]
-        match_groups_data.append(entry)
+            cogs = grouped["cog"].apply(list)
 
-    ref_genomes = db.get_genomes_description(
-    ).loc[include_taxids].reset_index()
+        if "KO" in opt_header:
+            kos = grouped["ko"].apply(list)
 
-    envoi_extract = True
-    return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
+        table_headers = ["Orthogroup", "Genes", "Products"]
+        table_headers.extend(opt_header)
+        table_headers.extend(
+            [f"Present in {sum_include_lengths}", f"Freq complete database (/{max_n})"])
+
+        for row, count in orthogroup2count_all.items():
+            cnt_in = og_counts_in.presence.loc[row]
+            g = genes.loc[row]
+            gene_data = format_lst_to_html(
+                "-" if pd.isna(entry) else entry for entry in g)
+            prod_data = format_lst_to_html(products.loc[row])
+            column_header = format_orthogroup(row)
+            optional = []
+            if "KO" in opt_header and row in kos:
+                optional.append(format_lst_to_html(
+                    kos.loc[row], add_count=True, format_func=format_ko_url))
+            if "COG" in opt_header:
+                optional.append(format_lst_to_html(
+                    cogs.loc[row], add_count=True, format_func=format_cog_url))
+            entry = [column_header, gene_data, prod_data, *optional, cnt_in, count]
+            match_groups_data.append(entry)
+
+        ref_genomes = self.db.get_genomes_description(
+        ).loc[include_taxids].reset_index()
+
+        envoi_extract = True
+        return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
 
 def venn_orthogroup(request):
