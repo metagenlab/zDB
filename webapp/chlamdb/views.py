@@ -345,11 +345,11 @@ class ExtractOrthogroupView(View):
             hit_counts["presence"] = hit_counts[hit_counts > 0].count(axis=1)
             hit_counts["selection"] = hit_counts.presence >= self.min_count
         else:
+            excluded_hits = hit_counts[hit_counts > 1].count(axis=1)
             hit_counts["presence"] = hit_counts[hit_counts == 1].count(
                 axis=1)
-            hit_counts["absence"] = hit_counts[hit_counts == 0].count(axis=1)
             hit_counts["selection"] = ((hit_counts.presence >= self.min_count)
-                                         & (hit_counts.absence + hit_counts.presence == self.n_included))
+                                       & (excluded_hits == 0))
 
         if self.n_excluded > 0:
             mat_exclude = self.db.get_og_count(
