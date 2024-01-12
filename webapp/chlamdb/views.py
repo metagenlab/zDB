@@ -295,23 +295,31 @@ class ExtractOrthogroupView(View):
         self.page_title = page2title[self.view_name]
         self.extract_form_class = make_extract_form(
             self.db, self.view_name, plasmid=True)
-
         return super(ExtractOrthogroupView, self).dispatch(request, *args, **kwargs)
 
+    def get_context(self, **kwargs):
+        context = {
+            "page_title": self.page_title,
+            "form": self.form,
+        }
+        context.update(kwargs)
+
+        return my_locals(context)
+
     def get(self, request, *args, **kwargs):
-        form = self.extract_form_class()
-        return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
+        self.form = self.extract_form_class()
+        return render(request, 'chlamdb/extract_orthogroup.html', self.get_context())
 
     def post(self, request, *args, **kwargs):
-        form = self.extract_form_class(request.POST)
-        if not form.is_valid():
-            form = self.extract_form_class()
+        self.form = self.extract_form_class(request.POST)
+        if not self.form.is_valid():
+            self.form = self.extract_form_class()
             # add error message in web page
-            return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
+            return render(request, 'chlamdb/extract_orthogroup.html', self.get_context())
 
-        include_taxids, include_plasmids = form.get_include_choices()
-        exclude_taxids, exclude_plasmids = form.get_exclude_choices()
-        n_missing = form.get_n_missing()
+        include_taxids, include_plasmids = self.form.get_include_choices()
+        exclude_taxids, exclude_plasmids = self.form.get_exclude_choices()
+        n_missing = self.form.get_n_missing()
         single_copy = "checkbox_single_copy" in request.POST
 
         sum_include_lengths = len(include_taxids)
@@ -319,8 +327,8 @@ class ExtractOrthogroupView(View):
             sum_include_lengths += len(include_plasmids)
 
         if n_missing >= sum_include_lengths:
-            wrong_n_missing = True
-            return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
+            return render(request, 'chlamdb/extract_orthogroup.html',
+                          self.get_context(wrong_n_missing=True))
 
         og_counts_in = self.get_hits(include_taxids, plasmids=include_plasmids)
         if not single_copy:
@@ -349,8 +357,8 @@ class ExtractOrthogroupView(View):
         pos_index = og_counts_in[og_counts_in.selection].index
         selection = pos_index.difference(neg_index).tolist()
         if len(selection) == 0:
-            no_match = True
-            return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
+            return render(request, 'chlamdb/extract_orthogroup.html',
+                          self.get_context(no_match=True))
 
         count_all_genomes = self.get_hits(selection, search_on="orthogroup")
         number_orth = count_all_genomes.index
@@ -413,8 +421,18 @@ class ExtractOrthogroupView(View):
         ref_genomes = self.db.get_genomes_description(
         ).loc[include_taxids].reset_index()
 
-        envoi_extract = True
-        return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
+        context = self.get_context(envoi_extract=True,
+                                   n_missing=n_missing,
+                                   number_orth=number_orth,
+                                   table_headers=table_headers,
+                                   ref_genomes=ref_genomes,
+                                   match_groups_data=match_groups_data,
+                                   details_header=details_header,
+                                   details_data=details_data,
+                                   include_taxids=include_taxids,
+                                   exclude_taxids=exclude_taxids,
+                                   selection=selection)
+        return render(request, 'chlamdb/extract_orthogroup.html', context)
 
 
 def venn_orthogroup(request):
