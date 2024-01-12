@@ -298,8 +298,22 @@ class ComparisonViewMixin():
 
 class ExtractOrthogroupView(View, ComparisonViewMixin):
 
-    view_type = "orthogroup"
+    comp_type = "orthogroup"
     template = 'chlamdb/extract_orthogroup.html'
+
+    table_help = """
+    Two tables have been generated:<br>
+    <b>Orthogroups</b> table: it contains the list of orthologous groups shared
+    among the selected genomes. The annotation(s) of orthologous groups is a
+    consensus of the annotation of all members of the group, and only the two
+    most frequent annotations are reported.  For each orthogroup the table
+    displays the gene name, the product and the COG category. Additionally,
+    the number of occurences of the annotation in the whole set database and
+    in the selected genomes.<br>
+    <b>Table detail</b>: a complete list of the members of each orthologous
+    group shared by the selected genome is displayed. Gene loci are reported
+    and quickly linked to additional details about locus annotations.
+    """
 
     @property
     def get_hit_counts(self):
@@ -307,7 +321,7 @@ class ExtractOrthogroupView(View, ComparisonViewMixin):
 
     @property
     def view_name(self):
-        return f"extract_{self.view_type}"
+        return f"extract_{self.comp_type}"
 
     def dispatch(self, request, *args, **kwargs):
         biodb_path = settings.BIODB_DB_PATH
@@ -319,6 +333,9 @@ class ExtractOrthogroupView(View, ComparisonViewMixin):
     def get_context(self, **kwargs):
         context = {
             "page_title": self.page_title,
+            "comp_type": self.comp_type,
+            "compared_obj_name": self.compared_obj_name,
+            "table_help": self.table_help,
             "form": self.form,
         }
         context.update(kwargs)

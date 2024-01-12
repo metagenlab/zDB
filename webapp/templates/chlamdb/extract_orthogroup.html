@@ -20,11 +20,11 @@
           <div class="row">
             <div class="col-lg-12">
              {% include "chlamdb/menu.html" %}
-             {% include "chlamdb/extract_nav_tabs_template.html" with type="orthogroup" active_tab="det" %}
+             {% include "chlamdb/extract_nav_tabs_template.html" with type=comp_type active_tab="det" %}
 
              <br>
-                  <p class="page-title"><b>Orthogroups shared by selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Get the list of {{compared_obj_name}} identified with Ortohfinder shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
-                    
+                  <p class="page-title"><b>{{compared_obj_name|capfirst}} shared by selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Get the list of {{compared_obj_name}} shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
+
                 <!--
                 <div style="position: absolute;margin-top:10%; margin-left: 33%;">
                     <div style="height:40px;margin-left: 180px;width:280px;border: 2px solid #8AC007; border-radius: 15px;">
@@ -84,10 +84,7 @@
               <div class="panel-heading" style="width:100%">
                 <h3 class="panel-title">Help to interpret the results</h3>
               </div>
-              <p style="margin: 10px 10px 10px 10px; line-height: 180%">Two tables have been generated:
-                <br> <b>Orthogroups</b> table: it contains the list of orthologous groups shared among the selected genomes. The annotation(s) of orthologous groups is a consensus of the annotation of all members of the group, and only the two most frequent annotations are reported.  For each orthogroup the table displays the gene name, the product and the COG 
-              category. Additionally, the number of occurences of the annotation in the whole set database and in the selected genomes. 
-              <br><b>Table detail</b>: a complete list of the members of each orthologous group shared by the selected genome is displayed. Gene loci are reported and quickly linked to additional details about locus annotations.               
+              <p style="margin: 10px 10px 10px 10px; line-height: 180%">{{ table_help|safe }}
               </p>
             </div>
               <ul style="list-style-type:square">
@@ -108,7 +105,7 @@
                                <td> {{ n_missing }} </td>
                            </tr>
                              <tr>
-                               <th>Number of orthogroups identified</th>
+                               <th>Number of {{ compared_obj_name }} identified</th>
                                <td> {{ n_hits }}  </td>
                            </tr>
 
@@ -145,9 +142,7 @@
             <div class="tab-pane active" id="red">
               
             <div style="padding-top:18px;">
-  
-              <table class="hover" id="table_groups">
-  
+              <table class="hover data-table" id="table_groups">
                 <thead>
                   <tr>
                   {% for value in table_headers %}
@@ -155,13 +150,13 @@
                   {% endfor %}
                   </tr>
                 </thead>
-  
+
                 <tbody>
                 {% for value in match_groups_data %}
                   <tr>
                     {% for entry in value %}
                     {% if forloop.first %}
-                      <td><a href="{% url 'orthogroup' entry %}">{{entry}}</a></td>
+                      <td><a href="{% url comp_type entry %}">{{entry}}</a></td>
                     {% else %}
                       <td>{{entry|safe}}</td>
                     {% endif %}
@@ -179,7 +174,7 @@
                   {% endif %}
                   <br/>
                 </div>
-                <table class="hover" id="orthogroups_table">
+                <table class="hover data-table" id="details_table">
                   <thead>
                     <tr>
                     {% for value in details_header %}
@@ -215,20 +210,13 @@
 <script>
 
   $(document).ready(function() {
-	  $('#orthogroups_table').DataTable({
+	  $('.data-table').DataTable({
 		dom: 'Bfrtip',
 		"paging":   true,
 		"ordering": true,
 		"info":     false,
 		buttons: [{extend: 'excel', title: 'ko_table'},
 		{ extend: 'csv', title: 'ko_table'}] }); 
-	  $("#table_groups").DataTable({
-		dom: 'Bfrtip',
-		"paging":   true,
-		"ordering": true,
-		"info":     false,
-		buttons: [{extend: 'excel', title: 'ko_table'},
-		{ extend: 'csv', title: 'ko_table'}] })
   } );
 
 
