@@ -1,0 +1,76 @@
+<!DOCTYPE html> <html>  <head> {% load custom_tags %}
+  {% load static %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+  {% load custom_tags %}
+  {% include "chlamdb/header.html" %}
+
+
+</head>
+
+<body>
+<div class="container-fluid" id="main_container">
+  <div class="row">
+    <div id="wrapper">
+      <div id="page-content-wrapper">
+        <div class="row">
+          <div class="col-lg-12">
+            {% include "chlamdb/menu.html" %}
+            {% include "chlamdb/extract_nav_tabs_template.html" with type=entry_type active_tab="index" %}
+            <br><br><br>
+            <table id="pfam_table">
+              <thead>
+                <tr>
+                  <td></td>
+                  {% for header in table_headers %}
+                    <td>{{ header }}</td>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for index, row in table_data.iterrows %}
+                  <tr>
+                    <td>{{forloop.counter}}</td>
+                    {% for attrname in table_data_accessors%}
+                      <td>{{row|keyvalue:attrname|safe}}</td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+$(document).ready(function() {
+  $('#pfam_table').DataTable( {
+    dom: 'lBfrtip',
+    buttons: [
+        {
+            extend: 'colvis',
+            columns: ':not(.noVis)',
+        },
+        {
+            extend: 'excel',
+            title: 'plast_refseq'
+        },
+        {
+            extend: 'csv',
+            title: 'plast_refseq'
+        }
+    ],
+
+    "ordering": true,
+    "info":     false,
+    } );
+} );
+
+</script>
+
+</body>
+</html>

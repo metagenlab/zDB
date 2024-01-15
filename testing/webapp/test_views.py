@@ -49,6 +49,7 @@ urls = [
     '/entry_list_pfam',
     '/entry_list_cog',
     '/entry_list_ko',
+    '/entry_list_amr',
     '/circos/',
     '/blast/',
     '/extract_orthogroup/',
