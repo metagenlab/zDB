@@ -17,7 +17,7 @@ to [Common Changelog](https://common-changelog.org)
 ### Added
 
 - Add AMR hit extraction view. ([#38](https://github.com/metagenlab/zDB/pull/38)) (Niklaus Johner)
-- Add AMR entry list view. ([#36](https://github.com/metagenlab/zDB/pull/36)) (Niklaus Johner)
+- Add AMR entry list view. ([#37](https://github.com/metagenlab/zDB/pull/37)) (Niklaus Johner)
 - Add AMR comparison index view and link it in the menu and home page. ([#35](https://github.com/metagenlab/zDB/pull/35)) (Niklaus Johner)
 - Add AMR tabular comparison views. ([#24](https://github.com/metagenlab/zDB/pull/24), [#31](https://github.com/metagenlab/zDB/pull/31)) (Niklaus Johner)
 - Add integration tests for pipelines and views. ([#29](https://github.com/metagenlab/zDB/pull/29)) (Niklaus Johner)
