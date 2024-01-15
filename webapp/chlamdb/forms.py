@@ -112,7 +112,7 @@ def make_plot_form(db):
     return PlotForm
 
 
-def make_metabo_from(db, add_box=False):
+def make_metabo_from(db, add_box=False, add_amr_choices=False):
 
     accession_choices, rev_index = get_accessions(db)
 
@@ -132,33 +132,35 @@ def make_metabo_from(db, add_box=False):
             input_box = forms.CharField(
                 widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
 
+        if add_amr_choices:
+            comp_type = forms.ChoiceField(
+                choices=(("gene", "Gene"),
+                         ("class", "Class"),
+                         ("subclass", "Subclass")),
+                required=True
+            )
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.helper = FormHelper()
             self.helper.form_method = 'post'
             self.helper.label_class = 'col-lg-1 col-md-6 col-sm-6'
             self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
-            if not add_box:
-                self.helper.layout = Layout(
+            rows = [Row('targets')]
+            if add_box:
+                rows.append(Row('input_box'))
+            if add_amr_choices:
+                rows.append(Row('comp_type'))
 
-                    Fieldset("Compare genomes",
-                             Column(
-                                 Row('targets'),
-                                 Submit('submit', 'Submit'),
-                                 css_class='form-group col-lg-12 col-md-12 col-sm-12'),
-                             )
-                )
+            self.helper.layout = Layout(
 
-            else:
-                self.helper.layout = Layout(
-                    Fieldset("Compare genomes",
-                             Column(
-                                 Row('targets'),
-                                 Row('input_box'),
-                                 Submit('submit', 'Submit'),
-                                 css_class='form-group col-lg-12 col-md-12 col-sm-12'),
-                             )
-                )
+                Fieldset("Compare genomes",
+                         Column(
+                             *rows,
+                             Submit('submit', 'Submit'),
+                             css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                         )
+            )
 
             super(MetaboForm, self).__init__(*args, **kwargs)
 

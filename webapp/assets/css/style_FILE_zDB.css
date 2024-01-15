@@ -172,6 +172,11 @@
     margin: 10px 10px 10px 10px
 }
 
+.jumbotron {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
 .title {
     text-transform: uppercase;
     text-align: left;

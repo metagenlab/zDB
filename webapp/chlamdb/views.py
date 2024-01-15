@@ -30,18 +30,14 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
 from ete3 import SeqMotifFace, StackedBarFace, TextFace, Tree, TreeStyle
-
-import chlamdb.circosjs as circosjs
-
 from lib import search_bar as sb
-from lib.db_utils import (DB, NoPhylogenyException)
+from lib.db_utils import DB, NoPhylogenyException
 from lib.ete_phylo import (Column, EteTree, KOAndCompleteness,
-                                       ModuleCompletenessColumn,
-                                       SimpleColorColumn)
+                           ModuleCompletenessColumn, SimpleColorColumn)
 from lib.KO_module import ModuleParser
-
 from reportlab.lib import colors
 
+import chlamdb.circosjs as circosjs
 from chlamdb.forms import (make_blast_form, make_circos_form,
                            make_extract_form, make_metabo_from,
                            make_module_overview_form,
@@ -61,21 +57,21 @@ with DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
 title2page = {
     'COG Ortholog': ['fam_cog'],
     'Comparisons: Antimicrobial Resistance': [
-        'amr_class_comparison', 'amr_gene_comparison', 'amr_subclass_comparison'],
+        'amr_comparison', 'index_comp_amr'],
     'Comparisons: Clusters of Orthologous groups (COGs)': [
-        'cog_barchart', 'index_comp_COG', 'COG_phylo_heatmap',
+        'cog_barchart', 'index_comp_cog', 'cog_phylo_heatmap',
         'cog_comparison', 'entry_list_cog', 'extract_cog', 'heatmap_COG',
-        'pan_genome_COG', 'plot_heatmap_COG', 'venn_cog'],
+        'pan_genome_cog', 'plot_heatmap_cog', 'venn_cog'],
     'Comparisons: Kegg Orthologs (KO)': [
         'entry_list_ko', 'extract_ko', 'heatmap_ko', 'index_comp_ko',
         'ko_comparison', 'module_barchart', 'pan_genome_ko', 'plot_heatmap_ko',
         'venn_ko'],
     'Comparisons: PFAM domains': [
-        'entry_list_pfam', 'extract_pfam', 'heatmap_pfam', 'pan_genome_Pfam',
-        'pfam_comparison', 'venn_pfam', 'index_comp_Pfam', 'plot_heatmap_Pfam'],
+        'entry_list_pfam', 'extract_pfam', 'heatmap_pfam', 'pan_genome_pfam',
+        'pfam_comparison', 'venn_pfam', 'index_comp_pfam', 'plot_heatmap_pfam'],
     'Comparisons: orthologous groups': [
-        'extract_orthogroup', 'heatmap_orthogroup', 'index_comp_orthology',
-        'orthogroup_comparison', 'pan_genome_orthology', 'plot_heatmap_orthology',
+        'extract_orthogroup', 'heatmap_orthogroup', 'index_comp_orthogroup',
+        'orthogroup_comparison', 'pan_genome_orthogroup', 'plot_heatmap_orthogroup',
         'venn_orthogroup'],
     'Genome alignments: Circos plot': ['circos'],
     'Genome alignments: Plot region': ['plot_region'],
@@ -469,16 +465,47 @@ def format_pfam(pfam_id, base=None, to_url=False):
     return fmt_entry
 
 
-def index_comp(request, type):
-    page_title = page2title[f"index_comp_{type}"]
-    if type == 'Pfam':
-        return render(request, 'chlamdb/index_pfam.html', my_locals(locals()))
-    if type == 'COG':
-        return render(request, 'chlamdb/index_cog.html', my_locals(locals()))
-    if type == 'ko':
-        return render(request, 'chlamdb/index_ko.html', my_locals(locals()))
-    if type == 'orthology':
-        return render(request, 'chlamdb/index_orthology.html', my_locals(locals()))
+class ComparisonIndexView(View):
+
+    type2objname = {
+        "cog": "COGs",
+        "pfam": "Pfam domains",
+        "ko": "Kegg Orthologs",
+        "orthogroup": "Orthologous groups",
+        "amr": "AMR"
+    }
+
+    @property
+    def boxes(self):
+        boxes = ["entry-list", "extraction", "venn",
+                 "tabular-comparison", "heatmap", "accumulation-rarefaction"]
+        if self.comp_type == "amr":
+            boxes = ["tabular-comparison"]
+        elif self.comp_type == "orthogroup":
+            boxes.remove("entry-list")
+        elif self.comp_type == "ko":
+            boxes.append("barcharts")
+        elif self.comp_type == "cog":
+            boxes.extend(["barcharts", "heatmap-count", "heatmap-fraction"])
+        return boxes
+
+    def dispatch(self, request, comp_type, *args, **kwargs):
+        self.comp_type = comp_type
+        return super(ComparisonIndexView, self).dispatch(request, *args, **kwargs)
+
+    @property
+    def compared_obj_name(self):
+        return self.type2objname[self.comp_type]
+
+    def get(self, request):
+        page_title = page2title[f"index_comp_{self.comp_type}"]
+        context = my_locals({
+            "page_title": page_title,
+            "compared_obj_name": self.compared_obj_name,
+            "comp_type": self.comp_type,
+            "boxes": self.boxes,
+            })
+        return render(request, 'chlamdb/index_comp.html', context)
 
 
 def entry_list_ko(request,):
@@ -2260,13 +2287,13 @@ def fam_pfam(request, pfam):
     return render(request, 'chlamdb/fam.html', my_locals(context))
 
 
-def COG_phylo_heatmap(request, frequency):
+def cog_phylo_heatmap(request, frequency):
     biodb = settings.BIODB_DB_PATH
 
-    page_title = page2title["COG_phylo_heatmap"]
+    page_title = page2title["cog_phylo_heatmap"]
 
     if request.method != "GET":
-        return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
+        return render(request, 'chlamdb/cog_phylo_heatmap.html', my_locals(locals()))
     freq = frequency != "False"
 
     db = DB.load_db_from_name(biodb)
@@ -2318,7 +2345,7 @@ def COG_phylo_heatmap(request, frequency):
     asset_path = f"/temp/COG_tree_{freq}.svg"
     e_tree.render(path, dpi=600)
     envoi = True
-    return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
+    return render(request, 'chlamdb/cog_phylo_heatmap.html', my_locals(locals()))
 
 
 class KOModuleChooser:
@@ -2910,16 +2937,16 @@ def pan_genome(request, type):
         return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
     taxids = form.get_taxids()
 
-    if type == "COG":
+    if type == "cog":
         df_hits = db.get_cog_hits(taxids, search_on="taxid", indexing="taxid")
         type_txt = "COG orthologs"
-    elif type == "orthology":
+    elif type == "orthogroup":
         df_hits = db.get_og_count(taxids, search_on="taxid")
         type_txt = "orthologs"
     elif type == "ko":
         df_hits = db.get_ko_hits(taxids, search_on="taxid")
         type_txt = "KEGG orthologs"
-    elif type == "Pfam":
+    elif type == "pfam":
         df_hits = db.get_pfam_hits(taxids, search_on="taxid")
         type_txt = "PFAM domains"
     else:
@@ -3589,16 +3616,16 @@ def plot_heatmap(request, type):
                "form_venn": form_venn, "error_message": error_message, "page_title": page_title}
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(ctx))
 
-    if type == "COG":
+    if type == "cog":
         mat = db.get_cog_hits(taxon_ids, indexing="taxid", search_on="taxid")
         mat.index = [format_cog(i) for i in mat.index]
-    elif type == "orthology":
+    elif type == "orthogroup":
         mat = db.get_og_count(taxon_ids)
         mat.index = [format_orthogroup(i) for i in mat.index]
     elif type == "ko":
         mat = db.get_ko_hits(taxon_ids)
         mat.index = [format_ko(i) for i in mat.index]
-    elif type == "Pfam":
+    elif type == "pfam":
         mat = db.get_pfam_hits(taxon_ids)
         mat.index = [format_pfam(i) for i in mat.index]
     else:
@@ -3908,10 +3935,13 @@ class TabularComparisonViewBase(View):
         biodb_path = settings.BIODB_DB_PATH
         self.db = DB.load_db_from_name(biodb_path)
         self.page_title = page2title[self.view_name]
-        self.comp_metabo_form = make_metabo_from(self.db)
+        self.comp_metabo_form = self.make_metabo_from()
         self.show_comparison_table = False
         self._hash_to_taxon_dict = None
         return super(TabularComparisonViewBase, self).dispatch(request, *args, **kwargs)
+
+    def make_metabo_from(self):
+        return make_metabo_from(self.db)
 
     def get(self, request, *args, **kwargs):
         self.form = self.comp_metabo_form()
@@ -3921,13 +3951,16 @@ class TabularComparisonViewBase(View):
         self.form = self.comp_metabo_form(request.POST)
         if self.form.is_valid():
             self.show_comparison_table = True
+            self.targets = self.form.get_choices()
+            if "comp_type" in self.form.cleaned_data:
+                self.comp_type = self.form.cleaned_data["comp_type"]
             self.set_table_data()
 
         return render(request, self.template, self.context)
 
     @property
     def view_name(self):
-        return f"{self.view_type.lower()}_comparison"
+        return f"{self.view_type}_comparison"
 
     @property
     def context(self):
@@ -3959,7 +3992,6 @@ class TabularComparisonViewBase(View):
         return self._hash_to_taxon_dict
 
     def set_table_data(self):
-        self.targets = self.form.get_choices()
         self.n_selected = len(self.targets)
 
         taxon_list = [self.hash_to_taxon_dict[target_id]
@@ -4051,7 +4083,7 @@ def module_comparison(request):
 
 class PfamComparisonView(TabularComparisonViewBase):
 
-    view_type = "Pfam"
+    view_type = "pfam"
     base_info_headers = ["Domain ID", "Description", "nDomain"]
 
     table_help = """
@@ -4082,7 +4114,7 @@ class PfamComparisonView(TabularComparisonViewBase):
 
 class CogComparisonView(TabularComparisonViewBase):
 
-    view_type = "COG"
+    view_type = "cog"
     base_info_headers = ["COG accession", "Description", "# complete DB", "# genomes"]
 
     table_help = """
@@ -4138,7 +4170,7 @@ class CogComparisonView(TabularComparisonViewBase):
 
 class OrthogroupComparisonView(TabularComparisonViewBase):
 
-    view_type = "orthology"
+    view_type = "orthogroup"
     base_info_headers = ["Orthogroup", "Annotaion"]
 
     table_help = """
@@ -4210,13 +4242,10 @@ class KoComparisonView(TabularComparisonViewBase):
         return table_rows
 
 
-class AmrClassComparisonView(TabularComparisonViewBase):
+class AmrComparisonView(TabularComparisonViewBase):
 
     view_type = "amr"
     compared_obj_name = "AMR"
-
-    base_info_headers = ["Class"]
-    group_by = "class"
 
     _table_help = """
     The ouput table contains the number of times a given AMR {} appears
@@ -4225,19 +4254,55 @@ class AmrClassComparisonView(TabularComparisonViewBase):
     <br> Counts can be reordrered by clicking on column headers.<br>
     """
 
+    _scope_hint = """
+    <br> Note that genes are split into "core" and "plus" scopes, where
+    "core" proteins are expected to have an effect on resistance while
+    "plus" proteins are included with a less stringent criteria.<br>
+    """
+
+    def make_metabo_from(self):
+        return make_metabo_from(self.db, add_amr_choices=True)
+
+    @property
+    def base_info_headers(self):
+        if self.comp_type == "gene":
+            return ["Gene", "scope", "Class", "Subclass", "Annotation"]
+        elif self.comp_type == "subclass":
+            return ["Subclass", "Class"]
+        elif self.comp_type == "class":
+            return ["Class"]
+
     @property
     def table_help(self):
-        return self._table_help.format(self.group_by)
+        if self.comp_type == "gene":
+            return self._table_help.format(self.comp_type) + self._scope_hint
+        else:
+            return self._table_help.format(self.comp_type)
 
     def get_row_data(self, groupid, data):
-        return [groupid]
+        if self.comp_type == "class":
+            return [groupid]
+        elif self.comp_type == "subclass":
+            return [
+                format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
+                data.iloc[0]["scope"],
+                safe_replace(data.iloc[0]["class"], "/", " / "),
+                safe_replace(data.iloc[0]["subclass"], "/", " / "),
+                data.iloc[0]["seq_name"]]
+        elif self.comp_type == "gene":
+            return [
+                format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
+                data.iloc[0]["scope"],
+                safe_replace(data.iloc[0]["class"], "/", " / "),
+                safe_replace(data.iloc[0]["subclass"], "/", " / "),
+                data.iloc[0]["seq_name"]]
 
     def get_table_rows(self):
         hits = self.db.get_amr_hits_from_taxonids(self.targets)
 
         table_rows = []
         hits["quality"] = hits["coverage"] * hits["identity"] / 10000
-        for groupid, data in hits.groupby(self.group_by):
+        for groupid, data in hits.groupby(self.comp_type):
             row = self.get_row_data(groupid, data)
             taxonids = data["bioentry.taxon_id"]
             values = [len(taxonids[taxonids == target_id])
@@ -4252,46 +4317,6 @@ class AmrClassComparisonView(TabularComparisonViewBase):
     @property
     def hist_colour_index_shift(self):
         return len(self.targets)
-
-    @property
-    def view_name(self):
-        return f"{self.view_type}_{self.group_by}_comparison"
-
-    @property
-    def tab_name(self):
-        return f"{self.group_by}_comp"
-
-
-class AmrGeneComparisonView(AmrClassComparisonView):
-
-    base_info_headers = ["Gene", "scope", "Class", "Subclass", "Annotation"]
-    group_by = "gene"
-
-    _scope_hint = """
-    <br> Note that genes are split into "core" and "plus" scopes, where
-    "core" proteins are expected to have an effect on resistance while
-    "plus" proteins are included with a less stringent criteria.<br>
-    """
-
-    @property
-    def table_help(self):
-        return self._table_help.format(self.group_by) + self._scope_hint
-
-    def get_row_data(self, groupid, data):
-        return [format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
-                data.iloc[0]["scope"],
-                safe_replace(data.iloc[0]["class"], "/", " / "),
-                safe_replace(data.iloc[0]["subclass"], "/", " / "),
-                data.iloc[0]["seq_name"]]
-
-
-class AmrSubclassComparisonView(AmrClassComparisonView):
-
-    base_info_headers = ["Subclass", "Class"]
-    group_by = "subclass"
-
-    def get_row_data(self, groupid, data):
-        return [groupid, safe_replace(data.iloc[0]["class"], "/", " / ")]
 
 
 def faq(request):

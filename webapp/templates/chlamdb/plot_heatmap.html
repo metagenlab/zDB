@@ -19,9 +19,9 @@
 
                 <br>
                     <p class="page-title"><b>Heatmap of the presence/absence of
-                        {% if type == 'Pfam' %}
+                    {% if type == 'pfam' %}
                         Pfam domains
-                    {% elif type == 'COG' %}
+                    {% elif type == 'cog' %}
                         COG categories
                     {% elif type == 'interpro'%}
                         Interpro Entries.
@@ -67,9 +67,9 @@
                      </div>
                      <p style="margin: 10px 10px 10px 10px">
                         The heatmap displays the number of
-                        {% if type == 'Pfam' %}
+                        {% if type == 'pfam' %}
                         times a Pfam domain shared by the genomes of interest is found.
-                    {% elif type == 'COG' %}
+                    {% elif type == 'cog' %}
                         COGs found per each COG category shared by the genomes of interest.
                     {% elif type == 'ko' %}
                     Kegg entries found per each Kegg orthologous groups shared by the genomes of interest.

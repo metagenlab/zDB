@@ -1,3 +1,5 @@
+import re
+
 from chlamdb.urls import urlpatterns
 from django.test import SimpleTestCase
 from django.urls import resolve
@@ -22,24 +24,24 @@ untested_patterns = {
 urls = [
     '/home/',
     '/cog_barchart/',
-    '/pan_genome/COG',
-    '/pan_genome/Pfam',
+    '/pan_genome/cog',
+    '/pan_genome/pfam',
     '/pan_genome/ko',
-    '/pan_genome/orthology',
-    '/plot_heatmap/COG',
-    '/plot_heatmap/Pfam',
+    '/pan_genome/orthogroup',
+    '/plot_heatmap/cog',
+    '/plot_heatmap/pfam',
     '/plot_heatmap/ko',
-    '/plot_heatmap/orthology',
-    '/COG_phylo_heatmap/True',
-    '/COG_phylo_heatmap/False',
+    '/plot_heatmap/orthogroup',
+    '/cog_phylo_heatmap/True',
+    '/cog_phylo_heatmap/False',
     '/module_barchart/',
     '/get_cog/3/L?h=1&h=2&h=3',
     '/ko_venn_subset/L?h=1&h=2&h=3',
     '/kegg/',
     '/locusx/CHUV_00025/True',
-    '/index_comp/orthology',
-    '/index_comp/COG',
-    '/index_comp/Pfam',
+    '/index_comp/orthogroup',
+    '/index_comp/cog',
+    '/index_comp/pfam',
     '/index_comp/ko',
     '/locusx/CHUV_00025',
     '/orthogroup/group_85',
@@ -71,9 +73,7 @@ urls = [
     '/cog_comparison',
     '/ko_comparison',
     '/orthogroup_comparison',
-    '/amr_gene_comparison',
-    '/amr_class_comparison',
-    '/amr_subclass_comparison',
+    '/amr_comparison',
     '/about',
     '/help',
     '/fam_pfam/PF10423',
@@ -125,6 +125,16 @@ class TestViewsAreHealthy(SimpleTestCase):
                 print(f"Templates {[el.name for el in resp.templates]}\n\n")
                 raise exc
 
+    def test_all_comparison_views_render_navigation(self):
+
+        comp_pattern = "/extract_[^s]+/|/[^m].+_comparison|/venn_|"\
+                       "/plot_heatmap|/pan_genome|/entry_list"
+        for url in urls:
+            if re.match(comp_pattern, url):
+                resp = self.client.get(url)
+                self.assertContains(resp, "<nav>",
+                                    msg_prefix=f"{url} does not contain navigation")
+
 
 class TestViewsContent(SimpleTestCase):
 
@@ -151,10 +161,10 @@ class TestViewsContent(SimpleTestCase):
         self.assertContains(resp, '<a href="/genomes" ><b>Genomes</b></a>', html=True)
         self.assertContains(resp, '<a href="/phylogeny"><b>Phylogeny</b></a>', html=True)
         self.assertContains(resp, '<a class="link_boxes" href="/blast/"><span class="link"></span> Blast </a>', html=True)
-        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/orthology"><span class="link"></span>Orthogroups</a>', html=True)
-        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/COG"><span class="link"></span>COGs</a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/orthogroup"><span class="link"></span>Orthogroups</a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/cog"><span class="link"></span>COGs</a>', html=True)
         self.assertContains(resp, '<a class="link_boxes" href="/index_comp/ko"><span class="link"></span>Kegg Orthologs</a>', html=True)
-        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/Pfam"><span class="link"></span>Pfam domains</a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/pfam"><span class="link"></span>Pfam domains</a>', html=True)
         self.assertContains(resp, '<a class="link_boxes" href="/circos/"><span class="link"></span>Plot region</a>', html=True)
         self.assertContains(resp, '<a class="link_boxes" href="/circos/"><span class="link"></span>Circos</a>', html=True)
         self.assertContains(resp, '<a class="link_boxes" href="/kegg/"><span class="link"></span>Kegg based</a>', html=True)
@@ -175,17 +185,17 @@ class TestViewsContent(SimpleTestCase):
         self.assertContains(resp, "Distribution of COGs within COG categories")
 
     def test_pan_genome_cog(self):
-        resp = self.client.get("/pan_genome/COG")
+        resp = self.client.get("/pan_genome/cog")
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
-        self.assertEqual("COG", resp.context["type"])
+        self.assertEqual("cog", resp.context["type"])
         self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
         self.assertNoPlot(resp)
 
-        resp = self.client.post("/pan_genome/COG", data={"targets": ["0", "1"]})
+        resp = self.client.post("/pan_genome/cog", data={"targets": ["0", "1"]})
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
-        self.assertEqual("COG", resp.context["type"])
+        self.assertEqual("cog", resp.context["type"])
         self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
         self.assertPlot(resp)
 
@@ -224,6 +234,10 @@ class TabularViewTestMixin():
     def tab_comp_view(self):
         return f"/{self.view_type}_comparison"
 
+    @property
+    def tab_comp_form_data(self):
+        return {"targets": ["0", "1"]}
+
     def test_tabular_comparison_view(self):
         resp = self.client.get(self.tab_comp_view)
         self.assertEqual(200, resp.status_code)
@@ -234,7 +248,7 @@ class TabularViewTestMixin():
         self.assertNav(resp)
 
         resp = self.client.post(self.tab_comp_view,
-                                data={"targets": ["0", "1"]})
+                                data=self.tab_comp_form_data)
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/tabular_comparison.html')
         self.assertPageTitle(resp, self.page_title)
@@ -269,26 +283,12 @@ class TestCOGViews(SimpleTestCase, TabularViewTestMixin):
 
 class TestAMRViews(SimpleTestCase, TabularViewTestMixin):
 
-    view_type = "amr_gene"
+    view_type = "amr"
     page_title = "Comparisons: Antimicrobial Resistance"
 
-    pass
-
-
-class TestAMRClassComparisonViews(SimpleTestCase, TabularViewTestMixin):
-
-    view_type = "amr_class"
-    page_title = "Comparisons: Antimicrobial Resistance"
-
-    pass
-
-
-class TestAMRSubclassComparisonViews(SimpleTestCase, TabularViewTestMixin):
-
-    view_type = "amr_subclass"
-    page_title = "Comparisons: Antimicrobial Resistance"
-
-    pass
+    @property
+    def tab_comp_form_data(self):
+        return {"targets": ["0", "1"], "comp_type": "gene"}
 
 
 class TestOrthogroupViews(SimpleTestCase, TabularViewTestMixin):

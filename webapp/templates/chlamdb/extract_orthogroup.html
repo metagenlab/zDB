@@ -20,10 +20,10 @@
           <div class="row">
             <div class="col-lg-12">
              {% include "chlamdb/menu.html" %}
-             {% include "chlamdb/extract_nav_tabs_template.html" with type="orthology" active_tab="det" %}           
+             {% include "chlamdb/extract_nav_tabs_template.html" with type="orthogroup" active_tab="det" %}
 
              <br>
-                  <p class="page-title"><b>Orthogroups shared by selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Get the list of Orthologous groups identified with Ortohfinder shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
+                  <p class="page-title"><b>Orthogroups shared by selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Get the list of {{compared_obj_name}} identified with Ortohfinder shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
                     
                 <!--
                 <div style="position: absolute;margin-top:10%; margin-left: 33%;">
@@ -95,12 +95,12 @@
  			<table class="table" style="width:600px">
                            <tr>
                                <th>Number of included genomes</th>
-                               <td> {{ include_taxids|length }} </td>
+                               <td> {{ included_taxids|length }} </td>
                            </tr>
 
                            <tr>
                                <th>Number of excluded genomes</th>
-                               <td> {{ exclude_taxids|length }} </td>
+                               <td> {{ excluded_taxids|length }} </td>
                            </tr>
 
                             <tr>
@@ -109,7 +109,7 @@
                            </tr>
                              <tr>
                                <th>Number of orthogroups identified</th>
-                               <td> {{ number_orth }}  </td>
+                               <td> {{ n_hits }}  </td>
                            </tr>
 
                        </table>
@@ -119,8 +119,8 @@
             <form action="/circos_main/" method="POST" id="carform" >
             <h5><b>Show the comparison on circular map</b></h5>
               {% csrf_token %}
-              <input type="hidden" name="exclude_taxids" value="{{exclude_taxids}}">
-              <input type="hidden" name="include_taxids" value="{{include_taxids}}">
+              <input type="hidden" name="exclude_taxids" value="{{excluded_taxids}}">
+              <input type="hidden" name="include_taxids" value="{{included_taxids}}">
               <input type="hidden" name="og_list" value="{{selection}}">
                   <select name="reference_taxid" id="reference_taxid" class="bootstrap-select" style="height:36px; margin-bottom: 1em;">
                     {% for row in ref_genomes.itertuples %}
