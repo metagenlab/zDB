@@ -60,7 +60,7 @@ urlpatterns = [
             name="extract_orthogroup"),
     re_path(r'^venn_orthogroup/$', views.venn_orthogroup,
             name="venn_orthogroup"),
-    re_path(r'^extract_cog/$', views.extract_cog, name="extract_cog"),
+    re_path(r'^extract_cog/$', views.ExtractCogView.as_view(), name="extract_cog"),
     re_path(r'^venn_cog/$', views.venn_cog, name="venn_cog"),
     re_path(r'^cog_venn_subset/([A-Z])$',
             views.cog_venn_subset, name="cog_venn_subset"),

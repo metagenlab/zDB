@@ -386,7 +386,8 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
 
         # Count hits for selection
         hit_counts = self.get_hit_counts(self.included_taxids,
-                                         plasmids=self.included_plasmids)
+                                         plasmids=self.included_plasmids,
+                                         search_on="taxid")
         if not single_copy:
             hit_counts["presence"] = hit_counts[hit_counts > 0].count(axis=1)
             hit_counts["selection"] = hit_counts.presence >= self.min_count
@@ -399,7 +400,8 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
 
         if self.n_excluded > 0:
             mat_exclude = self.get_hit_counts(
-                self.excluded_taxids, plasmids=self.excluded_plasmids)
+                self.excluded_taxids, plasmids=self.excluded_plasmids,
+                search_on="taxid")
             mat_exclude["presence"] = mat_exclude[mat_exclude > 0].count(axis=1)
             mat_exclude["exclude"] = mat_exclude.presence > 0
             neg_index = mat_exclude[mat_exclude.exclude].index
@@ -413,7 +415,8 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
             return render(request, self.template, context)
 
         # Count hits for all genomes
-        hit_counts_all = self.get_hit_counts(self.selection, search_on=self.comp_type)
+        hit_counts_all = self.get_hit_counts(
+            self.selection, search_on=self.comp_type)
         self.n_hits = len(hit_counts_all.index)
 
         if not single_copy:
@@ -721,8 +724,7 @@ class CogEntryListView(EntryListViewBase):
     def get_table_data(self):
         # retrieve entry list
         cog_all = self.db.get_cog_hits(self.taxids,
-                                       search_on="taxid",
-                                       indexing="taxid")
+                                       search_on="taxid")
         # retrieve annotations
         cogs_summaries = self.db.get_cog_summaries(
             cog_all.index.tolist(), as_df=True, only_cog_desc=True)
@@ -942,107 +944,99 @@ def venn_pfam(request):
     return render(request, 'chlamdb/venn_Pfam.html', my_locals(ctx))
 
 
-def extract_cog(request):
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    extract_form_class = make_extract_form(db, "extract_cog", plasmid=True, label="COG")
-    page_title = page2title["extract_cog"]
+class ExtractCogView(ExtractHitsBaseView):
 
-    if request.method != "POST":
-        form = extract_form_class()
-        return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
+    comp_type = "cog"
 
-    form = extract_form_class(request.POST)
-    if not form.is_valid():
-        return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
+    _table_headers = ["COG", "Category", "Name"]
 
-    include, include_plasmids = form.get_include_choices()
-    exclude, exclude_plasmids = form.get_exclude_choices()
-    n_missing = form.get_n_missing()
+    table_help = """
+    <br><b>COGs</b> table: it contains the list of COG categories shared among
+    the selected genomes. For each category the most frequent annotations and
+    the number of occurences in the whole set database and in the selected
+    genomes are reported.
+    <br><b> COG categories barchart</b>: this plot displays for each COG
+    category in
+    <span style="color: rgb(135, 186, 245)"><b>light-blue</b></span> the number
+    of genes shared by the selected genomes, while in
+    <span style="color: rgb(16, 76, 145)"><b>blue</b></span> , the total number
+    of genes annotated with that COG in the selected genomes
+    (shared and unique to each selected genome). Next to the light-blue
+    barcharts there is a percentage value as the result of the number of
+    reported COGs for each category divided by the number of shared COG in all
+    categories, while next to the blue barcharts the value represents COGs
+    count are divided by the total COGs unique and shared in the selected
+    genomes.
+    <br>A longer light-blue bar can be interpreted as an enrichment of that
+    shared COG category in the selected genomes compared to their complete COG
+    profiles.
+    <br> <b>Locus list reference</b>
+    """
 
-    sum_include_length = len(include)
-    if include_plasmids is not None:
-        sum_include_length += len(include_plasmids)
+    @property
+    def get_hit_counts(self):
+        return self.db.get_cog_hits
 
-    sum_exclude_length = len(exclude)
-    if exclude_plasmids is not None:
-        sum_exclude_length += len(exclude_plasmids)
+    @property
+    def result_tabs(self):
+        return [
+            ResultTab(1, self.compared_obj_name, "chlamdb/extract_hits_results_table.html"),
+            ResultTab(2, "COG categories barchart", "chlamdb/extract_hits_cog_barcharts.html"),
+            ]
 
-    if n_missing >= sum_include_length:
-        wrong_n_missing = True
-        return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
+    def prepare_data(self, hit_counts, hit_counts_all):
+        cat_count = {}
+        cogs_summaries = self.db.get_cog_summaries(hit_counts_all.index.tolist())
+        cogs_funct = self.db.get_cog_code_description()
+        self.table_data = []
+        for cog_id in self.selection:
 
-    cog_include = db.get_cog_hits(include, plasmids=include_plasmids,
-                                  search_on="taxid", indexing="taxid")
-    if sum_exclude_length > 0:
-        cog_exclude = db.get_cog_hits(exclude, plasmids=exclude_plasmids,
-                                      search_on="taxid", indexing="taxid")
-        cog_exclude["sum_pos"] = cog_exclude[cog_exclude > 0].count(axis=1)
-        cog_exclude["exclude"] = cog_exclude.sum_pos > 0
-        neg_index = cog_exclude[cog_exclude.exclude].index
-    else:
-        neg_index = pd.Index([])
+            # some cogs do not have a description, skip those
+            if cog_id not in cogs_summaries:
+                continue
 
-    cog_include["sum_pos"] = cog_include[cog_include > 0].count(axis=1)
-    cog_include["selection"] = cog_include.sum_pos >= len(include) - n_missing
-    pos_index = cog_include[cog_include.selection].index
-    selection = pos_index.difference(neg_index).tolist()
-    if len(selection) == 0:
-        no_match = True
-        return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
+            data = [format_cog(cog_id)]
+            func_acc = []
+            for func, func_descr, cog_descr in cogs_summaries[cog_id]:
+                func_acc.append((func, func_descr))
+                inc, not_incl = cat_count.get(func, (0, 0))
+                cat_count[func] = (inc + hit_counts.presence.loc[cog_id], not_incl)
+            funcs = "<br>".join(f"{func} ({func_desc})" for func, func_desc in func_acc)
+            data = (format_cog(cog_id, as_url=True), funcs, cog_descr,
+                    hit_counts.presence.loc[cog_id], hit_counts_all.loc[cog_id])
+            self.table_data.append(data)
 
-    all_database = db.get_cog_hits(cog_include.index.tolist(), search_on="cog", indexing="taxid")
-    sums = all_database.sum(axis=1)
+        # get the categories for all cogs
+        for cog_id, details_lst in cogs_summaries.items():
+            for func, func_descr, cog_descr in details_lst:
+                inc, not_incl = cat_count.get(func, (0, 0))
+                cat_count[func] = (inc, not_incl + hit_counts_all.loc[cog_id])
 
-    cat_count = {}
-    cogs_summaries = db.get_cog_summaries(sums.index.tolist())
-    cogs_funct = db.get_cog_code_description()
-    cog_data = []
-    for cog_id in selection:
-        count = sums.loc[cog_id]
+        # Code to generate the barchart diagrams
+        cat_map_str = ",".join([f"\"{func}\": \"{descr}\"" for func, descr in cogs_funct.items()])
+        category_map = f"var category_description = {{{cat_map_str}}};"
+        ttl_sel = sum([c1 for func, (c1, c2) in cat_count.items()])
+        ttl_all = sum([c2 for func, (c1, c2) in cat_count.items()])
 
-        # some cogs do not have a description, skip those
-        if cog_id not in cogs_summaries:
-            continue
+        cat_count_comp = ",".join([f"\"{func}\": [\"{c2}\", \"{c1}\"]" for func, (c1, c2) in cat_count.items()])
+        category_count_complete = f"var category_count_complete = {{{cat_count_comp}}};"
 
-        data = [format_cog(cog_id)]
-        func_acc = []
-        for func, func_descr, cog_descr in cogs_summaries[cog_id]:
-            func_acc.append((func, func_descr))
-            inc, not_incl = cat_count.get(func, (0, 0))
-            cat_count[func] = (inc + cog_include.sum_pos.loc[cog_id], not_incl)
-        funcs = "<br>".join(f"{func} ({func_desc})" for func, func_desc in func_acc)
-        data = (format_cog(cog_id), funcs, cog_descr,
-                cog_include.sum_pos.loc[cog_id], str(count))
-        cog_data.append(data)
+        serie_selection_val = [str(round(float(c1) / ttl_sel, 2)) for func, (c1, c2) in cat_count.items()]
+        serie_all_val = [str(round(float(c2) / ttl_all, 2)) for func, (c1, c2) in cat_count.items()]
+        serie_selection = f"{{labels: \"selection\", values: [{','.join(serie_selection_val)}]}}"
+        serie_all = f"{{labels: \"complete genomes\", values: [{','.join(serie_all_val)}]}}"
+        series_str = ",".join([serie_all, serie_selection])
+        series = f"[{series_str}]"
+        labels_str = ",".join([f"\"{funct}\"" for funct in cat_count.keys()])
+        labels = f"[{labels_str}]"
 
-    # get the categories for all cogs
-    for cog_id, details_lst in cogs_summaries.items():
-        for func, func_descr, cog_descr in details_lst:
-            inc, not_incl = cat_count.get(func, (0, 0))
-            cat_count[func] = (inc, not_incl + sums.loc[cog_id])
-
-    max_n = sums.max(axis=0)
-    sum_group = len(selection)
-
-    # Code to generate the barchart diagrams
-    cat_map_str = ",".join([f"\"{func}\": \"{descr}\"" for func, descr in cogs_funct.items()])
-    category_map = f"var category_description = {{{cat_map_str}}};"
-    ttl_sel = sum([c1 for func, (c1, c2) in cat_count.items()])
-    ttl_all = sum([c2 for func, (c1, c2) in cat_count.items()])
-
-    cat_count_comp = ",".join([f"\"{func}\": [\"{c2}\", \"{c1}\"]" for func, (c1, c2) in cat_count.items()])
-    category_count_complete = f"var category_count_complete = {{{cat_count_comp}}};"
-
-    serie_selection_val = [str(round(float(c1) / ttl_sel, 2)) for func, (c1, c2) in cat_count.items()]
-    serie_all_val = [str(round(float(c2) / ttl_all, 2)) for func, (c1, c2) in cat_count.items()]
-    serie_selection = f"{{labels: \"selection\", values: [{','.join(serie_selection_val)}]}}"
-    serie_all = f"{{labels: \"complete genomes\", values: [{','.join(serie_all_val)}]}}"
-    series_str = ",".join([serie_all, serie_selection])
-    series = f"[{series_str}]"
-    labels_str = ",".join([f"\"{funct}\"" for funct in cat_count.keys()])
-    labels = f"[{labels_str}]"
-    envoi_extract = True
-    return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
+        self.show_results = True
+        return self.get_context(
+            labels=labels,
+            series=series,
+            category_map=category_map,
+            category_count_complete=category_count_complete,
+            )
 
 
 def venn_ko(request):
@@ -1125,7 +1119,7 @@ def venn_cog(request, sep_plasmids=False):
         return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
 
     targets = form_venn.get_taxids()
-    cog_hits = db.get_cog_hits(targets, indexing="taxid", search_on="taxid")
+    cog_hits = db.get_cog_hits(targets, search_on="taxid")
     data = db.get_cog_summaries(cog_hits.index.tolist(), only_cog_desc=True, as_df=True)
     genome_desc = db.get_genomes_description().description.to_dict()
 
@@ -2416,7 +2410,7 @@ def cog_phylo_heatmap(request, frequency):
     descr = db.get_genomes_description()
     all_taxids = descr.index.tolist()
 
-    all_cog_hits = db.get_cog_hits(all_taxids, indexing="taxid", search_on="taxid")
+    all_cog_hits = db.get_cog_hits(all_taxids, search_on="taxid")
     all_cog_funcs = db.get_cog_summaries(all_cog_hits.index.unique().tolist(),
                                          only_cog_desc=True, as_df=True)
     all_cog_hits = all_cog_hits.join(all_cog_funcs.function)
@@ -2738,7 +2732,7 @@ def cog_venn_subset(request, category):
     if len(targets) > 5:
         targets = targets[0:6]
 
-    cog_hits = db.get_cog_hits(targets, indexing="taxid", search_on="taxid")
+    cog_hits = db.get_cog_hits(targets, search_on="taxid")
     genome_desc = db.get_genomes_description().description.to_dict()
     cog_description = db.get_cog_summaries(cog_hits.index.tolist(), only_cog_desc=True, as_df=True)
     selected_cogs = cog_description[cog_description.function.str.contains(category)]
@@ -3053,7 +3047,7 @@ def pan_genome(request, type):
     taxids = form.get_taxids()
 
     if type == "cog":
-        df_hits = db.get_cog_hits(taxids, search_on="taxid", indexing="taxid")
+        df_hits = db.get_cog_hits(taxids, search_on="taxid")
         type_txt = "COG orthologs"
     elif type == "orthogroup":
         df_hits = db.get_og_count(taxids, search_on="taxid")
@@ -3732,7 +3726,7 @@ def plot_heatmap(request, type):
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(ctx))
 
     if type == "cog":
-        mat = db.get_cog_hits(taxon_ids, indexing="taxid", search_on="taxid")
+        mat = db.get_cog_hits(taxon_ids, search_on="taxid")
         mat.index = [format_cog(i) for i in mat.index]
     elif type == "orthogroup":
         mat = db.get_og_count(taxon_ids)
@@ -4243,12 +4237,11 @@ class CogComparisonView(TabularComparisonViewBase):
 
     def get_table_rows(self):
         cog_hits = self.db.get_cog_hits(
-            ids=self.targets, search_on="taxid", indexing="taxid")
+            ids=self.targets, search_on="taxid")
         # retrieve entry list
         cog_all = self.db.get_cog_hits(
             ids=list(self.hash_to_taxon_dict.keys()),
-            search_on="taxid",
-            indexing="taxid")
+            search_on="taxid")
 
         # count frequency and n genomes
         cog_count = cog_all.sum(axis=1)
