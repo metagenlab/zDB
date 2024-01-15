@@ -418,12 +418,12 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
         hit_counts_all = self.get_hit_counts(
             self.selection, search_on=self.comp_type)
         self.n_hits = len(hit_counts_all.index)
+        self.max_n = len(hit_counts_all.columns)
 
         if not single_copy:
             hit_counts_all = hit_counts_all[hit_counts_all > 0].count(axis=1)
         else:
             hit_counts_all = hit_counts_all[hit_counts_all == 1].count(axis=1)
-        self.max_n = hit_counts_all.max()
 
         context = self.prepare_data(hit_counts, hit_counts_all)
 
