@@ -60,7 +60,6 @@ urls = [
     '/venn_cog/True',
     '/venn_ko/',
     '/extract_pfam/',
-    '/extract_pfam/taxon_id',
     '/extract_ko/',
     '/venn_pfam/',
     '/KEGG_mapp_ko',

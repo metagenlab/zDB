@@ -793,7 +793,7 @@ class AmrEntryListView(EntryListViewBase):
         return aggregated
 
 
-def extract_pfam(request, classification="taxon_id"):
+def extract_pfam(request):
     db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     page_title = page2title["extract_pfam"]
 
