@@ -910,71 +910,41 @@ def format_ko_modules(hsh_modules, ko):
     return "<br>".join([format_ko_module(i, d) for i, d in modules])
 
 
-def extract_ko(request):
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    page_title = page2title["extract_ko"]
+class ExtractKoView(ExtractHitsBaseView):
 
-    extract_form_class = make_extract_form(db, "extract_ko", plasmid=True, label="Kegg Orthologs")
+    comp_type = "ko"
 
-    if request.method != "POST":
-        form = extract_form_class()
-        return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
+    _table_headers = ["KO", "Description", "Kegg Pathways", "Kegg Modules"]
 
-    form = extract_form_class(request.POST)
-    if not form.is_valid():
-        return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
+    table_help = """
+    The output consists of a table containing the KO accession number of
+    the Kegg Orthologs shared among the selected genomes. For each entry
+    its description, the corresponding EC numbers used in Enzyme nomenclature,
+    the Kegg Pathways and Kegg modules to whihch it belongs are reported.
+    Additionally the frequency of the Ko entry in the selected genomes and in
+    the whole database is computed.
+    """
 
-    include, include_plasmids = form.get_include_choices()
-    exclude, exclude_plasmids = form.get_exclude_choices()
-    n_missing = form.get_n_missing()
+    @property
+    def get_hit_counts(self):
+        return self.db.get_ko_hits
 
-    sum_include_length = len(include)
-    if include_plasmids is not None:
-        sum_include_length += len(include_plasmids)
+    def prepare_data(self, hit_counts, hit_counts_all):
+        ko_desc = self.db.get_ko_desc(self.selection)
+        ko_mod = self.db.get_ko_modules(self.selection)
+        ko_path = self.db.get_ko_pathways(self.selection)
+        self.table_data = []
+        for ko in self.selection:
+            kof = format_ko(ko, as_url=True)
+            kod = ko_desc.get(ko, "-")
+            kop = format_ko_path(ko_path, ko)
+            kom = format_ko_modules(ko_mod, ko)
+            kot = hit_counts_all.loc[ko]
+            data = [kof, kod, kop, kom, hit_counts.presence.loc[ko], kot]
+            self.table_data.append(data)
 
-    sum_exclude_length = len(exclude)
-    if exclude_plasmids is not None:
-        sum_exclude_length += len(exclude_plasmids)
-
-    if n_missing >= sum_include_length:
-        hsh_var = {"wrong_n_missing": True, "form": form}
-        return render(request, 'chlamdb/extract_ko.html', my_locals(hsh_var))
-
-    mat_include = db.get_ko_hits(include, plasmids=include_plasmids)
-    if len(exclude) > 0:
-        mat_exclude = db.get_ko_hits(exclude, plasmids=exclude_plasmids)
-        mat_exclude["sum_pos"] = mat_exclude[mat_exclude > 0].count(axis=1)
-        mat_exclude["exclude"] = mat_exclude.sum_pos > 0
-        neg_index = mat_exclude[mat_exclude.exclude].index
-    else:
-        neg_index = pd.Index([])
-
-    mat_include["sum_pos"] = mat_include[mat_include > 0].count(axis=1)
-    mat_include["selection"] = mat_include.sum_pos >= len(include) - n_missing
-    pos_index = mat_include[mat_include.selection].index
-    selection = pos_index.difference(neg_index).tolist()
-    if len(selection) == 0:
-        hsh_var = {"no_match": True, "form": form}
-        return render(request, 'chlamdb/extract_ko.html', my_locals(hsh_var))
-
-    all_database = db.get_ko_hits(selection, search_on="ko", indexing="taxid")
-    ko_total_count = all_database.sum(axis=1)
-    ko_desc = db.get_ko_desc(selection)
-    ko_mod = db.get_ko_modules(selection)
-    ko_path = db.get_ko_pathways(selection)
-    match_groups_data = []
-    for ko in selection:
-        kof = format_ko(ko)
-        kod = ko_desc.get(ko, "-")
-        kop = format_ko_path(ko_path, ko)
-        kom = format_ko_modules(ko_mod, ko)
-        kot = ko_total_count.loc[ko]
-        data = [kof, kod, kop, kom, mat_include.sum_pos.loc[ko], kot]
-        match_groups_data.append(data)
-
-    max_n = ko_total_count.max()
-    envoi_extract = True
-    return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
+        self.show_results = True
+        return self.get_context()
 
 
 def venn_pfam(request):
