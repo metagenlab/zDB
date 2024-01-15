@@ -793,79 +793,33 @@ class AmrEntryListView(EntryListViewBase):
         return aggregated
 
 
-def extract_pfam(request):
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    page_title = page2title["extract_pfam"]
+class ExtractPfamView(ExtractHitsBaseView):
 
-    extract_form_class = make_extract_form(db, "extract_pfam", plasmid=True, label="Pfam domains")
-    if request.method != "POST":
-        form = extract_form_class()
-        return render(request, 'chlamdb/extract_Pfam.html', my_locals({"form": form, "page_title": page_title}))
+    comp_type = "pfam"
 
-    form = extract_form_class(request.POST)
-    if not form.is_valid():
-        return render(request, 'chlamdb/extract_Pfam.html', my_locals(locals()))
+    _table_headers = ["Pfam entry", "Description"]
 
-    include, include_plasmids = form.get_include_choices()
-    exclude, exclude_plasmids = form.get_exclude_choices()
-    n_missing = form.get_n_missing()
+    table_help = """
+    <br> <b>Pfam</b> table: it contains the list of Pfam domains shared among
+    the selected genomes. Pfam entry, its description, its frequency in the
+    selected genomes and in all genomes is reported.
+    """
 
-    sum_include_length = len(include)
-    if include_plasmids is not None:
-        sum_include_length += len(include_plasmids)
+    @property
+    def get_hit_counts(self):
+        return self.db.get_pfam_hits
 
-    sum_exclude_length = len(exclude)
-    if exclude_plasmids is not None:
-        sum_exclude_length += len(exclude_plasmids)
+    def prepare_data(self, hit_counts, hit_counts_all):
+        self.table_data = []
+        pfam_defs = self.db.get_pfam_def(self.selection)
+        for pfam in self.selection:
+            pfam_def = pfam_defs["def"].loc[pfam]
+            data = [format_pfam(pfam, to_url=True), pfam_def,
+                    hit_counts.presence.loc[pfam], hit_counts_all.loc[pfam]]
+            self.table_data.append(data)
 
-    if n_missing >= sum_include_length:
-        ctx = {"wrong_n_missing": True, "form": form, "page_title": page_title}
-        return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
-
-    pfam_include = db.get_pfam_hits(include, plasmids=include_plasmids,
-                                    search_on="taxid", indexing="taxid")
-    if sum_exclude_length > 0:
-        pfam_exclude = db.get_pfam_hits(exclude, plasmids=exclude_plasmids,
-                                        search_on="taxid", indexing="taxid")
-        pfam_exclude["sum_pos"] = pfam_exclude[pfam_exclude > 0].count(axis=1)
-        pfam_exclude["exclude"] = pfam_exclude.sum_pos > 0
-        neg_index = pfam_exclude[pfam_exclude.exclude].index
-    else:
-        neg_index = pd.Index([])
-
-    pfam_include["sum_pos"] = pfam_include[pfam_include > 0].count(axis=1)
-    pfam_include["selection"] = pfam_include.sum_pos >= len(include) - n_missing
-    pos_index = pfam_include[pfam_include.selection].index
-    selection = pos_index.difference(neg_index).tolist()
-    pfam_defs = db.get_pfam_def(selection)
-
-    if len(selection) == 0:
-        ctx = {"no_match": True, "form": form, "page_title": page_title}
-        return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
-
-    all_database = db.get_pfam_hits(pfam_include.index.tolist(), search_on="pfam", indexing="taxid")
-    sums = all_database.sum(axis=1)
-    sum_group = len(selection)
-
-    match_groups_data = []
-    for no, pfam in enumerate(selection):
-        count = sums.loc[pfam]
-        pfam_def = pfam_defs["def"].loc[pfam]
-        data = [no + 1, format_pfam(pfam), pfam_def,
-                pfam_include.sum_pos.loc[pfam], sums.loc[pfam]]
-        match_groups_data.append(data)
-
-    ctx = {"envoi_extract": True,
-           "sum_group": sum_group,
-           "n_genomes": sum_include_length,
-           "max_n": sums.max(),
-           "match_groups_data": match_groups_data,
-           "form": form,
-           "sum_include_length": sum_include_length,
-           "sum_exclude_length": sum_exclude_length,
-           "n_missing": n_missing,
-           "page_title": page_title}
-    return render(request, 'chlamdb/extract_Pfam.html', my_locals(ctx))
+        self.show_results = True
+        return self.get_context()
 
 
 def format_ko(ko_id, as_url=False, base=None):
