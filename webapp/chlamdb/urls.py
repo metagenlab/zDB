@@ -2,8 +2,7 @@
 from django.urls import re_path
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
-
-from . import views
+from views import views
 
 favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
