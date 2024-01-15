@@ -19,193 +19,167 @@
         <div id="page-content-wrapper">
           <div class="row">
             <div class="col-lg-12">
-             {% include "chlamdb/menu.html" %}
-             {% include "chlamdb/extract_nav_tabs_template.html" with type=comp_type active_tab="det" %}
+              {% include "chlamdb/menu.html" %}
+              {% include "chlamdb/extract_nav_tabs_template.html" with type=comp_type active_tab="det" %}
 
-             <br>
-                  <p class="page-title"><b>{{compared_obj_name|capfirst}} shared by selected genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Get the list of {{compared_obj_name}} shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
+              <br>
+              <p class="page-title">
+                <b>{{compared_obj_name|capfirst}} shared by selected genomes </b>
+                <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Get the list of {{compared_obj_name}} shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
+              </p>
 
-                <!--
-                <div style="position: absolute;margin-top:10%; margin-left: 33%;">
-                    <div style="height:40px;margin-left: 180px;width:280px;border: 2px solid #8AC007; border-radius: 15px;">
-                        <div style="width: 100%; float: left; margin-left: 10px;margin-top:3px">
-                            <p>Consider single copy groups only</p>
-                        </div >
-
-                        <div style="height: 40px; margin-left: 180px;margin-top:3px;">
-                            <label class="switch-light well" onclick="" style="margin: 5px 0px 0px 0px; padding: 0 0 0 0; position: absolute">
-                                <input type="checkbox" style="padding: 0 0px 0 0" id="button_single_copy" name="button_single_copy">
-                                <span>
-                                <span>Off</span>
-                                <span>On</span>
-                                </span>
-                                <a class="btn btn-success btn-xs"></a>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                -->
-               
-
-                {% block content %}
-				{% csrf_token %}
-				{% crispy form %}
-                {% endblock %}
-
+              {% block content %}
+			          {% csrf_token %}
+			          {% crispy form %}
+              {% endblock %}
             </div>
 
             {% if wrong_n_missing%}
 
-            <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                <div class="panel-heading" style="width:100%">
-                    <h3 class="panel-title">Help</h3>
-                </div>
-                <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
-            </div>
+              <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                  <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Help</h3>
+                  </div>
+                  <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
+              </div>
 
             {% elif no_match%}
 
-            <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                <div class="panel-heading" style="width:100%">
-                    <h3 class="panel-title"></h3>
-                </div>
-                <p style="margin: 10px 10px 10px 10px">No match</p>
-            </div>
+              <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                  <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title"></h3>
+                  </div>
+                  <p style="margin: 10px 10px 10px 10px">No match</p>
+              </div>
 
             {% endif %}
 
-			{% if envoi_extract %}
+      			{% if envoi_extract %}
 
-			<div class="row" style="background-color: rgba(245, 245, 245, 0.986)">
-        <div class="col-lg-12">
-          <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-            <br>
-            <div class="panel panel-success" style="width:60%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
-              <div class="panel-heading" style="width:100%">
-                <h3 class="panel-title">Help to interpret the results</h3>
-              </div>
-              <p style="margin: 10px 10px 10px 10px; line-height: 180%">{{ table_help|safe }}
-              </p>
-            </div>
-              <ul style="list-style-type:square">
-                    <div style="padding-top:10px">
- 			<table class="table" style="width:600px">
-                           <tr>
-                               <th>Number of included genomes</th>
-                               <td> {{ included_taxids|length }} </td>
-                           </tr>
-
-                           <tr>
-                               <th>Number of excluded genomes</th>
-                               <td> {{ excluded_taxids|length }} </td>
-                           </tr>
-
-                            <tr>
-                               <th>Number of accepted missing data</th>
-                               <td> {{ n_missing }} </td>
-                           </tr>
-                             <tr>
-                               <th>Number of {{ compared_obj_name }} identified</th>
-                               <td> {{ n_hits }}  </td>
-                           </tr>
-
-                       </table>
-
-            <div class="box" style="width:30%; top: 200px; padding: 10px 10px 10px 10px;">
-
-            <form action="/circos_main/" method="POST" id="carform" >
-            <h5><b>Show the comparison on circular map</b></h5>
-              {% csrf_token %}
-              <input type="hidden" name="exclude_taxids" value="{{excluded_taxids}}">
-              <input type="hidden" name="include_taxids" value="{{included_taxids}}">
-              <input type="hidden" name="og_list" value="{{selection}}">
-                  <select name="reference_taxid" id="reference_taxid" class="bootstrap-select" style="height:36px; margin-bottom: 1em;">
-                    {% for row in ref_genomes.itertuples %}
-                    <option value="{{row.taxon_id}}">{{row.description}}</option>
-                    {% endfor %}
-                  </select>
-            <br><button type="submit">Show</button>
-          </form>
-
-        </div>
-      </div>
-    </div>
-      
-          <div class="col-lg-12">
-              <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                <br>
-            <li class="active"><a href="#red" data-toggle="tab"><b>Orthogroups</b></a></li>
-            <li><a href="#orange" data-toggle="tab"><b>Table detail</b></a></li>
-          </ul>
-  
-          <div id="my-tab-content" class="tab-content">
-            <div class="tab-pane active" id="red">
-              
-            <div style="padding-top:18px;">
-              <table class="hover data-table" id="table_groups">
-                <thead>
-                  <tr>
-                  {% for value in table_headers %}
-                    <th> {{value|safe}} </th>
-                  {% endfor %}
-                  </tr>
-                </thead>
-
-                <tbody>
-                {% for value in match_groups_data %}
-                  <tr>
-                    {% for entry in value %}
-                    {% if forloop.first %}
-                      <td><a href="{% url comp_type entry %}">{{entry}}</a></td>
-                    {% else %}
-                      <td>{{entry|safe}}</td>
-                    {% endif %}
-                    {% endfor %}
-                  </tr>
-                {% endfor %}
-                </tbody>
-              </table>
-            </div>
-            </div>
-            <div class="tab-pane" id="orange">
-                <div id="export_bouttons_groups">
-                  {% if show_reference_annot %}
-                  <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_ref_url|safe}}'">fasta aa</button>
-                  {% endif %}
-                  <br/>
-                </div>
-                <table class="hover data-table" id="details_table">
-                  <thead>
-                    <tr>
-                    {% for value in details_header %}
-                    <th style="text-align:center; padding: 5px 30px"> {{value|safe}} </th>
-                    {% endfor %}
-                    </tr>
-                  </thead>
-  
-                  <tbody>
-  
-                    {% for entry in details_data %}
+        			<div class="row" style="background-color: rgba(245, 245, 245, 0.986)">
+                <div class="col-lg-12">
+                  <br>
+                  <div class="panel panel-success" style="width:60%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
+                    <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Help to interpret the results</h3>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 180%">{{ table_help|safe }}</p>
+                  </div>
+                  <div style="padding-top:10px">
+     			          <table class="table" style="width:600px">
                       <tr>
-                        {% for values in entry %}
-                        <td style="text-align: center;"> {{ values|safe }} </td>
-                        {% endfor %}
+                        <th>Number of included genomes</th>
+                        <td> {{ included_taxids|length }} </td>
                       </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-            </div>
-          </div>
-          </div>
-        </div>
-      {% endif %}
+                      <tr>
+                        <th>Number of excluded genomes</th>
+                        <td> {{ excluded_taxids|length }} </td>
+                      </tr>
 
-        </div> <!-- row -->
-      </div> <!-- page-content-wrapper -->
-    </div> <!-- wrapper -->
-  </div>  <!-- row -->
-  
-</div>  <!-- container-fluid -->
+                      <tr>
+                        <th>Number of accepted missing data</th>
+                        <td> {{ n_missing }} </td>
+                      </tr>
+                      <tr>
+                        <th>Number of {{ compared_obj_name }} identified</th>
+                        <td> {{ n_hits }}  </td>
+                      </tr>
+                    </table>
+
+                    <div class="box" style="width:30%; top: 200px; padding: 10px 10px 10px 10px;">
+
+                      <form action="/circos_main/" method="POST" id="carform" >
+                        <h5><b>Show the comparison on circular map</b></h5>
+                        {% csrf_token %}
+                        <input type="hidden" name="exclude_taxids" value="{{excluded_taxids}}">
+                        <input type="hidden" name="include_taxids" value="{{included_taxids}}">
+                        <input type="hidden" name="og_list" value="{{selection}}">
+                        <select name="reference_taxid" id="reference_taxid" class="bootstrap-select" style="height:36px; margin-bottom: 1em;">
+                          {% for row in ref_genomes.itertuples %}
+                            <option value="{{row.taxon_id}}">{{row.description}}</option>
+                          {% endfor %}
+                        </select>
+                        <br>
+                        <button type="submit">Show</button>
+                      </form>
+
+                    </div>
+                  </div>
+                </div>
+      
+                <div class="col-lg-12">
+                  <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                    <br>
+                    <li class="active"><a href="#red" data-toggle="tab"><b>Orthogroups</b></a></li>
+                    <li><a href="#orange" data-toggle="tab"><b>Table detail</b></a></li>
+                  </ul>
+
+                  <div id="my-tab-content" class="tab-content">
+                    <div class="tab-pane active" id="red">
+
+                      <div style="padding-top:18px;">
+                        <table class="hover data-table" id="table_groups">
+                          <thead>
+                            <tr>
+                            {% for value in table_headers %}
+                              <th> {{value|safe}} </th>
+                            {% endfor %}
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                          {% for value in match_groups_data %}
+                            <tr>
+                              {% for entry in value %}
+                              {% if forloop.first %}
+                                <td><a href="{% url comp_type entry %}">{{entry}}</a></td>
+                              {% else %}
+                                <td>{{entry|safe}}</td>
+                              {% endif %}
+                              {% endfor %}
+                            </tr>
+                          {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div class="tab-pane" id="orange">
+                      <div id="export_bouttons_groups">
+                        {% if show_reference_annot %}
+                          <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_ref_url|safe}}'">fasta aa</button>
+                        {% endif %}
+                        <br/>
+                      </div>
+                      <table class="hover data-table" id="details_table">
+                        <thead>
+                          <tr>
+                          {% for value in details_header %}
+                            <th style="text-align:center; padding: 5px 30px"> {{value|safe}} </th>
+                          {% endfor %}
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {% for entry in details_data %}
+                            <tr>
+                              {% for values in entry %}
+                                <td style="text-align: center;"> {{ values|safe }} </td>
+                              {% endfor %}
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+
+          </div> <!-- row -->
+        </div> <!-- page-content-wrapper -->
+      </div> <!-- wrapper -->
+    </div>  <!-- row -->
+  </div>  <!-- container-fluid -->
 
 <script>
 
