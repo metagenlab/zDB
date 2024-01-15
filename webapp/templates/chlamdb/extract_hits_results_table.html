@@ -11,14 +11,10 @@
       </thead>
 
       <tbody>
-      {% for value in match_groups_data %}
+      {% for value in table_data %}
         <tr>
           {% for entry in value %}
-          {% if forloop.first %}
-            <td><a href="{% url comp_type entry %}">{{entry}}</a></td>
-          {% else %}
             <td>{{entry|safe}}</td>
-          {% endif %}
           {% endfor %}
         </tr>
       {% endfor %}

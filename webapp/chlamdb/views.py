@@ -296,39 +296,38 @@ class ComparisonViewMixin():
         return page2title[self.view_name]
 
 
-class ExtractOrthogroupView(View, ComparisonViewMixin):
+ResultTab = collections.namedtuple("Tab", ["id", "title", "template"])
 
-    comp_type = "orthogroup"
+
+class ExtractHitsBaseView(View, ComparisonViewMixin):
+
     template = 'chlamdb/extract_hits.html'
-
-    table_help = """
-    Two tables have been generated:<br>
-    <b>Orthogroups</b> table: it contains the list of orthologous groups shared
-    among the selected genomes. The annotation(s) of orthologous groups is a
-    consensus of the annotation of all members of the group, and only the two
-    most frequent annotations are reported.  For each orthogroup the table
-    displays the gene name, the product and the COG category. Additionally,
-    the number of occurences of the annotation in the whole set database and
-    in the selected genomes.<br>
-    <b>Table detail</b>: a complete list of the members of each orthologous
-    group shared by the selected genome is displayed. Gene loci are reported
-    and quickly linked to additional details about locus annotations.
-    """
-
-    @property
-    def get_hit_counts(self):
-        return self.db.get_og_count
 
     @property
     def view_name(self):
         return f"extract_{self.comp_type}"
+
+    @property
+    def result_tabs(self):
+        return [
+            ResultTab(1, self.compared_obj_name, "chlamdb/extract_hits_results_table.html"),
+            ]
+
+    @property
+    def table_count_headers(self):
+        return [f"Present in {self.n_included}",
+                f"Freq complete database (/{self.max_n})"]
+
+    @property
+    def table_headers(self):
+        return self._table_headers + self.table_count_headers
 
     def dispatch(self, request, *args, **kwargs):
         biodb_path = settings.BIODB_DB_PATH
         self.db = DB.load_db_from_name(biodb_path)
         self.extract_form_class = make_extract_form(
             self.db, self.view_name, plasmid=True)
-        return super(ExtractOrthogroupView, self).dispatch(request, *args, **kwargs)
+        return super(ExtractHitsBaseView, self).dispatch(request, *args, **kwargs)
 
     def get_context(self, **kwargs):
         context = {
@@ -338,6 +337,18 @@ class ExtractOrthogroupView(View, ComparisonViewMixin):
             "table_help": self.table_help,
             "form": self.form,
         }
+        if getattr(self, "show_results", False):
+            context.update({
+                "show_results": True,
+                "n_missing": self.n_missing,
+                "n_hits": self.n_hits,
+                "table_headers": self.table_headers,
+                "table_data": self.table_data,
+                "included_taxids": self.included_taxids,
+                "excluded_taxids": self.excluded_taxids,
+                "selection": self.selection,
+                "result_tabs": self.result_tabs,
+                })
         context.update(kwargs)
 
         return my_locals(context)
@@ -402,7 +413,7 @@ class ExtractOrthogroupView(View, ComparisonViewMixin):
             return render(request, self.template, context)
 
         # Count hits for all genomes
-        hit_counts_all = self.get_hit_counts(self.selection, search_on="orthogroup")
+        hit_counts_all = self.get_hit_counts(self.selection, search_on=self.comp_type)
         self.n_hits = len(hit_counts_all.index)
 
         if not single_copy:
@@ -419,8 +430,44 @@ class ExtractOrthogroupView(View, ComparisonViewMixin):
 
         return render(request, self.template, context)
 
+
+class ExtractOrthogroupView(ExtractHitsBaseView):
+
+    comp_type = "orthogroup"
+
+    _table_headers = ["Orthogroup", "Genes", "Products"]
+
+    table_help = """
+    Two tables have been generated:<br>
+    <b>Orthogroups</b> table: it contains the list of orthologous groups shared
+    among the selected genomes. The annotation(s) of orthologous groups is a
+    consensus of the annotation of all members of the group, and only the two
+    most frequent annotations are reported.  For each orthogroup the table
+    displays the gene name, the product and the COG category. Additionally,
+    the number of occurences of the annotation in the whole set database and
+    in the selected genomes.<br>
+    <b>Table detail</b>: a complete list of the members of each orthologous
+    group shared by the selected genome is displayed. Gene loci are reported
+    and quickly linked to additional details about locus annotations.
+    """
+
+    @property
+    def result_tabs(self):
+        return [
+            ResultTab(1, self.compared_obj_name, "chlamdb/extract_hits_results_table.html"),
+            ResultTab(2, "Details table", "chlamdb/extract_hits_details_table.html"),
+            ]
+
+    @property
+    def table_headers(self):
+        return self._table_headers + self.opt_header + self.table_count_headers
+
+    @property
+    def get_hit_counts(self):
+        return self.db.get_og_count
+
     def prepare_data(self, hit_counts, hit_counts_all):
-        data = []
+        self.table_data = []
 
         all_taxids = self.included_taxids
         if self.included_plasmids is not None:
@@ -433,23 +480,18 @@ class ExtractOrthogroupView(View, ComparisonViewMixin):
         if annotations.empty:
             return None
 
-        opt_header, optional_annotations = get_optional_annotations(
+        self.opt_header, optional_annotations = get_optional_annotations(
             self.db, seqids=annotations.index.tolist())
         annotations = annotations.join(optional_annotations)
         grouped = annotations.groupby("orthogroup")
         genes = grouped["gene"].apply(list)
         products = grouped["product"].apply(list)
 
-        if "COG" in opt_header:
+        if "COG" in self.opt_header:
             cogs = grouped["cog"].apply(list)
 
-        if "KO" in opt_header:
+        if "KO" in self.opt_header:
             kos = grouped["ko"].apply(list)
-
-        table_headers = ["Orthogroup", "Genes", "Products"]
-        table_headers.extend(opt_header)
-        table_headers.extend([f"Present in {self.n_included}",
-                              f"Freq complete database (/{self.max_n})"])
 
         for row, count in hit_counts_all.items():
             cnt_in = hit_counts.presence.loc[row]
@@ -457,40 +499,26 @@ class ExtractOrthogroupView(View, ComparisonViewMixin):
             gene_data = format_lst_to_html(
                 "-" if pd.isna(entry) else entry for entry in g)
             prod_data = format_lst_to_html(products.loc[row])
-            column_header = format_orthogroup(row)
+            column_header = format_orthogroup(row, to_url=True)
             optional = []
-            if "KO" in opt_header and row in kos:
+            if "KO" in self.opt_header and row in kos:
                 optional.append(format_lst_to_html(
                     kos.loc[row], add_count=True, format_func=format_ko_url))
-            if "COG" in opt_header:
+            if "COG" in self.opt_header:
                 optional.append(format_lst_to_html(
                     cogs.loc[row], add_count=True, format_func=format_cog_url))
             entry = [column_header, gene_data, prod_data, *optional, cnt_in, count]
-            data.append(entry)
+            self.table_data.append(entry)
 
         ref_genomes = self.db.get_genomes_description(
         ).loc[self.included_taxids].reset_index()
 
         details_header, details_data = get_table_details(self.db, annotations)
 
-        ResultTab = collections.namedtuple("Tab", ["id", "title", "template"])
-        result_tabs = [
-            ResultTab(1, "Orthogroups", "chlamdb/extract_hits_results_table.html"),
-            ResultTab(2, "Details table", "chlamdb/extract_hits_details_table.html"),
-            ]
-        context = self.get_context(envoi_extract=True,
-                                   n_missing=self.n_missing,
-                                   n_hits=self.n_hits,
-                                   table_headers=table_headers,
-                                   ref_genomes=ref_genomes,
-                                   match_groups_data=data,
+        self.show_results = True
+        context = self.get_context(ref_genomes=ref_genomes,
                                    details_header=details_header,
-                                   details_data=details_data,
-                                   included_taxids=self.included_taxids,
-                                   excluded_taxids=self.excluded_taxids,
-                                   selection=self.selection,
-                                   result_tabs=result_tabs,
-                                   )
+                                   details_data=details_data)
         return context
 
 
