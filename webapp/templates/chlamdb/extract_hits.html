@@ -110,66 +110,23 @@
                 <div class="col-lg-12">
                   <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                     <br>
-                    <li class="active"><a href="#red" data-toggle="tab"><b>Orthogroups</b></a></li>
-                    <li><a href="#orange" data-toggle="tab"><b>Table detail</b></a></li>
+                    {% for tab in result_tabs %}
+                      {% if forloop.first %}
+                        <li class="active">
+                      {% else %}
+                        <li>
+                      {% endif %}
+                        <a href=#{{tab.id}} data-toggle="tab">
+                          <b>{{tab.title}}</b>
+                        </a>
+                      </li>
+                    {% endfor %}
                   </ul>
 
                   <div id="my-tab-content" class="tab-content">
-                    <div class="tab-pane active" id="red">
-
-                      <div style="padding-top:18px;">
-                        <table class="hover data-table" id="table_groups">
-                          <thead>
-                            <tr>
-                            {% for value in table_headers %}
-                              <th> {{value|safe}} </th>
-                            {% endfor %}
-                            </tr>
-                          </thead>
-
-                          <tbody>
-                          {% for value in match_groups_data %}
-                            <tr>
-                              {% for entry in value %}
-                              {% if forloop.first %}
-                                <td><a href="{% url comp_type entry %}">{{entry}}</a></td>
-                              {% else %}
-                                <td>{{entry|safe}}</td>
-                              {% endif %}
-                              {% endfor %}
-                            </tr>
-                          {% endfor %}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                    <div class="tab-pane" id="orange">
-                      <div id="export_bouttons_groups">
-                        {% if show_reference_annot %}
-                          <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_ref_url|safe}}'">fasta aa</button>
-                        {% endif %}
-                        <br/>
-                      </div>
-                      <table class="hover data-table" id="details_table">
-                        <thead>
-                          <tr>
-                          {% for value in details_header %}
-                            <th style="text-align:center; padding: 5px 30px"> {{value|safe}} </th>
-                          {% endfor %}
-                          </tr>
-                        </thead>
-
-                        <tbody>
-                          {% for entry in details_data %}
-                            <tr>
-                              {% for values in entry %}
-                                <td style="text-align: center;"> {{ values|safe }} </td>
-                              {% endfor %}
-                            </tr>
-                          {% endfor %}
-                        </tbody>
-                      </table>
-                    </div>
+                    {% for tab in result_tabs %}
+                      {% include tab.template with tabid=tab.id %}
+                    {% endfor %}
                   </div>
                 </div>
               </div>

@@ -299,7 +299,7 @@ class ComparisonViewMixin():
 class ExtractOrthogroupView(View, ComparisonViewMixin):
 
     comp_type = "orthogroup"
-    template = 'chlamdb/extract_orthogroup.html'
+    template = 'chlamdb/extract_hits.html'
 
     table_help = """
     Two tables have been generated:<br>
@@ -473,6 +473,11 @@ class ExtractOrthogroupView(View, ComparisonViewMixin):
 
         details_header, details_data = get_table_details(self.db, annotations)
 
+        ResultTab = collections.namedtuple("Tab", ["id", "title", "template"])
+        result_tabs = [
+            ResultTab(1, "Orthogroups", "chlamdb/extract_hits_results_table.html"),
+            ResultTab(2, "Details table", "chlamdb/extract_hits_details_table.html"),
+            ]
         context = self.get_context(envoi_extract=True,
                                    n_missing=self.n_missing,
                                    n_hits=self.n_hits,
@@ -483,7 +488,9 @@ class ExtractOrthogroupView(View, ComparisonViewMixin):
                                    details_data=details_data,
                                    included_taxids=self.included_taxids,
                                    excluded_taxids=self.excluded_taxids,
-                                   selection=self.selection)
+                                   selection=self.selection,
+                                   result_tabs=result_tabs,
+                                   )
         return context
 
 

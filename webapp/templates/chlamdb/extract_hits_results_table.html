@@ -1,0 +1,28 @@
+<div class="tab-pane active" id={{tabid}}>
+
+  <div style="padding-top:18px;">
+    <table class="hover data-table" id="table_groups">
+      <thead>
+        <tr>
+        {% for value in table_headers %}
+          <th> {{value|safe}} </th>
+        {% endfor %}
+        </tr>
+      </thead>
+
+      <tbody>
+      {% for value in match_groups_data %}
+        <tr>
+          {% for entry in value %}
+          {% if forloop.first %}
+            <td><a href="{% url comp_type entry %}">{{entry}}</a></td>
+          {% else %}
+            <td>{{entry|safe}}</td>
+          {% endif %}
+          {% endfor %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
