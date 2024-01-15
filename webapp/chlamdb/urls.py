@@ -68,6 +68,7 @@ urlpatterns = [
     re_path(r'^venn_ko/$', views.venn_ko, name="venn_ko"),
     re_path(r'^extract_pfam/$', views.ExtractPfamView.as_view(), name="extract_pfam"),
     re_path(r'^extract_ko/$', views.ExtractKoView.as_view(), name="extract_ko"),
+    re_path(r'^extract_amr/$', views.ExtractAmrView.as_view(), name="extract_amr"),
     re_path(r'^venn_pfam/$', views.venn_pfam, name="venn_pfam"),
     re_path(r'^KEGG_mapp_ko$', views.KEGG_mapp_ko, name="KEGG_mapp_ko"),
     re_path(r'^KEGG_mapp_ko/([a-zA-Z0-9_\.]+)$',

@@ -57,7 +57,7 @@ with DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
 title2page = {
     'COG Ortholog': ['fam_cog'],
     'Comparisons: Antimicrobial Resistance': [
-        'amr_comparison', 'index_comp_amr', 'entry_list_amr'],
+        'amr_comparison', 'index_comp_amr', 'entry_list_amr', 'extract_amr'],
     'Comparisons: Clusters of Orthologous groups (COGs)': [
         'cog_barchart', 'index_comp_cog', 'cog_phylo_heatmap',
         'cog_comparison', 'entry_list_cog', 'extract_cog', 'heatmap_COG',
@@ -824,6 +824,41 @@ class ExtractPfamView(ExtractHitsBaseView):
             pfam_def = pfam_defs["def"].loc[pfam]
             data = [format_pfam(pfam, to_url=True), pfam_def,
                     hit_counts.presence.loc[pfam], hit_counts_all.loc[pfam]]
+            self.table_data.append(data)
+
+        self.show_results = True
+        return self.get_context()
+
+
+class ExtractAmrView(ExtractHitsBaseView, AmrAnnotationsMixin):
+
+    comp_type = "amr"
+
+    _table_headers = ["Gene", "Description", "Scope", "Type", "Class",
+                      "Subclass"]
+
+    table_help = """
+    <br> <b>Pfam</b> table: it contains the list of Pfam domains shared among
+    the selected genomes. Pfam entry, its description, its frequency in the
+    selected genomes and in all genomes is reported.
+    """
+
+    @property
+    def get_hit_counts(self):
+        return self.db.get_amr_hit_counts
+
+    def prepare_data(self, hit_counts, hit_counts_all):
+        self.table_data = []
+        # retrieve annotations
+        amr_annotations = self.db.get_amr_descriptions(self.selection)
+        self.aggregate_amr_annotations(amr_annotations)
+
+        for gene in self.selection:
+            amr_annot = amr_annotations[amr_annotations.gene == gene].iloc[0]
+            data = [format_gene_to_ncbi_hmm(amr_annot[["gene", "hmm_id"]]),
+                    amr_annot.seq_name, amr_annot.scope, amr_annot.type,
+                    amr_annot["class"], amr_annot.subclass,
+                    hit_counts.presence.loc[gene], hit_counts_all.loc[gene]]
             self.table_data.append(data)
 
         self.show_results = True
