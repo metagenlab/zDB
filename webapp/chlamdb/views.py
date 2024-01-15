@@ -746,7 +746,28 @@ class CogEntryListView(EntryListViewBase):
         return combined_df
 
 
-class AmrEntryListView(EntryListViewBase):
+class AmrAnnotationsMixin():
+
+    def aggregate_amr_annotations(self, amr_annotations):
+        gene_annot_counts = amr_annotations.gene.value_counts()
+        for gene in gene_annot_counts[gene_annot_counts > 1].keys():
+            amr_annotations[amr_annotations["gene"] == gene] = \
+                self.aggregate_annotations_for_gene(gene, amr_annotations)
+
+    def aggregate_annotations_for_gene(self, gene, annotations):
+        """
+        entries for gene symbols or descriptions are not unique
+        and there can therefore be more than one entry per gene.
+        We concatenante them, it's the best we can do
+        """
+        rows = annotations[annotations.gene == gene]
+        aggregated = []
+        for col in rows.columns:
+            aggregated.append(" || ".join(rows[col].unique()))
+        return aggregated
+
+
+class AmrEntryListView(EntryListViewBase, AmrAnnotationsMixin):
 
     entry_type = "amr"
     table_headers = ["Gene", "Description", "Scope", "Type", "Class",
@@ -762,10 +783,7 @@ class AmrEntryListView(EntryListViewBase):
         # retrieve annotations
         amr_annotations = self.db.get_amr_descriptions(amr_all.index.tolist())
 
-        gene_annot_counts = amr_annotations.gene.value_counts()
-        for gene in gene_annot_counts[gene_annot_counts > 1].keys():
-            amr_annotations[amr_annotations["gene"] == gene] = \
-                self.aggregate_annotations_for_gene(gene, amr_annotations)
+        self.aggregate_amr_annotations(amr_annotations)
 
         # count frequency and n genomes
         combined_df = pd.DataFrame(amr_all.sum(axis=1).rename('count'))
@@ -781,18 +799,6 @@ class AmrEntryListView(EntryListViewBase):
                 for gene in combined_df.index]
 
         return combined_df.sort_values(["count", "freq"], ascending=False)
-
-    def aggregate_annotations_for_gene(self, gene, annotations):
-        """
-        entries for gene symbols or descriptions are not unique
-        and there can therefore be more than one entry per gene.
-        We concatenante them, it's the best we can do
-        """
-        rows = annotations[annotations.gene == gene]
-        aggregated = []
-        for col in rows.columns:
-            aggregated.append(" || ".join(rows[col].unique()))
-        return aggregated
 
 
 class ExtractPfamView(ExtractHitsBaseView):
