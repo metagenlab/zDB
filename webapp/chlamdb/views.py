@@ -326,7 +326,7 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
         biodb_path = settings.BIODB_DB_PATH
         self.db = DB.load_db_from_name(biodb_path)
         self.extract_form_class = make_extract_form(
-            self.db, self.view_name, plasmid=True)
+            self.db, self.view_name, plasmid=True, label=self.compared_obj_name)
         return super(ExtractHitsBaseView, self).dispatch(request, *args, **kwargs)
 
     def get_context(self, **kwargs):
