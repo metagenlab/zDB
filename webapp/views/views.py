@@ -277,8 +277,8 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
 
     @property
     def table_count_headers(self):
-        return [f"Present in {self.n_included}",
-                f"Freq complete database (/{self.max_n})"]
+        return [f"Presence in selection",
+                f"Presence in database"]
 
     @property
     def table_headers(self):
@@ -319,6 +319,10 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
         self.form = self.extract_form_class()
         return render(request, self.template, self.get_context())
 
+    @staticmethod
+    def _to_percent(count, tot):
+        return (count / tot * 100).astype(int)
+
     def post(self, request, *args, **kwargs):
         self.form = self.extract_form_class(request.POST)
         if not self.form.is_valid():
@@ -340,7 +344,8 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
             context = self.get_context(wrong_n_missing=True)
             return render(request, self.template, context)
 
-        self.min_count = self.n_included - self.n_missing
+        self.min_fraq = int((self.n_included - self.n_missing) /
+                            self.n_included * 100)
 
         self.n_excluded = len(self.excluded_taxids)
         if self.excluded_plasmids is not None:
@@ -351,13 +356,14 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
                                          plasmids=self.included_plasmids,
                                          search_on="taxid")
         if not single_copy:
-            hit_counts["presence"] = hit_counts[hit_counts > 0].count(axis=1)
-            hit_counts["selection"] = hit_counts.presence >= self.min_count
+            hit_counts["presence"] = self._to_percent(
+                hit_counts[hit_counts > 0].count(axis=1), self.n_included)
+            hit_counts["selection"] = hit_counts.presence >= self.min_fraq
         else:
             excluded_hits = hit_counts[hit_counts > 1].count(axis=1)
-            hit_counts["presence"] = hit_counts[hit_counts == 1].count(
-                axis=1)
-            hit_counts["selection"] = ((hit_counts.presence >= self.min_count)
+            hit_counts["presence"] = self._to_percent(
+                hit_counts[hit_counts == 1].count(axis=1), self.n_included)
+            hit_counts["selection"] = ((hit_counts.presence >= self.min_fraq)
                                        & (excluded_hits == 0))
 
         if self.n_excluded > 0:
@@ -383,10 +389,11 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
         self.max_n = len(hit_counts_all.columns)
 
         if not single_copy:
-            hit_counts_all = hit_counts_all[hit_counts_all > 0].count(axis=1)
+            hit_counts_all = self._to_percent(
+                hit_counts_all[hit_counts_all > 0].count(axis=1), self.max_n)
         else:
-            hit_counts_all = hit_counts_all[hit_counts_all == 1].count(axis=1)
-
+            hit_counts_all = self._to_percent(
+                hit_counts_all[hit_counts_all == 1].count(axis=1), self.max_n)
         context = self.prepare_data(hit_counts, hit_counts_all)
 
         if context is None:
