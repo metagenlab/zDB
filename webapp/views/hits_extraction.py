@@ -32,8 +32,8 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
 
     @property
     def table_count_headers(self):
-        return [f"Presence in selection",
-                f"Presence in database"]
+        return ["Presence in selection",
+                "Presence in database"]
 
     @property
     def table_headers(self):
@@ -158,42 +158,6 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
         return render(request, self.template, context)
 
 
-def get_optional_annotations(db, seqids):
-    header = []
-    config_table = db.get_config_table()
-    annotations = []
-    if config_table.get("KEGG", False):
-        header.append("KO")
-        ko_hits = db.get_ko_hits(seqids, search_on="seqid", indexing="seqid")
-        annotations.append(ko_hits)
-    if config_table.get("COG", False):
-        header.append("COG")
-        cog_hits = db.get_cog_hits(seqids, indexing="seqid", search_on="seqid")
-        annotations.append(cog_hits)
-
-    if len(annotations) == 2:
-        return header, annotations[0].join(annotations[1], how="outer")
-    elif len(annotations) == 1:
-        return header, annotations[0]
-    return header, pd.DataFrame()
-
-
-def get_table_details(db, annotations):
-    header = ["Orthogroup", "Organism", "Locus", "Gene", "Product"]
-    hsh_organisms = db.get_organism(annotations.index.tolist())
-    infos = []
-    for seqid, data in annotations.iterrows():
-        organism = hsh_organisms[seqid]
-        og = format_orthogroup(data.orthogroup, to_url=True)
-        gene = data.gene
-        if pd.isna(data.gene):
-            gene = "-"
-        locus = format_locus(data.locus_tag, to_url=True)
-        entry = [og, organism, locus, gene, data["product"]]
-        infos.append(entry)
-    return header, infos
-
-
 class ExtractOrthogroupView(ExtractHitsBaseView):
 
     comp_type = "orthogroup"
@@ -229,6 +193,42 @@ class ExtractOrthogroupView(ExtractHitsBaseView):
     def get_hit_counts(self):
         return self.db.get_og_count
 
+    @staticmethod
+    def get_optional_annotations(db, seqids):
+        header = []
+        config_table = db.get_config_table()
+        annotations = []
+        if config_table.get("KEGG", False):
+            header.append("KO")
+            ko_hits = db.get_ko_hits(seqids, search_on="seqid", indexing="seqid")
+            annotations.append(ko_hits)
+        if config_table.get("COG", False):
+            header.append("COG")
+            cog_hits = db.get_cog_hits(seqids, indexing="seqid", search_on="seqid")
+            annotations.append(cog_hits)
+
+        if len(annotations) == 2:
+            return header, annotations[0].join(annotations[1], how="outer")
+        elif len(annotations) == 1:
+            return header, annotations[0]
+        return header, pd.DataFrame()
+
+    @staticmethod
+    def get_table_details(db, annotations):
+        header = ["Orthogroup", "Organism", "Locus", "Gene", "Product"]
+        hsh_organisms = db.get_organism(annotations.index.tolist())
+        infos = []
+        for seqid, data in annotations.iterrows():
+            organism = hsh_organisms[seqid]
+            og = format_orthogroup(data.orthogroup, to_url=True)
+            gene = data.gene
+            if pd.isna(data.gene):
+                gene = "-"
+            locus = format_locus(data.locus_tag, to_url=True)
+            entry = [og, organism, locus, gene, data["product"]]
+            infos.append(entry)
+        return header, infos
+
     def prepare_data(self, hit_counts, hit_counts_all):
         self.table_data = []
 
@@ -243,7 +243,7 @@ class ExtractOrthogroupView(ExtractHitsBaseView):
         if annotations.empty:
             return None
 
-        self.opt_header, optional_annotations = get_optional_annotations(
+        self.opt_header, optional_annotations = self.get_optional_annotations(
             self.db, seqids=annotations.index.tolist())
         annotations = annotations.join(optional_annotations)
         grouped = annotations.groupby("orthogroup")
@@ -276,7 +276,7 @@ class ExtractOrthogroupView(ExtractHitsBaseView):
         ref_genomes = self.db.get_genomes_description(
         ).loc[self.included_taxids].reset_index()
 
-        details_header, details_data = get_table_details(self.db, annotations)
+        details_header, details_data = self.get_table_details(self.db, annotations)
 
         self.show_results = True
         context = self.get_context(ref_genomes=ref_genomes,
