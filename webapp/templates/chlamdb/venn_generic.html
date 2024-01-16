@@ -31,25 +31,25 @@
               {% endblock %}
 
             </div>
-
-
-            {% if show_results %}
-              <div class="row" style="padding-top:1em ;background-color: rgba(245, 245, 245, 0.986)" >
-                <br>
-                <div class="panel panel-success" style="margin:1em;">
-                  <div class="panel-heading" style="width:100%">
-                      <h5 class="panel-title">Help to interpret the results</h5>
-                  </div>
-                  <p style="margin: 10px 10px 10px 10px">
-                    The interactive Venn diagram let you visualize how many {{compared_obj_name}} are shared among the selected genomes or a subset of genomes of interest, and how many are unique to each genome.
-                    <br> Clicking on the reported numbers, the list of identified {{compared_obj_name}} is displayed below. {{table_data_descr}}
-                    <br> Additionally, the total number of {{compared_obj_name}} identified in each genome can be visualized in the barplot, while the number of unique or shared ones can be appreciated in the last plot.
-                  </p>
-                </div>
-                {% include "chlamdb/venn_template_orthogroups.html" %}
-              </div>
-            {% endif %}
           </div>
+
+
+          {% if show_results %}
+            <div class="row" style="padding-top:1em ;background-color: rgba(245, 245, 245, 0.986)" >
+              <br>
+              <div class="panel panel-success" style="margin:1em;">
+                <div class="panel-heading" style="width:100%">
+                    <h5 class="panel-title">Help to interpret the results</h5>
+                </div>
+                <p style="margin: 10px 10px 10px 10px">
+                  The interactive Venn diagram let you visualize how many {{compared_obj_name}} are shared among the selected genomes or a subset of genomes of interest, and how many are unique to each genome.
+                  <br> Clicking on the reported numbers, the list of identified {{compared_obj_name}} is displayed below. {{table_data_descr}}
+                  <br> Additionally, the total number of {{compared_obj_name}} identified in each genome can be visualized in the barplot, while the number of unique or shared ones can be appreciated in the last plot.
+                </p>
+              </div>
+              {% include "chlamdb/venn_template_orthogroups.html" %}
+            </div>
+          {% endif %}
         </div>
       </div>
     </div>
