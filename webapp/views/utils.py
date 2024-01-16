@@ -64,6 +64,10 @@ def my_locals(local_dico):
     return local_dico
 
 
+def to_s(f):
+    return "\"" + str(f) + "\""
+
+
 def format_lst_to_html(lst_elem, add_count=True, format_func=lambda x: x):
     dict_elem = {}
     for elem in lst_elem:
