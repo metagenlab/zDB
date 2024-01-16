@@ -39,6 +39,9 @@ class VennBaseView(View, ComparisonViewMixin):
             context.update({
                 "show_results": True,
                 "table_headers": self.table_headers,
+                "table_data_descr": self.table_data_descr,
+                "series": self.series,
+                "data_dict": self.data_dict,
                 })
         context.update(kwargs)
         return my_locals(context)
@@ -70,17 +73,19 @@ class VennOrthogroupView(VennBaseView):
     template = 'chlamdb/venn_orthogroup.html'
     comp_type = "orthogroup"
     table_headers = ["Orthogroup", "Gene", "Description"]
+    table_data_descr = "The table contains a list of the genes annotated "\
+                       "in each Orthogroup and their description."
 
     @property
     def get_counts(self):
         return self.db.get_og_count
 
     def prepare_data(self, counts, genomes):
-        series = []
+        self.series = []
         for taxon in counts:
             ogs = counts[taxon]
             genome = genomes.loc[int(taxon)].description
-            series.append({
+            self.series.append({
                 "name": genome,
                 "data": [format_orthogroup(og)
                          for og, cnt in ogs.items() if cnt > 0]
@@ -93,7 +98,7 @@ class VennOrthogroupView(VennBaseView):
         genes = grouped["gene"].apply(list)
         products = grouped["product"].apply(list)
 
-        data_dict = {}
+        self.data_dict = {}
         for og in og_list:
             gene_data = "-"
             if og in genes.index:
@@ -103,11 +108,10 @@ class VennOrthogroupView(VennBaseView):
             if og in products.index:
                 p = products.loc[og]
                 prod_data = format_lst_to_html(p, add_count=False)
-            data_dict[format_orthogroup(og)] = [
+            self.data_dict[format_orthogroup(og)] = [
                 format_orthogroup(og, to_url=True), gene_data, prod_data]
         self.show_results = True
-        return self.get_context(series=series,
-                                data_dict=data_dict)
+        return self.get_context()
 
 
 def venn_pfam(request):
