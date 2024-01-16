@@ -213,8 +213,10 @@ class ExtractOrthogroupView(ExtractHitsBaseView):
             ResultTab(2, "Details table", "chlamdb/extract_hits_details_table.html"),
             ]
 
+    @property
     def table_headers(self):
-        return self._table_headers + self.opt_header + self.table_count_headers
+        return self._table_headers + getattr(self, "opt_header", [])\
+               + self.table_count_headers
 
     @property
     def get_hit_counts(self):
