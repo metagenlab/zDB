@@ -17,6 +17,8 @@ def escape_quotes(unsafe):
 
 class VennBaseView(View, ComparisonViewMixin):
 
+    template = 'chlamdb/venn_generic.html'
+
     @property
     def view_name(self):
         return f"venn_{self.comp_type}"
@@ -61,16 +63,15 @@ class VennBaseView(View, ComparisonViewMixin):
             # add error message in web page
             return render(request, self.template, self.get_context())
 
-        targets = self.form.get_taxids()
+        self.targets = self.form.get_taxids()
         genomes = self.db.get_genomes_description()
-        counts = self.db.get_og_count(targets)
+        counts = self.db.get_og_count(self.targets)
         context = self.prepare_data(counts, genomes)
         return render(request, self.template, context)
 
 
 class VennOrthogroupView(VennBaseView):
 
-    template = 'chlamdb/venn_orthogroup.html'
     comp_type = "orthogroup"
     table_headers = ["Orthogroup", "Gene", "Description"]
     table_data_descr = "The table contains a list of the genes annotated "\
@@ -114,45 +115,34 @@ class VennOrthogroupView(VennBaseView):
         return self.get_context()
 
 
-def venn_pfam(request):
-    biodb = settings.BIODB_DB_PATH
-    db = DB.load_db(biodb, settings.BIODB_CONF)
-    page_title = page2title["venn_pfam"]
+class VennPfamView(VennBaseView):
 
-    venn_form_class = make_venn_from(db, label="PFAM domain", limit=6, action="venn_pfam")
-    if request.method != "POST":
-        form_venn = venn_form_class()
-        return render(request, 'chlamdb/venn_Pfam.html', my_locals(locals()))
+    comp_type = "pfam"
+    table_headers = ["PFAM", "Description"]
+    table_data_descr = "The table contains a list of the Pfam entries and "\
+                       "their description."
 
-    form_venn = venn_form_class(request.POST)
-    if not form_venn.is_valid():
-        # add error message
-        form_venn = venn_form_class()
-        return render(request, 'chlamdb/venn_Pfam.html', my_locals(locals()))
+    @property
+    def get_counts(self):
+        return self.db.get_pfam_hits
 
-    targets = form_venn.get_taxids()
-    pfam_hits = db.get_pfam_hits(targets, search_on="taxid", indexing="taxid")
-    data = db.get_pfam_def(pfam_hits.index.tolist())
-    genomes_desc = db.get_genomes_description().description.to_dict()
+    def prepare_data(self, counts, genomes):
+        data = self.db.get_pfam_def(counts.index.tolist())
+        self.series = []
+        for taxon in counts:
+            pfams = counts[taxon]
+            self.series.append({
+                "name": genomes.loc[int(taxon)].description,
+                "data": [format_pfam(og)
+                         for og, cnt in pfams.items() if cnt > 0]
+                })
 
-    series_tab = []
-    for target in targets:
-        pfams = pfam_hits[target]
-        non_zero = pfams[pfams > 0]
-        str_fmt = ",".join(f"\"{format_pfam(pfam)}\"" for pfam, _ in non_zero.items())
-        series_tab.append(f"{{name: \"{genomes_desc[target]}\", data: [{str_fmt}]}}")
-    series = "[" + ",".join(series_tab) + "]"
-
-    descriptions = []
-    for pfam, pfam_info in data.iterrows():
-        pfam_def = escape_quotes(pfam_info["def"])
-        descriptions.append(f"h[\"{format_pfam(pfam)}\"] = \"{pfam_def}\"")
-
-    ctx = {"envoi_venn": True,
-           "series": series,
-           "pfam2description": ";".join(descriptions),
-           "form_venn": form_venn}
-    return render(request, 'chlamdb/venn_Pfam.html', my_locals(ctx))
+        self.data_dict = {}
+        for pfam, pfam_info in data.iterrows():
+            self.data_dict[format_pfam(pfam)] = [
+                format_pfam(pfam, to_url=True), pfam_info["def"]]
+        self.show_results = True
+        return self.get_context()
 
 
 def venn_ko(request):
