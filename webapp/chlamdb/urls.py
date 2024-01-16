@@ -2,8 +2,7 @@
 from django.urls import re_path
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
-
-from . import views
+from views import entry_lists, hits_extraction, views
 
 favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
@@ -40,13 +39,13 @@ urlpatterns = [
     re_path(r'^orthogroup/([a-zA-Z0-9_\.\-]+)',
             views.orthogroup, name="orthogroup"),
     re_path(r'^locusx$', views.locusx, name="locusx"),
-    re_path(r'^entry_list_amr$', views.AmrEntryListView.as_view(),
+    re_path(r'^entry_list_amr$', entry_lists.AmrEntryListView.as_view(),
             name="entry_list_amr"),
-    re_path(r'^entry_list_pfam$', views.PfamEntryListView.as_view(),
+    re_path(r'^entry_list_pfam$', entry_lists.PfamEntryListView.as_view(),
             name="entry_list_pfam"),
-    re_path(r'^entry_list_cog$', views.CogEntryListView.as_view(),
+    re_path(r'^entry_list_cog$', entry_lists.CogEntryListView.as_view(),
             name="entry_list_cog"),
-    re_path(r'^entry_list_ko$', views.KoEntryListView.as_view(),
+    re_path(r'^entry_list_ko$', entry_lists.KoEntryListView.as_view(),
             name="entry_list_ko"),
     re_path(r'^plot_region/$', views.plot_region, name="plot_region"),
     re_path(r'^circos/$', views.circos, name="circos"),
@@ -56,19 +55,19 @@ urlpatterns = [
     re_path(r'^orthogroup_list_cog_barchart/([a-zA-Z0-9_]+)/$',
             views.orthogroup_list_cog_barchart, name="orthogroup_list_cog_barchart"),
     re_path(r'^blast/$', views.blast, name="blast"),
-    re_path(r'^extract_orthogroup/$', views.ExtractOrthogroupView.as_view(),
+    re_path(r'^extract_orthogroup/$', hits_extraction.ExtractOrthogroupView.as_view(),
             name="extract_orthogroup"),
     re_path(r'^venn_orthogroup/$', views.venn_orthogroup,
             name="venn_orthogroup"),
-    re_path(r'^extract_cog/$', views.ExtractCogView.as_view(), name="extract_cog"),
+    re_path(r'^extract_cog/$', hits_extraction.ExtractCogView.as_view(), name="extract_cog"),
     re_path(r'^venn_cog/$', views.venn_cog, name="venn_cog"),
     re_path(r'^cog_venn_subset/([A-Z])$',
             views.cog_venn_subset, name="cog_venn_subset"),
     re_path(r'^venn_cog/([a-zA-Z0-9_]+)$$', views.venn_cog, name="venn_cog"),
     re_path(r'^venn_ko/$', views.venn_ko, name="venn_ko"),
-    re_path(r'^extract_pfam/$', views.ExtractPfamView.as_view(), name="extract_pfam"),
-    re_path(r'^extract_ko/$', views.ExtractKoView.as_view(), name="extract_ko"),
-    re_path(r'^extract_amr/$', views.ExtractAmrView.as_view(), name="extract_amr"),
+    re_path(r'^extract_pfam/$', hits_extraction.ExtractPfamView.as_view(), name="extract_pfam"),
+    re_path(r'^extract_ko/$', hits_extraction.ExtractKoView.as_view(), name="extract_ko"),
+    re_path(r'^extract_amr/$', hits_extraction.ExtractAmrView.as_view(), name="extract_amr"),
     re_path(r'^venn_pfam/$', views.venn_pfam, name="venn_pfam"),
     re_path(r'^KEGG_mapp_ko$', views.KEGG_mapp_ko, name="KEGG_mapp_ko"),
     re_path(r'^KEGG_mapp_ko/([a-zA-Z0-9_\.]+)$',
