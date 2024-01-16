@@ -20,6 +20,35 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
 
     template = 'chlamdb/extract_hits.html'
 
+    results_table_help = """
+            <br> <b>{0} table</b>: it contains the list of
+            {0} shared among the selected (and absent
+            from the excluded) genomes. For each entry, the table lists its
+            {1} as well as the fraction of included genomes
+            containing it {2} and the fraction of genomes in the whole database
+            containing it {2}.
+            {3}
+            """
+
+    _table_help_complement = ""
+    _col_descriptions = {}
+
+    @property
+    def table_cols_description(self):
+        return [self._col_descriptions.get(header, header.lower())
+                for header in self.table_headers[:-2]]
+
+    @property
+    def table_help(self):
+        once = "exactly once" if getattr(self, "single_copy", False)\
+                else "at least once"
+        col_descr = ", ".join(self.table_cols_description[:-1])
+        col_descr += " and " + self.table_cols_description[-1]
+        return self.results_table_help.format(self.compared_obj_name,
+                                              col_descr,
+                                              once,
+                                              self._table_help_complement)
+
     @property
     def view_name(self):
         return f"extract_{self.comp_type}"
@@ -89,7 +118,7 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
         self.included_taxids, self.included_plasmids = self.form.get_include_choices()
         self.excluded_taxids, self.excluded_plasmids = self.form.get_exclude_choices()
         self.n_missing = self.form.get_n_missing()
-        single_copy = "checkbox_single_copy" in request.POST
+        self.single_copy = "checkbox_single_copy" in request.POST
 
         self.n_included = len(self.included_taxids)
         if self.included_plasmids is not None:
@@ -110,7 +139,7 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
         hit_counts = self.get_hit_counts(self.included_taxids,
                                          plasmids=self.included_plasmids,
                                          search_on="taxid")
-        if not single_copy:
+        if not self.single_copy:
             hit_counts["presence"] = self._to_percent(
                 hit_counts[hit_counts > 0].count(axis=1), self.n_included)
             hit_counts["selection"] = hit_counts.presence >= self.min_fraq
@@ -143,7 +172,7 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
         self.n_hits = len(hit_counts_all.index)
         self.max_n = len(hit_counts_all.columns)
 
-        if not single_copy:
+        if not self.single_copy:
             hit_counts_all = self._to_percent(
                 hit_counts_all[hit_counts_all > 0].count(axis=1), self.max_n)
         else:
@@ -164,19 +193,18 @@ class ExtractOrthogroupView(ExtractHitsBaseView):
 
     _table_headers = ["Orthogroup", "Genes", "Products"]
 
-    table_help = """
-    Two tables have been generated:<br>
-    <b>Orthogroups</b> table: it contains the list of orthologous groups shared
-    among the selected genomes. The annotation(s) of orthologous groups is a
+    _table_help_complement = """
+    The annotation(s) of orthologous groups is a
     consensus of the annotation of all members of the group, and only the two
-    most frequent annotations are reported.  For each orthogroup the table
-    displays the gene name, the product and the COG category. Additionally,
-    the number of occurences of the annotation in the whole set database and
-    in the selected genomes.<br>
-    <b>Table detail</b>: a complete list of the members of each orthologous
+    most frequent annotations are reported.
+    <br>
+    <b>Details tabke</b>: a complete list of the members of each orthologous
     group shared by the selected genome is displayed. Gene loci are reported
     and quickly linked to additional details about locus annotations.
     """
+
+    _col_descriptions = {"COG": "COG category",
+                         "KO": "KO assignment"}
 
     @property
     def result_tabs(self):
@@ -185,7 +213,6 @@ class ExtractOrthogroupView(ExtractHitsBaseView):
             ResultTab(2, "Details table", "chlamdb/extract_hits_details_table.html"),
             ]
 
-    @property
     def table_headers(self):
         return self._table_headers + self.opt_header + self.table_count_headers
 
@@ -291,12 +318,6 @@ class ExtractPfamView(ExtractHitsBaseView):
 
     _table_headers = ["Pfam entry", "Description"]
 
-    table_help = """
-    <br> <b>Pfam</b> table: it contains the list of Pfam domains shared among
-    the selected genomes. Pfam entry, its description, its frequency in the
-    selected genomes and in all genomes is reported.
-    """
-
     @property
     def get_hit_counts(self):
         return self.db.get_pfam_hits
@@ -320,12 +341,6 @@ class ExtractAmrView(ExtractHitsBaseView, AmrAnnotationsMixin):
 
     _table_headers = ["Gene", "Description", "Scope", "Type", "Class",
                       "Subclass"]
-
-    table_help = """
-    <br> <b>Pfam</b> table: it contains the list of Pfam domains shared among
-    the selected genomes. Pfam entry, its description, its frequency in the
-    selected genomes and in all genomes is reported.
-    """
 
     @property
     def get_hit_counts(self):
@@ -355,14 +370,9 @@ class ExtractKoView(ExtractHitsBaseView):
 
     _table_headers = ["KO", "Description", "Kegg Pathways", "Kegg Modules"]
 
-    table_help = """
-    The output consists of a table containing the KO accession number of
-    the Kegg Orthologs shared among the selected genomes. For each entry
-    its description, the corresponding EC numbers used in Enzyme nomenclature,
-    the Kegg Pathways and Kegg modules to whihch it belongs are reported.
-    Additionally the frequency of the Ko entry in the selected genomes and in
-    the whole database is computed.
-    """
+    _col_descriptions = {"Description": "description including the corresponding"
+                                        " EC numbers used in enzyme nomenclature",
+                         "Kegg Modules": "Kegg modules to whihch it belongs"}
 
     @property
     def get_hit_counts(self):
@@ -392,11 +402,7 @@ class ExtractCogView(ExtractHitsBaseView):
 
     _table_headers = ["COG", "Category", "Name"]
 
-    table_help = """
-    <br><b>COGs</b> table: it contains the list of COG categories shared among
-    the selected genomes. For each category the most frequent annotations and
-    the number of occurences in the whole set database and in the selected
-    genomes are reported.
+    _table_help_complement = """
     <br><b> COG categories barchart</b>: this plot displays for each COG
     category in
     <span style="color: rgb(135, 186, 245)"><b>light-blue</b></span> the number
