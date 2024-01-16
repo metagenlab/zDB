@@ -1,0 +1,23 @@
+<div class="tab-pane active" id={{tabid}}>
+  <div style="padding-top:18px;">
+    <table class="hover data-table table table-striped" id="table_groups">
+      <thead>
+        <tr>
+        {% for value in table_headers %}
+          <th> {{value|safe}} </th>
+        {% endfor %}
+        </tr>
+      </thead>
+
+      <tbody>
+      {% for value in table_data %}
+        <tr>
+          {% for entry in value %}
+            <td>{{entry|safe}}</td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -70,6 +70,8 @@
 {% elif type == 'amr' %}
     <nav>
         <ul id="tabs_main" class="nav nav-tabs">
+            <li class={% if active_tab == "index" %}"active"{%endif%}><a href="{% url 'entry_list_amr' %}">Index</a></li>
+            <li class={% if active_tab == "det" %}"active"{%endif%}><a href="{% url 'extract_amr' %}">Extract form</a></li>
             <li class={% if active_tab == "comp" %}"active"{%endif%}><a href="{% url 'amr_comparison' %}">Presence/absence table</a></li>
         </ul>
     </nav>
