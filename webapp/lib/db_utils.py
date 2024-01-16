@@ -731,7 +731,7 @@ class DB:
         return hsh_results
 
     def get_module_completeness(self, taxids):
-        plchd = self.gen_placeholder_string(ids)
+        plchd = self.gen_placeholder_string(taxids)
         query = (
             "SELECT module_id, taxid "
             "FROM module_completeness "
