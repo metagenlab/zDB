@@ -93,7 +93,7 @@ class VennOrthogroupView(VennBaseView):
         genes = grouped["gene"].apply(list)
         products = grouped["product"].apply(list)
 
-        orthogroup2description = {}
+        data_dict = {}
         for og in og_list:
             gene_data = "-"
             if og in genes.index:
@@ -103,10 +103,11 @@ class VennOrthogroupView(VennBaseView):
             if og in products.index:
                 p = products.loc[og]
                 prod_data = format_lst_to_html(p, add_count=False)
-            orthogroup2description[format_orthogroup(og)] = [gene_data, prod_data]
+            data_dict[format_orthogroup(og)] = [
+                format_orthogroup(og, to_url=True), gene_data, prod_data]
         self.show_results = True
         return self.get_context(series=series,
-                                orthogroup2description=orthogroup2description)
+                                data_dict=data_dict)
 
 
 def venn_pfam(request):

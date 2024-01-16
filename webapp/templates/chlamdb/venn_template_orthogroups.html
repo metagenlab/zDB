@@ -5,7 +5,7 @@
 *   in the template file that includes this one.
 */
 
-var h = {{ description_dico|safe }};
+var data_dict = {{ data_dict|safe }};
 
 
 $(document).ready(function() {
@@ -20,10 +20,9 @@ $(document).ready(function() {
 		series: {{ series|safe }},
 		displayStat: true,
 		fnClickCallback: function() {
-			console.log(this.list);
 			let dataSet = this.list
-				.filter(it => it in h)
-				.map(it => build_set(it, h));
+				.filter(it => it in data_dict)
+				.map(it => data_dict[it]);
 			$("#names_div").show();
 			let table = $("#names").DataTable();
 			table.clear();

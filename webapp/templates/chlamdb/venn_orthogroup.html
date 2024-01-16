@@ -46,7 +46,7 @@
                     <br> Additionally, the total number of Orthologous identified in each genome can be visualized in the barplot, while the number of unique or shared ones can be appreciated in the last plot.
                   </p>
                 </div>
-                {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=orthogroup2description %}
+                {% include "chlamdb/venn_template_orthogroups.html" %}
               </div>
             {% endif %}
           </div>
@@ -59,15 +59,6 @@
   <script>
     var table_headers = {{ table_headers|safe }}
     var columns = table_headers.map(it => ({"title": it}));
-
-  	function build_set(val, dict) {
-  		var link = "<a href=/orthogroup/"+val+">"+val+"</a>";
-
-  		// data[0] contains the gene name(s); data[1] contains the description(s)
-  		var data = dict[val];
-  		return [link, data[0], data[1]];
-  	}
-
 
   </script>
 
