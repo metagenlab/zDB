@@ -92,7 +92,6 @@ class VennOrthogroupView(VennBaseView):
 
         orthogroup2description = []
         for og in og_list:
-            forbidden = "\""
             gene_data = "-"
             if og in genes.index:
                 g = genes.loc[og]
