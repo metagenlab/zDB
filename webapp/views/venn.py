@@ -37,7 +37,7 @@ class VennBaseView(View, ComparisonViewMixin):
         }
         if getattr(self, "show_results", False):
             context.update({
-                "envoi_venn": True,
+                "show_results": True,
                 })
         context.update(kwargs)
         return my_locals(context)
