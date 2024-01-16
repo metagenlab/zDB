@@ -66,6 +66,15 @@ class VennBaseView(View, ComparisonViewMixin):
         self.targets = self.form.get_taxids()
         genomes = self.db.get_genomes_description()
         counts = self.db.get_og_count(self.targets)
+
+        self.series = []
+        for taxon, taxon_counts in counts.items():
+            self.series.append({
+                "name": genomes.loc[int(taxon)].description,
+                "data": [self.format_entry(key)
+                         for key, cnt in taxon_counts.items() if cnt > 0]
+                })
+
         context = self.prepare_data(counts, genomes)
         return render(request, self.template, context)
 
@@ -77,21 +86,15 @@ class VennOrthogroupView(VennBaseView):
     table_data_descr = "The table contains a list of the genes annotated "\
                        "in each Orthogroup and their description."
 
+    @staticmethod
+    def format_entry(entry, to_url=False):
+        return format_orthogroup(entry, to_url=to_url)
+
     @property
     def get_counts(self):
         return self.db.get_og_count
 
     def prepare_data(self, counts, genomes):
-        self.series = []
-        for taxon in counts:
-            ogs = counts[taxon]
-            genome = genomes.loc[int(taxon)].description
-            self.series.append({
-                "name": genome,
-                "data": [format_orthogroup(og)
-                         for og, cnt in ogs.items() if cnt > 0]
-                })
-
         og_list = counts.index.tolist()
         annotations = self.db.get_genes_from_og(
             orthogroups=og_list, taxon_ids=genomes.index.tolist())
@@ -109,8 +112,8 @@ class VennOrthogroupView(VennBaseView):
             if og in products.index:
                 p = products.loc[og]
                 prod_data = format_lst_to_html(p, add_count=False)
-            self.data_dict[format_orthogroup(og)] = [
-                format_orthogroup(og, to_url=True), gene_data, prod_data]
+            self.data_dict[self.format_entry(og)] = [
+                self.format_entry(og, to_url=True), gene_data, prod_data]
         self.show_results = True
         return self.get_context()
 
@@ -122,25 +125,20 @@ class VennPfamView(VennBaseView):
     table_data_descr = "The table contains a list of the Pfam entries and "\
                        "their description."
 
+    @staticmethod
+    def format_entry(entry, to_url=False):
+        return format_pfam(entry, to_url=to_url)
+
     @property
     def get_counts(self):
         return self.db.get_pfam_hits
 
     def prepare_data(self, counts, genomes):
         data = self.db.get_pfam_def(counts.index.tolist())
-        self.series = []
-        for taxon in counts:
-            pfams = counts[taxon]
-            self.series.append({
-                "name": genomes.loc[int(taxon)].description,
-                "data": [format_pfam(og)
-                         for og, cnt in pfams.items() if cnt > 0]
-                })
-
         self.data_dict = {}
         for pfam, pfam_info in data.iterrows():
-            self.data_dict[format_pfam(pfam)] = [
-                format_pfam(pfam, to_url=True), pfam_info["def"]]
+            self.data_dict[self.format_entry(pfam)] = [
+                self.format_entry(pfam, to_url=True), pfam_info["def"]]
         self.show_results = True
         return self.get_context()
 
