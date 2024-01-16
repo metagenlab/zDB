@@ -400,7 +400,7 @@ class ExtractCogView(ExtractHitsBaseView):
 
     comp_type = "cog"
 
-    _table_headers = ["COG", "Category", "Name"]
+    _table_headers = ["COG", "Function", "Description"]
 
     _table_help_complement = """
     <br><b> COG categories barchart</b>: this plot displays for each COG
