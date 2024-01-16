@@ -1682,7 +1682,7 @@ class DB:
         results = self.server.adaptor.execute_and_fetchall(query, ids)
         if as_df:
             col_name = "taxid" if as_taxid else "organism"
-            df = DB.to_pandas_frame(results, columns=["seqid", "taxid"])
+            df = DB.to_pandas_frame(results, columns=["seqid", col_name])
             return df.set_index("seqid")
 
         hsh_results = {}
