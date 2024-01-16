@@ -57,11 +57,9 @@
 
 
   <script>
-  	var columns = [
-  		{title: "Orthogroup"},
-  		{title: "Gene"},
-  		{title: "Description"}
-  	];
+    var table_headers = {{ table_headers|safe }}
+    var columns = table_headers.map(it => ({"title": it}));
+
   	function build_set(val, dict) {
   		var link = "<a href=/orthogroup/"+val+">"+val+"</a>";
 

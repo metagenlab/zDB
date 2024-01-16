@@ -38,6 +38,7 @@ class VennBaseView(View, ComparisonViewMixin):
         if getattr(self, "show_results", False):
             context.update({
                 "show_results": True,
+                "table_headers": self.table_headers,
                 })
         context.update(kwargs)
         return my_locals(context)
@@ -68,20 +69,22 @@ class VennOrthogroupView(VennBaseView):
 
     template = 'chlamdb/venn_orthogroup.html'
     comp_type = "orthogroup"
+    table_headers = ["Orthogroup", "Gene", "Description"]
 
     @property
     def get_counts(self):
         return self.db.get_og_count
 
     def prepare_data(self, counts, genomes):
-        fmt_data = []
+        series = []
         for taxon in counts:
             ogs = counts[taxon]
-            ogs_str = ",".join(f"{to_s(format_orthogroup(og))}"
-                               for og, cnt in ogs.items() if cnt > 0)
             genome = genomes.loc[int(taxon)].description
-            fmt_data.append(f"{{name: {to_s(genome)}, data: [{ogs_str}]}}")
-        series = "[" + ",".join(fmt_data) + "]"
+            series.append({
+                "name": genome,
+                "data": [format_orthogroup(og)
+                         for og, cnt in ogs.items() if cnt > 0]
+                })
 
         og_list = counts.index.tolist()
         annotations = self.db.get_genes_from_og(
@@ -90,7 +93,7 @@ class VennOrthogroupView(VennBaseView):
         genes = grouped["gene"].apply(list)
         products = grouped["product"].apply(list)
 
-        orthogroup2description = []
+        orthogroup2description = {}
         for og in og_list:
             gene_data = "-"
             if og in genes.index:
@@ -100,10 +103,7 @@ class VennOrthogroupView(VennBaseView):
             if og in products.index:
                 p = products.loc[og]
                 prod_data = format_lst_to_html(p, add_count=False)
-            og_info = "[\"" + gene_data + "\",\"" + prod_data + "\"]"
-            og_item = f"h[{to_s(format_orthogroup(og))}] = {og_info}"
-            orthogroup2description.append(og_item)
-        orthogroup2description = "\n".join(orthogroup2description)
+            orthogroup2description[format_orthogroup(og)] = [gene_data, prod_data]
         self.show_results = True
         return self.get_context(series=series,
                                 orthogroup2description=orthogroup2description)

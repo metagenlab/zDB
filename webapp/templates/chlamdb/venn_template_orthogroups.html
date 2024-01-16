@@ -5,8 +5,8 @@
 *   in the template file that includes this one.
 */
 
-var h = new Object();
-{{ description_dico|safe }}
+var h = {{ description_dico|safe }};
+
 
 $(document).ready(function() {
 	$("#names").DataTable ({
