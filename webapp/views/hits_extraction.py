@@ -61,8 +61,8 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
 
     @property
     def table_count_headers(self):
-        return ["Presence in selection",
-                "Presence in database"]
+        return ["Presence in selection (%)",
+                "Presence in database (%)"]
 
     @property
     def table_headers(self):
