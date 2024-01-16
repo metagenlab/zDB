@@ -2,8 +2,10 @@
 from chlamdb.forms import make_venn_from
 from django.conf import settings
 from django.shortcuts import render
+from django.views import View
 from lib.db_utils import DB
 
+from views.mixins import ComparisonViewMixin
 from views.utils import (format_cog, format_ko, format_lst_to_html,
                          format_orthogroup, format_pfam, my_locals, page2title,
                          to_s)
@@ -13,56 +15,99 @@ def escape_quotes(unsafe):
     return unsafe.replace("\"", "\\\"")
 
 
-def venn_orthogroup(request):
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
-    page_title = page2title["venn_orthogroup"]
+class VennBaseView(View, ComparisonViewMixin):
 
-    venn_form_class = make_venn_from(db, limit=6)
-    if request.method != "POST":
-        form_venn = venn_form_class()
-        return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
+    @property
+    def view_name(self):
+        return f"venn_{self.comp_type}"
 
-    form_venn = venn_form_class(request.POST)
-    if not form_venn.is_valid():
-        return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
+    def dispatch(self, request, *args, **kwargs):
+        biodb_path = settings.BIODB_DB_PATH
+        self.db = DB.load_db_from_name(biodb_path)
+        self.form_class = make_venn_from(self.db, label=self.compared_obj_name,
+                                         limit=6, action=self.view_name)
+        return super(VennBaseView, self).dispatch(request, *args, **kwargs)
 
-    targets = form_venn.get_taxids()
-    genomes = db.get_genomes_description()
-    og_count = db.get_og_count(targets)
-    fmt_data = []
-    for taxon in og_count:
-        ogs = og_count[taxon]
-        ogs_str = ",".join(f"{to_s(format_orthogroup(og))}"
-                           for og, cnt in ogs.items() if cnt > 0)
-        genome = genomes.loc[int(taxon)].description
-        fmt_data.append(f"{{name: {to_s(genome)}, data: [{ogs_str}]}}")
-    series = "[" + ",".join(fmt_data) + "]"
+    def get_context(self, **kwargs):
+        context = {
+            "page_title": self.page_title,
+            "comp_type": self.comp_type,
+            "compared_obj_name": self.compared_obj_name,
+            "form_venn": self.form,
+        }
+        if getattr(self, "show_results", False):
+            context.update({
+                "envoi_venn": True,
+                })
+        context.update(kwargs)
+        return my_locals(context)
 
-    og_list = og_count.index.tolist()
-    annotations = db.get_genes_from_og(
-        orthogroups=og_list, taxon_ids=genomes.index.tolist())
-    grouped = annotations.groupby("orthogroup")
-    genes = grouped["gene"].apply(list)
-    products = grouped["product"].apply(list)
+    def get(self, request, *args, **kwargs):
+        self.form = self.form_class()
+        return render(request, self.template, self.get_context())
 
-    orthogroup2description = []
-    for og in og_list:
-        forbidden = "\""
-        gene_data = "-"
-        if og in genes.index:
-            g = genes.loc[og]
-            gene_data = format_lst_to_html(g, add_count=False)
-        prod_data = "-"
-        if og in products.index:
-            p = products.loc[og]
-            prod_data = format_lst_to_html(p, add_count=False)
-        og_info = "[\"" + gene_data + "\",\"" + prod_data + "\"]"
-        og_item = f"h[{to_s(format_orthogroup(og))}] = {og_info}"
-        orthogroup2description.append(og_item)
-    orthogroup2description = "\n".join(orthogroup2description)
-    envoi_venn = True
-    return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
+    @staticmethod
+    def _to_percent(count, tot):
+        return (count / tot * 100).astype(int)
+
+    def post(self, request, *args, **kwargs):
+        self.form = self.form_class(request.POST)
+        if not self.form.is_valid():
+            self.form = self.form_class()
+            # add error message in web page
+            return render(request, self.template, self.get_context())
+
+        targets = self.form.get_taxids()
+        genomes = self.db.get_genomes_description()
+        counts = self.db.get_og_count(targets)
+        context = self.prepare_data(counts, genomes)
+        return render(request, self.template, context)
+
+
+class VennOrthogroupView(VennBaseView):
+
+    template = 'chlamdb/venn_orthogroup.html'
+    comp_type = "orthogroup"
+
+    @property
+    def get_counts(self):
+        return self.db.get_og_count
+
+    def prepare_data(self, counts, genomes):
+        fmt_data = []
+        for taxon in counts:
+            ogs = counts[taxon]
+            ogs_str = ",".join(f"{to_s(format_orthogroup(og))}"
+                               for og, cnt in ogs.items() if cnt > 0)
+            genome = genomes.loc[int(taxon)].description
+            fmt_data.append(f"{{name: {to_s(genome)}, data: [{ogs_str}]}}")
+        series = "[" + ",".join(fmt_data) + "]"
+
+        og_list = counts.index.tolist()
+        annotations = self.db.get_genes_from_og(
+            orthogroups=og_list, taxon_ids=genomes.index.tolist())
+        grouped = annotations.groupby("orthogroup")
+        genes = grouped["gene"].apply(list)
+        products = grouped["product"].apply(list)
+
+        orthogroup2description = []
+        for og in og_list:
+            forbidden = "\""
+            gene_data = "-"
+            if og in genes.index:
+                g = genes.loc[og]
+                gene_data = format_lst_to_html(g, add_count=False)
+            prod_data = "-"
+            if og in products.index:
+                p = products.loc[og]
+                prod_data = format_lst_to_html(p, add_count=False)
+            og_info = "[\"" + gene_data + "\",\"" + prod_data + "\"]"
+            og_item = f"h[{to_s(format_orthogroup(og))}] = {og_info}"
+            orthogroup2description.append(og_item)
+        orthogroup2description = "\n".join(orthogroup2description)
+        self.show_results = True
+        return self.get_context(series=series,
+                                orthogroup2description=orthogroup2description)
 
 
 def venn_pfam(request):

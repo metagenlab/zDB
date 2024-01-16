@@ -57,7 +57,7 @@ urlpatterns = [
     re_path(r'^blast/$', views.blast, name="blast"),
     re_path(r'^extract_orthogroup/$', hits_extraction.ExtractOrthogroupView.as_view(),
             name="extract_orthogroup"),
-    re_path(r'^venn_orthogroup/$', venn.venn_orthogroup,
+    re_path(r'^venn_orthogroup/$', venn.VennOrthogroupView.as_view(),
             name="venn_orthogroup"),
     re_path(r'^extract_cog/$', hits_extraction.ExtractCogView.as_view(), name="extract_cog"),
     re_path(r'^venn_cog/$', venn.venn_cog, name="venn_cog"),
