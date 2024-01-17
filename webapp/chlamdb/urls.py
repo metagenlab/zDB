@@ -25,7 +25,7 @@ urlpatterns = [
     re_path(r'^module_cat_info/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\+-]+)$',
             views.module_cat_info, name="module_cat_info"),
     re_path(r'^ko_venn_subset/([a-zA-Z0-9_\.\+-]+)$',
-            venn.ko_venn_subset, name="ko_venn_subset"),
+            venn.VennKoSubsetView.as_view(), name="ko_venn_subset"),
     re_path(r'^kegg/$', views.kegg, name="kegg"),
     re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)',
             views.locusx, name="locusx"),

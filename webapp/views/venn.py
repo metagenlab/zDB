@@ -64,6 +64,9 @@ class VennBaseView(View, ComparisonViewMixin):
             return render(request, self.template, self.get_context())
 
         self.targets = self.form.get_taxids()
+        return self.render_venn(request)
+
+    def render_venn(self, request):
         genomes = self.db.get_genomes_description()
         counts = self.get_counts(self.targets)
 
@@ -170,6 +173,35 @@ class VennKoView(VennBaseView):
         return self.get_context()
 
 
+class VennKoSubsetView(VennKoView):
+
+    def dispatch(self, request, category, *args, **kwargs):
+        self.category = category.replace("+", " ")
+        self.request = request
+        return super(VennKoSubsetView, self).dispatch(request, *args, **kwargs)
+
+    def get_counts(self, targets):
+        counts = self.db.get_ko_count_cat(
+            taxon_ids=targets, subcategory_name=self.category, index=False)
+        counts = counts.drop("module_id", axis=1)
+        counts = counts.drop_duplicates(subset=["taxon_id", "KO"])
+        counts = counts.set_index(["taxon_id", "KO"])
+        counts = counts.unstack(level=0, fill_value=0)["count"]
+        return counts
+
+    def get(self, request, *args, **kwargs):
+        self.form = self.form_class()
+        try:
+            self.targets = [int(i) for i in self.request.GET.getlist('h')]
+        except Exception:
+            return render(request, self.template, self.get_context())
+
+        if len(self.targets) > 5:
+            self.targets = self.targets[0:6]
+
+        return self.render_venn(request)
+
+
 class VennCogView(VennBaseView):
 
     comp_type = "cog"
@@ -199,49 +231,3 @@ class VennCogView(VennBaseView):
                 cog_data.description]
         self.show_results = True
         return self.get_context()
-
-
-def ko_venn_subset(request, category):
-    biodb = settings.BIODB_DB_PATH
-    db = DB.load_db(biodb, settings.BIODB_CONF)
-
-    category = category.replace("+", " ")
-    try:
-        targets = [int(i) for i in request.GET.getlist('h')]
-    except Exception:
-        # add an error message
-        return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
-
-    if len(targets) > 5:
-        targets = targets[0:6]
-
-    genomes = db.get_genomes_description(targets).description.to_dict()
-    ko_counts = db.get_ko_count_cat(taxon_ids=targets, subcategory_name=category, index=False)
-    ko_count = ko_counts.groupby("taxon_id")["KO"].apply(list)
-
-    # shameful copy/cape from venn_ko
-    fmt_data = []
-    ko_set = set()
-    for taxid in targets:
-        if taxid not in ko_count.index:
-            continue
-        kos = ko_count.loc[taxid]
-        kos_str = ",".join(f"{to_s(format_ko(ko))}" for ko in kos)
-        genome = genomes[taxid]
-        fmt_data.append(f"{{name: {to_s(genome)}, data: [{kos_str}]}}")
-        ko_set = ko_set.union({ko for ko in kos})
-    series = "[" + ",".join(fmt_data) + "]"
-
-    ko_list = list(ko_set)
-    ko_descriptions = db.get_ko_desc(ko_list)
-    ko2description = []
-    for ko, ko_desc in ko_descriptions.items():
-        forbidden = "\""
-        safe_desc = escape_quotes(ko_desc)
-        ko_item = f"h[{to_s(format_ko(ko))}] = {forbidden}{safe_desc}{forbidden}"
-        ko2description.append(ko_item)
-
-    ko2description = "".join(ko2description)
-    display_form = False
-    envoi_venn = True
-    return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
