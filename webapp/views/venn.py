@@ -65,7 +65,7 @@ class VennBaseView(View, ComparisonViewMixin):
 
         self.targets = self.form.get_taxids()
         genomes = self.db.get_genomes_description()
-        counts = self.db.get_og_count(self.targets)
+        counts = self.get_counts(self.targets)
 
         self.series = []
         for taxon, taxon_counts in counts.items():
