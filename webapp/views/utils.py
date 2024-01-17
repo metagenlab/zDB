@@ -20,7 +20,7 @@ title2page = {
         'pan_genome_cog', 'plot_heatmap_cog', 'venn_cog'],
     'Comparisons: Kegg Orthologs (KO)': [
         'entry_list_ko', 'extract_ko', 'heatmap_ko', 'index_comp_ko',
-        'ko_comparison', 'module_barchart', 'pan_genome_ko', 'plot_heatmap_ko',
+        'ko_comparison', 'ko_barchart', 'pan_genome_ko', 'plot_heatmap_ko',
         'venn_ko'],
     'Comparisons: PFAM domains': [
         'entry_list_pfam', 'extract_pfam', 'heatmap_pfam', 'pan_genome_pfam',

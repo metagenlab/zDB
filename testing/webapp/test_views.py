@@ -34,7 +34,7 @@ urls = [
     '/plot_heatmap/orthogroup',
     '/cog_phylo_heatmap/True',
     '/cog_phylo_heatmap/False',
-    '/module_barchart/',
+    '/ko_barchart/',
     '/get_cog/3/L?h=1&h=2&h=3',
     '/ko_venn_subset/Cofactor+and+vitamin+metabolism?h=1&h=2',
     '/kegg/',
