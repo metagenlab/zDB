@@ -63,7 +63,6 @@ urlpatterns = [
     re_path(r'^venn_cog/$', venn.venn_cog, name="venn_cog"),
     re_path(r'^cog_venn_subset/([A-Z])$',
             views.cog_venn_subset, name="cog_venn_subset"),
-    re_path(r'^venn_cog/([a-zA-Z0-9_]+)$$', venn.venn_cog, name="venn_cog"),
     re_path(r'^venn_ko/$', venn.VennKoView.as_view(), name="venn_ko"),
     re_path(r'^extract_pfam/$', hits_extraction.ExtractPfamView.as_view(), name="extract_pfam"),
     re_path(r'^extract_ko/$', hits_extraction.ExtractKoView.as_view(), name="extract_ko"),

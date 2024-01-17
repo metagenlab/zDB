@@ -170,13 +170,7 @@ class VennKoView(VennBaseView):
         return self.get_context()
 
 
-def venn_cog(request, sep_plasmids=False):
-    """
-    Will need to modify the signature of the method to remove the sep_plasmid
-    parameter as it is not taken into account. Or put back the differentiate
-    plasmid parameter in the web page.
-    """
-
+def venn_cog(request):
     biodb = settings.BIODB_DB_PATH
     db = DB.load_db(biodb, settings.BIODB_CONF)
     page_title = page2title["venn_cog"]

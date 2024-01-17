@@ -57,7 +57,6 @@ urls = [
     '/extract_cog/',
     '/venn_cog/',
     '/cog_venn_subset/L?h=1&h=2',
-    '/venn_cog/True',
     '/venn_ko/',
     '/extract_amr/',
     '/extract_pfam/',
