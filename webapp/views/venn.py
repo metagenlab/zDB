@@ -231,3 +231,45 @@ class VennCogView(VennBaseView):
                 cog_data.description]
         self.show_results = True
         return self.get_context()
+
+
+def cog_venn_subset(request, category):
+    # Note: add error handling
+
+    biodb = settings.BIODB_DB_PATH
+    db = DB.load_db(biodb, settings.BIODB_CONF)
+
+    targets = [int(i) for i in request.GET.getlist('h')]
+    if len(targets) > 5:
+        targets = targets[0:6]
+
+    cog_hits = db.get_cog_hits(targets, search_on="taxid")
+    genome_desc = db.get_genomes_description().description.to_dict()
+    cog_description = db.get_cog_summaries(cog_hits.index.tolist(), only_cog_desc=True, as_df=True)
+    selected_cogs = cog_description[cog_description.function.str.contains(category)]
+    cog_codes = db.get_cog_code_description()
+
+    cog2description_l = []
+    for cog, data in selected_cogs.iterrows():
+        name = data.description
+        func = data.function
+        functions = ",".join(f"\"{abbr}\"" for abbr in func)
+        cog2description_l.append(f"h[\"{format_cog(cog)}\"] = [[{functions}], \"{name}\"]")
+    cog2description = ";".join(cog2description_l)
+
+    sel_cog_ids = selected_cogs.index
+    cog_hits = cog_hits.reindex(sel_cog_ids)
+
+    series_tab = []
+    for target in targets:
+        cogs = cog_hits[target]
+        non_zero_cogs = cogs[cogs > 0]
+        data = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.items())
+        series_tab.append(f"{{name: \"{genome_desc[target]}\", data: [{data}]}}")
+    series = "[" + ",".join(series_tab) + "]"
+
+    cog_func_dict = (f"\"{func}\": \"{descr}\"" for func, descr in cog_codes.items())
+    cog_func_dict = "{" + ",".join(cog_func_dict) + "}"
+    display_form = False
+    envoi_venn = True
+    return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
