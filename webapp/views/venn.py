@@ -7,8 +7,7 @@ from lib.db_utils import DB
 
 from views.mixins import ComparisonViewMixin
 from views.utils import (format_cog, format_ko, format_lst_to_html,
-                         format_orthogroup, format_pfam, my_locals, page2title,
-                         to_s)
+                         format_orthogroup, format_pfam, my_locals)
 
 
 def escape_quotes(unsafe):
