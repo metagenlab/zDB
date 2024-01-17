@@ -201,7 +201,7 @@ class TestViewsContent(SimpleTestCase):
         self.assertPlot(resp)
 
 
-class TabularViewTestMixin():
+class ComparisonViewsTestMixin():
 
     selection_html = """
         <option value="0" {0}>Klebsiella pneumoniae R6724_16313</option>
@@ -210,6 +210,7 @@ class TabularViewTestMixin():
         """
 
     table_html = '<table class="hover" id="mytable"  style="padding-top: 1em;">'
+    venn_html = '<div id="venn_diagram" '
 
     def assertPageTitle(self, resp, title):
         self.assertContains(
@@ -231,12 +232,28 @@ class TabularViewTestMixin():
             'selected=""' if selected else '')
         self.assertContains(resp, expected, html=True)
 
+    def assertNoVennDiagram(self, resp):
+        self.assertFalse(resp.context.get("envoi_venn", False))
+        self.assertNotContains(resp, self.venn_html)
+
+    def assertVennDiagram(self, resp):
+        self.assertTrue(resp.context.get("envoi_venn", False))
+        self.assertContains(resp, self.venn_html)
+
     @property
     def tab_comp_view(self):
         return f"/{self.view_type}_comparison"
 
     @property
     def tab_comp_form_data(self):
+        return {"targets": ["0", "1"]}
+
+    @property
+    def venn_view(self):
+        return f"/venn_{self.view_type}/"
+
+    @property
+    def venn_form_data(self):
         return {"targets": ["0", "1"]}
 
     def test_tabular_comparison_view(self):
@@ -257,8 +274,24 @@ class TabularViewTestMixin():
         self.assertCompTable(resp)
         self.assertNav(resp)
 
+    def test_venn_view(self):
+        resp = self.client.get(self.venn_view)
+        self.assertEqual(200, resp.status_code)
+        self.assertPageTitle(resp, self.page_title)
+        self.assertSelection(resp)
+        self.assertNoVennDiagram(resp)
+        self.assertNav(resp)
 
-class TestPfamViews(SimpleTestCase, TabularViewTestMixin):
+        resp = self.client.post(self.venn_view,
+                                data=self.venn_form_data)
+        self.assertEqual(200, resp.status_code)
+        self.assertPageTitle(resp, self.page_title)
+        self.assertSelection(resp, selected=True)
+        self.assertVennDiagram(resp)
+        self.assertNav(resp)
+
+
+class TestPfamViews(SimpleTestCase, ComparisonViewsTestMixin):
 
     view_type = "pfam"
     page_title = "Comparisons: PFAM domains"
@@ -266,23 +299,37 @@ class TestPfamViews(SimpleTestCase, TabularViewTestMixin):
     pass
 
 
-class TestKOViews(SimpleTestCase, TabularViewTestMixin):
+class TestKOViews(SimpleTestCase, ComparisonViewsTestMixin):
 
     view_type = "ko"
     page_title = "Comparisons: Kegg Orthologs (KO)"
 
-    pass
+    def test_venn_subset_view(self):
+        subset_view = f"/{self.view_type}_venn_subset/Cofactor+and+vitamin+metabolism?h=1&h=2"
+        resp = self.client.get(subset_view)
+        self.assertEqual(200, resp.status_code)
+        self.assertPageTitle(resp, self.page_title)
+        self.assertSelection(resp)
+        self.assertVennDiagram(resp)
+        self.assertNav(resp)
 
 
-class TestCOGViews(SimpleTestCase, TabularViewTestMixin):
+class TestCOGViews(SimpleTestCase, ComparisonViewsTestMixin):
 
     view_type = "cog"
     page_title = "Comparisons: Clusters of Orthologous groups (COGs)"
 
-    pass
+    def test_venn_subset_view(self):
+        subset_view = f"/{self.view_type}_venn_subset/L?h=1&h=2"
+        resp = self.client.get(subset_view)
+        self.assertEqual(200, resp.status_code)
+        self.assertPageTitle(resp, self.page_title)
+        self.assertSelection(resp)
+        self.assertVennDiagram(resp)
+        self.assertNav(resp)
 
 
-class TestAMRViews(SimpleTestCase, TabularViewTestMixin):
+class TestAMRViews(SimpleTestCase, ComparisonViewsTestMixin):
 
     view_type = "amr"
     page_title = "Comparisons: Antimicrobial Resistance"
@@ -292,7 +339,7 @@ class TestAMRViews(SimpleTestCase, TabularViewTestMixin):
         return {"targets": ["0", "1"], "comp_type": "gene"}
 
 
-class TestOrthogroupViews(SimpleTestCase, TabularViewTestMixin):
+class TestOrthogroupViews(SimpleTestCase, ComparisonViewsTestMixin):
 
     view_type = "orthogroup"
     page_title = "Comparisons: orthologous groups"
