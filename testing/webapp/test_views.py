@@ -233,11 +233,13 @@ class ComparisonViewsTestMixin():
         self.assertContains(resp, expected, html=True)
 
     def assertNoVennDiagram(self, resp):
-        self.assertFalse(resp.context.get("envoi_venn", False))
+        self.assertFalse(resp.context.get("show_results", False))
+        self.assertTemplateNotUsed('chlamdb/venn_representation_template.html')
         self.assertNotContains(resp, self.venn_html)
 
     def assertVennDiagram(self, resp):
-        self.assertTrue(resp.context.get("envoi_venn", False))
+        self.assertTrue(resp.context.get("show_results", False))
+        self.assertTemplateUsed('chlamdb/venn_representation_template.html')
         self.assertContains(resp, self.venn_html)
 
     @property
@@ -277,6 +279,7 @@ class ComparisonViewsTestMixin():
     def test_venn_view(self):
         resp = self.client.get(self.venn_view)
         self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/venn_generic.html')
         self.assertPageTitle(resp, self.page_title)
         self.assertSelection(resp)
         self.assertNoVennDiagram(resp)
@@ -285,6 +288,7 @@ class ComparisonViewsTestMixin():
         resp = self.client.post(self.venn_view,
                                 data=self.venn_form_data)
         self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/venn_generic.html')
         self.assertPageTitle(resp, self.page_title)
         self.assertSelection(resp, selected=True)
         self.assertVennDiagram(resp)
@@ -308,6 +312,7 @@ class TestKOViews(SimpleTestCase, ComparisonViewsTestMixin):
         subset_view = f"/{self.view_type}_venn_subset/Cofactor+and+vitamin+metabolism?h=1&h=2"
         resp = self.client.get(subset_view)
         self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/venn_generic.html')
         self.assertPageTitle(resp, self.page_title)
         self.assertSelection(resp)
         self.assertVennDiagram(resp)
@@ -323,6 +328,7 @@ class TestCOGViews(SimpleTestCase, ComparisonViewsTestMixin):
         subset_view = f"/{self.view_type}_venn_subset/L?h=1&h=2"
         resp = self.client.get(subset_view)
         self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/venn_generic.html')
         self.assertPageTitle(resp, self.page_title)
         self.assertSelection(resp)
         self.assertVennDiagram(resp)
