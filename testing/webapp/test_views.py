@@ -258,6 +258,21 @@ class ComparisonViewsTestMixin():
     def venn_form_data(self):
         return {"targets": ["0", "1"]}
 
+    def test_comparison_index_view(self):
+        resp = self.client.get(f"/index_comp/{self.view_type}")
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/index_comp.html')
+        self.assertPageTitle(resp, self.page_title)
+        # Check that all links work
+        links = re.findall('location.href="(.*?)";', str(resp.content))
+        for link in links:
+            resp = self.client.get(link)
+            self.assertEqual(200, resp.status_code)
+            # Make sure we landed on the desired view
+            self.assertEqual(link.lstrip("/").split("/")[0],
+                             resp.resolver_match.view_name)
+            self.assertPageTitle(resp, self.page_title)
+
     def test_tabular_comparison_view(self):
         resp = self.client.get(self.tab_comp_view)
         self.assertEqual(200, resp.status_code)
