@@ -231,7 +231,9 @@ class VennCogView(VennBaseView):
         # Fitler for VennCogSubsetView
         if self.category:
             data = data[data.function.str.contains(self.category)]
-            counts = counts.reindex(data.index)
+        # Filters out COGs without description and COGs not of the correct
+        # category (if a category was selected).
+        counts = counts.reindex(data.index)
 
         cog_codes = self.db.get_cog_code_description()
         self.data_dict = {}
