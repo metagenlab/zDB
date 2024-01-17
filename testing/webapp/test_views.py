@@ -62,6 +62,7 @@ urls = [
     '/extract_pfam/',
     '/extract_ko/',
     '/venn_pfam/',
+    '/venn_amr/',
     '/KEGG_mapp_ko',
     '/KEGG_mapp_ko/map01100',
     '/KEGG_mapp_ko/map00230/1',

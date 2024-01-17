@@ -5,9 +5,10 @@ from django.shortcuts import render
 from django.views import View
 from lib.db_utils import DB
 
-from views.mixins import ComparisonViewMixin
-from views.utils import (format_cog, format_ko, format_lst_to_html,
-                         format_orthogroup, format_pfam, my_locals)
+from views.mixins import AmrAnnotationsMixin, ComparisonViewMixin
+from views.utils import (format_cog, format_gene_to_ncbi_hmm, format_ko,
+                         format_lst_to_html, format_orthogroup, format_pfam,
+                         my_locals)
 
 
 def escape_quotes(unsafe):
@@ -251,3 +252,37 @@ class VennCogView(VennBaseView):
 class VennCogSubsetView(VennSubsetBaseView, VennCogView):
 
     pass
+
+
+class VennAmrView(VennBaseView, AmrAnnotationsMixin):
+
+    comp_type = "amr"
+    table_data_descr = "The table contains a list of the Pfam entries and "\
+                       "their description."
+
+    table_headers = ["Gene", "Description", "Scope", "Type", "Class",
+                     "Subclass"]
+    table_data_accessors = ["seq_name", "scope", "type", "class", "subclass"]
+
+    @staticmethod
+    def format_entry(entry, to_url=False, hmm_id=None):
+        if to_url:
+            return format_gene_to_ncbi_hmm((entry, hmm_id))
+        return entry
+
+    @property
+    def get_counts(self):
+        return self.db.get_amr_hit_counts
+
+    def prepare_data(self, counts, genomes):
+        data = self.db.get_amr_descriptions(counts.index.tolist())
+        self.aggregate_amr_annotations(data)
+        data = data.drop_duplicates(subset=["gene"]).set_index("gene")
+        self.data_dict = {}
+        for amr, amr_info in data.iterrows():
+            self.data_dict[self.format_entry(amr)] = [
+                self.format_entry(amr, to_url=True, hmm_id=amr_info["hmm_id"]),
+                *[amr_info[accessor] or "" for accessor in self.table_data_accessors]
+            ]
+        self.show_results = True
+        return counts

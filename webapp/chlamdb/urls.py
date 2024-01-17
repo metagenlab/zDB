@@ -61,6 +61,7 @@ urlpatterns = [
             name="venn_orthogroup"),
     re_path(r'^extract_cog/$', hits_extraction.ExtractCogView.as_view(), name="extract_cog"),
     re_path(r'^venn_cog/$', venn.VennCogView.as_view(), name="venn_cog"),
+    re_path(r'^venn_amr/$', venn.VennAmrView.as_view(), name="venn_amr"),
     re_path(r'^cog_venn_subset/([A-Z])$',
             venn.VennCogSubsetView.as_view(), name="cog_venn_subset"),
     re_path(r'^venn_ko/$', venn.VennKoView.as_view(), name="venn_ko"),
