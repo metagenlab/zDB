@@ -69,6 +69,7 @@ class VennBaseView(View, ComparisonViewMixin):
     def render_venn(self, request):
         genomes = self.db.get_genomes_description()
         counts = self.get_counts(self.targets)
+        counts = self.prepare_data(counts, genomes)
 
         self.series = []
         for taxon, taxon_counts in counts.items():
@@ -78,7 +79,7 @@ class VennBaseView(View, ComparisonViewMixin):
                          for key, cnt in taxon_counts.items() if cnt > 0]
                 })
 
-        context = self.prepare_data(counts, genomes)
+        context = self.get_context()
         return render(request, self.template, context)
 
 
@@ -118,7 +119,7 @@ class VennOrthogroupView(VennBaseView):
             self.data_dict[self.format_entry(og)] = [
                 self.format_entry(og, to_url=True), gene_data, prod_data]
         self.show_results = True
-        return self.get_context()
+        return counts
 
 
 class VennPfamView(VennBaseView):
@@ -143,10 +144,10 @@ class VennPfamView(VennBaseView):
             self.data_dict[self.format_entry(pfam)] = [
                 self.format_entry(pfam, to_url=True), pfam_info["def"]]
         self.show_results = True
-        return self.get_context()
+        return counts
 
 
-class VennKoView(VennBaseView):
+class VennKoMixin():
 
     comp_type = "ko"
     table_headers = ["KO", "Description"]
@@ -157,11 +158,6 @@ class VennKoView(VennBaseView):
     def format_entry(entry, to_url=False):
         return format_ko(entry, as_url=to_url)
 
-    def get_counts(self, targets):
-        counts = self.db.get_ko_count(targets)["count"].unstack(
-            level=0, fill_value=0)
-        return counts
-
     def prepare_data(self, counts, genomes):
         ko_list = counts.index.get_level_values("KO").unique().to_list()
         data = self.db.get_ko_desc(ko_list)
@@ -170,24 +166,23 @@ class VennKoView(VennBaseView):
             self.data_dict[self.format_entry(ko)] = [
                 self.format_entry(ko, to_url=True), ko_desc]
         self.show_results = True
-        return self.get_context()
+        return counts
 
 
-class VennKoSubsetView(VennKoView):
+class VennKoView(VennBaseView, VennKoMixin):
+
+    def get_counts(self, targets):
+        counts = self.db.get_ko_count(targets)["count"].unstack(
+            level=0, fill_value=0)
+        return counts
+
+
+class VennSubsetBaseView(VennBaseView):
 
     def dispatch(self, request, category, *args, **kwargs):
         self.category = category.replace("+", " ")
         self.request = request
-        return super(VennKoSubsetView, self).dispatch(request, *args, **kwargs)
-
-    def get_counts(self, targets):
-        counts = self.db.get_ko_count_cat(
-            taxon_ids=targets, subcategory_name=self.category, index=False)
-        counts = counts.drop("module_id", axis=1)
-        counts = counts.drop_duplicates(subset=["taxon_id", "KO"])
-        counts = counts.set_index(["taxon_id", "KO"])
-        counts = counts.unstack(level=0, fill_value=0)["count"]
-        return counts
+        return super(VennSubsetBaseView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         self.form = self.form_class()
@@ -202,12 +197,25 @@ class VennKoSubsetView(VennKoView):
         return self.render_venn(request)
 
 
+class VennKoSubsetView(VennSubsetBaseView, VennKoMixin):
+
+    def get_counts(self, targets):
+        counts = self.db.get_ko_count_cat(
+            taxon_ids=targets, subcategory_name=self.category, index=False)
+        counts = counts.drop("module_id", axis=1)
+        counts = counts.drop_duplicates(subset=["taxon_id", "KO"])
+        counts = counts.set_index(["taxon_id", "KO"])
+        counts = counts.unstack(level=0, fill_value=0)["count"]
+        return counts
+
+
 class VennCogView(VennBaseView):
 
     comp_type = "cog"
     table_headers = ["ID", "Category", "Description"]
     table_data_descr = "The table contains a list of COG definitions, their "\
                        "description and the category to which they belong."
+    category = None
 
     @staticmethod
     def format_entry(entry, to_url=False):
@@ -219,6 +227,12 @@ class VennCogView(VennBaseView):
     def prepare_data(self, counts, genomes):
         data = self.db.get_cog_summaries(
             counts.index.tolist(), only_cog_desc=True, as_df=True)
+
+        # Fitler for VennCogSubsetView
+        if self.category:
+            data = data[data.function.str.contains(self.category)]
+            counts = counts.reindex(data.index)
+
         cog_codes = self.db.get_cog_code_description()
         self.data_dict = {}
         for cog, cog_data in data.iterrows():
@@ -230,46 +244,9 @@ class VennCogView(VennBaseView):
                 functions,
                 cog_data.description]
         self.show_results = True
-        return self.get_context()
+        return counts
 
 
-def cog_venn_subset(request, category):
-    # Note: add error handling
+class VennCogSubsetView(VennSubsetBaseView, VennCogView):
 
-    biodb = settings.BIODB_DB_PATH
-    db = DB.load_db(biodb, settings.BIODB_CONF)
-
-    targets = [int(i) for i in request.GET.getlist('h')]
-    if len(targets) > 5:
-        targets = targets[0:6]
-
-    cog_hits = db.get_cog_hits(targets, search_on="taxid")
-    genome_desc = db.get_genomes_description().description.to_dict()
-    cog_description = db.get_cog_summaries(cog_hits.index.tolist(), only_cog_desc=True, as_df=True)
-    selected_cogs = cog_description[cog_description.function.str.contains(category)]
-    cog_codes = db.get_cog_code_description()
-
-    cog2description_l = []
-    for cog, data in selected_cogs.iterrows():
-        name = data.description
-        func = data.function
-        functions = ",".join(f"\"{abbr}\"" for abbr in func)
-        cog2description_l.append(f"h[\"{format_cog(cog)}\"] = [[{functions}], \"{name}\"]")
-    cog2description = ";".join(cog2description_l)
-
-    sel_cog_ids = selected_cogs.index
-    cog_hits = cog_hits.reindex(sel_cog_ids)
-
-    series_tab = []
-    for target in targets:
-        cogs = cog_hits[target]
-        non_zero_cogs = cogs[cogs > 0]
-        data = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.items())
-        series_tab.append(f"{{name: \"{genome_desc[target]}\", data: [{data}]}}")
-    series = "[" + ",".join(series_tab) + "]"
-
-    cog_func_dict = (f"\"{func}\": \"{descr}\"" for func, descr in cog_codes.items())
-    cog_func_dict = "{" + ",".join(cog_func_dict) + "}"
-    display_form = False
-    envoi_venn = True
-    return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
+    pass
