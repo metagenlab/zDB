@@ -143,45 +143,31 @@ class VennPfamView(VennBaseView):
         return self.get_context()
 
 
-def venn_ko(request):
-    biodb = settings.BIODB_DB_PATH
-    db = DB.load_db(biodb, settings.BIODB_CONF)
-    page_title = page2title["venn_ko"]
+class VennKoView(VennBaseView):
 
-    venn_form_class = make_venn_from(db, limit=6)
-    display_form = True
-    if request.method != "POST":
-        form_venn = venn_form_class()
-        return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
+    comp_type = "ko"
+    table_headers = ["KO", "Description"]
+    table_data_descr = "The table contains a list of the Kegg Orthologs and "\
+                       "their description."
 
-    form_venn = venn_form_class(request.POST)
-    if not form_venn.is_valid():
-        # add error message
-        form_venn = venn_form_class()
-        return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
+    @staticmethod
+    def format_entry(entry, to_url=False):
+        return format_ko(entry, as_url=to_url)
 
-    taxids = form_venn.get_taxids()
-    genomes = db.get_genomes_description().description.to_dict()
-    ko_counts = db.get_ko_count(taxids)
+    def get_counts(self, targets):
+        counts = self.db.get_ko_count(targets)["count"].unstack(
+            level=0, fill_value=0)
+        return counts
 
-    fmt_data = []
-    ko_list = ko_counts.index.get_level_values("KO").unique().to_list()
-    for taxid in taxids:
-        kos = ko_counts.loc[taxid].index.values
-        kos_str = ",".join(f"{to_s(format_ko(ko))}" for ko in kos)
-        genome = genomes[taxid]
-        fmt_data.append(f"{{name: {to_s(genome)}, data: [{kos_str}]}}")
-    series = "[" + ",".join(fmt_data) + "]"
-
-    ko_descriptions = db.get_ko_desc(ko_list)
-    ko2description = []
-    for ko, ko_desc in ko_descriptions.items():
-        cleaned_desc = escape_quotes(ko_desc)
-        ko_item = f"h[{to_s(format_ko(ko))}] = [\"{cleaned_desc}\"];"
-        ko2description.append(ko_item)
-    ko2description = "\n".join(ko2description)
-    envoi_venn = True
-    return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
+    def prepare_data(self, counts, genomes):
+        ko_list = counts.index.get_level_values("KO").unique().to_list()
+        data = self.db.get_ko_desc(ko_list)
+        self.data_dict = {}
+        for ko, ko_desc in data.items():
+            self.data_dict[self.format_entry(ko)] = [
+                self.format_entry(ko, to_url=True), ko_desc]
+        self.show_results = True
+        return self.get_context()
 
 
 def venn_cog(request, sep_plasmids=False):
