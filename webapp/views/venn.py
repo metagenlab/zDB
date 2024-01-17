@@ -212,7 +212,7 @@ class VennKoSubsetView(VennSubsetBaseView, VennKoMixin):
 class VennCogView(VennBaseView):
 
     comp_type = "cog"
-    table_headers = ["ID", "Category", "Description"]
+    table_headers = ["ID", "Function(s)", "Description"]
     table_data_descr = "The table contains a list of COG definitions, their "\
                        "description and the category to which they belong."
     category = None
