@@ -170,52 +170,35 @@ class VennKoView(VennBaseView):
         return self.get_context()
 
 
-def venn_cog(request):
-    biodb = settings.BIODB_DB_PATH
-    db = DB.load_db(biodb, settings.BIODB_CONF)
-    page_title = page2title["venn_cog"]
+class VennCogView(VennBaseView):
 
-    display_form = True
-    venn_form_class = make_venn_from(db, limit=6, label="COG")
-    if request.method != "POST":
-        form_venn = venn_form_class()
-        return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
+    comp_type = "cog"
+    table_headers = ["ID", "Category", "Description"]
+    table_data_descr = "The table contains a list of COG definitions, their "\
+                       "description and the category to which they belong."
 
-    form_venn = venn_form_class(request.POST)
-    if not form_venn.is_valid():
-        # TODO: add error message
-        return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
+    @staticmethod
+    def format_entry(entry, to_url=False):
+        return format_cog(entry, as_url=to_url)
 
-    targets = form_venn.get_taxids()
-    cog_hits = db.get_cog_hits(targets, search_on="taxid")
-    data = db.get_cog_summaries(cog_hits.index.tolist(), only_cog_desc=True, as_df=True)
-    genome_desc = db.get_genomes_description().description.to_dict()
+    def get_counts(self, targets):
+        return self.db.get_cog_hits(targets, search_on="taxid")
 
-    # necessary as some COG do not have a description
-    # --> filter them out
-    cog_hits = cog_hits.reindex(data.index)
-
-    series_tab = []
-    for target in targets:
-        cogs = cog_hits[target]
-        non_zero_cogs = cogs[cogs > 0]
-        str_fmt = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.items())
-        series_tab.append(f"{{name: \"{genome_desc[target]}\", data: [{str_fmt}]}}")
-    series = "[" + ",".join(series_tab) + "]"
-
-    cog2description_l = []
-    cog_codes = db.get_cog_code_description()
-    for cog, data in data.iterrows():
-        name = escape_quotes(data.description)
-        func = data.function
-        functions = ",".join(f"\"{abbr}\"" for abbr in func)
-        cog2description_l.append(f"h[\"{format_cog(cog)}\"] = [[{functions}], \"{name}\"]")
-
-    cog_func_dict = (f"\"{func}\": \"{descr}\"" for func, descr in cog_codes.items())
-    cog_func_dict = "{" + ",".join(cog_func_dict) + "}"
-    cog2description = ";".join(cog2description_l)
-    envoi_venn = True
-    return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
+    def prepare_data(self, counts, genomes):
+        data = self.db.get_cog_summaries(
+            counts.index.tolist(), only_cog_desc=True, as_df=True)
+        cog_codes = self.db.get_cog_code_description()
+        self.data_dict = {}
+        for cog, cog_data in data.iterrows():
+            functions = [f"{cog_codes[abbr]} ({abbr})"
+                         for abbr in cog_data.function]
+            functions = format_lst_to_html(functions, False)
+            self.data_dict[self.format_entry(cog)] = [
+                self.format_entry(cog, to_url=True),
+                functions,
+                cog_data.description]
+        self.show_results = True
+        return self.get_context()
 
 
 def ko_venn_subset(request, category):
