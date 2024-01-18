@@ -23,7 +23,7 @@
                   <br>
                   <p class="page-title"><b>Distribution of Kegg Orthologs within KO categories </b><a href="/docs/index.html" id="show-option" title="Compare Kegg Orthologs between genomes of interest (targets) and visualize them in barcharts."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
 
-              <form action='{% url "module_barchart" %}' method="post">
+              <form action='{% url "ko_barchart" %}' method="post">
                   {% csrf_token %}
                   {{ form.as_p }}
                   <input type="submit" value="Submit" />

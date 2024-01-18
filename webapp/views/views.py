@@ -1810,20 +1810,20 @@ def js_bioentries_to_description(hsh):
     return taxon_map + mid + "};"
 
 
-def module_barchart(request):
+def ko_barchart(request):
     biodb = settings.BIODB_DB_PATH
     db = DB.load_db(biodb, settings.BIODB_CONF)
-    page_title = page2title["module_barchart"]
+    page_title = page2title["ko_barchart"]
 
     venn_form_class = make_venn_from(db)
     if request.method != "POST":
         form = venn_form_class()
-        return render(request, 'chlamdb/module_barplot.html', my_locals(locals()))
+        return render(request, 'chlamdb/ko_barplot.html', my_locals(locals()))
 
     form = venn_form_class(request.POST)
     if not form.is_valid():
         form = venn_form_class()
-        return render(request, 'chlamdb/module_barplot.html', my_locals(locals()))
+        return render(request, 'chlamdb/ko_barplot.html', my_locals(locals()))
 
     taxids = form.get_taxids()
     taxon2description = db.get_genomes_description().description.to_dict()
@@ -1863,7 +1863,7 @@ def module_barchart(request):
     series = "[" + ",".join(series_data) + "]"
     envoi = True
     form = venn_form_class()
-    return render(request, 'chlamdb/module_barplot.html', my_locals(locals()))
+    return render(request, 'chlamdb/ko_barplot.html', my_locals(locals()))
 
 
 def orthogroup_list_cog_barchart(request, accessions=False):

@@ -23,7 +23,7 @@
             <li class={% if active_tab == "comp" %}"active"{%endif%}><a href="{% url 'ko_comparison' %}">Presence/absence table</a></li>
             <li class={% if active_tab == "heat" %}"active"{%endif%}><a href="{% url 'plot_heatmap' 'ko' %}">Heatmap</a></li>
             <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'ko' %}">Accumulation/rarefaction plot </a></li>
-            <li class={% if active_tab == "bar" %}"active"{%endif%}><a href="{% url 'module_barchart' %}">Categories barchart</a></li>
+            <li class={% if active_tab == "bar" %}"active"{%endif%}><a href="{% url 'ko_barchart' %}">Categories barchart</a></li>
         </ul>
     </nav>
 
