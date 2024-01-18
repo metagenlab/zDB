@@ -14,7 +14,7 @@ title2page = {
     'COG Ortholog': ['fam_cog'],
     'Comparisons: Antimicrobial Resistance': [
         'amr_comparison', 'index_comp_amr', 'entry_list_amr', 'extract_amr',
-        'venn_amr'],
+        'plot_heatmap_amr', 'venn_amr'],
     'Comparisons: Clusters of Orthologous groups (COGs)': [
         'cog_barchart', 'index_comp_cog', 'cog_phylo_heatmap',
         'cog_comparison', 'entry_list_cog', 'extract_cog', 'heatmap_COG',

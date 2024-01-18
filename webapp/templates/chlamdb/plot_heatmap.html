@@ -31,6 +31,8 @@
                         Kegg orthologous groups (KO)
                     {% elif type == 'orthology' %}
                         orthologous groups
+                    {% elif type == 'amr' %}
+                        AMR genes
                     {% endif %}</b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option"  target="_blank"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
                 
 
@@ -75,6 +77,8 @@
                     Kegg entries found per each Kegg orthologous groups shared by the genomes of interest.
                     {% elif type == 'orthology' %}
                        homologs found per each Orthogroups shared by the genomes of interest.
+                    {% elif type == 'amr' %}
+                       times an AMR gene is found in each of the genomes of interest.
                     {% endif %}
                     
                     Zooming into an area of interest you can visualize the presence/absence profile.

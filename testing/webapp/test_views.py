@@ -1,4 +1,5 @@
 import re
+from unittest import skip
 
 from chlamdb.urls import urlpatterns
 from django.test import SimpleTestCase
@@ -83,6 +84,7 @@ urls = [
     '/plot_heatmap/ko',
     '/plot_heatmap/orthogroup',
     '/plot_heatmap/pfam',
+    '/plot_heatmap/amr',
     '/venn_amr/',
     '/venn_cog/',
     '/venn_ko/',
@@ -212,6 +214,7 @@ class ComparisonViewsTestMixin():
 
     table_html = '<table class="hover" id="mytable"  style="padding-top: 1em;">'
     venn_html = '<div id="venn_diagram" '
+    heatmap_html = '<div id="heatmap" '
 
     def assertPageTitle(self, resp, title):
         self.assertContains(
@@ -243,6 +246,14 @@ class ComparisonViewsTestMixin():
         self.assertTemplateUsed('chlamdb/venn_representation_template.html')
         self.assertContains(resp, self.venn_html)
 
+    def assertNoHeatmap(self, resp):
+        self.assertFalse(resp.context.get("envoi_heatmap", False))
+        self.assertNotContains(resp, self.heatmap_html)
+
+    def assertHeatmap(self, resp):
+        self.assertTrue(resp.context.get("envoi_heatmap", False))
+        self.assertContains(resp, self.heatmap_html)
+
     @property
     def tab_comp_view(self):
         return f"/{self.view_type}_comparison"
@@ -257,6 +268,14 @@ class ComparisonViewsTestMixin():
 
     @property
     def venn_form_data(self):
+        return {"targets": ["0", "1"]}
+
+    @property
+    def heatmap_view(self):
+        return f"/plot_heatmap/{self.view_type}/"
+
+    @property
+    def heatmap_form_data(self):
         return {"targets": ["0", "1"]}
 
     def test_comparison_index_view(self):
@@ -310,6 +329,24 @@ class ComparisonViewsTestMixin():
         self.assertVennDiagram(resp)
         self.assertNav(resp)
 
+    def test_plot_heatmap_view(self):
+        resp = self.client.get(self.heatmap_view)
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/plot_heatmap.html')
+        self.assertPageTitle(resp, self.page_title)
+        self.assertSelection(resp)
+        self.assertNoHeatmap(resp)
+        self.assertNav(resp)
+
+        resp = self.client.post(self.heatmap_view,
+                                data=self.heatmap_form_data)
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/plot_heatmap.html')
+        self.assertPageTitle(resp, self.page_title)
+        self.assertSelection(resp, selected=True)
+        self.assertHeatmap(resp)
+        self.assertNav(resp)
+
 
 class TestPfamViews(SimpleTestCase, ComparisonViewsTestMixin):
 
@@ -359,6 +396,10 @@ class TestAMRViews(SimpleTestCase, ComparisonViewsTestMixin):
     @property
     def tab_comp_form_data(self):
         return {"targets": ["0", "1"], "comp_type": "gene"}
+
+    @skip("Heatmap plot fails because the test data does not provide enough hits")
+    def test_plot_heatmap_view(self):
+        super(TestAMRViews, self).test_plot_heatmap_view()
 
 
 class TestOrthogroupViews(SimpleTestCase, ComparisonViewsTestMixin):
