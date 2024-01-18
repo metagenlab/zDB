@@ -8,10 +8,11 @@ from django.views import View
 from lib.db_utils import DB
 
 from views.mixins import AmrAnnotationsMixin, ComparisonViewMixin
-from views.utils import (format_cog, format_cog_url, format_gene_to_ncbi_hmm,
-                         format_ko, format_ko_modules, format_ko_path,
-                         format_ko_url, format_locus, format_lst_to_html,
-                         format_orthogroup, format_pfam, my_locals)
+from views.utils import (format_amr, format_cog, format_cog_url,
+                         format_hmm_url, format_ko, format_ko_modules,
+                         format_ko_path, format_ko_url, format_locus,
+                         format_lst_to_html, format_orthogroup, format_pfam,
+                         my_locals)
 
 ResultTab = collections.namedtuple("Tab", ["id", "title", "template"])
 
@@ -342,7 +343,7 @@ class ExtractAmrView(ExtractHitsBaseView, AmrAnnotationsMixin):
     comp_type = "amr"
 
     _table_headers = ["Gene", "Description", "Scope", "Type", "Class",
-                      "Subclass"]
+                      "Subclass", "HMM"]
 
     @property
     def get_hit_counts(self):
@@ -356,10 +357,12 @@ class ExtractAmrView(ExtractHitsBaseView, AmrAnnotationsMixin):
 
         for gene in self.selection:
             amr_annot = amr_annotations[amr_annotations.gene == gene].iloc[0]
-            data = [format_gene_to_ncbi_hmm(amr_annot[["gene", "hmm_id"]]),
+            data = [format_amr(amr_annot.gene, to_url=True),
                     amr_annot.seq_name, amr_annot.scope, amr_annot.type,
                     amr_annot["class"], amr_annot.subclass,
+                    format_hmm_url(amr_annot.hmm_id),
                     hit_counts.presence.loc[gene], hit_counts_all.loc[gene]]
+            data = [el if el is not None else "-" for el in data]
             self.table_data.append(data)
 
         self.show_results = True
