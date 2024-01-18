@@ -3365,7 +3365,7 @@ class AmrComparisonView(TabularComparisonViewBase):
     @property
     def base_info_headers(self):
         if self.comp_type == "gene":
-            return ["Gene", "scope", "Class", "Subclass", "Annotation"]
+            return ["Gene", "scope", "Class", "Subclass", "Annotation", "HMM"]
         elif self.comp_type == "subclass":
             return ["Subclass", "Class"]
         elif self.comp_type == "class":
@@ -3380,21 +3380,19 @@ class AmrComparisonView(TabularComparisonViewBase):
 
     def get_row_data(self, groupid, data):
         if self.comp_type == "class":
-            return [groupid]
+            return [safe_replace(groupid, "/", " / ")]
         elif self.comp_type == "subclass":
             return [
-                format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
-                data.iloc[0]["scope"],
-                safe_replace(data.iloc[0]["class"], "/", " / "),
-                safe_replace(data.iloc[0]["subclass"], "/", " / "),
-                data.iloc[0]["seq_name"]]
+                safe_replace(groupid, "/", " / "),
+                safe_replace(data.iloc[0]["class"], "/", " / ") or "-"]
         elif self.comp_type == "gene":
             return [
-                format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
-                data.iloc[0]["scope"],
-                safe_replace(data.iloc[0]["class"], "/", " / "),
-                safe_replace(data.iloc[0]["subclass"], "/", " / "),
-                data.iloc[0]["seq_name"]]
+                format_amr(groupid, to_url=True),
+                data.iloc[0]["scope"] or "-",
+                safe_replace(data.iloc[0]["class"], "/", " / ") or "-",
+                safe_replace(data.iloc[0]["subclass"], "/", " / ") or "-",
+                data.iloc[0]["seq_name"],
+                format_hmm_url(data.iloc[0].hmm_id) or "-"]
 
     def get_table_rows(self):
         hits = self.db.get_amr_hits_from_taxonids(self.targets)
