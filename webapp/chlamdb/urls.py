@@ -2,7 +2,7 @@
 from django.urls import re_path
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
-from views import entry_lists, hits_extraction, views
+from views import entry_lists, hits_extraction, venn, views
 
 favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
@@ -25,7 +25,7 @@ urlpatterns = [
     re_path(r'^module_cat_info/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\+-]+)$',
             views.module_cat_info, name="module_cat_info"),
     re_path(r'^ko_venn_subset/([a-zA-Z0-9_\.\+-]+)$',
-            views.ko_venn_subset, name="ko_venn_subset"),
+            venn.VennKoSubsetView.as_view(), name="ko_venn_subset"),
     re_path(r'^kegg/$', views.kegg, name="kegg"),
     re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)',
             views.locusx, name="locusx"),
@@ -57,18 +57,18 @@ urlpatterns = [
     re_path(r'^blast/$', views.blast, name="blast"),
     re_path(r'^extract_orthogroup/$', hits_extraction.ExtractOrthogroupView.as_view(),
             name="extract_orthogroup"),
-    re_path(r'^venn_orthogroup/$', views.venn_orthogroup,
+    re_path(r'^venn_orthogroup/$', venn.VennOrthogroupView.as_view(),
             name="venn_orthogroup"),
     re_path(r'^extract_cog/$', hits_extraction.ExtractCogView.as_view(), name="extract_cog"),
-    re_path(r'^venn_cog/$', views.venn_cog, name="venn_cog"),
+    re_path(r'^venn_cog/$', venn.VennCogView.as_view(), name="venn_cog"),
+    re_path(r'^venn_amr/$', venn.VennAmrView.as_view(), name="venn_amr"),
     re_path(r'^cog_venn_subset/([A-Z])$',
-            views.cog_venn_subset, name="cog_venn_subset"),
-    re_path(r'^venn_cog/([a-zA-Z0-9_]+)$$', views.venn_cog, name="venn_cog"),
-    re_path(r'^venn_ko/$', views.venn_ko, name="venn_ko"),
+            venn.VennCogSubsetView.as_view(), name="cog_venn_subset"),
+    re_path(r'^venn_ko/$', venn.VennKoView.as_view(), name="venn_ko"),
     re_path(r'^extract_pfam/$', hits_extraction.ExtractPfamView.as_view(), name="extract_pfam"),
     re_path(r'^extract_ko/$', hits_extraction.ExtractKoView.as_view(), name="extract_ko"),
     re_path(r'^extract_amr/$', hits_extraction.ExtractAmrView.as_view(), name="extract_amr"),
-    re_path(r'^venn_pfam/$', views.venn_pfam, name="venn_pfam"),
+    re_path(r'^venn_pfam/$', venn.VennPfamView.as_view(), name="venn_pfam"),
     re_path(r'^KEGG_mapp_ko$', views.KEGG_mapp_ko, name="KEGG_mapp_ko"),
     re_path(r'^KEGG_mapp_ko/([a-zA-Z0-9_\.]+)$',
             views.KEGG_mapp_ko, name="KEGG_mapp_ko"),

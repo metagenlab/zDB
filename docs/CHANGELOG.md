@@ -16,6 +16,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add AMR Venn diagram view. ([#41](https://github.com/metagenlab/zDB/pull/41)) (Niklaus Johner)
 - Add AMR hit extraction view. ([#38](https://github.com/metagenlab/zDB/pull/38)) (Niklaus Johner)
 - Add AMR entry list view. ([#37](https://github.com/metagenlab/zDB/pull/37)) (Niklaus Johner)
 - Add AMR comparison index view and link it in the menu and home page. ([#35](https://github.com/metagenlab/zDB/pull/35)) (Niklaus Johner)
