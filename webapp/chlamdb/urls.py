@@ -8,101 +8,71 @@ favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
 
 urlpatterns = [
-    re_path('^robots.txt$', TemplateView.as_view(
-        template_name='robots.txt', content_type='text/plain')),
-    re_path(r'^home/$', views.home, name="home"),
-    re_path(r'^cog_barchart/$', views.cog_barchart, name="cog_barchart"),
-    re_path(r'^pan_genome/([a-zA-Z0-9_]+)',
-            views.pan_genome, name="pan_genome"),
-    re_path(r'^cog_phylo_heatmap/([a-zA-Z0-9_\-]+)',
-            views.cog_phylo_heatmap, name="cog_phylo_heatmap"),
-    re_path(r'^ko_barchart/$', views.ko_barchart,
-            name="ko_barchart"),
-    re_path(r'^plot_heatmap/([a-zA-Z0-9_\-]+)',
-            views.plot_heatmap, name="plot_heatmap"),
-    re_path(r'^get_cog/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\%]+)$',
-            views.get_cog, name="get_cog"),
-    re_path(r'^module_cat_info/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\+-]+)$',
-            views.module_cat_info, name="module_cat_info"),
-    re_path(r'^ko_venn_subset/([a-zA-Z0-9_\.\+-]+)$',
-            venn.VennKoSubsetView.as_view(), name="ko_venn_subset"),
-    re_path(r'^kegg/$', views.kegg, name="kegg"),
-    re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)',
-            views.locusx, name="locusx"),
-    re_path(r'^search_bar$', views.search_bar, name="search_bar"),
-    re_path(r'^index_comp/([a-zA-Z0-9_\.\-]+)',
-            views.ComparisonIndexView.as_view(), name="index_comp"),
-    re_path(r'^search_suggest/.*$', views.search_suggest, name="search_suggest"),
-    re_path(r'^search_bar/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)',
-            views.search_bar, name="search_bar"),
-    re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)', views.locusx, name="locusx"),
-    re_path(r'^orthogroup/([a-zA-Z0-9_\.\-]+)',
-            views.orthogroup, name="orthogroup"),
-    re_path(r'^locusx$', views.locusx, name="locusx"),
-    re_path(r'^entry_list_amr$', entry_lists.AmrEntryListView.as_view(),
-            name="entry_list_amr"),
-    re_path(r'^entry_list_pfam$', entry_lists.PfamEntryListView.as_view(),
-            name="entry_list_pfam"),
-    re_path(r'^entry_list_cog$', entry_lists.CogEntryListView.as_view(),
-            name="entry_list_cog"),
-    re_path(r'^entry_list_ko$', entry_lists.KoEntryListView.as_view(),
-            name="entry_list_ko"),
-    re_path(r'^plot_region/$', views.plot_region, name="plot_region"),
-    re_path(r'^circos/$', views.circos, name="circos"),
-    re_path(r'^circos_main/$', views.circos_main, name="circos_main"),
-    re_path(r'^orthogroup_list_cog_barchart/$',
-            views.orthogroup_list_cog_barchart, name="orthogroup_list_cog_barchart"),
-    re_path(r'^orthogroup_list_cog_barchart/([a-zA-Z0-9_]+)/$',
-            views.orthogroup_list_cog_barchart, name="orthogroup_list_cog_barchart"),
-    re_path(r'^blast/$', views.blast, name="blast"),
-    re_path(r'^extract_orthogroup/$', hits_extraction.ExtractOrthogroupView.as_view(),
-            name="extract_orthogroup"),
-    re_path(r'^venn_orthogroup/$', venn.VennOrthogroupView.as_view(),
-            name="venn_orthogroup"),
-    re_path(r'^extract_cog/$', hits_extraction.ExtractCogView.as_view(), name="extract_cog"),
+    re_path(r'^venn_pfam/$', venn.VennPfamView.as_view(), name="venn_pfam"),
+    re_path(r'^venn_orthogroup/$', venn.VennOrthogroupView.as_view(), name="venn_orthogroup"),  # noqa
+    re_path(r'^venn_ko/$', venn.VennKoView.as_view(), name="venn_ko"),
     re_path(r'^venn_cog/$', venn.VennCogView.as_view(), name="venn_cog"),
     re_path(r'^venn_amr/$', venn.VennAmrView.as_view(), name="venn_amr"),
-    re_path(r'^cog_venn_subset/([A-Z])$',
-            venn.VennCogSubsetView.as_view(), name="cog_venn_subset"),
-    re_path(r'^venn_ko/$', venn.VennKoView.as_view(), name="venn_ko"),
-    re_path(r'^extract_pfam/$', hits_extraction.ExtractPfamView.as_view(), name="extract_pfam"),
-    re_path(r'^extract_ko/$', hits_extraction.ExtractKoView.as_view(), name="extract_ko"),
-    re_path(r'^extract_amr/$', hits_extraction.ExtractAmrView.as_view(), name="extract_amr"),
-    re_path(r'^venn_pfam/$', venn.VennPfamView.as_view(), name="venn_pfam"),
-    re_path(r'^KEGG_mapp_ko$', views.KEGG_mapp_ko, name="KEGG_mapp_ko"),
-    re_path(r'^KEGG_mapp_ko/([a-zA-Z0-9_\.]+)$',
-            views.KEGG_mapp_ko, name="KEGG_mapp_ko"),
-    re_path(r'^KEGG_mapp_ko/([a-zA-Z0-9_\.]+)/([0-9]+)$',
-            views.KEGG_mapp_ko, name="KEGG_mapp_ko"),
-    re_path(r'^KEGG_module_map/([a-zA-Z0-9_\.]+)$',
-            views.KEGG_module_map, name="KEGG_module_map"),
-    re_path(r'^kegg_module_subcat$', views.kegg_module_subcat,
-            name="kegg_module_subcat"),
+    re_path(r'^search_suggest/.*$', views.search_suggest, name="search_suggest"),  # noqa
+    re_path(r'^search_bar/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)', views.search_bar, name="search_bar"),  # noqa
+    re_path(r'^search_bar$', views.search_bar, name="search_bar"),
+    re_path(r'^plot_region/$', views.plot_region, name="plot_region"),
+    re_path(r'^plot_heatmap/([a-zA-Z0-9_\-]+)', views.plot_heatmap, name="plot_heatmap"),  # noqa
+    re_path(r'^phylogeny', views.phylogeny, name='phylogeny'),
+    re_path(r'^pfam_comparison', views.PfamComparisonView.as_view(), name="pfam_comparison"),  # noqa
+    re_path(r'^pan_genome/([a-zA-Z0-9_]+)', views.pan_genome, name="pan_genome"),  # noqa
+    re_path(r'^orthogroup_list_cog_barchart/([a-zA-Z0-9_]+)/$', views.orthogroup_list_cog_barchart, name="orthogroup_list_cog_barchart"),  # noqa
+    re_path(r'^orthogroup_list_cog_barchart/$', views.orthogroup_list_cog_barchart, name="orthogroup_list_cog_barchart"),  # noqa
+    re_path(r'^orthogroup_comparison', views.OrthogroupComparisonView.as_view(), name="orthogroup_comparison"),  # noqa
+    re_path(r'^orthogroup/([a-zA-Z0-9_\.\-]+)', views.orthogroup, name="orthogroup"),  # noqa
+    re_path(r'^module_comparison/$', views.module_comparison, name="module_comparison"),  # noqa
+    re_path(r'^module_cat_info/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\+-]+)$', views.module_cat_info, name="module_cat_info"),  # noqa
+    re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)', views.locusx, name="locusx"),  # noqa
+    re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)', views.locusx, name="locusx"),
+    re_path(r'^locusx$', views.locusx, name="locusx"),
+    re_path(r'^ko_venn_subset/([a-zA-Z0-9_\.\+-]+)$', venn.VennKoSubsetView.as_view(), name="ko_venn_subset"),  # noqa
+    re_path(r'^ko_comparison', views.KoComparisonView.as_view(), name="ko_comparison"),  # noqa
+    re_path(r'^ko_barchart/$', views.ko_barchart, name="ko_barchart"),
+    re_path(r'^kegg_module_subcat$', views.kegg_module_subcat, name="kegg_module_subcat"),  # noqa
+    re_path(r'^KEGG_module_map/([a-zA-Z0-9_\.]+)$', views.KEGG_module_map, name="KEGG_module_map"),  # noqa
     re_path(r'^kegg_module/$', views.kegg_module, name="kegg_module"),
-    re_path(r'^module_comparison/$', views.module_comparison,
-            name="module_comparison"),
-    re_path(r'^pfam_comparison', views.PfamComparisonView.as_view(), name="pfam_comparison"),
-    re_path(r'^cog_comparison', views.CogComparisonView.as_view(), name="cog_comparison"),
-    re_path(r'^ko_comparison', views.KoComparisonView.as_view(), name="ko_comparison"),
-    re_path(r'^orthogroup_comparison', views.OrthogroupComparisonView.as_view(),
-            name="orthogroup_comparison"),
-    re_path(r'^amr_comparison', views.AmrComparisonView.as_view(),
-            name="amr_comparison"),
-    re_path(r'^about$', views.about, name="about"),
+    re_path(r'^KEGG_mapp_ko/([a-zA-Z0-9_\.]+)/([0-9]+)$', views.KEGG_mapp_ko, name="KEGG_mapp_ko"),  # noqa
+    re_path(r'^KEGG_mapp_ko/([a-zA-Z0-9_\.]+)$', views.KEGG_mapp_ko, name="KEGG_mapp_ko"),  # noqa
+    re_path(r'^KEGG_mapp_ko$', views.KEGG_mapp_ko, name="KEGG_mapp_ko"),
+    re_path(r'^kegg_genomes_modules/$', views.kegg_genomes_modules, name="kegg_genomes_modules"),  # noqa
+    re_path(r'^kegg_genomes/$', views.kegg_genomes, name="kegg_genomes"),
+    re_path(r'^kegg/$', views.kegg, name="kegg"),
+    re_path(r'^index_comp/([a-zA-Z0-9_\.\-]+)', views.ComparisonIndexView.as_view(), name="index_comp"),  # noqa
+    re_path(r'^home/$', views.home, name="home"),
     re_path(r'^help', views.help, name="help"),
-    re_path(r'^fam_pfam/(PF[0-9]+)$', views.fam_pfam, name="fam_pfam"),
-    re_path(r'^fam_cog/(COG[0-9]+)$', views.fam_cog, name="fam_cog"),
-    re_path(r'^fam_ko/(K[0-9]+)$', views.fam_ko, name="fam_ko"),
+    re_path(r'^get_cog/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\%]+)$', views.get_cog, name="get_cog"),  # noqa
+    re_path(r'^genomes_intro', views.genomes_intro, name='genomes_intro'),
+    re_path(r'^genomes', views.genomes, name='genomes'),
     re_path(r'^favicon\.ico$', favicon_view),
     re_path(r'^FAQ', views.faq, name='FAQ'),
-    re_path(r'^phylogeny', views.phylogeny, name='phylogeny'),
-    re_path(r'^genomes_intro', views.genomes_intro, name='genomes_intro'),
-    re_path(r'^extract_contigs/([0-9]+)',
-            views.extract_contigs, name='extract_contigs'),
-    re_path(r'^genomes', views.genomes, name='genomes'),
-    re_path(r'^kegg_genomes/$', views.kegg_genomes, name="kegg_genomes"),
-    re_path(r'^kegg_genomes_modules/$', views.kegg_genomes_modules,
-            name="kegg_genomes_modules"),
+    re_path(r'^fam_pfam/(PF[0-9]+)$', views.fam_pfam, name="fam_pfam"),
+    re_path(r'^fam_ko/(K[0-9]+)$', views.fam_ko, name="fam_ko"),
+    re_path(r'^fam_cog/(COG[0-9]+)$', views.fam_cog, name="fam_cog"),
+    re_path(r'^extract_pfam/$', hits_extraction.ExtractPfamView.as_view(), name="extract_pfam"),  # noqa
+    re_path(r'^extract_orthogroup/$', hits_extraction.ExtractOrthogroupView.as_view(), name="extract_orthogroup"),  # noqa
+    re_path(r'^extract_ko/$', hits_extraction.ExtractKoView.as_view(), name="extract_ko"),  # noqa
+    re_path(r'^extract_contigs/([0-9]+)', views.extract_contigs, name='extract_contigs'),  # noqa
+    re_path(r'^extract_cog/$', hits_extraction.ExtractCogView.as_view(), name="extract_cog"),  # noqa
+    re_path(r'^extract_amr/$', hits_extraction.ExtractAmrView.as_view(), name="extract_amr"),  # noqa
+    re_path(r'^entry_list_pfam$', entry_lists.PfamEntryListView.as_view(), name="entry_list_pfam"),  # noqa
+    re_path(r'^entry_list_ko$', entry_lists.KoEntryListView.as_view(), name="entry_list_ko"),  # noqa
+    re_path(r'^entry_list_cog$', entry_lists.CogEntryListView.as_view(), name="entry_list_cog"),  # noqa
+    re_path(r'^entry_list_amr$', entry_lists.AmrEntryListView.as_view(), name="entry_list_amr"),  # noqa
+    re_path(r'^cog_venn_subset/([A-Z])$', venn.VennCogSubsetView.as_view(), name="cog_venn_subset"),  # noqa
+    re_path(r'^cog_phylo_heatmap/([a-zA-Z0-9_\-]+)', views.cog_phylo_heatmap, name="cog_phylo_heatmap"),  # noqa
+    re_path(r'^cog_comparison', views.CogComparisonView.as_view(), name="cog_comparison"),  # noqa
+    re_path(r'^cog_barchart/$', views.cog_barchart, name="cog_barchart"),
+    re_path(r'^circos_main/$', views.circos_main, name="circos_main"),
+    re_path(r'^circos/$', views.circos, name="circos"),
+    re_path(r'^blast/$', views.blast, name="blast"),
+    re_path(r'^amr_comparison', views.AmrComparisonView.as_view(), name="amr_comparison"),  # noqa
+    re_path(r'^about$', views.about, name="about"),
     re_path(r'^.*$', views.home, name="home"),
+    re_path('^robots.txt$', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),  # noqa
     # re_path(r'^FAQ',TemplateView.as_view(template_name='FAQ.html')),
 ]
