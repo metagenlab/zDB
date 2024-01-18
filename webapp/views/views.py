@@ -43,12 +43,11 @@ from lib.KO_module import ModuleParser
 from reportlab.lib import colors
 
 from views.mixins import ComparisonViewMixin
-from views.utils import (format_amr, format_cog, format_gene_to_ncbi_hmm,
-                         format_hmm_url, format_ko, format_ko_module,
-                         format_ko_modules, format_ko_path, format_locus,
-                         format_lst_to_html, format_orthogroup, format_pfam,
-                         my_locals, optional2status, page2title, safe_replace,
-                         to_s)
+from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
+                         format_ko_module, format_ko_modules, format_ko_path,
+                         format_locus, format_lst_to_html, format_orthogroup,
+                         format_pfam, my_locals, optional2status, page2title,
+                         safe_replace, to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -578,10 +577,12 @@ def og_tab_get_amr_annot(db, seqids):
     if amr_hits.empty:
         return {}
 
-    col_titles = {"closest_seq": "Closest Sequence"}
+    col_titles = {"closest_seq": "Closest Sequence",
+                  "hmm_id": "HMM"}
 
     amr_hits["closest_seq"] = amr_hits["closest_seq"].map(format_refseqid_to_ncbi)
-    amr_hits["gene"] = amr_hits[["gene", "hmm_id"]].apply(format_gene_to_ncbi_hmm, axis=1)
+    amr_hits["gene"] = amr_hits["gene"].apply(format_amr, to_url=True)
+    amr_hits["hmm_id"] = amr_hits["hmm_id"].apply(format_hmm_url)
     return {
         "amr_entries": amr_hits.values,
         "amr_header": [col_titles.get(col, col.capitalize())
