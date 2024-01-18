@@ -7,7 +7,7 @@ from django.views import View
 from lib.db_utils import DB
 
 from views.mixins import AmrAnnotationsMixin
-from views.utils import (format_cog, format_gene_to_ncbi_hmm, format_ko,
+from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_ko_modules, format_ko_path, format_pfam,
                          my_locals, page2title)
 
@@ -141,9 +141,9 @@ class AmrEntryListView(EntryListViewBase, AmrAnnotationsMixin):
 
     entry_type = "amr"
     table_headers = ["Gene", "Description", "Scope", "Type", "Class",
-                     "Subclass", "Count", "Frequency (n genomes)"]
+                     "Subclass", "HMM", "Count", "Frequency (n genomes)"]
     table_data_accessors = ["accession", "seq_name", "scope", "type", "class",
-                            "subclass", "count", "freq"]
+                            "subclass", "hmm", "count", "freq"]
 
     def get_table_data(self):
         # retrieve entry list
@@ -160,7 +160,12 @@ class AmrEntryListView(EntryListViewBase, AmrAnnotationsMixin):
         freq = amr_all[amr_all > 0].count(axis=1).to_dict()
 
         # prepare accession
-        amr_annotations["accession"] = amr_annotations[["gene", "hmm_id"]].apply(format_gene_to_ncbi_hmm, axis=1)
+        amr_annotations["accession"] = amr_annotations["gene"].apply(
+            format_amr, to_url=True)
+
+        # link hmms
+        amr_annotations["hmm"] = amr_annotations["hmm_id"].apply(
+            format_hmm_url)
 
         combined_df["freq"] = [freq[gene] for gene in combined_df.index]
         for col in self.table_data_accessors[:-2]:
@@ -168,4 +173,5 @@ class AmrEntryListView(EntryListViewBase, AmrAnnotationsMixin):
                 amr_annotations[amr_annotations.gene == gene].iloc[0][col]
                 for gene in combined_df.index]
 
+        combined_df = combined_df.where(combined_df.notna(), "-")
         return combined_df.sort_values(["count", "freq"], ascending=False)
