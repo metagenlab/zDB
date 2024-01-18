@@ -136,10 +136,14 @@ def format_amr(gene, to_url=False):
     return f"<a href=\"/fam_amr/{gene}\">{gene}</a>"
 
 
+icon_external_link = '<i class="fas fa-external-link-alt"></i>'
+
+
 def format_hmm_url(hmm_id):
     if hmm_id:
         hmm_id = hmm_id.rsplit(".", 1)[0]
-        return f"<a href=\"https://www.ncbi.nlm.nih.gov/genome/annotation_prok/evidence/{hmm_id}\">{hmm_id}</a>"  # noqa
+        return f'<a href="https://www.ncbi.nlm.nih.gov/genome/annotation_prok/evidence/{hmm_id}"'\
+               f' target="_blank">{hmm_id}&nbsp{icon_external_link}</a>'  # noqa
     return hmm_id
 
 
