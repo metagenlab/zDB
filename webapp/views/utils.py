@@ -143,15 +143,6 @@ def format_hmm_url(hmm_id):
     return hmm_id
 
 
-def format_gene_to_ncbi_hmm(gene_and_hmmid):
-    gene, hmm_id = gene_and_hmmid
-    if hmm_id:
-        # The hmm_id contains a version number, which is not in the ncbi URL.
-        hmm_id = hmm_id.rsplit(".", 1)[0]
-        return f"<a href=\"https://www.ncbi.nlm.nih.gov/genome/annotation_prok/evidence/{hmm_id}\">{gene}</a>"  # noqa
-    return gene
-
-
 def format_pfam(pfam_id, base=None, to_url=False):
     if base is None:
         fmt_entry = f"PF{pfam_id:04d}"
