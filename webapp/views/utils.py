@@ -10,6 +10,7 @@ def safe_replace(string, search_string, replace_string):
 
 
 title2page = {
+    'Antimicrobial Resistance Gene': ["fam_amr"],
     'COG Ortholog': ['fam_cog'],
     'Comparisons: Antimicrobial Resistance': [
         'amr_comparison', 'index_comp_amr', 'entry_list_amr', 'extract_amr',
@@ -127,6 +128,19 @@ def format_ko(ko_id, as_url=False, base=None):
 
 def format_ko_url(ko_id):
     return format_ko(ko_id, as_url=True)
+
+
+def format_amr(gene, to_url=False):
+    if not to_url:
+        return gene
+    return f"<a href=\"/fam_amr/{gene}\">{gene}</a>"
+
+
+def format_hmm_url(hmm_id):
+    if hmm_id:
+        hmm_id = hmm_id.rsplit(".", 1)[0]
+        return f"<a href=\"https://www.ncbi.nlm.nih.gov/genome/annotation_prok/evidence/{hmm_id}\">{hmm_id}</a>"  # noqa
+    return hmm_id
 
 
 def format_gene_to_ncbi_hmm(gene_and_hmmid):

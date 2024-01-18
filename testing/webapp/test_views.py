@@ -41,6 +41,7 @@ urls = [
     '/extract_ko/',
     '/extract_orthogroup/',
     '/extract_pfam/',
+    '/fam_amr/ybtP',
     '/fam_cog/COG0775',
     '/fam_ko/K01241',
     '/fam_pfam/PF10423',

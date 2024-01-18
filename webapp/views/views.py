@@ -43,11 +43,12 @@ from lib.KO_module import ModuleParser
 from reportlab.lib import colors
 
 from views.mixins import ComparisonViewMixin
-from views.utils import (format_cog, format_gene_to_ncbi_hmm, format_ko,
-                         format_ko_module, format_ko_modules, format_ko_path,
-                         format_locus, format_lst_to_html, format_orthogroup,
-                         format_pfam, my_locals, optional2status, page2title,
-                         safe_replace, to_s)
+from views.utils import (format_amr, format_cog, format_gene_to_ncbi_hmm,
+                         format_hmm_url, format_ko, format_ko_module,
+                         format_ko_modules, format_ko_path, format_locus,
+                         format_lst_to_html, format_orthogroup, format_pfam,
+                         my_locals, optional2status, page2title, safe_replace,
+                         to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -1309,6 +1310,57 @@ def tab_gen_profile_tree(db, main_series, header, intersect):
                                        col_func=color_chooser.get_color)
         e_tree.add_column(col_column)
     return e_tree
+
+
+def fam_amr(request, gene):
+    page_title = page2title["fam_amr"]
+
+    biodb_path = settings.BIODB_DB_PATH
+    db = DB.load_db_from_name(biodb_path)
+
+    if request.method != "GET":
+        return render(request, 'chlamdb/fam.html', my_locals(locals()))
+
+    # Get hits for that gene:
+    df_seqid_to_amr = db.get_amr_hit_counts([gene], indexing="seqid",
+                                            search_on="amr", keep_taxid=True)
+
+    if len(df_seqid_to_amr) == 0:
+        return render(request, 'chlamdb/fam.html', {"msg": f"No entry for {format_amr(gene)}"})
+
+    seqids = df_seqid_to_amr.index.tolist()
+
+    orthogroups = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
+    amr_info = db.get_amr_descriptions([gene])
+    all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
+    ref_tree = db.get_reference_phylogeny()
+
+    df_amr_count = df_seqid_to_amr.groupby(["taxid"]).count()
+    fam = format_amr(gene)
+    e_tree = tab_gen_profile_tree(db, df_amr_count.gene, format_amr(gene), orthogroups)
+    asset_path = f"/temp/fam_tree_{gene}.svg"
+    path = settings.BASE_DIR + "/assets/" + asset_path
+    e_tree.render(path, dpi=500)
+
+    amr_info = amr_info.iloc[0]
+    amr_info.hmm_id = format_hmm_url(amr_info.hmm_id)
+    headers = ["Description", "Scope", "Type", "Class", "Subclass", "HMM"]
+    accessors = ["seq_name", "scope", "type", "class", "subclass", "hmm_id"]
+    info = {header: amr_info[key] for header, key in zip(headers, accessors)
+            if amr_info[key]}
+
+    menu = True
+    envoi = True
+    context = {
+        "page_title": page_title,
+        "type": "amr",
+        "fam": fam,
+        "info": info,
+        "all_locus_data": all_locus_data,
+        "group_count": group_count,
+        "asset_path": asset_path,
+    }
+    return render(request, 'chlamdb/fam.html', my_locals(context))
 
 
 # TODO : add error handling

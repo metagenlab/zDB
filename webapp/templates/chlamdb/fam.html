@@ -38,6 +38,9 @@
             {{ fam }}
 
             <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#kegg-module-overview-page" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
+
+          {% elif type == 'amr' %}
+                {{ fam }}
           {% endif %}
 
         </b></p>
@@ -60,6 +63,8 @@
                 Kegg Ortholog
               {% elif type == 'pfam' %}
                 Pfam domain
+              {% elif type == 'amr' %}
+                AMR gene
               {% endif %}
 
               {{ fam }}, of which KO pathways and KO modules it is part. Additionally, its occurence in the database is reported.
@@ -71,6 +76,8 @@
                 Kegg Ortholog
               {% elif type == 'pfam' %}
                 Pfam domain
+              {% elif type == 'amr' %}
+                AMR gene
               {% endif %}
 
               within the database. {{ all_locus_data|length }} occurences are identified.
@@ -85,6 +92,8 @@
                 Kegg Ortholog(s)
               {% elif type == 'pfam' %}
                 Pfam domain(s)
+              {% elif type == 'amr' %}
+                AMR gene(s)
               {% endif %} of interest within all the genomes of the database (first column)
 
               <br>- the size of the orthogroup(s) in which the reported
@@ -95,6 +104,8 @@
                 Ko entry
               {% elif type == 'pfam' %}
                 Pfam domain
+              {% elif type == 'amr' %}
+                AMR gene
               {% endif %} has been clustered.
 
               <br>In red the <font size="2" color="red">{{type}} with positive hit(s)</font> in the corresponding genome.
@@ -143,6 +154,12 @@
                           <td><a href="{{ external_link }}" target="_blank">  {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
                         </tr>
 
+                      {% elif type == 'amr' %}
+                        <tr>
+                          <th>Gene</th>
+                          <td><a href="https://www.ncbi.nlm.nih.gov/pathogens/isolates/#AMR_genotypes:{{ gene }}*" target="_blank">  {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
+                        </tr>
+
                       {% endif %}
 
                       {% if type == 'EC' %}
@@ -157,10 +174,13 @@
                           </tr>
                         {% endfor %}
 
-                        <tr>
-                          <th>{{key}}</th>
-                          <td>{{value}}</td>
-                        </tr>
+                      {% elif type == 'amr' %}
+                        {% for key, value in info.items %}
+                          <tr>
+                            <th>{{key}}</th>
+                            <td>{{value}}</td>
+                          </tr>
+                        {% endfor %}
 
                       {% elif type == 'ko'%}
                         <tr>
