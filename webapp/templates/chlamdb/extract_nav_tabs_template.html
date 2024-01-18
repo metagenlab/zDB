@@ -75,6 +75,7 @@
             <li class={% if active_tab == "venn" %}"active"{%endif%}><a href="{% url 'venn_amr' %}">Venn</a></li>
             <li class={% if active_tab == "comp" %}"active"{%endif%}><a href="{% url 'amr_comparison' %}">Presence/absence table</a></li>
             <li class={% if active_tab == "heat" %}"active"{%endif%}><a href="{% url 'plot_heatmap' 'amr' %}">Heatmaps</a></li>
+            <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'amr' %}">Accumulation/rarefaction plot </a></li>
         </ul>
     </nav>
 {% endif %}
