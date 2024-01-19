@@ -6,7 +6,7 @@ from django.views import View
 from lib.db_utils import DB
 
 from views.mixins import AmrAnnotationsMixin, ComparisonViewMixin
-from views.utils import (format_cog, format_gene_to_ncbi_hmm, format_ko,
+from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_lst_to_html, format_orthogroup, format_pfam,
                          my_locals)
 
@@ -261,14 +261,12 @@ class VennAmrView(VennBaseView, AmrAnnotationsMixin):
                        "their description."
 
     table_headers = ["Gene", "Description", "Scope", "Type", "Class",
-                     "Subclass"]
+                     "Subclass", "HMM"]
     table_data_accessors = ["seq_name", "scope", "type", "class", "subclass"]
 
     @staticmethod
-    def format_entry(entry, to_url=False, hmm_id=None):
-        if to_url:
-            return format_gene_to_ncbi_hmm((entry, hmm_id))
-        return entry
+    def format_entry(entry, to_url=False):
+        return format_amr(entry, to_url=to_url)
 
     @property
     def get_counts(self):
@@ -280,9 +278,14 @@ class VennAmrView(VennBaseView, AmrAnnotationsMixin):
         data = data.drop_duplicates(subset=["gene"]).set_index("gene")
         self.data_dict = {}
         for amr, amr_info in data.iterrows():
-            self.data_dict[self.format_entry(amr)] = [
-                self.format_entry(amr, to_url=True, hmm_id=amr_info["hmm_id"]),
-                *[amr_info[accessor] or "" for accessor in self.table_data_accessors]
+            row = [
+                self.format_entry(amr, to_url=True),
+                *[amr_info[accessor] or ""
+                  for accessor in self.table_data_accessors]
             ]
+            row.append(format_hmm_url(amr_info["hmm_id"]))
+            row = [el if el is not None else "-" for el in row]
+            self.data_dict[self.format_entry(amr)] = row
+
         self.show_results = True
         return counts

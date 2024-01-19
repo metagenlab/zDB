@@ -53,6 +53,7 @@ urlpatterns = [
     re_path(r'^fam_pfam/(PF[0-9]+)$', views.fam_pfam, name="fam_pfam"),
     re_path(r'^fam_ko/(K[0-9]+)$', views.fam_ko, name="fam_ko"),
     re_path(r'^fam_cog/(COG[0-9]+)$', views.fam_cog, name="fam_cog"),
+    re_path(r'^fam_amr/([a-zA-Z0-9_\.\(\)\-\']+)$', views.fam_amr, name="fam_amr"),
     re_path(r'^extract_pfam/$', hits_extraction.ExtractPfamView.as_view(), name="extract_pfam"),  # noqa
     re_path(r'^extract_orthogroup/$', hits_extraction.ExtractOrthogroupView.as_view(), name="extract_orthogroup"),  # noqa
     re_path(r'^extract_ko/$', hits_extraction.ExtractKoView.as_view(), name="extract_ko"),  # noqa

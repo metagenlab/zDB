@@ -43,7 +43,7 @@ from lib.KO_module import ModuleParser
 from reportlab.lib import colors
 
 from views.mixins import ComparisonViewMixin
-from views.utils import (format_cog, format_gene_to_ncbi_hmm, format_ko,
+from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_ko_module, format_ko_modules, format_ko_path,
                          format_locus, format_lst_to_html, format_orthogroup,
                          format_pfam, my_locals, optional2status, page2title,
@@ -577,10 +577,12 @@ def og_tab_get_amr_annot(db, seqids):
     if amr_hits.empty:
         return {}
 
-    col_titles = {"closest_seq": "Closest Sequence"}
+    col_titles = {"closest_seq": "Closest Sequence",
+                  "hmm_id": "HMM"}
 
     amr_hits["closest_seq"] = amr_hits["closest_seq"].map(format_refseqid_to_ncbi)
-    amr_hits["gene"] = amr_hits[["gene", "hmm_id"]].apply(format_gene_to_ncbi_hmm, axis=1)
+    amr_hits["gene"] = amr_hits["gene"].apply(format_amr, to_url=True)
+    amr_hits["hmm_id"] = amr_hits["hmm_id"].apply(format_hmm_url)
     return {
         "amr_entries": amr_hits.values,
         "amr_header": [col_titles.get(col, col.capitalize())
@@ -1309,6 +1311,57 @@ def tab_gen_profile_tree(db, main_series, header, intersect):
                                        col_func=color_chooser.get_color)
         e_tree.add_column(col_column)
     return e_tree
+
+
+def fam_amr(request, gene):
+    page_title = page2title["fam_amr"]
+
+    biodb_path = settings.BIODB_DB_PATH
+    db = DB.load_db_from_name(biodb_path)
+
+    if request.method != "GET":
+        return render(request, 'chlamdb/fam.html', my_locals(locals()))
+
+    # Get hits for that gene:
+    df_seqid_to_amr = db.get_amr_hit_counts([gene], indexing="seqid",
+                                            search_on="amr", keep_taxid=True)
+
+    if len(df_seqid_to_amr) == 0:
+        return render(request, 'chlamdb/fam.html', {"msg": f"No entry for {format_amr(gene)}"})
+
+    seqids = df_seqid_to_amr.index.tolist()
+
+    orthogroups = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
+    amr_info = db.get_amr_descriptions([gene])
+    all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
+    ref_tree = db.get_reference_phylogeny()
+
+    df_amr_count = df_seqid_to_amr.groupby(["taxid"]).count()
+    fam = format_amr(gene)
+    e_tree = tab_gen_profile_tree(db, df_amr_count.gene, format_amr(gene), orthogroups)
+    asset_path = f"/temp/fam_tree_{gene}.svg"
+    path = settings.BASE_DIR + "/assets/" + asset_path
+    e_tree.render(path, dpi=500)
+
+    amr_info = amr_info.iloc[0]
+    amr_info.hmm_id = format_hmm_url(amr_info.hmm_id)
+    headers = ["Description", "Scope", "Type", "Class", "Subclass", "HMM"]
+    accessors = ["seq_name", "scope", "type", "class", "subclass", "hmm_id"]
+    info = {header: amr_info[key] for header, key in zip(headers, accessors)
+            if amr_info[key]}
+
+    menu = True
+    envoi = True
+    context = {
+        "page_title": page_title,
+        "type": "amr",
+        "fam": fam,
+        "info": info,
+        "all_locus_data": all_locus_data,
+        "group_count": group_count,
+        "asset_path": asset_path,
+    }
+    return render(request, 'chlamdb/fam.html', my_locals(context))
 
 
 # TODO : add error handling
@@ -3313,7 +3366,7 @@ class AmrComparisonView(TabularComparisonViewBase):
     @property
     def base_info_headers(self):
         if self.comp_type == "gene":
-            return ["Gene", "scope", "Class", "Subclass", "Annotation"]
+            return ["Gene", "scope", "Class", "Subclass", "Annotation", "HMM"]
         elif self.comp_type == "subclass":
             return ["Subclass", "Class"]
         elif self.comp_type == "class":
@@ -3328,21 +3381,19 @@ class AmrComparisonView(TabularComparisonViewBase):
 
     def get_row_data(self, groupid, data):
         if self.comp_type == "class":
-            return [groupid]
+            return [safe_replace(groupid, "/", " / ")]
         elif self.comp_type == "subclass":
             return [
-                format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
-                data.iloc[0]["scope"],
-                safe_replace(data.iloc[0]["class"], "/", " / "),
-                safe_replace(data.iloc[0]["subclass"], "/", " / "),
-                data.iloc[0]["seq_name"]]
+                safe_replace(groupid, "/", " / "),
+                safe_replace(data.iloc[0]["class"], "/", " / ") or "-"]
         elif self.comp_type == "gene":
             return [
-                format_gene_to_ncbi_hmm((groupid, data.iloc[0].hmm_id)),
-                data.iloc[0]["scope"],
-                safe_replace(data.iloc[0]["class"], "/", " / "),
-                safe_replace(data.iloc[0]["subclass"], "/", " / "),
-                data.iloc[0]["seq_name"]]
+                format_amr(groupid, to_url=True),
+                data.iloc[0]["scope"] or "-",
+                safe_replace(data.iloc[0]["class"], "/", " / ") or "-",
+                safe_replace(data.iloc[0]["subclass"], "/", " / ") or "-",
+                data.iloc[0]["seq_name"],
+                format_hmm_url(data.iloc[0].hmm_id) or "-"]
 
     def get_table_rows(self):
         hits = self.db.get_amr_hits_from_taxonids(self.targets)

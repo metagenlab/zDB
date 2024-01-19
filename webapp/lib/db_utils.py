@@ -2435,8 +2435,12 @@ class DB:
         return where_clause
 
     def get_amr_hit_counts(self, ids, indexing="taxid", search_on="taxid",
-                           plasmids=None):
-        if indexing == "taxid":
+                           keep_taxid=False, plasmids=None):
+        if indexing == "seqid":
+            index = "seqfeature.seqfeature_id"
+            if keep_taxid:
+                index += ", bioentry.taxon_id "
+        elif indexing == "taxid":
             index = "bioentry.taxon_id"
         else:
             raise RuntimeError(f"Indexing method not supported: {indexing}")
@@ -2446,7 +2450,7 @@ class DB:
         plasmid_join = ""
         if plasmids is not None:
             index += ", CAST(is_plasmid.value AS int) "
-            subclause = self.gen_cog_where_clause(search_on, plasmids)
+            subclause = self.gen_amr_where_clause(search_on, plasmids)
             where_clause = (
                     f"({where_clause} AND is_plasmid.value=0) "
                     f" OR ({subclause} AND is_plasmid.value=1)"
@@ -2474,19 +2478,34 @@ class DB:
             all_ids += plasmids
         results = self.server.adaptor.execute_and_fetchall(query, all_ids)
 
-        column_names = [indexing, "gene", "count"]
-        index = [indexing, "gene"]
-        if plasmids is not None:
-            column_names.insert(1, "plasmid")
-            index.insert(1, "plasmid")
-        df = DB.to_pandas_frame(results, column_names)
-        df = df.set_index(index).unstack(level=0, fill_value=0)
+        # ugly code, open for improvements
+        if indexing == "taxid" or indexing == "bioentry":
+            column_names = [indexing, "gene", "count"]
+            index = [indexing, "gene"]
+            if plasmids is not None:
+                column_names.insert(1, "plasmid")
+                index.insert(1, "plasmid")
+            df = DB.to_pandas_frame(results, column_names)
+            df = df.set_index(index).unstack(level=0, fill_value=0)
 
-        if plasmids is not None:
-            return df.unstack(level=0, fill_value=0)
-        else:
-            df.columns = [col for col in df["count"].columns.values]
+            if plasmids is not None:
+                return df.unstack(level=0, fill_value=0)
+            else:
+                df.columns = [col for col in df["count"].columns.values]
 
+        elif indexing == "seqid":
+            if plasmids is not None:
+                raise RuntimeError("Not implemented for now")
+            header = ["seqid", "gene"]
+            if keep_taxid:
+                header.append("taxid")
+                results = ((seqid, gene, taxid)
+                           for seqid, taxid, gene, count in results)
+            else:
+                results = ((seqid, gene) for seqid, gene, count in results)
+
+            df = DB.to_pandas_frame(results, header)
+            df = df.set_index(["seqid"])
         return df
 
     def get_amr_descriptions(self, gene_ids):
