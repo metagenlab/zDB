@@ -178,7 +178,8 @@ class ComparisonIndexView(View, ComparisonViewMixin):
         boxes = ["entry-list", "extraction", "venn",
                  "tabular-comparison", "heatmap", "accumulation-rarefaction"]
         if self.comp_type == "amr":
-            boxes = ["entry-list", "extraction", "venn", "tabular-comparison"]
+            boxes = ["entry-list", "extraction", "venn",
+                     "tabular-comparison", "heatmap"]
         elif self.comp_type == "orthogroup":
             boxes.remove("entry-list")
         elif self.comp_type == "ko":
@@ -2729,13 +2730,15 @@ def plot_heatmap(request, type):
     elif type == "pfam":
         mat = db.get_pfam_hits(taxon_ids)
         mat.index = [format_pfam(i) for i in mat.index]
+    elif type == "amr":
+        mat = db.get_amr_hit_counts(taxon_ids)
+        mat.index = [format_amr(i) for i in mat.index]
     else:
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
     target2description = db.get_genomes_description().description.to_dict()
     mat.columns = (target2description[i] for i in mat.columns.values)
-
     # reorder row and columns based on clustering
     Z_rows = shc.linkage(mat.T, method='ward')
     order_rows = hierarchy.leaves_list(Z_rows)
