@@ -178,7 +178,7 @@
                         {% for key, value in info.items %}
                           <tr>
                             <th>{{key}}</th>
-                            <td>{{value}}</td>
+                            <td>{{value|safe}}</td>
                           </tr>
                         {% endfor %}
 
