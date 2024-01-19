@@ -2,7 +2,7 @@
 from django.urls import re_path
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
-from views import entry_lists, hits_extraction, venn, views
+from views import entry_lists, fam, hits_extraction, venn, views
 
 favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
@@ -50,10 +50,10 @@ urlpatterns = [
     re_path(r'^genomes', views.genomes, name='genomes'),
     re_path(r'^favicon\.ico$', favicon_view),
     re_path(r'^FAQ', views.faq, name='FAQ'),
-    re_path(r'^fam_pfam/(PF[0-9]+)$', views.fam_pfam, name="fam_pfam"),
-    re_path(r'^fam_ko/(K[0-9]+)$', views.fam_ko, name="fam_ko"),
-    re_path(r'^fam_cog/(COG[0-9]+)$', views.fam_cog, name="fam_cog"),
-    re_path(r'^fam_amr/([a-zA-Z0-9_\.\(\)\-\']+)$', views.fam_amr, name="fam_amr"),
+    re_path(r'^fam_pfam/(PF[0-9]+)$', fam.fam_pfam, name="fam_pfam"),
+    re_path(r'^fam_ko/(K[0-9]+)$', fam.fam_ko, name="fam_ko"),
+    re_path(r'^fam_cog/(COG[0-9]+)$', fam.fam_cog, name="fam_cog"),
+    re_path(r'^fam_amr/([a-zA-Z0-9_\.\(\)\-\']+)$', fam.fam_amr, name="fam_amr"),
     re_path(r'^extract_pfam/$', hits_extraction.ExtractPfamView.as_view(), name="extract_pfam"),  # noqa
     re_path(r'^extract_orthogroup/$', hits_extraction.ExtractOrthogroupView.as_view(), name="extract_orthogroup"),  # noqa
     re_path(r'^extract_ko/$', hits_extraction.ExtractKoView.as_view(), name="extract_ko"),  # noqa
