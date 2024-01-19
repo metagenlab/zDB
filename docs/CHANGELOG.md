@@ -13,6 +13,7 @@ to [Common Changelog](https://common-changelog.org)
 - Port nextflow pipelines to DSL2 language. ([#26](https://github.com/metagenlab/zDB/pull/26)) (Niklaus Johner)
 - Add CHANGELOG file. ([#25](https://github.com/metagenlab/zDB/pull/25)) (Niklaus Johner)
 - Imported metagenlab_lib code into zdb (https://github.com/metagenlab/zDB/pull/33) (Bastian Marquis)
+- Removed eutils module. ([#47](https://github.com/metagenlab/zDB/pull/47)) (Niklaus Johner)
 
 ### Added
 
