@@ -74,6 +74,7 @@ urls = [
     '/module_comparison/',
     '/orthogroup/group_85',
     '/orthogroup_comparison',
+    '/pan_genome/amr',
     '/pan_genome/cog',
     '/pan_genome/ko',
     '/pan_genome/orthogroup',
@@ -188,21 +189,6 @@ class TestViewsContent(SimpleTestCase):
         self.assertPlot(resp)
         self.assertContains(resp, "Distribution of COGs within COG categories")
 
-    def test_pan_genome_cog(self):
-        resp = self.client.get("/pan_genome/cog")
-        self.assertEqual(200, resp.status_code)
-        self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
-        self.assertEqual("cog", resp.context["type"])
-        self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
-        self.assertNoPlot(resp)
-
-        resp = self.client.post("/pan_genome/cog", data={"targets": ["0", "1"]})
-        self.assertEqual(200, resp.status_code)
-        self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
-        self.assertEqual("cog", resp.context["type"])
-        self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
-        self.assertPlot(resp)
-
 
 class ComparisonViewsTestMixin():
 
@@ -215,6 +201,7 @@ class ComparisonViewsTestMixin():
     table_html = '<table class="hover" id="mytable"  style="padding-top: 1em;">'
     venn_html = '<div id="venn_diagram" '
     heatmap_html = '<div id="heatmap" '
+    rarefaction_plot_html = 'id="rarefaction_plot"'
 
     def assertPageTitle(self, resp, title):
         self.assertContains(
@@ -253,6 +240,14 @@ class ComparisonViewsTestMixin():
     def assertHeatmap(self, resp):
         self.assertTrue(resp.context.get("envoi_heatmap", False))
         self.assertContains(resp, self.heatmap_html)
+
+    def assertNoRarefactionPlot(self, resp):
+        self.assertFalse(resp.context.get("envoi", False))
+        self.assertNotContains(resp, self.rarefaction_plot_html)
+
+    def assertRarefactionPlot(self, resp):
+        self.assertTrue(resp.context.get("envoi", False))
+        self.assertContains(resp, self.rarefaction_plot_html)
 
     @property
     def tab_comp_view(self):
@@ -346,6 +341,22 @@ class ComparisonViewsTestMixin():
         self.assertSelection(resp, selected=True)
         self.assertHeatmap(resp)
         self.assertNav(resp)
+
+    def test_pan_genome_view(self):
+        resp = self.client.get(f"/pan_genome/{self.view_type}")
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
+        self.assertEqual(self.view_type, resp.context["type"])
+        self.assertPageTitle(resp, self.page_title)
+        self.assertNoRarefactionPlot(resp)
+
+        resp = self.client.post(f"/pan_genome/{self.view_type}",
+                                data={"targets": ["0", "1"]})
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
+        self.assertEqual(self.view_type, resp.context["type"])
+        self.assertPageTitle(resp, self.page_title)
+        self.assertRarefactionPlot(resp)
 
 
 class TestPfamViews(SimpleTestCase, ComparisonViewsTestMixin):

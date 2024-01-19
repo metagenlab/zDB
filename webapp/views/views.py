@@ -177,10 +177,7 @@ class ComparisonIndexView(View, ComparisonViewMixin):
     def boxes(self):
         boxes = ["entry-list", "extraction", "venn",
                  "tabular-comparison", "heatmap", "accumulation-rarefaction"]
-        if self.comp_type == "amr":
-            boxes = ["entry-list", "extraction", "venn",
-                     "tabular-comparison", "heatmap"]
-        elif self.comp_type == "orthogroup":
+        if self.comp_type == "orthogroup":
             boxes.remove("entry-list")
         elif self.comp_type == "ko":
             boxes.append("barcharts")
@@ -2060,6 +2057,9 @@ def pan_genome(request, type):
     elif type == "pfam":
         df_hits = db.get_pfam_hits(taxids, search_on="taxid")
         type_txt = "PFAM domains"
+    elif type == "amr":
+        df_hits = db.get_amr_hit_counts(taxids, search_on="taxid")
+        type_txt = "AMR genes"
     else:
         form = venn_form_class()
         return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
