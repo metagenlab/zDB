@@ -122,7 +122,7 @@ class FamBaseView(View):
         hit_counts = hit_counts.groupby(["taxid"]).count()
         fam = self.format_entry(entry_id)
         e_tree = tab_gen_profile_tree(
-            self.db, getattr(hit_counts, self.object_type),
+            self.db, getattr(hit_counts, self.object_column),
             self.format_entry(entry_id), orthogroups)
         asset_path = f"/temp/fam_tree_{entry_id}.svg"
         path = settings.BASE_DIR + "/assets/" + asset_path

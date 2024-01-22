@@ -27,6 +27,10 @@ class BaseViewMixin():
     def object_name_singular_or_plural(self):
         return f"{self.object_name}(s)"
 
+    @property
+    def object_column(self):
+        return self.object_type
+
 
 class ComparisonViewMixin(BaseViewMixin):
 
@@ -47,6 +51,7 @@ class AmrViewMixin(BaseViewMixin):
 
     object_type = "amr"
     object_name = "AMR gene"
+    object_column = "gene"
 
     colname_to_header = {
         "gene": "Gene",
