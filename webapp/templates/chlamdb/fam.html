@@ -57,27 +57,23 @@
   					<p style="margin: 10px 10px 10px 10px; line-height: 180%">Three outputs have been generated:
   						<br> <b>General</b>:  this result contains the description and frequency of the selected
 
-              {% if type == 'cog'%}
-                COG entry
+              {% if type == 'cog' or type == 'amr'%}
+                {{ object_name }}
               {% elif type == 'ko' %}
                 Kegg Ortholog
               {% elif type == 'pfam' %}
                 Pfam domain
-              {% elif type == 'amr' %}
-                {{ object_name }}
               {% endif %}
 
               {{ fam }}, of which KO pathways and KO modules it is part. Additionally, its occurence in the database is reported.
               <br> <b>Proteins list</b>: list of occurences of the
 
-              {% if type == 'ko'%}
-                COG entry
+              {% if type == 'cog' or type == 'amr' %}
+                {{ object_name }}
               {% elif type == 'ko' %}
                 Kegg Ortholog
               {% elif type == 'pfam' %}
                 Pfam domain
-              {% elif type == 'amr' %}
-                {{ object_name }}
               {% endif %}
 
               within the database. {{ all_locus_data|length }} occurences are identified.
@@ -86,26 +82,23 @@
   					  <br><b> Profiles</b>: Phylogenetic tree annotated with
               <br>- the presence of the
 
-              {% if type == 'cog'%}
-                COG entry(ies)
+              {% if type == 'cog' or type == 'amr' %}
+                {{ object_name_singular_or_plural }}
               {% elif type == 'ko' %}
                 Kegg Ortholog(s)
               {% elif type == 'pfam' %}
                 Pfam domain(s)
-              {% elif type == 'amr' %}
-                {{ object_name_singular_or_plural }}
+
               {% endif %} of interest within all the genomes of the database (first column)
 
               <br>- the size of the orthogroup(s) in which the reported
 
-              {% if type == 'cog'%}
-                COG entry
+              {% if type == 'cog' or type == 'amr' %}
+                {{ object_name }}
               {% elif type == 'ko' %}
                 Ko entry
               {% elif type == 'pfam' %}
                 Pfam domain
-              {% elif type == 'amr' %}
-                {{ object_name }}
               {% endif %} has been clustered.
 
               <br>In red the <font size="2" color="red">{{type}} with positive hit(s)</font> in the corresponding genome.
@@ -174,7 +167,7 @@
                           </tr>
                         {% endfor %}
 
-                      {% elif type == 'amr' %}
+                      {% elif type == 'cog' or type == 'amr' %}
                         {% for key, value in info.items %}
                           <tr>
                             <th>{{key}}</th>
@@ -231,16 +224,6 @@
                             <td> N/A </td>
                           </tr>
                         {% endif %}
-
-							        {% elif type == "cog" %}
-                        <tr>
-                          <th style="width:160px">Description</th>
-                          <td> {{ info.1 }} </td>
-                        </tr>
-												<tr>
-                          <th style="width:160px">Function(s)</th>
-													<td> {{info.0|safe}}</td>
-												</tr>
             
                       {% else %}
                         <tr>

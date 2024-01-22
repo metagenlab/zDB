@@ -6,7 +6,7 @@ from ete3 import Tree
 from lib.db_utils import DB
 from lib.ete_phylo import EteTree, SimpleColorColumn
 
-from views.mixins import AmrViewMixin
+from views.mixins import AmrViewMixin, CogViewMixin
 from views.utils import (format_cog, format_ko, format_ko_module,
                          format_ko_path, format_orthogroup, my_locals,
                          page2title)
@@ -85,10 +85,9 @@ def get_all_prot_infos(db, seqids, orthogroups):
     return all_locus_data, group_count
 
 
-class FamAmrView(View, AmrViewMixin):
+class FamBaseView(View):
 
     template = 'chlamdb/fam.html'
-    accessors = ["seq_name", "scope", "type", "class", "subclass", "hmm_id"]
 
     @property
     def view_name(self):
@@ -140,44 +139,18 @@ class FamAmrView(View, AmrViewMixin):
         return render(request, self.template, my_locals(context))
 
 
-# TODO : add error handling
-def fam_cog(request, cog_id):
-    page_title = page2title["fam_cog"]
+class FamAmrView(FamBaseView, AmrViewMixin):
 
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
-    cog_id = int(cog_id[3:])
+    accessors = ["seq_name", "scope", "type", "class", "subclass", "hmm_id"]
 
-    if request.method != "GET":
-        return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
-    df_seqid_to_cog = db.get_cog_hits([cog_id], indexing="seqid", search_on="cog", keep_taxid=True)
-    if len(df_seqid_to_cog) == 0:
-        return render(request, 'chlamdb/fam.html', {"msg": f"No entry for {format_cog(cog_id)}"})
+class FamCogView(FamBaseView, CogViewMixin):
 
-    seqids = df_seqid_to_cog.index.tolist()
+    accessors = ["description", "function"]
 
-    orthogroups = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
-    cog_info = db.get_cog_summaries([cog_id], only_cog_desc=True, as_df=True)
-    all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
-    ref_tree = db.get_reference_phylogeny()
-    cog_func = db.get_cog_code_description()
-
-    df_cog_count = df_seqid_to_cog.groupby(["taxid"]).count()
-    fam = format_cog(cog_id)
-    e_tree = tab_gen_profile_tree(db, df_cog_count.cog, format_cog(cog_id), orthogroups)
-    asset_path = f"/temp/fam_tree_{cog_id}.svg"
-    path = settings.BASE_DIR + "/assets/" + asset_path
-    e_tree.render(path, dpi=500)
-
-    func, cog_description = cog_info.loc[cog_id]
-    info_func = "<br>".join((cog_func[code] for code in func))
-    type = "cog"
-
-    info = [info_func, cog_description]
-    menu = True
-    envoi = True
-    return render(request, 'chlamdb/fam.html', my_locals(locals()))
+    def get(self, request, entry_id, *args, **kwargs):
+        entry_id = int(entry_id[3:])
+        return super(FamCogView, self).get(request, entry_id, *args, **kwargs)
 
 
 def fam_ko(request, ko_str):

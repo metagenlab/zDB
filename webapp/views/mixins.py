@@ -1,7 +1,7 @@
 from django.conf import settings
 from lib.db_utils import DB
 
-from views.utils import format_amr, format_hmm_url, page2title
+from views.utils import format_amr, format_cog, format_hmm_url, page2title
 
 
 class BaseViewMixin():
@@ -96,3 +96,32 @@ class AmrViewMixin(BaseViewMixin):
         for col in rows.columns:
             aggregated.append(" || ".join(rows[col].unique()))
         return aggregated
+
+
+class CogViewMixin(BaseViewMixin):
+
+    object_type = "cog"
+    object_name = "COG entry"
+    object_name_plural = "COG entries"
+    object_name_singular_or_plural = "COG entry(ies)"
+
+    colname_to_header = {
+        "function": "Function(s)",
+        "description": "Description",
+    }
+
+    @property
+    def get_hit_counts(self):
+        return self.db.get_cog_hits
+
+    def get_hit_descriptions(self, ids, transformed=True):
+        descriptions = self.db.get_cog_summaries(
+            ids, only_cog_desc=True, as_df=True)
+        if transformed:
+            cog_func = self.db.get_cog_code_description()
+            descriptions["function"] = descriptions["function"].apply(lambda func: "<br>".join((cog_func[code] for code in func)))
+        return descriptions
+
+    @staticmethod
+    def format_entry(entry, to_url=False):
+        return format_cog(entry, as_url=to_url)
