@@ -1,11 +1,13 @@
 
 from django.conf import settings
 from django.shortcuts import render
+from django.views import View
 from ete3 import Tree
 from lib.db_utils import DB
 from lib.ete_phylo import EteTree, SimpleColorColumn
 
-from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
+from views.mixins import AmrViewMixin
+from views.utils import (format_cog, format_hmm_url, format_ko,
                          format_ko_module, format_ko_path, format_orthogroup,
                          my_locals, page2title)
 
@@ -83,55 +85,55 @@ def get_all_prot_infos(db, seqids, orthogroups):
     return all_locus_data, group_count
 
 
-def fam_amr(request, gene):
-    page_title = page2title["fam_amr"]
+class FamAmrView(View, AmrViewMixin):
 
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
+    template = 'chlamdb/fam.html'
 
-    if request.method != "GET":
-        return render(request, 'chlamdb/fam.html', my_locals(locals()))
+    @property
+    def view_name(self):
+        return f"fam_{self.object_type}"
 
-    # Get hits for that gene:
-    df_seqid_to_amr = db.get_amr_hit_counts([gene], indexing="seqid",
-                                            search_on="amr", keep_taxid=True)
+    def get(self, request, gene, *args, **kwargs):
+        # Get hits for that gene:
+        df_seqid_to_amr = self.get_hit_counts(
+            [gene], indexing="seqid", search_on="amr", keep_taxid=True)
 
-    if len(df_seqid_to_amr) == 0:
-        return render(request, 'chlamdb/fam.html', {"msg": f"No entry for {format_amr(gene)}"})
+        if len(df_seqid_to_amr) == 0:
+            return render(request, self.tempalte,
+                          {"msg": f"No entry for {self.format_entry(gene)}"})
 
-    seqids = df_seqid_to_amr.index.tolist()
+        seqids = df_seqid_to_amr.index.tolist()
 
-    orthogroups = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
-    amr_info = db.get_amr_descriptions([gene])
-    all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
-    ref_tree = db.get_reference_phylogeny()
+        orthogroups = self.db.get_og_count(seqids, search_on="seqid",
+                                           keep_taxid=True)
+        amr_info = self.get_hit_descriptions([gene])
+        amr_info = amr_info.iloc[0]
+        all_locus_data, group_count = get_all_prot_infos(
+            self.db, seqids, orthogroups)
 
-    df_amr_count = df_seqid_to_amr.groupby(["taxid"]).count()
-    fam = format_amr(gene)
-    e_tree = tab_gen_profile_tree(db, df_amr_count.gene, format_amr(gene), orthogroups)
-    asset_path = f"/temp/fam_tree_{gene}.svg"
-    path = settings.BASE_DIR + "/assets/" + asset_path
-    e_tree.render(path, dpi=500)
+        df_amr_count = df_seqid_to_amr.groupby(["taxid"]).count()
+        fam = self.format_entry(gene)
+        e_tree = tab_gen_profile_tree(
+            self.db, df_amr_count.gene, self.format_entry(gene), orthogroups)
+        asset_path = f"/temp/fam_tree_{gene}.svg"
+        path = settings.BASE_DIR + "/assets/" + asset_path
+        e_tree.render(path, dpi=500)
 
-    amr_info = amr_info.iloc[0]
-    amr_info.hmm_id = format_hmm_url(amr_info.hmm_id)
-    headers = ["Description", "Scope", "Type", "Class", "Subclass", "HMM"]
-    accessors = ["seq_name", "scope", "type", "class", "subclass", "hmm_id"]
-    info = {header: amr_info[key] for header, key in zip(headers, accessors)
-            if amr_info[key]}
+        accessors = ["seq_name", "scope", "type", "class", "subclass", "hmm_id"]
+        headers = [self.colname_to_header[colname] for colname in accessors]
+        info = {header: amr_info[key] for header, key in zip(headers, accessors)
+                if amr_info[key]}
 
-    menu = True
-    envoi = True
-    context = {
-        "page_title": page_title,
-        "type": "amr",
-        "fam": fam,
-        "info": info,
-        "all_locus_data": all_locus_data,
-        "group_count": group_count,
-        "asset_path": asset_path,
-    }
-    return render(request, 'chlamdb/fam.html', my_locals(context))
+        context = {
+            "page_title": self.page_title,
+            "type": self.object_type,
+            "fam": fam,
+            "info": info,
+            "all_locus_data": all_locus_data,
+            "group_count": group_count,
+            "asset_path": asset_path,
+        }
+        return render(request, self.template, my_locals(context))
 
 
 # TODO : add error handling

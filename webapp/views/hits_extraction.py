@@ -2,12 +2,10 @@ import collections
 
 import pandas as pd
 from chlamdb.forms import make_extract_form
-from django.conf import settings
 from django.shortcuts import render
 from django.views import View
-from lib.db_utils import DB
 
-from views.mixins import AmrAnnotationsMixin, ComparisonViewMixin
+from views.mixins import AmrViewMixin, ComparisonViewMixin
 from views.utils import (format_amr, format_cog, format_cog_url,
                          format_hmm_url, format_ko, format_ko_modules,
                          format_ko_path, format_ko_url, format_locus,
@@ -70,8 +68,6 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
         return self._table_headers + self.table_count_headers
 
     def dispatch(self, request, *args, **kwargs):
-        biodb_path = settings.BIODB_DB_PATH
-        self.db = DB.load_db_from_name(biodb_path)
         self.extract_form_class = make_extract_form(
             self.db, self.view_name, plasmid=True, label=self.compared_obj_name)
         return super(ExtractHitsBaseView, self).dispatch(request, *args, **kwargs)
@@ -338,7 +334,7 @@ class ExtractPfamView(ExtractHitsBaseView):
         return self.get_context()
 
 
-class ExtractAmrView(ExtractHitsBaseView, AmrAnnotationsMixin):
+class ExtractAmrView(ExtractHitsBaseView, AmrViewMixin):
 
     comp_type = "amr"
 

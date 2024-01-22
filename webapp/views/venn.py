@@ -1,11 +1,9 @@
 
 from chlamdb.forms import make_venn_from
-from django.conf import settings
 from django.shortcuts import render
 from django.views import View
-from lib.db_utils import DB
 
-from views.mixins import AmrAnnotationsMixin, ComparisonViewMixin
+from views.mixins import AmrViewMixin, ComparisonViewMixin
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_lst_to_html, format_orthogroup, format_pfam,
                          my_locals)
@@ -24,8 +22,6 @@ class VennBaseView(View, ComparisonViewMixin):
         return f"venn_{self.comp_type}"
 
     def dispatch(self, request, *args, **kwargs):
-        biodb_path = settings.BIODB_DB_PATH
-        self.db = DB.load_db_from_name(biodb_path)
         self.form_class = make_venn_from(self.db, label=self.compared_obj_name,
                                          limit=6, action=self.view_name)
         return super(VennBaseView, self).dispatch(request, *args, **kwargs)
@@ -254,7 +250,7 @@ class VennCogSubsetView(VennSubsetBaseView, VennCogView):
     pass
 
 
-class VennAmrView(VennBaseView, AmrAnnotationsMixin):
+class VennAmrView(VennBaseView, AmrViewMixin):
 
     comp_type = "amr"
     table_data_descr = "The table contains a list of the Pfam entries and "\

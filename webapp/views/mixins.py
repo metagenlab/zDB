@@ -1,7 +1,25 @@
-from views.utils import page2title
+from django.conf import settings
+from lib.db_utils import DB
+
+from views.utils import format_amr, format_hmm_url, page2title
 
 
-class ComparisonViewMixin():
+class BaseViewMixin():
+
+    _db = None
+
+    @property
+    def db(self):
+        if self._db is None:
+            biodb_path = settings.BIODB_DB_PATH
+            self._db = DB.load_db_from_name(biodb_path)
+        return self._db
+
+    def page_title(self):
+        return page2title[self.view_name]
+
+
+class ComparisonViewMixin(BaseViewMixin):
 
     type2objname = {
         "cog": "COGs",
@@ -15,12 +33,43 @@ class ComparisonViewMixin():
     def compared_obj_name(self):
         return self.type2objname[self.comp_type]
 
+
+class AmrViewMixin(BaseViewMixin):
+
+    object_type = "amr"
+    object_name = "AMR"
+
+    colname_to_header = {
+        "gene": "Gene",
+        "seq_name": "Description",
+        "scope": "Scope",
+        "type": "Type",
+        "class": "Class",
+        "subclass": "Subclass",
+        "hmm_id": "HMM"
+    }
+
+    transforms = {
+        "gene": (format_amr, {"to_url": True}),
+        "hmm_id": (format_hmm_url, {}),
+        }
+
     @property
-    def page_title(self):
-        return page2title[self.view_name]
+    def get_hit_counts(self):
+        return self.db.get_amr_hit_counts
 
+    def get_hit_descriptions(self, ids, transformed=True):
+        descriptions = self.db.get_amr_descriptions(ids)
+        self.aggregate_amr_annotations(descriptions)
+        if transformed:
+            for colname, (transform, kwargs) in self.transforms.items():
+                descriptions[colname] = descriptions[colname].apply(transform,
+                                                                    **kwargs)
+        return descriptions
 
-class AmrAnnotationsMixin():
+    @staticmethod
+    def format_entry(gene, to_url=False):
+        return format_amr(gene, to_url=to_url)
 
     def aggregate_amr_annotations(self, amr_annotations):
         gene_annot_counts = amr_annotations.gene.value_counts()
