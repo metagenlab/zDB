@@ -25,22 +25,16 @@
           </div>
         </div>
         <p class="page-title"><b>
+          {{ fam }}
 
-          {% if type == 'cog'%}
-            {{ fam }}
-
-          {% elif type == 'pfam' %}
-            {{ fam }}
+          {% if type == 'pfam' %}
 
             <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#cog-pfam-annotation-summary" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
 
           {% elif type == 'ko' %}
-            {{ fam }}
 
             <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#kegg-module-overview-page" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
 
-          {% elif type == 'amr' %}
-                {{ fam }}
           {% endif %}
 
         </b></p>
@@ -119,67 +113,13 @@
 
                       {% endif %}
 
-                      {% if type == 'EC' %}
-                        {% for key, value in info%}
-                          <tr>
-                            <th>{{key}}</th>
-                            {% if key == "prosite"%}
-                              <td><a href="https://prosite.expasy.org/{{value}}">{{value}}</a></td>
-                            {% else %}
-                              <td>{{value}}</td>
-                            {% endif %}
-                          </tr>
-                        {% endfor %}
-
-                      {% elif type == 'cog' or type == 'amr' or type == 'ko' or type == 'pfam' %}
-                        {% for key, value in info.items %}
-                          <tr>
-                            <th>{{key}}</th>
-                            <td>{{value|safe}}</td>
-                          </tr>
-                        {% endfor %}
-
-                      {% elif fam_interpro %}
+                      {% for key, value in info.items %}
                         <tr>
-                          <th style="width:160px">Signature accession</th>
-                          {% if type == "PANTHER" %}
-                            <td><a href="http://www.pantherdb.org/panther/family.do?clsAccession={{info.0}}">{{ info.0 }}</a></td>
-                          {% elif type == "CDD" %}
-                            <td><a href="https://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{info.0}}">{{ info.0 }}</a></td>
-                          {% elif type == "Pfam" %}
-                            <td><a href="http://pfam.xfam.org/family/{{info.0}}">{{ info.0 }}</a></td>
-                          {% elif type == "PRINTS" %}
-                            <td><a href="http://130.88.97.239/cgi-bin/dbbrowser/sprint/searchprintss.cgi?prints_accn={{info.0}}&display_opts=Prints&category=None&queryform=false&regexpr=off">{{ info.0 }}</a></td>
-                          {% elif type == "TIGRFAM" %}
-                            <td><a href="http://tigrfams.jcvi.org/cgi-bin/HmmReportPage.cgi?acc={{info.0}}">{{ info.0 }}</a></td>
-                          {% elif type == "Hamap" %}
-                            <td><a href="https://hamap.expasy.org/signature/{{info.0}}">{{ info.0 }}</a></td>
-                          {% elif type == "Gene3D" %}
-                            <td><a href="http://www.cathdb.info/version/latest/superfamily/{{Gene3D_acc}}">{{ info.0 }}</a></td>
-                          {% elif type == "SUPERFAMILY" %}
-                            <td><a href="http://supfam.org/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{info.0}}">{{ info.0 }}</a></td>
-                          {% elif type == "SMART" %}
-                            <td><a href="http://smart.embl-heidelberg.de/smart/do_annotation.pl?DOMAIN={{info.0}}">{{ info.0 }}</a></td>
-                          {% elif type == "ProSitePatterns" %}
-                            <td><a href="https://prosite.expasy.org/{{info.0}}">{{ info.0 }}</a></td>
-                          {% else %}
-                            <td>{{ info.0 }} {{ info.1 }}</td>
-                          {% endif %}
+                          <th>{{key}}</th>
+                          <td>{{value|safe}}</td>
                         </tr>
+                      {% endfor %}
 
-                        {% if info.1 != "0" %}
-                          <tr>
-                            <th style="width:160px">Signature description</th>
-                            <td> {{ info.1 }}</td>
-                          </tr>
-                        {% else %}
-                          <tr>
-                            <th style="width:160px">Signature description</th>
-                            <td> N/A </td>
-                          </tr>
-                        {% endif %}
-
-                      {% endif %}
                     </table>
                   </div>
                 </div>
@@ -227,71 +167,6 @@
 
                     </div>
                   </div>
-                {% endif %}
-
-                {% if type == 'EC'%}
-                  <div class="row">
-                    <div class="panel panel-default">
-                      <div class="panel-heading">
-                        <h3 class="panel-title">EC part of <strong>{{pathway_data|length }} pathways</strong></h3>
-                      </div>
-                      {% if pathway_data|length > 0 %}
-                        <table class="table table-striped" style="width: 100%">
-                          <tbody>
-
-                            {% for path in pathway_data %}
-                              <tr>
-                                <td style="width:160px"><a href="{% url 'KEGG_mapp_ko' path.0 %}">{{path.0}}</a></td>
-                                <td>{{path.1}}</td>
-                              </tr>
-                            {% endfor %}
-
-                          </tbody>
-                        </table>
-                      {% endif %}
-                    </div>
-                  </div>
-
-                  {% if associated_ko|length > 0 %}
-                    <div class="row">
-                      <div class="panel panel-default">
-                        <div class="panel-heading">
-                          <h3 class="panel-title">Kegg Orthologs</h3>
-                        </div>
-                        <table class="table table-striped" style="width: 100%">
-                          <thead>
-                            <tr>
-                              <th>Accession</th>
-                              <th>Description</th>
-                              <th>Frequency in the database</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-
-                            {% for ko in associated_ko %}
-                              <tr>
-                                {% with ko2freq|keyvalue:ko.0 as freq%}
-
-                                  {% if freq > 0%}
-                                    <td style="width:160px"><a href="{% url 'fam' ko.0 "ko" %}">{{ko.0}}</a></td>
-                                    <td>{{ko.1}}</td>
-                                    <td>{{ freq }}</td>
-                                  {% else %}
-                                    <td style="width:160px">{{ko.0}}</td>
-                                    <td>{{ko.1}}</td>
-                                    <td>-</td>
-                                  {% endif %}
-
-                                {% endwith %}
-                              </tr>
-                            {% endfor %}
-
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  {% endif %}
-
                 {% endif %}
 
                 <div class="row">
