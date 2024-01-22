@@ -6,10 +6,9 @@ from ete3 import Tree
 from lib.db_utils import DB
 from lib.ete_phylo import EteTree, SimpleColorColumn
 
-from views.mixins import AmrViewMixin, CogViewMixin
-from views.utils import (format_cog, format_ko, format_ko_module,
-                         format_ko_path, format_orthogroup, my_locals,
-                         page2title)
+from views.mixins import AmrViewMixin, CogViewMixin, KoViewMixin
+from views.utils import (format_ko, format_ko_module, format_ko_path,
+                         format_orthogroup, my_locals, page2title)
 
 
 class FamCogColorFunc:
@@ -94,6 +93,10 @@ class FamBaseView(View):
         return f"fam_{self.object_type}"
 
     def get(self, request, entry_id, *args, **kwargs):
+        context = self.prepare_context(request, entry_id, *args, **kwargs)
+        return render(request, self.template, my_locals(context))
+
+    def prepare_context(self, request, entry_id, *args, **kwargs):
         # Get hits for that entry:
         hit_counts = self.get_hit_counts(
             [entry_id], indexing="seqid", search_on=self.object_type,
@@ -136,7 +139,7 @@ class FamBaseView(View):
             "object_name_plural": self.object_name_plural,
             "object_name_singular_or_plural": self.object_name_singular_or_plural,
         }
-        return render(request, self.template, my_locals(context))
+        return context
 
 
 class FamAmrView(FamBaseView, AmrViewMixin):
@@ -153,39 +156,28 @@ class FamCogView(FamBaseView, CogViewMixin):
         return super(FamCogView, self).get(request, entry_id, *args, **kwargs)
 
 
-def fam_ko(request, ko_str):
-    page_title = page2title["fam_ko"]
+class FamKoView(FamBaseView, KoViewMixin):
 
-    ko_id = int(ko_str[len("K"):])
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    accessors = ["ko", "description"]
 
-    df_ko_hits = db.get_ko_hits([ko_id], search_on="ko", indexing="seqid", keep_taxid=True)
-    seqids = df_ko_hits.index.tolist()
-    seqid_to_og = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
-    red_color = set(tuple(entry) for entry in seqid_to_og.to_numpy())
+    def get(self, request, entry_id, *args, **kwargs):
+        entry_id = int(entry_id[len("K"):])
+        return super(FamKoView, self).get(request, entry_id, *args, **kwargs)
 
-    pathways = db.get_ko_pathways([ko_id])
-    modules = db.get_ko_modules([ko_id])
-    modules_id = [mod_id for key, values in modules.items() for mod_id, desc in values]
-    modules_data = db.get_modules_info(modules_id)
-    ko_desc = db.get_ko_desc([ko_id])[ko_id]
-    all_locus_data, group_count = get_all_prot_infos(db, seqids, seqid_to_og)
+    def prepare_context(self, request, entry_id, *args, **kwargs):
+        pathways = self.db.get_ko_pathways([entry_id])
+        modules = self.db.get_ko_modules([entry_id])
+        modules_id = [mod_id for key, values in modules.items() for mod_id, desc in values]
+        modules_data = self.db.get_modules_info(modules_id)
+        pathway_data = format_ko_path(pathways, entry_id, as_list=True)
+        module_data = [(format_ko_module(mod_id), cat, mod_desc)
+                       for mod_id, mod_desc, mod_def, path, cat in modules_data]
 
-    pathway_data = format_ko_path(pathways, ko_id, as_list=True)
-    module_data = [(format_ko_module(mod_id), cat, mod_desc)
-                   for mod_id, mod_desc, mod_def, path, cat in modules_data]
-    df_ko_count = df_ko_hits.groupby(["taxid"]).count()
-
-    fam = format_ko(ko_id)
-    e_tree = tab_gen_profile_tree(db, df_ko_count.ko, fam, seqid_to_og)
-    asset_path = f"/temp/fam_tree_{fam}.svg"
-    path = settings.BASE_DIR + f"/assets/{asset_path}"
-
-    e_tree.render(path, dpi=500)
-    type = "ko"
-    menu = True
-    envoi = True
-    return render(request, 'chlamdb/fam.html', my_locals(locals()))
+        context = super(FamKoView, self).prepare_context(
+            request, entry_id, *args, **kwargs)
+        context["pathway_data"] = pathway_data
+        context["module_data"] = module_data
+        return context
 
 
 def fam_pfam(request, pfam):

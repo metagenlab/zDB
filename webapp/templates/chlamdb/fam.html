@@ -57,10 +57,8 @@
   					<p style="margin: 10px 10px 10px 10px; line-height: 180%">Three outputs have been generated:
   						<br> <b>General</b>:  this result contains the description and frequency of the selected
 
-              {% if type == 'cog' or type == 'amr'%}
+              {% if type == 'cog' or type == 'amr' or type == 'ko' %}
                 {{ object_name }}
-              {% elif type == 'ko' %}
-                Kegg Ortholog
               {% elif type == 'pfam' %}
                 Pfam domain
               {% endif %}
@@ -68,10 +66,8 @@
               {{ fam }}, of which KO pathways and KO modules it is part. Additionally, its occurence in the database is reported.
               <br> <b>Proteins list</b>: list of occurences of the
 
-              {% if type == 'cog' or type == 'amr' %}
+              {% if type == 'cog' or type == 'amr' or type == 'ko' %}
                 {{ object_name }}
-              {% elif type == 'ko' %}
-                Kegg Ortholog
               {% elif type == 'pfam' %}
                 Pfam domain
               {% endif %}
@@ -82,10 +78,8 @@
   					  <br><b> Profiles</b>: Phylogenetic tree annotated with
               <br>- the presence of the
 
-              {% if type == 'cog' or type == 'amr' %}
+              {% if type == 'cog' or type == 'amr' or type == 'ko' %}
                 {{ object_name_singular_or_plural }}
-              {% elif type == 'ko' %}
-                Kegg Ortholog(s)
               {% elif type == 'pfam' %}
                 Pfam domain(s)
 
@@ -93,10 +87,8 @@
 
               <br>- the size of the orthogroup(s) in which the reported
 
-              {% if type == 'cog' or type == 'amr' %}
+              {% if type == 'cog' or type == 'amr' or type == 'ko' %}
                 {{ object_name }}
-              {% elif type == 'ko' %}
-                Ko entry
               {% elif type == 'pfam' %}
                 Pfam domain
               {% endif %} has been clustered.
@@ -167,23 +159,13 @@
                           </tr>
                         {% endfor %}
 
-                      {% elif type == 'cog' or type == 'amr' %}
+                      {% elif type == 'cog' or type == 'amr' or type == 'ko' %}
                         {% for key, value in info.items %}
                           <tr>
                             <th>{{key}}</th>
                             <td>{{value|safe}}</td>
                           </tr>
                         {% endfor %}
-
-                      {% elif type == 'ko'%}
-                        <tr>
-                          <th style="width:160px">Accession</th>
-                          <td>{{ fam }}</td>
-                        </tr>
-                        <tr>
-                          <th style="width:160px">Description</th>
-                          <td>{{ ko_desc }}</td>
-                        </tr>
 
                       {% elif fam_interpro %}
                         <tr>

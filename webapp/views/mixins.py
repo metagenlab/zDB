@@ -1,7 +1,8 @@
 from django.conf import settings
 from lib.db_utils import DB
 
-from views.utils import format_amr, format_cog, format_hmm_url, page2title
+from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
+                         page2title)
 
 
 class BaseViewMixin():
@@ -125,3 +126,28 @@ class CogViewMixin(BaseViewMixin):
     @staticmethod
     def format_entry(entry, to_url=False):
         return format_cog(entry, as_url=to_url)
+
+
+class KoViewMixin(BaseViewMixin):
+
+    object_type = "ko"
+    object_name = "Kegg Ortholog"
+
+    colname_to_header = {
+        "ko": "KO",
+        "description": "Description",
+    }
+
+    @property
+    def get_hit_counts(self):
+        return self.db.get_ko_hits
+
+    def get_hit_descriptions(self, ids, transformed=True):
+        descriptions = self.db.get_ko_desc(ids, as_df=True)
+        if transformed:
+            descriptions["ko"] = descriptions["ko"].apply(self.format_entry)
+        return descriptions
+
+    @staticmethod
+    def format_entry(entry, to_url=False):
+        return format_ko(entry, as_url=to_url)

@@ -623,7 +623,7 @@ class DB:
         results = self.server.adaptor.execute_and_fetchall(query)
         return [(line[0], line[1]) for line in results]
 
-    def get_ko_desc(self, ko_ids):
+    def get_ko_desc(self, ko_ids, as_df=False):
         if ko_ids is None:
             where = (
                 "INNER JOIN ko_hits AS hit ON hit.ko_id=ko.ko_id "
@@ -640,6 +640,8 @@ class DB:
             f"{where};"
         )
         results = self.server.adaptor.execute_and_fetchall(query, ko_ids)
+        if as_df:
+            return DB.to_pandas_frame(results, ["ko", "description"])
         hsh_results = {}
         for line in results:
             hsh_results[line[0]] = line[1]
