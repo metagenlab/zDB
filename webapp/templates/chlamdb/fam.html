@@ -64,7 +64,7 @@
               {% elif type == 'pfam' %}
                 Pfam domain
               {% elif type == 'amr' %}
-                AMR gene
+                {{ object_name }}
               {% endif %}
 
               {{ fam }}, of which KO pathways and KO modules it is part. Additionally, its occurence in the database is reported.
@@ -77,7 +77,7 @@
               {% elif type == 'pfam' %}
                 Pfam domain
               {% elif type == 'amr' %}
-                AMR gene
+                {{ object_name }}
               {% endif %}
 
               within the database. {{ all_locus_data|length }} occurences are identified.
@@ -93,7 +93,7 @@
               {% elif type == 'pfam' %}
                 Pfam domain(s)
               {% elif type == 'amr' %}
-                AMR gene(s)
+                {{ object_name_singular_or_plural }}
               {% endif %} of interest within all the genomes of the database (first column)
 
               <br>- the size of the orthogroup(s) in which the reported
@@ -105,7 +105,7 @@
               {% elif type == 'pfam' %}
                 Pfam domain
               {% elif type == 'amr' %}
-                AMR gene
+                {{ object_name }}
               {% endif %} has been clustered.
 
               <br>In red the <font size="2" color="red">{{type}} with positive hit(s)</font> in the corresponding genome.

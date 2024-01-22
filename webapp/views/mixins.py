@@ -18,6 +18,14 @@ class BaseViewMixin():
     def page_title(self):
         return page2title[self.view_name]
 
+    @property
+    def object_name_plural(self):
+        return f"{self.object_name}s"
+
+    @property
+    def object_name_singular_or_plural(self):
+        return f"{self.object_name}(s)"
+
 
 class ComparisonViewMixin(BaseViewMixin):
 
@@ -37,7 +45,7 @@ class ComparisonViewMixin(BaseViewMixin):
 class AmrViewMixin(BaseViewMixin):
 
     object_type = "amr"
-    object_name = "AMR"
+    object_name = "AMR gene"
 
     colname_to_header = {
         "gene": "Gene",
