@@ -6,9 +6,9 @@ from ete3 import Tree
 from lib.db_utils import DB
 from lib.ete_phylo import EteTree, SimpleColorColumn
 
-from views.mixins import AmrViewMixin, CogViewMixin, KoViewMixin
-from views.utils import (format_ko, format_ko_module, format_ko_path,
-                         format_orthogroup, my_locals, page2title)
+from views.mixins import AmrViewMixin, CogViewMixin, KoViewMixin, PfamViewMixin
+from views.utils import (format_ko_module, format_ko_path, format_orthogroup,
+                         my_locals, page2title)
 
 
 class FamCogColorFunc:
@@ -106,7 +106,11 @@ class FamBaseView(View):
             return render(request, self.template,
                           {"msg": f"No entry for {self.format_entry(entry_id)}"})
 
-        seqids = hit_counts.index.tolist()
+        if hit_counts.index.name == "seqid":
+            seqids = hit_counts.index.tolist()
+        else:
+            # Pfam hits are not indexed with seqid...
+            seqids = hit_counts.seqid.unique().tolist()
 
         orthogroups = self.db.get_og_count(seqids, search_on="seqid",
                                            keep_taxid=True)
@@ -180,40 +184,10 @@ class FamKoView(FamBaseView, KoViewMixin):
         return context
 
 
-def fam_pfam(request, pfam):
-    page_title = page2title["fam_pfam"]
+class FamPfamView(FamBaseView, PfamViewMixin):
 
-    context = {
-        "type": "pfam",
-        "menu": True,
-        "envoi": True,
-        "fam": pfam
-    }
-    if len(pfam) < 2 or not pfam.startswith("PF"):
-        # add error message
-        return render(request, 'chlamdb/fam.html', my_locals(context))
-    try:
-        pfam_id = int(pfam[len("PF"):])
-    except Exception:
-        return render(request, 'chlamdb/fam.html', my_locals(context))
+    accessors = ["def"]
 
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    pfam_hits = db.get_pfam_hits([pfam_id], search_on="pfam", indexing="seqid", keep_taxid=True)
-    seqids = pfam_hits.seqid.unique().tolist()
-    orthogroups = db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
-    all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
-    infos = db.get_pfam_def([pfam_id])
-
-    e_tree = tab_gen_profile_tree(db, pfam_hits.groupby(["taxid"])["pfam"].count(),
-                                  pfam, orthogroups)
-
-    asset_path = f"/temp/fam_tree_{pfam_id}.svg"
-    path = settings.BASE_DIR + "/assets/" + asset_path
-    e_tree.render(path, dpi=500)
-
-    context["all_locus_data"] = all_locus_data
-    context["group_count"] = group_count
-    context["info"] = [infos.loc[pfam_id]["def"]]
-    context["asset_path"] = asset_path
-    context["page_title"] = page_title
-    return render(request, 'chlamdb/fam.html', my_locals(context))
+    def get(self, request, entry_id, *args, **kwargs):
+        entry_id = int(entry_id[len("PF"):])
+        return super(FamPfamView, self).get(request, entry_id, *args, **kwargs)

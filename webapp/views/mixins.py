@@ -2,7 +2,7 @@ from django.conf import settings
 from lib.db_utils import DB
 
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
-                         page2title)
+                         format_pfam, page2title)
 
 
 class BaseViewMixin():
@@ -151,3 +151,25 @@ class KoViewMixin(BaseViewMixin):
     @staticmethod
     def format_entry(entry, to_url=False):
         return format_ko(entry, as_url=to_url)
+
+
+class PfamViewMixin(BaseViewMixin):
+
+    object_type = "pfam"
+    object_name = "Pfam domain"
+
+    colname_to_header = {
+        "def": "Description",
+    }
+
+    @property
+    def get_hit_counts(self):
+        return self.db.get_pfam_hits
+
+    def get_hit_descriptions(self, ids, transformed=True):
+        descriptions = self.db.get_pfam_def(ids)
+        return descriptions
+
+    @staticmethod
+    def format_entry(entry, to_url=False):
+        return format_pfam(entry, to_url=to_url)
