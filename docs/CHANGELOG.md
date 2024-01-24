@@ -17,6 +17,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add possibility to dump HTML responses from webapp tests. ([#50](https://github.com/metagenlab/zDB/pull/50)) (Niklaus Johner)
 - Add AMR accumulation/rarefaction plot view. ([#46](https://github.com/metagenlab/zDB/pull/46)) (Niklaus Johner)
 - Add AMR heatmap view. ([#45](https://github.com/metagenlab/zDB/pull/45)) (Niklaus Johner)
 - Add AMR details view. ([#44](https://github.com/metagenlab/zDB/pull/44)) (Niklaus Johner)

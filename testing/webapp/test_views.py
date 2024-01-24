@@ -1,9 +1,14 @@
+import os
 import re
 from unittest import skip
 
 from chlamdb.urls import urlpatterns
 from django.test import SimpleTestCase
 from django.urls import resolve
+
+dump_html = False
+html_dumps_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              "html_dumps")
 
 broken_views = [
     '/circos_main/',
@@ -94,6 +99,24 @@ urls = [
 ]
 
 
+def maybe_dump_html(resp, fname_postfix=""):
+    if dump_html:
+        if not os.path.isdir(html_dumps_dir):
+            os.mkdir(html_dumps_dir)
+        fname = resp.request["PATH_INFO"].strip("/").replace("/", "-")
+        if fname_postfix:
+            fname += "_" + fname_postfix
+        fname += ".html"
+
+        # Replace csrf token
+        match = re.search(b'<input type="hidden" name="csrfmiddlewaretoken" value="(.*?)"', resp.content)
+        if match:
+            resp.content = resp.content.replace(match.groups()[0], b"XXXXX")
+
+        with open(os.path.join(html_dumps_dir, fname), "wb") as dumpfile:
+            dumpfile.write(resp.content)
+
+
 class TestViewsAreHealthy(SimpleTestCase):
 
     def test_no_broken_views(self):
@@ -129,6 +152,7 @@ class TestViewsAreHealthy(SimpleTestCase):
                 print(f"\n\nInvalid html for {url}")
                 print(f"Templates {[el.name for el in resp.templates]}\n\n")
                 raise exc
+            maybe_dump_html(resp)
 
     def test_all_comparison_views_render_navigation(self):
 
@@ -306,6 +330,8 @@ class ComparisonViewsTestMixin():
         self.assertCompTable(resp)
         self.assertNav(resp)
 
+        maybe_dump_html(resp, "with_results")
+
     def test_venn_view(self):
         resp = self.client.get(self.venn_view)
         self.assertEqual(200, resp.status_code)
@@ -323,6 +349,8 @@ class ComparisonViewsTestMixin():
         self.assertSelection(resp, selected=True)
         self.assertVennDiagram(resp)
         self.assertNav(resp)
+
+        maybe_dump_html(resp, "with_results")
 
     def test_plot_heatmap_view(self):
         resp = self.client.get(self.heatmap_view)
@@ -342,6 +370,8 @@ class ComparisonViewsTestMixin():
         self.assertHeatmap(resp)
         self.assertNav(resp)
 
+        maybe_dump_html(resp, "with_results")
+
     def test_pan_genome_view(self):
         resp = self.client.get(f"/pan_genome/{self.view_type}")
         self.assertEqual(200, resp.status_code)
@@ -357,6 +387,8 @@ class ComparisonViewsTestMixin():
         self.assertEqual(self.view_type, resp.context["type"])
         self.assertPageTitle(resp, self.page_title)
         self.assertRarefactionPlot(resp)
+
+        maybe_dump_html(resp, "with_results")
 
 
 class TestPfamViews(SimpleTestCase, ComparisonViewsTestMixin):
@@ -382,6 +414,8 @@ class TestKOViews(SimpleTestCase, ComparisonViewsTestMixin):
         self.assertVennDiagram(resp)
         self.assertNav(resp)
 
+        maybe_dump_html(resp)
+
 
 class TestCOGViews(SimpleTestCase, ComparisonViewsTestMixin):
 
@@ -397,6 +431,8 @@ class TestCOGViews(SimpleTestCase, ComparisonViewsTestMixin):
         self.assertSelection(resp)
         self.assertVennDiagram(resp)
         self.assertNav(resp)
+
+        maybe_dump_html(resp)
 
 
 class TestAMRViews(SimpleTestCase, ComparisonViewsTestMixin):
