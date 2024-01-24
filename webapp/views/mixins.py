@@ -75,6 +75,8 @@ class AmrViewMixin(BaseViewMixin):
     def get_hit_descriptions(self, ids, transformed=True):
         descriptions = self.db.get_amr_descriptions(ids)
         self.aggregate_amr_annotations(descriptions)
+        descriptions = descriptions.drop_duplicates(subset=["gene"])
+        descriptions.set_index("gene", drop=False)
         if transformed:
             for colname, (transform, kwargs) in self.transforms.items():
                 descriptions[colname] = descriptions[colname].apply(transform,
@@ -112,6 +114,7 @@ class CogViewMixin(BaseViewMixin):
     object_name_singular_or_plural = "COG entry(ies)"
 
     colname_to_header = {
+        "cog": "ID",
         "function": "Function(s)",
         "description": "Description",
     }
@@ -149,6 +152,7 @@ class KoViewMixin(BaseViewMixin):
 
     def get_hit_descriptions(self, ids, transformed=True):
         descriptions = self.db.get_ko_desc(ids, as_df=True)
+        descriptions.set_index(["ko"], drop=False)
         if transformed:
             descriptions["ko"] = descriptions["ko"].apply(self.format_entry)
         return descriptions
@@ -164,6 +168,7 @@ class PfamViewMixin(BaseViewMixin):
     object_name = "Pfam domain"
 
     colname_to_header = {
+        "pfam": "PFAM",
         "def": "Description",
     }
 

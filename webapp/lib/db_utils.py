@@ -1443,7 +1443,9 @@ class DB:
                 hsh_results[line[0]] = (line[1], line[2])
             return hsh_results
         elif only_cog_desc:
-            return DB.to_pandas_frame(results, ["cog", "function", "description"]).set_index(["cog"])
+            return DB.to_pandas_frame(
+                results, ["cog", "function", "description"]).set_index(
+                    ["cog"], drop=False)
 
         funcs = "SELECT function, description FROM cog_functions;"
         functions = self.server.adaptor.execute_and_fetchall(funcs)
@@ -2108,7 +2110,7 @@ class DB:
         cols = ["pfam", "def"]
         if add_ttl_count:
             cols.append("ttl_cnt")
-        return DB.to_pandas_frame(results, cols).set_index(["pfam"])
+        return DB.to_pandas_frame(results, cols).set_index(["pfam"], drop=False)
 
     def gen_pfam_where_clause(self, search_on, entries):
         entries = self.gen_placeholder_string(entries)
