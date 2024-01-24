@@ -2,7 +2,7 @@ from django.conf import settings
 from lib.db_utils import DB
 
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
-                         format_pfam, page2title)
+                         format_orthogroup, format_pfam, page2title)
 
 
 class BaseViewMixin():
@@ -178,3 +178,17 @@ class PfamViewMixin(BaseViewMixin):
     @staticmethod
     def format_entry(entry, to_url=False):
         return format_pfam(entry, to_url=to_url)
+
+
+class OrthogroupViewMixin(BaseViewMixin):
+
+    object_type = "orthogroup"
+    object_name = "Orthologous group"
+
+    @property
+    def get_hit_counts(self):
+        return self.db.get_og_count
+
+    @staticmethod
+    def format_entry(entry, to_url=False):
+        return format_orthogroup(entry, to_url=to_url)
