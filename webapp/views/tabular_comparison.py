@@ -306,11 +306,13 @@ class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
 
     def get_table_rows(self):
         hits = self.db.get_amr_hits_from_taxonids(self.targets)
+        hits = self.transform_data(hits)
 
         table_rows = []
         hits["quality"] = hits["coverage"] * hits["identity"] / 10000
         for groupid, data in hits.groupby(self.comp_type):
-            row = [data[key] for key in self.base_info_accessors]
+            row_data = data.iloc[0]
+            row = [row_data[key] or "-" for key in self.base_info_accessors]
             taxonids = data["bioentry.taxon_id"]
             values = [len(taxonids[taxonids == target_id])
                       for target_id in self.targets]
