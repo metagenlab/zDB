@@ -1,12 +1,11 @@
 from chlamdb.forms import make_metabo_from
-from django.conf import settings
 from django.shortcuts import render
 from django.views import View
-from lib.db_utils import DB
 
-from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
-                         format_lst_to_html, format_orthogroup, format_pfam,
-                         my_locals, page2title, safe_replace)
+from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
+                          OrthogroupViewMixin, PfamViewMixin)
+from views.utils import (format_cog, format_ko, format_lst_to_html,
+                         format_orthogroup, my_locals)
 
 
 class TabularComparisonViewBase(View):
@@ -16,9 +15,6 @@ class TabularComparisonViewBase(View):
     tab_name = "comp"
 
     def dispatch(self, request, *args, **kwargs):
-        biodb_path = settings.BIODB_DB_PATH
-        self.db = DB.load_db_from_name(biodb_path)
-        self.page_title = page2title[self.view_name]
         self.comp_metabo_form = self.make_metabo_from()
         self.show_comparison_table = False
         self._hash_to_taxon_dict = None
@@ -44,7 +40,7 @@ class TabularComparisonViewBase(View):
 
     @property
     def view_name(self):
-        return f"{self.view_type}_comparison"
+        return f"{self.object_type}_comparison"
 
     @property
     def context(self):
@@ -56,7 +52,7 @@ class TabularComparisonViewBase(View):
             "show_comparison_table": self.show_comparison_table,
             "tab_name": self.tab_name,
             "view_name": self.view_name,
-            "view_type": self.view_type,
+            "object_type": self.object_type,
             }
         if self.show_comparison_table:
             context["table_headers"] = self.table_headers
@@ -97,29 +93,28 @@ class TabularComparisonViewBase(View):
     @property
     def table_title(self):
         return "Number of {} present at least once in 1 of the {} selected "\
-               "genomes: <strong>{}</strong>".format(self.compared_obj_name,
+               "genomes: <strong>{}</strong>".format(self.object_name_plural,
                                                      self.n_selected,
                                                      self.n_rows)
 
     @property
     def form_title(self):
         return "Compare the distribution of shared {}.".format(
-            self.compared_obj_name)
+            self.object_name_plural)
 
     @property
     def form_help(self):
         return "Compare the size of the {} shared by selected genomes (targets).".format(
-            self.compared_obj_name)
+            self.object_name_plural)
 
     @property
     def first_coloured_row(self):
         return len(self.base_info_headers)
 
 
-class PfamComparisonView(TabularComparisonViewBase):
+class PfamComparisonView(TabularComparisonViewBase, PfamViewMixin):
 
-    view_type = "pfam"
-    base_info_headers = ["Domain ID", "Description", "nDomain"]
+    base_info_accessors = ["pfam", "def", "ttl_cnt"]
 
     table_help = """
     The ouput table contains the list of shared Pfam domains and the number of
@@ -130,26 +125,28 @@ class PfamComparisonView(TabularComparisonViewBase):
     corresponding Pfam entry.
     """
 
-    compared_obj_name = "domains"
+    @property
+    def base_info_headers(self):
+        return [self.colname_to_header[colname]
+                for colname in self.base_info_accessors]
 
     def get_table_rows(self):
-        pfam_hits = self.db.get_pfam_hits(ids=self.targets)
-        pfam_defs = self.db.get_pfam_def(pfam_hits.index.tolist(),
-                                         add_ttl_count=True)
+        pfam_hits = self.get_hit_counts(ids=self.targets)
+        pfam_defs = self.get_hit_descriptions(pfam_hits.index.tolist(),
+                                              add_ttl_count=True)
 
         table_rows = []
         for key, values in pfam_hits.iterrows():
             entry_infos = pfam_defs.loc[key]
-            base_infos = [format_pfam(key, to_url=True), entry_infos["def"],
-                          entry_infos.ttl_cnt]
+            base_infos = [entry_infos[accessor]
+                          for accessor in self.base_info_accessors]
             table_rows.append(base_infos + values.values.tolist())
 
         return table_rows
 
 
-class CogComparisonView(TabularComparisonViewBase):
+class CogComparisonView(TabularComparisonViewBase, CogViewMixin):
 
-    view_type = "cog"
     base_info_headers = ["COG accession", "Description", "# complete DB", "# genomes"]
 
     table_help = """
@@ -158,8 +155,6 @@ class CogComparisonView(TabularComparisonViewBase):
     <br>Click on COG accession to get detailed phylogenetic profile of the
     corresponding COG entry.
     """
-
-    compared_obj_name = "COG"
 
     def get_table_rows(self):
         cog_hits = self.db.get_cog_hits(
@@ -202,9 +197,8 @@ class CogComparisonView(TabularComparisonViewBase):
         return 4
 
 
-class OrthogroupComparisonView(TabularComparisonViewBase):
+class OrthogroupComparisonView(TabularComparisonViewBase, OrthogroupViewMixin):
 
-    view_type = "orthogroup"
     base_info_headers = ["Orthogroup", "Annotaion"]
 
     table_help = """
@@ -215,8 +209,6 @@ class OrthogroupComparisonView(TabularComparisonViewBase):
     <br>Click on Orthologous group to get all the homologs identified in the
     database and the phylogenetic profile.
     """
-
-    compared_obj_name = "orthogroups"
 
     @property
     def view_name(self):
@@ -244,9 +236,7 @@ class OrthogroupComparisonView(TabularComparisonViewBase):
         return og_data
 
 
-class KoComparisonView(TabularComparisonViewBase):
-
-    view_type = "ko"
+class KoComparisonView(TabularComparisonViewBase, KoViewMixin):
 
     table_help = """
     The ouput table contains the number of homologs in the shared Kegg
@@ -259,7 +249,6 @@ class KoComparisonView(TabularComparisonViewBase):
     """
 
     base_info_headers = ["KO", "Annot", "tot"]
-    compared_obj_name = "KO"
 
     def get_table_rows(self):
         hits = self.db.get_ko_count(self.targets).unstack(level=0, fill_value=0)
@@ -276,10 +265,7 @@ class KoComparisonView(TabularComparisonViewBase):
         return table_rows
 
 
-class AmrComparisonView(TabularComparisonViewBase):
-
-    view_type = "amr"
-    compared_obj_name = "AMR"
+class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
 
     _table_help = """
     The ouput table contains the number of times a given AMR {} appears
@@ -298,13 +284,18 @@ class AmrComparisonView(TabularComparisonViewBase):
         return make_metabo_from(self.db, add_amr_choices=True)
 
     @property
-    def base_info_headers(self):
+    def base_info_accessors(self):
         if self.comp_type == "gene":
-            return ["Gene", "scope", "Class", "Subclass", "Annotation", "HMM"]
+            return ["gene", "scope", "class", "subclass", "seq_name", "hmm_id"]
         elif self.comp_type == "subclass":
             return ["Subclass", "Class"]
         elif self.comp_type == "class":
             return ["Class"]
+
+    @property
+    def base_info_headers(self):
+        return [self.colname_to_header[colname]
+                for colname in self.base_info_accessors]
 
     @property
     def table_help(self):
@@ -313,29 +304,13 @@ class AmrComparisonView(TabularComparisonViewBase):
         else:
             return self._table_help.format(self.comp_type)
 
-    def get_row_data(self, groupid, data):
-        if self.comp_type == "class":
-            return [safe_replace(groupid, "/", " / ")]
-        elif self.comp_type == "subclass":
-            return [
-                safe_replace(groupid, "/", " / "),
-                safe_replace(data.iloc[0]["class"], "/", " / ") or "-"]
-        elif self.comp_type == "gene":
-            return [
-                format_amr(groupid, to_url=True),
-                data.iloc[0]["scope"] or "-",
-                safe_replace(data.iloc[0]["class"], "/", " / ") or "-",
-                safe_replace(data.iloc[0]["subclass"], "/", " / ") or "-",
-                data.iloc[0]["seq_name"],
-                format_hmm_url(data.iloc[0].hmm_id) or "-"]
-
     def get_table_rows(self):
         hits = self.db.get_amr_hits_from_taxonids(self.targets)
 
         table_rows = []
         hits["quality"] = hits["coverage"] * hits["identity"] / 10000
         for groupid, data in hits.groupby(self.comp_type):
-            row = self.get_row_data(groupid, data)
+            row = [data[key] for key in self.base_info_accessors]
             taxonids = data["bioentry.taxon_id"]
             values = [len(taxonids[taxonids == target_id])
                       for target_id in self.targets]

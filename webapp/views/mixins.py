@@ -2,7 +2,8 @@ from django.conf import settings
 from lib.db_utils import DB
 
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
-                         format_orthogroup, format_pfam, page2title)
+                         format_orthogroup, format_pfam, page2title,
+                         safe_replace)
 
 
 class BaseViewMixin():
@@ -66,11 +67,19 @@ class AmrViewMixin(BaseViewMixin):
     transforms = {
         "gene": (format_amr, {"to_url": True}),
         "hmm_id": (format_hmm_url, {}),
+        "class": (safe_replace, {"args": ["/", " / "]}),
+        "subclass": (safe_replace, {"args": ["/", " / "]})
         }
 
     @property
     def get_hit_counts(self):
         return self.db.get_amr_hit_counts
+
+    def transform_data(self, descriptions):
+        for colname, (transform, kwargs) in self.transforms.items():
+            descriptions[colname] = descriptions[colname].apply(transform,
+                                                                **kwargs)
+        return descriptions
 
     def get_hit_descriptions(self, ids, transformed=True):
         descriptions = self.db.get_amr_descriptions(ids)
@@ -78,9 +87,7 @@ class AmrViewMixin(BaseViewMixin):
         descriptions = descriptions.drop_duplicates(subset=["gene"])
         descriptions.set_index("gene", drop=False)
         if transformed:
-            for colname, (transform, kwargs) in self.transforms.items():
-                descriptions[colname] = descriptions[colname].apply(transform,
-                                                                    **kwargs)
+            descriptions = self.transform_data(descriptions)
         return descriptions
 
     @staticmethod
@@ -168,16 +175,19 @@ class PfamViewMixin(BaseViewMixin):
     object_name = "Pfam domain"
 
     colname_to_header = {
-        "pfam": "PFAM",
+        "pfam": "Domain ID",
         "def": "Description",
+        "ttl_cnt": "nDomains"
     }
 
     @property
     def get_hit_counts(self):
         return self.db.get_pfam_hits
 
-    def get_hit_descriptions(self, ids, transformed=True):
-        descriptions = self.db.get_pfam_def(ids)
+    def get_hit_descriptions(self, ids, transformed=True, **kwargs):
+        descriptions = self.db.get_pfam_def(ids, **kwargs)
+        if transformed:
+            descriptions["pfam"] = descriptions["pfam"].apply(self.format_entry)
         return descriptions
 
     @staticmethod
@@ -193,6 +203,12 @@ class OrthogroupViewMixin(BaseViewMixin):
     @property
     def get_hit_counts(self):
         return self.db.get_og_count
+
+    def get_hit_descriptions(self, ids, transformed=True):
+        descriptions = self.db.get_genes_from_og(ids)
+        if transformed:
+            descriptions["pfam"] = descriptions["pfam"].apply(self.format_entry)
+        return descriptions
 
     @staticmethod
     def format_entry(entry, to_url=False):
