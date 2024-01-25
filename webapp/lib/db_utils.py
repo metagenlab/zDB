@@ -2238,7 +2238,7 @@ class DB:
     #   seqid1 cog1
     #   seqid2 cog2
     #   seqid3 cog3
-    def get_cog_hits(self, ids, indexing="taxid", search_on="bioentry",
+    def get_cog_hits(self, ids, indexing="taxid", search_on="taxid",
                      keep_taxid=False, plasmids=None):
 
         where_clause = self.gen_cog_where_clause(search_on, ids)
