@@ -2,8 +2,8 @@ from django.conf import settings
 from lib.db_utils import DB
 
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
-                         format_orthogroup, format_pfam, page2title,
-                         safe_replace)
+                         format_lst_to_html, format_orthogroup, format_pfam,
+                         page2title, safe_replace)
 
 
 class BaseViewMixin():
@@ -85,7 +85,7 @@ class AmrViewMixin(BaseViewMixin):
         descriptions = self.db.get_amr_descriptions(ids)
         self.aggregate_amr_annotations(descriptions)
         descriptions = descriptions.drop_duplicates(subset=["gene"])
-        descriptions.set_index("gene", drop=False)
+        descriptions = descriptions.set_index("gene", drop=False)
         if transformed:
             descriptions = self.transform_data(descriptions)
         return descriptions
@@ -123,19 +123,34 @@ class CogViewMixin(BaseViewMixin):
     colname_to_header = {
         "cog": "ID",
         "function": "Function(s)",
+        "function_descr": "Function(s)",
         "description": "Description",
     }
+
+    _cog_code_descriptions = None
 
     @property
     def get_hit_counts(self):
         return self.db.get_cog_hits
 
+    @property
+    def cog_code_descriptions(self):
+        if not self._cog_code_descriptions:
+            self._cog_code_descriptions = self.db.get_cog_code_description()
+        return self._cog_code_descriptions
+
+    def format_function_descr(self, func):
+        descr = [f"{self.cog_code_descriptions[abbr]} ({abbr})" for abbr in func]
+        return format_lst_to_html(descr, False)
+
     def get_hit_descriptions(self, ids, transformed=True):
         descriptions = self.db.get_cog_summaries(
             ids, only_cog_desc=True, as_df=True)
         if transformed:
-            cog_func = self.db.get_cog_code_description()
-            descriptions["function"] = descriptions["function"].apply(lambda func: "<br>".join((cog_func[code] for code in func)))
+            descriptions["cog"] = descriptions["cog"].apply(
+                self.format_entry, to_url=True)
+            descriptions["function_descr"] = descriptions.function.apply(
+                self.format_function_descr)
         return descriptions
 
     @staticmethod
@@ -159,9 +174,10 @@ class KoViewMixin(BaseViewMixin):
 
     def get_hit_descriptions(self, ids, transformed=True):
         descriptions = self.db.get_ko_desc(ids, as_df=True)
-        descriptions.set_index(["ko"], drop=False)
+        descriptions = descriptions.set_index(["ko"], drop=False)
         if transformed:
-            descriptions["ko"] = descriptions["ko"].apply(self.format_entry)
+            descriptions["ko"] = descriptions["ko"].apply(self.format_entry,
+                                                          to_url=True)
         return descriptions
 
     @staticmethod
@@ -187,7 +203,8 @@ class PfamViewMixin(BaseViewMixin):
     def get_hit_descriptions(self, ids, transformed=True, **kwargs):
         descriptions = self.db.get_pfam_def(ids, **kwargs)
         if transformed:
-            descriptions["pfam"] = descriptions["pfam"].apply(self.format_entry)
+            descriptions["pfam"] = descriptions["pfam"].apply(
+                self.format_entry, to_url=True)
         return descriptions
 
     @staticmethod

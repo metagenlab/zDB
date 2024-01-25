@@ -187,7 +187,7 @@ class VennCogView(VennBaseView, CogViewMixin):
 
     table_data_descr = "The table contains a list of COG definitions, their "\
                        "description and the category to which they belong."
-    table_data_accessors = ["cog", "function", "description"]
+    table_data_accessors = ["cog", "function_descr", "description"]
 
     def filter_data(self, data, counts):
         return data, counts.reindex(data.index)
@@ -196,7 +196,8 @@ class VennCogView(VennBaseView, CogViewMixin):
 class VennCogSubsetView(VennSubsetBaseView, VennCogView):
 
     def filter_data(self, data, counts):
-        return data[data.function.str.contains(self.category)], counts
+        filtered_data = data[data.function.str.contains(self.category)]
+        return (filtered_data, counts.reindex(filtered_data.index))
 
 
 class VennAmrView(VennBaseView, AmrViewMixin):
