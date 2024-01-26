@@ -96,6 +96,8 @@ def setup_biodb(kwargs):
         conn.commit()
         cursor.execute(f"use {db_name};",)
         url_biosql_scheme = 'biosqldb-mysql.sql'
+        schema_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  "biosql_schema")
         err_code = os.system(f"mysql -uroot -p{sqlpsw} {db_name} "
                              f"< {schema_dir}/{url_biosql_scheme}")
 
