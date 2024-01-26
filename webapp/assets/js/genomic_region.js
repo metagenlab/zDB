@@ -47,7 +47,6 @@ function createGenomicRegion(div, div_width, svg_id, regions, connections, highl
 		.style("padding", "5px");
 
 	function get_feature_points(feature, region_start, region_end) {
-		console.log(feature);
 		let start = feature.start;
 		let stop = feature.end;
 		let top_y = 0;
