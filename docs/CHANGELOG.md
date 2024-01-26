@@ -34,6 +34,7 @@ to [Common Changelog](https://common-changelog.org)
 ### Fixed
 
 - Fix tabular comparison views navigation tabs. ([#30](https://github.com/metagenlab/zDB/pull/30), [#31](https://github.com/metagenlab/zDB/pull/31)) (Niklaus Johner)
+- Fix the representation of genes overflowing from a genomic region, that would appear shorter than they actually are. ([#52](https://github.com/metagenlab/zDB/pull/52)) (Bastian Marquis)
 
 
 ## 1.2.1 - 2023-10-16
