@@ -1,44 +1,41 @@
 #!/usr/bin/env python3
+"""
+This script is used to generate the skeleton of the database
+used by zdb. The entries will be filled by the annotation
+pipeline.
 
-# This script is used to generate the skeleton of the database
-# used by zdb. The entries will be filled by the annotation
-# pipeline.
-# 
-# For now, this script creates a new mysql database and creates
-# the tables of the biosql schema.
-# It then pulls all kegg orthologs, their related modules and pathways
-# and enters them in the database.
-# Same with COGs.
-#
-###############################################################################
-# NOTE: for this script to work, you either need to disable multithreading by 
-# setting N_THREAD to 1 or you need to patch REST.py to use urllib3 (thread safe).
-#
-#
-# TODO: as the REST API does not seem to be under active development, it would
-# be a solution to just import the source files into this directory to solve this
-# problem.
-###############################################################################
-#
-# Bastian Marquis (bastian.marquis@protonmail.com)
-# Date: 29.10.2020
+For now, this script creates a new mysql database and creates
+the tables of the biosql schema.
+It then pulls all kegg orthologs, their related modules and pathways
+and enters them in the database.
+Same with COGs.
 
-import os
-import sys
+##############################################################################
+NOTE: for this script to work, you either need to disable multithreading by
+setting N_THREAD to 1 or you need to patch REST.py to use urllib3 (thread safe).
+
+
+TODO: as the REST API does not seem to be under active development, it would
+be a solution to just import the source files into this directory to solve this
+problem.
+##############################################################################
+
+Bastian Marquis (bastian.marquis@protonmail.com)
+Date: 29.10.2020
+"""
+
 import argparse
-
+import os
 import queue
+import sys
 import threading
 import time
 
 # to be removed in favor of a local version
 from Bio.KEGG import REST
-
-
 from webapp.lib import db_utils
 
-
-# from REST documentation, can get a max of 10 queries 
+# from REST documentation, can get a max of 10 queries
 # in kegg_get
 MAX_N_QUERIES = 10
 
@@ -49,6 +46,7 @@ DEFAULT_N_THREADS = 5
 DEFAULT_KO_DIR = "tmp"
 
 N_RETRY = 5
+
 
 def create_data_table(db):
     entry_list = [
@@ -71,13 +69,14 @@ def create_data_table(db):
     db.load_chlamdb_config_tables(entry_list)
     db.commit()
 
+
 def setup_biodb(kwargs):
     sqlpsw = kwargs["db_psswd"]
     db_type = kwargs["db_type"]
     db_name = kwargs["db_name"]
     sql_def_file = kwargs.get("biosql_schema", "")
 
-    if db_type=="sqlite":
+    if db_type == "sqlite":
         import sqlite3
         conn = sqlite3.connect(db_name)
         cursor = conn.cursor()
@@ -86,16 +85,17 @@ def setup_biodb(kwargs):
     else:
         # NOTE: this part is untested!
         import MySQLdb
-        conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                    user="root", # your username
-                                    passwd=sqlpsw) # name of the data base
+        conn = MySQLdb.connect(host="localhost",  # your host, usually localhost
+                                    user="root",  # your username
+                                    passwd=sqlpsw)  # name of the data base
         cursor = conn.cursor()
         sql_db = f'CREATE DATABASE IF NOT EXISTS {db_name};'
         cursor.execute(sql_db,)
         conn.commit()
         cursor.execute(f"use {db_name};",)
         url_biosql_scheme = 'biosqldb-mysql.sql'
-        err_code = os.system(f"mysql -uroot -p{sqlpsw} {db_name} < {schema_dir}/{url_biosql_scheme}")
+        err_code = os.system(f"mysql -uroot -p{sqlpsw} {db_name} "
+                             f"< {schema_dir}/{url_biosql_scheme}")
 
     if err_code != 0:
         raise IOError("Problem loading sql schema:", err_code)
@@ -103,8 +103,8 @@ def setup_biodb(kwargs):
     # not really logical to me, but creating a database
     # from the biosql is necessary
     chlamdb_args = {"zdb.db_type": db_type,
-            "zdb.db_name": db_name,
-            "zdb.psswd": sqlpsw}
+                    "zdb.db_name": db_name,
+                    "zdb.psswd": sqlpsw}
     db = db_utils.DB.load_db(db_name, chlamdb_args)
     db.create_biosql_database(chlamdb_args)
     db.commit()
@@ -167,7 +167,7 @@ class Module(object):
 class Pathway(object):
     def __init__(self, entry, descr):
         self.entry = entry
-        self.descr  = descr
+        self.descr = descr
 
     def simplified_entry(self):
         return int(self.entry[len("map"):])
@@ -242,7 +242,7 @@ def download_ko_genes(gene_queue, tmp_dir):
                 size = gene_queue.qsize()
                 if size % 100 == 0:
                     print(size)
-        except Exception as e:
+        except Exception:
             if len(queries) == 0:
                 break
             done = True
@@ -263,7 +263,7 @@ def download_ko_genes(gene_queue, tmp_dir):
 
                 if retries == N_RETRY:
                     print(e)
-                    print(f"ERROR: Could not download one of the following kegg ")
+                    print("ERROR: Could not download one of the following kegg:")
                     print(",".join(queries))
                 else:
                     # wait for a bit as the server may be overloaded
@@ -282,7 +282,7 @@ def download_ko_files(ko_dir, n_threads=DEFAULT_N_THREADS):
             for gene in parse_gene(ko_file):
                 already_downloaded.append("ko:"+gene.entry)
 
-    if len(already_downloaded)>0:
+    if len(already_downloaded) > 0:
         print(f"Already {len(already_downloaded)} downloaded")
 
     gene_queue = queue.Queue()
@@ -295,20 +295,22 @@ def download_ko_files(ko_dir, n_threads=DEFAULT_N_THREADS):
         gene_list.append(gene)
 
     if len(gene_list) > 0:
-        print(f"Preparing to download : {len(gene_list)}")
+        print(f"Preparing to download: {len(gene_list)}")
     else:
         print("Everything already downloaded")
         return
 
     threads = []
     for i in range(n_threads):
-        thread = threading.Thread(target=download_ko_genes, args=(gene_queue, ko_dir))
+        thread = threading.Thread(target=download_ko_genes,
+                                  args=(gene_queue, ko_dir))
         threads.append(thread)
         thread.start()
 
     # wait for completion
     for thread in threads:
         thread.join()
+
 
 def chunk_modules(modules, size=MAX_N_QUERIES):
     curr = []
@@ -317,8 +319,9 @@ def chunk_modules(modules, size=MAX_N_QUERIES):
         if i % MAX_N_QUERIES == 0:
             yield curr
             curr = []
-    if len(curr)>0:
+    if len(curr) > 0:
         yield curr
+
 
 def load_KO_references(db, params, ko_dir=DEFAULT_KO_DIR):
     genes = []
@@ -336,7 +339,7 @@ def load_KO_references(db, params, ko_dir=DEFAULT_KO_DIR):
     hsh_modules = {}
     print("Downloading module data")
     for i, module_list in enumerate(chunk_modules(modules_set)):
-        if i %10==0:
+        if i % 10 == 0:
             print(i*MAX_N_QUERIES)
         mod_data = REST.kegg_get(module_list)
         for module in parse_module(mod_data):
@@ -357,7 +360,7 @@ def load_KO_references(db, params, ko_dir=DEFAULT_KO_DIR):
     module_classes = []
     hsh_class_to_id = {}
     for cat_id, cat in enumerate(category_set):
-        module_classes.append( (cat_id, cat) )
+        module_classes.append((cat_id, cat))
         hsh_class_to_id[cat] = cat_id
     for entry, module in hsh_modules.items():
         cat_id = hsh_class_to_id[module.category()]
@@ -366,7 +369,11 @@ def load_KO_references(db, params, ko_dir=DEFAULT_KO_DIR):
         module.subcat_id = subcat_id
 
     db.load_ko_module_classes(module_classes)
-    db.load_ko_module([(m.simplified_entry(), m.descr, m.get_definition(), m.is_signature(), m.cat_id, m.subcat_id)
+    db.load_ko_module([
+        (m.simplified_entry(),
+         m.descr, m.get_definition(),
+         m.is_signature(),
+         m.cat_id, m.subcat_id)
         for m in hsh_modules.values()])
     db.load_ko_pathway([(p.simplified_entry(), p.descr) for p in pathway_set])
     db.load_ko_def([(gene.simplified_entry(), gene.name) for gene in genes])
@@ -375,9 +382,10 @@ def load_KO_references(db, params, ko_dir=DEFAULT_KO_DIR):
     ko_to_module = []
     for gene in genes:
         simp = gene.simplified_entry()
-        ko_to_path.extend((simp, path.simplified_entry()) for path in gene.pathways)
+        ko_to_path.extend((simp, path.simplified_entry())
+                          for path in gene.pathways)
         ko_to_module.extend((simp, hsh_modules[mod].simplified_entry())
-                for mod in gene.modules)
+                            for mod in gene.modules)
     db.load_ko_to_pathway(ko_to_path)
     db.load_ko_to_module(ko_to_module)
     db.commit()
@@ -394,48 +402,53 @@ def setup_cog(db, cog_dir):
         cog_id = int(tokens[0][3:])
         fun = tokens[1].strip()
         description = tokens[2].strip()
-        cog_ref_data.append( (cog_id, fun, description) )
+        cog_ref_data.append((cog_id, fun, description))
     db.load_cog_ref_data(cog_ref_data)
 
     cog_fun_data = []
     for line_no, line in enumerate(fun_names_file):
-        function, random_str, description = line.split("\t") 
-        cog_fun_data.append( (function.strip(), description.strip()) )
+        function, random_str, description = line.split("\t")
+        cog_fun_data.append((function.strip(), description.strip()))
     db.load_cog_fun_data(cog_fun_data)
     db.commit()
 
 
-parser = argparse.ArgumentParser(description = "Creates a chlamdb database skeleton")
+parser = argparse.ArgumentParser(
+    description="Creates a chlamdb database skeleton")
 
 parser.add_argument("--db_name", nargs="?", default="zdb_base",
-        help=f"name of the database (default name zdb_base)")
+                    help="name of the database (default name zdb_base)")
 
 parser.add_argument("--load_cog", action="store_true",
-        help="load cog definitions (default no)")
+                    help="load cog definitions (default no)")
 
 parser.add_argument("--cog_dir", nargs="?", default="./",
-        help="directory where the cog definitions files are (default current directory)")
+                    help="directory where the cog definitions files are "
+                         "(default current directory)")
 
 parser.add_argument("--load_kegg", action="store_true",
-        help="load kegg definitions (default no, must specify ko genes dir)")
+                    help="load kegg definitions "
+                    "(default no, must specify ko genes dir)")
 
 parser.add_argument("--db_type", nargs="?", default="sqlite",
-        help="database type (either sqlite or mysql)")
+                    help="database type (either sqlite or mysql)")
 
 parser.add_argument("--db_psswd", nargs="+", default="",
-        help="set db password (default none)")
+                    help="set db password (default none)")
 
 parser.add_argument("--download_ko_files", action="store_true",
-        help="download ko file definition, necessary to do this before --load-kegg")
+                    help="download ko file definition, "
+                         "necessary to do this before --load-kegg")
 
 parser.add_argument("--ko_dir", nargs="?", default=DEFAULT_KO_DIR,
-        help=f"ko directory, defaults to {DEFAULT_KO_DIR}")
+                    help=f"ko directory, defaults to {DEFAULT_KO_DIR}")
 
 parser.add_argument("--skip_biodb", action="store_true", default=False,
-        help="skip setting up biodb, might be useful if using a pre-existing db")
+                    help="skip setting up biodb, "
+                    "might be useful if using a pre-existing db")
 
 parser.add_argument("--biosql_schema", nargs="+",
-        help="location of the biosql schema")
+                    help="location of the biosql schema")
 
 args = vars(parser.parse_args())
 
@@ -453,13 +466,13 @@ if not args.get("skip_biodb"):
     db = setup_biodb(args)
     create_data_table(db)
 
-if db == None:
+if db is None:
     db_name = args["db_name"]
     db_type = args["db_type"]
     db_psswd = args["db_psswd"]
-    chlamdb_args = { "chlamdb.db_type" : db_type,
-            "chlamdb.db_name" : db_name,
-            "chlamdb.db_psswd" : db_psswd}
+    chlamdb_args = {"chlamdb.db_type": db_type,
+                    "chlamdb.db_name": db_name,
+                    "chlamdb.db_psswd": db_psswd}
     db = db_utils.DB.load_db(db_name, chlamdb_args)
 
 if args.get("load_cog", False):
