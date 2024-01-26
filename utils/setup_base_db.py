@@ -419,73 +419,75 @@ def setup_cog(db, cog_dir):
     db.commit()
 
 
-parser = argparse.ArgumentParser(
-    description="Creates a chlamdb database skeleton")
+if __name__ == "__main__":
 
-parser.add_argument("--db_name", nargs="?", default="zdb_base",
-                    help="name of the database (default name zdb_base)")
+    parser = argparse.ArgumentParser(
+        description="Creates a chlamdb database skeleton")
 
-parser.add_argument("--load_cog", action="store_true",
-                    help="load cog definitions (default no)")
+    parser.add_argument("--db_name", nargs="?", default="zdb_base",
+                        help="name of the database (default name zdb_base)")
 
-parser.add_argument("--cog_dir", nargs="?", default="./",
-                    help="directory where the cog definitions files are "
-                         "(default current directory)")
+    parser.add_argument("--load_cog", action="store_true",
+                        help="load cog definitions (default no)")
 
-parser.add_argument("--load_kegg", action="store_true",
-                    help="load kegg definitions "
-                    "(default no, must specify ko genes dir)")
+    parser.add_argument("--cog_dir", nargs="?", default="./",
+                        help="directory where the cog definitions files are "
+                             "(default current directory)")
 
-parser.add_argument("--db_type", nargs="?", default="sqlite",
-                    help="database type (either sqlite or mysql)")
+    parser.add_argument("--load_kegg", action="store_true",
+                        help="load kegg definitions "
+                        "(default no, must specify ko genes dir)")
 
-parser.add_argument("--db_psswd", nargs="+", default="",
-                    help="set db password (default none)")
+    parser.add_argument("--db_type", nargs="?", default="sqlite",
+                        help="database type (either sqlite or mysql)")
 
-parser.add_argument("--download_ko_files", action="store_true",
-                    help="download ko file definition, "
-                         "necessary to do this before --load-kegg")
+    parser.add_argument("--db_psswd", nargs="+", default="",
+                        help="set db password (default none)")
 
-parser.add_argument("--ko_dir", nargs="?", default=DEFAULT_KO_DIR,
-                    help=f"ko directory, defaults to {DEFAULT_KO_DIR}")
+    parser.add_argument("--download_ko_files", action="store_true",
+                        help="download ko file definition, "
+                             "necessary to do this before --load-kegg")
 
-parser.add_argument("--skip_biodb", action="store_true", default=False,
-                    help="skip setting up biodb, "
-                    "might be useful if using a pre-existing db")
+    parser.add_argument("--ko_dir", nargs="?", default=DEFAULT_KO_DIR,
+                        help=f"ko directory, defaults to {DEFAULT_KO_DIR}")
 
-parser.add_argument("--biosql_schema", nargs="+",
-                    help="location of the biosql schema")
+    parser.add_argument("--skip_biodb", action="store_true", default=False,
+                        help="skip setting up biodb, "
+                        "might be useful if using a pre-existing db")
 
-args = vars(parser.parse_args())
+    parser.add_argument("--biosql_schema", nargs="+",
+                        help="location of the biosql schema")
 
-if args.get("download_ko_files", False):
-    print("Starting to download ko files to tmp")
-    print("Will do this first as this tend to crash")
-    print("Just insist until completion")
-    ko_dir = args.get("ko_dir")
-    download_ko_files(ko_dir)
-    sys.exit(0)
+    args = vars(parser.parse_args())
 
-db = None
-if not args.get("skip_biodb"):
-    print("Setting up the biosql schema")
-    db = setup_biodb(args)
-    create_data_table(db)
+    if args.get("download_ko_files", False):
+        print("Starting to download ko files to tmp")
+        print("Will do this first as this tend to crash")
+        print("Just insist until completion")
+        ko_dir = args.get("ko_dir")
+        download_ko_files(ko_dir)
+        sys.exit(0)
 
-if db is None:
-    db_name = args["db_name"]
-    db_type = args["db_type"]
-    db_psswd = args["db_psswd"]
-    chlamdb_args = {"chlamdb.db_type": db_type,
-                    "chlamdb.db_name": db_name,
-                    "chlamdb.db_psswd": db_psswd}
-    db = db_utils.DB.load_db(db_name, chlamdb_args)
+    db = None
+    if not args.get("skip_biodb"):
+        print("Setting up the biosql schema")
+        db = setup_biodb(args)
+        create_data_table(db)
 
-if args.get("load_cog", False):
-    print("Loading COG tables")
-    setup_cog(db, args.get("cog_dir", "."))
+    if db is None:
+        db_name = args["db_name"]
+        db_type = args["db_type"]
+        db_psswd = args["db_psswd"]
+        chlamdb_args = {"chlamdb.db_type": db_type,
+                        "chlamdb.db_name": db_name,
+                        "chlamdb.db_psswd": db_psswd}
+        db = db_utils.DB.load_db(db_name, chlamdb_args)
 
-if args.get("load_kegg", False):
-    print("Loading KEGG tables")
-    ko_dir = args.get("ko_dir", DEFAULT_KO_DIR)
-    genes = load_KO_references(db, args, ko_dir)
+    if args.get("load_cog", False):
+        print("Loading COG tables")
+        setup_cog(db, args.get("cog_dir", "."))
+
+    if args.get("load_kegg", False):
+        print("Loading KEGG tables")
+        ko_dir = args.get("ko_dir", DEFAULT_KO_DIR)
+        genes = load_KO_references(db, args, ko_dir)
