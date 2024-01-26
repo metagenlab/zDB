@@ -30,6 +30,7 @@ import queue
 import sys
 import threading
 import time
+from urllib.request import urljoin, urlretrieve
 
 # to be removed in favor of a local version
 from Bio.KEGG import REST
@@ -398,6 +399,13 @@ def load_KO_references(db, params, ko_dir=DEFAULT_KO_DIR):
     return genes
 
 
+def download_cog_files(cog_dir):
+    base_url = "ftp://ftp.ncbi.nih.gov/pub/COG/COG2020/data/"
+    files = ["cog-20.def.tab", "fun-20.tab"]
+    for file in files:
+        urlretrieve(urljoin(base_url, file), os.path.join(cog_dir, file))
+
+
 def setup_cog(db, cog_dir):
     fun_names_file = open(cog_dir+"/fun-20.tab", "r")
     cog_names_file = open(cog_dir+"/cog-20.def.tab", "r")
@@ -484,8 +492,11 @@ if __name__ == "__main__":
         db = db_utils.DB.load_db(db_name, chlamdb_args)
 
     if args.get("load_cog", False):
+        print("Downloading COG tables")
+        cog_dir = args.get("cog_dir", ".")
+        download_cog_files(cog_dir)
         print("Loading COG tables")
-        setup_cog(db, args.get("cog_dir", "."))
+        setup_cog(db, cog_dir)
 
     if args.get("load_kegg", False):
         print("Loading KEGG tables")
