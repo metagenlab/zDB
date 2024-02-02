@@ -30,20 +30,19 @@ class TestDBSetupPipeline(BasePipelineTestCase):
         self.nf_params["pfam"] = "true"
         execution = self.execute_pipeline()
         self.assert_success(execution)
-
         self.assertEqual(
             [proc.name for proc in execution.process_executions],
             ["setup_pfam_db:download_pfam_db", "setup_pfam_db:prepare_hmm"])
 
         download_process = execution.process_executions[0]
-        self.assert_created_files(download_process,
-                                  ["Pfam-A.hmm", "Pfam-A.hmm.dat"])
+        self.assert_created_files(download_process, [])
 
         setup_process = execution.process_executions[1]
         expected_files = ["Pfam-A.hmm", "Pfam-A.hmm.dat", "Pfam-A.hmm.h3f",
-                          "Pfam-A.hmm.h3i", "Pfam-A.hmm.h3m", "Pfam-A.hmm.h3p"]
-        self.assert_created_files(setup_process, expected_files)
-        # Files are copied to db directory
+                          "Pfam-A.hmm.h3i", "Pfam-A.hmm.h3m", "Pfam-A.hmm.h3p",
+                          'Pfam.version']
+        # Files are moved to db directory
+        self.assert_created_files(setup_process, [])
         self.assertItemsEqual(
             expected_files,
             os.listdir(os.path.join(self.ref_db_dir, "pfam")))
@@ -65,7 +64,7 @@ class TestDBSetupPipeline(BasePipelineTestCase):
         expected_files = ["cdd_to_cog", "cog_db.aux", "cog_db.freq",
                           "cog_db.loo", "cog_db.phr", "cog_db.pin",
                           "cog_db.psi", "cog_db.psq", "cog_db.rps",
-                          "cog_db.psd"]
+                          "cog_db.psd", "cdd.info"]
         # Files are moved to db directory
         self.assertItemsEqual(
             expected_files,
@@ -86,12 +85,12 @@ class TestDBSetupPipeline(BasePipelineTestCase):
             os.path.join(db_dir, "profiles", "prokaryote.hal")))
         hmm_files = glob.glob(os.path.join(db_dir, "profiles", "*.hmm"))
         self.assertTrue(len(hmm_files) > 20000)
+        self.assertTrue(os.path.isfile(os.path.join(db_dir, "version.txt")))
 
     def test_creating_swissprot_db(self):
         self.nf_params["blast_swissprot"] = "true"
         execution = self.execute_pipeline()
         self.assert_success(execution)
-
         self.assertEqual([proc.name for proc in execution.process_executions],
                          ["setup_swissprot_db:download_swissprot",
                           "setup_swissprot_db:prepare_swissprot"])
@@ -103,7 +102,8 @@ class TestDBSetupPipeline(BasePipelineTestCase):
         expected_files = ['swissprot.fasta.phr',
                           'swissprot.fasta',
                           'swissprot.fasta.pin',
-                          'swissprot.fasta.psq']
+                          'swissprot.fasta.psq',
+                          'relnotes.txt']
 
         self.assertItemsEqual(
             expected_files,
