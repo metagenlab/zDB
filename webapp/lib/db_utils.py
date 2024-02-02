@@ -341,6 +341,13 @@ class DB:
             lst_values.append((key, rank, value))
         self.load_data_into_table("taxonomy_mapping", lst_values)
 
+    def create_versions_table(self):
+        sql = (
+            "CREATE TABLE versions"
+            "(name varchar(200), version varchar(50));"
+        )
+        self.server.adaptor.execute(sql)
+
     def load_data_into_table(self, table, data):
         if len(data) == 0:
             return
