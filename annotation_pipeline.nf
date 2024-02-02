@@ -712,6 +712,7 @@ process load_PFAM_info_db {
         path db
         path pfam_annot
         path pfam_dat
+        path pfam_db
 
     output:
         path db
@@ -724,7 +725,7 @@ process load_PFAM_info_db {
         kwargs = ${gen_python_args()}
         pfam_files = "$pfam_annot".split()
 
-        setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$pfam_dat")
+        setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$pfam_dat", "$pfam_db")
         """
 }
 
@@ -898,7 +899,7 @@ workflow {
         Channel.fromPath("${params.pfam_db}", type: "dir").set { pfam_db }
         pfam_db.combine(split_nr_seqs).set { to_pfam_scan_combined }
         pfam_results = pfam_scan(to_pfam_scan_combined)
-        db = load_PFAM_info_db(db, pfam_results.collect(), Channel.fromPath("$params.pfam_db/Pfam-A.hmm.dat"))
+        db = load_PFAM_info_db(db, pfam_results.collect(), Channel.fromPath("$params.pfam_db/Pfam-A.hmm.dat"), pfam_db)
     }
 
     if(params.cog) {

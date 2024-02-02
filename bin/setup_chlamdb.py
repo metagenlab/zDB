@@ -1,14 +1,12 @@
 import os
 from collections import defaultdict, namedtuple
 
+import KO_module
 import pandas as pd
-
+import search_bar
 from Bio import AlignIO, SeqIO, SeqUtils
-
 from db_utils import DB
 
-import KO_module
-import search_bar
 
 # assumes orthofinder named: OG000N
 # returns the N as int
@@ -456,7 +454,7 @@ def parse_pfam_entry(file_iter):
             description = line[len("#=GF DE   "):-1]
 
 
-def load_pfam(params, pfam_files, db, pfam_def_file):
+def load_pfam(params, pfam_files, db, pfam_def_file, ref_db_dir):
     db = DB.load_db(db, params)
 
     db.create_pfam_hits_table()
@@ -478,6 +476,7 @@ def load_pfam(params, pfam_files, db, pfam_def_file):
                 pfam_ids.add(pfam_i)
 
         db.load_data_into_table("pfam_hits", entries)
+
     db.commit()
 
     pfam_entries = []
@@ -489,6 +488,14 @@ def load_pfam(params, pfam_files, db, pfam_def_file):
     pfam_def_file_iter.close()
     db.create_pfam_def_table(pfam_entries)
     db.set_status_in_config_table("pfam", 1)
+    db.commit()
+
+    # Determine reference DB version
+    with open(os.path.join(ref_db_dir, "Pfam.version")) as fh:
+        title, version = fh.readline().split(":")
+        if "Pfam release" not in title:
+            raise ValueError("Could not determine Pfam DB version")
+    db.load_data_into_table("versions", [("Pfam", version.strip())])
     db.commit()
 
 

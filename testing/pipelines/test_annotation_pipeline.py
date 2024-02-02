@@ -209,3 +209,7 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertTrue(self.query("swissprot_defs").count() > 19400)
         self.assertTrue(self.query("swissprot_hits").count() > 29400)
         self.assertEqual(2, self.query("amr_hits").count())
+
+        self.assertItemsEqual(
+            ["Pfam"],
+            [row[0] for row in self.query("versions").all()])
