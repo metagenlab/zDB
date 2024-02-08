@@ -685,6 +685,7 @@ process load_KO_into_db {
     input:
         path KO_results
         path db
+        val ko_db_dir
 
     output:
         path db
@@ -699,7 +700,7 @@ process load_KO_into_db {
 
         # this last function should be exported in a separate script to generate
         # the scaffold of a database
-        setup_chlamdb.load_KO(kwargs, ko_files, "$db")
+        setup_chlamdb.load_KO(kwargs, ko_files, "$db", "$ko_db_dir")
         setup_chlamdb.load_module_completeness(kwargs, "$db")
         """
 }
@@ -930,7 +931,7 @@ workflow {
         Channel.fromPath("$params.ko_db", type: "dir").set { to_ko_multi }
         to_ko_multi.combine(split_nr_seqs).set { to_kofamscan_multi }
         to_load_KO = execute_kofamscan(to_kofamscan_multi)
-        db = load_KO_into_db(to_load_KO.collect(), db)
+        db = load_KO_into_db(to_load_KO.collect(), db, "$params.ko_db")
     }
 
     if(params.amr) {

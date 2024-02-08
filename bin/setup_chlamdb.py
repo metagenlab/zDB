@@ -591,7 +591,7 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db
 # NOTE:
 # Several KO marked as significant can be assigned to the same locus
 # only take the hit with the lowest evalue (the first in the list)
-def load_KO(params, ko_files, db_name):
+def load_KO(params, ko_files, db_name, ko_db_dir):
     db = DB.load_db(db_name, params)
     data = []
     for ko_file in ko_files:
@@ -619,6 +619,12 @@ def load_KO(params, ko_files, db_name):
                 data.append(entry)
     db.load_ko_hits(data)
     db.set_status_in_config_table("KEGG", 1)
+    db.commit()
+
+    # Determine reference DB version
+    with open(os.path.join(ko_db_dir, "version.txt")) as fh:
+        version = fh.readline()
+    db.load_data_into_table("versions", [("Ko", version.strip())])
     db.commit()
 
 
