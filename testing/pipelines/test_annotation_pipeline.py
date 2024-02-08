@@ -48,7 +48,8 @@ base_tables = [
     'term_path',
     'term_relationship',
     'term_relationship_term',
-    'term_synonym'
+    'term_synonym',
+    'versions'
 ]
 
 
@@ -156,8 +157,9 @@ class TestAnnotationPipeline(BasePipelineTestCase):
             base_tables + ['swissprot_defs', 'swissprot_hits'],
             self.metadata_obj.tables.keys())
         self.assert_db_base_table_row_counts()
-        self.assertEqual(19400, self.query("swissprot_defs").count())
-        self.assertEqual(29400, self.query("swissprot_hits").count())
+        # The exact number of hits depends on the version of the ref db
+        self.assertTrue(self.query("swissprot_defs").count() > 19400)
+        self.assertTrue(self.query("swissprot_hits").count() > 29400)
 
     def test_amr_hits(self):
         self.nf_params["amr"] = "true"
@@ -204,6 +206,6 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertEqual(137, self.query("ko_hits").count())
         self.assertEqual(324, self.query("pfam_hits").count())
         self.assertEqual(237, self.query("pfam_table").count())
-        self.assertEqual(19400, self.query("swissprot_defs").count())
-        self.assertEqual(29400, self.query("swissprot_hits").count())
+        self.assertTrue(self.query("swissprot_defs").count() > 19400)
+        self.assertTrue(self.query("swissprot_hits").count() > 29400)
         self.assertEqual(2, self.query("amr_hits").count())
