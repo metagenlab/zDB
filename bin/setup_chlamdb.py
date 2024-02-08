@@ -311,7 +311,7 @@ def amr_hit_to_db_entry(hit):
     return entry
 
 
-def load_amr(params, filelist, db_file):
+def load_amr(params, filelist, db_file, version_file):
     db = DB.load_db(db_file, params)
 
     data = []
@@ -320,6 +320,17 @@ def load_amr(params, filelist, db_file):
         data.extend(amr_hit_to_db_entry(hit) for i, hit in amr_hits.iterrows())
     db.load_amr_hits(data)
     db.set_status_in_config_table("AMR", 1)
+    db.commit()
+
+    # Determine software and reference DB version
+    with open(version_file) as fh:
+        for line in fh:
+            if line.startswith("Software version"):
+                soft_version = line.rsplit(":", 1)[1].strip()
+            elif line.startswith("Database version"):
+                db_version = line.rsplit(":", 1)[1].strip()
+    db.load_data_into_table("versions", [("AMRFinderSoftware", soft_version),
+                                         ("AMRFinderDB", db_version)])
     db.commit()
 
 

@@ -475,9 +475,26 @@ process execute_kofamscan {
   """
 }
 
+process prepare_amrscan {
+  container "$params.ncbi_amr_container"
+  conda "$baseDir/conda/amrfinderplus.yaml"
+
+  output:
+      path 'versions.txt'
+
+  script:
+  conda = params.conda
+  """
+  if $conda; then
+        amrfinder -u
+  fi
+  amrfinder -V > versions.txt
+  """
+}
+
 process execute_amrscan {
   container "$params.ncbi_amr_container"
-  conda "$baseDir/conda/ncbi_amr.yaml"
+  conda "$baseDir/conda/amrfinderplus.yaml"
 
   input:
   file(seq)
@@ -763,6 +780,7 @@ process load_amr_into_db {
     input:
         file collected_amr_files
         file db
+        file version
 
     output:
         file db
@@ -775,7 +793,7 @@ process load_amr_into_db {
 
         kwargs = ${gen_python_args()}
         amr_files = "${collected_amr_files}".split()
-        setup_chlamdb.load_amr(kwargs, amr_files, "$db")
+        setup_chlamdb.load_amr(kwargs, amr_files, "$db", "$version")
         """
 }
 
@@ -936,8 +954,9 @@ workflow {
     }
 
     if(params.amr) {
+        amr_version = prepare_amrscan()
         amr_table = execute_amrscan(split_nr_seqs)
-        db = load_amr_into_db(amr_table.collect(), db)
+        db = load_amr_into_db(amr_table.collect(), db, amr_version)
     }
 
     (to_index_cleanup, to_db_cleanup) = create_chlamdb_search_index(db)
