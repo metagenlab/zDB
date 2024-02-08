@@ -211,5 +211,5 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertEqual(2, self.query("amr_hits").count())
 
         self.assertItemsEqual(
-            ["Pfam", "SwissProt", "Ko"],
+            ["Pfam", "SwissProt", "Ko", "CDD"],
             [row[0] for row in self.query("versions").all()])

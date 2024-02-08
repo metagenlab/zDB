@@ -4,7 +4,7 @@ from collections import defaultdict, namedtuple
 import KO_module
 import pandas as pd
 import search_bar
-from Bio import AlignIO, SeqIO, SeqUtils
+from Bio import SeqIO, SeqUtils
 from db_utils import DB
 
 
@@ -257,7 +257,7 @@ def load_alignments_results(args, identity_csvs, db_file):
     db.commit()
 
 
-def load_cog(params, filelist, db_file, cdd_to_cog):
+def load_cog(params, filelist, db_file, cdd_to_cog, cog_db_dir):
     db = DB.load_db(db_file, params)
     hsh_cdd_to_cog = {}
     with open(cdd_to_cog, "r") as cdd_to_cog_file:
@@ -282,6 +282,14 @@ def load_cog(params, filelist, db_file, cdd_to_cog):
             data.append(entry)
     db.load_cog_hits(data)
     db.set_status_in_config_table("COG", 1)
+    db.commit()
+
+    # Determine reference DB version
+    with open(os.path.join(cog_db_dir, "cdd.info")) as fh:
+        dbname, _, version = fh.readline().split()
+        if dbname != "cdd":
+            raise ValueError("Could not determine Cog DB version")
+    db.load_data_into_table("versions", [("CDD", version.strip())])
     db.commit()
 
 

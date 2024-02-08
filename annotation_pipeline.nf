@@ -662,6 +662,7 @@ process load_COG_into_db {
         path db
         path cog_file
         path cdd_to_cog
+        val cog_db_dir
 
     output:
         path db
@@ -674,7 +675,7 @@ process load_COG_into_db {
 
         kwargs = ${gen_python_args()}
         cog_files = "${cog_file}".split()
-        setup_chlamdb.load_cog(kwargs, cog_files, "$db", "$cdd_to_cog")
+        setup_chlamdb.load_cog(kwargs, cog_files, "$db", "$cdd_to_cog", "$cog_db_dir")
         """
 }
 
@@ -908,7 +909,7 @@ workflow {
         Channel.fromPath("$params.cog_db", type: "dir").set { to_cog_multi }
         to_cog_multi.combine(split_nr_seqs).set { to_rpsblast_COG_multi }
         COG_to_load_db = rpsblast_COG(to_rpsblast_COG_multi)
-        db = load_COG_into_db(db, COG_to_load_db.collect(), Channel.fromPath("$params.cog_db/cdd_to_cog"))
+        db = load_COG_into_db(db, COG_to_load_db.collect(), Channel.fromPath("$params.cog_db/cdd_to_cog"), "$params.cog_db")
     }
 
     if (params.blast_swissprot) {
