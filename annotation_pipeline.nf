@@ -737,6 +737,7 @@ process load_swissprot_hits_into_db {
         path db
         path blast_results
         path swissprot_db
+        val swissprot_db_dir
 
     output:
         path db
@@ -749,7 +750,7 @@ process load_swissprot_hits_into_db {
         kwargs = ${gen_python_args()}
         blast_results = "$blast_results".split()
 
-        setup_chlamdb.load_swissprot(kwargs, blast_results, "$db", "swissprot.fasta")
+        setup_chlamdb.load_swissprot(kwargs, blast_results, "$db", "swissprot.fasta", "$swissprot_db_dir")
     """
 }
 
@@ -913,7 +914,7 @@ workflow {
         Channel.fromPath("$params.swissprot_db", type: "dir").set { to_swissprot_multi }
         to_swissprot_multi.combine(split_nr_seqs).set { to_blast_swissprot_multi }
         swissprot_blast = blast_swissprot(to_blast_swissprot_multi)
-        db = load_swissprot_hits_into_db(db, swissprot_blast.collect(), Channel.fromPath("$params.swissprot_db/swissprot.fasta"))
+        db = load_swissprot_hits_into_db(db, swissprot_blast.collect(), Channel.fromPath("$params.swissprot_db/swissprot.fasta"), "$params.swissprot_db")
     }
 
     if(params.diamond_refseq) {

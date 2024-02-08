@@ -543,7 +543,7 @@ def parse_swissprot_id(to_parse):
     return db, ident, name
 
 
-def load_swissprot(params, blast_results, db_name, swissprot_fasta):
+def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db_dir):
     db = DB.load_db(db_name, params)
     hsh_swissprot_id = SwissProtIdCount()
     db.create_swissprot_tables()
@@ -577,6 +577,14 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta):
             (db_prot_id, prot_id, descr, taxid, org, gene, pe))
     db.load_swissprot_defs(swiss_prot_defs)
     db.set_status_in_config_table("BLAST_swissprot", 1)
+    db.commit()
+
+    # Determine reference DB version
+    with open(os.path.join(swissprot_db_dir, "relnotes.txt")) as fh:
+        dbname, _,  version = fh.readline().split()
+        if dbname != "UniProt":
+            raise ValueError("Could not determine SwissProt DB version")
+    db.load_data_into_table("versions", [("SwissProt", version.strip())])
     db.commit()
 
 
