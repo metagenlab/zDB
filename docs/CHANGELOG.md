@@ -17,6 +17,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Store reference DB and software versions in DB. ([#54](https://github.com/metagenlab/zDB/pull/54)) (Niklaus Johner)
 - Add script to compute rendering times of various views. ([#51](https://github.com/metagenlab/zDB/pull/51)) (Niklaus Johner)
 - Add possibility to dump HTML responses from webapp tests. ([#50](https://github.com/metagenlab/zDB/pull/50)) (Niklaus Johner)
 - Add AMR accumulation/rarefaction plot view. ([#46](https://github.com/metagenlab/zDB/pull/46)) (Niklaus Johner)

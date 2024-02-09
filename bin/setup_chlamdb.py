@@ -1,14 +1,12 @@
 import os
 from collections import defaultdict, namedtuple
 
+import KO_module
 import pandas as pd
-
-from Bio import AlignIO, SeqIO, SeqUtils
-
+import search_bar
+from Bio import SeqIO, SeqUtils
 from db_utils import DB
 
-import KO_module
-import search_bar
 
 # assumes orthofinder named: OG000N
 # returns the N as int
@@ -259,7 +257,7 @@ def load_alignments_results(args, identity_csvs, db_file):
     db.commit()
 
 
-def load_cog(params, filelist, db_file, cdd_to_cog):
+def load_cog(params, filelist, db_file, cdd_to_cog, cog_db_dir):
     db = DB.load_db(db_file, params)
     hsh_cdd_to_cog = {}
     with open(cdd_to_cog, "r") as cdd_to_cog_file:
@@ -286,6 +284,14 @@ def load_cog(params, filelist, db_file, cdd_to_cog):
     db.set_status_in_config_table("COG", 1)
     db.commit()
 
+    # Determine reference DB version
+    with open(os.path.join(cog_db_dir, "cdd.info")) as fh:
+        dbname, _, version = fh.readline().split()
+        if dbname != "cdd":
+            raise ValueError("Could not determine Cog DB version")
+    db.load_data_into_table("versions", [("CDD", version.strip())])
+    db.commit()
+
 
 def amr_hit_to_db_entry(hit):
     columns = ["Gene symbol",
@@ -305,7 +311,7 @@ def amr_hit_to_db_entry(hit):
     return entry
 
 
-def load_amr(params, filelist, db_file):
+def load_amr(params, filelist, db_file, version_file):
     db = DB.load_db(db_file, params)
 
     data = []
@@ -314,6 +320,17 @@ def load_amr(params, filelist, db_file):
         data.extend(amr_hit_to_db_entry(hit) for i, hit in amr_hits.iterrows())
     db.load_amr_hits(data)
     db.set_status_in_config_table("AMR", 1)
+    db.commit()
+
+    # Determine software and reference DB version
+    with open(version_file) as fh:
+        for line in fh:
+            if line.startswith("Software version"):
+                soft_version = line.rsplit(":", 1)[1].strip()
+            elif line.startswith("Database version"):
+                db_version = line.rsplit(":", 1)[1].strip()
+    db.load_data_into_table("versions", [("AMRFinderSoftware", soft_version),
+                                         ("AMRFinderDB", db_version)])
     db.commit()
 
 
@@ -456,7 +473,7 @@ def parse_pfam_entry(file_iter):
             description = line[len("#=GF DE   "):-1]
 
 
-def load_pfam(params, pfam_files, db, pfam_def_file):
+def load_pfam(params, pfam_files, db, pfam_def_file, ref_db_dir):
     db = DB.load_db(db, params)
 
     db.create_pfam_hits_table()
@@ -478,6 +495,7 @@ def load_pfam(params, pfam_files, db, pfam_def_file):
                 pfam_ids.add(pfam_i)
 
         db.load_data_into_table("pfam_hits", entries)
+
     db.commit()
 
     pfam_entries = []
@@ -489,6 +507,14 @@ def load_pfam(params, pfam_files, db, pfam_def_file):
     pfam_def_file_iter.close()
     db.create_pfam_def_table(pfam_entries)
     db.set_status_in_config_table("pfam", 1)
+    db.commit()
+
+    # Determine reference DB version
+    with open(os.path.join(ref_db_dir, "Pfam.version")) as fh:
+        title, version = fh.readline().split(":")
+        if "Pfam release" not in title:
+            raise ValueError("Could not determine Pfam DB version")
+    db.load_data_into_table("versions", [("Pfam", version.strip())])
     db.commit()
 
 
@@ -536,7 +562,7 @@ def parse_swissprot_id(to_parse):
     return db, ident, name
 
 
-def load_swissprot(params, blast_results, db_name, swissprot_fasta):
+def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db_dir):
     db = DB.load_db(db_name, params)
     hsh_swissprot_id = SwissProtIdCount()
     db.create_swissprot_tables()
@@ -572,11 +598,19 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta):
     db.set_status_in_config_table("BLAST_swissprot", 1)
     db.commit()
 
+    # Determine reference DB version
+    with open(os.path.join(swissprot_db_dir, "relnotes.txt")) as fh:
+        dbname, _,  version = fh.readline().split()
+        if dbname != "UniProt":
+            raise ValueError("Could not determine SwissProt DB version")
+    db.load_data_into_table("versions", [("SwissProt", version.strip())])
+    db.commit()
+
 
 # NOTE:
 # Several KO marked as significant can be assigned to the same locus
 # only take the hit with the lowest evalue (the first in the list)
-def load_KO(params, ko_files, db_name):
+def load_KO(params, ko_files, db_name, ko_db_dir):
     db = DB.load_db(db_name, params)
     data = []
     for ko_file in ko_files:
@@ -604,6 +638,12 @@ def load_KO(params, ko_files, db_name):
                 data.append(entry)
     db.load_ko_hits(data)
     db.set_status_in_config_table("KEGG", 1)
+    db.commit()
+
+    # Determine reference DB version
+    with open(os.path.join(ko_db_dir, "version.txt")) as fh:
+        version = fh.readline()
+    db.load_data_into_table("versions", [("Ko", version.strip())])
     db.commit()
 
 

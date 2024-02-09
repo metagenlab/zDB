@@ -475,9 +475,26 @@ process execute_kofamscan {
   """
 }
 
+process prepare_amrscan {
+  container "$params.ncbi_amr_container"
+  conda "$baseDir/conda/amrfinderplus.yaml"
+
+  output:
+      path 'versions.txt'
+
+  script:
+  conda = params.conda
+  """
+  if $conda; then
+        amrfinder -u
+  fi
+  amrfinder -V > versions.txt
+  """
+}
+
 process execute_amrscan {
   container "$params.ncbi_amr_container"
-  conda "$baseDir/conda/ncbi_amr.yaml"
+  conda "$baseDir/conda/amrfinderplus.yaml"
 
   input:
   file(seq)
@@ -662,6 +679,7 @@ process load_COG_into_db {
         path db
         path cog_file
         path cdd_to_cog
+        path cog_db_dir
 
     output:
         path db
@@ -674,7 +692,7 @@ process load_COG_into_db {
 
         kwargs = ${gen_python_args()}
         cog_files = "${cog_file}".split()
-        setup_chlamdb.load_cog(kwargs, cog_files, "$db", "$cdd_to_cog")
+        setup_chlamdb.load_cog(kwargs, cog_files, "$db", "$cdd_to_cog", "$cog_db_dir")
         """
 }
 
@@ -685,6 +703,7 @@ process load_KO_into_db {
     input:
         path KO_results
         path db
+        path ko_db_dir
 
     output:
         path db
@@ -699,7 +718,7 @@ process load_KO_into_db {
 
         # this last function should be exported in a separate script to generate
         # the scaffold of a database
-        setup_chlamdb.load_KO(kwargs, ko_files, "$db")
+        setup_chlamdb.load_KO(kwargs, ko_files, "$db", "$ko_db_dir")
         setup_chlamdb.load_module_completeness(kwargs, "$db")
         """
 }
@@ -712,6 +731,7 @@ process load_PFAM_info_db {
         path db
         path pfam_annot
         path pfam_dat
+        path pfam_db
 
     output:
         path db
@@ -724,7 +744,7 @@ process load_PFAM_info_db {
         kwargs = ${gen_python_args()}
         pfam_files = "$pfam_annot".split()
 
-        setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$pfam_dat")
+        setup_chlamdb.load_pfam(kwargs, pfam_files, "$db", "$pfam_dat", "$pfam_db")
         """
 }
 
@@ -736,6 +756,7 @@ process load_swissprot_hits_into_db {
         path db
         path blast_results
         path swissprot_db
+        path swissprot_db_dir
 
     output:
         path db
@@ -748,7 +769,7 @@ process load_swissprot_hits_into_db {
         kwargs = ${gen_python_args()}
         blast_results = "$blast_results".split()
 
-        setup_chlamdb.load_swissprot(kwargs, blast_results, "$db", "swissprot.fasta")
+        setup_chlamdb.load_swissprot(kwargs, blast_results, "$db", "swissprot.fasta", "$swissprot_db_dir")
     """
 }
 
@@ -759,6 +780,7 @@ process load_amr_into_db {
     input:
         file collected_amr_files
         file db
+        file version
 
     output:
         file db
@@ -771,7 +793,7 @@ process load_amr_into_db {
 
         kwargs = ${gen_python_args()}
         amr_files = "${collected_amr_files}".split()
-        setup_chlamdb.load_amr(kwargs, amr_files, "$db")
+        setup_chlamdb.load_amr(kwargs, amr_files, "$db", "$version")
         """
 }
 
@@ -898,21 +920,21 @@ workflow {
         Channel.fromPath("${params.pfam_db}", type: "dir").set { pfam_db }
         pfam_db.combine(split_nr_seqs).set { to_pfam_scan_combined }
         pfam_results = pfam_scan(to_pfam_scan_combined)
-        db = load_PFAM_info_db(db, pfam_results.collect(), Channel.fromPath("$params.pfam_db/Pfam-A.hmm.dat"))
+        db = load_PFAM_info_db(db, pfam_results.collect(), Channel.fromPath("$params.pfam_db/Pfam-A.hmm.dat"), pfam_db)
     }
 
     if(params.cog) {
         Channel.fromPath("$params.cog_db", type: "dir").set { to_cog_multi }
         to_cog_multi.combine(split_nr_seqs).set { to_rpsblast_COG_multi }
         COG_to_load_db = rpsblast_COG(to_rpsblast_COG_multi)
-        db = load_COG_into_db(db, COG_to_load_db.collect(), Channel.fromPath("$params.cog_db/cdd_to_cog"))
+        db = load_COG_into_db(db, COG_to_load_db.collect(), Channel.fromPath("$params.cog_db/cdd_to_cog"),  Channel.fromPath("$params.cog_db"))
     }
 
     if (params.blast_swissprot) {
         Channel.fromPath("$params.swissprot_db", type: "dir").set { to_swissprot_multi }
         to_swissprot_multi.combine(split_nr_seqs).set { to_blast_swissprot_multi }
         swissprot_blast = blast_swissprot(to_blast_swissprot_multi)
-        db = load_swissprot_hits_into_db(db, swissprot_blast.collect(), Channel.fromPath("$params.swissprot_db/swissprot.fasta"))
+        db = load_swissprot_hits_into_db(db, swissprot_blast.collect(), Channel.fromPath("$params.swissprot_db/swissprot.fasta"), Channel.fromPath("$params.swissprot_db"))
     }
 
     if(params.diamond_refseq) {
@@ -928,12 +950,13 @@ workflow {
         Channel.fromPath("$params.ko_db", type: "dir").set { to_ko_multi }
         to_ko_multi.combine(split_nr_seqs).set { to_kofamscan_multi }
         to_load_KO = execute_kofamscan(to_kofamscan_multi)
-        db = load_KO_into_db(to_load_KO.collect(), db)
+        db = load_KO_into_db(to_load_KO.collect(), db, Channel.fromPath("$params.ko_db"))
     }
 
     if(params.amr) {
+        amr_version = prepare_amrscan()
         amr_table = execute_amrscan(split_nr_seqs)
-        db = load_amr_into_db(amr_table.collect(), db)
+        db = load_amr_into_db(amr_table.collect(), db, amr_version)
     }
 
     (to_index_cleanup, to_db_cleanup) = create_chlamdb_search_index(db)

@@ -166,7 +166,7 @@ def home(request):
 
     number_ort = db.get_n_orthogroups()
     taxids = list(genomes_descr.index)
-
+    versions = db.get_versions_table()
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 

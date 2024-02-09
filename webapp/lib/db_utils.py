@@ -341,6 +341,13 @@ class DB:
             lst_values.append((key, rank, value))
         self.load_data_into_table("taxonomy_mapping", lst_values)
 
+    def create_versions_table(self):
+        sql = (
+            "CREATE TABLE versions"
+            "(name varchar(200), version varchar(50));"
+        )
+        self.server.adaptor.execute(sql)
+
     def load_data_into_table(self, table, data):
         if len(data) == 0:
             return
@@ -1146,6 +1153,11 @@ class DB:
             return {val[0]: (val[1] == "mandatory", val[2]) for val in values}
         else:
             return {val[0]: val[2] for val in values}
+
+    def get_versions_table(self, ret_mandatory=False):
+        sql = "SELECT * from versions;"
+        values = self.server.adaptor.execute_and_fetchall(sql)
+        return {val[0]: val[1] for val in values}
 
     def create_biosql_database(self, args):
         self.server.new_database(self.db_name)

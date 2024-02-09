@@ -73,6 +73,11 @@ def create_data_table(db):
     db.commit()
 
 
+def create_versions_table(db):
+    db.create_versions_table()
+    db.commit()
+
+
 def setup_biodb(kwargs):
     sqlpsw = kwargs["db_psswd"]
     db_type = kwargs["db_type"]
@@ -403,6 +408,7 @@ if __name__ == "__main__":
         print("Setting up the biosql schema")
         db = setup_biodb(args)
         create_data_table(db)
+        create_versions_table(db)
 
     if db is None:
         db_name = args["db_name"]
