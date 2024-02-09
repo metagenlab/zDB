@@ -679,7 +679,7 @@ process load_COG_into_db {
         path db
         path cog_file
         path cdd_to_cog
-        val cog_db_dir
+        path cog_db_dir
 
     output:
         path db
@@ -703,7 +703,7 @@ process load_KO_into_db {
     input:
         path KO_results
         path db
-        val ko_db_dir
+        path ko_db_dir
 
     output:
         path db
@@ -756,7 +756,7 @@ process load_swissprot_hits_into_db {
         path db
         path blast_results
         path swissprot_db
-        val swissprot_db_dir
+        path swissprot_db_dir
 
     output:
         path db
@@ -927,14 +927,14 @@ workflow {
         Channel.fromPath("$params.cog_db", type: "dir").set { to_cog_multi }
         to_cog_multi.combine(split_nr_seqs).set { to_rpsblast_COG_multi }
         COG_to_load_db = rpsblast_COG(to_rpsblast_COG_multi)
-        db = load_COG_into_db(db, COG_to_load_db.collect(), Channel.fromPath("$params.cog_db/cdd_to_cog"), "$params.cog_db")
+        db = load_COG_into_db(db, COG_to_load_db.collect(), Channel.fromPath("$params.cog_db/cdd_to_cog"),  Channel.fromPath("$params.cog_db"))
     }
 
     if (params.blast_swissprot) {
         Channel.fromPath("$params.swissprot_db", type: "dir").set { to_swissprot_multi }
         to_swissprot_multi.combine(split_nr_seqs).set { to_blast_swissprot_multi }
         swissprot_blast = blast_swissprot(to_blast_swissprot_multi)
-        db = load_swissprot_hits_into_db(db, swissprot_blast.collect(), Channel.fromPath("$params.swissprot_db/swissprot.fasta"), "$params.swissprot_db")
+        db = load_swissprot_hits_into_db(db, swissprot_blast.collect(), Channel.fromPath("$params.swissprot_db/swissprot.fasta"), Channel.fromPath("$params.swissprot_db"))
     }
 
     if(params.diamond_refseq) {
@@ -950,7 +950,7 @@ workflow {
         Channel.fromPath("$params.ko_db", type: "dir").set { to_ko_multi }
         to_ko_multi.combine(split_nr_seqs).set { to_kofamscan_multi }
         to_load_KO = execute_kofamscan(to_kofamscan_multi)
-        db = load_KO_into_db(to_load_KO.collect(), db, "$params.ko_db")
+        db = load_KO_into_db(to_load_KO.collect(), db, Channel.fromPath("$params.ko_db"))
     }
 
     if(params.amr) {
