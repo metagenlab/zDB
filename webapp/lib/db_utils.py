@@ -1152,6 +1152,11 @@ class DB:
         else:
             return {val[0]: val[2] for val in values}
 
+    def get_versions_table(self, ret_mandatory=False):
+        sql = "SELECT * from versions;"
+        values = self.server.adaptor.execute_and_fetchall(sql)
+        return {val[0]: val[1] for val in values}
+
     def create_biosql_database(self, args):
         self.server.new_database(self.db_name)
 
