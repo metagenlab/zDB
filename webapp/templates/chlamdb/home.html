@@ -239,6 +239,9 @@
                               {% if optional2status|keyvalue:"BLAST_swissprot" == 1 %}
                                 <dd> - <a href="https://www.uniprot.org/" target="_blank">SwissProt</a> (manually annotated proteins, reference DB version {{versions|keyvalue:"SwissProt"}})</dd>
                               {% endif %}
+                              {% if optional2status|keyvalue:"AMR" == 1 %}
+                                <dd> - <a href="https://www.ncbi.nlm.nih.gov/pathogens/antimicrobial-resistance/AMRFinder/" target="_blank">AMRFinderPlus ({{versions|keyvalue:"AMRFinderSoftware"}})</a> (manually annotated Antiobiotic resistance genes, reference DB version {{versions|keyvalue:"AMRFinderDB"}})</dd>
+                              {% endif %}
                               <li> Precomputed phylogenetic reconstructions of orthologous groups</li>
                               {% if optional2status|keyvalue:"KEGG" %}
                                 <li> Kegg maps visualization</li>
