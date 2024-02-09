@@ -623,7 +623,7 @@ class DB:
         results = self.server.adaptor.execute_and_fetchall(query)
         return [(line[0], line[1]) for line in results]
 
-    def get_ko_desc(self, ko_ids):
+    def get_ko_desc(self, ko_ids, as_df=False):
         if ko_ids is None:
             where = (
                 "INNER JOIN ko_hits AS hit ON hit.ko_id=ko.ko_id "
@@ -640,6 +640,8 @@ class DB:
             f"{where};"
         )
         results = self.server.adaptor.execute_and_fetchall(query, ko_ids)
+        if as_df:
+            return DB.to_pandas_frame(results, ["ko", "description"])
         hsh_results = {}
         for line in results:
             hsh_results[line[0]] = line[1]
@@ -1441,7 +1443,9 @@ class DB:
                 hsh_results[line[0]] = (line[1], line[2])
             return hsh_results
         elif only_cog_desc:
-            return DB.to_pandas_frame(results, ["cog", "function", "description"]).set_index(["cog"])
+            return DB.to_pandas_frame(
+                results, ["cog", "function", "description"]).set_index(
+                    ["cog"], drop=False)
 
         funcs = "SELECT function, description FROM cog_functions;"
         functions = self.server.adaptor.execute_and_fetchall(funcs)
@@ -2106,7 +2110,7 @@ class DB:
         cols = ["pfam", "def"]
         if add_ttl_count:
             cols.append("ttl_cnt")
-        return DB.to_pandas_frame(results, cols).set_index(["pfam"])
+        return DB.to_pandas_frame(results, cols).set_index(["pfam"], drop=False)
 
     def gen_pfam_where_clause(self, search_on, entries):
         entries = self.gen_placeholder_string(entries)
@@ -2234,7 +2238,7 @@ class DB:
     #   seqid1 cog1
     #   seqid2 cog2
     #   seqid3 cog3
-    def get_cog_hits(self, ids, indexing="taxid", search_on="bioentry",
+    def get_cog_hits(self, ids, indexing="taxid", search_on="taxid",
                      keep_taxid=False, plasmids=None):
 
         where_clause = self.gen_cog_where_clause(search_on, ids)

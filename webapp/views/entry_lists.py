@@ -1,18 +1,16 @@
 
 
 import pandas as pd
-from django.conf import settings
 from django.shortcuts import render
 from django.views import View
-from lib.db_utils import DB
 
-from views.mixins import AmrAnnotationsMixin
+from views.mixins import AmrViewMixin, BaseViewMixin
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_ko_modules, format_ko_path, format_pfam,
                          my_locals, page2title)
 
 
-class EntryListViewBase(View):
+class EntryListViewBase(View, BaseViewMixin):
 
     entry_type = None
     table_headers = None
@@ -20,7 +18,6 @@ class EntryListViewBase(View):
 
     def get(self, request):
         page_title = page2title[f"entry_list_{self.entry_type}"]
-        self.db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
         # retrieve taxid list
         genomes_data = self.db.get_genomes_infos()
         self.taxids = [str(i) for i in genomes_data.index.to_list()]
@@ -137,7 +134,7 @@ class CogEntryListView(EntryListViewBase):
         return combined_df
 
 
-class AmrEntryListView(EntryListViewBase, AmrAnnotationsMixin):
+class AmrEntryListView(EntryListViewBase, AmrViewMixin):
 
     entry_type = "amr"
     table_headers = ["Gene", "Description", "Scope", "Type", "Class",

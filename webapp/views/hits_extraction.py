@@ -2,22 +2,20 @@ import collections
 
 import pandas as pd
 from chlamdb.forms import make_extract_form
-from django.conf import settings
 from django.shortcuts import render
 from django.views import View
-from lib.db_utils import DB
 
-from views.mixins import AmrAnnotationsMixin, ComparisonViewMixin
-from views.utils import (format_amr, format_cog, format_cog_url,
-                         format_hmm_url, format_ko, format_ko_modules,
-                         format_ko_path, format_ko_url, format_locus,
-                         format_lst_to_html, format_orthogroup, format_pfam,
+from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
+                          OrthogroupViewMixin, PfamViewMixin)
+from views.utils import (format_cog, format_cog_url, format_ko,
+                         format_ko_modules, format_ko_path, format_ko_url,
+                         format_locus, format_lst_to_html, format_orthogroup,
                          my_locals)
 
 ResultTab = collections.namedtuple("Tab", ["id", "title", "template"])
 
 
-class ExtractHitsBaseView(View, ComparisonViewMixin):
+class ExtractHitsBaseView(View):
 
     template = 'chlamdb/extract_hits.html'
 
@@ -45,19 +43,19 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
                 else "at least once"
         col_descr = ", ".join(self.table_cols_description[:-1])
         col_descr += " and " + self.table_cols_description[-1]
-        return self.results_table_help.format(self.compared_obj_name,
+        return self.results_table_help.format(self.object_name_plural,
                                               col_descr,
                                               once,
                                               self._table_help_complement)
 
     @property
     def view_name(self):
-        return f"extract_{self.comp_type}"
+        return f"extract_{self.object_type}"
 
     @property
     def result_tabs(self):
         return [
-            ResultTab(1, self.compared_obj_name, "chlamdb/extract_hits_results_table.html"),
+            ResultTab(1, self.object_name_plural, "chlamdb/extract_hits_results_table.html"),
             ]
 
     @property
@@ -70,17 +68,15 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
         return self._table_headers + self.table_count_headers
 
     def dispatch(self, request, *args, **kwargs):
-        biodb_path = settings.BIODB_DB_PATH
-        self.db = DB.load_db_from_name(biodb_path)
         self.extract_form_class = make_extract_form(
-            self.db, self.view_name, plasmid=True, label=self.compared_obj_name)
+            self.db, self.view_name, plasmid=True, label=self.object_name_plural)
         return super(ExtractHitsBaseView, self).dispatch(request, *args, **kwargs)
 
     def get_context(self, **kwargs):
         context = {
             "page_title": self.page_title,
-            "comp_type": self.comp_type,
-            "compared_obj_name": self.compared_obj_name,
+            "object_type": self.object_type,
+            "object_name_plural": self.object_name_plural,
             "table_help": self.table_help,
             "form": self.form,
         }
@@ -169,7 +165,7 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
 
         # Count hits for all genomes
         hit_counts_all = self.get_hit_counts(
-            self.selection, search_on=self.comp_type)
+            self.selection, search_on=self.object_column)
         self.n_hits = len(hit_counts_all.index)
         self.max_n = len(hit_counts_all.columns)
 
@@ -188,9 +184,7 @@ class ExtractHitsBaseView(View, ComparisonViewMixin):
         return render(request, self.template, context)
 
 
-class ExtractOrthogroupView(ExtractHitsBaseView):
-
-    comp_type = "orthogroup"
+class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
 
     _table_headers = ["Orthogroup", "Genes", "Products"]
 
@@ -210,7 +204,7 @@ class ExtractOrthogroupView(ExtractHitsBaseView):
     @property
     def result_tabs(self):
         return [
-            ResultTab(1, self.compared_obj_name, "chlamdb/extract_hits_results_table.html"),
+            ResultTab(1, self.object_name_plural, "chlamdb/extract_hits_results_table.html"),
             ResultTab(2, "Details table", "chlamdb/extract_hits_details_table.html"),
             ]
 
@@ -218,10 +212,6 @@ class ExtractOrthogroupView(ExtractHitsBaseView):
     def table_headers(self):
         return self._table_headers + getattr(self, "opt_header", [])\
                + self.table_count_headers
-
-    @property
-    def get_hit_counts(self):
-        return self.db.get_og_count
 
     @staticmethod
     def get_optional_annotations(db, seqids):
@@ -315,22 +305,16 @@ class ExtractOrthogroupView(ExtractHitsBaseView):
         return context
 
 
-class ExtractPfamView(ExtractHitsBaseView):
-
-    comp_type = "pfam"
+class ExtractPfamView(ExtractHitsBaseView, PfamViewMixin):
 
     _table_headers = ["Pfam entry", "Description"]
 
-    @property
-    def get_hit_counts(self):
-        return self.db.get_pfam_hits
-
     def prepare_data(self, hit_counts, hit_counts_all):
         self.table_data = []
-        pfam_defs = self.db.get_pfam_def(self.selection)
+        pfam_defs = self.get_hit_descriptions(self.selection)
         for pfam in self.selection:
             pfam_def = pfam_defs["def"].loc[pfam]
-            data = [format_pfam(pfam, to_url=True), pfam_def,
+            data = [self.format_entry(pfam, to_url=True), pfam_def,
                     hit_counts.presence.loc[pfam], hit_counts_all.loc[pfam]]
             self.table_data.append(data)
 
@@ -338,30 +322,24 @@ class ExtractPfamView(ExtractHitsBaseView):
         return self.get_context()
 
 
-class ExtractAmrView(ExtractHitsBaseView, AmrAnnotationsMixin):
+class ExtractAmrView(ExtractHitsBaseView, AmrViewMixin):
 
-    comp_type = "amr"
-
-    _table_headers = ["Gene", "Description", "Scope", "Type", "Class",
-                      "Subclass", "HMM"]
+    _table_accessors = ["gene", "seq_name", "scope", "type", "class",
+                        "subclass", "hmm_id"]
 
     @property
-    def get_hit_counts(self):
-        return self.db.get_amr_hit_counts
+    def _table_headers(self):
+        return [self.colname_to_header[colname] for colname in self._table_accessors]
 
     def prepare_data(self, hit_counts, hit_counts_all):
         self.table_data = []
         # retrieve annotations
-        amr_annotations = self.db.get_amr_descriptions(self.selection)
-        self.aggregate_amr_annotations(amr_annotations)
+        amr_annotations = self.get_hit_descriptions(self.selection)
 
         for gene in self.selection:
             amr_annot = amr_annotations[amr_annotations.gene == gene].iloc[0]
-            data = [format_amr(amr_annot.gene, to_url=True),
-                    amr_annot.seq_name, amr_annot.scope, amr_annot.type,
-                    amr_annot["class"], amr_annot.subclass,
-                    format_hmm_url(amr_annot.hmm_id),
-                    hit_counts.presence.loc[gene], hit_counts_all.loc[gene]]
+            data = [amr_annot[key] for key in self._table_accessors]
+            data.extend([hit_counts.presence.loc[gene], hit_counts_all.loc[gene]])
             data = [el if el is not None else "-" for el in data]
             self.table_data.append(data)
 
@@ -369,9 +347,7 @@ class ExtractAmrView(ExtractHitsBaseView, AmrAnnotationsMixin):
         return self.get_context()
 
 
-class ExtractKoView(ExtractHitsBaseView):
-
-    comp_type = "ko"
+class ExtractKoView(ExtractHitsBaseView, KoViewMixin):
 
     _table_headers = ["KO", "Description", "Kegg Pathways", "Kegg Modules"]
 
@@ -379,12 +355,8 @@ class ExtractKoView(ExtractHitsBaseView):
                                         " EC numbers used in enzyme nomenclature",
                          "Kegg Modules": "Kegg modules to whihch it belongs"}
 
-    @property
-    def get_hit_counts(self):
-        return self.db.get_ko_hits
-
     def prepare_data(self, hit_counts, hit_counts_all):
-        ko_desc = self.db.get_ko_desc(self.selection)
+        ko_desc = self.get_hit_descriptions(self.selection)
         ko_mod = self.db.get_ko_modules(self.selection)
         ko_path = self.db.get_ko_pathways(self.selection)
         self.table_data = []
@@ -401,9 +373,7 @@ class ExtractKoView(ExtractHitsBaseView):
         return self.get_context()
 
 
-class ExtractCogView(ExtractHitsBaseView):
-
-    comp_type = "cog"
+class ExtractCogView(ExtractHitsBaseView, CogViewMixin):
 
     _table_headers = ["COG", "Function", "Description"]
 
@@ -427,13 +397,9 @@ class ExtractCogView(ExtractHitsBaseView):
     """
 
     @property
-    def get_hit_counts(self):
-        return self.db.get_cog_hits
-
-    @property
     def result_tabs(self):
         return [
-            ResultTab(1, self.compared_obj_name, "chlamdb/extract_hits_results_table.html"),
+            ResultTab(1, self.object_name_plural, "chlamdb/extract_hits_results_table.html"),
             ResultTab(2, "COG categories barchart", "chlamdb/extract_hits_cog_barcharts.html"),
             ]
 
