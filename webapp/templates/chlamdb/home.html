@@ -236,8 +236,9 @@
                               {% if optional2status|keyvalue:"KEGG" == 1 %}
                                 <dd> - <a href="https://www.genome.jp/kegg/" target="_blank" >KEGG</a> (Kegg orthologs, reference DB version {{versions|keyvalue:"Ko"}})</dd>
                               {% endif %}
-                              <dd> - <a href="https://www.uniprot.org/" target="_blank">SwissProt</a> (manually annotated proteins, reference DB version {{versions|keyvalue:"SwissProt"}})</dd>
-
+                              {% if optional2status|keyvalue:"BLAST_swissprot" == 1 %}
+                                <dd> - <a href="https://www.uniprot.org/" target="_blank">SwissProt</a> (manually annotated proteins, reference DB version {{versions|keyvalue:"SwissProt"}})</dd>
+                              {% endif %}
                               <li> Precomputed phylogenetic reconstructions of orthologous groups</li>
                               {% if optional2status|keyvalue:"KEGG" %}
                                 <li> Kegg maps visualization</li>
