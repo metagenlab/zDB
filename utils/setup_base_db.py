@@ -68,6 +68,7 @@ def create_data_table(db):
         ("phylogenetic_profile", "optional", False),
         ("gbk_files", "optional", False),
         ("AMR", "optional", False),
+        ("BLAST_vfdb", "optional", False),
     ]
     db.load_chlamdb_config_tables(entry_list)
     db.commit()

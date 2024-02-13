@@ -1,9 +1,12 @@
 import os
+import re
 from collections import defaultdict, namedtuple
+from datetime import datetime
 
 import KO_module
 import pandas as pd
 import search_bar
+import xlrd
 from Bio import SeqIO, SeqUtils
 from db_utils import DB
 
@@ -518,7 +521,7 @@ def load_pfam(params, pfam_files, db, pfam_def_file, ref_db_dir):
     db.commit()
 
 
-class SwissProtIdCount(defaultdict):
+class ProtIdCounter(defaultdict):
     def __init__(self):
         super().__init__()
         self.id_count = 0
@@ -562,9 +565,29 @@ def parse_swissprot_id(to_parse):
     return db, ident, name
 
 
+vfdb_id_expr = re.compile(r"(.*)\(gb\|(.*)\)")
+
+
+def parse_vfdb_id(to_parse):
+    """IDs in vfdb.fasta are either of the form VFID(gb_accession) or VFID
+    """
+    if "(" in to_parse:
+        return vfdb_id_expr.match(to_parse).groups()
+    return to_parse, None
+
+
+vfdb_descr_expr = re.compile(r"\(.*?\) (.*?) \[.*?\((VF.*?)\).*?\] \[.*?\]")
+
+
+def parse_vfdb_entry(description):
+    description = description.split(" ", 1)[1]
+    prot_name, vfid = vfdb_descr_expr.match(description).groups()
+    return prot_name, vfid
+
+
 def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db_dir):
     db = DB.load_db(db_name, params)
-    hsh_swissprot_id = SwissProtIdCount()
+    hsh_swissprot_id = ProtIdCounter()
     db.create_swissprot_tables()
 
     # Note: this is not really scalable to x genomes, as
@@ -604,6 +627,61 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db
         if dbname != "UniProt":
             raise ValueError("Could not determine SwissProt DB version")
     db.load_data_into_table("versions", [("SwissProt", version.strip())])
+    db.commit()
+
+
+def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs):
+    db = DB.load_db(db_name, params)
+    hsh_prot_id = ProtIdCounter()
+    db.create_vf_tables()
+
+    # Note: this is not really scalable to x genomes, as
+    # it necessitates to keep the prot id in memory
+    # may need to process the blast results in batch instead (slower but
+    # spares memory).
+    for blast_file in blast_results:
+        data = []
+        with open(blast_file, "r") as blast_fh:
+            for line in blast_fh:
+                crc, gene_id, perid, leng, n_mis, n_gap, qs, qe, ss, se, e, score = line.split()
+                hsh = simplify_hash(crc)
+                prot_id, _ = parse_vfdb_id(gene_id)
+                db_prot_id = hsh_prot_id[prot_id]
+                data.append((hsh, db_prot_id, float(e), int(float(score)),
+                             int(float(perid)), int(n_gap), int(leng)))
+        db.load_vf_hits(data)
+
+    # Definitions are constructed from two data sources.
+    # vfdb_fasta contains matching entries for every hit, with a
+    # VFID relating to more information in VFs.xls
+    vf_defs = pd.read_excel(vfdb_defs, header=1)
+    vf_defs = vf_defs.set_index("VFID")
+
+    vfdb_prot_defs = []
+    for record in SeqIO.parse(vfdb_fasta, "fasta"):
+        prot_id, gb_accession = parse_vfdb_id(record.name)
+        if prot_id not in hsh_prot_id:
+            continue
+        db_prot_id = hsh_prot_id[prot_id]
+        prot_name, vfid = parse_vfdb_entry(record.description)
+        # Get info from definitions
+        vf_data = vf_defs.loc[vfid]
+        vfdb_prot_defs.append(
+            (db_prot_id, prot_id, gb_accession, prot_name, vfid,
+             vf_data.VFcategory, vf_data.Characteristics, vf_data.Structure,
+             vf_data.Function, vf_data.Mechanism))
+    db.load_vf_defs(vfdb_prot_defs)
+    db.set_status_in_config_table("BLAST_vfdb", 1)
+    db.commit()
+
+    # There is no version of the VFdb, only a download date
+    # As there is a new version of the DB every week, the download date
+    # will have to do.
+    book = xlrd.open_workbook(vfdb_defs)
+    sheet = book.sheet_by_index(0)
+    download_date = re.match(r".*\[(.*)\]", sheet.row(0)[3].value).groups()[0]
+    download_date = datetime.strptime(download_date, "%a %b %d %H:%M:%S %Y")
+    db.load_data_into_table("versions", [("VFDB", download_date.date().isoformat())])
     db.commit()
 
 

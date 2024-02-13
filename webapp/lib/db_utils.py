@@ -299,6 +299,38 @@ class DB:
     def load_swissprot_defs(self, data):
         self.load_data_into_table("swissprot_defs", data)
 
+    def create_vf_tables(self):
+        query = (
+            "CREATE TABLE vf_hits ("
+            " hsh INT, prot_id INT, evalue INT, score INT,"
+            " perc_id INT, gaps INT, leng INT"
+            ");"
+        )
+        self.server.adaptor.execute(query,)
+        query = (
+            "CREATE INDEX vfhi ON vf_hits(hsh);"
+        )
+        self.server.adaptor.execute(query,)
+        query = (
+            "CREATE TABLE vf_defs ("
+            " prot_id INT, vfdb_id varchar(15), gb_accession varchar(15),"
+            " prot_name tinytext, vfid varchar(10), category tinytext,"
+            " characteristics TEXT,  structure TEXT, function TEXT,"
+            " mechanism TEXT"
+            ");"
+        )
+        self.server.adaptor.execute(query,)
+        query = (
+            "CREATE INDEX vfdi ON vf_defs(prot_id);"
+        )
+        self.server.adaptor.execute(query,)
+
+    def load_vf_hits(self, data):
+        self.load_data_into_table("vf_hits", data)
+
+    def load_vf_defs(self, data):
+        self.load_data_into_table("vf_defs", data)
+
     def create_diamond_refseq_match_id(self):
         query = (
             "CREATE TABLE diamond_refseq_match_id ( "

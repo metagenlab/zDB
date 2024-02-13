@@ -479,6 +479,10 @@ elif [[ "$1" == "run" ]]; then
 				args="${args} --pfam"
 				shift
 				;;
+			--vfdb)
+				args="${args} --vfdb"
+				shift
+				;;
 			--singularity_dir=*)
 				singularity_dir=$(realpath ${i#*=})
 				shift
@@ -503,6 +507,7 @@ elif [[ "$1" == "run" ]]; then
 				echo " --ko: perform ko (metabolism) annotation"
 				echo " --pfam: peform PFAM domain annotation"
 				echo " --swissprot: search for homologs in the swissprot database"
+				echo " --vfdb: search for homologs in the virulence factor database"
 				echo " --ref_dir: directory where the reference databases were setup up (default zdb_ref)"
 				echo " --cpu: number of parallel processes allowed (default 8)"
 				echo " --mem: max memory usage allowed (default 8GB)"

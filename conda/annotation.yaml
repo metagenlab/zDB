@@ -11,3 +11,4 @@ dependencies:
     - numpy
     - pandas
     - metagenlab_libs
+    - xlrd
