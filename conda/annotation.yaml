@@ -2,7 +2,6 @@ name: annotation-base
 channels:
     - anaconda
     - conda-forge
-    - metagenlab
 dependencies:
     - python=3.9
     - whoosh
@@ -10,5 +9,4 @@ dependencies:
     - biopython>=1.8
     - numpy
     - pandas
-    - metagenlab_libs
     - xlrd
