@@ -497,7 +497,8 @@ process execute_amrscan {
   conda "$baseDir/conda/amrfinderplus.yaml"
 
   input:
-  file(seq)
+    file(seq)
+    file(version)
 
   output:
       file "amrfinder_results*.tab"
@@ -999,7 +1000,7 @@ workflow {
 
     if(params.amr) {
         amr_version = prepare_amrscan()
-        amr_table = execute_amrscan(split_nr_seqs)
+        amr_table = execute_amrscan(split_nr_seqs, amr_version)
         db = load_amr_into_db(amr_table.collect(), db, amr_version)
     }
 
