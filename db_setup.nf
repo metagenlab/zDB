@@ -151,8 +151,6 @@ process prepare_swissprot {
 
 process download_vfdb {
 
-    publishDir "$params.vf_db", mode: "move"
-
     output:
         tuple path("vfdb.fasta"), path("VFs.xls")
 
@@ -164,6 +162,24 @@ process download_vfdb {
     gunzip < VFs.xls.gz > VFs.xls
     rm VFDB_setB_nt.fas.gz
     rm VFs.xls.gz
+    """
+}
+
+process prepare_vfdb {
+    container "$params.blast_container"
+    conda "$baseDir/conda/blast.yaml"
+
+    publishDir "$params.vf_db", mode: "move"
+
+    input:
+        tuple path(vfdb_fasta), path(vf_descr)
+
+    output:
+        path("*", includeInputs: true)
+
+    script:
+    """
+    makeblastdb -dbtype prot -in $vfdb_fasta
     """
 }
 
@@ -193,7 +209,7 @@ workflow setup_swissprot_db {
 }
 
 workflow setup_vfdb {
-    download_vfdb()
+    download_vfdb() | prepare_vfdb
 }
 
 workflow {
