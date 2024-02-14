@@ -229,7 +229,8 @@ class OrthogroupViewMixin(BaseViewMixin):
     def get_hit_descriptions(self, ids, transformed=True):
         descriptions = self.db.get_genes_from_og(ids)
         if transformed:
-            descriptions["pfam"] = descriptions["pfam"].apply(self.format_entry)
+            descriptions["orthogroup"] = descriptions["orthogroup"].apply(
+                self.format_entry)
         return descriptions
 
     @staticmethod
