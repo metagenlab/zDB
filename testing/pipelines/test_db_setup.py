@@ -108,3 +108,20 @@ class TestDBSetupPipeline(BasePipelineTestCase):
         self.assertItemsEqual(
             expected_files,
             os.listdir(os.path.join(self.ref_db_dir, "uniprot", "swissprot")))
+
+    def test_creating_vf_db(self):
+        self.nf_params["vfdb"] = "true"
+        execution = self.execute_pipeline()
+        self.assert_success(execution)
+
+        self.assertEqual([proc.name for proc in execution.process_executions],
+                         ["setup_vfdb:download_vfdb"])
+
+        download_process = execution.process_executions[0]
+        # Files are moved to zdb_ref/vfdb
+        expected_files = ['vfdb.fasta',
+                          'VFs.xls']
+        self.assert_created_files(download_process, [])
+        self.assertItemsEqual(
+            expected_files,
+            os.listdir(os.path.join(self.ref_db_dir, "vfdb")))

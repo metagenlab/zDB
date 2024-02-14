@@ -509,6 +509,24 @@ process execute_amrscan {
   """
 }
 
+process blast_vfdb {
+  container "$params.blast_container"
+  conda "$baseDir/conda/blast.yaml"
+
+  input:
+      tuple (path(vf_db), path(seq))
+
+  output:
+      path '*tab'
+
+  script:
+
+  n = seq.name
+  """
+  blastp -db $vf_db/vfdb.fasta -query ${n} -outfmt 6 -evalue 10.0 > ${n}.tab
+  """
+}
+
 process setup_db {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
@@ -797,6 +815,32 @@ process load_amr_into_db {
         """
 }
 
+process load_vfdb_hits_into_db {
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
+    input:
+        path db
+        path blast_results
+        path vf_db_fasta
+        path vf_db_defs
+
+    output:
+        path db
+
+    script:
+    """
+        #!/usr/bin/env python
+        import setup_chlamdb
+
+        kwargs = ${gen_python_args()}
+        blast_results = "$blast_results".split()
+
+        setup_chlamdb.load_vfdb_hits(kwargs, blast_results, "$db", "$vf_db_fasta", "$vf_db_defs")
+    """
+}
+
+
 process create_chlamdb_search_index {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
@@ -957,6 +1001,13 @@ workflow {
         amr_version = prepare_amrscan()
         amr_table = execute_amrscan(split_nr_seqs)
         db = load_amr_into_db(amr_table.collect(), db, amr_version)
+    }
+
+    if(params.vfdb) {
+        vf_ref_db = Channel.fromPath("$params.vf_db", type: "dir")
+        db_seq_combined = vf_ref_db.combine(split_nr_seqs)
+        vfdb_blast = blast_vfdb(db_seq_combined)
+        db = load_vfdb_hits_into_db(db, vfdb_blast.collect(), Channel.fromPath("$params.vf_db/vfdb.fasta"), Channel.fromPath("$params.vf_db/VFs.xls"))
     }
 
     (to_index_cleanup, to_db_cleanup) = create_chlamdb_search_index(db)

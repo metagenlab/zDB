@@ -149,6 +149,40 @@ process prepare_swissprot {
     """
 }
 
+process download_vfdb {
+
+    output:
+        tuple path("vfdb.fasta"), path("VFs.xls")
+
+    script:
+    """
+    wget http://www.mgc.ac.cn/VFs/Down/VFDB_setB_nt.fas.gz
+    wget http://www.mgc.ac.cn/VFs/Down/VFs.xls.gz
+    gunzip < VFDB_setB_nt.fas.gz > vfdb.fasta
+    gunzip < VFs.xls.gz > VFs.xls
+    rm VFDB_setB_nt.fas.gz
+    rm VFs.xls.gz
+    """
+}
+
+process prepare_vfdb {
+    container "$params.blast_container"
+    conda "$baseDir/conda/blast.yaml"
+
+    publishDir "$params.vf_db", mode: "move"
+
+    input:
+        tuple path(vfdb_fasta), path(vf_descr)
+
+    output:
+        path("*", includeInputs: true)
+
+    script:
+    """
+    makeblastdb -dbtype prot -in $vfdb_fasta
+    """
+}
+
 workflow setup_cogg_db {
     download_cog_cdd() | setup_cog_cdd
 }
@@ -174,6 +208,10 @@ workflow setup_swissprot_db {
     download_swissprot() | prepare_swissprot
 }
 
+workflow setup_vfdb {
+    download_vfdb() | prepare_vfdb
+}
+
 workflow {
     if( params.cog )
         setup_cogg_db()
@@ -189,4 +227,7 @@ workflow {
 
     if ( params.blast_swissprot )
         setup_swissprot_db()
+
+    if ( params.vfdb )
+        setup_vfdb()
 }
