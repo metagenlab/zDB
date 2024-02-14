@@ -127,7 +127,7 @@ class PfamComparisonView(TabularComparisonViewBase, PfamViewMixin):
 
     @property
     def base_info_headers(self):
-        return [self.colname_to_header[colname]
+        return [self.colname_to_header(colname)
                 for colname in self.base_info_accessors]
 
     def get_table_rows(self):
@@ -294,7 +294,7 @@ class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
 
     @property
     def base_info_headers(self):
-        return [self.colname_to_header[colname]
+        return [self.colname_to_header(colname)
                 for colname in self.base_info_accessors]
 
     @property

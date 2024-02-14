@@ -3,12 +3,11 @@ from django.conf import settings
 from django.shortcuts import render
 from django.views import View
 from ete3 import Tree
-from lib.db_utils import DB
 from lib.ete_phylo import EteTree, SimpleColorColumn
 
 from views.mixins import AmrViewMixin, CogViewMixin, KoViewMixin, PfamViewMixin
 from views.utils import (format_ko_module, format_ko_path, format_orthogroup,
-                         my_locals, page2title)
+                         my_locals)
 
 
 class FamCogColorFunc:
@@ -128,7 +127,7 @@ class FamBaseView(View):
         path = settings.BASE_DIR + "/assets/" + asset_path
         e_tree.render(path, dpi=500)
 
-        info = {self.colname_to_header[key]: infos[key]
+        info = {self.colname_to_header(key): infos[key]
                 for key in self.accessors if infos[key]}
 
         context = {

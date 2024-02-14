@@ -5,15 +5,15 @@ from django.shortcuts import render
 from django.views import View
 
 from views.mixins import (AmrViewMixin, BaseViewMixin, CogViewMixin,
-                          PfamViewMixin)
+                          KoViewMixin, PfamViewMixin)
 from views.utils import (format_ko, format_ko_modules, format_ko_path,
                          my_locals, page2title)
 
 
 class EntryListViewBase(View, BaseViewMixin):
 
-    table_headers = None
     table_data_accessors = None
+    _specific_colname_to_header_mapping = {"freq": "Frequency (n genomes)"}
 
     def get(self, request):
         page_title = page2title[f"entry_list_{self.object_type}"]
@@ -60,16 +60,12 @@ class EntryListViewBase(View, BaseViewMixin):
 
 class PfamEntryListView(EntryListViewBase, PfamViewMixin):
 
-    table_headers = ["Accession", "Description", "Count", "Frequency (n genomes)"]
     table_data_accessors = ["pfam", "def", "count", "freq"]
 
 
-class KoEntryListView(EntryListViewBase):
+class KoEntryListView(EntryListViewBase, KoViewMixin):
 
-    object_type = "ko"
-    table_headers = ["Accession", "Description", "Modules", "Pathways",
-                     "Count", "Frequency (n genomes)"]
-    table_data_accessors = ["accession", "description", "modules", "pathways",
+    table_data_accessors = ["ko", "description", "modules", "pathways",
                             "count", "freq"]
 
     def get_table_data(self):
@@ -86,7 +82,7 @@ class KoEntryListView(EntryListViewBase):
         combined_df = pd.DataFrame(ko_all.sum(axis=1).rename('count'))
         ko_freq = ko_all[ko_all > 0].count(axis=1).to_dict()
 
-        combined_df["accession"] = [format_ko(ko, as_url=True) for ko in combined_df.index]
+        combined_df["ko"] = [format_ko(ko, as_url=True) for ko in combined_df.index]
         combined_df["modules"] = [format_ko_modules(ko_mod, ko) if ko in ko_mod else '-' for ko in combined_df.index]
         combined_df["description"] = [ko_desc[ko] for ko in combined_df.index]
         combined_df["pathways"] = [format_ko_path(ko_path, ko) if ko in ko_path else '-' for ko in combined_df.index]
@@ -97,15 +93,11 @@ class KoEntryListView(EntryListViewBase):
 
 class CogEntryListView(EntryListViewBase, CogViewMixin):
 
-    table_headers = ["Accession", "Function", "Description", "Count",
-                     "Frequency (n genomes)"]
     table_data_accessors = ["cog", "function", "description", "count",
                             "freq"]
 
 
 class AmrEntryListView(EntryListViewBase, AmrViewMixin):
 
-    table_headers = ["Gene", "Description", "Scope", "Type", "Class",
-                     "Subclass", "HMM", "Count", "Frequency (n genomes)"]
     table_data_accessors = ["gene", "seq_name", "scope", "type", "class",
                             "subclass", "hmm_id", "count", "freq"]

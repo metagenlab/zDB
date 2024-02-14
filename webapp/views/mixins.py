@@ -9,6 +9,8 @@ from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
 class BaseViewMixin():
 
     _db = None
+    _base_colname_to_header_mapping = {}
+    _specific_colname_to_header_mapping = {}
 
     @property
     def db(self):
@@ -32,6 +34,16 @@ class BaseViewMixin():
     def object_column(self):
         return self.object_type
 
+    def colname_to_header(self, colname):
+        return self._specific_colname_to_header_mapping.get(
+            colname, self._base_colname_to_header_mapping.get(
+                colname, colname.capitalize()))
+
+    @property
+    def table_headers(self):
+        return [self.colname_to_header(col)
+                for col in self.table_data_accessors]
+
 
 class ComparisonViewMixin(BaseViewMixin):
 
@@ -54,13 +66,8 @@ class AmrViewMixin(BaseViewMixin):
     object_name = "AMR gene"
     object_column = "gene"
 
-    colname_to_header = {
-        "gene": "Gene",
+    _base_colname_to_header_mapping = {
         "seq_name": "Description",
-        "scope": "Scope",
-        "type": "Type",
-        "class": "Class",
-        "subclass": "Subclass",
         "hmm_id": "HMM"
     }
 
@@ -120,11 +127,10 @@ class CogViewMixin(BaseViewMixin):
     object_name_plural = "COG entries"
     object_name_singular_or_plural = "COG entry(ies)"
 
-    colname_to_header = {
+    _base_colname_to_header_mapping = {
         "cog": "ID",
         "function": "Function(s)",
         "function_descr": "Function(s)",
-        "description": "Description",
     }
 
     _cog_code_descriptions = None
@@ -163,9 +169,8 @@ class KoViewMixin(BaseViewMixin):
     object_type = "ko"
     object_name = "Kegg Ortholog"
 
-    colname_to_header = {
+    _base_colname_to_header_mapping = {
         "ko": "KO",
-        "description": "Description",
     }
 
     @property
@@ -190,7 +195,7 @@ class PfamViewMixin(BaseViewMixin):
     object_type = "pfam"
     object_name = "Pfam domain"
 
-    colname_to_header = {
+    _base_colname_to_header_mapping = {
         "pfam": "Domain ID",
         "def": "Description",
         "ttl_cnt": "nDomains"

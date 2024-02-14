@@ -20,11 +20,6 @@ class VennBaseView(View):
     def view_name(self):
         return f"venn_{self.object_type}"
 
-    @property
-    def table_headers(self):
-        return [self.colname_to_header[col]
-                for col in self.table_data_accessors]
-
     def dispatch(self, request, *args, **kwargs):
         self.form_class = make_venn_from(self.db, label=self.object_name_plural,
                                          limit=6, action=self.view_name)

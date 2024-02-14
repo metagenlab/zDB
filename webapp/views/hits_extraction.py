@@ -324,12 +324,8 @@ class ExtractPfamView(ExtractHitsBaseView, PfamViewMixin):
 
 class ExtractAmrView(ExtractHitsBaseView, AmrViewMixin):
 
-    _table_accessors = ["gene", "seq_name", "scope", "type", "class",
-                        "subclass", "hmm_id"]
-
-    @property
-    def _table_headers(self):
-        return [self.colname_to_header[colname] for colname in self._table_accessors]
+    table_data_accessors = ["gene", "seq_name", "scope", "type", "class",
+                            "subclass", "hmm_id"]
 
     def prepare_data(self, hit_counts, hit_counts_all):
         self.table_data = []
@@ -338,7 +334,7 @@ class ExtractAmrView(ExtractHitsBaseView, AmrViewMixin):
 
         for gene in self.selection:
             amr_annot = amr_annotations[amr_annotations.gene == gene].iloc[0]
-            data = [amr_annot[key] for key in self._table_accessors]
+            data = [amr_annot[key] for key in self.table_data_accessors]
             data.extend([hit_counts.presence.loc[gene], hit_counts_all.loc[gene]])
             data = [el if el is not None else "-" for el in data]
             self.table_data.append(data)
