@@ -420,7 +420,7 @@ def get_gen_stats(gbk_list):
         cds_length = 0
         for record in SeqIO.parse(gbk_file, "genbank"):
             ttl_length += len(record)
-            gc_cum += SeqUtils.GC(record.seq) * len(record)
+            gc_cum += SeqUtils.gc_fraction(record.seq) * len(record)
             for fet in record.features:
                 if fet.type in ["CDS", "tmRNA", "rRNA", "ncRNA", "tRNA"]:
                     if "pseudo" in fet.qualifiers:
