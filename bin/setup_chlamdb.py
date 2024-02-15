@@ -575,13 +575,13 @@ def parse_vf_gene_id(to_parse):
     return to_parse, None
 
 
-vfdb_descr_expr = re.compile(r"\(.*?\) (.*?) \[.*?\((VF.*?)\).*?\] \[.*?\]")
+vfdb_descr_expr = re.compile(r"\(.*?\) (.*?) \[.*?\((VF.*?)\) - (.*?) \(.*?\)\] \[(.*?)\]")
 
 
 def parse_vfdb_entry(description):
     description = description.split(" ", 1)[1]
-    prot_name, vfid = vfdb_descr_expr.match(description).groups()
-    return prot_name, vfid
+    prot_name, vfid, category, organism = vfdb_descr_expr.match(description).groups()
+    return prot_name, vfid, category, organism
 
 
 def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db_dir):
@@ -662,13 +662,17 @@ def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs):
         if vf_gene_id not in hsh_prot_id:
             continue
         db_vf_id = hsh_prot_id[vf_gene_id]
-        prot_name, vfid = parse_vfdb_entry(record.description)
+        prot_name, vfid, category, organism = parse_vfdb_entry(record.description)
         # Get info from definitions.
-        vf_data = vf_defs.loc[vfid]
+        # Note that not all vfids have an entry in the definitions table
+        if vfid in vf_defs.index:
+            vf_data = vf_defs.loc[vfid]
+        else:
+            vf_data = {}
         vfdb_prot_defs.append(
-            (db_vf_id, vf_gene_id, gb_accession, prot_name, vfid,
-             vf_data.Category, vf_data.Characteristics, vf_data.Structure,
-             vf_data.Function, vf_data.Mechanism))
+            (db_vf_id, vf_gene_id, gb_accession, prot_name, vfid, category,
+             vf_data.get("Characteristics"), vf_data.get("Structure"),
+             vf_data.get("Function"), vf_data.get("Mechanism")))
     db.load_vf_defs(vfdb_prot_defs)
     db.set_status_in_config_table("BLAST_vfdb", 1)
     db.commit()
