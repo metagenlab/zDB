@@ -243,6 +243,12 @@ class VfViewMixin(BaseViewMixin):
     object_type = "vf"
     object_name = "Virulence factor"
 
+    _base_colname_to_header_mapping = {
+        "vf_gene_id": "VF gene ID",
+        "prot_name": "Protein",
+        "vfid": "VF ID"
+    }
+
     @property
     def get_hit_counts(self):
         return self.db.vf.get_hit_counts
