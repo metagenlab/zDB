@@ -434,7 +434,7 @@ process blast_swissprot {
   n = seq.name
   """
   blastp -db $swissprot_db/swissprot.fasta -query ${n} \
-            -outfmt 6 -evalue 0.001 > ${n}.tab
+  -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > ${n}.tab
   """
 }
 
@@ -525,7 +525,7 @@ process blast_vfdb {
 
   n = seq.name
   """
-  blastp -db $vf_db/vfdb.fasta -query ${n} -outfmt 6 -evalue 10.0 > ${n}.tab
+  blastp -db $vf_db/vfdb.fasta -query ${n} -outfmt 6 -evalue 10.0 -num_threads ${task.cpus} > ${n}.tab
   """
 }
 
