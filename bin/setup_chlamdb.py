@@ -3,12 +3,11 @@ import re
 from collections import defaultdict, namedtuple
 from datetime import datetime
 
-import KO_module
 import pandas as pd
-import search_bar
 import xlrd
 from Bio import SeqIO, SeqUtils
-from db_utils import DB
+from lib import KO_module, search_bar
+from lib.db_utils import DB
 
 
 # assumes orthofinder named: OG000N
