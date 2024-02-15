@@ -302,7 +302,7 @@ class DB:
     def create_vf_tables(self):
         query = (
             "CREATE TABLE vf_hits ("
-            " hsh INT, prot_id INT, evalue INT, score INT,"
+            " hsh INT, vf_id INT, evalue INT, score INT,"
             " perc_id INT, gaps INT, leng INT"
             ");"
         )
@@ -313,7 +313,7 @@ class DB:
         self.server.adaptor.execute(query,)
         query = (
             "CREATE TABLE vf_defs ("
-            " prot_id INT, vfdb_id varchar(15), gb_accession varchar(15),"
+            " vf_id INT, vf_gene_id varchar(15), gb_accession varchar(15),"
             " prot_name tinytext, vfid varchar(10), category tinytext,"
             " characteristics TEXT,  structure TEXT, function TEXT,"
             " mechanism TEXT"
@@ -321,7 +321,7 @@ class DB:
         )
         self.server.adaptor.execute(query,)
         query = (
-            "CREATE INDEX vfdi ON vf_defs(prot_id);"
+            "CREATE INDEX vfdi ON vf_defs(vf_id);"
         )
         self.server.adaptor.execute(query,)
 
