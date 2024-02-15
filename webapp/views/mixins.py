@@ -236,3 +236,25 @@ class OrthogroupViewMixin(BaseViewMixin):
     @staticmethod
     def format_entry(entry, to_url=False):
         return format_orthogroup(entry, to_url=to_url)
+
+
+class VfViewMixin(BaseViewMixin):
+
+    object_type = "vf"
+    object_name = "Virulence factor"
+
+    @property
+    def get_hit_counts(self):
+        return self.db.vf.get_hit_counts
+
+    def get_hit_descriptions(self, ids, transformed=True):
+        descriptions = self.db.vf.get_hit_descriptions(ids)
+        if transformed:
+            descriptions["vf_id"] = descriptions["vf_id"].apply(self.format_entry)
+        return descriptions
+
+    @staticmethod
+    def format_entry(entry, to_url=False):
+        """Will point to the details page as soon as it exists
+        """
+        return entry
