@@ -182,6 +182,8 @@ class ComparisonIndexView(View, ComparisonViewMixin):
             boxes.append("barcharts")
         elif self.comp_type == "cog":
             boxes.extend(["barcharts", "heatmap-count", "heatmap-fraction"])
+        elif self.comp_type == "vf":
+            boxes = ["entry-list"]
         return boxes
 
     def dispatch(self, request, comp_type, *args, **kwargs):

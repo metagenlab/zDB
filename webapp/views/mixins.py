@@ -52,7 +52,8 @@ class ComparisonViewMixin(BaseViewMixin):
         "pfam": "Pfam domains",
         "ko": "Kegg Orthologs",
         "orthogroup": "Orthologous groups",
-        "amr": "AMR"
+        "amr": "AMR",
+        "vf": "Virulence Factors"
     }
 
     @property

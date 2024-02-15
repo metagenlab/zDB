@@ -17,6 +17,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add VF comparison index view and link it in the menu and home page. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)
 - Add VF entry list view. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)
 - Add virulence factor annotations. ([#56](https://github.com/metagenlab/zDB/pull/56)) (Niklaus Johner)
 - Store reference DB and software versions in DB. ([#54](https://github.com/metagenlab/zDB/pull/54)) (Niklaus Johner)

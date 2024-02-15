@@ -30,7 +30,7 @@ title2page = {
         'extract_orthogroup', 'heatmap_orthogroup', 'index_comp_orthogroup',
         'orthogroup_comparison', 'pan_genome_orthogroup', 'plot_heatmap_orthogroup',
         'venn_orthogroup'],
-    'Comparisons: Virulence Factors': ['entry_list_vf'],
+    'Comparisons: Virulence Factors': ['entry_list_vf', 'index_comp_vf'],
     'Genome alignments: Circos plot': ['circos'],
     'Genome alignments: Plot region': ['plot_region'],
     'Genomes: table of contents': ['extract_contigs', 'genomes_intro'],
