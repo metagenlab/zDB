@@ -55,6 +55,7 @@ urlpatterns = [
     re_path(r'^fam_ko/(K[0-9]+)$', fam.FamKoView.as_view(), name="fam_ko"),
     re_path(r'^fam_cog/(COG[0-9]+)$', fam.FamCogView.as_view(), name="fam_cog"),  # noqa
     re_path(r'^fam_amr/([a-zA-Z0-9_\.\(\)\-\']+)$', fam.FamAmrView.as_view(), name="fam_amr"),  # noqa
+    re_path(r'^extract_vf/$', hits_extraction.ExtractVfView.as_view(), name="extract_vf"),  # noq
     re_path(r'^extract_pfam/$', hits_extraction.ExtractPfamView.as_view(), name="extract_pfam"),  # noqa
     re_path(r'^extract_orthogroup/$', hits_extraction.ExtractOrthogroupView.as_view(), name="extract_orthogroup"),  # noqa
     re_path(r'^extract_ko/$', hits_extraction.ExtractKoView.as_view(), name="extract_ko"),  # noqa

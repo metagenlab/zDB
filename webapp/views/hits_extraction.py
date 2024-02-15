@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.views import View
 
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
-                          OrthogroupViewMixin, PfamViewMixin)
+                          OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
 from views.utils import (format_cog, format_cog_url, format_ko,
                          format_ko_modules, format_ko_path, format_ko_url,
                          format_locus, format_lst_to_html, format_orthogroup,
@@ -339,6 +339,29 @@ class ExtractAmrView(AmrViewMixin, ExtractHitsBaseView):
             amr_annot = amr_annotations.loc[gene]
             data = [amr_annot[key] for key in self.table_data_accessors]
             data.extend([hit_counts.presence.loc[gene], hit_counts_all.loc[gene]])
+            data = [el if el is not None else "-" for el in data]
+            self.table_data.append(data)
+
+        self.show_results = True
+        return self.get_context()
+
+
+class ExtractVfView(VfViewMixin, ExtractHitsBaseView):
+
+    table_data_accessors = ["vf_gene_id", "prot_name", "vfid", "category"]
+
+    @property
+    def _table_headers(self):
+        return super(ExtractAmrView, self).table_headers
+
+    def prepare_data(self, hit_counts, hit_counts_all):
+        self.table_data = []
+        # retrieve descriptions
+        descriptions = self.get_hit_descriptions(self.selection)
+        for entry in self.selection:
+            amr_annot = descriptions.loc[entry]
+            data = [amr_annot[key] for key in self.table_data_accessors]
+            data.extend([hit_counts.presence.loc[entry], hit_counts_all.loc[entry]])
             data = [el if el is not None else "-" for el in data]
             self.table_data.append(data)
 
