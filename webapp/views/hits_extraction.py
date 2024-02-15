@@ -322,10 +322,14 @@ class ExtractPfamView(ExtractHitsBaseView, PfamViewMixin):
         return self.get_context()
 
 
-class ExtractAmrView(ExtractHitsBaseView, AmrViewMixin):
+class ExtractAmrView(AmrViewMixin, ExtractHitsBaseView):
 
     table_data_accessors = ["gene", "seq_name", "scope", "type", "class",
                             "subclass", "hmm_id"]
+
+    @property
+    def _table_headers(self):
+        return super(ExtractAmrView, self).table_headers
 
     def prepare_data(self, hit_counts, hit_counts_all):
         self.table_data = []
