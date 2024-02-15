@@ -64,6 +64,10 @@ class ExtractHitsBaseView(View):
                 "Presence in database (%)"]
 
     @property
+    def _table_headers(self):
+        return super(ExtractHitsBaseView, self).table_headers
+
+    @property
     def table_headers(self):
         return self._table_headers + self.table_count_headers
 
@@ -182,6 +186,20 @@ class ExtractHitsBaseView(View):
             return render(request, self.template, context)
 
         return render(request, self.template, context)
+
+    def prepare_data(self, hit_counts, hit_counts_all):
+        self.table_data = []
+        # retrieve descriptions
+        descriptions = self.get_hit_descriptions(self.selection)
+        for entry in self.selection:
+            amr_annot = descriptions.loc[entry]
+            data = [amr_annot[key] for key in self.table_data_accessors]
+            data.extend([hit_counts.presence.loc[entry], hit_counts_all.loc[entry]])
+            data = [el if el is not None else "-" for el in data]
+            self.table_data.append(data)
+
+        self.show_results = True
+        return self.get_context()
 
 
 class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
@@ -307,66 +325,18 @@ class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
 
 class ExtractPfamView(ExtractHitsBaseView, PfamViewMixin):
 
-    _table_headers = ["Pfam entry", "Description"]
-
-    def prepare_data(self, hit_counts, hit_counts_all):
-        self.table_data = []
-        pfam_defs = self.get_hit_descriptions(self.selection)
-        for pfam in self.selection:
-            pfam_def = pfam_defs["def"].loc[pfam]
-            data = [self.format_entry(pfam, to_url=True), pfam_def,
-                    hit_counts.presence.loc[pfam], hit_counts_all.loc[pfam]]
-            self.table_data.append(data)
-
-        self.show_results = True
-        return self.get_context()
+    table_data_accessors = ["pfam", "def"]
 
 
-class ExtractAmrView(AmrViewMixin, ExtractHitsBaseView):
+class ExtractAmrView(ExtractHitsBaseView, AmrViewMixin):
 
     table_data_accessors = ["gene", "seq_name", "scope", "type", "class",
                             "subclass", "hmm_id"]
 
-    @property
-    def _table_headers(self):
-        return super(ExtractAmrView, self).table_headers
 
-    def prepare_data(self, hit_counts, hit_counts_all):
-        self.table_data = []
-        # retrieve annotations
-        amr_annotations = self.get_hit_descriptions(self.selection)
-        for gene in self.selection:
-            amr_annot = amr_annotations.loc[gene]
-            data = [amr_annot[key] for key in self.table_data_accessors]
-            data.extend([hit_counts.presence.loc[gene], hit_counts_all.loc[gene]])
-            data = [el if el is not None else "-" for el in data]
-            self.table_data.append(data)
-
-        self.show_results = True
-        return self.get_context()
-
-
-class ExtractVfView(VfViewMixin, ExtractHitsBaseView):
+class ExtractVfView(ExtractHitsBaseView, VfViewMixin):
 
     table_data_accessors = ["vf_gene_id", "prot_name", "vfid", "category"]
-
-    @property
-    def _table_headers(self):
-        return super(ExtractAmrView, self).table_headers
-
-    def prepare_data(self, hit_counts, hit_counts_all):
-        self.table_data = []
-        # retrieve descriptions
-        descriptions = self.get_hit_descriptions(self.selection)
-        for entry in self.selection:
-            amr_annot = descriptions.loc[entry]
-            data = [amr_annot[key] for key in self.table_data_accessors]
-            data.extend([hit_counts.presence.loc[entry], hit_counts_all.loc[entry]])
-            data = [el if el is not None else "-" for el in data]
-            self.table_data.append(data)
-
-        self.show_results = True
-        return self.get_context()
 
 
 class ExtractKoView(ExtractHitsBaseView, KoViewMixin):
