@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.views import View
 
 from views.mixins import (AmrViewMixin, BaseViewMixin, CogViewMixin,
-                          KoViewMixin, PfamViewMixin)
+                          KoViewMixin, PfamViewMixin, VfViewMixin)
 from views.utils import (format_ko, format_ko_modules, format_ko_path,
                          my_locals, page2title)
 
@@ -101,3 +101,8 @@ class AmrEntryListView(EntryListViewBase, AmrViewMixin):
 
     table_data_accessors = ["gene", "seq_name", "scope", "type", "class",
                             "subclass", "hmm_id", "count", "freq"]
+
+
+class VfEntryListView(EntryListViewBase, VfViewMixin):
+
+    table_data_accessors = ["vf_gene_id", "prot_name", "vfid", "category"]

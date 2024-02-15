@@ -61,6 +61,7 @@ urlpatterns = [
     re_path(r'^extract_contigs/([0-9]+)', views.extract_contigs, name='extract_contigs'),  # noqa
     re_path(r'^extract_cog/$', hits_extraction.ExtractCogView.as_view(), name="extract_cog"),  # noqa
     re_path(r'^extract_amr/$', hits_extraction.ExtractAmrView.as_view(), name="extract_amr"),  # noqa
+    re_path(r'^entry_list_vf$', entry_lists.VfEntryListView.as_view(), name="entry_list_vf"),  # noqa
     re_path(r'^entry_list_pfam$', entry_lists.PfamEntryListView.as_view(), name="entry_list_pfam"),  # noqa
     re_path(r'^entry_list_ko$', entry_lists.KoEntryListView.as_view(), name="entry_list_ko"),  # noqa
     re_path(r'^entry_list_cog$', entry_lists.CogEntryListView.as_view(), name="entry_list_cog"),  # noqa
