@@ -4,6 +4,8 @@ import pandas as pd
 from Bio.Seq import Seq
 from BioSQL import BioSeqDatabase
 
+from lib.queries import VFQueries
+
 # This file defines a class DB, that encapsulates all the SQL requests
 # necessary to create the zDB database.
 # In the future, the goal is to import all database queries needed by the
@@ -36,6 +38,7 @@ class DB:
         self.conn_refseq = None
         # this will need to be changed in case a MySQL database is used
         self.placeholder = "?"
+        self.vf = VFQueries(self)
 
     # the next two methods are necessary for DB objects to be used
     # in 'with' blocks.
@@ -462,7 +465,7 @@ class DB:
         query_string = ",".join(["\"" + a + "\"" for a in accession])
         query = (
             f"SELECT accession, taxid FROM accession2taxid "
-            f"WHERE accession IN ({query_string});" 
+            f"WHERE accession IN ({query_string});"
         )
         results = cursor.execute(query,).fetchall()
         hsh_results = {}
@@ -1287,7 +1290,7 @@ class DB:
             "SELECT entry.taxon_id, txn_name.name,  "
             f" CASE WHEN EXISTS ({has_plasmid_query}) THEN 1 ELSE 0 END "
             "FROM bioentry AS entry "
-            "INNER JOIN bioentry_qualifier_value AS orga ON entry.bioentry_id=orga.bioentry_id " 
+            "INNER JOIN bioentry_qualifier_value AS orga ON entry.bioentry_id=orga.bioentry_id "
             "INNER JOIN taxon_name as txn_name ON entry.taxon_id=txn_name.taxon_id "
             "INNER JOIN term AS orga_term ON orga.term_id=orga_term.term_id "
             " AND orga_term.name=\"organism\" "
@@ -1747,6 +1750,7 @@ class DB:
     #
     # NOTE: may be interesting to use int8/16 whenever possible
     # to spare memory.
+    @staticmethod
     def to_pandas_frame(db_results, columns, types=None):
         return pd.DataFrame(db_results, columns=columns)
 
