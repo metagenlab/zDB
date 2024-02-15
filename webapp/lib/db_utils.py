@@ -2478,7 +2478,7 @@ class DB:
             where_clause = f" bioentry.bioentry_id IN ({entries}) "
         elif search_on == "seqid":
             where_clause = f" hsh.seqid IN ({entries}) "
-        elif search_on == "amr":
+        elif search_on == "amr" or search_on == "gene":
             where_clause = f" gene IN ({entries}) "
         elif search_on == "taxid":
             where_clause = f" bioentry.taxon_id IN ({entries}) "
@@ -2538,6 +2538,8 @@ class DB:
                 column_names.insert(1, "plasmid")
                 index.insert(1, "plasmid")
             df = DB.to_pandas_frame(results, column_names)
+            if df.empty:
+                return df
             df = df.set_index(index).unstack(level=0, fill_value=0)
 
             if plasmids is not None:

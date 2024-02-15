@@ -335,9 +335,8 @@ class ExtractAmrView(AmrViewMixin, ExtractHitsBaseView):
         self.table_data = []
         # retrieve annotations
         amr_annotations = self.get_hit_descriptions(self.selection)
-
         for gene in self.selection:
-            amr_annot = amr_annotations[amr_annotations.gene == gene].iloc[0]
+            amr_annot = amr_annotations.loc[gene]
             data = [amr_annot[key] for key in self.table_data_accessors]
             data.extend([hit_counts.presence.loc[gene], hit_counts_all.loc[gene]])
             data = [el if el is not None else "-" for el in data]
