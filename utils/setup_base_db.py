@@ -33,8 +33,9 @@ from urllib.request import urljoin, urlretrieve
 # to be removed in favor of a local version
 from Bio.KEGG import REST
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from webapp.lib import db_utils  # noqa
+zdbdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.join(zdbdir, "webapp"))
+from lib import db_utils  # noqa
 
 # from REST documentation, can get a max of 10 queries
 # in kegg_get
