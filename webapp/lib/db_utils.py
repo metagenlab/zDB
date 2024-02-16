@@ -318,8 +318,8 @@ class DB:
             "CREATE TABLE vf_defs ("
             " vf_gene_id varchar(15), gb_accession varchar(15),"
             " prot_name tinytext, vfid varchar(10), category tinytext,"
-            " characteristics TEXT,  structure TEXT, function TEXT,"
-            " mechanism TEXT"
+            " vf_category_id varchar(10), characteristics TEXT,"
+            " structure TEXT, function TEXT, mechanism TEXT"
             ");"
         )
         self.server.adaptor.execute(query,)
