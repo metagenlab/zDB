@@ -41,12 +41,14 @@ urls = [
     '/entry_list_cog',
     '/entry_list_ko',
     '/entry_list_pfam',
+    '/entry_list_vf',
     '/extract_amr/',
     '/extract_cog/',
     '/extract_contigs/1',
     '/extract_ko/',
     '/extract_orthogroup/',
     '/extract_pfam/',
+    '/extract_vf/',
     '/fam_amr/ybtP',
     '/fam_cog/COG0775',
     '/fam_ko/K01241',
@@ -60,6 +62,7 @@ urls = [
     '/index_comp/ko',
     '/index_comp/orthogroup',
     '/index_comp/pfam',
+    '/index_comp/vf',
     '/invalid/url',
     '/kegg/',
     '/kegg_genomes/',
@@ -84,6 +87,7 @@ urls = [
     '/pan_genome/ko',
     '/pan_genome/orthogroup',
     '/pan_genome/pfam',
+    '/pan_genome/vf',
     '/pfam_comparison',
     '/phylogeny',
     '/plot_heatmap/cog',
@@ -91,11 +95,14 @@ urls = [
     '/plot_heatmap/orthogroup',
     '/plot_heatmap/pfam',
     '/plot_heatmap/amr',
+    '/plot_heatmap/vf',
     '/venn_amr/',
     '/venn_cog/',
     '/venn_ko/',
     '/venn_orthogroup/',
     '/venn_pfam/',
+    '/venn_vf/',
+    '/vf_comparison/',
 ]
 
 
@@ -447,6 +454,16 @@ class TestAMRViews(SimpleTestCase, ComparisonViewsTestMixin):
     @skip("Heatmap plot fails because the test data does not provide enough hits")
     def test_plot_heatmap_view(self):
         super(TestAMRViews, self).test_plot_heatmap_view()
+
+
+class TestVFViews(SimpleTestCase, ComparisonViewsTestMixin):
+
+    view_type = "vf"
+    page_title = "Comparisons: Virulence Factors"
+
+    @property
+    def tab_comp_form_data(self):
+        return {"targets": ["0", "1"], "comp_type": "vf_gene_id"}
 
 
 class TestOrthogroupViews(SimpleTestCase, ComparisonViewsTestMixin):
