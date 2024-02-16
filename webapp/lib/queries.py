@@ -124,8 +124,9 @@ class VFQueries():
             df = df.set_index(["seqid"])
         return df
 
-    def get_hit_descriptions(self, hit_ids):
-        columns = [self.id_col, "prot_name", "vfid", "category"]
+    def get_hit_descriptions(self, hit_ids, columns=None):
+        if columns is None:
+            columns = [self.id_col, "prot_name", "vfid", "category"]
         if hit_ids is None:
             where = (
                 f"INNER JOIN {self.hit_table} AS hit ON hit.{self.id_col}=descr.{self.id_col} "

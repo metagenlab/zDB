@@ -46,6 +46,7 @@ title2page = {
     'Pfam domain': ['fam_pfam'],
     'Phylogeny': ['phylogeny_intro'],
     'Table of content: Genomes': ['genomes'],
+    'Virulence Factor Gene': ["fam_vf"],
 }
 
 page2title = {}
@@ -188,3 +189,7 @@ def format_ko_modules(hsh_modules, ko):
     if len(modules) == 0:
         return "-"
     return "<br>".join([format_ko_module(i, d) for i, d in modules])
+
+
+def format_refseqid_to_ncbi(seqid):
+    return f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{seqid}\">{seqid}</a>"

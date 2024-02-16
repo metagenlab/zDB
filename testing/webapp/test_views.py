@@ -53,6 +53,7 @@ urls = [
     '/fam_cog/COG0775',
     '/fam_ko/K01241',
     '/fam_pfam/PF10423',
+    '/fam_vf/VFG029227',
     '/FAQ',
     '/genomes',
     '/get_cog/3/L?h=1&h=2&h=3',

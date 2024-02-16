@@ -5,7 +5,8 @@ from django.views import View
 from ete3 import Tree
 from lib.ete_phylo import EteTree, SimpleColorColumn
 
-from views.mixins import AmrViewMixin, CogViewMixin, KoViewMixin, PfamViewMixin
+from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
+                          PfamViewMixin, VfViewMixin)
 from views.utils import (format_ko_module, format_ko_path, format_orthogroup,
                          my_locals)
 
@@ -113,7 +114,7 @@ class FamBaseView(View):
 
         orthogroups = self.db.get_og_count(seqids, search_on="seqid",
                                            keep_taxid=True)
-        infos = self.get_hit_descriptions([entry_id])
+        infos = self.get_hit_descriptions([entry_id], columns=self.accessors)
         infos = infos.iloc[0]
         all_locus_data, group_count = get_all_prot_infos(
             self.db, seqids, orthogroups)
@@ -148,6 +149,12 @@ class FamBaseView(View):
 class FamAmrView(FamBaseView, AmrViewMixin):
 
     accessors = ["seq_name", "scope", "type", "class", "subclass", "hmm_id"]
+
+
+class FamVfView(FamBaseView, VfViewMixin):
+
+    accessors = ["prot_name", "vfid", "category", "gb_accession",
+                 "characteristics", "structure", "function", "mechanism"]
 
 
 class FamCogView(FamBaseView, CogViewMixin):

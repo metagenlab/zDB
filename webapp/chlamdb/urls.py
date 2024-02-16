@@ -53,6 +53,7 @@ urlpatterns = [
     re_path(r'^genomes', views.genomes, name='genomes'),
     re_path(r'^favicon\.ico$', favicon_view),
     re_path(r'^FAQ', views.faq, name='FAQ'),
+    re_path(r'^fam_vf/(VFG[0-9]+)$', fam.FamVfView.as_view(), name="fam_vf"),
     re_path(r'^fam_pfam/(PF[0-9]+)$', fam.FamPfamView.as_view(), name="fam_pfam"),
     re_path(r'^fam_ko/(K[0-9]+)$', fam.FamKoView.as_view(), name="fam_ko"),
     re_path(r'^fam_cog/(COG[0-9]+)$', fam.FamCogView.as_view(), name="fam_cog"),  # noqa

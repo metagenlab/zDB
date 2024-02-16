@@ -3,7 +3,7 @@ from lib.db_utils import DB
 
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_lst_to_html, format_orthogroup, format_pfam,
-                         page2title, safe_replace)
+                         format_refseqid_to_ncbi, page2title, safe_replace)
 
 
 class BaseViewMixin():
@@ -44,6 +44,17 @@ class BaseViewMixin():
         return [self.colname_to_header(col)
                 for col in self.table_data_accessors]
 
+    def transform_data(self, descriptions):
+        for colname, (transform, kwargs) in self.transforms.items():
+            if colname in descriptions:
+                descriptions[colname] = descriptions[colname].apply(transform,
+                                                                    **kwargs)
+        return descriptions
+
+    @property
+    def transforms(self):
+        return {self.object_column: (self.format_entry, {"to_url": True})}
+
 
 class ComparisonViewMixin(BaseViewMixin):
 
@@ -83,13 +94,7 @@ class AmrViewMixin(BaseViewMixin):
     def get_hit_counts(self):
         return self.db.get_amr_hit_counts
 
-    def transform_data(self, descriptions):
-        for colname, (transform, kwargs) in self.transforms.items():
-            descriptions[colname] = descriptions[colname].apply(transform,
-                                                                **kwargs)
-        return descriptions
-
-    def get_hit_descriptions(self, ids, transformed=True):
+    def get_hit_descriptions(self, ids, transformed=True, **kwargs):
         descriptions = self.db.get_amr_descriptions(ids)
         self.aggregate_amr_annotations(descriptions)
         descriptions = descriptions.drop_duplicates(subset=["gene"])
@@ -150,15 +155,17 @@ class CogViewMixin(BaseViewMixin):
         descr = [f"{self.cog_code_descriptions[abbr]} ({abbr})" for abbr in func]
         return format_lst_to_html(descr, False)
 
-    def get_hit_descriptions(self, ids, transformed=True):
+    def get_hit_descriptions(self, ids, transformed=True, **kwargs):
         descriptions = self.db.get_cog_summaries(
             ids, only_cog_desc=True, as_df=True)
         if transformed:
-            descriptions["cog"] = descriptions["cog"].apply(
-                self.format_entry, to_url=True)
-            descriptions["function_descr"] = descriptions.function.apply(
-                self.format_function_descr)
+            descriptions = self.transform_data(descriptions)
         return descriptions
+
+    @property
+    def transforms(self):
+        return {self.object_column: (self.format_entry, {"to_url": True}),
+                "function_descr": (self.format_function_descr, {})}
 
     @staticmethod
     def format_entry(entry, to_url=False):
@@ -178,12 +185,11 @@ class KoViewMixin(BaseViewMixin):
     def get_hit_counts(self):
         return self.db.get_ko_hits
 
-    def get_hit_descriptions(self, ids, transformed=True):
+    def get_hit_descriptions(self, ids, transformed=True, **kwargs):
         descriptions = self.db.get_ko_desc(ids, as_df=True)
         descriptions = descriptions.set_index(["ko"], drop=False)
         if transformed:
-            descriptions["ko"] = descriptions["ko"].apply(self.format_entry,
-                                                          to_url=True)
+            descriptions = self.transform_data(descriptions)
         return descriptions
 
     @staticmethod
@@ -209,8 +215,7 @@ class PfamViewMixin(BaseViewMixin):
     def get_hit_descriptions(self, ids, transformed=True, **kwargs):
         descriptions = self.db.get_pfam_def(ids, **kwargs)
         if transformed:
-            descriptions["pfam"] = descriptions["pfam"].apply(
-                self.format_entry, to_url=True)
+            descriptions = self.transform_data(descriptions)
         return descriptions
 
     @staticmethod
@@ -227,11 +232,10 @@ class OrthogroupViewMixin(BaseViewMixin):
     def get_hit_counts(self):
         return self.db.get_og_count
 
-    def get_hit_descriptions(self, ids, transformed=True):
+    def get_hit_descriptions(self, ids, transformed=True, **kwargs):
         descriptions = self.db.get_genes_from_og(ids)
         if transformed:
-            descriptions["orthogroup"] = descriptions["orthogroup"].apply(
-                self.format_entry)
+            descriptions = self.transform_data(descriptions)
         return descriptions
 
     @staticmethod
@@ -242,12 +246,15 @@ class OrthogroupViewMixin(BaseViewMixin):
 class VfViewMixin(BaseViewMixin):
 
     object_type = "vf"
+    object_column = "vf_gene_id"
     object_name = "Virulence factor"
 
     _base_colname_to_header_mapping = {
         "vf_gene_id": "VF gene ID",
         "prot_name": "Protein",
-        "vfid": "VF ID"
+        "vfid": "VF ID",
+        "gb_accession": "Protein ID",
+
     }
 
     @property
@@ -258,16 +265,29 @@ class VfViewMixin(BaseViewMixin):
     def get_hits(self):
         return self.db.vf.get_hits
 
-    def get_hit_descriptions(self, ids, transformed=True):
-        descriptions = self.db.vf.get_hit_descriptions(ids)
-        descriptions = descriptions.set_index("vf_gene_id", drop=False)
+    def get_hit_descriptions(self, ids, transformed=True, **kwargs):
+        descriptions = self.db.vf.get_hit_descriptions(ids, columns=kwargs.get("columns"))
+        if "vf_gene_id" in descriptions:
+            descriptions = descriptions.set_index("vf_gene_id", drop=False)
         if transformed:
-            descriptions["vf_gene_id"] = descriptions["vf_gene_id"].apply(
-                self.format_entry)
+            descriptions = self.transform_data(descriptions)
         return descriptions
 
     @staticmethod
     def format_entry(entry, to_url=False):
         """Will point to the details page as soon as it exists
         """
+        if to_url:
+            return f"<a href=\"/fam_vf/{entry}\">{entry}</a>"
         return entry
+
+    @staticmethod
+    def format_vfid(vfid):
+        return f'<a href="http://www.mgc.ac.cn/cgi-bin/VFs/vfs.cgi?VFID={vfid}"'\
+               f'target="_blank">{vfid}</a>'
+
+    @property
+    def transforms(self):
+        return {self.object_column: (self.format_entry, {"to_url": True}),
+                "gb_accession": (format_refseqid_to_ncbi, {}),
+                "vfid": (self.format_vfid, {})}

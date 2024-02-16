@@ -45,8 +45,9 @@ from reportlab.lib import colors
 from views.mixins import ComparisonViewMixin, VfViewMixin
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_ko_modules, format_ko_path, format_locus,
-                         format_orthogroup, format_pfam, my_locals,
-                         optional2status, page2title, to_s)
+                         format_orthogroup, format_pfam,
+                         format_refseqid_to_ncbi, my_locals, optional2status,
+                         page2title, to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -2054,10 +2055,6 @@ def format_taxid_to_ncbi(organism, taxid):
         f"""{organism}</a>"""
     )
     return val
-
-
-def format_refseqid_to_ncbi(seqid):
-    return f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{seqid}\">{seqid}</a>"
 
 
 def locus_tab_swissprot_hits(db, seqid):
