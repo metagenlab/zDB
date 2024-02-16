@@ -42,7 +42,7 @@ from lib.ete_phylo import (Column, EteTree, KOAndCompleteness,
 from lib.KO_module import ModuleParser
 from reportlab.lib import colors
 
-from views.mixins import ComparisonViewMixin
+from views.mixins import ComparisonViewMixin, VfViewMixin
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_ko_modules, format_ko_path, format_locus,
                          format_orthogroup, format_pfam, my_locals,
@@ -2495,6 +2495,9 @@ def plot_heatmap(request, type):
     elif type == "amr":
         mat = db.get_amr_hit_counts(taxon_ids)
         mat.index = [format_amr(i) for i in mat.index]
+    elif type == "vf":
+        mat = db.vf.get_hit_counts(taxon_ids)
+        mat.index = [VfViewMixin.format_entry(i) for i in mat.index]
     else:
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
