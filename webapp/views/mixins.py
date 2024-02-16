@@ -256,9 +256,10 @@ class VfViewMixin(BaseViewMixin):
 
     def get_hit_descriptions(self, ids, transformed=True):
         descriptions = self.db.vf.get_hit_descriptions(ids)
-        descriptions = descriptions.set_index("vf_id")
+        descriptions = descriptions.set_index("vf_gene_id", drop=False)
         if transformed:
-            descriptions["vf_gene_id"] = descriptions["vf_gene_id"].apply(self.format_entry)
+            descriptions["vf_gene_id"] = descriptions["vf_gene_id"].apply(
+                self.format_entry)
         return descriptions
 
     @staticmethod

@@ -3,7 +3,7 @@ class VFQueries():
 
     hit_table = "vf_hits"
     decription_table = "vf_defs"
-    id_col = "vf_id"
+    id_col = "vf_gene_id"
 
     def __init__(self, db):
         self.db = db
@@ -19,7 +19,7 @@ class VFQueries():
         elif search_on == "seqid":
             where_clause = f" hsh.seqid IN ({entries}) "
         elif search_on == "vf":
-            where_clause = f" vf_id IN ({entries}) "
+            where_clause = f" vf_gene_id IN ({entries}) "
         elif search_on == "taxid":
             where_clause = f" bioentry.taxon_id IN ({entries}) "
         else:
@@ -103,7 +103,7 @@ class VFQueries():
         return df
 
     def get_hit_descriptions(self, hit_ids):
-        columns = [self.id_col, "vf_gene_id", "prot_name", "vfid", "category"]
+        columns = [self.id_col, "prot_name", "vfid", "category"]
         if hit_ids is None:
             where = (
                 f"INNER JOIN {self.hit_table} AS hit ON hit.{self.id_col}=descr.{self.id_col} "

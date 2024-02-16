@@ -631,7 +631,7 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db
 
 def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs):
     db = DB.load_db(db_name, params)
-    hsh_prot_id = ProtIdCounter()
+    included_vf_genes = set()
     db.create_vf_tables()
 
     # Note: this is not really scalable to x genomes, as
@@ -645,8 +645,8 @@ def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs):
                 crc, gene_id, perid, leng, n_mis, n_gap, qs, qe, ss, se, e, score = line.split()
                 hsh = simplify_hash(crc)
                 vf_gene_id, _ = parse_vf_gene_id(gene_id)
-                db_vf_id = hsh_prot_id[vf_gene_id]
-                data.append((hsh, db_vf_id, float(e), int(float(score)),
+                included_vf_genes.add(vf_gene_id)
+                data.append((hsh, vf_gene_id, float(e), int(float(score)),
                              int(float(perid)), int(n_gap), int(leng)))
         db.load_vf_hits(data)
 
@@ -659,9 +659,8 @@ def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs):
     vfdb_prot_defs = []
     for record in SeqIO.parse(vfdb_fasta, "fasta"):
         vf_gene_id, gb_accession = parse_vf_gene_id(record.name)
-        if vf_gene_id not in hsh_prot_id:
+        if vf_gene_id not in included_vf_genes:
             continue
-        db_vf_id = hsh_prot_id[vf_gene_id]
         prot_name, vfid, category, organism = parse_vfdb_entry(record.description)
         # Get info from definitions.
         # Note that not all vfids have an entry in the definitions table
@@ -670,7 +669,7 @@ def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs):
         else:
             vf_data = {}
         vfdb_prot_defs.append(
-            (db_vf_id, vf_gene_id, gb_accession, prot_name, vfid, category,
+            (vf_gene_id, gb_accession, prot_name, vfid, category,
              vf_data.get("Characteristics"), vf_data.get("Structure"),
              vf_data.get("Function"), vf_data.get("Mechanism")))
     db.load_vf_defs(vfdb_prot_defs)
