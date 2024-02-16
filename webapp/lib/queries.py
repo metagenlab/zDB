@@ -18,7 +18,7 @@ class VFQueries():
             where_clause = f" bioentry.bioentry_id IN ({entries}) "
         elif search_on == "seqid":
             where_clause = f" hsh.seqid IN ({entries}) "
-        elif search_on == "vf":
+        elif search_on == "vf" or search_on == "vf_gene_id":
             where_clause = f" vf_gene_id IN ({entries}) "
         elif search_on == "taxid":
             where_clause = f" bioentry.taxon_id IN ({entries}) "
