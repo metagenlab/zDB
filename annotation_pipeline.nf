@@ -525,7 +525,7 @@ process blast_vfdb {
 
   n = seq.name
   """
-  blastp -db $vf_db/vfdb.fasta -query ${n} -outfmt 6 -evalue 10.0 -num_threads ${task.cpus} > ${n}.tab
+  blastp -db $vf_db/vfdb.fasta -query ${n} -outfmt 6 -evalue ${params.vf_evalue} -num_threads ${task.cpus} > ${n}.tab
   """
 }
 
