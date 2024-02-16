@@ -9,6 +9,7 @@ favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
 
 urlpatterns = [
+    re_path(r'^venn_vf/$', venn.VennVfView.as_view(), name="venn_vf"),
     re_path(r'^venn_pfam/$', venn.VennPfamView.as_view(), name="venn_pfam"),
     re_path(r'^venn_orthogroup/$', venn.VennOrthogroupView.as_view(), name="venn_orthogroup"),  # noqa
     re_path(r'^venn_ko/$', venn.VennKoView.as_view(), name="venn_ko"),

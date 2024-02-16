@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.views import View
 
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
-                          OrthogroupViewMixin, PfamViewMixin)
+                          OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
 from views.utils import format_lst_to_html, my_locals
 
 
@@ -73,7 +73,6 @@ class VennBaseView(View):
                 "data": [self.format_entry(key)
                          for key, cnt in taxon_counts.items() if cnt > 0]
                 })
-
         context = self.get_context()
         return render(request, self.template, context)
 
@@ -202,3 +201,11 @@ class VennAmrView(VennBaseView, AmrViewMixin):
 
     table_data_accessors = ["gene", "seq_name", "scope", "type",
                             "class", "subclass", "hmm_id"]
+
+
+class VennVfView(VennBaseView, VfViewMixin):
+
+    table_data_descr = "The table contains a list of the Pfam entries and "\
+                       "their description."
+
+    table_data_accessors = ["vf_gene_id", "prot_name", "vfid", "category"]
