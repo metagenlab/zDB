@@ -1822,6 +1822,9 @@ def pan_genome(request, type):
     elif type == "amr":
         df_hits = db.get_amr_hit_counts(taxids, search_on="taxid")
         type_txt = "AMR genes"
+    elif type == "vf":
+        df_hits = db.vf.get_hit_counts(taxids, search_on="taxid")
+        type_txt = "VF genes"
     else:
         form = venn_form_class()
         return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))

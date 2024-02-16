@@ -17,6 +17,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add VF accumulation/rarefaction plot view. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)
 - Add VF heatmap view. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)
 - Add VF tabular comparison views. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)
 - Add VF Venn diagram view. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)

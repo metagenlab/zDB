@@ -32,7 +32,7 @@ title2page = {
         'venn_orthogroup'],
     'Comparisons: Virulence Factors': [
         'entry_list_vf', 'index_comp_vf', 'extract_vf', 'venn_vf',
-        'vf_comparison', 'plot_heatmap_vf'],
+        'vf_comparison', 'plot_heatmap_vf', 'pan_genome_vf'],
     'Genome alignments: Circos plot': ['circos'],
     'Genome alignments: Plot region': ['plot_region'],
     'Genomes: table of contents': ['extract_contigs', 'genomes_intro'],
