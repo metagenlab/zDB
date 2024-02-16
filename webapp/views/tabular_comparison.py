@@ -359,6 +359,7 @@ class VfComparisonView(TabularComparisonViewBase, VfViewMixin):
 
     def get_table_rows(self):
         hits = self.get_hits(self.targets)
+        hits = self.transform_data(hits)
         hits = hits.where(hits.notna(), "-")
         table_rows = []
         for groupid, data in hits.groupby(self.comp_type):
