@@ -34,6 +34,7 @@ class VFQueries():
                    "prot_name",
                    "vfid",
                    "category",
+                   "vf_category_id",
                    ]
         query = (
             f"SELECT {', '.join(columns)} "
@@ -126,7 +127,8 @@ class VFQueries():
 
     def get_hit_descriptions(self, hit_ids, columns=None):
         if columns is None:
-            columns = [self.id_col, "prot_name", "vfid", "category"]
+            columns = [self.id_col, "prot_name", "vfid", "category",
+                       "vf_category_id"]
         if hit_ids is None:
             where = (
                 f"INNER JOIN {self.hit_table} AS hit ON hit.{self.id_col}=descr.{self.id_col} "

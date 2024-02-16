@@ -46,7 +46,14 @@ class BaseViewMixin():
 
     def transform_data(self, descriptions):
         for colname, (transform, kwargs) in self.transforms.items():
-            if colname in descriptions:
+            if isinstance(colname, tuple):
+                if not all(col in descriptions for col in colname):
+                    continue
+                descriptions[colname[0]] = descriptions[list(colname)].apply(
+                    transform, axis=1, **kwargs)
+            elif colname not in descriptions:
+                continue
+            else:
                 descriptions[colname] = descriptions[colname].apply(transform,
                                                                     **kwargs)
         return descriptions
@@ -266,7 +273,10 @@ class VfViewMixin(BaseViewMixin):
         return self.db.vf.get_hits
 
     def get_hit_descriptions(self, ids, transformed=True, **kwargs):
-        descriptions = self.db.vf.get_hit_descriptions(ids, columns=kwargs.get("columns"))
+        cols = kwargs.get("columns")
+        if transformed and cols and "category" in cols and "vf_category_id" not in cols:
+            kwargs["columns"].append("vf_category_id")
+        descriptions = self.db.vf.get_hit_descriptions(ids, columns=cols)
         if "vf_gene_id" in descriptions:
             descriptions = descriptions.set_index("vf_gene_id", drop=False)
         if transformed:
@@ -286,8 +296,15 @@ class VfViewMixin(BaseViewMixin):
         return f'<a href="http://www.mgc.ac.cn/cgi-bin/VFs/vfs.cgi?VFID={vfid}"'\
                f'target="_blank">{vfid}</a>'
 
+    @staticmethod
+    def format_vf_category(category_and_id):
+        category, vfcid = category_and_id
+        return f'<a href="http://www.mgc.ac.cn/cgi-bin/VFs/VFcategory.cgi?{vfcid}"'\
+               f'target="_blank">{category}</a>'
+
     @property
     def transforms(self):
         return {self.object_column: (self.format_entry, {"to_url": True}),
                 "gb_accession": (format_refseqid_to_ncbi, {}),
-                "vfid": (self.format_vfid, {})}
+                "vfid": (self.format_vfid, {}),
+                ("category", "vf_category_id"): (self.format_vf_category, {})}
