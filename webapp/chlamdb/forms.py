@@ -112,7 +112,7 @@ def make_plot_form(db):
     return PlotForm
 
 
-def make_metabo_from(db, add_box=False, add_amr_choices=False):
+def make_metabo_from(db, add_box=False, type_choices=None):
 
     accession_choices, rev_index = get_accessions(db)
 
@@ -132,11 +132,9 @@ def make_metabo_from(db, add_box=False, add_amr_choices=False):
             input_box = forms.CharField(
                 widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
 
-        if add_amr_choices:
+        if type_choices:
             comp_type = forms.ChoiceField(
-                choices=(("gene", "Gene"),
-                         ("class", "Class"),
-                         ("subclass", "Subclass")),
+                choices=type_choices,
                 required=True
             )
 
@@ -149,7 +147,7 @@ def make_metabo_from(db, add_box=False, add_amr_choices=False):
             rows = [Row('targets')]
             if add_box:
                 rows.append(Row('input_box'))
-            if add_amr_choices:
+            if type_choices:
                 rows.append(Row('comp_type'))
 
             self.helper.layout = Layout(

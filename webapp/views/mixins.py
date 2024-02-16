@@ -254,6 +254,10 @@ class VfViewMixin(BaseViewMixin):
     def get_hit_counts(self):
         return self.db.vf.get_hit_counts
 
+    @property
+    def get_hits(self):
+        return self.db.vf.get_hits
+
     def get_hit_descriptions(self, ids, transformed=True):
         descriptions = self.db.vf.get_hit_descriptions(ids)
         descriptions = descriptions.set_index("vf_gene_id", drop=False)

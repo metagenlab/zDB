@@ -17,6 +17,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add VF tabular comparison views. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)
 - Add VF Venn diagram view. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)
 - Add VF hit extraction view. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)
 - Add VF comparison index view and link it in the menu and home page. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)

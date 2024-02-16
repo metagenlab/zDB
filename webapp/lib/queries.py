@@ -26,6 +26,28 @@ class VFQueries():
             raise RuntimeError(f"Searching on {search_on} is not supported")
         return where_clause
 
+    def get_hits(self, taxids):
+        where_clause = self.gen_where_clause("taxid", taxids)
+        columns = ["bioentry.taxon_id",
+                   f"{self.hit_table}.{self.id_col}",
+                   "evalue",
+                   "prot_name",
+                   "vfid",
+                   "category",
+                   ]
+        query = (
+            f"SELECT {', '.join(columns)} "
+            f"FROM {self.hit_table} "
+            f"INNER JOIN {self.decription_table} ON {self.decription_table}.{self.id_col} = {self.hit_table}.{self.id_col} "
+            f"INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = {self.hit_table}.hsh "
+            "INNER JOIN seqfeature ON hsh.seqid = seqfeature.seqfeature_id "
+            "INNER JOIN bioentry ON seqfeature.bioentry_id = bioentry.bioentry_id "
+            f"WHERE {where_clause} "
+        )
+        results = self.server.adaptor.execute_and_fetchall(query, taxids)
+        df = self.to_pandas_frame(results, [col.split(".")[-1] for col in columns])
+        return df
+
     def get_hit_counts(self, ids, indexing="taxid", search_on="taxid",
                        keep_taxid=False, plasmids=None):
         if indexing == "seqid":
