@@ -2127,7 +2127,7 @@ class DB:
         # df_pivot = df.pivot_table(index=["seqfeature_id_1"], columns="target_taxid",values="identity", aggfunc=lambda x: max(x))
         return df
 
-    def get_pfam_def(self, pfam_ids, add_ttl_count=False):
+    def get_pfam_def(self, pfam_ids, add_ttl_count=False, **kwargs):
         ttl_cnt, ttl_join, ttl_grp = "", "", ""
         ttl_join_template = (
             " INNER JOIN pfam_hits AS hits ON hits.pfam_id=pfam_defs.pfam_id "
