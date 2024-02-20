@@ -2480,22 +2480,22 @@ def plot_heatmap(request, type):
 
     if type == "cog":
         mat = db.get_cog_hits(taxon_ids, search_on="taxid")
-        mat.index = [format_cog(i) for i in mat.index]
+        mat.index = [format_cog(i, as_url=True) for i in mat.index]
     elif type == "orthogroup":
         mat = db.get_og_count(taxon_ids)
-        mat.index = [format_orthogroup(i) for i in mat.index]
+        mat.index = [format_orthogroup(i, to_url=True) for i in mat.index]
     elif type == "ko":
         mat = db.get_ko_hits(taxon_ids)
-        mat.index = [format_ko(i) for i in mat.index]
+        mat.index = [format_ko(i, as_url=True) for i in mat.index]
     elif type == "pfam":
         mat = db.get_pfam_hits(taxon_ids)
-        mat.index = [format_pfam(i) for i in mat.index]
+        mat.index = [format_pfam(i, to_url=True) for i in mat.index]
     elif type == "amr":
         mat = db.get_amr_hit_counts(taxon_ids)
-        mat.index = [format_amr(i) for i in mat.index]
+        mat.index = [format_amr(i, to_url=True) for i in mat.index]
     elif type == "vf":
         mat = db.vf.get_hit_counts(taxon_ids)
-        mat.index = [VfViewMixin.format_entry(i) for i in mat.index]
+        mat.index = [VfViewMixin.format_entry(i, to_url=True) for i in mat.index]
     else:
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
@@ -2519,7 +2519,6 @@ def plot_heatmap(request, type):
     fig = go.Figure(data=go.Heatmap(z=new_mat, colorscale=colors,
                                     y=new_mat.index, x=new_mat.columns))
     fig.update_traces(showlegend=False, showscale=False)
-    fig.update_xaxes(visible=False)
 
     html_plot = make_div(fig, div_id="heatmap")
     envoi_heatmap = True
