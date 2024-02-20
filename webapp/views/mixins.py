@@ -6,6 +6,46 @@ from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_refseqid_to_ncbi, page2title, safe_replace)
 
 
+class Transform():
+
+    def __init__(self, colname, transform, kwargs=None, outcolname=None):
+        self.colname = colname
+        self.transform = transform
+        self.kwargs = kwargs or {}
+        self.outcolname = outcolname or colname
+
+    def should_apply(self, df):
+        return self.colname in df
+
+    def apply(self, df):
+        df[self.outcolname] = df[self.colname].apply(self.transform, **self.kwargs)
+
+    def maybe_apply(self, df):
+        if self.should_apply(df):
+            self.apply(df)
+
+
+class TransformWithAccessoryColumn(Transform):
+
+    def __init__(self, colname, accessory_colname, transform):
+        self.colname = colname
+        self.accessory_colname = accessory_colname
+        self.transform = transform
+
+    def should_apply(self, df):
+        return self.colname in df and self.accessory_colname in df
+
+    def apply(self, df):
+        df[self.colname] = df[[self.colname, self.accessory_colname]].apply(
+            self.transform, axis=1)
+
+    def maybe_add_accessory_col_for_query(self, columns, transformed):
+        if not transformed or not columns or self.colname not in columns:
+            return
+        if self.accessory_colname not in columns:
+            columns.append(self.accessory_colname)
+
+
 class BaseViewMixin():
 
     _db = None
@@ -45,22 +85,14 @@ class BaseViewMixin():
                 for col in self.table_data_accessors]
 
     def transform_data(self, descriptions):
-        for colname, (transform, kwargs) in self.transforms.items():
-            if isinstance(colname, tuple):
-                if not all(col in descriptions for col in colname):
-                    continue
-                descriptions[colname[0]] = descriptions[list(colname)].apply(
-                    transform, axis=1, **kwargs)
-            elif colname not in descriptions:
-                continue
-            else:
-                descriptions[colname] = descriptions[colname].apply(transform,
-                                                                    **kwargs)
+        for transform in self.transforms:
+            transform.maybe_apply(descriptions)
         return descriptions
 
     @property
     def transforms(self):
-        return {self.object_column: (self.format_entry, {"to_url": True})}
+        return [
+            Transform(self.object_column, self.format_entry, {"to_url": True})]
 
 
 class ComparisonViewMixin(BaseViewMixin):
@@ -90,12 +122,14 @@ class AmrViewMixin(BaseViewMixin):
         "hmm_id": "HMM"
     }
 
-    transforms = {
-        "gene": (format_amr, {"to_url": True}),
-        "hmm_id": (format_hmm_url, {}),
-        "class": (safe_replace, {"args": ["/", " / "]}),
-        "subclass": (safe_replace, {"args": ["/", " / "]})
-        }
+    @property
+    def transforms(self):
+        return [
+            Transform(self.object_column, self.format_entry, {"to_url": True}),
+            Transform("hmm_id", format_hmm_url),
+            Transform("class", safe_replace, {"args": ["/", " / "]}),
+            Transform("subclass", safe_replace, {"args": ["/", " / "]})
+        ]
 
     @property
     def get_hit_counts(self):
@@ -171,8 +205,11 @@ class CogViewMixin(BaseViewMixin):
 
     @property
     def transforms(self):
-        return {self.object_column: (self.format_entry, {"to_url": True}),
-                "function_descr": (self.format_function_descr, {})}
+        return [
+            Transform(self.object_column, self.format_entry, {"to_url": True}),
+            Transform("function", self.format_function_descr,
+                      outcolname="function_descr"),
+        ]
 
     @staticmethod
     def format_entry(entry, to_url=False):
@@ -274,8 +311,8 @@ class VfViewMixin(BaseViewMixin):
 
     def get_hit_descriptions(self, ids, transformed=True, **kwargs):
         cols = kwargs.get("columns")
-        if transformed and cols and "category" in cols and "vf_category_id" not in cols:
-            kwargs["columns"].append("vf_category_id")
+        self.transform_category.maybe_add_accessory_col_for_query(
+            cols, transformed)
         descriptions = self.db.vf.get_hit_descriptions(ids, columns=cols)
         if "vf_gene_id" in descriptions:
             descriptions = descriptions.set_index("vf_gene_id", drop=False)
@@ -303,8 +340,15 @@ class VfViewMixin(BaseViewMixin):
                f'target="_blank">{category}</a>'
 
     @property
+    def transform_category(self):
+        return TransformWithAccessoryColumn(
+            "category", "vf_category_id", self.format_vf_category)
+
+    @property
     def transforms(self):
-        return {self.object_column: (self.format_entry, {"to_url": True}),
-                "gb_accession": (format_refseqid_to_ncbi, {}),
-                "vfid": (self.format_vfid, {}),
-                ("category", "vf_category_id"): (self.format_vf_category, {})}
+        return [
+            Transform(self.object_column, self.format_entry, {"to_url": True}),
+            Transform("gb_accession", format_refseqid_to_ncbi),
+            Transform("vfid", self.format_vfid),
+            self.transform_category
+        ]
