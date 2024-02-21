@@ -35,7 +35,7 @@ title2page = {
         'vf_comparison', 'plot_heatmap_vf', 'pan_genome_vf'],
     'Genome alignments: Circos plot': ['circos'],
     'Genome alignments: Plot region': ['plot_region'],
-    'Genomes: table of contents': ['extract_contigs', 'genomes_intro'],
+    'Genomes: table of contents': ['extract_contigs'],
     'Homology search: Blast': ['blast'],
     'Kegg Ortholog': ['fam_ko'],
     'Kegg metabolic pathways': ['kegg_genomes'],

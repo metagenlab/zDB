@@ -12,7 +12,6 @@ html_dumps_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 broken_views = [
     '/circos_main/',
-    '/genomes_intro/',
     '/orthogroup_list_cog_barchart/',
     '/orthogroup_list_cog_barchart/True/',
 ]
