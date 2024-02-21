@@ -151,10 +151,7 @@ class ComparisonIndexView(View, ComparisonViewMixin):
         return render(request, 'chlamdb/index_comp.html', context)
 
 
-def genomes(request):
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
-    page_title = page2title["genomes"]
+def get_genomes_data(db):
     genomes_data = db.get_genomes_infos()
     genomes_descr = db.get_genomes_description()
 
@@ -163,6 +160,14 @@ def genomes(request):
     genomes_data.gc = genomes_data.gc.apply(round)
     genomes_data.coding_density = genomes_data.coding_density.apply(lambda x: round(100 * x))
     genomes_data.length = genomes_data.length.apply(lambda x: round(x / pow(10, 6), 2))
+    return genomes_data
+
+
+def genomes(request):
+    biodb_path = settings.BIODB_DB_PATH
+    db = DB.load_db_from_name(biodb_path)
+    page_title = page2title["genomes"]
+    genomes_data = get_genomes_data(db)
 
     filenames_tax_id = db.get_filenames_to_taxon_id()
     filenames_tax_id_db = pd.DataFrame.from_dict(list(filenames_tax_id.items()))
@@ -2787,6 +2792,7 @@ def module_comparison(request):
     envoi_comp = True
     return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
 
+
 def faq(request):
     a = 2
     return render(request, 'chlamdb/FAQ.html', my_locals(locals()))
@@ -2798,19 +2804,12 @@ def phylogeny(request):
     biodb_path = settings.BIODB_DB_PATH
     db = DB.load_db_from_name(biodb_path)
 
-    genomes_data = db.get_genomes_infos()
-    genomes_descr = db.get_genomes_description()
+    genomes_data = get_genomes_data(db)
 
     asset_path = "/temp/species_tree.svg"
     path = settings.BASE_DIR + '/assets/temp/species_tree.svg'
 
     core = db.get_n_orthogroups(only_core=True)
-
-    genomes_data = genomes_data.join(genomes_descr)
-
-    genomes_data.gc = genomes_data.gc.apply(round)
-    genomes_data.coding_density = genomes_data.coding_density.apply(lambda x: round(100 * x))
-    genomes_data.length = genomes_data.length.apply(lambda x: round(x / pow(10, 6), 2))
 
     data_table_header = ["Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding"]
     data_table = genomes_data[["description", "gc", "n_prot", "n_contigs", "length", "coding_density"]].values.tolist()
@@ -2843,6 +2842,6 @@ def phylogeny(request):
                                  header_params=header_params, face_params=stacked_face_params)
         e_tree.add_column(stack)
 
-    e_tree.rename_leaves(genomes_descr.description.to_dict())
+    e_tree.rename_leaves(genomes_data.description.to_dict())
     e_tree.render(path, dpi=500)
     return render(request, 'chlamdb/phylogeny_intro.html', my_locals(locals()))
