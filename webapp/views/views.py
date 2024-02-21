@@ -2828,8 +2828,8 @@ def phylogeny(request):
         ["length", "Size (Mbp)", "#91bfdb", True],
         ["gc", "GC %", "#fc8d59", False],
         ["coding_density", "Coding density %", "#99d594", False],
-        ["completeness", "Completeness", "#d7191c", False],
-        ["contamination", "Contamination", "black", False]]
+        ["completeness", "Completeness %", "#d7191c", False],
+        ["contamination", "Contamination %", "black", False]]
 
     for serie_name, header, col, is_relative in tree_params:
         data = genomes_data[serie_name]
