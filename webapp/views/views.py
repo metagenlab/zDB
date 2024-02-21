@@ -2811,9 +2811,6 @@ def phylogeny(request):
 
     core = db.get_n_orthogroups(only_core=True)
 
-    data_table_header = ["Name", "%GC", "N proteins", "N contigs", "Size (Mbp)", "Percent coding"]
-    data_table = genomes_data[["description", "gc", "n_prot", "n_contigs", "length", "coding_density"]].values.tolist()
-
     # plot phylo only of not already in assets
     tree = db.get_reference_phylogeny()
     t1 = Tree(tree)
