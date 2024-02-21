@@ -188,11 +188,11 @@ def genomes(request):
     genomes_data = genomes_data.join(filenames_tax_id_db, on="taxon_id")
     data_table_header = [
         "Name",
-        "%GC",
+        "GC %",
         "N proteins",
         "N contigs",
         "Size (Mbp)",
-        "Percent coding",
+        "Coding %",
         "N plasmid contigs",
         "faa seq",
         "fna seq",
