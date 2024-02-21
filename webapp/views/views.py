@@ -157,7 +157,7 @@ def get_genomes_data(db):
 
     genomes_data = genomes_data.join(genomes_descr)
 
-    genomes_data.gc = genomes_data.gc.apply(round)
+    genomes_data.gc = genomes_data.gc.apply(lambda x: round(100 * x))
     genomes_data.coding_density = genomes_data.coding_density.apply(lambda x: round(100 * x))
     genomes_data.length = genomes_data.length.apply(lambda x: round(x / pow(10, 6), 2))
     return genomes_data
