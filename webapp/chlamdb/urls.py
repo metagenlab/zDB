@@ -9,6 +9,8 @@ favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
 
 urlpatterns = [
+    re_path(r'^vf_comparison', tabular_comparison.VfComparisonView.as_view(), name="vf_comparison"),  # noqa
+    re_path(r'^venn_vf/$', venn.VennVfView.as_view(), name="venn_vf"),
     re_path(r'^venn_pfam/$', venn.VennPfamView.as_view(), name="venn_pfam"),
     re_path(r'^venn_orthogroup/$', venn.VennOrthogroupView.as_view(), name="venn_orthogroup"),  # noqa
     re_path(r'^venn_ko/$', venn.VennKoView.as_view(), name="venn_ko"),
@@ -51,16 +53,19 @@ urlpatterns = [
     re_path(r'^genomes', views.genomes, name='genomes'),
     re_path(r'^favicon\.ico$', favicon_view),
     re_path(r'^FAQ', views.faq, name='FAQ'),
+    re_path(r'^fam_vf/(VFG[0-9]+)$', fam.FamVfView.as_view(), name="fam_vf"),
     re_path(r'^fam_pfam/(PF[0-9]+)$', fam.FamPfamView.as_view(), name="fam_pfam"),
     re_path(r'^fam_ko/(K[0-9]+)$', fam.FamKoView.as_view(), name="fam_ko"),
     re_path(r'^fam_cog/(COG[0-9]+)$', fam.FamCogView.as_view(), name="fam_cog"),  # noqa
     re_path(r'^fam_amr/([a-zA-Z0-9_\.\(\)\-\']+)$', fam.FamAmrView.as_view(), name="fam_amr"),  # noqa
+    re_path(r'^extract_vf/$', hits_extraction.ExtractVfView.as_view(), name="extract_vf"),  # noq
     re_path(r'^extract_pfam/$', hits_extraction.ExtractPfamView.as_view(), name="extract_pfam"),  # noqa
     re_path(r'^extract_orthogroup/$', hits_extraction.ExtractOrthogroupView.as_view(), name="extract_orthogroup"),  # noqa
     re_path(r'^extract_ko/$', hits_extraction.ExtractKoView.as_view(), name="extract_ko"),  # noqa
     re_path(r'^extract_contigs/([0-9]+)', views.extract_contigs, name='extract_contigs'),  # noqa
     re_path(r'^extract_cog/$', hits_extraction.ExtractCogView.as_view(), name="extract_cog"),  # noqa
     re_path(r'^extract_amr/$', hits_extraction.ExtractAmrView.as_view(), name="extract_amr"),  # noqa
+    re_path(r'^entry_list_vf$', entry_lists.VfEntryListView.as_view(), name="entry_list_vf"),  # noqa
     re_path(r'^entry_list_pfam$', entry_lists.PfamEntryListView.as_view(), name="entry_list_pfam"),  # noqa
     re_path(r'^entry_list_ko$', entry_lists.KoEntryListView.as_view(), name="entry_list_ko"),  # noqa
     re_path(r'^entry_list_cog$', entry_lists.CogEntryListView.as_view(), name="entry_list_cog"),  # noqa

@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.views import View
 
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
-                          OrthogroupViewMixin, PfamViewMixin)
+                          OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
 from views.utils import (format_cog, format_ko, format_lst_to_html,
                          format_orthogroup, my_locals)
 
@@ -13,6 +13,7 @@ class TabularComparisonViewBase(View):
     template = 'chlamdb/tabular_comparison.html'
     hist_colour_index_shift = 0
     tab_name = "comp"
+    table_headers = None
 
     def dispatch(self, request, *args, **kwargs):
         self.comp_metabo_form = self.make_metabo_from()
@@ -111,6 +112,11 @@ class TabularComparisonViewBase(View):
     def first_coloured_row(self):
         return len(self.base_info_headers)
 
+    @property
+    def base_info_headers(self):
+        return [self.colname_to_header(colname)
+                for colname in self.base_info_accessors]
+
 
 class PfamComparisonView(TabularComparisonViewBase, PfamViewMixin):
 
@@ -124,11 +130,6 @@ class PfamComparisonView(TabularComparisonViewBase, PfamViewMixin):
     <br>Click on Pfam accession to get detailed phylogenetic profile of the
     corresponding Pfam entry.
     """
-
-    @property
-    def base_info_headers(self):
-        return [self.colname_to_header[colname]
-                for colname in self.base_info_accessors]
 
     def get_table_rows(self):
         pfam_hits = self.get_hit_counts(ids=self.targets)
@@ -280,8 +281,12 @@ class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
     "plus" proteins are included with a less stringent criteria.<br>
     """
 
+    type_choices = (("gene", "Gene"),
+                    ("class", "Class"),
+                    ("subclass", "Subclass"))
+
     def make_metabo_from(self):
-        return make_metabo_from(self.db, add_amr_choices=True)
+        return make_metabo_from(self.db, type_choices=self.type_choices)
 
     @property
     def base_info_accessors(self):
@@ -291,11 +296,6 @@ class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
             return ["Subclass", "Class"]
         elif self.comp_type == "class":
             return ["Class"]
-
-    @property
-    def base_info_headers(self):
-        return [self.colname_to_header[colname]
-                for colname in self.base_info_accessors]
 
     @property
     def table_help(self):
@@ -317,6 +317,57 @@ class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
             values = [len(taxonids[taxonids == target_id])
                       for target_id in self.targets]
             colours = [data[taxonids == target_id]["quality"].max() if value
+                       else 0 for value, target_id in zip(values, self.targets)]
+            row.extend(values)
+            row.extend(colours)
+            table_rows.append(row)
+        return table_rows
+
+    @property
+    def hist_colour_index_shift(self):
+        return len(self.targets)
+
+
+class VfComparisonView(TabularComparisonViewBase, VfViewMixin):
+
+    _table_help = """
+    The ouput table contains the number of times a given {} appears
+    in the selected genomes, color coded according to the e-value
+    of the best hit for that genome.<br>
+    <br> Counts can be reordrered by clicking on column headers.<br>
+    """
+
+    type_choices = (("vf_gene_id", "VF Gene"),
+                    ("vfid", "VF"),
+                    ("category", "VF Category"))
+
+    def make_metabo_from(self):
+        return make_metabo_from(self.db, type_choices=self.type_choices)
+
+    @property
+    def base_info_accessors(self):
+        if self.comp_type == "vf_gene_id":
+            return ["vf_gene_id", "prot_name", "vfid", "category"]
+        elif self.comp_type == "vfid":
+            return ["vfid", "category"]
+        elif self.comp_type == "category":
+            return ["category"]
+
+    @property
+    def table_help(self):
+        return self._table_help.format(self.comp_type)
+
+    def get_table_rows(self):
+        hits = self.get_hits(self.targets)
+        hits = self.transform_data(hits)
+        hits = hits.where(hits.notna(), "-")
+        table_rows = []
+        for groupid, data in hits.groupby(self.comp_type):
+            row = data.iloc[0][self.base_info_accessors].tolist()
+            taxonids = data["taxon_id"]
+            values = [len(taxonids[taxonids == target_id])
+                      for target_id in self.targets]
+            colours = [data[taxonids == target_id]["evalue"].max() if value
                        else 0 for value, target_id in zip(values, self.targets)]
             row.extend(values)
             row.extend(colours)

@@ -483,6 +483,11 @@ elif [[ "$1" == "run" ]]; then
 				args="${args} --vfdb"
 				shift
 				;;
+			--vf_evalue=*)
+				evalue=${i#*=}
+				args="${args} --vf_evalue=${evalue}"
+				shift
+				;;
 			--singularity_dir=*)
 				singularity_dir=$(realpath ${i#*=})
 				shift

@@ -42,11 +42,12 @@ from lib.ete_phylo import (Column, EteTree, KOAndCompleteness,
 from lib.KO_module import ModuleParser
 from reportlab.lib import colors
 
-from views.mixins import ComparisonViewMixin
+from views.mixins import ComparisonViewMixin, VfViewMixin
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_ko_modules, format_ko_path, format_locus,
-                         format_orthogroup, format_pfam, my_locals,
-                         optional2status, page2title, to_s)
+                         format_orthogroup, format_pfam,
+                         format_refseqid_to_ncbi, my_locals, optional2status,
+                         page2title, to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -1820,6 +1821,9 @@ def pan_genome(request, type):
     elif type == "amr":
         df_hits = db.get_amr_hit_counts(taxids, search_on="taxid")
         type_txt = "AMR genes"
+    elif type == "vf":
+        df_hits = db.vf.get_hit_counts(taxids, search_on="taxid")
+        type_txt = "VF genes"
     else:
         form = venn_form_class()
         return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
@@ -2051,10 +2055,6 @@ def format_taxid_to_ncbi(organism, taxid):
         f"""{organism}</a>"""
     )
     return val
-
-
-def format_refseqid_to_ncbi(seqid):
-    return f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{seqid}\">{seqid}</a>"
 
 
 def locus_tab_swissprot_hits(db, seqid):
@@ -2493,6 +2493,9 @@ def plot_heatmap(request, type):
     elif type == "amr":
         mat = db.get_amr_hit_counts(taxon_ids)
         mat.index = [format_amr(i) for i in mat.index]
+    elif type == "vf":
+        mat = db.vf.get_hit_counts(taxon_ids)
+        mat.index = [VfViewMixin.format_entry(i) for i in mat.index]
     else:
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))

@@ -78,5 +78,16 @@
             <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'amr' %}">Accumulation/rarefaction plot </a></li>
         </ul>
     </nav>
+{% elif type == 'vf' %}
+    <nav>
+        <ul id="tabs_main" class="nav nav-tabs">
+            <li class={% if active_tab == "index" %}"active"{%endif%}><a href="{% url 'entry_list_vf' %}">Index</a></li>
+            <li class={% if active_tab == "det" %}"active"{%endif%}><a href="{% url 'extract_vf' %}">Extract form</a></li>
+            <li class={% if active_tab == "venn" %}"active"{%endif%}><a href="{% url 'venn_vf' %}">Venn</a></li>
+            <li class={% if active_tab == "comp" %}"active"{%endif%}><a href="{% url 'vf_comparison' %}">Presence/absence table</a></li>
+            <li class={% if active_tab == "heat" %}"active"{%endif%}><a href="{% url 'plot_heatmap' 'vf' %}">Heatmaps</a></li>
+            <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'vf' %}">Accumulation/rarefaction plot </a></li>
+        </ul>
+    </nav>
 {% endif %}
 

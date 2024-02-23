@@ -3,12 +3,11 @@ import re
 from collections import defaultdict, namedtuple
 from datetime import datetime
 
-import KO_module
 import pandas as pd
-import search_bar
 import xlrd
 from Bio import SeqIO, SeqUtils
-from db_utils import DB
+from lib import KO_module, search_bar
+from lib.db_utils import DB
 
 
 # assumes orthofinder named: OG000N
@@ -565,24 +564,25 @@ def parse_swissprot_id(to_parse):
     return db, ident, name
 
 
-vfdb_id_expr = re.compile(r"(.*)\(gb\|(.*)\)")
+vf_gene_id_expr = re.compile(r"(.*)\(gb\|(.*)\)")
 
 
-def parse_vfdb_id(to_parse):
+def parse_vf_gene_id(to_parse):
     """IDs in vfdb.fasta are either of the form VFID(gb_accession) or VFID
     """
     if "(" in to_parse:
-        return vfdb_id_expr.match(to_parse).groups()
+        return vf_gene_id_expr.match(to_parse).groups()
     return to_parse, None
 
 
-vfdb_descr_expr = re.compile(r"\(.*?\) (.*?) \[.*?\((VF.*?)\).*?\] \[.*?\]")
+vfdb_descr_expr = re.compile(r"\(.*?\) (.*?) \[.*?\((VF.*?)\) - (.*?) \((VFC.*?)\)\] \[(.*?)\]")
 
 
 def parse_vfdb_entry(description):
     description = description.split(" ", 1)[1]
-    prot_name, vfid = vfdb_descr_expr.match(description).groups()
-    return prot_name, vfid
+    prot_name, vfid, category, cat_id, organism = vfdb_descr_expr.match(
+        description).groups()
+    return prot_name, vfid, category, cat_id, organism
 
 
 def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db_dir):
@@ -632,7 +632,7 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db
 
 def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs):
     db = DB.load_db(db_name, params)
-    hsh_prot_id = ProtIdCounter()
+    included_vf_genes = set()
     db.create_vf_tables()
 
     # Note: this is not really scalable to x genomes, as
@@ -645,9 +645,9 @@ def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs):
             for line in blast_fh:
                 crc, gene_id, perid, leng, n_mis, n_gap, qs, qe, ss, se, e, score = line.split()
                 hsh = simplify_hash(crc)
-                prot_id, _ = parse_vfdb_id(gene_id)
-                db_prot_id = hsh_prot_id[prot_id]
-                data.append((hsh, db_prot_id, float(e), int(float(score)),
+                vf_gene_id, _ = parse_vf_gene_id(gene_id)
+                included_vf_genes.add(vf_gene_id)
+                data.append((hsh, vf_gene_id, float(e), int(float(score)),
                              int(float(perid)), int(n_gap), int(leng)))
         db.load_vf_hits(data)
 
@@ -659,17 +659,21 @@ def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs):
 
     vfdb_prot_defs = []
     for record in SeqIO.parse(vfdb_fasta, "fasta"):
-        prot_id, gb_accession = parse_vfdb_id(record.name)
-        if prot_id not in hsh_prot_id:
+        vf_gene_id, gb_accession = parse_vf_gene_id(record.name)
+        if vf_gene_id not in included_vf_genes:
             continue
-        db_prot_id = hsh_prot_id[prot_id]
-        prot_name, vfid = parse_vfdb_entry(record.description)
-        # Get info from definitions
-        vf_data = vf_defs.loc[vfid]
+        prot_name, vfid, category, cat_id, organism = parse_vfdb_entry(
+            record.description)
+        # Get info from definitions.
+        # Note that not all vfids have an entry in the definitions table
+        if vfid in vf_defs.index:
+            vf_data = vf_defs.loc[vfid]
+        else:
+            vf_data = {}
         vfdb_prot_defs.append(
-            (db_prot_id, prot_id, gb_accession, prot_name, vfid,
-             vf_data.VFcategory, vf_data.Characteristics, vf_data.Structure,
-             vf_data.Function, vf_data.Mechanism))
+            (vf_gene_id, gb_accession, prot_name, vfid, category, cat_id,
+             vf_data.get("Characteristics"), vf_data.get("Structure"),
+             vf_data.get("Function"), vf_data.get("Mechanism")))
     db.load_vf_defs(vfdb_prot_defs)
     db.set_status_in_config_table("BLAST_vfdb", 1)
     db.commit()

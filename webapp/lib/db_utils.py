@@ -4,6 +4,8 @@ import pandas as pd
 from Bio.Seq import Seq
 from BioSQL import BioSeqDatabase
 
+from lib.queries import VFQueries
+
 # This file defines a class DB, that encapsulates all the SQL requests
 # necessary to create the zDB database.
 # In the future, the goal is to import all database queries needed by the
@@ -36,6 +38,7 @@ class DB:
         self.conn_refseq = None
         # this will need to be changed in case a MySQL database is used
         self.placeholder = "?"
+        self.vf = VFQueries(self)
 
     # the next two methods are necessary for DB objects to be used
     # in 'with' blocks.
@@ -302,7 +305,7 @@ class DB:
     def create_vf_tables(self):
         query = (
             "CREATE TABLE vf_hits ("
-            " hsh INT, prot_id INT, evalue INT, score INT,"
+            " hsh INT, vf_gene_id INT, evalue INT, score INT,"
             " perc_id INT, gaps INT, leng INT"
             ");"
         )
@@ -313,15 +316,15 @@ class DB:
         self.server.adaptor.execute(query,)
         query = (
             "CREATE TABLE vf_defs ("
-            " prot_id INT, vfdb_id varchar(15), gb_accession varchar(15),"
+            " vf_gene_id varchar(15), gb_accession varchar(15),"
             " prot_name tinytext, vfid varchar(10), category tinytext,"
-            " characteristics TEXT,  structure TEXT, function TEXT,"
-            " mechanism TEXT"
+            " vf_category_id varchar(10), characteristics TEXT,"
+            " structure TEXT, function TEXT, mechanism TEXT"
             ");"
         )
         self.server.adaptor.execute(query,)
         query = (
-            "CREATE INDEX vfdi ON vf_defs(prot_id);"
+            "CREATE INDEX vfdi ON vf_defs(vf_gene_id);"
         )
         self.server.adaptor.execute(query,)
 
@@ -462,7 +465,7 @@ class DB:
         query_string = ",".join(["\"" + a + "\"" for a in accession])
         query = (
             f"SELECT accession, taxid FROM accession2taxid "
-            f"WHERE accession IN ({query_string});" 
+            f"WHERE accession IN ({query_string});"
         )
         results = cursor.execute(query,).fetchall()
         hsh_results = {}
@@ -1287,7 +1290,7 @@ class DB:
             "SELECT entry.taxon_id, txn_name.name,  "
             f" CASE WHEN EXISTS ({has_plasmid_query}) THEN 1 ELSE 0 END "
             "FROM bioentry AS entry "
-            "INNER JOIN bioentry_qualifier_value AS orga ON entry.bioentry_id=orga.bioentry_id " 
+            "INNER JOIN bioentry_qualifier_value AS orga ON entry.bioentry_id=orga.bioentry_id "
             "INNER JOIN taxon_name as txn_name ON entry.taxon_id=txn_name.taxon_id "
             "INNER JOIN term AS orga_term ON orga.term_id=orga_term.term_id "
             " AND orga_term.name=\"organism\" "
@@ -1747,6 +1750,7 @@ class DB:
     #
     # NOTE: may be interesting to use int8/16 whenever possible
     # to spare memory.
+    @staticmethod
     def to_pandas_frame(db_results, columns, types=None):
         return pd.DataFrame(db_results, columns=columns)
 
@@ -2123,7 +2127,7 @@ class DB:
         # df_pivot = df.pivot_table(index=["seqfeature_id_1"], columns="target_taxid",values="identity", aggfunc=lambda x: max(x))
         return df
 
-    def get_pfam_def(self, pfam_ids, add_ttl_count=False):
+    def get_pfam_def(self, pfam_ids, add_ttl_count=False, **kwargs):
         ttl_cnt, ttl_join, ttl_grp = "", "", ""
         ttl_join_template = (
             " INNER JOIN pfam_hits AS hits ON hits.pfam_id=pfam_defs.pfam_id "
@@ -2474,7 +2478,7 @@ class DB:
             where_clause = f" bioentry.bioentry_id IN ({entries}) "
         elif search_on == "seqid":
             where_clause = f" hsh.seqid IN ({entries}) "
-        elif search_on == "amr":
+        elif search_on == "amr" or search_on == "gene":
             where_clause = f" gene IN ({entries}) "
         elif search_on == "taxid":
             where_clause = f" bioentry.taxon_id IN ({entries}) "
@@ -2534,6 +2538,8 @@ class DB:
                 column_names.insert(1, "plasmid")
                 index.insert(1, "plasmid")
             df = DB.to_pandas_frame(results, column_names)
+            if df.empty:
+                return df
             df = df.set_index(index).unstack(level=0, fill_value=0)
 
             if plasmids is not None:
