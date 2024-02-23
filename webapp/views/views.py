@@ -1189,65 +1189,75 @@ def format_module(mod_id, base=None, to_url=False):
         return f"<a href=/KEGG_module_map/{formated}>{formated}</a>"
     return formated
 
-def cog_phylo_heatmap(request, frequency):
-    biodb = settings.BIODB_DB_PATH
 
-    page_title = page2title["cog_phylo_heatmap"]
+class CogPhyloHeatmap(CogViewMixin, View):
 
-    if request.method != "GET":
-        return render(request, 'chlamdb/cog_phylo_heatmap.html', my_locals(locals()))
-    freq = frequency != "False"
+    @property
+    def view_name(self):
+        return f"{self.object_type}_phylo_heatmap"
 
-    db = DB.load_db_from_name(biodb)
-    tree = db.get_reference_phylogeny()
-    descr = db.get_genomes_description()
-    all_taxids = descr.index.tolist()
+    def get_context(self, **kwargs):
+        context = {
+            "page_title": self.page_title,
+        }
+        context.update(kwargs)
+        return my_locals(context)
 
-    all_cog_hits = db.get_cog_hits(all_taxids, search_on="taxid")
-    all_cog_funcs = db.get_cog_summaries(all_cog_hits.index.unique().tolist(),
-                                         only_cog_desc=True, as_df=True)
-    all_cog_hits = all_cog_hits.join(all_cog_funcs.function)
-    summed_entries = all_cog_hits.groupby("function").sum()
+    def post(self, request, *args, **kwargs):
+        return render(request, 'chlamdb/cog_phylo_heatmap.html', self.get_context())
 
-    # this is necessary as some cog are assigned several functions, in
-    # which case, all functions are concatenated into a single string
-    # e.g. MCT to say that a cog has the three functions
-    for func, entries in summed_entries.iterrows():
-        if len(func) == 1:
-            continue
-        for single_func in func:
-            if single_func in summed_entries.index:
-                summed_entries.loc[single_func] += entries
-            else:
-                summed_entries.loc[single_func] = entries
-    grouped_by_functions = summed_entries[summed_entries.index.map(len) == 1].T
+    def get(self, request, frequency, *args, **kwargs):
+        freq = frequency != "False"
 
-    t1 = Tree(tree)
-    R = t1.get_midpoint_outgroup()
-    t1.set_outgroup(R)
-    t1.ladderize()
+        tree = self.db.get_reference_phylogeny()
+        descr = self.db.get_genomes_description()
+        all_taxids = descr.index.tolist()
 
-    funcs_descr = db.get_cog_code_description()
-    e_tree = EteTree(t1)
-    e_tree.rename_leaves(descr.description.to_dict())
-    ttl_cnt = grouped_by_functions.sum(axis=1)
-    for func in grouped_by_functions.columns:
-        detailed_func = funcs_descr[func]
-        func_count = grouped_by_functions[func]
-        if freq:
-            func_count /= ttl_cnt
-            func_count *= 100
-            func_count = func_count.round(2)
-        col = SimpleColorColumn.fromSeries(func_count,
-                                           header=detailed_func + "(" + func + ")", color_gradient=True)
-        e_tree.add_column(col)
+        all_cog_hits = self.db.get_cog_hits(all_taxids, search_on="taxid")
+        all_cog_funcs = self.db.get_cog_summaries(all_cog_hits.index.unique().tolist(),
+                                                  only_cog_desc=True, as_df=True)
+        all_cog_hits = all_cog_hits.join(all_cog_funcs.function)
+        summed_entries = all_cog_hits.groupby("function").sum()
 
-    freq = frequency
-    path = settings.BASE_DIR + f"/assets/temp/COG_tree_{freq}.svg"
-    asset_path = f"/temp/COG_tree_{freq}.svg"
-    e_tree.render(path, dpi=600)
-    envoi = True
-    return render(request, 'chlamdb/cog_phylo_heatmap.html', my_locals(locals()))
+        # this is necessary as some cog are assigned several functions, in
+        # which case, all functions are concatenated into a single string
+        # e.g. MCT to say that a cog has the three functions
+        for func, entries in summed_entries.iterrows():
+            if len(func) == 1:
+                continue
+            for single_func in func:
+                if single_func in summed_entries.index:
+                    summed_entries.loc[single_func] += entries
+                else:
+                    summed_entries.loc[single_func] = entries
+        grouped_by_functions = summed_entries[summed_entries.index.map(len) == 1].T
+
+        t1 = Tree(tree)
+        R = t1.get_midpoint_outgroup()
+        t1.set_outgroup(R)
+        t1.ladderize()
+
+        funcs_descr = self.db.get_cog_code_description()
+        e_tree = EteTree(t1)
+        e_tree.rename_leaves(descr.description.to_dict())
+        ttl_cnt = grouped_by_functions.sum(axis=1)
+        for func in grouped_by_functions.columns:
+            detailed_func = funcs_descr[func]
+            func_count = grouped_by_functions[func]
+            if freq:
+                func_count /= ttl_cnt
+                func_count *= 100
+                func_count = func_count.round(2)
+            col = SimpleColorColumn.fromSeries(func_count,
+                                               header=detailed_func + "(" + func + ")", color_gradient=True)
+            e_tree.add_column(col)
+
+        freq = frequency
+        path = settings.BASE_DIR + f"/assets/temp/COG_tree_{freq}.svg"
+        asset_path = f"/temp/COG_tree_{freq}.svg"
+        e_tree.render(path, dpi=600)
+        context = self.get_context(envoi=True, freq=freq, asset_path=asset_path)
+        return render(request, 'chlamdb/cog_phylo_heatmap.html', context)
 
 
 class KOModuleChooser:
