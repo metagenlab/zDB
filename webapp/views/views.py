@@ -2432,81 +2432,91 @@ def alignment(request, input_fasta):
     return render(request, 'chlamdb/alignment.html', my_locals(locals()))
 
 
-def plot_heatmap(request, type):
-    import plotly.graph_objects as go
-    import scipy.cluster.hierarchy as shc
-    from scipy.cluster import hierarchy
+class PlotHeatmap(ComparisonViewMixin, View):
 
-    page_title = page2title[f"plot_heatmap_{type}"]
+    @property
+    def view_name(self):
+        return f"plot_heatmap_{self.object_type}"
 
-    biodb = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb)
-    form_class = make_venn_from(db)
+    def get_context(self, **kwargs):
+        context = {
+            "page_title": self.page_title,
+            "object_type": self.object_type,
+            "form": self.form,
+        }
+        context.update(kwargs)
+        return my_locals(context)
 
-    if request.method != "POST":
-        form_venn = form_class()
-        ctx = {"form_venn": form_venn, "type": type, "page_title": page_title}
-        return render(request, 'chlamdb/plot_heatmap.html', my_locals(ctx))
+    def get(self, request, *args, **kwargs):
+        venn_form_class = make_venn_from(self.db)
+        self.form = venn_form_class()
+        return render(request, 'chlamdb/plot_heatmap.html', self.get_context())
 
-    form_venn = form_class(request.POST)
-    if not form_venn.is_valid():
-        ctx = {"form_venn": form_venn, "type": type, "page_title": page_title}
-        return render(request, 'chlamdb/plot_heatmap.html', my_locals(ctx))
+    def post(self, request, *args, **kwargs):
+        venn_form_class = make_venn_from(self.db)
+        self.form = venn_form_class(request.POST)
+        if not self.form.is_valid():
+            # add error message
+            return render(request, 'chlamdb/plot_heatmap.html', self.get_context())
 
-    taxon_ids = form_venn.get_taxids()
+        import plotly.graph_objects as go
+        import scipy.cluster.hierarchy as shc
+        from scipy.cluster import hierarchy
 
-    if len(taxon_ids) <= 1:
-        error_message = "Please select at least two genomes"
-        error_title = "Wrong input"
-        ctx = {"error": True, "type": type, "type": type, "error_title": error_title,
-               "form_venn": form_venn, "error_message": error_message, "page_title": page_title}
-        return render(request, 'chlamdb/plot_heatmap.html', my_locals(ctx))
+        taxon_ids = self.form.get_taxids()
 
-    if type == "cog":
-        mat = db.get_cog_hits(taxon_ids, search_on="taxid")
-        mat.index = [format_cog(i, as_url=True) for i in mat.index]
-    elif type == "orthogroup":
-        mat = db.get_og_count(taxon_ids)
-        mat.index = [format_orthogroup(i, to_url=True) for i in mat.index]
-    elif type == "ko":
-        mat = db.get_ko_hits(taxon_ids)
-        mat.index = [format_ko(i, as_url=True) for i in mat.index]
-    elif type == "pfam":
-        mat = db.get_pfam_hits(taxon_ids)
-        mat.index = [format_pfam(i, to_url=True) for i in mat.index]
-    elif type == "amr":
-        mat = db.get_amr_hit_counts(taxon_ids)
-        mat.index = [format_amr(i, to_url=True) for i in mat.index]
-    elif type == "vf":
-        mat = db.vf.get_hit_counts(taxon_ids)
-        mat.index = [VfViewMixin.format_entry(i, to_url=True) for i in mat.index]
-    else:
-        form_venn = form_class()
-        return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
+        if len(taxon_ids) <= 1:
+            error_message = "Please select at least two genomes"
+            error_title = "Wrong input"
+            ctx = self.get_context(error=True, error_title=error_title,
+                                   error_message=error_message)
+            return render(request, 'chlamdb/plot_heatmap.html', ctx)
 
-    target2description = db.get_genomes_description().description.to_dict()
-    mat.columns = (target2description[i] for i in mat.columns.values)
-    # reorder row and columns based on clustering
-    Z_rows = shc.linkage(mat.T, method='ward')
-    order_rows = hierarchy.leaves_list(Z_rows)
-    new_index = [mat.columns.values[i] for i in order_rows]
+        if self.object_type == "cog":
+            mat = self.db.get_cog_hits(taxon_ids, search_on="taxid")
+            mat.index = [format_cog(i, as_url=True) for i in mat.index]
+        elif self.object_type == "orthogroup":
+            mat = self.db.get_og_count(taxon_ids)
+            mat.index = [format_orthogroup(i, to_url=True) for i in mat.index]
+        elif self.object_type == "ko":
+            mat = self.db.get_ko_hits(taxon_ids)
+            mat.index = [format_ko(i, as_url=True) for i in mat.index]
+        elif self.object_type == "pfam":
+            mat = self.db.get_pfam_hits(taxon_ids)
+            mat.index = [format_pfam(i, to_url=True) for i in mat.index]
+        elif self.object_type == "amr":
+            mat = self.db.get_amr_hit_counts(taxon_ids)
+            mat.index = [format_amr(i, to_url=True) for i in mat.index]
+        elif self.object_type == "vf":
+            mat = self.db.vf.get_hit_counts(taxon_ids)
+            mat.index = [VfViewMixin.format_entry(i, to_url=True) for i in mat.index]
+        else:
+            self.form = venn_form_class()
+            return render(request, 'chlamdb/plot_heatmap.html', self.get_context())
 
-    Z_genomes = shc.linkage(mat, method='ward')
-    order_genomes = hierarchy.leaves_list(Z_genomes)
+        target2description = self.db.get_genomes_description().description.to_dict()
+        mat.columns = (target2description[i] for i in mat.columns.values)
+        # reorder row and columns based on clustering
+        Z_rows = shc.linkage(mat.T, method='ward')
+        order_rows = hierarchy.leaves_list(Z_rows)
+        new_index = [mat.columns.values[i] for i in order_rows]
 
-    # set number of paralogs >1 as 2 to simplify the color code
-    mat[mat > 1] = 2
-    colors = ["#ffffff", "#2394d9", "#d923ce"]
-    new_cols = [mat.index.tolist()[i] for i in order_genomes]
+        Z_genomes = shc.linkage(mat, method='ward')
+        order_genomes = hierarchy.leaves_list(Z_genomes)
 
-    new_mat = mat.T.reindex(new_index)[new_cols]
-    fig = go.Figure(data=go.Heatmap(z=new_mat, colorscale=colors,
-                                    y=new_mat.index, x=new_mat.columns))
-    fig.update_traces(showlegend=False, showscale=False)
+        # set number of paralogs >1 as 2 to simplify the color code
+        mat[mat > 1] = 2
+        colors = ["#ffffff", "#2394d9", "#d923ce"]
+        new_cols = [mat.index.tolist()[i] for i in order_genomes]
 
-    html_plot = make_div(fig, div_id="heatmap")
-    envoi_heatmap = True
-    return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
+        new_mat = mat.T.reindex(new_index)[new_cols]
+        fig = go.Figure(data=go.Heatmap(z=new_mat, colorscale=colors,
+                                        y=new_mat.index, x=new_mat.columns))
+        fig.update_traces(showlegend=False, showscale=False)
+
+        html_plot = make_div(fig, div_id="heatmap")
+        context = self.get_context(envoi_heatmap=True, html_plot=html_plot)
+        return render(request, 'chlamdb/plot_heatmap.html', context)
 
 
 def format_pathway(path_id, base=None, to_url=False, taxid=None):

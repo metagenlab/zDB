@@ -15,23 +15,23 @@
           <div class="row">
             <div class="col-lg-12">
                {% include "chlamdb/menu.html" %}
-               {% include "chlamdb/extract_nav_tabs_template.html" with type=type active_tab="heat" %}
+               {% include "chlamdb/extract_nav_tabs_template.html" with type=object_type active_tab="heat" %}
 
                 <br>
                     <p class="page-title"><b>Heatmap of the presence/absence of
-                    {% if type == 'pfam' %}
+                    {% if object_type == 'pfam' %}
                         Pfam domains
-                    {% elif type == 'cog' %}
+                    {% elif object_type == 'cog' %}
                         COG categories
-                    {% elif type == 'interpro'%}
+                    {% elif object_type == 'interpro'%}
                         Interpro Entries.
-                    {% elif type == 'EC' %}
+                    {% elif object_type == 'EC' %}
                         EC numbers. Based on PRIAM data. Partial EC are not considered.
-                    {% elif type == 'ko' %}
+                    {% elif object_type == 'ko' %}
                         Kegg orthologous groups (KO)
-                    {% elif type == 'orthology' %}
+                    {% elif object_type == 'orthology' %}
                         orthologous groups
-                    {% elif type == 'amr' %}
+                    {% elif object_type == 'amr' %}
                         AMR genes
                     {% endif %}</b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option"  target="_blank"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
                 
@@ -49,10 +49,10 @@
 			{% endif %}
 
 
-                <form action="{% url "plot_heatmap" type %}" method="post" id="heatmap-form" >
+                <form action="{% url "plot_heatmap" object_type %}" method="post" id="heatmap-form" >
 
                     {% csrf_token %}
-                    {{ form_venn.as_p }}
+                    {{ form.as_p }}
                     <input type="submit" name="venn" value="Show" id="venn_button" />
 
                 </form>
@@ -69,15 +69,15 @@
                      </div>
                      <p style="margin: 10px 10px 10px 10px">
                         The heatmap displays the number of
-                        {% if type == 'pfam' %}
+                        {% if object_type == 'pfam' %}
                         times a Pfam domain shared by the genomes of interest is found.
-                    {% elif type == 'cog' %}
+                    {% elif object_type == 'cog' %}
                         COGs found per each COG category shared by the genomes of interest.
-                    {% elif type == 'ko' %}
+                    {% elif object_type == 'ko' %}
                     Kegg entries found per each Kegg orthologous groups shared by the genomes of interest.
-                    {% elif type == 'orthology' %}
+                    {% elif object_type == 'orthology' %}
                        homologs found per each Orthogroups shared by the genomes of interest.
-                    {% elif type == 'amr' %}
+                    {% elif object_type == 'amr' %}
                        times an AMR gene is found in each of the genomes of interest.
                     {% endif %}
                     
