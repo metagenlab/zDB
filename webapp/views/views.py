@@ -120,11 +120,7 @@ def home(request):
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 
-class ComparisonIndexView(View, ComparisonViewMixin):
-
-    def dispatch(self, request, comp_type, *args, **kwargs):
-        self.object_type = comp_type
-        return super(ComparisonIndexView, self).dispatch(request, *args, **kwargs)
+class ComparisonIndexView(ComparisonViewMixin, View):
 
     @property
     def view_name(self):
@@ -1761,72 +1757,88 @@ class CogBarchart(CogViewMixin, View):
         return render(request, 'chlamdb/cog_barplot.html', context)
 
 
-def pan_genome(request, type):
-    biodb = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb)
-    page_title = page2title[f"pan_genome_{type}"]
-    venn_form_class = make_venn_from(db, plasmid=False)
+class PanGenome(ComparisonViewMixin, View):
 
-    if request.method != "POST":
-        form = venn_form_class()
-        return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
+    @property
+    def view_name(self):
+        return f"pan_genome_{self.object_type}"
 
-    form = venn_form_class(request.POST)
-    if not form.is_valid():
-        # should add an error message
-        form = venn_form_class()
-        return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
-    taxids = form.get_taxids()
+    def get_context(self, **kwargs):
+        context = {
+            "page_title": self.page_title,
+            "form": self.form,
+            "object_type": self.object_type,
+        }
+        context.update(kwargs)
+        return my_locals(context)
 
-    if type == "cog":
-        df_hits = db.get_cog_hits(taxids, search_on="taxid")
-        type_txt = "COG orthologs"
-    elif type == "orthogroup":
-        df_hits = db.get_og_count(taxids, search_on="taxid")
-        type_txt = "orthologs"
-    elif type == "ko":
-        df_hits = db.get_ko_hits(taxids, search_on="taxid")
-        type_txt = "KEGG orthologs"
-    elif type == "pfam":
-        df_hits = db.get_pfam_hits(taxids, search_on="taxid")
-        type_txt = "PFAM domains"
-    elif type == "amr":
-        df_hits = db.get_amr_hit_counts(taxids, search_on="taxid")
-        type_txt = "AMR genes"
-    elif type == "vf":
-        df_hits = db.vf.get_hit_counts(taxids, search_on="taxid")
-        type_txt = "VF genes"
-    else:
-        form = venn_form_class()
-        return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
+    def get(self, request, *args, **kwargs):
+        venn_form_class = make_venn_from(self.db, plasmid=False)
+        self.form = venn_form_class()
+        return render(request, 'chlamdb/pan_genome.html', self.get_context())
 
-    unique, counts = np.unique(np.count_nonzero(df_hits, axis=1), return_counts=True)
-    unique_to_count = dict(zip(unique, counts))
+    def post(self, request, *args, **kwargs):
+        venn_form_class = make_venn_from(self.db)
+        self.form = venn_form_class(request.POST)
+        if not self.form.is_valid():
+            # add error message
+            self.form = venn_form_class()
+            return render(request, 'chlamdb/pan_genome.html', self.get_context())
 
-    data_count = []
-    for i in range(1, len(taxids) + 1):
-        count = unique_to_count.get(i, 0)
-        data_count.append(count)
+        taxids = self.form.get_taxids()
 
-    acc_set = set()
-    core_set = set(df_hits.index.tolist())
-    sum_og = []
-    core_og = []
-    for col in df_hits:
-        curr_col = df_hits[col]
-        tmp_set = set(curr_col.index[curr_col != 0].unique())
-        acc_set = acc_set.union(tmp_set)
-        core_set = core_set.intersection(tmp_set)
+        if self.object_type == "cog":
+            df_hits = self.db.get_cog_hits(taxids, search_on="taxid")
+            type_txt = "COG orthologs"
+        elif self.object_type == "orthogroup":
+            df_hits = self.db.get_og_count(taxids, search_on="taxid")
+            type_txt = "orthologs"
+        elif self.object_type == "ko":
+            df_hits = self.db.get_ko_hits(taxids, search_on="taxid")
+            type_txt = "KEGG orthologs"
+        elif self.object_type == "pfam":
+            df_hits = self.db.get_pfam_hits(taxids, search_on="taxid")
+            type_txt = "PFAM domains"
+        elif self.object_type == "amr":
+            df_hits = self.db.get_amr_hit_counts(taxids, search_on="taxid")
+            type_txt = "AMR genes"
+        elif self.object_type == "vf":
+            df_hits = self.db.vf.get_hit_counts(taxids, search_on="taxid")
+            type_txt = "VF genes"
+        else:
+            self.form = venn_form_class()
+            return render(request, 'chlamdb/pan_genome.html', self.get_context())
 
-        sum_og.append(len(acc_set))
-        core_og.append(len(core_set))
+        unique, counts = np.unique(np.count_nonzero(df_hits, axis=1), return_counts=True)
+        unique_to_count = dict(zip(unique, counts))
 
-    js_data_count = "[" + ",".join(str(i) for i in data_count) + "]"
-    js_data_acc = "[" + ",".join(str(i) for i in sum_og) + "]"
-    js_data_core = "[" + ",".join(str(i) for i in core_og) + "]"
+        data_count = []
+        for i in range(1, len(taxids) + 1):
+            count = unique_to_count.get(i, 0)
+            data_count.append(count)
 
-    envoi = True
-    return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
+        acc_set = set()
+        core_set = set(df_hits.index.tolist())
+        sum_og = []
+        core_og = []
+        for col in df_hits:
+            curr_col = df_hits[col]
+            tmp_set = set(curr_col.index[curr_col != 0].unique())
+            acc_set = acc_set.union(tmp_set)
+            core_set = core_set.intersection(tmp_set)
+
+            sum_og.append(len(acc_set))
+            core_og.append(len(core_set))
+
+        js_data_count = "[" + ",".join(str(i) for i in data_count) + "]"
+        js_data_acc = "[" + ",".join(str(i) for i in sum_og) + "]"
+        js_data_core = "[" + ",".join(str(i) for i in core_og) + "]"
+
+        context = self.get_context(
+            envoi=True, type_txt=type_txt, js_data_acc=js_data_acc,
+            js_data_count=js_data_count, js_data_core=js_data_core
+            )
+        return render(request, 'chlamdb/pan_genome.html', context)
 
 
 blast_input_dir = {"blastp": "faa",

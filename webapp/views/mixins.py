@@ -122,6 +122,10 @@ class ComparisonViewMixin(BaseViewMixin):
     def compared_obj_name(self):
         return self.type2objname[self.object_type]
 
+    def dispatch(self, request, comp_type, *args, **kwargs):
+        self.object_type = comp_type
+        return super(ComparisonViewMixin, self).dispatch(request, *args, **kwargs)
+
 
 class AmrViewMixin(BaseViewMixin):
 
