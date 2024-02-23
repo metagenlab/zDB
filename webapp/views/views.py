@@ -42,8 +42,7 @@ from lib.ete_phylo import (Column, EteTree, KOAndCompleteness,
 from lib.KO_module import ModuleParser
 from reportlab.lib import colors
 
-from views.mixins import (CogViewMixin, ComparisonViewMixin, KoViewMixin,
-                          VfViewMixin)
+from views.mixins import CogViewMixin, ComparisonViewMixin, KoViewMixin
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_ko_modules, format_ko_path, format_locus,
                          format_orthogroup, format_pfam,
@@ -129,7 +128,7 @@ class ComparisonIndexView(ComparisonViewMixin, View):
     def get(self, request):
         context = my_locals({
             "page_title": self.page_title,
-            "compared_obj_name": self.compared_obj_name,
+            "compared_obj_name": self.object_name_plural,
             "comp_type": self.object_type,
             "boxes": self.available_views,
             })
@@ -1786,28 +1785,7 @@ class PanGenome(ComparisonViewMixin, View):
             return render(request, 'chlamdb/pan_genome.html', self.get_context())
 
         taxids = self.form.get_taxids()
-
-        if self.object_type == "cog":
-            df_hits = self.db.get_cog_hits(taxids, search_on="taxid")
-            type_txt = "COG orthologs"
-        elif self.object_type == "orthogroup":
-            df_hits = self.db.get_og_count(taxids, search_on="taxid")
-            type_txt = "orthologs"
-        elif self.object_type == "ko":
-            df_hits = self.db.get_ko_hits(taxids, search_on="taxid")
-            type_txt = "KEGG orthologs"
-        elif self.object_type == "pfam":
-            df_hits = self.db.get_pfam_hits(taxids, search_on="taxid")
-            type_txt = "PFAM domains"
-        elif self.object_type == "amr":
-            df_hits = self.db.get_amr_hit_counts(taxids, search_on="taxid")
-            type_txt = "AMR genes"
-        elif self.object_type == "vf":
-            df_hits = self.db.vf.get_hit_counts(taxids, search_on="taxid")
-            type_txt = "VF genes"
-        else:
-            self.form = venn_form_class()
-            return render(request, 'chlamdb/pan_genome.html', self.get_context())
+        df_hits = self.get_hit_counts(taxids, search_on="taxid")
 
         unique, counts = np.unique(np.count_nonzero(df_hits, axis=1), return_counts=True)
         unique_to_count = dict(zip(unique, counts))
@@ -1835,7 +1813,7 @@ class PanGenome(ComparisonViewMixin, View):
         js_data_core = "[" + ",".join(str(i) for i in core_og) + "]"
 
         context = self.get_context(
-            envoi=True, type_txt=type_txt, js_data_acc=js_data_acc,
+            envoi=True, type_txt=self.object_name_plural, js_data_acc=js_data_acc,
             js_data_count=js_data_count, js_data_core=js_data_core
             )
         return render(request, 'chlamdb/pan_genome.html', context)
@@ -2472,27 +2450,8 @@ class PlotHeatmap(ComparisonViewMixin, View):
                                    error_message=error_message)
             return render(request, 'chlamdb/plot_heatmap.html', ctx)
 
-        if self.object_type == "cog":
-            mat = self.db.get_cog_hits(taxon_ids, search_on="taxid")
-            mat.index = [format_cog(i, as_url=True) for i in mat.index]
-        elif self.object_type == "orthogroup":
-            mat = self.db.get_og_count(taxon_ids)
-            mat.index = [format_orthogroup(i, to_url=True) for i in mat.index]
-        elif self.object_type == "ko":
-            mat = self.db.get_ko_hits(taxon_ids)
-            mat.index = [format_ko(i, as_url=True) for i in mat.index]
-        elif self.object_type == "pfam":
-            mat = self.db.get_pfam_hits(taxon_ids)
-            mat.index = [format_pfam(i, to_url=True) for i in mat.index]
-        elif self.object_type == "amr":
-            mat = self.db.get_amr_hit_counts(taxon_ids)
-            mat.index = [format_amr(i, to_url=True) for i in mat.index]
-        elif self.object_type == "vf":
-            mat = self.db.vf.get_hit_counts(taxon_ids)
-            mat.index = [VfViewMixin.format_entry(i, to_url=True) for i in mat.index]
-        else:
-            self.form = venn_form_class()
-            return render(request, 'chlamdb/plot_heatmap.html', self.get_context())
+        mat = self.get_hit_counts(taxon_ids, search_on="taxid")
+        mat.index = [self.format_entry(i, to_url=True) for i in mat.index]
 
         target2description = self.db.get_genomes_description().description.to_dict()
         mat.columns = (target2description[i] for i in mat.columns.values)

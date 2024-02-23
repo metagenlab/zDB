@@ -107,26 +107,6 @@ class BaseViewMixin():
         return views
 
 
-class ComparisonViewMixin(BaseViewMixin):
-
-    type2objname = {
-        "cog": "COGs",
-        "pfam": "Pfam domains",
-        "ko": "Kegg Orthologs",
-        "orthogroup": "Orthologous groups",
-        "amr": "AMR",
-        "vf": "Virulence Factors"
-    }
-
-    @property
-    def compared_obj_name(self):
-        return self.type2objname[self.object_type]
-
-    def dispatch(self, request, comp_type, *args, **kwargs):
-        self.object_type = comp_type
-        return super(ComparisonViewMixin, self).dispatch(request, *args, **kwargs)
-
-
 class AmrViewMixin(BaseViewMixin):
 
     object_type = "amr"
@@ -368,3 +348,28 @@ class VfViewMixin(BaseViewMixin):
             Transform("vfid", self.format_vfid),
             self.transform_category
         ]
+
+
+class ComparisonViewMixin(BaseViewMixin):
+    """This class is somewhat of a hack to get pseudo inheritance
+    from the correct mixin for views that get the object_type as
+    parameter.
+    """
+    type2mixin = {
+        "cog": CogViewMixin,
+        "pfam": PfamViewMixin,
+        "ko": KoViewMixin,
+        "orthogroup": OrthogroupViewMixin,
+        "amr": AmrViewMixin,
+        "vf": VfViewMixin
+    }
+
+    mixin = None
+
+    def __getattr__(self, attrname):
+        return getattr(self.mixin, attrname)
+
+    def dispatch(self, request, comp_type, *args, **kwargs):
+        self.object_type = comp_type
+        self.mixin = self.type2mixin[self.object_type]()
+        return super(ComparisonViewMixin, self).dispatch(request, *args, **kwargs)
