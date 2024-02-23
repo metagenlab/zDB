@@ -2,7 +2,6 @@ name: webapp
 channels:
     - conda-forge
     - bioconda
-    - metagenlab
 dependencies:
     - python>=3.9
     - ete3
@@ -22,4 +21,3 @@ dependencies:
     - pyqt
     - bibtexparser
     - blast>=2.9.0
-    - metagenlab_libs
