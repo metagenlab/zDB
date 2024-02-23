@@ -42,7 +42,8 @@ from lib.ete_phylo import (Column, EteTree, KOAndCompleteness,
 from lib.KO_module import ModuleParser
 from reportlab.lib import colors
 
-from views.mixins import CogViewMixin, ComparisonViewMixin, VfViewMixin
+from views.mixins import (CogViewMixin, ComparisonViewMixin, KoViewMixin,
+                          VfViewMixin)
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_ko_modules, format_ko_path, format_locus,
                          format_orthogroup, format_pfam,
@@ -1573,60 +1574,72 @@ def js_bioentries_to_description(hsh):
     return taxon_map + mid + "};"
 
 
-def ko_barchart(request):
-    biodb = settings.BIODB_DB_PATH
-    db = DB.load_db(biodb, settings.BIODB_CONF)
-    page_title = page2title["ko_barchart"]
+class KoBarchart(KoViewMixin, View):
 
-    venn_form_class = make_venn_from(db)
-    if request.method != "POST":
-        form = venn_form_class()
-        return render(request, 'chlamdb/ko_barplot.html', my_locals(locals()))
+    @property
+    def view_name(self):
+        return f"{self.object_type}_barchart"
 
-    form = venn_form_class(request.POST)
-    if not form.is_valid():
-        form = venn_form_class()
-        return render(request, 'chlamdb/ko_barplot.html', my_locals(locals()))
+    def get_context(self, **kwargs):
+        context = {
+            "page_title": self.page_title,
+            "form": self.form,
+        }
+        context.update(kwargs)
+        return my_locals(context)
 
-    taxids = form.get_taxids()
-    taxon2description = db.get_genomes_description().description.to_dict()
+    def get(self, request, *args, **kwargs):
+        venn_form_class = make_venn_from(self.db)
+        self.form = venn_form_class()
+        return render(request, 'chlamdb/ko_barplot.html', self.get_context())
 
-    ko_counts = db.get_ko_count(taxids, keep_seqids=True, as_multi=False)
-    ko_ids = ko_counts.KO.unique()
-    ko_module_ids = db.get_ko_modules(ko_ids.tolist(), as_pandas=True, compact=True)
-    ko_modules_info = db.get_modules_info(ko_module_ids["module_id"].unique().tolist(), as_pandas=True)
+    def post(self, request, *args, **kwargs):
+        venn_form_class = make_venn_from(self.db)
+        self.form = venn_form_class(request.POST)
+        if not self.form.is_valid():
+            self.form = venn_form_class(request.POST)
+            return render(request, 'chlamdb/ko_barplot.html', self.get_context())
 
-    merged = ko_counts.merge(ko_module_ids, left_on="KO", right_on="ko_id", how="inner")
-    merged = merged.merge(ko_modules_info, left_on="module_id", right_on="module_id", how="inner")
-    cat_count = merged[["taxid", "subcat", "seqid"]].groupby(["taxid", "subcat"]).nunique()
-    subcategories_list = cat_count.index.unique(level="subcat").to_list()
-    subcategories = ",".join(f"{to_s(cat)}" for cat in subcategories_list)
-    labels = f"[{subcategories}]"
+        taxids = self.form.get_taxids()
+        taxon2description = self.db.get_genomes_description().description.to_dict()
 
-    taxon_map = js_bioentries_to_description(taxon2description)
+        ko_counts = self.db.get_ko_count(taxids, keep_seqids=True, as_multi=False)
+        ko_ids = ko_counts.KO.unique()
+        ko_module_ids = self.db.get_ko_modules(ko_ids.tolist(), as_pandas=True, compact=True)
+        ko_modules_info = self.db.get_modules_info(ko_module_ids["module_id"].unique().tolist(), as_pandas=True)
 
-    series_data = []
+        merged = ko_counts.merge(ko_module_ids, left_on="KO", right_on="ko_id", how="inner")
+        merged = merged.merge(ko_modules_info, left_on="module_id", right_on="module_id", how="inner")
+        cat_count = merged[["taxid", "subcat", "seqid"]].groupby(["taxid", "subcat"]).nunique()
+        subcategories_list = cat_count.index.unique(level="subcat").to_list()
+        subcategories = ",".join(f"{to_s(cat)}" for cat in subcategories_list)
+        labels = f"[{subcategories}]"
 
-    # not ideal, but I'm really fed up with multi-indices. Be my guest
-    # if you want to improve on this.
-    cat_count_dict = cat_count["seqid"].to_dict()
-    taxids = cat_count.index.unique(level="taxid")
-    for taxid in taxids:
-        entry_data = []
-        for subcat in subcategories_list:
-            if (taxid, subcat) in cat_count_dict:
-                entry_data.append(cat_count_dict[(taxid, subcat)])
-            else:
-                entry_data.append(0)
-        str_entry_data = (str(entry) for entry in entry_data)
-        string = f"{{label: {to_s(taxid)}, values: [" + ",".join(str_entry_data) + "]}"
-        series_data.append(string)
+        taxon_map = js_bioentries_to_description(taxon2description)
 
-    taxids = "?" + "&".join((f"h={i}" for i in taxids))
-    series = "[" + ",".join(series_data) + "]"
-    envoi = True
-    form = venn_form_class()
-    return render(request, 'chlamdb/ko_barplot.html', my_locals(locals()))
+        series_data = []
+
+        # not ideal, but I'm really fed up with multi-indices. Be my guest
+        # if you want to improve on this.
+        cat_count_dict = cat_count["seqid"].to_dict()
+        taxids = cat_count.index.unique(level="taxid")
+        for taxid in taxids:
+            entry_data = []
+            for subcat in subcategories_list:
+                if (taxid, subcat) in cat_count_dict:
+                    entry_data.append(cat_count_dict[(taxid, subcat)])
+                else:
+                    entry_data.append(0)
+            str_entry_data = (str(entry) for entry in entry_data)
+            string = f"{{label: {to_s(taxid)}, values: [" + ",".join(str_entry_data) + "]}"
+            series_data.append(string)
+
+        taxids = "?" + "&".join((f"h={i}" for i in taxids))
+        series = "[" + ",".join(series_data) + "]"
+        self.form = venn_form_class()
+        context = self.get_context(
+            envoi=True, series=series, labels=labels, taxids=taxids)
+        return render(request, 'chlamdb/ko_barplot.html', context)
 
 
 def orthogroup_list_cog_barchart(request, accessions=False):
