@@ -94,6 +94,18 @@ class BaseViewMixin():
         return [
             Transform(self.object_column, self.format_entry, {"to_url": True})]
 
+    @property
+    def available_views(self):
+        views = ["entry-list", "extraction", "venn",
+                 "tabular-comparison", "heatmap", "accumulation-rarefaction"]
+        if self.object_type == "orthogroup":
+            views.remove("entry-list")
+        elif self.object_type == "ko":
+            views.append("barcharts")
+        elif self.object_type == "cog":
+            views.extend(["barcharts", "heatmap-count", "heatmap-fraction"])
+        return views
+
 
 class ComparisonViewMixin(BaseViewMixin):
 
@@ -108,7 +120,7 @@ class ComparisonViewMixin(BaseViewMixin):
 
     @property
     def compared_obj_name(self):
-        return self.type2objname[self.comp_type]
+        return self.type2objname[self.object_type]
 
 
 class AmrViewMixin(BaseViewMixin):

@@ -121,32 +121,20 @@ def home(request):
 
 class ComparisonIndexView(View, ComparisonViewMixin):
 
-    @property
-    def boxes(self):
-        boxes = ["entry-list", "extraction", "venn",
-                 "tabular-comparison", "heatmap", "accumulation-rarefaction"]
-        if self.comp_type == "orthogroup":
-            boxes.remove("entry-list")
-        elif self.comp_type == "ko":
-            boxes.append("barcharts")
-        elif self.comp_type == "cog":
-            boxes.extend(["barcharts", "heatmap-count", "heatmap-fraction"])
-        return boxes
-
     def dispatch(self, request, comp_type, *args, **kwargs):
-        self.comp_type = comp_type
+        self.object_type = comp_type
         return super(ComparisonIndexView, self).dispatch(request, *args, **kwargs)
 
     @property
     def view_name(self):
-        return f"index_comp_{self.comp_type}"
+        return f"index_comp_{self.object_type}"
 
     def get(self, request):
         context = my_locals({
             "page_title": self.page_title,
             "compared_obj_name": self.compared_obj_name,
-            "comp_type": self.comp_type,
-            "boxes": self.boxes,
+            "comp_type": self.object_type,
+            "boxes": self.available_views,
             })
         return render(request, 'chlamdb/index_comp.html', context)
 
