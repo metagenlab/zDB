@@ -1699,33 +1699,6 @@ class KoBarchart(KoViewMixin, View):
         return render(request, 'chlamdb/ko_barplot.html', context)
 
 
-def orthogroup_list_cog_barchart(request, accessions=False):
-    biodb = settings.BIODB
-    if accessions == 'False' or accessions == 'F':
-        accessions = False
-
-    orthogroup_list = [i for i in request.GET.getlist('h')]
-
-    reference = request.GET.getlist('ref')[0]
-
-    series, \
-        labels, \
-        serie_all_counts, \
-        serie_target_counts, \
-        series_counts, \
-        labels_counts, \
-        category_description, \
-        category_map, \
-        n_missing_cog, \
-        missing_cog_list = orthogroup2cog_series(orthogroup_list, reference_taxon=reference, accessions=accessions)
-
-    no_cogs_url = "?g=" + ('&g=').join(missing_cog_list)
-    orthogroups_url = '?h=' + ('&h=').join(orthogroup_list)
-
-    return render(request, 'chlamdb/orthogroup_list_cog_barchart.html',
-                  my_locals(locals()))
-
-
 class CogBarchart(CogViewMixin, View):
 
     def get_context(self, **kwargs):
