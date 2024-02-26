@@ -121,10 +121,6 @@ def home(request):
 
 class ComparisonIndexView(ComparisonViewMixin, View):
 
-    @property
-    def view_name(self):
-        return f"index_comp_{self.object_type}"
-
     def get(self, request):
         context = my_locals({
             "page_title": self.page_title,
@@ -1188,10 +1184,6 @@ def format_module(mod_id, base=None, to_url=False):
 
 class CogPhyloHeatmap(CogViewMixin, View):
 
-    @property
-    def view_name(self):
-        return f"{self.object_type}_phylo_heatmap"
-
     def get_context(self, **kwargs):
         context = {
             "page_title": self.page_title,
@@ -1571,10 +1563,6 @@ def js_bioentries_to_description(hsh):
 
 class KoBarchart(KoViewMixin, View):
 
-    @property
-    def view_name(self):
-        return f"{self.object_type}_barchart"
-
     def get_context(self, **kwargs):
         context = {
             "page_title": self.page_title,
@@ -1665,10 +1653,6 @@ def orthogroup_list_cog_barchart(request, accessions=False):
 
 class CogBarchart(CogViewMixin, View):
 
-    @property
-    def view_name(self):
-        return f"{self.object_type}_barchart"
-
     def get_context(self, **kwargs):
         context = {
             "page_title": self.page_title,
@@ -1757,10 +1741,6 @@ class CogBarchart(CogViewMixin, View):
 
 
 class PanGenome(ComparisonViewMixin, View):
-
-    @property
-    def view_name(self):
-        return f"pan_genome_{self.object_type}"
 
     def get_context(self, **kwargs):
         context = {
@@ -2412,10 +2392,6 @@ def alignment(request, input_fasta):
 
 
 class PlotHeatmap(ComparisonViewMixin, View):
-
-    @property
-    def view_name(self):
-        return f"plot_heatmap_{self.object_type}"
 
     def get_context(self, **kwargs):
         context = {

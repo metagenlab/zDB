@@ -211,10 +211,6 @@ class OrthogroupComparisonView(TabularComparisonViewBase, OrthogroupViewMixin):
     database and the phylogenetic profile.
     """
 
-    @property
-    def view_name(self):
-        return "orthogroup_comparison"
-
     def get_table_rows(self):
         og_count = self.db.get_og_count(self.targets)
         annotations = self.db.get_genes_from_og(
