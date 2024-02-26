@@ -155,16 +155,21 @@ def genomes(request):
     filenames_tax_id_db.index = list(filenames_tax_id_db['taxon_id'])
     filenames_list = list(filenames_tax_id_db["filename"])
 
-    path_faa = [settings.BLAST_DB_PATH + "/faa/" + filename + ".faa" for filename in filenames_list]
-    path_fna = [settings.BLAST_DB_PATH + "/fna/" + filename + ".fna" for filename in filenames_list]
-    path_ffn = [settings.BLAST_DB_PATH + "/ffn/" + filename + ".ffn" for filename in filenames_list]
-    path_gbk = [settings.BLAST_DB_PATH + "/gbk/" + filename + ".gbk" for filename in filenames_list]
+    path_faa = [settings.BLAST_DB_PATH + "/faa/" + filename + ".faa"
+                for filename in filenames_list]
+    path_fna = [settings.BLAST_DB_PATH + "/fna/" + filename + ".fna"
+                for filename in filenames_list]
+    path_ffn = [settings.BLAST_DB_PATH + "/ffn/" + filename + ".ffn"
+                for filename in filenames_list]
+    path_gbk = [settings.BLAST_DB_PATH + "/gbk/" + filename + ".gbk"
+                for filename in filenames_list]
 
     filenames_tax_id_db['path_to_faa'] = path_faa
     filenames_tax_id_db['path_to_fna'] = path_fna
     filenames_tax_id_db['path_to_ffn'] = path_ffn
     filenames_tax_id_db['path_to_gbk'] = path_gbk
-    filenames_tax_id_db = filenames_tax_id_db[["path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk"]]
+    filenames_tax_id_db = filenames_tax_id_db[["path_to_faa", "path_to_fna",
+                                               "path_to_ffn", "path_to_gbk"]]
     genomes_data = genomes_data.join(filenames_tax_id_db, on="taxon_id")
     data_table_header = [
         "Name",
@@ -202,8 +207,9 @@ def extract_contigs(request, genome):
     db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
 
     descr = db.get_genomes_description().description.to_dict()
-    prot_infos = db.get_proteins_info([taxid], search_on="taxid",
-                                      as_df=True, to_return=["locus_tag", "product", "gene"])
+    prot_infos = db.get_proteins_info(
+        [taxid], search_on="taxid", as_df=True,
+        to_return=["locus_tag", "product", "gene"])
     seqids = prot_infos.index.tolist()
     ogs = db.get_og_count(seqids, search_on="seqid")
 
@@ -268,7 +274,8 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
     for seqid, data in infos.iterrows():
         organism = hsh_organism[seqid]
         locus_fmt = format_locus(data.locus_tag, to_url=True)
-        entry = [index + 1, locus_fmt, organism, format_gene(data.gene), data["product"]]
+        entry = [index + 1, locus_fmt, organism, format_gene(data.gene),
+                 data["product"]]
         if ref_seqid is not None:
             if seqid == ref_seqid:
                 continue
@@ -281,7 +288,8 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
         homologues.append(entry)
         index += 1
 
-    n_genomes = len(orga_set) if ref_seqid is not None else len(set(hsh_organism.values()))
+    n_genomes = (len(orga_set) if ref_seqid is not None
+                 else len(set(hsh_organism.values())))
     return {"orthogroup": orthogroup_title,
             "n_genomes": "1 genome" if n_genomes == 1 else f"{n_genomes} genomes",
             "headers": headers,
@@ -323,12 +331,16 @@ def tab_lengths(n_homologues, annotations):
     mean_protein_length = f"{lengths.mean():.1f}"
     median_protein_length = f"{lengths.median():.1f}"
     if len(lengths.unique()) > 1:
-        fig1 = ff.create_distplot([lengths.tolist()], ["Sequence length"], bin_size=20)
+        fig1 = ff.create_distplot([lengths.tolist()], ["Sequence length"],
+                                  bin_size=20)
         fig1.update_xaxes(range=[0, max_protein_length])
-        fig1.layout.margin.update({"l": 80, "r": 20, "b": 40, "t": 20, "pad": 10, })
+        fig1.layout.margin.update(
+            {"l": 80, "r": 20, "b": 40, "t": 20, "pad": 10, })
         html_plot_prot_length = make_div(fig1, div_id="distplot")
     else:
-        return {"length_distrib": True, "single_length": True, "prot_length": lengths.iloc[0]}
+        return {"length_distrib": True,
+                "single_length": True,
+                "prot_length": lengths.iloc[0]}
 
     return {"length_distrib": True,
             "max_protein_length": max_protein_length,
@@ -359,13 +371,15 @@ class PfamColumn(Column):
         pfam_entries = []
         for pfam, start, end in pfam_infos:
             fmt_entry = f"arial|6|white|{format_pfam(pfam)}"
-            entry = [start, end, "[]", None, 8, "black", self.pfam_cmap[pfam], fmt_entry]
+            entry = [start, end, "[]", None, 8, "black", self.pfam_cmap[pfam],
+                     fmt_entry]
             pfam_entries.append(entry)
         return SeqMotifFace(dummy_seq, motifs=pfam_entries, seq_format="line")
 
 
 def og_tab_get_swissprot_homologs(db, annotations):
-    homologs = db.get_swissprot_homologs(annotations.index.tolist(), indexing="accession")
+    homologs = db.get_swissprot_homologs(annotations.index.tolist(),
+                                         indexing="accession")
     summary = homologs.groupby("definition").count()
     swissprot = []
     for definition, data in summary.iterrows():
@@ -389,15 +403,19 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
     pfam_col = None
     ident_col = None
     if optional2status.get("pfam", False):
-        annots = db.get_genes_from_og(orthogroups=[og_id], terms=["locus_tag", "length"])
+        annots = db.get_genes_from_og(orthogroups=[og_id],
+                                      terms=["locus_tag", "length"])
         pfams = db.get_pfam_hits_info(annots.index.tolist())
         unique_pfams = pfams.pfam.unique()
-        color_palette = (mpl_col.to_hex(col) for col in sns.color_palette(None, len(unique_pfams)))
+        color_palette = (mpl_col.to_hex(col)
+                         for col in sns.color_palette(None, len(unique_pfams)))
         pfam_cmap = dict(zip(unique_pfams, color_palette))
         tmp_hsh_infos = collections.defaultdict(list)
         hsh_pfam_infos = {}
         for index, infos in pfams.iterrows():
-            tmp_hsh_infos[infos.seqid].append([infos.pfam, infos.start, infos.end])
+            tmp_hsh_infos[infos.seqid].append([infos.pfam,
+                                               infos.start,
+                                               infos.end])
         for seqid, data in annots.iterrows():
             pfam_entries = tmp_hsh_infos.get(seqid, [])
             hsh_pfam_infos[data.locus_tag] = [data.length, pfam_entries]
@@ -407,12 +425,14 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
         identity_matrix = db.get_og_identity(og=og_id, ref_seqid=compare_to)
         seqids = identity_matrix.index.tolist()
         seqids.append(compare_to)
-        seqid_to_locus = db.get_proteins_info(seqids, to_return=["locus_tag"], as_df=True)
+        seqid_to_locus = db.get_proteins_info(seqids, to_return=["locus_tag"],
+                                              as_df=True)
         all_infos = identity_matrix.join(seqid_to_locus).set_index("locus_tag").round(1)
         all_infos.loc[seqid_to_locus.loc[compare_to].locus_tag] = 100.0
 
-        ident_col = SimpleColorColumn.fromSeries(all_infos.identity, color_gradient=True,
-                                                 header="Identity", default_val="-", is_str_index=True)
+        ident_col = SimpleColorColumn.fromSeries(
+            all_infos.identity, color_gradient=True, header="Identity",
+            default_val="-", is_str_index=True)
 
     tree, root = prepare_default_tree(og_phylogeny)
     locuses = [branch.name for branch in tree.iter_leaves()]
@@ -433,7 +453,9 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
     e_tree.render(path, dpi=1200)
 
     algn_file = f"/alignments/{og_filename}"
-    return {"og_phylogeny": asset_path, "root": root, "og_alignment": algn_file}
+    return {"og_phylogeny": asset_path,
+            "root": root,
+            "og_alignment": algn_file}
 
 
 def tab_og_conservation_tree(db, group, compare_to=None):
@@ -451,7 +473,8 @@ def tab_og_conservation_tree(db, group, compare_to=None):
     tree.ladderize()
     e_tree = EteTree(tree)
 
-    e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group], header="Number of homologs"))
+    e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group],
+                      header="Number of homologs"))
     if compare_to is not None:
         identity_matrix = db.get_og_identity(og=group, ref_seqid=compare_to)
         seqids = identity_matrix.index.tolist()
@@ -463,8 +486,9 @@ def tab_og_conservation_tree(db, group, compare_to=None):
         identity_matrix["taxid"] = identity_matrix.index.map(seqid_to_taxon)
         max_identity = identity_matrix.groupby("taxid").max().round(1)
         max_identity.loc[seqid_to_taxon[compare_to]] = 100.0
-        col = SimpleColorColumn.fromSeries(max_identity.identity, color_gradient=True,
-                                           header="Identity", default_val="-")
+        col = SimpleColorColumn.fromSeries(
+            max_identity.identity, color_gradient=True,
+            header="Identity", default_val="-")
         e_tree.add_column(col)
 
     e_tree.rename_leaves(leaf_to_name)
@@ -551,7 +575,8 @@ def og_tab_get_cog_annot(db, seqids):
     if len(cog_entries) == 0:
         return {}
 
-    cog_header = ["COG", "Occurences", "Description", "Category", "Category description"]
+    cog_header = ["COG", "Occurences", "Description",
+                  "Category", "Category description"]
     return {
         "cog_header": cog_header,
         "cog_entries": cog_entries
@@ -568,7 +593,8 @@ def og_tab_get_pfams(db, annotations):
 
     all_infos_tab = []
     for pfam, data in all_infos.iterrows():
-        all_infos_tab.append([format_pfam(pfam, to_url=True), data.seqid, data["def"]])
+        all_infos_tab.append(
+            [format_pfam(pfam, to_url=True), data.seqid, data["def"]])
     return {
         "pfam_def": all_infos_tab
     }
@@ -635,8 +661,8 @@ def orthogroup(request, og):
         valid_id = False
         return render(request, "chlamdb/og.html", my_locals(locals()))
 
-    annotations = db.get_genes_from_og(orthogroups=[og_id],
-                                       terms=["locus_tag", "gene", "product", "length"])
+    annotations = db.get_genes_from_og(
+        orthogroups=[og_id], terms=["locus_tag", "gene", "product", "length"])
 
     hsh_organisms = db.get_organism(annotations.index.tolist())
     hsh_genes = format_lst(annotations["gene"].tolist())
@@ -700,9 +726,11 @@ def orthogroup(request, og):
     }
     return render(request, "chlamdb/og.html", my_locals(context))
 
+
 def tab_general(db, seqid):
-    hsh_infos = db.get_proteins_info([seqid], to_return=["locus_tag", "gene", "product"],
-            inc_non_CDS=True, inc_pseudo=True)
+    hsh_infos = db.get_proteins_info(
+        [seqid], to_return=["locus_tag", "gene", "product"],
+        inc_non_CDS=True, inc_pseudo=True)
     hsh_organism = db.get_organism([seqid])
     gene_loc = db.get_gene_loc([seqid], as_hash=False)
 
@@ -719,11 +747,12 @@ def tab_general(db, seqid):
     return {
         "locus_tag": locus_tag,
         "organism": organism,
-        "gene_pos" : gene_pos,
+        "gene_pos": gene_pos,
         "gene": gene,
         "nucl_length": nucl_length,
         "prot": product
     }
+
 
 # to be moved somewhere else at some point
 def to_color_code(c):
@@ -753,8 +782,8 @@ class LocusHeatmapColumn(SimpleColorColumn):
         if val is None:
             return TextFace("-")
 
-        color = colors.linearlyInterpolatedColor(colors.gray,
-                                                 colors.firebrick, self.min_val, self.max_val, val)
+        color = colors.linearlyInterpolatedColor(
+            colors.gray, colors.firebrick, self.min_val, self.max_val, val)
         text_face = TextFace(str(int(val)).center(12 - len(str(int(val)))))
         text_face.inner_background.color = to_color_code(color)
         self.set_default_params(text_face)
@@ -763,30 +792,36 @@ class LocusHeatmapColumn(SimpleColorColumn):
 
 def get_sequence(db, seqid, flanking=0):
     loc = db.get_gene_loc([seqid], as_hash=False)
-    bioentry, accession, length, seq = db.get_bioentry_list(seqid, search_on="seqid")
+    bioentry, accession, length, seq = db.get_bioentry_list(seqid,
+                                                            search_on="seqid")
 
     if len(loc) == 2:
         # Need to handle the special case where a gene is overlapping both ends
         # of a circular contig.
-        # This code assumes that the gene overlaps both ends of a circular contig
-        # and won't work otherwise
+        # This code assumes that the gene overlaps both ends of a circular
+        # contig and won't work otherwise
         loc0 = loc.loc[0]
         loc1 = loc.loc[1]
         if loc0.strand != loc1.strand:
             raise Exception("Unsupported case of fragment gene on different strands")
 
         _, strand, start, stop = (int(i) for i in loc0.tolist())
-        if start==1:
-            fet1 = SeqFeature(FeatureLocation(start-1, stop+flanking, strand=strand))
-            fet0 = SeqFeature(FeatureLocation(int(loc1.start-flanking-1), int(loc1.end), strand=strand))
+        if start == 1:
+            fet1 = SeqFeature(FeatureLocation(
+                start - 1, stop + flanking, strand=strand))
+            fet0 = SeqFeature(FeatureLocation(
+                int(loc1.start - flanking - 1), int(loc1.end), strand=strand))
         else:
-            fet0 = SeqFeature(FeatureLocation(start-1-flanking, stop, strand=strand))
-            fet1 = SeqFeature(FeatureLocation(int(loc1.start)-1, int(loc1.end)+flanking, strand=strand))
+            fet0 = SeqFeature(FeatureLocation(
+                start-1-flanking, stop, strand=strand))
+            fet1 = SeqFeature(FeatureLocation(
+                int(loc1.start) - 1, int(loc1.end) + flanking, strand=strand))
         extracted0 = fet0.extract(seq)
         extracted1 = fet1.extract(seq)
-        extracted = extracted0+extracted1
+        extracted = extracted0 + extracted1
         red_start = flanking
-        red_stop = len(extracted0)+(fet1.location.end-fet1.location.start-flanking)
+        red_stop = (len(extracted0)
+                    + (fet1.location.end - fet1.location.start - flanking))
     elif len(loc) == 1:
         _, strand, start, stop = (int(i) for i in loc.loc[0].tolist())
         start -= 1
@@ -802,12 +837,14 @@ def get_sequence(db, seqid, flanking=0):
         else:
             stop_w_flank = stop + flanking
         red_stop = red_start + stop - start
-        fet = SeqFeature(FeatureLocation(start_w_flank, stop_w_flank, strand=strand))
+        fet = SeqFeature(FeatureLocation(
+            start_w_flank, stop_w_flank, strand=strand))
         extracted = fet.extract(seq)
     else:
         raise Exception("Unsupported case of fragmented gene")
     return extracted[0:red_start] + "<font color='red'>" + \
         extracted[red_start:red_stop] + "</font>" + extracted[red_stop:]
+
 
 def tab_get_pfam_annot(db, seqid):
     pfam_hits = db.get_pfam_hits_info(seqid)
@@ -864,7 +901,6 @@ def locusx_genomic_region(db, seqid, window):
     strand, start, end = hsh_loc[seqid]
     window_start, window_stop = start - window, start + window
 
-    hsh_organism = db.get_organism([seqid], id_type="seqid")
     bioentry, _, contig_size, _ = db.get_bioentry_list(seqid, search_on="seqid")
     qualifiers = db.get_bioentry_qualifiers(bioentry)
     is_circular = "circular" in qualifiers["value"].values
@@ -873,13 +909,13 @@ def locusx_genomic_region(db, seqid, window):
     if 2*window >= contig_size:
         window_start = 0
         window_stop = contig_size
-    elif window_start<0 and not is_circular:
+    elif window_start < 0 and not is_circular:
         window_start = 0
         df_seqids = df_seqids[df_seqids.start_pos < window_stop]
-    elif window_stop>contig_size and not is_circular:
+    elif window_stop > contig_size and not is_circular:
         window_stop = contig_size
-        df_seqids = df_seqids[df_seqids.end_pos>window_start]
-    elif window_start<0:
+        df_seqids = df_seqids[df_seqids.end_pos > window_start]
+    elif window_start < 0:
         # circular contig
         diff = contig_size+window_start
         mask_circled = (df_seqids.end_pos >= diff)
@@ -890,7 +926,7 @@ def locusx_genomic_region(db, seqid, window):
         df_seqids.loc[mask_circled, "start_pos"] -= diff
         df_seqids.loc[mask_circled, "end_pos"] -= diff
         df_seqids = pd.concat([df_seqids.loc[mask_same],
-            df_seqids.loc[mask_circled]])
+                              df_seqids.loc[mask_circled]])
         window_stop -= window_start
         window_start = 0
     elif window_stop > contig_size:
@@ -905,49 +941,54 @@ def locusx_genomic_region(db, seqid, window):
         df_seqids.loc[mask_circled, "start_pos"] += (contig_size-diff)
         df_seqids.loc[mask_circled, "end_pos"] += (contig_size-diff)
         df_seqids = pd.concat([df_seqids.loc[mask_same],
-            df_seqids.loc[mask_circled]])
+                              df_seqids.loc[mask_circled]])
         window_start -= diff
         window_stop = contig_size
     else:
         df_seqids = df_seqids[(df_seqids.end_pos>window_start)]
         df_seqids = df_seqids[(df_seqids.start_pos < window_stop)]
 
-    if len(df_seqids)!=len(df_seqids["seqfeature_id"].unique()):
+    if len(df_seqids) != len(df_seqids["seqfeature_id"].unique()):
         # This case may happen when a gene overlaps the break of a circular contig.
         # The location of this gene will be coded as join(...,...) in the gbk file
         # and stored as two separate genes with the same seqid in BioSQL.
         # If we want to display the whole contig as a continuous sequence, it is necessary
         # to detect this and manually merge this overlapping gene.
         grouped = df_seqids[["seqfeature_id", "strand", "end_pos",
-            "start_pos"]].groupby("seqfeature_id")
+                             "start_pos"]].groupby("seqfeature_id")
         start = grouped["start_pos"].min()
         end = grouped["end_pos"].max()
-        strands = df_seqids[["seqfeature_id", "strand"]].drop_duplicates("seqfeature_id")
-        df_seqids = start.to_frame().join(end).join(strands.set_index("seqfeature_id"))
+        strands = df_seqids[["seqfeature_id", "strand"]].drop_duplicates(
+            "seqfeature_id")
+        df_seqids = start.to_frame().join(end).join(
+            strands.set_index("seqfeature_id"))
     else:
         df_seqids = df_seqids.set_index("seqfeature_id")
 
     # Some parts are redundant with get_features_location
     # those two function should be merged at some point
     infos = db.get_proteins_info(df_seqids.index.tolist(),
-                                 to_return=["gene", "locus_tag", "product"], as_df=True,
-                                 inc_non_CDS=True, inc_pseudo=True)
+                                 to_return=["gene", "locus_tag", "product"],
+                                 as_df=True, inc_non_CDS=True, inc_pseudo=True)
     cds_type = db.get_CDS_type(df_seqids.index.tolist())
     all_infos = infos.join(cds_type)
     all_infos = all_infos.join(df_seqids)
     return all_infos, window_start, window_stop
+
 
 def tab_get_refseq_homologs(db, seqid):
     refseq_hits = db.get_refseq_hits([seqid]).set_index("match_id")
     refseq_hits_infos = db.get_refseq_matches_info(refseq_hits.index.tolist())
     all_infos = refseq_hits.join(refseq_hits_infos)
 
-    header = ["Refseq accession", "Evalue", "Score", "ID(%)", "# gaps", "Len", "Description", "Organism"]
+    header = ["Refseq accession", "Evalue", "Score", "ID(%)", "# gaps", "Len",
+              "Description", "Organism"]
     entries = []
     for match_id, data in all_infos.iterrows():
         to_ncbi = format_refseqid_to_ncbi(data.accession)
-        entries.append((to_ncbi, data.evalue, data.bitscore,
-                        data.pident, data.gaps, data.length, data.description, data.organism))
+        entries.append(
+            (to_ncbi, data.evalue, data.bitscore, data.pident,
+             data.gaps, data.length, data.description, data.organism))
     return {"n_refseq_homologs": len(refseq_hits),
             "refseq_headers": header,
             "blast_data": entries}
@@ -958,25 +999,28 @@ def locusx(request, locus=None, menu=True):
     db = DB.load_db(biodb, settings.BIODB_CONF)
 
     if locus is None:
-        return render(request, 'chlamdb/locus.html', my_locals({"valid_id": False}))
+        return render(request, 'chlamdb/locus.html',
+                      my_locals({"valid_id": False}))
     try:
         seqid, feature_type, is_pseudogene = db.get_seqid(locus_tag=locus,
                                                           feature_type=True)
     except Exception:
-        return render(request, 'chlamdb/locus.html', my_locals({"valid": False}))
+        return render(request, 'chlamdb/locus.html',
+                      my_locals({"valid": False}))
     else:
         valid_id = True
 
     page_title = f'Locus tag: {locus}'
     sequence = get_sequence(db, seqid, flanking=50)
     window_size = 8000
-    all_infos, wd_start, wd_end = locusx_genomic_region(db, seqid, window=window_size)
+    all_infos, wd_start, wd_end = locusx_genomic_region(
+        db, seqid, window=window_size)
     region_js = genomic_region_df_to_js(all_infos, wd_start, wd_end)
     genomic_region_ctx = {"genomic_region": region_js,
-            "window_size": window_size*2}
+                          "window_size": window_size*2}
     general_tab = tab_general(db, seqid)
 
-    if feature_type!="CDS" or is_pseudogene:
+    if feature_type != "CDS" or is_pseudogene:
         if is_pseudogene:
             feature_type = "Pseudogene"
         context = {
@@ -994,10 +1038,10 @@ def locusx(request, locus=None, menu=True):
 
     # a bit of an hack
     general_tab["length"] = len(translation)
-    og_inf   = db.get_og_count([seqid], search_on="seqid")
-    og_id    = int(og_inf.loc[seqid].orthogroup) # need to convert from numpy64 to int
-    og_annot = db.get_genes_from_og(orthogroups=[og_id],
-                                    terms=["locus_tag", "gene", "product", "length"])
+    og_inf = db.get_og_count([seqid], search_on="seqid")
+    og_id = int(og_inf.loc[seqid].orthogroup)  # need to convert from numpy64 to int
+    og_annot = db.get_genes_from_og(
+        orthogroups=[og_id], terms=["locus_tag", "gene", "product", "length"])
     all_og_c = db.get_og_count([og_id], search_on="orthogroup")
     all_org = db.get_organism(og_annot.index.tolist())
 
@@ -1005,8 +1049,8 @@ def locusx(request, locus=None, menu=True):
     og_size = n_homologues + 1
     og_num_genomes = len(set(all_org.values()))
 
-    if n_homologues>1:
-        og_conserv_ctx  = tab_og_conservation_tree(db, og_id, compare_to=seqid)
+    if n_homologues > 1:
+        og_conserv_ctx = tab_og_conservation_tree(db, og_id, compare_to=seqid)
         homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
         try:
             og_phylogeny_ctx = tab_og_phylogeny(db, og_id, compare_to=seqid)
@@ -1117,17 +1161,23 @@ def search_bar(request):
             product = str_if_none(result.description)
             genes.append([locus_tag, gene, product, result.organism])
         elif result.entry_type == sb.EntryTypes.COG and has_cog:
-            cog.append([format_cog(None, base=result.name, as_url=True), result.description])
+            cog.append([format_cog(None, base=result.name, as_url=True),
+                        result.description])
         elif result.entry_type == sb.EntryTypes.KO and has_ko:
-            ko.append([format_ko(None, base=result.name, as_url=True), result.description])
+            ko.append([format_ko(None, base=result.name, as_url=True),
+                       result.description])
         elif result.entry_type == sb.EntryTypes.PFAM and has_pfam:
-            pfam.append([format_pfam(None, base=result.name, to_url=True), result.description])
+            pfam.append([format_pfam(None, base=result.name, to_url=True),
+                         result.description])
         elif result.entry_type == sb.EntryTypes.Module and has_ko:
-            mod.append([format_module(None, base=result.name, to_url=True), result.description])
+            mod.append([format_module(None, base=result.name, to_url=True),
+                        result.description])
         elif result.entry_type == sb.EntryTypes.Pathway and has_ko:
-            pat.append([format_pathway(None, base=result.name, to_url=True), result.description])
+            pat.append([format_pathway(None, base=result.name, to_url=True),
+                        result.description])
 
-    gene_active, cogs_active, ko_active, pfam_active, pat_active, mod_active = "active", "", "", "", "", ""
+    gene_active = "active"
+    cogs_active = ko_active = pfam_active = pat_active = mod_active = ""
     if len(genes) == 0:
         gene_active = ""
         if len(cog) > 0:
@@ -1192,7 +1242,8 @@ class CogPhyloHeatmap(CogViewMixin, View):
         return my_locals(context)
 
     def post(self, request, *args, **kwargs):
-        return render(request, 'chlamdb/cog_phylo_heatmap.html', self.get_context())
+        return render(request, 'chlamdb/cog_phylo_heatmap.html',
+                      self.get_context())
 
     def get(self, request, frequency, *args, **kwargs):
         freq = frequency != "False"
@@ -1202,8 +1253,9 @@ class CogPhyloHeatmap(CogViewMixin, View):
         all_taxids = descr.index.tolist()
 
         all_cog_hits = self.db.get_cog_hits(all_taxids, search_on="taxid")
-        all_cog_funcs = self.db.get_cog_summaries(all_cog_hits.index.unique().tolist(),
-                                                  only_cog_desc=True, as_df=True)
+        all_cog_funcs = self.db.get_cog_summaries(
+            all_cog_hits.index.unique().tolist(),
+            only_cog_desc=True, as_df=True)
         all_cog_hits = all_cog_hits.join(all_cog_funcs.function)
         summed_entries = all_cog_hits.groupby("function").sum()
 
@@ -1236,8 +1288,9 @@ class CogPhyloHeatmap(CogViewMixin, View):
                 func_count /= ttl_cnt
                 func_count *= 100
                 func_count = func_count.round(2)
-            col = SimpleColorColumn.fromSeries(func_count,
-                                               header=detailed_func + "(" + func + ")", color_gradient=True)
+            col = SimpleColorColumn.fromSeries(
+                func_count, header=detailed_func + "(" + func + ")",
+                color_gradient=True)
             e_tree.add_column(col)
 
         freq = frequency
@@ -1260,7 +1313,8 @@ def KEGG_module_map(request, module_name):
     page_title = page2title["KEGG_module_map"]
 
     if request.method != "GET":
-        return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
+        return render(request, 'chlamdb/KEGG_module_map.html',
+                      my_locals(locals()))
     db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
 
     try:
@@ -1268,12 +1322,14 @@ def KEGG_module_map(request, module_name):
     except Exception:
         # add error message: module not formated correctly
         valid_id = False
-        return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
+        return render(request, 'chlamdb/KEGG_module_map.html',
+                      my_locals(locals()))
 
     module_infos = db.get_modules_info([module_id])
     if len(module_infos) != 1:
         # add error message
-        return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
+        return render(request, 'chlamdb/KEGG_module_map.html',
+                      my_locals(locals()))
     else:
         mod_id, module_descr, module_def, cat, sub_cat = module_infos[0]
 
@@ -1281,19 +1337,23 @@ def KEGG_module_map(request, module_name):
     expr_tree = parser.parse()
     ko_ids = db.get_module_kos(module_id)
     mat = db.get_ko_hits(ko_ids, search_on="ko", indexing="taxid").T
-    map_data = [(format_ko(ko_id), ko_desc) for ko_id, ko_desc in db.get_ko_desc(ko_ids).items()]
+    map_data = [(format_ko(ko_id), ko_desc)
+                for ko_id, ko_desc in db.get_ko_desc(ko_ids).items()]
     if mat.empty:
         # should add an error message: no gene was associated for any
         # of the KO of the current module
         envoi = True
         menu = True
         valid_id = True
-        return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
+        return render(request, 'chlamdb/KEGG_module_map.html',
+                      my_locals(locals()))
 
     seqids = db.get_ko_hits(ko_ids, search_on="ko", indexing="seqid")
     associated_ogs = db.get_og_count(seqids.index.tolist(), search_on="seqid")
-    og_taxid = db.get_og_count(associated_ogs.orthogroup.unique().tolist(), search_on="orthogroup").T
-    ko_to_og_mapping = seqids.join(associated_ogs).groupby(["ko"])["orthogroup"].unique()
+    og_taxid = db.get_og_count(associated_ogs.orthogroup.unique().tolist(),
+                               search_on="orthogroup").T
+    ko_to_og_mapping = seqids.join(associated_ogs).groupby(
+        ["ko"])["orthogroup"].unique()
     leaf_to_name = db.get_genomes_description().description.to_dict()
 
     tree = Tree(db.get_reference_phylogeny())
@@ -1305,10 +1365,12 @@ def KEGG_module_map(request, module_name):
     hsh_pres = collections.defaultdict(dict)
     for ko in ko_ids:
         if ko not in mat.columns:
-            e_tree.add_column(SimpleColorColumn({}, header=format_ko(ko), default_val="-"))
+            e_tree.add_column(SimpleColorColumn({}, header=format_ko(ko),
+                              default_val="-"))
             continue
         if ko not in ko_to_og_mapping.index:
-            e_tree.add_column(SimpleColorColumn.fromSeries(mat[ko], header=format_ko(ko)))
+            e_tree.add_column(SimpleColorColumn.fromSeries(mat[ko],
+                              header=format_ko(ko)))
             continue
 
         associated_ogs = ko_to_og_mapping.loc[ko]
@@ -1342,7 +1404,8 @@ def KEGG_module_map(request, module_name):
         hsh_n_missing[index] = n_missing
 
     e_tree.add_column(SimpleColorColumn({}, default_val=" "))
-    completeness = ModuleCompletenessColumn(hsh_n_missing, "", add_missing=False)
+    completeness = ModuleCompletenessColumn(
+        hsh_n_missing, "", add_missing=False)
     e_tree.add_column(completeness)
     e_tree.rename_leaves(leaf_to_name)
 
@@ -1361,8 +1424,10 @@ def gen_pathway_profile(db, ko_ids):
     mat = db.get_ko_hits(ko_ids, search_on="ko", indexing="taxid").T
     seqids = db.get_ko_hits(ko_ids, search_on="ko", indexing="seqid")
     associated_ogs = db.get_og_count(seqids.index.tolist(), search_on="seqid")
-    og_taxid = db.get_og_count(associated_ogs.orthogroup.unique().tolist(), search_on="orthogroup").T
-    ko_to_og_mapping = seqids.join(associated_ogs).groupby(["ko"])["orthogroup"].unique()
+    og_taxid = db.get_og_count(associated_ogs.orthogroup.unique().tolist(),
+                               search_on="orthogroup").T
+    ko_to_og_mapping = seqids.join(associated_ogs).groupby(
+        ["ko"])["orthogroup"].unique()
     leaf_to_name = db.get_genomes_description().description.to_dict()
 
     tree = Tree(db.get_reference_phylogeny())
@@ -1374,7 +1439,8 @@ def gen_pathway_profile(db, ko_ids):
         if ko not in mat.columns:
             continue
         if ko not in ko_to_og_mapping.index:
-            e_tree.add_column(SimpleColorColumn.fromSeries(mat[ko], header=format_ko(ko)))
+            e_tree.add_column(SimpleColorColumn.fromSeries(mat[ko],
+                              header=format_ko(ko)))
             continue
 
         associated_ogs = ko_to_og_mapping.loc[ko]
@@ -1530,11 +1596,15 @@ def module_cat_info(request, taxid, category):
 
     category = category.replace("+", " ")
     ko_counts = db.get_ko_count([taxid], keep_seqids=True, as_multi=False)
-    ko_modules = db.get_ko_modules(ko_counts["KO"].values.tolist(), as_pandas=True, compact=True)
-    ko_modules_info = db.get_modules_info(ko_modules["module_id"].unique().tolist(), as_pandas=True)
+    ko_modules = db.get_ko_modules(
+        ko_counts["KO"].values.tolist(), as_pandas=True, compact=True)
+    ko_modules_info = db.get_modules_info(ko_modules["module_id"].unique().tolist(),
+                                          as_pandas=True)
     filtered_modules = ko_modules_info[ko_modules_info.subcat == category]
-    selected_kos = filtered_modules.merge(ko_modules, left_on="module_id",
-                                          right_on="module_id", how="inner")["ko_id"].unique()
+    selected_kos = filtered_modules.merge(ko_modules,
+                                          left_on="module_id",
+                                          right_on="module_id",
+                                          how="inner")["ko_id"].unique()
     selected_seqids = ko_counts[ko_counts.KO.isin(selected_kos)]
     seqids = selected_seqids["seqid"].unique().tolist()
     hsh_to_prot = db.get_proteins_info(seqids)
@@ -1557,7 +1627,8 @@ def module_cat_info(request, taxid, category):
 
 def js_bioentries_to_description(hsh):
     taxon_map = 'var taxon2description = { '
-    mid = ",".join(f"{to_s(bioentry)}: {to_s(description)}" for bioentry, description in hsh.items())
+    mid = ",".join(f"{to_s(bioentry)}: {to_s(description)}"
+                   for bioentry, description in hsh.items())
     return taxon_map + mid + "};"
 
 
@@ -1581,24 +1652,27 @@ class KoBarchart(KoViewMixin, View):
         self.form = venn_form_class(request.POST)
         if not self.form.is_valid():
             self.form = venn_form_class(request.POST)
-            return render(request, 'chlamdb/ko_barplot.html', self.get_context())
+            return render(request, 'chlamdb/ko_barplot.html',
+                          self.get_context())
 
         taxids = self.form.get_taxids()
-        taxon2description = self.db.get_genomes_description().description.to_dict()
 
-        ko_counts = self.db.get_ko_count(taxids, keep_seqids=True, as_multi=False)
+        ko_counts = self.db.get_ko_count(
+            taxids, keep_seqids=True, as_multi=False)
         ko_ids = ko_counts.KO.unique()
-        ko_module_ids = self.db.get_ko_modules(ko_ids.tolist(), as_pandas=True, compact=True)
-        ko_modules_info = self.db.get_modules_info(ko_module_ids["module_id"].unique().tolist(), as_pandas=True)
+        ko_module_ids = self.db.get_ko_modules(
+            ko_ids.tolist(), as_pandas=True, compact=True)
+        ko_modules_info = self.db.get_modules_info(
+            ko_module_ids["module_id"].unique().tolist(), as_pandas=True)
 
-        merged = ko_counts.merge(ko_module_ids, left_on="KO", right_on="ko_id", how="inner")
-        merged = merged.merge(ko_modules_info, left_on="module_id", right_on="module_id", how="inner")
+        merged = ko_counts.merge(ko_module_ids, left_on="KO",
+                                 right_on="ko_id", how="inner")
+        merged = merged.merge(ko_modules_info, left_on="module_id",
+                              right_on="module_id", how="inner")
         cat_count = merged[["taxid", "subcat", "seqid"]].groupby(["taxid", "subcat"]).nunique()
         subcategories_list = cat_count.index.unique(level="subcat").to_list()
         subcategories = ",".join(f"{to_s(cat)}" for cat in subcategories_list)
         labels = f"[{subcategories}]"
-
-        taxon_map = js_bioentries_to_description(taxon2description)
 
         series_data = []
 
@@ -1648,7 +1722,8 @@ def orthogroup_list_cog_barchart(request, accessions=False):
     no_cogs_url = "?g=" + ('&g=').join(missing_cog_list)
     orthogroups_url = '?h=' + ('&h=').join(orthogroup_list)
 
-    return render(request, 'chlamdb/orthogroup_list_cog_barchart.html', my_locals(locals()))
+    return render(request, 'chlamdb/orthogroup_list_cog_barchart.html',
+                  my_locals(locals()))
 
 
 class CogBarchart(CogViewMixin, View):
@@ -1671,7 +1746,8 @@ class CogBarchart(CogViewMixin, View):
         self.form = venn_form_class(request.POST)
         if not self.form.is_valid():
             # add error message
-            return render(request, 'chlamdb/cog_barplot.html', self.get_context())
+            return render(request, 'chlamdb/cog_barplot.html',
+                          self.get_context())
 
         target_bioentries = self.form.get_taxids()
 
@@ -1681,11 +1757,13 @@ class CogBarchart(CogViewMixin, View):
 
         # create a dictionnary to convert cog category description and one letter code
         category_map = 'var description2category = {'
-        map_lst = (f"\"{func_descr}\": \"{func}\"" for func, func_descr in category_dico.items())
+        map_lst = (f"\"{func_descr}\": \"{func}\""
+                   for func, func_descr in category_dico.items())
         category_map = category_map + ",".join(map_lst) + '};'
 
         taxon_map = 'var taxon2description = {'
-        taxon_map_lst = (f"\"{target}\": \"{taxon2description[target]}\"" for target in target_bioentries)
+        taxon_map_lst = (f"\"{target}\": \"{taxon2description[target]}\""
+                         for target in target_bioentries)
         taxon_map = taxon_map + ",".join(taxon_map_lst) + '};'
 
         # Not too happy with this code and its level of indentation
@@ -1729,7 +1807,8 @@ class CogBarchart(CogViewMixin, View):
                 one_category_list.append(count)
             one_category_list = [str(i) for i in one_category_list]
 
-            all_series_templates.append(one_serie_template % (taxon, ','.join(one_category_list)))
+            all_series_templates.append(
+                one_serie_template % (taxon, ','.join(one_category_list)))
 
         taxids = "?" + "&".join((f"h={i}" for i in target_bioentries))
         series = serie_template % ''.join(all_series_templates)
@@ -1763,12 +1842,14 @@ class PanGenome(ComparisonViewMixin, View):
         if not self.form.is_valid():
             # add error message
             self.form = venn_form_class()
-            return render(request, 'chlamdb/pan_genome.html', self.get_context())
+            return render(request, 'chlamdb/pan_genome.html',
+                          self.get_context())
 
         taxids = self.form.get_taxids()
         df_hits = self.get_hit_counts(taxids, search_on="taxid")
 
-        unique, counts = np.unique(np.count_nonzero(df_hits, axis=1), return_counts=True)
+        unique, counts = np.unique(np.count_nonzero(df_hits, axis=1),
+                                   return_counts=True)
         unique_to_count = dict(zip(unique, counts))
 
         data_count = []
@@ -1828,13 +1909,16 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
         for hit in record.alignments:
             hsp = hit.hsps[0]
             scores = hits[query]
-            scores.append((hit.accession, 100.0 * hsp.identities / hsp.align_length))
+            scores.append((hit.accession,
+                           100.0 * hsp.identities / hsp.align_length))
             accessions.add(hit.accession)
 
     if blast_type in ["blastp", "blastx", "blastn_ffn"]:
-        acc_to_taxid = db.get_taxid_from_accession(list(accessions), look_on="locus_tag")
+        acc_to_taxid = db.get_taxid_from_accession(list(accessions),
+                                                   look_on="locus_tag")
     elif blast_type in ["tblastn", "blastn_fna"]:
-        acc_to_taxid = db.get_taxid_from_accession(list(accessions), look_on="contig")
+        acc_to_taxid = db.get_taxid_from_accession(list(accessions),
+                                                   look_on="contig")
     else:
         raise Exception("Unknown blast type: " + blast_type)
 
@@ -1860,8 +1944,9 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
     e_tree.rename_leaves(descr.description.to_dict())
 
     for query, hsh_values in all_infos:
-        col = SimpleColorColumn(hsh_values, header=query, color_gradient=True,
-                                default_val="-", gradient_value_range=[min_val, max_val])
+        col = SimpleColorColumn(
+            hsh_values, header=query, color_gradient=True,
+            default_val="-", gradient_value_range=[min_val, max_val])
         e_tree.add_column(col)
 
     base_file_name = time.strftime("blast_%d_%m_%y_%H_%M.svg", time.gmtime())
@@ -1880,7 +1965,8 @@ def blast(request):
 
     if request.method != "POST":
         form = blast_form_class()
-        return render(request, 'chlamdb/blast.html', my_locals({"form": form, "page_title": page_title}))
+        return render(request, 'chlamdb/blast.html',
+                      my_locals({"form": form, "page_title": page_title}))
 
     form = blast_form_class(request.POST)
     if not form.is_valid():
@@ -1897,10 +1983,12 @@ def blast(request):
             records = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
             for record in records:
                 if len(record.seq) == 0:
-                    context = {"error_message": "Empty sequence in input",
-                               "error_title": "Query format error", "envoi": True,
-                               "form": form, "wrong_format": True}
-                    return render(request, 'chlamdb/blast.html', my_locals(context))
+                    context = {
+                        "error_message": "Empty sequence in input",
+                        "error_title": "Query format error", "envoi": True,
+                        "form": form, "wrong_format": True}
+                    return render(request, 'chlamdb/blast.html',
+                                  my_locals(context))
         except Exception:
             context = {"error_message": "Error while parsing the fasta query",
                        "error_title": "Query format error",
@@ -1922,20 +2010,22 @@ def blast(request):
     if check_seq_prot and blast_type in ["blastp", "tblastn"]:
         wrong_chars = ", ".join(check_seq_prot)
         if len(check_seq_prot) > 1:
-            error_message = f"Unexpected characters in amino-acid query: {wrong_chars}"
+            errmsg = f"Unexpected characters in amino-acid query: {wrong_chars}"
         else:
-            error_message = f"Unexpected character in amino-acid query: {wrong_chars}"
-        context = {"error_message": error_message, "error_title": "Query format error",
+            errmsg = f"Unexpected character in amino-acid query: {wrong_chars}"
+        context = {"error_message": errmsg, "error_title": "Query format error",
                    "envoi": True, "form": form, "wrong_format": True}
         return render(request, 'chlamdb/blast.html', my_locals(context))
-    elif check_seq_DNA and blast_type in ["blastn", "blastn_ffn", "blast_fna", "blastx"]:
+    elif check_seq_DNA and blast_type in ["blastn", "blastn_ffn",
+                                          "blast_fna", "blastx"]:
         wrong_chars = ", ".join(check_seq_DNA)
         if len(check_seq_DNA) > 1:
-            error_message = f"Unexpected characters in nucleotide query: {wrong_chars}"
+            errmsg = f"Unexpected characters in nucleotide query: {wrong_chars}"
         else:
-            error_message = f"Unexpected character in nucleotide query: {wrong_chars}"
-        context = {"error_message": error_message, "wrong_format": True,
-                   "error_title": "Query format error", "envoi": True, "form": form}
+            errmsg = f"Unexpected character in nucleotide query: {wrong_chars}"
+        context = {"error_message": errmsg, "wrong_format": True,
+                   "error_title": "Query format error", "envoi": True,
+                   "form": form}
         return render(request, 'chlamdb/blast.html', my_locals(context))
 
     query_file = NamedTemporaryFile(mode='w')
@@ -1962,8 +2052,9 @@ def blast(request):
     try:
         blast_stdout, blast_stderr = blast_cline()
     except Exception as e:
-        context = {"error_message": "Error in blast " + str(e), "wrong_format": True,
-                   "error_title": "Blast error", "envoi": True, "form": form}
+        context = {
+            "error_message": "Error in blast " + str(e), "wrong_format": True,
+            "error_title": "Blast error", "envoi": True, "form": form}
         return render(request, 'chlamdb/blast.html', my_locals(context))
 
     if blast_stdout.find("No hits found") != -1:
@@ -1972,7 +2063,8 @@ def blast(request):
         blast_err = blast_stderr
     else:
         if target == "all":
-            asset_path = gen_blast_heatmap(db, blast_stdout, blast_type, no_query_name)
+            asset_path = gen_blast_heatmap(db, blast_stdout,
+                                           blast_type, no_query_name)
         rand_id = id_generator(6)
         blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
         f = open(blast_file_l, 'w')
@@ -2005,7 +2097,8 @@ def locus_tab_swissprot_hits(db, seqid):
 
     blast_data = []
     header = ["Swissprot accession", "Eval", "Score", "ID (%)", "N gaps",
-              "Alignment length", "Annot score", "Gene", "Description", "Organism"]
+              "Alignment length", "Annot score", "Gene", "Description",
+              "Organism"]
 
     for num, data in swissprot_homologs.iterrows():
         line = [data.accession, data.evalue, data.bitscore, data.perc_id,
@@ -2051,15 +2144,18 @@ def plot_region(request):
 
     if request.method != "POST":
         form = form_class()
-        return render(request, 'chlamdb/plot_region.html', my_locals({"form": form, "page_title": page_title}))
+        return render(request, 'chlamdb/plot_region.html',
+                      my_locals({"form": form, "page_title": page_title}))
 
     form = form_class(request.POST)
     if not form.is_valid():
         # add error message
-        return render(request, 'chlamdb/plot_region.html', my_locals({"form": form, "page_title": page_title}))
+        return render(request, 'chlamdb/plot_region.html',
+                      my_locals({"form": form, "page_title": page_title}))
 
     accession = form.get_accession()
-    prot_info = db.get_proteins_info(ids=[accession], search_on="locus_tag", as_df=True)
+    prot_info = db.get_proteins_info(
+        ids=[accession], search_on="locus_tag", as_df=True)
     if prot_info.empty:
         context = {"form": form,
                    "errors": ["Accession not found"],
@@ -2116,7 +2212,8 @@ def plot_region(request):
                 "errors": [f"Region size should be between 5000 and {max_region_size} bp"],
                 "page_title": page_title
             }
-            return render(request, 'chlamdb/plot_region.html', my_locals(context))
+            return render(request, 'chlamdb/plot_region.html',
+                          my_locals(context))
     except ValueError:
         context = {"form": form,
                    "error": True,
@@ -2124,7 +2221,8 @@ def plot_region(request):
                    "page_title": page_title}
         return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
-    locus_tags = db.get_proteins_info(seqids, to_return=["locus_tag"], as_df=True)
+    locus_tags = db.get_proteins_info(
+        seqids, to_return=["locus_tag"], as_df=True)
     to_highlight = locus_tags["locus_tag"].tolist()
     all_regions = []
     connections = []
@@ -2139,7 +2237,7 @@ def plot_region(request):
     # remove overlapping regions (e.g. if two matches are on the same
     # region, avoid displaying this region twice).
     # XXX : coalesce_regions does not do what it is intended to do, to fix
-    filtered_regions = genomic_regions # coalesce_regions(genomic_regions, seqids)
+    filtered_regions = genomic_regions  # coalesce_regions(genomic_regions, seqids)
 
     for genomic_region in filtered_regions:
         seqid, region, start, end = genomic_region
@@ -2153,19 +2251,20 @@ def plot_region(request):
         ogs = db.get_og_count(region.index.tolist(), search_on="seqid")
         # need to reset index to keep seqid in the next merge
         region = region.join(ogs).reset_index()
-            
-        if not prev_infos is None:
+
+        if prev_infos is not None:
             # BM: horrible code (I wrote it, I should know).
             # would be nice to refactor it in a more efficient and clean way.
 
-            # We need to drop na from orthogroup, as some genes, like rRNA or tRNA
-            # are not assigned any orthogroup
+            # We need to drop na from orthogroup, as some genes, like rRNA
+            # or tRNA are not assigned any orthogroup
             common_og = region.dropna(subset=["orthogroup"]).merge(
-                    prev_infos, on="orthogroup")[["locus_tag_x",
-                        "locus_tag_y",
-                        "seqid_x",
-                        "seqid_y",
-                        "orthogroup"]]
+                    prev_infos, on="orthogroup")[
+                        ["locus_tag_x",
+                         "locus_tag_y",
+                         "seqid_x",
+                         "seqid_y",
+                         "orthogroup"]]
             related = []
             ogs = common_og.orthogroup.astype(int).tolist()
             p1 = common_og.seqid_x.tolist()
@@ -2185,7 +2284,8 @@ def plot_region(request):
                 arr = hsh_agg.get(v.locus_tag_x, [])
                 arr.append(f"[{to_s(v.locus_tag_y)}, {og_val}, {ident: .2f}]")
                 hsh_agg[v.locus_tag_x] = arr
-            related = (f"{to_s(loc)}: [" + ",".join(values) + "]" for loc, values in hsh_agg.items())
+            related = (f"{to_s(loc)}: [" + ",".join(values) + "]"
+                       for loc, values in hsh_agg.items())
             connections.append("{" + ",".join(related) + "}")
 
         taxid = organisms.loc[seqid].taxid
@@ -2194,8 +2294,11 @@ def plot_region(request):
         all_regions.append(js_val)
         prev_infos = region[["orthogroup", "locus_tag", "seqid"]]
 
-    ctx = {"form": form, "genomic_regions": "[" + "\n,".join(all_regions) + "]",
-           "window_size": max_region_size, "to_highlight": to_highlight, "envoi": True,
+    ctx = {"form": form,
+           "genomic_regions": "[" + "\n,".join(all_regions) + "]",
+           "window_size": max_region_size,
+           "to_highlight": to_highlight,
+           "envoi": True,
            "connections": "[" + ",".join(connections) + "]",
            "page_title": page_title}
     if len(all_identities) > 0:
@@ -2218,7 +2321,9 @@ def circos_main(request):
 
         target_taxons.pop(target_taxons.index(int(reference_taxon)))
 
-        js_code = get_circos_data(int(reference_taxon), [int(i) for i in target_taxons], highlight_og=og_list)
+        js_code = get_circos_data(int(reference_taxon),
+                                  [int(i) for i in target_taxons],
+                                  highlight_og=og_list)
 
         envoi = True
         envoi_region = True
@@ -2262,7 +2367,8 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     db = DB.load_db_from_name(biodb_path)
 
     if highlight_og:
-        df_genes = db.get_genes_from_og(highlight_og, taxon_ids=[reference_taxon], terms=["locus_tag"])
+        df_genes = db.get_genes_from_og(
+            highlight_og, taxon_ids=[reference_taxon], terms=["locus_tag"])
         locus_list = df_genes["locus_tag"].to_list()
     else:
         locus_list = []
@@ -2277,8 +2383,10 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
 
     # retrieve n_orthologs of list of seqids
 
-    seq_og = db.get_og_count(df_feature_location.index.to_list(), search_on="seqid")
-    count_all_genomes = db.get_og_count(seq_og["orthogroup"].to_list(), search_on="orthogroup")
+    seq_og = db.get_og_count(
+        df_feature_location.index.to_list(), search_on="seqid")
+    count_all_genomes = db.get_og_count(
+        seq_og["orthogroup"].to_list(), search_on="orthogroup")
     orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(axis=1)
     homologs_count = df_feature_location.loc[df_feature_location.term_name == 'CDS']\
         .join(seq_og)\
@@ -2288,8 +2396,8 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
                left_index=True,
                right_index=True)[["bioentry_id", "start_pos", "end_pos", "value"]]
 
-    df_identity = db.get_identity_closest_homolog(reference_taxon, target_taxons)\
-                    .set_index(["target_taxid"])
+    df_identity = db.get_identity_closest_homolog(
+        reference_taxon, target_taxons).set_index(["target_taxid"])
 
     c = circosjs.CircosJs()
 
@@ -2300,7 +2408,8 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
                                          .count()["seqfeature_id_1"]\
                                          .sort_values(ascending=False)
     locus2seqfeature_id = db.get_hsh_locus_to_seqfeature_id()
-    seqfeature_id2locus_tag = {value: key for key, value in locus2seqfeature_id.items()}
+    seqfeature_id2locus_tag = {
+        value: key for key, value in locus2seqfeature_id.items()}
     # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
     # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
     # join on seqfeature id
@@ -2316,9 +2425,12 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     # = [seqfeature_id2locus_tag[seqfeature_id] for seqfeature_id in df_feature_location.index]
     minus_strand = df_feature_location.set_index("strand").loc[-1]
     plus_strand = df_feature_location.set_index("strand").loc[1]
-    c.add_histogram_track(homologs_count, "n_genomes", radius_diff=0.1, sep=0.005, outer=True)
-    c.add_gene_track(minus_strand, "minus", sep=0, radius_diff=0.04, highlight_list=locus_list)
-    c.add_gene_track(plus_strand, "plus", sep=0, radius_diff=0.04, highlight_list=locus_list)
+    c.add_histogram_track(homologs_count, "n_genomes",
+                          radius_diff=0.1, sep=0.005, outer=True)
+    c.add_gene_track(minus_strand, "minus", sep=0,
+                     radius_diff=0.04, highlight_list=locus_list)
+    c.add_gene_track(plus_strand, "plus", sep=0,
+                     radius_diff=0.04, highlight_list=locus_list)
 
     # iterate ordered list of target taxids, add track to circos
     for n, target_taxon in enumerate(target_taxon_n_homologs.index):
@@ -2347,9 +2459,11 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
             sep = 0.03
         else:
             sep = 0.01
-        c.add_heatmap_track(df_combined, f"target_{target_taxon}", color="comp", sep=sep, radius_diff=0.04)
+        c.add_heatmap_track(df_combined, f"target_{target_taxon}",
+                            color="comp", sep=sep, radius_diff=0.04)
 
-    c.add_line_track(df_bioentry, "GC_content", radius_diff=0.12, fillcolor="green")
+    c.add_line_track(df_bioentry, "GC_content", radius_diff=0.12,
+                     fillcolor="green")
 
     js_code = c.get_js_code()
     return js_code
@@ -2412,7 +2526,8 @@ class PlotHeatmap(ComparisonViewMixin, View):
         self.form = venn_form_class(request.POST)
         if not self.form.is_valid():
             # add error message
-            return render(request, 'chlamdb/plot_heatmap.html', self.get_context())
+            return render(request, 'chlamdb/plot_heatmap.html',
+                          self.get_context())
 
         import plotly.graph_objects as go
         import scipy.cluster.hierarchy as shc
@@ -2477,12 +2592,14 @@ def kegg_genomes(request):
     hsh_organisms = db.get_genomes_description().description.to_dict()
     if request.method != "POST":
         form = single_genome_form()
-        return render(request, 'chlamdb/kegg_genomes.html', my_locals(locals()))
+        return render(request, 'chlamdb/kegg_genomes.html',
+                      my_locals(locals()))
 
     form = single_genome_form(request.POST)
     if not form.is_valid():
         form = single_genome_form()
-        return render(request, 'chlamdb/kegg_genomes.html', my_locals(locals()))
+        return render(request, 'chlamdb/kegg_genomes.html',
+                      my_locals(locals()))
 
     taxid = form.get_genome()
     ko_hits = db.get_ko_hits([taxid], search_on="taxid")
@@ -2503,7 +2620,8 @@ def kegg_genomes(request):
 
     for element, count in pathway_count.items():
         descr = hsh_path_to_descr[element]
-        entry = (format_pathway(element, to_url=True, taxid=taxid), descr, count)
+        entry = (format_pathway(element, to_url=True, taxid=taxid),
+                 descr, count)
         data.append(entry)
 
     ctx = {"envoi": True,
@@ -2522,12 +2640,14 @@ def kegg_genomes_modules(request):
     hsh_organisms = db.get_genomes_description().description.to_dict()
     if request.method != "POST":
         form = single_genome_form()
-        return render(request, 'chlamdb/kegg_genomes_modules.html', my_locals(locals()))
+        return render(request, 'chlamdb/kegg_genomes_modules.html',
+                      my_locals(locals()))
 
     form = single_genome_form(request.POST)
     if not form.is_valid():
         form = single_genome_form()
-        return render(request, 'chlamdb/kegg_genomes_modules.html', my_locals(locals()))
+        return render(request, 'chlamdb/kegg_genomes_modules.html',
+                      my_locals(locals()))
 
     taxid = form.get_genome()
     list_taxid = [""]
@@ -2539,7 +2659,8 @@ def kegg_genomes_modules(request):
     grouped_count.fillna(0, inplace=True, downcast="infer")
     taxids = grouped_count.columns
     genomes = db.get_genomes_description().description.to_dict()
-    modules_info = db.get_modules_info(grouped_count.index.tolist(), as_pandas=True)
+    modules_info = db.get_modules_info(grouped_count.index.tolist(),
+                                       as_pandas=True)
     all_infos = modules_info.set_index("module_id").join(grouped_count)
 
     header = ["Module", "Category", "Sub-category", "Description"]
@@ -2550,12 +2671,14 @@ def kegg_genomes_modules(request):
         taxons.append(genomes[taxid])
 
     for module_id, data in all_infos.iterrows():
-        line = [format_module(module_id, to_url=True), data["cat"], data.subcat, data.descr]
+        line = [format_module(module_id, to_url=True), data["cat"],
+                data.subcat, data.descr]
         for taxid in taxids:
             line.append(data[taxid])
         entries.append(line)
     envoi_comp = True
-    return render(request, 'chlamdb/kegg_genomes_modules.html', my_locals(locals()))
+    return render(request, 'chlamdb/kegg_genomes_modules.html',
+                  my_locals(locals()))
 
 
 def kegg(request):
@@ -2594,13 +2717,15 @@ def kegg_module_subcat(request):
     module_overview_form = make_module_overview_form(db, True)
     if request.method != "POST":
         form = module_overview_form()
-        return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
+        return render(request, 'chlamdb/module_subcat.html',
+                      my_locals(locals()))
 
     form = module_overview_form(request.POST)
     if not form.is_valid():
         # TODO: add error message
         form = module_overview_form()
-        return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
+        return render(request, 'chlamdb/module_subcat.html',
+                      my_locals(locals()))
 
     cat = form.cleaned_data["subcategory"]
     ko_count_subcat = db.get_ko_count_cat(subcategory=cat)
@@ -2626,11 +2751,13 @@ def kegg_module_subcat(request):
             expression_tree[module_id] = parser.parse()
         data.append((format_module(module_id, to_url=True), descr, occurences))
 
-    unique_module_ids = ko_count_subcat.index.get_level_values("module_id").unique().tolist()
+    unique_module_ids = ko_count_subcat.index.get_level_values(
+        "module_id").unique().tolist()
     if len(unique_module_ids) == 0:
         # add error message : no module found
         envoi = True
-        return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
+        return render(request, 'chlamdb/module_subcat.html',
+                      my_locals(locals()))
 
     grouped_count = grouped_count.unstack(level=1, fill_value=0)
     grouped_count.columns = [col for col in grouped_count["count"].columns]
@@ -2663,13 +2790,15 @@ def kegg_module(request):
     module_overview_form = make_module_overview_form(db)
     if request.method != "POST":
         form = module_overview_form()
-        return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
+        return render(request, 'chlamdb/module_overview.html',
+                      my_locals(locals()))
 
     form = module_overview_form(request.POST)
     if not form.is_valid():
         # TODO: add error message
         form = module_overview_form()
-        return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
+        return render(request, 'chlamdb/module_overview.html',
+                      my_locals(locals()))
 
     cat = form.cleaned_data["category"]
     modules_infos = db.get_modules_info(ids=[cat], search_on="category")
@@ -2695,7 +2824,8 @@ def kegg_module(request):
 
     if grouped_count.empty:
         envoi = True
-        return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
+        return render(request, 'chlamdb/module_overview.html',
+                      my_locals(locals()))
 
     grouped_count = grouped_count.unstack(level=1, fill_value=0)
     grouped_count.columns = [col for col in grouped_count["count"].columns]
@@ -2751,7 +2881,8 @@ def module_comparison(request):
     grouped_count.fillna(0, inplace=True, downcast="infer")
     taxids = grouped_count.columns
     genomes = db.get_genomes_description().description.to_dict()
-    modules_info = db.get_modules_info(grouped_count.index.tolist(), as_pandas=True)
+    modules_info = db.get_modules_info(grouped_count.index.tolist(),
+                                       as_pandas=True)
     all_infos = modules_info.set_index("module_id").join(grouped_count)
 
     header = ["Module", "Category", "Sub-category", "Description"]
@@ -2762,7 +2893,8 @@ def module_comparison(request):
         taxons.append(genomes[taxid])
 
     for module_id, data in all_infos.iterrows():
-        line = [format_module(module_id, to_url=True), data["cat"], data.subcat, data.descr]
+        line = [format_module(module_id, to_url=True), data["cat"],
+                data.subcat, data.descr]
         for taxid in taxids:
             line.append(data[taxid])
         entries.append(line)
@@ -2810,10 +2942,12 @@ def phylogeny(request):
 
     for serie_name, header, col, is_relative in tree_params:
         data = genomes_data[serie_name]
-        e_tree.add_column(SimpleColorColumn.fromSeries(data, header=None, use_col=False))
+        e_tree.add_column(SimpleColorColumn.fromSeries(
+            data, header=None, use_col=False))
         stack = StackedBarColumn(data.to_dict(), colours=[col, "white"],
                                  relative=is_relative, header=header,
-                                 header_params=header_params, face_params=stacked_face_params)
+                                 header_params=header_params,
+                                 face_params=stacked_face_params)
         e_tree.add_column(stack)
 
     e_tree.rename_leaves(genomes_data.description.to_dict())
