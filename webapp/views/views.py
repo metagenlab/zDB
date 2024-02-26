@@ -2303,35 +2303,6 @@ def circos_main(request):
 
         return render(request, 'chlamdb/circos_main.html', my_locals(locals()))
 
-    if request.method == 'GET':
-        server, db = manipulate_biosqldb.load_db(biodb)
-
-        reference_taxon = int(request.GET.getlist('ref')[0])
-
-        if request.GET.getlist('t')[0] == '':
-            # if no target list given, get the 10 closest genomes
-            try:
-                sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa '\
-                            'where taxon_1=%s order by identity desc;' % (reference_taxon)
-                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-                target_taxons = ordered_taxons[0:10]
-            except Exception:
-                sql_order = 'select taxon_2 from comparative_tables_shared_orthogroups '\
-                            'where taxon_1=%s order by n_shared_orthogroups DESC;' % (reference_taxon)
-
-                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-                target_taxons = ordered_taxons[0:10]
-        else:
-            target_taxons = [int(i) for i in request.GET.getlist('t')]
-        highlight = request.GET.getlist('h')
-
-        task = run_circos_main.delay(reference_taxon, target_taxons, highlight)
-        task_id = task.id
-        envoi_circos = True
-        envoi_region = True
-
-        # return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
-
     return render(request, 'chlamdb/circos_main.html', my_locals(locals()))
 
 
