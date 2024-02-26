@@ -18,22 +18,10 @@
                {% include "chlamdb/extract_nav_tabs_template.html" with type=object_type active_tab="heat" %}
 
                 <br>
-                    <p class="page-title"><b>Heatmap of the presence/absence of
-                    {% if object_type == 'pfam' %}
-                        Pfam domains
-                    {% elif object_type == 'cog' %}
-                        COG categories
-                    {% elif object_type == 'interpro'%}
-                        Interpro Entries.
-                    {% elif object_type == 'EC' %}
-                        EC numbers. Based on PRIAM data. Partial EC are not considered.
-                    {% elif object_type == 'ko' %}
-                        Kegg orthologous groups (KO)
-                    {% elif object_type == 'orthology' %}
-                        orthologous groups
-                    {% elif object_type == 'amr' %}
-                        AMR genes
-                    {% endif %}</b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option"  target="_blank"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
+                    <p class="page-title">
+                        <b>Heatmap of the presence/absence of {{ object_name_plural }}</b>
+                        <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option"  target="_blank"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
+                    </p>
                 
 
 			{% if error %}
@@ -68,21 +56,10 @@
                          <h5 class="panel-title">Help to interpret the results</h5>
                      </div>
                      <p style="margin: 10px 10px 10px 10px">
-                        The heatmap displays the number of
-                        {% if object_type == 'pfam' %}
-                        times a Pfam domain shared by the genomes of interest is found.
-                    {% elif object_type == 'cog' %}
-                        COGs found per each COG category shared by the genomes of interest.
-                    {% elif object_type == 'ko' %}
-                    Kegg entries found per each Kegg orthologous groups shared by the genomes of interest.
-                    {% elif object_type == 'orthology' %}
-                       homologs found per each Orthogroups shared by the genomes of interest.
-                    {% elif object_type == 'amr' %}
-                       times an AMR gene is found in each of the genomes of interest.
-                    {% endif %}
-                    
+                        The heatmap displays the number of times an {{ object_name}} is found in each of the genomes of interest.
                     Zooming into an area of interest you can visualize the presence/absence profile.
-                    <br>In white when absent, in <span style="color: rgb(5, 98, 151)"><b>blue</b></span> present in one copy, and in <span style="color: rgb(200, 41, 248)"><b>pink</b></span> present in two or more copies.
+                    <br>
+                    In white when absent, in <span style="color: rgb(5, 98, 151)"><b>blue</b></span> present in one copy, and in <span style="color: rgb(200, 41, 248)"><b>pink</b></span> present in two or more copies.
                      </p>
                     </div>
                 </div>

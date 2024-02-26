@@ -1767,6 +1767,7 @@ class PanGenome(ComparisonViewMixin, View):
             "page_title": self.page_title,
             "form": self.form,
             "object_type": self.object_type,
+            "object_name_plural": self.object_name_plural
         }
         context.update(kwargs)
         return my_locals(context)
@@ -1813,7 +1814,7 @@ class PanGenome(ComparisonViewMixin, View):
         js_data_core = "[" + ",".join(str(i) for i in core_og) + "]"
 
         context = self.get_context(
-            envoi=True, type_txt=self.object_name_plural, js_data_acc=js_data_acc,
+            envoi=True, js_data_acc=js_data_acc,
             js_data_count=js_data_count, js_data_core=js_data_core
             )
         return render(request, 'chlamdb/pan_genome.html', context)
