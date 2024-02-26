@@ -12,7 +12,6 @@ class TabularComparisonViewBase(View):
 
     template = 'chlamdb/tabular_comparison.html'
     hist_colour_index_shift = 0
-    tab_name = "comp"
     table_headers = None
 
     def dispatch(self, request, *args, **kwargs):
@@ -51,9 +50,9 @@ class TabularComparisonViewBase(View):
             "form_help": self.form_help,
             "form": self.form,
             "show_comparison_table": self.show_comparison_table,
-            "tab_name": self.tab_name,
             "view_name": self.view_name,
             "object_type": self.object_type,
+            "available_views": self.available_views
             }
         if self.show_comparison_table:
             context["table_headers"] = self.table_headers

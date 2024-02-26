@@ -27,6 +27,7 @@ class EntryListViewBase(View, BaseViewMixin):
             "table_headers": self.table_headers,
             "table_data_accessors": self.table_data_accessors,
             "table_data": table_data,
+            "available_views": self.available_views,
             })
         return render(request, 'chlamdb/entry_list.html', context)
 

@@ -126,7 +126,7 @@ class ComparisonIndexView(ComparisonViewMixin, View):
             "page_title": self.page_title,
             "compared_obj_name": self.object_name_plural,
             "comp_type": self.object_type,
-            "boxes": self.available_views,
+            "boxes": zip(*(iter(self.available_views),) * 3),  # group by 3
             })
         return render(request, 'chlamdb/index_comp.html', context)
 
@@ -1237,6 +1237,7 @@ class CogPhyloHeatmap(CogViewMixin, View):
     def get_context(self, **kwargs):
         context = {
             "page_title": self.page_title,
+            "available_views": self.available_views,
         }
         context.update(kwargs)
         return my_locals(context)
@@ -1638,6 +1639,7 @@ class KoBarchart(KoViewMixin, View):
         context = {
             "page_title": self.page_title,
             "form": self.form,
+            "available_views": self.available_views,
         }
         context.update(kwargs)
         return my_locals(context)
@@ -1705,6 +1707,7 @@ class CogBarchart(CogViewMixin, View):
         context = {
             "page_title": self.page_title,
             "form": self.form,
+            "available_views": self.available_views
         }
         context.update(kwargs)
         return my_locals(context)
@@ -1799,7 +1802,8 @@ class PanGenome(ComparisonViewMixin, View):
             "page_title": self.page_title,
             "form": self.form,
             "object_type": self.object_type,
-            "object_name_plural": self.object_name_plural
+            "object_name_plural": self.object_name_plural,
+            "available_views": self.available_views,
         }
         context.update(kwargs)
         return my_locals(context)
@@ -2456,6 +2460,7 @@ class PlotHeatmap(ComparisonViewMixin, View):
             "page_title": self.page_title,
             "object_type": self.object_type,
             "form": self.form,
+            "available_views": self.available_views,
         }
         context.update(kwargs)
         return my_locals(context)

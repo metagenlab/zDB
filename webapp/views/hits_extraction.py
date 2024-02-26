@@ -83,6 +83,7 @@ class ExtractHitsBaseView(View):
             "object_name_plural": self.object_name_plural,
             "table_help": self.table_help,
             "form": self.form,
+            "available_views": self.available_views,
         }
         if getattr(self, "show_results", False):
             context.update({

@@ -31,6 +31,7 @@ class VennBaseView(View):
             "object_type": self.object_type,
             "object_name_plural": self.object_name_plural,
             "form_venn": self.form,
+            "available_views": self.available_views
         }
         if getattr(self, "show_results", False):
             context.update({

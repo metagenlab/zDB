@@ -1,6 +1,7 @@
 from django.conf import settings
 from lib.db_utils import DB
 
+from views.analysis_view_metadata import analysis_views_metadata
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_lst_to_html, format_orthogroup, format_pfam,
                          format_refseqid_to_ncbi, page2title, safe_replace)
@@ -96,15 +97,9 @@ class BaseViewMixin():
 
     @property
     def available_views(self):
-        views = ["entry-list", "extraction", "venn",
-                 "tabular-comparison", "heatmap", "accumulation-rarefaction"]
-        if self.object_type == "orthogroup":
-            views.remove("entry-list")
-        elif self.object_type == "ko":
-            views.append("barcharts")
-        elif self.object_type == "cog":
-            views.extend(["barcharts", "heatmap-count", "heatmap-fraction"])
-        return views
+        return [view_metadata(self.object_type, self.object_name_plural)
+                for view_metadata in analysis_views_metadata
+                if view_metadata.available_for(self.object_type)]
 
 
 class AmrViewMixin(BaseViewMixin):
@@ -350,7 +345,7 @@ class VfViewMixin(BaseViewMixin):
         ]
 
 
-class ComparisonViewMixin(BaseViewMixin):
+class ComparisonViewMixin():
     """This class is somewhat of a hack to get pseudo inheritance
     from the correct mixin for views that get the object_type as
     parameter.
