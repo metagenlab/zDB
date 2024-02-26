@@ -319,7 +319,8 @@ class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
         self.show_results = True
         context = self.get_context(ref_genomes=ref_genomes,
                                    details_header=details_header,
-                                   details_data=details_data)
+                                   details_data=details_data,
+                                   show_circos_form=True)
         return context
 
 

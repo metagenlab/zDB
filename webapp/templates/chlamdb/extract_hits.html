@@ -89,24 +89,26 @@
                     </tr>
                   </table>
 
-                  <div class="box" style="width:30%; top: 200px; padding: 10px 10px 10px 10px;">
+                  {% if show_circos_form %}
+                    <div class="box" style="width:30%; top: 200px; padding: 10px 10px 10px 10px;">
 
-                    <form action="/circos_main/" method="POST" id="carform" >
-                      <h5><b>Show the comparison on circular map</b></h5>
-                      {% csrf_token %}
-                      <input type="hidden" name="exclude_taxids" value="{{excluded_taxids}}">
-                      <input type="hidden" name="include_taxids" value="{{included_taxids}}">
-                      <input type="hidden" name="og_list" value="{{selection}}">
-                      <select name="reference_taxid" id="reference_taxid" class="bootstrap-select" style="height:36px; margin-bottom: 1em;">
-                        {% for row in ref_genomes.itertuples %}
-                          <option value="{{row.taxon_id}}">{{row.description}}</option>
-                        {% endfor %}
-                      </select>
-                      <br>
-                      <button type="submit">Show</button>
-                    </form>
+                      <form action="/circos_main/" method="POST" id="carform" >
+                        <h5><b>Show the comparison on circular map</b></h5>
+                        {% csrf_token %}
+                        <input type="hidden" name="exclude_taxids" value="{{excluded_taxids}}">
+                        <input type="hidden" name="include_taxids" value="{{included_taxids}}">
+                        <input type="hidden" name="og_list" value="{{selection}}">
+                        <select name="reference_taxid" id="reference_taxid" class="bootstrap-select" style="height:36px; margin-bottom: 1em;">
+                          {% for row in ref_genomes.itertuples %}
+                            <option value="{{row.taxon_id}}">{{row.description}}</option>
+                          {% endfor %}
+                        </select>
+                        <br>
+                        <button type="submit">Show</button>
+                      </form>
 
-                  </div>
+                    </div>
+                  {% endif %}
                 </div>
               </div>
 
