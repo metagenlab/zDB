@@ -34,13 +34,13 @@
                                 </style>
                                 <thead>
                                        <tr>
-								                        {% for entry in header %}
-								                         <th> {{entry|safe}} </th>
-								                        {% endfor %}
+                                        {% for entry in header %}
+                                         <th> {{entry|safe}} </th>
+                                        {% endfor %}
                                         {% for taxon in taxons %}
                                         <th valign="bottom"><div >{{ taxon}}</div></th>
                                         {% endfor %}
-							                          </tr>
+                                        </tr>
                                     </thead>
                                     <body>
                                         <tr>

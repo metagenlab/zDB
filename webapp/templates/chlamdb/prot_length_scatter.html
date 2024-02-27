@@ -39,83 +39,83 @@
                   <div class="chart"></div>
 
 
-          		<style type="text/css">
+              <style type="text/css">
 
-          			.axis path,
-          			.axis line {
-          				fill: none;
-          				stroke: black;
-          				shape-rendering: crispEdges;
-          			}
+                .axis path,
+                .axis line {
+                  fill: none;
+                  stroke: black;
+                  shape-rendering: crispEdges;
+                }
 
-          			.axis text {
-          				font-family: sans-serif;
-          				font-size: 11px;
-          			}
+                .axis text {
+                  font-family: sans-serif;
+                  font-size: 11px;
+                }
 
 
-          		</style>
-          	<script type="text/javascript">
+              </style>
+            <script type="text/javascript">
 
-          			//Width and height
-          			var w = 600;
-          			var h = 600;
-          			var padding = 40;
+                //Width and height
+                var w = 600;
+                var h = 600;
+                var padding = 40;
 
                       {{dataset|safe}}
 
 
-          			//Create scale functions
-          			var xScale = d3.scale.linear()
-          								 .domain([0, d3.max(dataset, function(d) { return d[0]; })])
-          								 .range([padding, w - padding * 2]);
+                //Create scale functions
+                var xScale = d3.scale.linear()
+                           .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+                           .range([padding, w - padding * 2]);
 
-          			var yScale = d3.scale.linear()
-          								 .domain([0, d3.max(dataset, function(d) { return d[1]; })])
-          								 .range([h - padding, padding]);
+                var yScale = d3.scale.linear()
+                           .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                           .range([h - padding, padding]);
 
-          			var rScale = d3.scale.linear()
-          								 .domain([0, d3.max(dataset, function(d) { return d[1]; })])
-          								 .range([2, 5]);
+                var rScale = d3.scale.linear()
+                           .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                           .range([2, 5]);
 
-          			//Define X axis
-          			var xAxis = d3.svg.axis()
-          							  .scale(xScale)
-          							  .orient("bottom")
-          							  .ticks(5);
+                //Define X axis
+                var xAxis = d3.svg.axis()
+                          .scale(xScale)
+                          .orient("bottom")
+                          .ticks(5);
 
-          			//Define Y axis
-          			var yAxis = d3.svg.axis()
-          							  .scale(yScale)
-          							  .orient("left")
-          							  .ticks(5);
+                //Define Y axis
+                var yAxis = d3.svg.axis()
+                          .scale(yScale)
+                          .orient("left")
+                          .ticks(5);
 
-          			//Create SVG element
-          			var svg = d3.select(".chart")
-          						.append("svg")
-          						.attr("width", w)
-          						.attr("height", h);
+                //Create SVG element
+                var svg = d3.select(".chart")
+                      .append("svg")
+                      .attr("width", w)
+                      .attr("height", h);
 
 
 
-          			//Create circles
-          			var mycircle = svg.selectAll("circle")
-          			   .data(dataset)
-          			   .enter()
+                //Create circles
+                var mycircle = svg.selectAll("circle")
+                   .data(dataset)
+                   .enter()
                          .append("g");
 
 
 
-          			mycircle.append("circle")
-          			   .attr("cx", function(d) {
-          			   		return xScale(d[0]);
-          			   })
-          			   .attr("cy", function(d) {
-          			   		return yScale(d[1]);
-          			   })
-          			   .attr("r", function(d) {
-          			   		return 3;
-          			   })
+                mycircle.append("circle")
+                   .attr("cx", function(d) {
+                      return xScale(d[0]);
+                   })
+                   .attr("cy", function(d) {
+                      return yScale(d[1]);
+                   })
+                   .attr("r", function(d) {
+                      return 3;
+                   })
                          .on("click",drill)
                          .on('mouseover', function(d){
                               var nodeSelection = d3.select(this.parentNode);
@@ -130,34 +130,34 @@
                       var orthogroup = d[2]; //data object
                       window.open("/chlamdb/locusx/"  + orthogroup + "/True");
                   }
-          			//Create labels
+                //Create labels
 
                       mycircle.append("text")
                          .attr("x", function(d) { return xScale(d[0]); })
                          .attr("y", function(d) { return yScale(d[1]); })
-          			   .attr("font-family", "sans-serif")
-          			   .attr("font-size", "11px")
-          			   .attr("fill", "red")
+                   .attr("font-family", "sans-serif")
+                   .attr("font-size", "11px")
+                   .attr("fill", "red")
                          .attr("opacity", "0")
                          .text(function(d) { return "  " + d[2] + " (" + d[0] + "," + d[1] + ")"; });
 
 
 
-          			//Create X axis
-          			svg.append("g")
-          				.attr("class", "axis")
-          				.attr("transform", "translate(0," + (h - padding) + ")")
-          				.call(xAxis);
+                //Create X axis
+                svg.append("g")
+                  .attr("class", "axis")
+                  .attr("transform", "translate(0," + (h - padding) + ")")
+                  .call(xAxis);
 
 
 
-          			//Create Y axis
-          			svg.append("g")
-          				.attr("class", "axis")
-          				.attr("transform", "translate(" + padding + ",0)")
-          				.call(yAxis);
+                //Create Y axis
+                svg.append("g")
+                  .attr("class", "axis")
+                  .attr("transform", "translate(" + padding + ",0)")
+                  .call(yAxis);
 
-          			svg.append("line")
+                svg.append("line")
                           .attr("x1", xScale(0))
                           .attr("y1", yScale(0))
                           .attr("x2", xScale(6000))
@@ -166,7 +166,7 @@
                           .attr("stroke", "red")
                           .attr("stroke-dasharray", "5,5");
 
-          		</script>
+              </script>
 
 
 

@@ -9,29 +9,29 @@ var data_dict = {{ data_dict|safe }};
 
 
 $(document).ready(function() {
-	$("#names").DataTable ({
-		columns: columns
-	});
+    $("#names").DataTable ({
+        columns: columns
+    });
 
-	// initially hide the table when no set is selected
-	$("#names_div").hide();
-	
-	$('#venn_diagram').jvenn({
-		series: {{ series|safe }},
-		displayStat: true,
-		fnClickCallback: function() {
-			let dataSet = this.list
-				.filter(it => it in data_dict)
-				.map(it => data_dict[it]);
-			$("#names_div").show();
-			let table = $("#names").DataTable();
-			table.clear();
-			for(el in dataSet) {
-				table.row.add(dataSet[el]);
-			}
-			table.draw();
-		}
-	});
+    // initially hide the table when no set is selected
+    $("#names_div").hide();
+
+    $('#venn_diagram').jvenn({
+        series: {{ series|safe }},
+        displayStat: true,
+        fnClickCallback: function() {
+            let dataSet = this.list
+                .filter(it => it in data_dict)
+                .map(it => data_dict[it]);
+            $("#names_div").show();
+            let table = $("#names").DataTable();
+            table.clear();
+            for(el in dataSet) {
+                table.row.add(dataSet[el]);
+            }
+            table.draw();
+        }
+    });
 });
 
 
@@ -42,5 +42,5 @@ $(document).ready(function() {
 </div>
 
 <div id="names_div">
-	<table id="names" class="hover"></table>
+    <table id="names" class="hover"></table>
 </div>
