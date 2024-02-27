@@ -4,7 +4,8 @@ from lib.db_utils import DB
 from views.analysis_view_metadata import analysis_views_metadata
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_lst_to_html, format_orthogroup, format_pfam,
-                         format_refseqid_to_ncbi, page2title, safe_replace)
+                         format_refseqid_to_ncbi, my_locals, page2title,
+                         safe_replace)
 
 
 class Transform():
@@ -100,6 +101,19 @@ class BaseViewMixin():
         return [view_metadata(self.object_type, self.object_name_plural)
                 for view_metadata in analysis_views_metadata
                 if view_metadata.available_for(self.object_type)]
+
+    def get_context(self, **kwargs):
+        context = {
+            "page_title": self.page_title(),
+            "object_type": self.object_type,
+            "object_name": self.object_name_plural,
+            "object_name_plural": self.object_name_plural,
+            "available_views": self.available_views,
+        }
+        if hasattr(self, "form"):
+            context["form"] = self.form
+        context.update(kwargs)
+        return my_locals(context)
 
 
 class AmrViewMixin(BaseViewMixin):

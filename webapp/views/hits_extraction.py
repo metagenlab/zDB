@@ -9,8 +9,7 @@ from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
 from views.utils import (format_cog, format_cog_url, format_ko,
                          format_ko_modules, format_ko_path, format_ko_url,
-                         format_locus, format_lst_to_html, format_orthogroup,
-                         my_locals)
+                         format_locus, format_lst_to_html, format_orthogroup)
 
 ResultTab = collections.namedtuple("Tab", ["id", "title", "template"])
 
@@ -77,14 +76,8 @@ class ExtractHitsBaseView(View):
         return super(ExtractHitsBaseView, self).dispatch(request, *args, **kwargs)
 
     def get_context(self, **kwargs):
-        context = {
-            "page_title": self.page_title,
-            "object_type": self.object_type,
-            "object_name_plural": self.object_name_plural,
-            "table_help": self.table_help,
-            "form": self.form,
-            "available_views": self.available_views,
-        }
+        context = super(ExtractHitsBaseView, self).get_context(**kwargs)
+        context["table_help"] = self.table_help,
         if getattr(self, "show_results", False):
             context.update({
                 "show_results": True,
@@ -97,9 +90,7 @@ class ExtractHitsBaseView(View):
                 "selection": self.selection,
                 "result_tabs": self.result_tabs,
                 })
-        context.update(kwargs)
-
-        return my_locals(context)
+        return context
 
     def get(self, request, *args, **kwargs):
         self.form = self.extract_form_class()

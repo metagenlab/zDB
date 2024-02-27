@@ -122,12 +122,9 @@ def home(request):
 class ComparisonIndexView(ComparisonViewMixin, View):
 
     def get(self, request):
-        context = my_locals({
-            "page_title": self.page_title,
-            "compared_obj_name": self.object_name_plural,
-            "comp_type": self.object_type,
-            "boxes": zip(*(iter(self.available_views),) * 3),  # group by 3
-            })
+        context = self.get_context(
+            boxes=zip(*(iter(self.available_views),) * 3),  # group by 3
+        )
         return render(request, 'chlamdb/index_comp.html', context)
 
 
@@ -1234,14 +1231,6 @@ def format_module(mod_id, base=None, to_url=False):
 
 class CogPhyloHeatmap(CogViewMixin, View):
 
-    def get_context(self, **kwargs):
-        context = {
-            "page_title": self.page_title,
-            "available_views": self.available_views,
-        }
-        context.update(kwargs)
-        return my_locals(context)
-
     def post(self, request, *args, **kwargs):
         return render(request, 'chlamdb/cog_phylo_heatmap.html',
                       self.get_context())
@@ -1635,15 +1624,6 @@ def js_bioentries_to_description(hsh):
 
 class KoBarchart(KoViewMixin, View):
 
-    def get_context(self, **kwargs):
-        context = {
-            "page_title": self.page_title,
-            "form": self.form,
-            "available_views": self.available_views,
-        }
-        context.update(kwargs)
-        return my_locals(context)
-
     def get(self, request, *args, **kwargs):
         venn_form_class = make_venn_from(self.db)
         self.form = venn_form_class()
@@ -1702,15 +1682,6 @@ class KoBarchart(KoViewMixin, View):
 
 
 class CogBarchart(CogViewMixin, View):
-
-    def get_context(self, **kwargs):
-        context = {
-            "page_title": self.page_title,
-            "form": self.form,
-            "available_views": self.available_views
-        }
-        context.update(kwargs)
-        return my_locals(context)
 
     def get(self, request, *args, **kwargs):
         venn_form_class = make_venn_from(self.db)
@@ -1797,21 +1768,11 @@ class CogBarchart(CogViewMixin, View):
 
 class PanGenome(ComparisonViewMixin, View):
 
-    def get_context(self, **kwargs):
-        context = {
-            "page_title": self.page_title,
-            "form": self.form,
-            "object_type": self.object_type,
-            "object_name_plural": self.object_name_plural,
-            "available_views": self.available_views,
-        }
-        context.update(kwargs)
-        return my_locals(context)
-
     def get(self, request, *args, **kwargs):
         venn_form_class = make_venn_from(self.db, plasmid=False)
         self.form = venn_form_class()
-        return render(request, 'chlamdb/pan_genome.html', self.get_context())
+        return render(request, 'chlamdb/pan_genome.html',
+                      self.get_context(form=self.form))
 
     def post(self, request, *args, **kwargs):
         venn_form_class = make_venn_from(self.db)
@@ -1820,7 +1781,7 @@ class PanGenome(ComparisonViewMixin, View):
             # add error message
             self.form = venn_form_class()
             return render(request, 'chlamdb/pan_genome.html',
-                          self.get_context())
+                          self.get_context(form=self.form))
 
         taxids = self.form.get_taxids()
         df_hits = self.get_hit_counts(taxids, search_on="taxid")
@@ -1853,7 +1814,8 @@ class PanGenome(ComparisonViewMixin, View):
 
         context = self.get_context(
             envoi=True, js_data_acc=js_data_acc,
-            js_data_count=js_data_count, js_data_core=js_data_core
+            js_data_count=js_data_count, js_data_core=js_data_core,
+            form=self.form
             )
         return render(request, 'chlamdb/pan_genome.html', context)
 
@@ -2455,20 +2417,11 @@ def alignment(request, input_fasta):
 
 class PlotHeatmap(ComparisonViewMixin, View):
 
-    def get_context(self, **kwargs):
-        context = {
-            "page_title": self.page_title,
-            "object_type": self.object_type,
-            "form": self.form,
-            "available_views": self.available_views,
-        }
-        context.update(kwargs)
-        return my_locals(context)
-
     def get(self, request, *args, **kwargs):
         venn_form_class = make_venn_from(self.db)
         self.form = venn_form_class()
-        return render(request, 'chlamdb/plot_heatmap.html', self.get_context())
+        return render(request, 'chlamdb/plot_heatmap.html',
+                      self.get_context(form=self.form))
 
     def post(self, request, *args, **kwargs):
         venn_form_class = make_venn_from(self.db)
@@ -2476,7 +2429,7 @@ class PlotHeatmap(ComparisonViewMixin, View):
         if not self.form.is_valid():
             # add error message
             return render(request, 'chlamdb/plot_heatmap.html',
-                          self.get_context())
+                          self.get_context(form=self.form))
 
         import plotly.graph_objects as go
         import scipy.cluster.hierarchy as shc
@@ -2488,7 +2441,8 @@ class PlotHeatmap(ComparisonViewMixin, View):
             error_message = "Please select at least two genomes"
             error_title = "Wrong input"
             ctx = self.get_context(error=True, error_title=error_title,
-                                   error_message=error_message)
+                                   error_message=error_message,
+                                   form=self.form)
             return render(request, 'chlamdb/plot_heatmap.html', ctx)
 
         mat = self.get_hit_counts(taxon_ids, search_on="taxid")
@@ -2515,7 +2469,8 @@ class PlotHeatmap(ComparisonViewMixin, View):
         fig.update_traces(showlegend=False, showscale=False)
 
         html_plot = make_div(fig, div_id="heatmap")
-        context = self.get_context(envoi_heatmap=True, html_plot=html_plot)
+        context = self.get_context(envoi_heatmap=True, html_plot=html_plot,
+                                   form=self.form)
         return render(request, 'chlamdb/plot_heatmap.html', context)
 
 

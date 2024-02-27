@@ -372,7 +372,7 @@ class ComparisonViewsTestMixin():
         resp = self.client.get(f"/pan_genome/{self.view_type}")
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
-        self.assertEqual(self.view_type, resp.context["type"])
+        self.assertEqual(self.view_type, resp.context["object_type"])
         self.assertPageTitle(resp, self.page_title)
         self.assertNoRarefactionPlot(resp)
 
@@ -380,7 +380,7 @@ class ComparisonViewsTestMixin():
                                 data={"targets": ["0", "1"]})
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
-        self.assertEqual(self.view_type, resp.context["type"])
+        self.assertEqual(self.view_type, resp.context["object_type"])
         self.assertPageTitle(resp, self.page_title)
         self.assertRarefactionPlot(resp)
 

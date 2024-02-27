@@ -27,11 +27,11 @@
         <p class="page-title"><b>
           {{ fam }}
 
-          {% if type == 'pfam' %}
+          {% if object_type == 'pfam' %}
 
             <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#cog-pfam-annotation-summary" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
 
-          {% elif type == 'ko' %}
+          {% elif object_type == 'ko' %}
 
             <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#kegg-module-overview-page" id="show-option" target="_blank" title="help with the overview page"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
 
@@ -59,10 +59,10 @@
 
               <br>- the size of the orthogroup(s) in which the reported {{ object_name }} has been clustered.
 
-              <br>In red the <font size="2" color="red">{{type}} with positive hit(s)</font> in the corresponding genome.
-              <br>In green <font size="2" color="green">the discrepencies between orthogroup clustering and {{type}} prediction</font>.
-              Green homologs (same orthogroup) <strong>are not</strong> positive hit(s) for the considered {{type}}.
-              <br><br>Variations within orthogroups may be due to the clustering of multi domain proteins or because of erroneous homolog clustering or {{type}} prediction.
+              <br>In red the <font size="2" color="red">{{object_name}} with positive hit(s)</font> in the corresponding genome.
+              <br>In green <font size="2" color="green">the discrepencies between orthogroup clustering and {{object_name}} prediction</font>.
+              Green homologs (same orthogroup) <strong>are not</strong> positive hit(s) for the considered {{object_name}}.
+              <br><br>Variations within orthogroups may be due to the clustering of multi domain proteins or because of erroneous homolog clustering or {{object_name}} prediction.
             </p>
 				  </div>
 
@@ -81,31 +81,31 @@
                       <h3 class="panel-title">Description</h3>
                     </div>
                     <table class="table table-striped" style="width: 100%">
-                      {% if type == 'pfam' %}
+                      {% if object_type == 'pfam' %}
                         <tr>
                           <th>External link</th>
                           <td><a href="http://pfam.xfam.org/family/{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
                         </tr>
 
-                      {% elif type == 'interpro' %}
+                      {% elif object_type == 'interpro' %}
                         <tr>
                           <th>External link</th>
                           <td><a href="http://www.ebi.ac.uk/interpro/entry/{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
                         </tr>
 
-                      {% elif type == 'ko' %}
+                      {% elif object_type == 'ko' %}
                         <tr>
                           <th>External link</th>
                           <td><a href="http://www.genome.jp/dbget-bin/www_bget?{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
                         </tr>
 
-                      {% elif type == 'EC' %}
+                      {% elif object_type == 'EC' %}
                         <tr>
                           <th>External link</th>
                           <td><a href="{{ external_link }}" target="_blank">  {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
                         </tr>
 
-                      {% elif type == 'amr' %}
+                      {% elif object_type == 'amr' %}
                         <tr>
                           <th>Gene</th>
                           <td><a href="https://www.ncbi.nlm.nih.gov/pathogens/refgene/#gene_family:{{ fam }}" target="_blank">  {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
@@ -124,7 +124,7 @@
                   </div>
                 </div>
 
-                {% if type == 'ko'%}
+                {% if object_type == 'ko'%}
                   <div class="row">
                     <div class="panel panel-default">
                       <div class="panel-heading">
