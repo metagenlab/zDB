@@ -12,7 +12,6 @@ html_dumps_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 broken_views = [
     '/circos_main/',
-    '/genomes_intro/',
     '/orthogroup_list_cog_barchart/',
     '/orthogroup_list_cog_barchart/True/',
 ]
@@ -286,8 +285,8 @@ class ComparisonViewsTestMixin():
         return f"/{self.view_type}_comparison"
 
     @property
-    def tab_comp_form_data(self):
-        return {"targets": ["0", "1"]}
+    def tab_comp_form_data_list(self):
+        return [{"targets": ["0", "1"]}]
 
     @property
     def venn_view(self):
@@ -329,14 +328,15 @@ class ComparisonViewsTestMixin():
         self.assertNoCompTable(resp)
         self.assertNav(resp)
 
-        resp = self.client.post(self.tab_comp_view,
-                                data=self.tab_comp_form_data)
-        self.assertEqual(200, resp.status_code)
-        self.assertTemplateUsed(resp, 'chlamdb/tabular_comparison.html')
-        self.assertPageTitle(resp, self.page_title)
-        self.assertSelection(resp, selected=True)
-        self.assertCompTable(resp)
-        self.assertNav(resp)
+        for tab_comp_form_data in self.tab_comp_form_data_list:
+            resp = self.client.post(self.tab_comp_view,
+                                    data=tab_comp_form_data)
+            self.assertEqual(200, resp.status_code)
+            self.assertTemplateUsed(resp, 'chlamdb/tabular_comparison.html')
+            self.assertPageTitle(resp, self.page_title)
+            self.assertSelection(resp, selected=True)
+            self.assertCompTable(resp)
+            self.assertNav(resp)
 
         maybe_dump_html(resp, "with_results")
 
@@ -449,8 +449,13 @@ class TestAMRViews(SimpleTestCase, ComparisonViewsTestMixin):
     page_title = "Comparisons: Antimicrobial Resistance"
 
     @property
-    def tab_comp_form_data(self):
-        return {"targets": ["0", "1"], "comp_type": "gene"}
+    def tab_comp_form_data_list(self):
+        """Tests for class and subclass are not worth much as none
+        of the AMRs in the DB have a class or subclass...
+        """
+        return [{"targets": ["0", "1"], "comp_type": "gene"},
+                {"targets": ["0", "1"], "comp_type": "class"},
+                {"targets": ["0", "1"], "comp_type": "subclass"}]
 
     @skip("Heatmap plot fails because the test data does not provide enough hits")
     def test_plot_heatmap_view(self):
@@ -463,8 +468,10 @@ class TestVFViews(SimpleTestCase, ComparisonViewsTestMixin):
     page_title = "Comparisons: Virulence Factors"
 
     @property
-    def tab_comp_form_data(self):
-        return {"targets": ["0", "1"], "comp_type": "vf_gene_id"}
+    def tab_comp_form_data_list(self):
+        return [{"targets": ["0", "1"], "comp_type": "vf_gene_id"},
+                {"targets": ["0", "1"], "comp_type": "vfid"},
+                {"targets": ["0", "1"], "comp_type": "category"},]
 
 
 class TestOrthogroupViews(SimpleTestCase, ComparisonViewsTestMixin):

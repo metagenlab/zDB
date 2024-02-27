@@ -293,9 +293,9 @@ class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
         if self.comp_type == "gene":
             return ["gene", "scope", "class", "subclass", "seq_name", "hmm_id"]
         elif self.comp_type == "subclass":
-            return ["Subclass", "Class"]
+            return ["subclass", "class"]
         elif self.comp_type == "class":
-            return ["Class"]
+            return ["class"]
 
     @property
     def table_help(self):

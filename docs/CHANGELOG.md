@@ -14,6 +14,7 @@ to [Common Changelog](https://common-changelog.org)
 - Add CHANGELOG file. ([#25](https://github.com/metagenlab/zDB/pull/25)) (Niklaus Johner)
 - Imported metagenlab_lib code into zdb (https://github.com/metagenlab/zDB/pull/33) (Bastian Marquis)
 - Removed eutils module. ([#47](https://github.com/metagenlab/zDB/pull/47)) (Niklaus Johner)
+- Show xaxis labels (as links) in heatmap view. ([#59](https://github.com/metagenlab/zDB/pull/59)) (Niklaus Johner)
 
 ### Added
 

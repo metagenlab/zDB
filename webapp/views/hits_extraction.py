@@ -171,7 +171,7 @@ class ExtractHitsBaseView(View):
         hit_counts_all = self.get_hit_counts(
             self.selection, search_on=self.object_column)
         self.n_hits = len(hit_counts_all.index)
-        self.max_n = len(hit_counts_all.columns)
+        self.max_n = len(self.db.taxon_ids())
 
         if not self.single_copy:
             hit_counts_all = self._to_percent(

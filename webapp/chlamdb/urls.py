@@ -49,7 +49,6 @@ urlpatterns = [
     re_path(r'^home/$', views.home, name="home"),
     re_path(r'^help', views.help, name="help"),
     re_path(r'^get_cog/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\%]+)$', views.get_cog, name="get_cog"),  # noqa
-    re_path(r'^genomes_intro', views.genomes_intro, name='genomes_intro'),
     re_path(r'^genomes', views.genomes, name='genomes'),
     re_path(r'^favicon\.ico$', favicon_view),
     re_path(r'^FAQ', views.faq, name='FAQ'),
