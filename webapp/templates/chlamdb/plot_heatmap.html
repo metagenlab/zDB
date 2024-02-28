@@ -24,17 +24,17 @@
                     </p>
                 
 
-			{% if error %}
-			  <div class="panel panel-danger" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-				  <div class="panel-heading" style="width:100%">
-					  <h3 class="panel-title">{{ error_title }}</h3>
-				  </div>
+            {% if error %}
+              <div class="panel panel-danger" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                  <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">{{ error_title }}</h3>
+                  </div>
 
-				  <div style="margin: 10px 10px 10px 10px">
-				  {{ error_message }}
-				  </div>
-			  </div>
-			{% endif %}
+                  <div style="margin: 10px 10px 10px 10px">
+                  {{ error_message }}
+                  </div>
+              </div>
+            {% endif %}
 
 
                 <form action="{% url "plot_heatmap" object_type %}" method="post" id="heatmap-form" >
@@ -48,9 +48,9 @@
             </div>
 
 
-			{% if envoi_heatmap %}
+            {% if envoi_heatmap %}
             <div class="row" style="padding-top:30px ;background-color: rgba(245, 245, 245, 0.986); margin-top: 1em;" >
-               
+
                  <div class="panel panel-success" style="margin:1em;">
                      <div class="panel-heading" style="width:100%">
                          <h5 class="panel-title">Help to interpret the results</h5>
@@ -63,11 +63,11 @@
                      </p>
                     </div>
                 </div>
-                
 
-                <table class="sortable table" id="table_pfam" style="width: 90%; margin-left: 1em;"></table> 
+
+                <table class="sortable table" id="table_pfam" style="width: 90%; margin-left: 1em;"></table>
                 {{html_plot|safe}}
-			{% endif %}
+            {% endif %}
 
        </div>
       </div>

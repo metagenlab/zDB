@@ -23,9 +23,9 @@
 
 
 {% if not menu %}
-	<div class="container-fluid" id="container_no_margin" height="100%">
+  <div class="container-fluid" id="container_no_margin" height="100%">
 {% else %}
-	<div class="container-fluid" id="main_container">
+  <div class="container-fluid" id="main_container">
 {% endif %}
 
   <div class="row">
@@ -45,156 +45,156 @@
             <ul id="tabs" class="nav nav-tabs">
 
                 <li class="active">
-					<a href="#main_tab" data-toggle="tab">Overview</a>
-				</li>
+          <a href="#main_tab" data-toggle="tab">Overview</a>
+        </li>
 
                 <li>
-					<a href="#tab3" data-toggle="tab">Sequences</a>
-				</li>
+          <a href="#tab3" data-toggle="tab">Sequences</a>
+        </li>
 
-				{% if feature_type == "CDS" and n_homologues > 1 %}
+        {% if feature_type == "CDS" and n_homologues > 1 %}
                 <li>
-					<a href="#homologs_tab" data-toggle="tab">
-				 	Homologs <span class="badge">{{n_homologues}}</span><br>
-					</a>
-				</li>
+          <a href="#homologs_tab" data-toggle="tab">
+          Homologs <span class="badge">{{n_homologues}}</span><br>
+          </a>
+        </li>
                 <li>
-					<a href="#phylogenetic_distrib" data-toggle="tab">Phylogenetic distribution</a>
-				</li>
+          <a href="#phylogenetic_distrib" data-toggle="tab">Phylogenetic distribution</a>
+        </li>
 
                 {% if n_homologues >= 2 %}
                 <li>
-					<a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a>
-				</li>
+          <a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a>
+        </li>
                 {% endif %}
 
-				{% endif %}
+        {% endif %}
 
 
-				{% if optional2status|keyvalue:"BLAST_database" and n_refseq_homologs > 0 %}
-					<li>
-						<a href="#refseq_homologs_tab" data-toggle="tab">
-							RefSeq homologs <span class="badge">{{n_refseq_homologs}}</span>
-						</a>
-					</li>
-				{% endif %}
+        {% if optional2status|keyvalue:"BLAST_database" and n_refseq_homologs > 0 %}
+          <li>
+            <a href="#refseq_homologs_tab" data-toggle="tab">
+              RefSeq homologs <span class="badge">{{n_refseq_homologs}}</span>
+            </a>
+          </li>
+        {% endif %}
 
-				{% if optional2status|keyvalue:"BLAST_swissprot" and n_swissprot_hits > 0 %}
-					<li>
-						<a href="#swissprot_homologs_tab" data-toggle="tab">
-							SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span>
-						</a>
-					</li>
-				{% endif %}
+        {% if optional2status|keyvalue:"BLAST_swissprot" and n_swissprot_hits > 0 %}
+          <li>
+            <a href="#swissprot_homologs_tab" data-toggle="tab">
+              SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span>
+            </a>
+          </li>
+        {% endif %}
 
-				{% if has_refseq_phylo and optional2status|keyvalue:"BBH_phylogenies" %}
+        {% if has_refseq_phylo and optional2status|keyvalue:"BBH_phylogenies" %}
                     <li><a href="#refseq_phylogeny" data-toggle="tab">RefSeq best hits phylogeny  </a></li>
                 {% endif %}
             </ul>
 
             <div id="my-tab-content" class="tab-content">
 
-				  <div class="tab-pane" id="homologs_tab">
-					  {% include "chlamdb/homologs.html" %}
-				  </div>
+          <div class="tab-pane" id="homologs_tab">
+            {% include "chlamdb/homologs.html" %}
+          </div>
 
-				  <div class="tab-pane" id="phylogenetic_distrib">
-					  <h3>Distribution of the homologs in the orthogroup {{og_id|safe}} </h3>
+          <div class="tab-pane" id="phylogenetic_distrib">
+            <h3>Distribution of the homologs in the orthogroup {{og_id|safe}} </h3>
 
-						<div class="tab-pane active" id="tab1">
-						  <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
-							  <div class="panel-heading" style="width:100%">
-								  <h3 class="panel-title">Help</h3>
-							  </div>
-							  <p style="margin: 10px 10px 10px 10px; line-height: 180%">
-							  Number of homologs in each genome (first column) and amino-acid identity of the closest homolog (second column).
-							  </p>
-						  </div>
+            <div class="tab-pane active" id="tab1">
+              <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
+                <div class="panel-heading" style="width:100%">
+                  <h3 class="panel-title">Help</h3>
+                </div>
+                <p style="margin: 10px 10px 10px 10px; line-height: 180%">
+                Number of homologs in each genome (first column) and amino-acid identity of the closest homolog (second column).
+                </p>
+              </div>
 
-						  <object type="image/svg+xml" data="{% static asset_path %}"></object>
+              <object type="image/svg+xml" data="{% static asset_path %}"></object>
 
-						  <a download="profile.svg" class="btn" href="{% static asset_path %}">
-							  <i class="fa fa-download"></i> Download SVG</a>
-						</div>
-				  </div>
+              <a download="profile.svg" class="btn" href="{% static asset_path %}">
+                <i class="fa fa-download"></i> Download SVG</a>
+            </div>
+          </div>
 
 
-				  <div class="tab-pane" id="og_phylogeny">
-						<h3>Phylogeny of {{og_id|safe}} </h3>
-						  <a download="profile.svg" class="btn" href="{% static og_phylogeny %}">
-							  <i class="fa fa-download"></i> Download SVG</a>
+          <div class="tab-pane" id="og_phylogeny">
+            <h3>Phylogeny of {{og_id|safe}} </h3>
+              <a download="profile.svg" class="btn" href="{% static og_phylogeny %}">
+                <i class="fa fa-download"></i> Download SVG</a>
 
-						  <a download="alignment.faa" class="btn" href="{% static og_alignment %}">
-							  <i class="fa fa-download"></i> Download alignment file</a>
-					
+              <a download="alignment.faa" class="btn" href="{% static og_alignment %}">
+                <i class="fa fa-download"></i> Download alignment file</a>
 
-						<div class="tab-pane active" id="tab1">
-						  <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
-						</div>
-				  </div>
 
-				  <div class="tab-pane" id="refseq_phylogeny">
-					  <h3>Phylogeny of the RefSeq best hits of {{og_id|safe}}</h3>
-						<div class="tab-pane active" id="tab1">
-						  <object type="image/svg+xml" data="{% static best_hits_phylogeny %}"></object>
-						  <a download="profile.svg" class="btn" href="{% static best_hits_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
-						</div>
-				  </div>
+            <div class="tab-pane active" id="tab1">
+              <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
+            </div>
+          </div>
 
-				<div class="tab-pane" id="swissprot_homologs_tab">
-					<div class="col-md-12 col-lg-10" style="padding-top:20px">
+          <div class="tab-pane" id="refseq_phylogeny">
+            <h3>Phylogeny of the RefSeq best hits of {{og_id|safe}}</h3>
+            <div class="tab-pane active" id="tab1">
+              <object type="image/svg+xml" data="{% static best_hits_phylogeny %}"></object>
+              <a download="profile.svg" class="btn" href="{% static best_hits_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
+            </div>
+          </div>
 
-					<table id="blast_swissprot_table" class="table">
-					  <thead>
-						<tr>
-							{% for entry in swissprot_headers %}
-							<th> {{entry}} </th>
-							{% endfor %}
-						</tr>
-					  </thead>
-					  <tbody>
-						  {% for values in swissprot_blast_data %}
-						  <tr>
-							  {% for entry in values %}
-							      {% if forloop.counter0 == 0 %}
-								      <td><a href="https://www.uniprot.org/uniprot/{{entry|safe}}">{{entry|safe}}</a></td>
-								  {% else %}
-								      <td>{{entry|safe}}</td>
-								  {% endif %}
-							  
-							  {% endfor %}
-						  </tr>
-						  {%  endfor %}
-					  </tbody>
-					</table>
-					</div>
-				</div>
+        <div class="tab-pane" id="swissprot_homologs_tab">
+          <div class="col-md-12 col-lg-10" style="padding-top:20px">
 
-				
-				<div class="tab-pane" id="refseq_homologs_tab">
-					<br>
-					<ul>
-					 <li>Number of RefSeq hits: {{n_refseq_homologs}} </li>
-					</ul>
-					<table id="blast_nr_table" class="table">
-					  <thead>
-						<tr>
-							{% for entry in refseq_headers %}
-							<th> {{entry}} </th>
-							{% endfor %}
-						</tr>
-					  </thead>
-					  <tbody>
-						  {% for values in blast_data %}
-						  <tr>
-							  {% for entry in values %}
-							  <td>{{entry|safe}}</td>
-							  {% endfor %}
-						  </tr>
-						  {%  endfor %}
-					  </tbody>
-					</table>
-				</div>
+          <table id="blast_swissprot_table" class="table">
+            <thead>
+            <tr>
+              {% for entry in swissprot_headers %}
+              <th> {{entry}} </th>
+              {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+              {% for values in swissprot_blast_data %}
+              <tr>
+                {% for entry in values %}
+                    {% if forloop.counter0 == 0 %}
+                      <td><a href="https://www.uniprot.org/uniprot/{{entry|safe}}">{{entry|safe}}</a></td>
+                  {% else %}
+                      <td>{{entry|safe}}</td>
+                  {% endif %}
+
+                {% endfor %}
+              </tr>
+              {%  endfor %}
+            </tbody>
+          </table>
+          </div>
+        </div>
+
+
+        <div class="tab-pane" id="refseq_homologs_tab">
+          <br>
+          <ul>
+           <li>Number of RefSeq hits: {{n_refseq_homologs}} </li>
+          </ul>
+          <table id="blast_nr_table" class="table">
+            <thead>
+            <tr>
+              {% for entry in refseq_headers %}
+              <th> {{entry}} </th>
+              {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+              {% for values in blast_data %}
+              <tr>
+                {% for entry in values %}
+                <td>{{entry|safe}}</td>
+                {% endfor %}
+              </tr>
+              {%  endfor %}
+            </tbody>
+          </table>
+        </div>
 
                 <div class="tab-pane active" id="main_tab" style="padding-left: 15px;padding-top:20px">
                         <div class="col-md-12 col-lg-4">
@@ -215,46 +215,46 @@
                                           <td>{{locus_tag}}</td>
                                       </tr>
 
-				  <tr>
-					  <th> Feature type </th>
-					  <td> {{feature_type}} </td>
-				  </tr>
+          <tr>
+            <th> Feature type </th>
+            <td> {{feature_type}} </td>
+          </tr>
 
                                       <tr><th>Gene</th>
                                           <td>{{gene}}</td>
                                       </tr>
 
-				  <tr>
-				  <th>Product</th>
-					  <td>{{prot}}</td>
-				  </tr>
+          <tr>
+          <th>Product</th>
+            <td>{{prot}}</td>
+          </tr>
 
                                       <tr>
                                           <th>Location</th>
-					  <td>
-					  {% for pos in gene_pos %}
-					    {{pos.0}} - {{pos.1}} (strand: {{pos.2}})
-					    {% if gene_pos|length > 1 %}
-					      <br>
-					    {% endif %}
-					  {% endfor %}
-					  </td>
+            <td>
+            {% for pos in gene_pos %}
+              {{pos.0}} - {{pos.1}} (strand: {{pos.2}})
+              {% if gene_pos|length > 1 %}
+                <br>
+              {% endif %}
+            {% endfor %}
+            </td>
                                       </tr>
 
                                       <tr>
                                           <th>Length</th>
-					  {% if sequence_type == "CDS" %}
-					    <td>{{nucl_length}} (nucleotides) / {{length}} (amino acids)</td>
-					  {% else %}
-					    <td>{{nucl_length}} (nucleotides)</td>
-					  {% endif %}
+            {% if sequence_type == "CDS" %}
+              <td>{{nucl_length}} (nucleotides) / {{length}} (amino acids)</td>
+            {% else %}
+              <td>{{nucl_length}} (nucleotides)</td>
+            {% endif %}
                                       </tr>
-                                      
+
                                   </table>
                               </div>
                             </div>
 
-						{% if sequence_type == "CDS" %}
+            {% if sequence_type == "CDS" %}
                            <div class="row">
                              <div class="panel panel-default">
                                <div class="panel-heading">
@@ -269,23 +269,23 @@
                                    </tr>
                                    <tr>
                                    <th>Orthogroup size <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip"
-										   title='Total number of homologs in the whole database'>
-										   <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
+                       title='Total number of homologs in the whole database'>
+                       <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td>{{og_size}}</td>
                                        <td></td>
                                    </tr>
-								   <tr>
+                   <tr>
                                    <th>N. genomes <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip"
-										   title='Number of genomes encoding one or several homologs of this protein. See the tab "homologs" for details'>
-										   <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-									   </a></th>
+                       title='Number of genomes encoding one or several homologs of this protein. See the tab "homologs" for details'>
+                       <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                     </a></th>
                                        <td>{{og_num_genomes}}</td>
                                        <td></td>
                                    </tr>
                                 </table>
                              </div>
                            </div>
-						 {% endif %}
+             {% endif %}
 
                         </div> <!-- fluid container -->
                       </div> <!-- first column -->
@@ -293,12 +293,12 @@
                         <div class=row>
                           <div class="panel panel-default">
                             <div class="panel-heading clearfix">
-			      <div class="pull-right">
-		              	 <button id="download_svg_button" class="btn-link btn-xs"
-					 style="background-color: transparent;">
-			           <i class="glyphicon glyphicon-download"></i>
-				 </button>
-			      </div>
+            <div class="pull-right">
+                     <button id="download_svg_button" class="btn-link btn-xs"
+           style="background-color: transparent;">
+                 <i class="glyphicon glyphicon-download"></i>
+         </button>
+            </div>
                               <h3 class="panel-title">Genomic region</h3>
                             </div>
                             <div class="panel-body" style="height:100px; display:flex; justify-content:center; align-items:center; margin-bottom:30px" id="genomic_region_rect">
@@ -306,153 +306,153 @@
                               </div>
                             </div>
                           </div>
-			</div>
+      </div>
 
-			{%if ko_pathway_data or ko_module_data %}
-			  <div class="row">
-				<div class="panel panel-default">
-				  <div class="panel-heading">
-					<h3 class="panel-title">Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and KofamScan"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
-				  </div>
-				  <table class="table table-striped" style="width: 100%">
+      {%if ko_pathway_data or ko_module_data %}
+        <div class="row">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+          <h3 class="panel-title">Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and KofamScan"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+          </div>
+          <table class="table table-striped" style="width: 100%">
 
-				  {%if ko_pathway_data %}
-					  {% for pathway in ko_pathway_data %}
-						  <tr>
-							  <td>Pathway</td>
-							  <td><a href="{% url 'KEGG_mapp_ko' pathway.1 %}" target="_top">{{pathway.1}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-							  <td>{{pathway.2}}</td>
-							  <td>{{pathway.3}}</td>
-						  </tr>
-					  {% endfor %}
-				  {% endif %}
-				  {%if ko_module_data %}
-					  {% for module in ko_module_data %}
-						  <tr>
-							  <td>Module</td>
-							  <td><a href="{% url 'KEGG_module_map' module.0 %}" target="_top">{{module.0}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
-							  <td>{{module.1}}</td>
-							  <td>{{module.2}}</td>
-						  </tr>
-					  {% endfor %}
-				  {% endif %}
-				  </table>
-				</div>
-			  </div>
+          {%if ko_pathway_data %}
+            {% for pathway in ko_pathway_data %}
+              <tr>
+                <td>Pathway</td>
+                <td><a href="{% url 'KEGG_mapp_ko' pathway.1 %}" target="_top">{{pathway.1}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                <td>{{pathway.2}}</td>
+                <td>{{pathway.3}}</td>
+              </tr>
+            {% endfor %}
+          {% endif %}
+          {%if ko_module_data %}
+            {% for module in ko_module_data %}
+              <tr>
+                <td>Module</td>
+                <td><a href="{% url 'KEGG_module_map' module.0 %}" target="_top">{{module.0}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
+                <td>{{module.1}}</td>
+                <td>{{module.2}}</td>
+              </tr>
+            {% endfor %}
+          {% endif %}
+          </table>
+        </div>
+        </div>
 
-			{% endif %}
+      {% endif %}
 
-					 {% if cog_entries|length > 0 %}
-						<div class="row">
-						  <div class="panel panel-default">
-							<div class="panel-heading">
-							  <h3 class="panel-title">COG annotation(s)</h3>
-							</div>
-								<table class="table table-striped" style="width: 100%">
-									<thead>
+           {% if cog_entries|length > 0 %}
+            <div class="row">
+              <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">COG annotation(s)</h3>
+              </div>
+                <table class="table table-striped" style="width: 100%">
+                  <thead>
 
-										  <tr>
-											  {% for h in cog_header %}
-												  <th> {{h|safe}} </th>
-											  {% endfor %}
-										  </tr>
-									</thead>
+                      <tr>
+                        {% for h in cog_header %}
+                          <th> {{h|safe}} </th>
+                        {% endfor %}
+                      </tr>
+                  </thead>
 
-									<tbody>
-										{% for row in cog_entries %}
-										<tr>
-											{% for entry in row %}
-											<td> {{ entry|safe }}</td>
-											{% endfor %}
-										</tr>
-										{% endfor %}
-									</tbody>
+                  <tbody>
+                    {% for row in cog_entries %}
+                    <tr>
+                      {% for entry in row %}
+                      <td> {{ entry|safe }}</td>
+                      {% endfor %}
+                    </tr>
+                    {% endfor %}
+                  </tbody>
 
-								</table>
-						  </div>
-						</div>
-					  {% endif %}
+                </table>
+              </div>
+            </div>
+            {% endif %}
 
-					 {% if pfam_def|length > 0 %}
-					 	<div class="row">
-							<div class="panel panel-default">
-								<div class="panel-heading">
-								  <h3 class="panel-title">Domains</h3>
-								</div>
-								<div id="div_features">
-								</div>
+           {% if pfam_def|length > 0 %}
+            <div class="row">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h3 class="panel-title">Domains</h3>
+                </div>
+                <div id="div_features">
+                </div>
 
-								<table id="panel_table" class="table table-striped" style="width: 100%">
-								{% for val in pfam_def %}
-								<tr>
-									<th>{{val.0|safe}}</th>
-									<td>{{val.1}}</td>
-								</tr>
-								{% endfor %}
-								</table>
-							</div>
-						</div>
-					 {% endif %}
+                <table id="panel_table" class="table table-striped" style="width: 100%">
+                {% for val in pfam_def %}
+                <tr>
+                  <th>{{val.0|safe}}</th>
+                  <td>{{val.1}}</td>
+                </tr>
+                {% endfor %}
+                </table>
+              </div>
+            </div>
+           {% endif %}
 
-					 {% if ko_entries|length > 0 %}
-						<div class="row">
-						  <div class="panel panel-default">
-							<div class="panel-heading">
-							  <h3 class="panel-title">Kegg Ortholog annotation(s)</h3>
-							</div>
-							<table class="table table-striped" style="width: 100%">
-								<thead>
-								  <tr>
-									  {% for entry in ko_header %}
-									  	<th> {{entry|safe}} </th>
-									  {% endfor %}
-								  </tr>
-								</thead>
-								<tbody>
-									{% for row in ko_entries %}
-										<tr>
-											{% for e in row %}
-												<td> {{e|safe}}</td>
-											{% endfor %}
-										</tr>
-									{% endfor %}
-								</tbody>
-							</table>
-						  </div>
-						</div>
-					  {% endif %}
+           {% if ko_entries|length > 0 %}
+            <div class="row">
+              <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Kegg Ortholog annotation(s)</h3>
+              </div>
+              <table class="table table-striped" style="width: 100%">
+                <thead>
+                  <tr>
+                    {% for entry in ko_header %}
+                      <th> {{entry|safe}} </th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in ko_entries %}
+                    <tr>
+                      {% for e in row %}
+                        <td> {{e|safe}}</td>
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              </div>
+            </div>
+            {% endif %}
 
-					 {% if amr_entries|length > 0 %}
-						<div class="row">
-						  <div class="panel panel-default">
-							<div class="panel-heading">
-							  <h3 class="panel-title">Antibiotic resistance annotations
-							  	<a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='For more information on the fields see the AMRFinderPlus documentation'>
-										 <span class="glyphicon glyphicon-question-sign" aria-hidden="true"/>
-									</a>
-								</h3>
-							</div>
-							<table class="table table-striped" style="width: 100%">
-								<thead>
-								  <tr>
-									  {% for entry in amr_header %}
-									  	<th> {{entry|safe}} </th>
-									  {% endfor %}
-								  </tr>
-								</thead>
-								<tbody>
-									{% for row in amr_entries %}
-										<tr>
-											{% for e in row %}
-												<td> {{e|safe}}</td>
-											{% endfor %}
-										</tr>
-									{% endfor %}
-								</tbody>
-							</table>
-						  </div>
-						</div>
-					  {% endif %}
+           {% if amr_entries|length > 0 %}
+            <div class="row">
+              <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Antibiotic resistance annotations
+                  <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='For more information on the fields see the AMRFinderPlus documentation'>
+                     <span class="glyphicon glyphicon-question-sign" aria-hidden="true"/>
+                  </a>
+                </h3>
+              </div>
+              <table class="table table-striped" style="width: 100%">
+                <thead>
+                  <tr>
+                    {% for entry in amr_header %}
+                      <th> {{entry|safe}} </th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in amr_entries %}
+                    <tr>
+                      {% for e in row %}
+                        <td> {{e|safe}}</td>
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              </div>
+            </div>
+            {% endif %}
                     </div> <!-- second column -->
                 </div> <!-- first tab -->
 
@@ -461,7 +461,7 @@
                   <div class="row" style="padding-top:15px;">
                     <div class="col-lg-6">
 
-					{% if sequence_type == "CDS" %}
+          {% if sequence_type == "CDS" %}
                       <div class="row">
                         <div class="panel panel-default">
                           <div class="panel-heading">
@@ -472,7 +472,7 @@
                           </div>
                         </div>
                       </div>
-					{% endif %}
+          {% endif %}
 
                       <div class="row">
 
@@ -502,7 +502,7 @@
     width:100px;
 }
 h3.panel-title > a{
-	color: #337ab7;
+  color: #337ab7;
 }
 </style>
 
@@ -565,83 +565,83 @@ $(document).ready(function(){
 
 {% if n_swissprot_hits > 0 %}
 $(document).ready(function() {
-	$('#blast_swissprot_table').DataTable( {
-	  dom: 'lBfrtip',
-	  buttons: [
-		  {
-			  extend: 'colvis',
-			  columns: ':not(.noVis)',
-		  },
-		  {
-			  extend: 'excel',
-			  title: 'blast_swissprot'
-		  },
-		  {
-			  extend: 'csv',
-			  title: 'blast_swissprot'
-		  }
-	  ],
-	  "paging":   true,
-	  "ordering": true,
-	  "info":     false,
-	  } );
+  $('#blast_swissprot_table').DataTable( {
+    dom: 'lBfrtip',
+    buttons: [
+      {
+        extend: 'colvis',
+        columns: ':not(.noVis)',
+      },
+      {
+        extend: 'excel',
+        title: 'blast_swissprot'
+      },
+      {
+        extend: 'csv',
+        title: 'blast_swissprot'
+      }
+    ],
+    "paging":   true,
+    "ordering": true,
+    "info":     false,
+    } );
 });
 {% endif %}
 
 
 {% if pfam_def|length > 0 %}
 window.onload = function() {
-	var ft2 = new FeatureViewer("{{translation}}",
-		"#div_features", 
-		{
-			showAxis: true,
-			showSequence: false,
-			brushActive: false,
-			toolbar:false,
-			bubbleHelp:true,
-			zoomMax:1}
-	);
+  var ft2 = new FeatureViewer("{{translation}}",
+    "#div_features",
+    {
+      showAxis: true,
+      showSequence: false,
+      brushActive: false,
+      toolbar:false,
+      bubbleHelp:true,
+      zoomMax:1}
+  );
 
-	features = {{pfam_domains|safe}};
+  features = {{pfam_domains|safe}};
 
-	for(fet in features) {
-		let curr_fet = features[fet];
-		ft2.addFeature(curr_fet);
-	}
+  for(fet in features) {
+    let curr_fet = features[fet];
+    ft2.addFeature(curr_fet);
+  }
 }
 {% endif %}
 
 $(document).ready(function() {
-	$('#blast_nr_table').DataTable( {
-	  dom: 'lBfrtip',
-	  buttons: [
-		  {
-			  extend: 'colvis',
-			  columns: ':not(.noVis)',
-		  },
-		  {
-			  extend: 'excel',
-			  title: 'plast_refseq'
-		  },
-		  {
-			  extend: 'csv',
-			  title: 'plast_refseq'
-		  }
-	  ],
-	  "paging":   true,
-	  "ordering": true,
-	  "info":     false,
-	  } );
+  $('#blast_nr_table').DataTable( {
+    dom: 'lBfrtip',
+    buttons: [
+      {
+        extend: 'colvis',
+        columns: ':not(.noVis)',
+      },
+      {
+        extend: 'excel',
+        title: 'plast_refseq'
+      },
+      {
+        extend: 'csv',
+        title: 'plast_refseq'
+      }
+    ],
+    "paging":   true,
+    "ordering": true,
+    "info":     false,
+    } );
 });
 
 
 var genomic_region = {{genomic_region|safe}};
 var genomic_region_rect = document.querySelector("#genomic_region_rect")
-		.getBoundingClientRect();
+    .getBoundingClientRect();
 var genomic_width = genomic_region_rect.right-genomic_region_rect.left;
 
 createGenomicRegion(d3.select("#div_genomic_region"), genomic_width*.8, "genomic_region", [genomic_region],
-		0, ["{{locus_tag}}"], {{window_size}});
+    0, ["{{locus_tag}}"], {{window_size}});
 
 document.querySelector("#download_svg_button").onclick = function() {
   var svg_elem = document.querySelector("#genomic_region");

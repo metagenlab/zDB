@@ -29,21 +29,21 @@
             <table class="display" id="proteins_table">
               <thead>
                   <tr>
-					  {% for header in data_table_header %}
-					  <th>{{header}}</th>
-					  {% endfor %}
+            {% for header in data_table_header %}
+            <th>{{header}}</th>
+            {% endfor %}
                   </tr>
               </thead>
 
               <tbody>
                 {% for entry_line in data_table %}
                   <tr>
-					{% for entry_col in entry_line %}
-					<td> {{entry_col|safe}}</td>
-					{% endfor %}
+          {% for entry_col in entry_line %}
+          <td> {{entry_col|safe}}</td>
+          {% endfor %}
                   </tr>
                   {% endfor %}
-		 	  </tbody>
+        </tbody>
 
           </table>        
            </div>

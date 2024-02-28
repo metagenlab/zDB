@@ -64,7 +64,7 @@
                   </thead>
                   <tbody>
                     {% for row in table_rows %}
-	                    <tr>
+                      <tr>
                         {% for value in row|slice_up_to:n_data_columns %}
                           {% if forloop.counter0 < first_coloured_row %}
                             <td>{{value|safe}}</td>
@@ -97,16 +97,16 @@
 <script src="{% static 'js/jquery.hottie.js' %}"></script>
 <script>
 $(function(){
-	$("#mytable td").hottie({
-		readValue : function(e) {
-			return $(e).attr("data-hist");
-		},
-		colorArray : [
-			"#5858FA",
-			"#FBEFEF",
-			"#FA5858"
-		]
-	});
+  $("#mytable td").hottie({
+    readValue : function(e) {
+      return $(e).attr("data-hist");
+    },
+    colorArray : [
+      "#5858FA",
+      "#FBEFEF",
+      "#FA5858"
+    ]
+  });
 });
 
 $(document).ready(function() {

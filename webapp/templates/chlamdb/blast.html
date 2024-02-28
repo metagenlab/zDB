@@ -172,44 +172,44 @@ margin-top: 15em;
                           <tr><td>blastx</td><td>translated dna sequence vs protein sequences database </td></tr>
                           <tr><td>tblastn</td><td>protein sequence vs translated nucleotide sequences database</td></tr>
                       </table>
-		    </div>
+        </div>
 
 
-		 
-			<div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
-				<a href="#" class="close" data-dismiss="alert">&times;</a>
-				<strong>Note!</strong>  The blast input can be either an amino-acid or a nucleotide sequence, or a set (one or more) of fasta sequences.
-			</div>
-                  
+
+      <div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
+        <a href="#" class="close" data-dismiss="alert">&times;</a>
+        <strong>Note!</strong>  The blast input can be either an amino-acid or a nucleotide sequence, or a set (one or more) of fasta sequences.
+      </div>
+
                   <form action="{% url "blast" %}" method="post">{% csrf_token %}
-                    {{ form.as_p }} 
+                    {{ form.as_p }}
                     <input type="submit" value="Submit" />
                   </form>
 
 
                   {% if wrong_format %}
-					  <div class="panel panel-danger" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-						  <div class="panel-heading" style="width:100%">
-							  <h3 class="panel-title">{{ error_title }}</h3>
-						  </div>
-						  {{ error_message }}
-					  </div>
+            <div class="panel panel-danger" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+              <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">{{ error_title }}</h3>
+              </div>
+              {{ error_message }}
+            </div>
                   {% endif %}
 
 
                   {% if envoi %}
-				<br>
-				  <div class="row" style="padding-top:1em ;background-color: rgba(245, 245, 245, 0.986)" >
+        <br>
+          <div class="row" style="padding-top:1em ;background-color: rgba(245, 245, 245, 0.986)" >
                     <div class="panel panel-success" style="margin:1em;">
                         <div class="panel-heading" style="width:100%">
                             <h5 class="panel-title">Help to interpret the results</h5>
                         </div>
                         <p style="margin: 10px 10px 10px 10px">
                             The blast search generates two output pages according to the search parameters set up in the analysis:
-                            <br><b>Details</b>: this page showa the graphical overview of blast hits identified on the genome(s) of interest colored according to the max score or E-value. Each hit is listed in the following table. It reportes the alignment scores and the contigs or locus tags of the match (Note that the locus tag is clickable and redirects you to a comphensive locus tag overview). 
-							{% if phylo_distrib %}
-							<br><b>Phylogenetic distribution</b>: Heatmap of the amino-acid/nucleotide identity of the best hit for each taxa.
-							{% endif %}
+                            <br><b>Details</b>: this page showa the graphical overview of blast hits identified on the genome(s) of interest colored according to the max score or E-value. Each hit is listed in the following table. It reportes the alignment scores and the contigs or locus tags of the match (Note that the locus tag is clickable and redirects you to a comphensive locus tag overview).
+              {% if phylo_distrib %}
+              <br><b>Phylogenetic distribution</b>: Heatmap of the amino-acid/nucleotide identity of the best hit for each taxa.
+              {% endif %}
                         </p>
                     </div>
                     {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=orthogroup2description %}
@@ -217,59 +217,59 @@ margin-top: 15em;
                 </div>
              {% if phylo_distrib %}
              <br>
-				  	  <nav>
-						  <ul id="tabs_blast" class="nav nav-tabs">
-							  <li class="active">
-								  <a href="#blast_details" data-toggle="tab">
-									  Details
-								  </a>
-							  </li>
-							  <li>
-								  <a href="#phylo_distrib" data-toggle="tab">
-									  Phylogenetic distribution
-								  </a>
-							  </li>
-						  </ul>
-					  </nav>
-					  {% endif %}
+              <nav>
+              <ul id="tabs_blast" class="nav nav-tabs">
+                <li class="active">
+                  <a href="#blast_details" data-toggle="tab">
+                    Details
+                  </a>
+                </li>
+                <li>
+                  <a href="#phylo_distrib" data-toggle="tab">
+                    Phylogenetic distribution
+                  </a>
+                </li>
+              </ul>
+            </nav>
+            {% endif %}
 
-					  	
-					  <div class="tab-content">
-						  <div class="tab-pane active" id="blast_details">
 
-							  {% if js_out %}
-								  <div id='snippetDiv'></div>
-								  <div id="blast-multiple-alignments"></div> 
-								  <div id="blast-alignments-table"></div> 
-								  <div id="blast-single-alignment"></div> 
-							  {% endif %}
+            <div class="tab-content">
+              <div class="tab-pane active" id="blast_details">
 
-							  {% if blast_result %} 
-								  <h3>Result</h3>
-								   <div id="blast_res">
-								  {% autoescape off %}{{blast_result}}{% endautoescape %}</div>
-							  {% elif blast_no_hits %}   
-								  <h3>No hits</h3>
-							  {% elif blast_err %}
-									<h3>Error</h3>
-									<pre id="blast_result">
-									 {% autoescape off %}{{blast_err}}{% endautoescape %}
-									</pre>
-							  {% endif %}
-						  </div>
+                {% if js_out %}
+                  <div id='snippetDiv'></div>
+                  <div id="blast-multiple-alignments"></div>
+                  <div id="blast-alignments-table"></div>
+                  <div id="blast-single-alignment"></div>
+                {% endif %}
 
-						  {% if phylo_distrib %}
-							  <div class="tab-pane" id="phylo_distrib">
-								
-								<br>
-								  <object type="image/svg+xml" data="{% static asset_path %}">
-								  </object>
+                {% if blast_result %}
+                  <h3>Result</h3>
+                   <div id="blast_res">
+                  {% autoescape off %}{{blast_result}}{% endautoescape %}</div>
+                {% elif blast_no_hits %}
+                  <h3>No hits</h3>
+                {% elif blast_err %}
+                  <h3>Error</h3>
+                  <pre id="blast_result">
+                   {% autoescape off %}{{blast_err}}{% endautoescape %}
+                  </pre>
+                {% endif %}
+              </div>
 
-								  <a download="profile.svg" class="btn" href="{% static asset_path %}">
-									  <i class="fa fa-download"></i> Download SVG</a>
-							  </div>
-						  {% endif %}
-					  </div>
+              {% if phylo_distrib %}
+                <div class="tab-pane" id="phylo_distrib">
+
+                <br>
+                  <object type="image/svg+xml" data="{% static asset_path %}">
+                  </object>
+
+                  <a download="profile.svg" class="btn" href="{% static asset_path %}">
+                    <i class="fa fa-download"></i> Download SVG</a>
+                </div>
+              {% endif %}
+            </div>
 
 
                   {% endif %}

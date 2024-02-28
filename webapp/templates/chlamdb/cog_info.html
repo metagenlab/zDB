@@ -48,12 +48,12 @@
                             <tr>
                                 <td>{{values.0}}</td>
                                 <td><a href='{% url "locusx" values.1 True %}' target="_top">{{values.1}}</a></td>
-								
-								{% if data_type == "ko" %}
+
+                                {% if data_type == "ko" %}
                                 <td><a href="{% url "fam_ko" values.2 %}" target="_top">{{values.2}}</a></td>
-								{% elif data_type == "cog" %}
+                                {% elif data_type == "cog" %}
                                 <td><a href="{% url "fam_cog" values.2 %}" target="_top">{{values.2}}</a></td>
-								{% endif %}
+                                {% endif %}
                                 <td>{{values.3}}</td>
                                 <td>
                                 {{ values.4 }}
