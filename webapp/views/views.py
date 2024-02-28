@@ -1912,7 +1912,8 @@ def blast(request):
 
     form = blast_form_class(request.POST)
     if not form.is_valid():
-        return render(request, 'chlamdb/blast.html', my_locals({"form": form}))
+        return render(request, 'chlamdb/blast.html',
+                      my_locals({"form": form, "page_title": page_title}))
 
     input_sequence = form.cleaned_data['blast_input']
     number_blast_hits = form.cleaned_data['max_number_of_hits']
@@ -1928,13 +1929,15 @@ def blast(request):
                     context = {
                         "error_message": "Empty sequence in input",
                         "error_title": "Query format error", "envoi": True,
-                        "form": form, "wrong_format": True}
+                        "form": form, "wrong_format": True,
+                        "page_title": page_title}
                     return render(request, 'chlamdb/blast.html',
                                   my_locals(context))
         except Exception:
             context = {"error_message": "Error while parsing the fasta query",
                        "error_title": "Query format error",
-                       "envoi": True, "form": form, "wrong_format": True}
+                       "envoi": True, "form": form, "wrong_format": True,
+                       "page_title": page_title}
             return render(request, 'chlamdb/blast.html', my_locals(context))
     else:
         no_query_name = True
@@ -1956,7 +1959,8 @@ def blast(request):
         else:
             errmsg = f"Unexpected character in amino-acid query: {wrong_chars}"
         context = {"error_message": errmsg, "error_title": "Query format error",
-                   "envoi": True, "form": form, "wrong_format": True}
+                   "envoi": True, "form": form, "wrong_format": True,
+                   "page_title": page_title}
         return render(request, 'chlamdb/blast.html', my_locals(context))
     elif check_seq_DNA and blast_type in ["blastn", "blastn_ffn",
                                           "blast_fna", "blastx"]:
@@ -1967,7 +1971,7 @@ def blast(request):
             errmsg = f"Unexpected character in nucleotide query: {wrong_chars}"
         context = {"error_message": errmsg, "wrong_format": True,
                    "error_title": "Query format error", "envoi": True,
-                   "form": form}
+                   "form": form, "page_title": page_title}
         return render(request, 'chlamdb/blast.html', my_locals(context))
 
     query_file = NamedTemporaryFile(mode='w')
@@ -1996,7 +2000,8 @@ def blast(request):
     except Exception as e:
         context = {
             "error_message": "Error in blast " + str(e), "wrong_format": True,
-            "error_title": "Blast error", "envoi": True, "form": form}
+            "error_title": "Blast error", "envoi": True, "form": form,
+            "page_title": page_title}
         return render(request, 'chlamdb/blast.html', my_locals(context))
 
     if blast_stdout.find("No hits found") != -1:
