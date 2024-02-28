@@ -15,27 +15,12 @@
         <div class="row">
           <div class="col-lg-12">
             {% include "chlamdb/menu.html" %}
-			   		{% include "chlamdb/extract_nav_tabs_template.html" with type=type active_tab="pan" %}
+						{% include "chlamdb/extract_nav_tabs_template.html" with active_tab="pan_genome" %}
 
             <br>
             <p class="page-title">
             	<b>
-            		Accumulation/rarefaction plot of
-		            {% if type == 'pfam' %}
-		                Pfam domains
-		            {% elif type == 'cog' %}
-		                COG categories
-		            {% elif type == 'interpro'%}
-		                Interpro Entries.
-		            {% elif type == 'EC' %}
-		                EC numbers. Based on PRIAM data. Partial EC are not considered.
-		            {% elif type == 'ko' %}
-		                Kegg orthologous groups (KO)
-		            {% elif type == 'orthogroup' %}
-		                orthologous groups
-		            {% elif type == 'amr' %}
-		                Antimicrobial resistance genes
-		            {% endif %}
+            		Accumulation/rarefaction plot of {{object_name_plural}}
           		</b>
           		<a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" >
 	  						<i class="fab fa-info-circle " style="size: 5em;" ></i>
@@ -44,7 +29,7 @@
 
                   
 
-            <form action='{% url "pan_genome" type %}' method="post">
+            <form action='{% url "pan_genome" object_type %}' method="post">
               {% csrf_token %}
               {{ form.as_p }}
               <input type="submit" value="Submit" />
@@ -60,11 +45,11 @@
                 <h5 class="panel-title">Help to interpret the results</h5>
               </div>
               <p style="margin: 10px 10px 10px 10px">
-								This plot shows the relationship between the number of {{type_txt}} and the number of genomes considered.
+								This plot shows the relationship between the number of {{object_name_plural}} and the number of genomes considered.
 								<br>
-								The <span style="color: #69b3a2;"><b>green</b></span> and the <span style="color: #5499c7;"><b>blue</b></span> lines are both based on a single random permutation of the selected genomes. The <span style="color: #69b3a2;"><b>green</b></span> line represent the total number of {{type_txt}} present in the first n genomes of the permutation. The <span style="color: #5499c7;"><b>blue</b></span> represents the number of {{type_txt}} shared by the first n genomes of the permutation.
+								The <span style="color: #69b3a2;"><b>green</b></span> and the <span style="color: #5499c7;"><b>blue</b></span> lines are both based on a single random permutation of the selected genomes. The <span style="color: #69b3a2;"><b>green</b></span> line represent the total number of {{object_name_plural}} present in the first n genomes of the permutation. The <span style="color: #5499c7;"><b>blue</b></span> represents the number of {{object_name_plural}} shared by the first n genomes of the permutation.
 								<br>
-								The <span style="color:#FF6347;"><b>red</b></span> line shows the number of {{type_txt}} present in exactly n genomes. This plot do not depend on a permutation and it is possible to click on the points to get more detailed information.
+								The <span style="color:#FF6347;"><b>red</b></span> line shows the number of {{object_name_plural}} present in exactly n genomes. This plot do not depend on a permutation and it is possible to click on the points to get more detailed information.
 								<br>
               </p>
           	</div>
@@ -77,17 +62,17 @@
 								<div id="plot_type" style="display: flex; justify-content: space-around; width: 900px;">
 									<div>
 										<input style="margin-left" value="pangenome" type="radio" id="pangenome" name="plot_type" checked>
-										<label for="pangenome">Total number of {{type_txt}}</label>
+										<label for="pangenome">Total number of {{object_name_plural}}</label>
 									</div>
 
 									<div>
 										<input style="center" type="radio" value="coregenome" id="coregenome" name="plot_type">
-										<label for="coregenome">Number of shared {{type_txt}}</label>
+										<label for="coregenome">Number of shared {{object_name_plural}}</label>
 									</div>
 
 									<div>
 										<input style="margin-right" type="radio" value="ortho_distrib" id="ortho_distrib" name="plot_type">
-										<label for="ortho_distrib">Distribution of {{type_txt}}</label>
+										<label for="ortho_distrib">Distribution of {{object_name_plural}}</label>
 									</div>
 								</div>
 							</div>
@@ -159,7 +144,7 @@ svg.append("text").
 	attr("y", height/2).
 	attr("transform", "rotate(-90," + -margins.left/2+ ","+height/2+")").
 	attr("id", "y-axis-label").
-	text("Number of {{type_txt}}");
+	text("Number of {{object_name_plural}}");
 
 
 svg.append("g").

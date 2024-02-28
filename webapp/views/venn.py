@@ -5,7 +5,7 @@ from django.views import View
 
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
-from views.utils import format_lst_to_html, my_locals
+from views.utils import format_lst_to_html
 
 
 def escape_quotes(unsafe):
@@ -26,12 +26,7 @@ class VennBaseView(View):
         return super(VennBaseView, self).dispatch(request, *args, **kwargs)
 
     def get_context(self, **kwargs):
-        context = {
-            "page_title": self.page_title,
-            "object_type": self.object_type,
-            "object_name_plural": self.object_name_plural,
-            "form_venn": self.form,
-        }
+        context = super(VennBaseView, self).get_context(**kwargs)
         if getattr(self, "show_results", False):
             context.update({
                 "show_results": True,
@@ -40,8 +35,7 @@ class VennBaseView(View):
                 "series": self.series,
                 "data_dict": self.data_dict,
                 })
-        context.update(kwargs)
-        return my_locals(context)
+        return context
 
     def get(self, request, *args, **kwargs):
         self.form = self.form_class()

@@ -6,8 +6,7 @@ from django.views import View
 
 from views.mixins import (AmrViewMixin, BaseViewMixin, CogViewMixin,
                           KoViewMixin, PfamViewMixin, VfViewMixin)
-from views.utils import (format_ko, format_ko_modules, format_ko_path,
-                         my_locals, page2title)
+from views.utils import format_ko, format_ko_modules, format_ko_path
 
 
 class EntryListViewBase(View, BaseViewMixin):
@@ -16,20 +15,16 @@ class EntryListViewBase(View, BaseViewMixin):
     _specific_colname_to_header_mapping = {"freq": "Frequency (n genomes)"}
 
     def get(self, request):
-        page_title = page2title[f"entry_list_{self.object_type}"]
         # retrieve taxid list
         genomes_data = self.db.get_genomes_infos()
         self.taxids = [str(i) for i in genomes_data.index.to_list()]
 
         table_data = self.get_table_data()
 
-        context = my_locals({
-            "page_title": page_title,
-            "object_type": self.object_type,
-            "table_headers": self.table_headers,
-            "table_data_accessors": self.table_data_accessors,
-            "table_data": table_data,
-            })
+        context = self.get_context(
+            table_headers=self.table_headers,
+            table_data_accessors=self.table_data_accessors,
+            table_data=table_data)
         return render(request, 'chlamdb/entry_list.html', context)
 
     def get_table_data(self):

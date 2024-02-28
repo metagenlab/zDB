@@ -10,12 +10,6 @@ dump_html = False
 html_dumps_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               "html_dumps")
 
-broken_views = [
-    '/circos_main/',
-    '/orthogroup_list_cog_barchart/',
-    '/orthogroup_list_cog_barchart/True/',
-]
-
 untested_patterns = {
     '^favicon\\.ico$',
     '^module_cat_info/([a-zA-Z0-9_\\.]+)/([a-zA-Z0-9_\\.\\+-]+)$',
@@ -31,6 +25,7 @@ urls = [
     '/amr_comparison',
     '/blast/',
     '/circos/',
+    '/circos_main/',
     '/cog_barchart/',
     '/cog_comparison',
     '/cog_phylo_heatmap/False',
@@ -131,24 +126,17 @@ class TestViewsAreHealthy(SimpleTestCase):
             resp = self.client.get(url)
             self.assertEqual(200, resp.status_code, f"{url} is broken")
 
-    def test_broken_views(self):
-        for url in broken_views:
-            self.assertRaises(Exception, self.client.get, url)
-
     def test_all_urlpatterns_are_tested(self):
         all_patterns = set(el.pattern._regex for el in urlpatterns)
         tested_patterns = set()
         for url in urls:
             tested_patterns.add(resolve(url.rsplit("?")[0]).route)
 
-        for url in broken_views:
-            tested_patterns.add(resolve(url.rsplit("?")[0]).route)
-
         covered_patterns = tested_patterns | untested_patterns
         self.assertFalse(
             all_patterns - covered_patterns,
             "Some patterns are not covered in the tests: please add them to "
-            "one of broken_views, untested_patterns or urls")
+            "untested_patterns or urls")
 
     def test_all_views_render_valid_html(self):
         for url in urls:
@@ -384,7 +372,7 @@ class ComparisonViewsTestMixin():
         resp = self.client.get(f"/pan_genome/{self.view_type}")
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
-        self.assertEqual(self.view_type, resp.context["type"])
+        self.assertEqual(self.view_type, resp.context["object_type"])
         self.assertPageTitle(resp, self.page_title)
         self.assertNoRarefactionPlot(resp)
 
@@ -392,7 +380,7 @@ class ComparisonViewsTestMixin():
                                 data={"targets": ["0", "1"]})
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
-        self.assertEqual(self.view_type, resp.context["type"])
+        self.assertEqual(self.view_type, resp.context["object_type"])
         self.assertPageTitle(resp, self.page_title)
         self.assertRarefactionPlot(resp)
 

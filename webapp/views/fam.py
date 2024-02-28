@@ -7,8 +7,7 @@ from lib.ete_phylo import EteTree, SimpleColorColumn
 
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           PfamViewMixin, VfViewMixin)
-from views.utils import (format_ko_module, format_ko_path, format_orthogroup,
-                         my_locals)
+from views.utils import format_ko_module, format_ko_path, format_orthogroup
 
 
 class FamCogColorFunc:
@@ -94,7 +93,7 @@ class FamBaseView(View):
 
     def get(self, request, entry_id, *args, **kwargs):
         context = self.prepare_context(request, entry_id, *args, **kwargs)
-        return render(request, self.template, my_locals(context))
+        return render(request, self.template, context)
 
     def prepare_context(self, request, entry_id, *args, **kwargs):
         # Get hits for that entry:
@@ -131,18 +130,14 @@ class FamBaseView(View):
         info = {self.colname_to_header(key): infos[key]
                 for key in self.accessors if infos[key]}
 
-        context = {
-            "page_title": self.page_title,
-            "type": self.object_type,
-            "fam": fam,
-            "info": info,
-            "all_locus_data": all_locus_data,
-            "group_count": group_count,
-            "asset_path": asset_path,
-            "object_name": self.object_name,
-            "object_name_plural": self.object_name_plural,
-            "object_name_singular_or_plural": self.object_name_singular_or_plural,
-        }
+        context = self.get_context(
+            fam=fam,
+            info=info,
+            all_locus_data=all_locus_data,
+            group_count=group_count,
+            asset_path=asset_path,
+            object_name_singular_or_plural=self.object_name_singular_or_plural,
+        )
         return context
 
 

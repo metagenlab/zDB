@@ -5,14 +5,13 @@ from django.views import View
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
 from views.utils import (format_cog, format_ko, format_lst_to_html,
-                         format_orthogroup, my_locals)
+                         format_orthogroup)
 
 
 class TabularComparisonViewBase(View):
 
     template = 'chlamdb/tabular_comparison.html'
     hist_colour_index_shift = 0
-    tab_name = "comp"
     table_headers = None
 
     def dispatch(self, request, *args, **kwargs):
@@ -45,16 +44,12 @@ class TabularComparisonViewBase(View):
 
     @property
     def context(self):
-        context = {
-            "page_title": self.page_title,
-            "form_title": self.form_title,
-            "form_help": self.form_help,
-            "form": self.form,
-            "show_comparison_table": self.show_comparison_table,
-            "tab_name": self.tab_name,
-            "view_name": self.view_name,
-            "object_type": self.object_type,
-            }
+        context = self.get_context(
+            form_title=self.form_title,
+            form_help=self.form_help,
+            show_comparison_table=self.show_comparison_table,
+            view_name=self.view_name,
+            )
         if self.show_comparison_table:
             context["table_headers"] = self.table_headers
             context["table_rows"] = self.table_rows
@@ -64,7 +59,7 @@ class TabularComparisonViewBase(View):
             context["n_data_columns"] = len(self.base_info_headers) + \
                 len(self.targets)
             context["hist_colour_index_shift"] = self.hist_colour_index_shift
-        return my_locals(context)
+        return context
 
     @property
     def hash_to_taxon_dict(self):
@@ -210,10 +205,6 @@ class OrthogroupComparisonView(TabularComparisonViewBase, OrthogroupViewMixin):
     <br>Click on Orthologous group to get all the homologs identified in the
     database and the phylogenetic profile.
     """
-
-    @property
-    def view_name(self):
-        return "orthogroup_comparison"
 
     def get_table_rows(self):
         og_count = self.db.get_og_count(self.targets)

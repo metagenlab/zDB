@@ -1,9 +1,11 @@
 from django.conf import settings
 from lib.db_utils import DB
 
+from views.analysis_view_metadata import analysis_views_metadata
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_lst_to_html, format_orthogroup, format_pfam,
-                         format_refseqid_to_ncbi, page2title, safe_replace)
+                         format_refseqid_to_ncbi, my_locals, page2title,
+                         safe_replace)
 
 
 class Transform():
@@ -60,7 +62,7 @@ class BaseViewMixin():
         return self._db
 
     def page_title(self):
-        return page2title[self.view_name]
+        return page2title[f"{self.object_type}_comparison"]
 
     @property
     def object_name_plural(self):
@@ -94,21 +96,24 @@ class BaseViewMixin():
         return [
             Transform(self.object_column, self.format_entry, {"to_url": True})]
 
-
-class ComparisonViewMixin(BaseViewMixin):
-
-    type2objname = {
-        "cog": "COGs",
-        "pfam": "Pfam domains",
-        "ko": "Kegg Orthologs",
-        "orthogroup": "Orthologous groups",
-        "amr": "AMR",
-        "vf": "Virulence Factors"
-    }
-
     @property
-    def compared_obj_name(self):
-        return self.type2objname[self.comp_type]
+    def available_views(self):
+        return [view_metadata(self.object_type, self.object_name_plural)
+                for view_metadata in analysis_views_metadata
+                if view_metadata.available_for(self.object_type)]
+
+    def get_context(self, **kwargs):
+        context = {
+            "page_title": self.page_title(),
+            "object_type": self.object_type,
+            "object_name": self.object_name_plural,
+            "object_name_plural": self.object_name_plural,
+            "available_views": self.available_views,
+        }
+        if hasattr(self, "form"):
+            context["form"] = self.form
+        context.update(kwargs)
+        return my_locals(context)
 
 
 class AmrViewMixin(BaseViewMixin):
@@ -352,3 +357,28 @@ class VfViewMixin(BaseViewMixin):
             Transform("vfid", self.format_vfid),
             self.transform_category
         ]
+
+
+class ComparisonViewMixin():
+    """This class is somewhat of a hack to get pseudo inheritance
+    from the correct mixin for views that get the object_type as
+    parameter.
+    """
+    type2mixin = {
+        "cog": CogViewMixin,
+        "pfam": PfamViewMixin,
+        "ko": KoViewMixin,
+        "orthogroup": OrthogroupViewMixin,
+        "amr": AmrViewMixin,
+        "vf": VfViewMixin
+    }
+
+    mixin = None
+
+    def __getattr__(self, attrname):
+        return getattr(self.mixin, attrname)
+
+    def dispatch(self, request, comp_type, *args, **kwargs):
+        self.object_type = comp_type
+        self.mixin = self.type2mixin[self.object_type]()
+        return super(ComparisonViewMixin, self).dispatch(request, *args, **kwargs)
