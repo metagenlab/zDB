@@ -122,9 +122,12 @@ def home(request):
 class ComparisonIndexView(ComparisonViewMixin, View):
 
     def get(self, request):
-        context = self.get_context(
-            boxes=zip(*(iter(self.available_views),) * 3),  # group by 3
-        )
+        boxes = []
+        for i, el in enumerate(self.available_views):
+            if i % 3 == 0:
+                boxes.append([])
+            boxes[-1].append(el)
+        context = self.get_context(boxes=boxes)
         return render(request, 'chlamdb/index_comp.html', context)
 
 
