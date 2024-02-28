@@ -48,6 +48,7 @@ to [Common Changelog](https://common-changelog.org)
 ### Fixed
 
 - Fix tabular comparison views navigation tabs. ([#30](https://github.com/metagenlab/zDB/pull/30), [#31](https://github.com/metagenlab/zDB/pull/31)) (Niklaus Johner)
+- Fix missing page title on error in blast view. ([#64](https://github.com/metagenlab/zDB/pull/64)) (Niklaus Johner)
 
 
 ## 1.2.1 - 2023-10-16
