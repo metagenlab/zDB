@@ -18,15 +18,14 @@ class ExtractHitsBaseView(View):
 
     template = 'chlamdb/extract_hits.html'
 
-    results_table_help = """
-            <br> <b>{0} table</b>: it contains the list of
-            {0} shared among the selected (and absent
-            from the excluded) genomes. For each entry, the table lists its
-            {1} as well as the fraction of included genomes
-            containing it {2} and the fraction of genomes in the whole database
-            containing it {2}.
-            {3}
-            """
+    results_table_help = (
+        "<b>{0} table</b>: it contains the list of"
+        "{0} shared among the selected (and absent"
+        "from the excluded) genomes. For each entry, the table lists its"
+        "{1} as well as the fraction of included genomes"
+        "containing it {2} and the fraction of genomes in the whole database"
+        "containing it {2}.<br>"
+        "{3}")
 
     _table_help_complement = ""
     _col_descriptions = {}
@@ -77,7 +76,7 @@ class ExtractHitsBaseView(View):
 
     def get_context(self, **kwargs):
         context = super(ExtractHitsBaseView, self).get_context(**kwargs)
-        context["table_help"] = self.table_help,
+        context["table_help"] = self.table_help
         if getattr(self, "show_results", False):
             context.update({
                 "show_results": True,
@@ -198,15 +197,15 @@ class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
 
     _table_headers = ["Orthogroup", "Genes", "Products"]
 
-    _table_help_complement = """
-    The annotation(s) of orthologous groups is a
-    consensus of the annotation of all members of the group, and only the two
-    most frequent annotations are reported.
-    <br>
-    <b>Details tabke</b>: a complete list of the members of each orthologous
-    group shared by the selected genome is displayed. Gene loci are reported
-    and quickly linked to additional details about locus annotations.
-    """
+    _table_help_complement = (
+        "The annotation(s) of orthologous groups is a"
+        "consensus of the annotation of all members of the group, and only the"
+        "two most frequent annotations are reported."
+        "<br>"
+        "<b>Details tabke</b>: a complete list of the members of each orthologous"
+        "group shared by the selected genome is displayed. Gene loci are reported"
+        "and quickly linked to additional details about locus annotations."
+    )
 
     _col_descriptions = {"COG": "COG category",
                          "KO": "KO assignment"}
@@ -362,24 +361,24 @@ class ExtractCogView(ExtractHitsBaseView, CogViewMixin):
 
     _table_headers = ["COG", "Function", "Description"]
 
-    _table_help_complement = """
-    <br><b> COG categories barchart</b>: this plot displays for each COG
-    category in
-    <span style="color: rgb(135, 186, 245)"><b>light-blue</b></span> the number
-    of genes shared by the selected genomes, while in
-    <span style="color: rgb(16, 76, 145)"><b>blue</b></span> , the total number
-    of genes annotated with that COG in the selected genomes
-    (shared and unique to each selected genome). Next to the light-blue
-    barcharts there is a percentage value as the result of the number of
-    reported COGs for each category divided by the number of shared COG in all
-    categories, while next to the blue barcharts the value represents COGs
-    count are divided by the total COGs unique and shared in the selected
-    genomes.
-    <br>A longer light-blue bar can be interpreted as an enrichment of that
-    shared COG category in the selected genomes compared to their complete COG
-    profiles.
-    <br> <b>Locus list reference</b>
-    """
+    _table_help_complement = (
+        '<br><b> COG categories barchart</b>: this plot displays for each COG'
+        'category in'
+        '<span style="color: rgb(135, 186, 245)"><b>light-blue</b></span> the '
+        'number of genes shared by the selected genomes, while in'
+        '<span style="color: rgb(16, 76, 145)"><b>blue</b></span> , the total '
+        'number of genes annotated with that COG in the selected genomes'
+        '(shared and unique to each selected genome). Next to the light-blue'
+        'barcharts there is a percentage value as the result of the number of'
+        'reported COGs for each category divided by the number of shared COG '
+        'in all categories, while next to the blue barcharts the value '
+        'represents COGs count are divided by the total COGs unique and shared'
+        ' in the selected genomes.'
+        '<br>A longer light-blue bar can be interpreted as an enrichment of '
+        'that shared COG category in the selected genomes compared to their '
+        'complete COG profiles.'
+        '<br> <b>Locus list reference</b>'
+    )
 
     @property
     def result_tabs(self):
