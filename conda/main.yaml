@@ -1,0 +1,7 @@
+name: main
+channels:
+    - conda-forge
+    - bioconda
+dependencies:
+    - nextflow=22.10
+    - singularity=3.8.4

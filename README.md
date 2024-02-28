@@ -55,8 +55,8 @@ and replace it by the directory where you downloaded the project (this should po
 Add zdb's bin directory to PATH and voila, zdb should run smoothly.
 
 Note that zDB depends on nextflow (version 22.10 or lower) and singularity, so you'll need to install these packages, e.g. with conda:
-- install nextflow `conda install nextflow=22.10 -c bioconda`
-- install singularity `conda install singularity=3.8.4 -c conda-forge`
+- `conda env create -p ./env -f conda/main.yaml`
+- `conda activate ./env`
 
 ## Overview
 
