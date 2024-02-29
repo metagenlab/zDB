@@ -317,18 +317,17 @@ class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
 
 class ExtractPfamView(ExtractHitsBaseView, PfamViewMixin):
 
-    table_data_accessors = ["pfam", "def"]
+    pass
 
 
 class ExtractAmrView(ExtractHitsBaseView, AmrViewMixin):
 
-    table_data_accessors = ["gene", "seq_name", "scope", "type", "class",
-                            "subclass", "hmm_id"]
+    pass
 
 
 class ExtractVfView(ExtractHitsBaseView, VfViewMixin):
 
-    table_data_accessors = ["vf_gene_id", "prot_name", "vfid", "category"]
+    pass
 
 
 class ExtractKoView(ExtractHitsBaseView, KoViewMixin):

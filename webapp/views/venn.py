@@ -119,7 +119,6 @@ class VennOrthogroupView(VennBaseView, OrthogroupViewMixin):
 
 class VennPfamView(VennBaseView, PfamViewMixin):
 
-    table_data_accessors = ["pfam", "def"]
     table_data_descr = "The table contains a list of the Pfam entries and "\
                        "their description."
 
@@ -175,7 +174,6 @@ class VennCogView(VennBaseView, CogViewMixin):
 
     table_data_descr = "The table contains a list of COG definitions, their "\
                        "description and the category to which they belong."
-    table_data_accessors = ["cog", "function_descr", "description"]
 
     def filter_data(self, data, counts):
         return data, counts.reindex(data.index)
@@ -193,13 +191,8 @@ class VennAmrView(VennBaseView, AmrViewMixin):
     table_data_descr = "The table contains a list of the Pfam entries and "\
                        "their description."
 
-    table_data_accessors = ["gene", "seq_name", "scope", "type",
-                            "class", "subclass", "hmm_id"]
-
 
 class VennVfView(VennBaseView, VfViewMixin):
 
     table_data_descr = "The table contains a list of the Pfam entries and "\
                        "their description."
-
-    table_data_accessors = ["vf_gene_id", "prot_name", "vfid", "category"]

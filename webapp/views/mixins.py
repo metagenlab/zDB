@@ -127,6 +127,9 @@ class AmrViewMixin(BaseViewMixin):
         "hmm_id": "HMM"
     }
 
+    table_data_accessors = ["gene", "seq_name", "scope", "type", "class",
+                            "subclass", "hmm_id"]
+
     @property
     def transforms(self):
         return [
@@ -187,6 +190,8 @@ class CogViewMixin(BaseViewMixin):
 
     _cog_code_descriptions = None
 
+    table_data_accessors = ["cog", "function_descr", "description"]
+
     @property
     def get_hit_counts(self):
         return self.db.get_cog_hits
@@ -230,6 +235,8 @@ class KoViewMixin(BaseViewMixin):
         "ko": "KO",
     }
 
+    table_data_accessors = ["ko", "description", "modules", "pathways"]
+
     @property
     def get_hit_counts(self):
         return self.db.get_ko_hits
@@ -256,6 +263,8 @@ class PfamViewMixin(BaseViewMixin):
         "def": "Description",
         "ttl_cnt": "nDomains"
     }
+
+    table_data_accessors = ["pfam", "def"]
 
     @property
     def get_hit_counts(self):
@@ -305,6 +314,8 @@ class VfViewMixin(BaseViewMixin):
         "gb_accession": "Protein ID",
 
     }
+
+    table_data_accessors = ["vf_gene_id", "prot_name", "vfid", "category"]
 
     @property
     def get_hit_counts(self):
