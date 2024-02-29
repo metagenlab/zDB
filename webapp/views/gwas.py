@@ -58,7 +58,10 @@ class GWASBaseView(View):
         self.targets = self.form.get_taxids()
         results = self.run_gwas()
         if results is None:
-            return render(request, self.template, self.get_context())
+            context = self.get_context(
+                error=True, error_title="No significant association",
+                error_message="No association of {} with the phenotype had p-value<0.05")
+            return render(request, self.template, context)
 
         results["Gene"] = results["Gene"].apply(self.format_entry, to_url=True)
         for key in self.table_data_accessors[3:]:

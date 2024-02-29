@@ -1,0 +1,19 @@
+{% if error %}
+  <div id="error" class="panel panel-danger" style="width:100%; top: 0px; margin: 10px 10px 10px 10px; position: sticky;">
+    <div class="panel-heading" style="width:100%">
+      <h3 class="panel-title">{{ error_title }}</h3>
+    </div>
+    <div style="margin: 10px">
+      {{ error_message }}
+    </div>
+  </div>
+{% endif %}
+
+<script>
+const error = document.getElementById("error");
+
+error.addEventListener("click", function() {
+    error.style.position = "static";
+    error.style.display = "none";
+})
+</script>
