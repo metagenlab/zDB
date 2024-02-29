@@ -17,7 +17,7 @@ from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
 class GWASBaseView(View):
 
     template = 'chlamdb/gwas.html'
-    table_data_accessors = ["Gene", "sensitivity", "specificity", "fisher_p",
+    _gwas_data_accessors = ["sensitivity", "specificity", "fisher_p",
                             "fisher_q", "empirical_p", "best", "worst", "fq*ep"]
     _specific_colname_to_header_mapping = {
         "Gene": "Entry",
@@ -32,6 +32,13 @@ class GWASBaseView(View):
     @property
     def view_name(self):
         return f"gwas_{self.object_type}"
+
+    @property
+    def table_data_accessors(self):
+        mixin_accessors = super(GWASBaseView, self).table_data_accessors
+        return [mixin_accessors[0],
+                *self._gwas_data_accessors,
+                *mixin_accessors[1:]]
 
     def get_context(self, **kwargs):
         context = super(GWASBaseView, self).get_context(**kwargs)
@@ -63,8 +70,12 @@ class GWASBaseView(View):
                 error_message="No association of {} with the phenotype had p-value<0.05")
             return render(request, self.template, context)
 
-        results["Gene"] = results["Gene"].apply(self.format_entry, to_url=True)
-        for key in self.table_data_accessors[3:]:
+        descriptions = self.get_hit_descriptions(results["Gene"].to_list())
+        results = results.merge(descriptions,
+                                left_on="Gene",
+                                right_on=descriptions.index)
+
+        for key in self._gwas_data_accessors[2:]:
             results[key] = results[key].apply(self.format_float)
 
         context = self.get_context(
