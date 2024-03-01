@@ -1,3 +1,4 @@
+import pandas as pd
 from django.conf import settings
 from lib.db_utils import DB
 
@@ -286,14 +287,31 @@ class OrthogroupViewMixin(BaseViewMixin):
     object_type = "orthogroup"
     object_name = "Orthologous group"
 
+    _base_colname_to_header_mapping = {
+        "product": "Products",
+        "gene": "Genes"
+    }
+
+    table_data_accessors = ["orthogroup", "product", "gene"]
+
     @property
     def get_hit_counts(self):
         return self.db.get_og_count
 
     def get_hit_descriptions(self, ids, transformed=True, **kwargs):
-        descriptions = self.db.get_genes_from_og(ids)
+        genes = self.db.get_genes_from_og(ids)
+        grouped = genes.groupby("orthogroup")
+        genes = grouped["gene"].apply(list).apply(format_lst_to_html)
+        products = grouped["product"].apply(list).apply(format_lst_to_html)
+        descriptions = pd.DataFrame({"orthogroup": ids},
+                                    index=pd.Index(ids, name="orthogroup"))
+
+        descriptions = descriptions.merge(
+            pd.DataFrame({"gene": genes, "product": products}),
+            "left", left_index=True, right_index=True)
         if transformed:
             descriptions = self.transform_data(descriptions)
+
         return descriptions
 
     @staticmethod

@@ -89,32 +89,8 @@ class VennBaseView(View):
 
 class VennOrthogroupView(VennBaseView, OrthogroupViewMixin):
 
-    table_headers = ["Orthogroup", "Gene", "Description"]
     table_data_descr = "The table contains a list of the genes annotated "\
                        "in each Orthogroup and their description."
-
-    def prepare_data(self, counts, genomes):
-        og_list = counts.index.tolist()
-        annotations = self.db.get_genes_from_og(
-            orthogroups=og_list, taxon_ids=genomes.index.tolist())
-        grouped = annotations.groupby("orthogroup")
-        genes = grouped["gene"].apply(list)
-        products = grouped["product"].apply(list)
-
-        self.data_dict = {}
-        for og in og_list:
-            gene_data = "-"
-            if og in genes.index:
-                g = genes.loc[og]
-                gene_data = format_lst_to_html(g, add_count=False)
-            prod_data = "-"
-            if og in products.index:
-                p = products.loc[og]
-                prod_data = format_lst_to_html(p, add_count=False)
-            self.data_dict[self.format_entry(og)] = [
-                self.format_entry(og, to_url=True), gene_data, prod_data]
-        self.show_results = True
-        return counts
 
 
 class VennPfamView(VennBaseView, PfamViewMixin):
