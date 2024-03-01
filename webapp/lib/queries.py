@@ -109,6 +109,9 @@ class VFQueries():
                 return df.unstack(level=0, fill_value=0)
             else:
                 df.columns = [col for col in df["count"].columns.values]
+                for taxid in ids:
+                    if taxid not in df.columns:
+                        df[taxid] = 0
 
         elif indexing == "seqid":
             if plasmids is not None:
