@@ -173,7 +173,7 @@ class AmrViewMixin(BaseViewMixin):
         rows = annotations[annotations.gene == gene]
         aggregated = []
         for col in rows.columns:
-            aggregated.append(" || ".join(rows[col].unique()))
+            aggregated.append(" || ".join(filter(None, rows[col].unique())))
         return aggregated
 
 
