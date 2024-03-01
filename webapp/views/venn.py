@@ -5,7 +5,6 @@ from django.views import View
 
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
-from views.utils import format_lst_to_html
 
 
 def escape_quotes(unsafe):
@@ -58,6 +57,10 @@ class VennBaseView(View):
     def render_venn(self, request):
         genomes = self.db.get_genomes_description()
         counts = self.get_hit_counts(self.targets)
+        if counts.empty:
+            return render(request, self.template,
+                          self.get_context(**self.errors["no_hits"]))
+
         counts = self.prepare_data(counts, genomes)
 
         self.series = []

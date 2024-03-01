@@ -1785,7 +1785,10 @@ class PanGenome(ComparisonViewMixin, View):
 
         taxids = self.form.get_taxids()
         df_hits = self.get_hit_counts(taxids, search_on="taxid")
-
+        if df_hits.empty:
+            return render(request, 'chlamdb/pan_genome.html',
+                          self.get_context(form=self.form,
+                                           **self.errors["no_hits"]))
         unique, counts = np.unique(np.count_nonzero(df_hits, axis=1),
                                    return_counts=True)
         unique_to_count = dict(zip(unique, counts))
@@ -2451,6 +2454,13 @@ class PlotHeatmap(ComparisonViewMixin, View):
             return render(request, 'chlamdb/plot_heatmap.html', ctx)
 
         mat = self.get_hit_counts(taxon_ids, search_on="taxid")
+        if mat.empty:
+            error_message = "No hits were found for the current selection."
+            error_title = "No hits"
+            ctx = self.get_context(**self.errors["no_hits"],
+                                   form=self.form)
+            return render(request, 'chlamdb/plot_heatmap.html', ctx)
+
         mat.index = [self.format_entry(i, to_url=True) for i in mat.index]
 
         target2description = self.db.get_genomes_description().description.to_dict()
