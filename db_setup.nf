@@ -161,11 +161,11 @@ process download_vfdb {
 
     script:
     """
-    wget http://www.mgc.ac.cn/VFs/Down/VFDB_setB_nt.fas.gz
+    wget http://www.mgc.ac.cn/VFs/Down/VFDB_setB_pro.fas.gz
     wget http://www.mgc.ac.cn/VFs/Down/VFs.xls.gz
-    gunzip < VFDB_setB_nt.fas.gz > vfdb.fasta
+    gunzip < VFDB_setB_pro.fas.gz > vfdb.fasta
     gunzip < VFs.xls.gz > VFs.xls
-    rm VFDB_setB_nt.fas.gz
+    rm VFDB_setB_pro.fas.gz
     rm VFs.xls.gz
     """
 }
