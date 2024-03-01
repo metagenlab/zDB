@@ -63,7 +63,8 @@ class BaseViewMixin():
         return self._db
 
     def page_title(self):
-        return page2title[f"{self.object_type}_comparison"]
+        return page2title.get(getattr(self, "view_name", None),
+                              page2title[f"{self.object_type}_comparison"])
 
     @property
     def object_name_plural(self):
