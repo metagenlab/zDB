@@ -48,6 +48,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix missing page title for kegg_mapp_ko view. ([#66](https://github.com/metagenlab/zDB/pull/66)) (Niklaus Johner)
 - Handle empty result set in heatmap, venn and pan_genome views. ([#66](https://github.com/metagenlab/zDB/pull/66)) (Niklaus Johner)
 - Fix tabular comparison views navigation tabs. ([#30](https://github.com/metagenlab/zDB/pull/30), [#31](https://github.com/metagenlab/zDB/pull/31)) (Niklaus Johner)
 - Fix missing page title on error in blast view. ([#64](https://github.com/metagenlab/zDB/pull/64)) (Niklaus Johner)

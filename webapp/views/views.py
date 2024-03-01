@@ -1531,7 +1531,7 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
            "asset_path": asset_path,
            "url": map_name + "+" + "+".join(all_kos),
            "envoi": True,
-           "page_titleA": page_title
+           "page_title": page_title
            }
 
     if taxon_id is not None:
