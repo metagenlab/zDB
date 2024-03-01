@@ -25,5 +25,10 @@ errors = {
         "error_title": "Invalid form.",
         "error_message":  "You cannot set a number of missing data bigger "\
                           "than the number of included genomes"
+    },
+    "too_many_targets": {
+        "error": True,
+        "error_title": "Invalid form.",
+        "error_message":  "Venn diagrams are limited to 6 genomes."
     }
 }
