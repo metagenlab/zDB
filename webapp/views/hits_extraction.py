@@ -5,6 +5,7 @@ from chlamdb.forms import make_extract_form
 from django.shortcuts import render
 from django.views import View
 
+from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
 from views.utils import (format_cog, format_cog_url, format_ko,
@@ -103,8 +104,8 @@ class ExtractHitsBaseView(View):
         self.form = self.extract_form_class(request.POST)
         if not self.form.is_valid():
             self.form = self.extract_form_class()
-            # add error message in web page
-            return render(request, self.template, self.get_context())
+            return render(request, self.template,
+                          self.get_context(**errors["invalid_form"]))
 
         # Extract form data
         self.included_taxids, self.included_plasmids = self.form.get_include_choices()

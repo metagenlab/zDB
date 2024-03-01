@@ -55,14 +55,6 @@ class BaseViewMixin():
     _base_colname_to_header_mapping = {}
     _specific_colname_to_header_mapping = {}
 
-    errors = {
-        "no_hits": {
-            "error": True,
-            "error_title": "Empty result set.",
-            "error_message":  "No hits were found for the current selection."
-            }
-        }
-
     @property
     def db(self):
         if self._db is None:

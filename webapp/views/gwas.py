@@ -10,6 +10,7 @@ from ete3 import Tree
 from scoary import scoary
 
 from views.analysis_view_metadata import GwasMetadata
+from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
 
@@ -59,8 +60,8 @@ class GWASBaseView(View):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
             self.form = self.form_class()
-            # add error message in web page
-            return render(request, self.template, self.get_context())
+            return render(request, self.template,
+                          self.get_context(**errors["invalid_form"]))
 
         self.targets = self.form.get_taxids()
         results = self.run_gwas()

@@ -3,6 +3,7 @@ from chlamdb.forms import make_venn_from
 from django.shortcuts import render
 from django.views import View
 
+from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
 
@@ -48,8 +49,8 @@ class VennBaseView(View):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
             self.form = self.form_class()
-            # add error message in web page
-            return render(request, self.template, self.get_context())
+            return render(request, self.template,
+                          self.get_context(**errors["invalid_form"]))
 
         self.targets = self.form.get_taxids()
         return self.render_venn(request)
@@ -59,7 +60,7 @@ class VennBaseView(View):
         counts = self.get_hit_counts(self.targets)
         if counts.empty:
             return render(request, self.template,
-                          self.get_context(**self.errors["no_hits"]))
+                          self.get_context(**errors["no_hits"]))
 
         counts = self.prepare_data(counts, genomes)
 

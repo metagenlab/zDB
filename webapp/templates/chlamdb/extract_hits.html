@@ -27,7 +27,7 @@
                 <b>{{object_name_plural|capfirst}} shared by selected genomes </b>
                 <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Get the list of {{object_name_plural}} shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
               </p>
-
+              {% include "chlamdb/error.html" %}
               {% block content %}
                 {% csrf_token %}
                 {% crispy form %}

@@ -23,12 +23,9 @@
                      {% include "chlamdb/menu.html" %}
                      
                      <p class="page-title"><b> {{ module_name }} </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#kegg-module-overview-page" id="show-option" target="_blank" title="Discover the distribution of the Kegg entries of this Kegg module within the database "><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
-             <hr class="lines-home">
-             {% if not valid_id %}
-            
-                    <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
-
-                {% else %}
+                    {% include "chlamdb/error.html" %}
+                    {% if not error %}
+                    <hr class="lines-home">
 
                          <div class="panel panel-success" style="width:100%; top: 400px; ">
                             <div class="panel-heading" style="width:100%">
@@ -75,9 +72,7 @@
                                 <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
                             </div>
                         </div>
-
-               {% endif %}
-
+                    {% endif %}
                 </div>
             </div>
         </div>
