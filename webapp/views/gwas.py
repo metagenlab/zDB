@@ -92,6 +92,8 @@ class GWASBaseView(View):
         all_taxids_str = [str(i) for i in genomes_data.index.to_list()]
         all_taxids = [i for i in genomes_data.index.to_list()]
         all_hits = self.get_hit_counts(all_taxids_str, search_on="taxid")
+        if all_hits.empty:
+            return None
 
         for i in all_taxids:
             if i not in all_hits:
