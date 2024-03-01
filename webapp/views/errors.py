@@ -19,5 +19,11 @@ errors = {
         "error": True,
         "error_title": "No information.",
         "error_message":  "No information was found for this module."
+    },
+    "wrong_n_missing": {
+        "error": True,
+        "error_title": "Invalid form.",
+        "error_message":  "You cannot set a number of missing data bigger "\
+                          "than the number of included genomes"
     }
 }
