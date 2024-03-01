@@ -67,7 +67,8 @@ class GWASBaseView(View):
         if results is None:
             context = self.get_context(
                 error=True, error_title="No significant association",
-                error_message="No association of {} with the phenotype had p-value<0.05")
+                error_message=f"No association of {self.object_name} with the"
+                " phenotype had p-value<0.05")
             return render(request, self.template, context)
 
         descriptions = self.get_hit_descriptions(results["Gene"].to_list())
