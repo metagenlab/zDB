@@ -75,7 +75,7 @@ class GWASBaseView(View):
                                 left_on="Gene",
                                 right_on=descriptions.index)
 
-        for key in self._gwas_data_accessors[2:]:
+        for key in self._gwas_data_accessors:
             results[key] = results[key].apply(self.format_float)
 
         context = self.get_context(
