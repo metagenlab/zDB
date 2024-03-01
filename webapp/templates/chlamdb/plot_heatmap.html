@@ -22,21 +22,8 @@
                         <b>Heatmap of the presence/absence of {{ object_name_plural }}</b>
                         <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option"  target="_blank"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
                     </p>
-                
 
-            {% if error %}
-              <div class="panel panel-danger" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-                  <div class="panel-heading" style="width:100%">
-                      <h3 class="panel-title">{{ error_title }}</h3>
-                  </div>
-
-                  <div style="margin: 10px 10px 10px 10px">
-                  {{ error_message }}
-                  </div>
-              </div>
-            {% endif %}
-
-
+                {% include "chlamdb/error.html" %}
                 <form action="{% url "plot_heatmap" object_type %}" method="post" id="heatmap-form" >
 
                     {% csrf_token %}
