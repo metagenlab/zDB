@@ -208,6 +208,31 @@ class TestViewsContent(SimpleTestCase):
         self.assertPlot(resp)
         self.assertContains(resp, "Distribution of COGs within COG categories")
 
+    def test_blast(self):
+        resp = self.client.get("/blast/")
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/blast.html')
+        self.assertTitle(resp, "Homology search: Blast")
+        self.assertNotIn("envoi", resp.context.keys())
+        self.assertNotContains(resp, "Help to interpret the results")
+        self.assertNotContains(resp, 'id="phylo_distrib"')
+        self.assertNotContains(resp, 'id="blast_details"')
+
+        data = {
+            "blast_input": "ATCGCCACGGTGGTGCAGGCGCAGAAAGCGGGCAAAACGCTCAGCGTCG",
+            "blast": "blastn_ffn",
+            "max_number_of_hits": 10,
+            "target": "all"
+        }
+        resp = self.client.post("/blast/", data=data)
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/blast.html')
+        self.assertTitle(resp, "Homology search: Blast")
+        self.assertIn("envoi", resp.context.keys())
+        self.assertContains(resp, "Help to interpret the results")
+        self.assertContains(resp, 'id="phylo_distrib"')
+        self.assertContains(resp, 'id="blast_details"')
+
 
 class ComparisonViewsTestMixin():
 
