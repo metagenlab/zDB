@@ -16,7 +16,6 @@
             <div class="col-lg-12">
               {% include "chlamdb/menu.html" %}
               {% include "chlamdb/extract_nav_tabs_template.html" with active_tab="venn" %}
-
               <br>
               <p class="page-title">
                 <b>Visual representation of unique and shared {{object_name_plural}} among selected genomes </b>
@@ -24,7 +23,7 @@
                   <i class="fab fa-info-circle " style="size: 5em;" ></i>
                 </a>
               </p>
-
+              {% include "chlamdb/error.html" %}
               {% block content %}
               {% csrf_token %}
               {% crispy form %}

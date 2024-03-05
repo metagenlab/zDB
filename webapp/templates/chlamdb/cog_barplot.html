@@ -24,7 +24,8 @@
 
                   <br>
                   <p class="page-title"><b>Distribution of COGs within COG categories </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#additional-plots-for-kegg-orthologs-and-cluster-of-orthologous-groups-cogs" id="show-option"  ><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
-  
+                  {% include "chlamdb/error.html" %}
+
               <form action='{% url "cog_barchart"  %}' method="post">
                   {% csrf_token %}
                   {{ form.as_p }}

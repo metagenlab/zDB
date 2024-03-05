@@ -63,7 +63,8 @@ class BaseViewMixin():
         return self._db
 
     def page_title(self):
-        return page2title[f"{self.object_type}_comparison"]
+        return page2title.get(getattr(self, "view_name", None),
+                              page2title[f"{self.object_type}_comparison"])
 
     @property
     def object_name_plural(self):
@@ -172,7 +173,7 @@ class AmrViewMixin(BaseViewMixin):
         rows = annotations[annotations.gene == gene]
         aggregated = []
         for col in rows.columns:
-            aggregated.append(" || ".join(rows[col].unique()))
+            aggregated.append(" || ".join(filter(None, rows[col].unique())))
         return aggregated
 
 

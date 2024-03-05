@@ -27,7 +27,7 @@
                 <b>{{object_name_plural|capfirst}} shared by selected genomes </b>
                 <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Get the list of {{object_name_plural}} shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
               </p>
-
+              {% include "chlamdb/error.html" %}
               {% block content %}
                 {% csrf_token %}
                 {% crispy form %}
@@ -36,27 +36,6 @@
 
           </div>
 
-          {% if wrong_n_missing%}
-            <div class="row">
-              <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                  <div class="panel-heading" style="width:100%">
-                      <h3 class="panel-title">Help</h3>
-                  </div>
-                  <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
-              </div>
-            </div>
-
-          {% elif no_match%}
-            <div class="row">
-              <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                  <div class="panel-heading" style="width:100%">
-                      <h3 class="panel-title"></h3>
-                  </div>
-                  <p style="margin: 10px 10px 10px 10px">No match</p>
-              </div>
-            </div>
-
-          {% endif %}
           {% if show_results %}
 
             <div class="row" style="background-color: rgba(245, 245, 245, 0.986)">

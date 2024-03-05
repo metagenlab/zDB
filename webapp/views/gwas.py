@@ -10,6 +10,7 @@ from ete3 import Tree
 from scoary import scoary
 
 from views.analysis_view_metadata import GwasMetadata
+from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
 
@@ -59,15 +60,16 @@ class GWASBaseView(View):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
             self.form = self.form_class()
-            # add error message in web page
-            return render(request, self.template, self.get_context())
+            return render(request, self.template,
+                          self.get_context(**errors["invalid_form"]))
 
         self.targets = self.form.get_taxids()
         results = self.run_gwas()
         if results is None:
             context = self.get_context(
                 error=True, error_title="No significant association",
-                error_message="No association of {} with the phenotype had p-value<0.05")
+                error_message=f"No association of {self.object_name} with the"
+                " phenotype had p-value<0.05")
             return render(request, self.template, context)
 
         descriptions = self.get_hit_descriptions(results["Gene"].to_list())
@@ -91,6 +93,8 @@ class GWASBaseView(View):
         all_taxids_str = [str(i) for i in genomes_data.index.to_list()]
         all_taxids = [i for i in genomes_data.index.to_list()]
         all_hits = self.get_hit_counts(all_taxids_str, search_on="taxid")
+        if all_hits.empty:
+            return None
 
         for i in all_taxids:
             if i not in all_hits:

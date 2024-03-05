@@ -5,6 +5,7 @@ from chlamdb.forms import make_extract_form
 from django.shortcuts import render
 from django.views import View
 
+from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
 from views.utils import (format_cog, format_cog_url, format_ko,
@@ -103,8 +104,8 @@ class ExtractHitsBaseView(View):
         self.form = self.extract_form_class(request.POST)
         if not self.form.is_valid():
             self.form = self.extract_form_class()
-            # add error message in web page
-            return render(request, self.template, self.get_context())
+            return render(request, self.template,
+                          self.get_context(**errors["invalid_form"]))
 
         # Extract form data
         self.included_taxids, self.included_plasmids = self.form.get_include_choices()
@@ -117,7 +118,7 @@ class ExtractHitsBaseView(View):
             self.n_included += len(self.included_plasmids)
 
         if self.n_missing >= self.n_included:
-            context = self.get_context(wrong_n_missing=True)
+            context = self.get_context(**errors["wrong_n_missing"])
             return render(request, self.template, context)
 
         self.min_fraq = int((self.n_included - self.n_missing) /
@@ -155,7 +156,7 @@ class ExtractHitsBaseView(View):
         pos_index = hit_counts[hit_counts.selection].index
         self.selection = pos_index.difference(neg_index).tolist()
         if len(self.selection) == 0:
-            context = self.get_context(no_match=True)
+            context = self.get_context(**errors["no_hits"])
             return render(request, self.template, context)
 
         # Count hits for all genomes
@@ -173,7 +174,7 @@ class ExtractHitsBaseView(View):
         context = self.prepare_data(hit_counts, hit_counts_all)
 
         if context is None:
-            context = self.get_context(no_match=True)
+            context = self.get_context(**errors["no_hits"])
             return render(request, self.template, context)
 
         return render(request, self.template, context)

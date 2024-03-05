@@ -42,6 +42,7 @@ from lib.ete_phylo import (Column, EteTree, KOAndCompleteness,
 from lib.KO_module import ModuleParser
 from reportlab.lib import colors
 
+from views.errors import errors
 from views.mixins import CogViewMixin, ComparisonViewMixin, KoViewMixin
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_ko_modules, format_ko_path, format_locus,
@@ -1306,20 +1307,20 @@ def KEGG_module_map(request, module_name):
         return render(request, 'chlamdb/KEGG_module_map.html',
                       my_locals(locals()))
     db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-
     try:
         module_id = int(module_name[len("M"):])
     except Exception:
-        # add error message: module not formated correctly
-        valid_id = False
+        error = True
+        error_title = "Unknown accession"
+        error_message = "Accepts protein ids, locus tags and orthogroup IDs"
         return render(request, 'chlamdb/KEGG_module_map.html',
                       my_locals(locals()))
 
     module_infos = db.get_modules_info([module_id])
     if len(module_infos) != 1:
-        # add error message
-        return render(request, 'chlamdb/KEGG_module_map.html',
-                      my_locals(locals()))
+        context = my_locals(locals())
+        context.update(errors["no_module_info"])
+        return render(request, 'chlamdb/KEGG_module_map.html', context)
     else:
         mod_id, module_descr, module_def, cat, sub_cat = module_infos[0]
 
@@ -1474,7 +1475,7 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
             pathway = extract_map(db, request)
         except Exception:
             ctx = {"error": True, "error_message": "No pathway specified",
-                   "error_title": "Error"}
+                   "error_title": "Error", "page_title": page_title}
             return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(ctx))
         map_name = format_pathway(pathway)
     else:
@@ -1489,7 +1490,8 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
     ko_hits = db.get_ko_hits(ko_list, search_on="ko", indexing="taxid")
 
     if ko_hits.empty:
-        ctx = {"error": True, "error_title": "No hits for this pathway"}
+        ctx = {"error": True, "error_title": "No hits for this pathway",
+               "page_title": page_title}
         return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(ctx))
 
     ko_desc = db.get_ko_desc(ko_list)
@@ -1529,8 +1531,7 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
            "asset_path": asset_path,
            "url": map_name + "+" + "+".join(all_kos),
            "envoi": True,
-           "error": False,
-           "page_titleA": page_title
+           "page_title": page_title
            }
 
     if taxon_id is not None:
@@ -1692,9 +1693,8 @@ class CogBarchart(CogViewMixin, View):
         venn_form_class = make_venn_from(self.db)
         self.form = venn_form_class(request.POST)
         if not self.form.is_valid():
-            # add error message
             return render(request, 'chlamdb/cog_barplot.html',
-                          self.get_context())
+                          self.get_context(**errors["invalid_form"]))
 
         target_bioentries = self.form.get_taxids()
 
@@ -1778,14 +1778,17 @@ class PanGenome(ComparisonViewMixin, View):
         venn_form_class = make_venn_from(self.db)
         self.form = venn_form_class(request.POST)
         if not self.form.is_valid():
-            # add error message
             self.form = venn_form_class()
             return render(request, 'chlamdb/pan_genome.html',
-                          self.get_context(form=self.form))
+                          self.get_context(**errors["invalid_form"],
+                                           form=self.form))
 
         taxids = self.form.get_taxids()
         df_hits = self.get_hit_counts(taxids, search_on="taxid")
-
+        if df_hits.empty:
+            return render(request, 'chlamdb/pan_genome.html',
+                          self.get_context(form=self.form,
+                                           **errors["no_hits"]))
         unique, counts = np.unique(np.count_nonzero(df_hits, axis=1),
                                    return_counts=True)
         unique_to_count = dict(zip(unique, counts))
@@ -2432,9 +2435,9 @@ class PlotHeatmap(ComparisonViewMixin, View):
         venn_form_class = make_venn_from(self.db)
         self.form = venn_form_class(request.POST)
         if not self.form.is_valid():
-            # add error message
             return render(request, 'chlamdb/plot_heatmap.html',
-                          self.get_context(form=self.form))
+                          self.get_context(form=self.form,
+                                           **errors["invalid_form"]))
 
         import plotly.graph_objects as go
         import scipy.cluster.hierarchy as shc
@@ -2451,6 +2454,13 @@ class PlotHeatmap(ComparisonViewMixin, View):
             return render(request, 'chlamdb/plot_heatmap.html', ctx)
 
         mat = self.get_hit_counts(taxon_ids, search_on="taxid")
+        if mat.empty:
+            error_message = "No hits were found for the current selection."
+            error_title = "No hits"
+            ctx = self.get_context(**errors["no_hits"],
+                                   form=self.form)
+            return render(request, 'chlamdb/plot_heatmap.html', ctx)
+
         mat.index = [self.format_entry(i, to_url=True) for i in mat.index]
 
         target2description = self.db.get_genomes_description().description.to_dict()
@@ -2631,10 +2641,10 @@ def kegg_module_subcat(request):
 
     form = module_overview_form(request.POST)
     if not form.is_valid():
-        # TODO: add error message
         form = module_overview_form()
-        return render(request, 'chlamdb/module_subcat.html',
-                      my_locals(locals()))
+        context = my_locals(locals())
+        context.update(errors["invalid_form"])
+        return render(request, 'chlamdb/module_subcat.html', context)
 
     cat = form.cleaned_data["subcategory"]
     ko_count_subcat = db.get_ko_count_cat(subcategory=cat)
@@ -2663,10 +2673,10 @@ def kegg_module_subcat(request):
     unique_module_ids = ko_count_subcat.index.get_level_values(
         "module_id").unique().tolist()
     if len(unique_module_ids) == 0:
-        # add error message : no module found
         envoi = True
-        return render(request, 'chlamdb/module_subcat.html',
-                      my_locals(locals()))
+        context = my_locals(locals())
+        context.update(errors["no_hits"])
+        return render(request, 'chlamdb/module_subcat.html', context)
 
     grouped_count = grouped_count.unstack(level=1, fill_value=0)
     grouped_count.columns = [col for col in grouped_count["count"].columns]
@@ -2704,10 +2714,10 @@ def kegg_module(request):
 
     form = module_overview_form(request.POST)
     if not form.is_valid():
-        # TODO: add error message
+        context = my_locals(locals())
+        context.update(errors["invalid_form"])
         form = module_overview_form()
-        return render(request, 'chlamdb/module_overview.html',
-                      my_locals(locals()))
+        return render(request, 'chlamdb/module_overview.html', context)
 
     cat = form.cleaned_data["category"]
     modules_infos = db.get_modules_info(ids=[cat], search_on="category")
@@ -2733,8 +2743,9 @@ def kegg_module(request):
 
     if grouped_count.empty:
         envoi = True
-        return render(request, 'chlamdb/module_overview.html',
-                      my_locals(locals()))
+        context = my_locals(locals())
+        context.update(errors["no_hits"])
+        return render(request, 'chlamdb/module_overview.html', context)
 
     grouped_count = grouped_count.unstack(level=1, fill_value=0)
     grouped_count.columns = [col for col in grouped_count["count"].columns]

@@ -3,9 +3,9 @@ from chlamdb.forms import make_venn_from
 from django.shortcuts import render
 from django.views import View
 
+from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
-from views.utils import format_lst_to_html
 
 
 def escape_quotes(unsafe):
@@ -49,15 +49,23 @@ class VennBaseView(View):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
             self.form = self.form_class()
-            # add error message in web page
-            return render(request, self.template, self.get_context())
+            return render(request, self.template,
+                          self.get_context(**errors["invalid_form"]))
 
         self.targets = self.form.get_taxids()
+        if len(self.targets) > 6:
+            self.form = self.form_class()
+            return render(request, self.template,
+                          self.get_context(**errors["too_many_targets"]))
         return self.render_venn(request)
 
     def render_venn(self, request):
         genomes = self.db.get_genomes_description()
         counts = self.get_hit_counts(self.targets)
+        if counts.empty:
+            return render(request, self.template,
+                          self.get_context(**errors["no_hits"]))
+
         counts = self.prepare_data(counts, genomes)
 
         self.series = []
