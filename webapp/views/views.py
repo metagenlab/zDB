@@ -66,16 +66,13 @@ def about(request):
     entry_list = []
 
     for entry in bib_database.entries:
-        string = ("<b>%s</b><br> %s, %s, %s(%s):%s, %s" % (re.sub('[{}]', '', entry["title"]),
-                                                           entry["author"],
-                                                           entry["journal"],
-                                                           entry["volume"],
-                                                           entry["number"],
-                                                           entry["pages"],
-                                                           entry["year"],
-                                                            ))
+        ref = f"<b>{re.sub('[{}]', '', entry['title'])}</b><br>"\
+              f"{entry['author']}, {entry['journal']},"
+        if entry.get("volume", False):
+            ref += f" {entry['volume']}({entry['number']}):{entry['pages']},"
+        ref += f" {entry['year']}"
         url = entry["url"]
-        entry_list.append([string, url])
+        entry_list.append([ref, url])
 
     return render(request, 'chlamdb/credits.html', my_locals(locals()))
 

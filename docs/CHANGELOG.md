@@ -20,6 +20,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add GWAS views. The associations are calculated using Scoary2. ([#62](https://github.com/metagenlab/zDB/pull/62)) (Niklaus Johner)
 - Add VF details view. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)
 - Add VF accumulation/rarefaction plot view. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)
 - Add VF heatmap view. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)

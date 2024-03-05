@@ -108,6 +108,16 @@ class CategoriesCountHeatmapMetadata(AnalysisViewMetadata):
     icon = "/img/icons8-heat-map-100.phylo.svg"
 
 
+class GwasMetadata(AnalysisViewMetadata):
+
+    name = "gwas"
+    _types_available_for = ['amr', 'cog', 'ko', 'pfam', 'vf', 'orthogroup']
+    title = "Genome Wide Association Study"
+    _description = "Association of {} with user-defined phenotype"
+    _url = "/gwas_{}/"
+    icon = "/img/bioinformatics.png"
+
+
 analysis_views_metadata = [EntryListMetadata,
                            ExtractionMetadata,
                            VennMetadata,
@@ -116,4 +126,5 @@ analysis_views_metadata = [EntryListMetadata,
                            AccumulationRarefactionMetadata,
                            CategoriesBarchartMetadata,
                            CategoriesFreqHeatmapMetadata,
-                           CategoriesCountHeatmapMetadata]
+                           CategoriesCountHeatmapMetadata,
+                           GwasMetadata]

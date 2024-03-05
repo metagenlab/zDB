@@ -11,7 +11,6 @@ from views.utils import format_ko, format_ko_modules, format_ko_path
 
 class EntryListViewBase(View, BaseViewMixin):
 
-    table_data_accessors = None
     _specific_colname_to_header_mapping = {"freq": "Frequency (n genomes)"}
 
     def get(self, request):
@@ -52,16 +51,17 @@ class EntryListViewBase(View, BaseViewMixin):
         combined_df = combined_df.where(combined_df.notna(), "-")
         return combined_df
 
+    @property
+    def table_data_accessors(self):
+        return super(EntryListViewBase, self).table_data_accessors + ["count", "freq"]
+
 
 class PfamEntryListView(EntryListViewBase, PfamViewMixin):
 
-    table_data_accessors = ["pfam", "def", "count", "freq"]
+    pass
 
 
 class KoEntryListView(EntryListViewBase, KoViewMixin):
-
-    table_data_accessors = ["ko", "description", "modules", "pathways",
-                            "count", "freq"]
 
     def get_table_data(self):
         # retrieve entry list
@@ -88,16 +88,14 @@ class KoEntryListView(EntryListViewBase, KoViewMixin):
 
 class CogEntryListView(EntryListViewBase, CogViewMixin):
 
-    table_data_accessors = ["cog", "function", "description", "count",
-                            "freq"]
+    pass
 
 
 class AmrEntryListView(EntryListViewBase, AmrViewMixin):
 
-    table_data_accessors = ["gene", "seq_name", "scope", "type", "class",
-                            "subclass", "hmm_id", "count", "freq"]
+    pass
 
 
 class VfEntryListView(EntryListViewBase, VfViewMixin):
 
-    table_data_accessors = ["vf_gene_id", "prot_name", "vfid", "category"]
+    pass

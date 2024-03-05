@@ -51,6 +51,12 @@ urls = [
     '/FAQ',
     '/genomes',
     '/get_cog/3/L?h=1&h=2&h=3',
+    '/gwas_amr/',
+    '/gwas_cog/',
+    '/gwas_ko/',
+    '/gwas_orthogroup/',
+    '/gwas_pfam/',
+    '/gwas_vf/',
     '/help',
     '/home/',
     '/index_comp/cog',
@@ -246,6 +252,7 @@ class ComparisonViewsTestMixin():
     venn_html = '<div id="venn_diagram" '
     heatmap_html = '<div id="heatmap" '
     rarefaction_plot_html = 'id="rarefaction_plot"'
+    gwas_table_html = '<table id="gwas_table"'
 
     def assertPageTitle(self, resp, title):
         self.assertContains(
@@ -293,6 +300,14 @@ class ComparisonViewsTestMixin():
         self.assertTrue(resp.context.get("envoi", False))
         self.assertContains(resp, self.rarefaction_plot_html)
 
+    def assertNoGwasTable(self, resp):
+        self.assertFalse(resp.context.get("show_results", False))
+        self.assertNotContains(resp, self.gwas_table_html)
+
+    def assertGwasTable(self, resp):
+        self.assertTrue(resp.context.get("show_results", False))
+        self.assertContains(resp, self.gwas_table_html)
+
     @property
     def tab_comp_view(self):
         return f"/{self.view_type}_comparison"
@@ -315,6 +330,14 @@ class ComparisonViewsTestMixin():
 
     @property
     def heatmap_form_data(self):
+        return {"targets": ["0", "1"]}
+
+    @property
+    def gwas_view(self):
+        return f"/gwas_{self.view_type}/"
+
+    @property
+    def gwas_form_data(self):
         return {"targets": ["0", "1"]}
 
     def test_comparison_index_view(self):
@@ -408,6 +431,27 @@ class ComparisonViewsTestMixin():
         self.assertEqual(self.view_type, resp.context["object_type"])
         self.assertPageTitle(resp, self.page_title)
         self.assertRarefactionPlot(resp)
+
+        maybe_dump_html(resp, "with_results")
+
+    def test_gwas_view(self):
+        resp = self.client.get(self.gwas_view)
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/gwas.html')
+        self.assertPageTitle(resp, self.page_title)
+        self.assertSelection(resp)
+        self.assertNoGwasTable(resp)
+        self.assertNav(resp)
+
+        resp = self.client.post(self.gwas_view,
+                                data=self.gwas_form_data)
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/gwas.html')
+        self.assertPageTitle(resp, self.page_title)
+        self.assertSelection(resp, selected=True)
+        # No results because there is no hit.
+        self.assertNoGwasTable(resp)
+        self.assertNav(resp)
 
         maybe_dump_html(resp, "with_results")
 

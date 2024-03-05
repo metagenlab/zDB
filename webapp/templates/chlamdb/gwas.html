@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% include "chlamdb/header.html" %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+</head>
+
+<body>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+              {% include "chlamdb/menu.html" %}
+              {% include "chlamdb/extract_nav_tabs_template.html" with active_tab="gwas" %}
+              {% include "chlamdb/error.html" %}
+              <br>
+              <p class="page-title">
+                <b>{{description}}</b>
+                <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" >
+                  <i class="fab fa-info-circle " style="size: 5em;" ></i>
+                </a>
+              </p>
+
+              {% block content %}
+              {% csrf_token %}
+              {% crispy form %}
+              {% endblock %}
+
+            </div>
+          </div>
+
+
+          {% if show_results %}
+            <div class="row" style="background-color: rgba(245, 245, 245, 0.986)" >
+              <div class="panel panel-success" style="margin: 1em;">
+                <div class="panel-heading" >
+                  <h5 class="panel-title">Help to interpret the results</h5>
+                </div>
+                <p style="margin: 10px 10px 10px 10px">
+                  The table displays results for all {{object_name_plural}} that passed filtering (p-value>0.05).
+                  <br><br>
+                  The significance of the association for each {{object_name}} is reported with (see <a href="https://github.com/MrTomRod/scoary-2/wiki/Understanding-the-p-values">Scoary-2</a> for more information):
+                  <ul style="margin-left: 20px; list-style-type:disc;" >
+                    <li><b>Sensitivity</b>: probability of trait being present if gene is present</li>
+                    <li><b>Specificity</b>: probability of trait being absent if gene is absent</li>
+                    <li><b>p-value</b>: p-value of Fisher's test</li>
+                    <li><b>q-value</b>: q-value of Fisher's test, i.e. the expected False Discovery Rate</li>
+                    <li><b>Empirical p-value</b>: Calculated from the best pairwise p-value 500 random permutations of the phenotype.</li>
+                    <li><b>Best pairwise p-value</b>: Best p-value obtained from pairwise comparisons to take population structure into account.</li>
+                    <li><b>Worst pairwise p-value</b>: Worst p-value obtained from pairwise comparisons to take population structure into account.</li>
+                    <li><b>fq*ep</b>: Product of Fisher's q-value with the empirical p-value.</li>
+                  </ul>
+                </p>
+              </div>
+
+              <div style="margin: 1em; margin-top: 3em;">
+                <table id="gwas_table" class="display" width="100%">
+                  <thead>
+                    <tr>
+                      <td></td>
+                      {% for header in table_headers %}
+                        <td>{{ header|safe }}</td>
+                      {% endfor %}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for index, row in table_data.iterrows %}
+                      <tr>
+                        <td>{{forloop.counter}}</td>
+                        {% for attrname in table_data_accessors%}
+                          <td>{{row|keyvalue:attrname|safe}}</td>
+                        {% endfor %}
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+$(document).ready(function() {
+  $('#gwas_table').DataTable( {
+    dom: 'lBfrtip',
+    buttons: [
+        {
+            extend: 'colvis',
+            columns: ':not(.noVis)',
+        },
+        {
+            extend: 'excel',
+            title: 'gwas_table'
+        },
+        {
+            extend: 'csv',
+            title: 'gwas_table'
+        }
+    ],
+    "paging": true,
+    "ordering": true,
+    "info":     false,
+    } );
+} );
+
+  </script>
+
+</body>
+{% include "chlamdb/style_menu.html" %}
+</html>

@@ -2,8 +2,8 @@
 from django.urls import re_path
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
-from views import (entry_lists, fam, hits_extraction, tabular_comparison, venn,
-                   views)
+from views import (entry_lists, fam, gwas, hits_extraction, tabular_comparison,
+                   venn, views)
 
 favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
@@ -46,6 +46,12 @@ urlpatterns = [
     re_path(r'^index_comp/([a-zA-Z0-9_\.\-]+)', views.ComparisonIndexView.as_view(), name="index_comp"),  # noqa
     re_path(r'^home/$', views.home, name="home"),
     re_path(r'^help', views.help, name="help"),
+    re_path(r'^gwas_vf/', gwas.VfGwasView.as_view(), name="gwas_vf"),
+    re_path(r'^gwas_pfam/', gwas.PfamGwasView.as_view(), name="gwas_pfam"),
+    re_path(r'^gwas_orthogroup/', gwas.OrthogroupGwasView.as_view(), name="gwas_orthogroup"),  # noqa
+    re_path(r'^gwas_ko/', gwas.KoGwasView.as_view(), name="gwas_ko"),
+    re_path(r'^gwas_cog/', gwas.CogGwasView.as_view(), name="gwas_cog"),
+    re_path(r'^gwas_amr/', gwas.AmrGwasView.as_view(), name="gwas_amr"),
     re_path(r'^get_cog/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\%]+)$', views.get_cog, name="get_cog"),  # noqa
     re_path(r'^genomes', views.genomes, name='genomes'),
     re_path(r'^favicon\.ico$', favicon_view),
@@ -55,7 +61,7 @@ urlpatterns = [
     re_path(r'^fam_ko/(K[0-9]+)$', fam.FamKoView.as_view(), name="fam_ko"),
     re_path(r'^fam_cog/(COG[0-9]+)$', fam.FamCogView.as_view(), name="fam_cog"),  # noqa
     re_path(r'^fam_amr/([a-zA-Z0-9_\.\(\)\-\']+)$', fam.FamAmrView.as_view(), name="fam_amr"),  # noqa
-    re_path(r'^extract_vf/$', hits_extraction.ExtractVfView.as_view(), name="extract_vf"),  # noq
+    re_path(r'^extract_vf/$', hits_extraction.ExtractVfView.as_view(), name="extract_vf"),  # noqa
     re_path(r'^extract_pfam/$', hits_extraction.ExtractPfamView.as_view(), name="extract_pfam"),  # noqa
     re_path(r'^extract_orthogroup/$', hits_extraction.ExtractOrthogroupView.as_view(), name="extract_orthogroup"),  # noqa
     re_path(r'^extract_ko/$', hits_extraction.ExtractKoView.as_view(), name="extract_ko"),  # noqa
