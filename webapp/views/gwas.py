@@ -3,7 +3,7 @@ import os
 from tempfile import TemporaryDirectory
 
 import pandas as pd
-from chlamdb.forms import make_venn_from
+from chlamdb.forms import make_gwas_form
 from django.shortcuts import render
 from django.views import View
 from ete3 import Tree
@@ -47,8 +47,7 @@ class GWASBaseView(View):
         return context
 
     def dispatch(self, request, *args, **kwargs):
-        self.form_class = make_venn_from(self.db, label=self.object_name_plural,
-                                         action=self.view_name)
+        self.form_class = make_gwas_form(self.db)
         self.metadata = GwasMetadata(self.object_type, self.object_name_plural)
         return super(GWASBaseView, self).dispatch(request, *args, **kwargs)
 
@@ -63,7 +62,6 @@ class GWASBaseView(View):
             return render(request, self.template,
                           self.get_context(**errors["invalid_form"]))
 
-        self.targets = self.form.get_taxids()
         results = self.run_gwas()
         if results is None:
             context = self.get_context(
@@ -96,6 +94,9 @@ class GWASBaseView(View):
         if all_hits.empty:
             return None
 
+        genomes_with_trait = self.form.get_taxids()
+        multiple_testing = f'bonferroni:{self.form.cleaned_data["bonferroni_cutoff"]}'
+        max_genes = self.form.cleaned_data["max_number_of_hits"]
         with TemporaryDirectory() as tmp:
             genotype_path = os.path.join(tmp, "genotype")
             with open(genotype_path, "w") as fh:
@@ -108,14 +109,19 @@ class GWASBaseView(View):
             with open(phenotype_path, "w") as fh:
                 fh.write("Trait,trait-1\n")
                 for taxid in all_taxids:
-                    fh.write(f"{taxid},{taxid in self.targets}\n")
+                    fh.write(f"{taxid},{taxid in genomes_with_trait}\n")
 
             tree_path = os.path.join(tmp, "tree.nw")
             tree = Tree(self.db.get_reference_phylogeny())
             tree.write(format=8, outfile=tree_path)
 
-            scoary(genotype_path, phenotype_path, os.path.join(tmp, "out"),
-                   newicktree=tree_path)
+            scoary(genotype_path,
+                   phenotype_path,
+                   os.path.join(tmp, "out"),
+                   newicktree=tree_path,
+                   multiple_testing=multiple_testing,
+                   max_genes=max_genes)
+
             # Summary file is absent if no gene passed filtering
             if not os.path.isfile(os.path.join(tmp, "out", "summary.tsv")):
                 return None

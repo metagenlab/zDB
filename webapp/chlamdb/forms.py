@@ -466,3 +466,61 @@ def make_blast_form(biodb):
             return rev_index[int(target)]
 
     return BlastForm
+
+
+def make_gwas_form(biodb):
+    accession_choices, rev_index = get_accessions(biodb, all=True)
+
+    class GwasForm(forms.Form):
+
+        genomes_with_trait = forms.MultipleChoiceField(
+            choices=accession_choices,
+            widget=forms.SelectMultiple(
+                attrs={"class": "selectpicker",
+                       "data-live-search": "true",
+                       "data-actions-box": "true",
+                       "size": 1})
+            )
+
+        max_number_of_hits = forms.TypedChoiceField(
+            choices=[("all", "all"),
+                     ("10", "10"),
+                     ("20", "20"),
+                     ("50", "50"),
+                     ("100", "100")],
+            coerce=lambda x: int(x) if x != "all" else None)
+
+        bonferroni_cutoff = forms.FloatField(
+            initial=0.1,
+            widget=forms.NumberInput(
+                attrs={"max": 1, "min": 0, "step": 0.01, "default": 0.1})
+            )
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            self.helper.label_class = 'col-lg-1 col-md-6 col-sm-6'
+            self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                Fieldset(
+                    "",
+                    Row("genomes_with_trait"),
+                    Row('bonferroni_cutoff', style="margin-top:1em"),
+                    Row('max_number_of_hits', style="margin-top:1em"),
+                    Submit('submit', 'Submit',
+                           style="padding-left:15px; margin-top:1em; "
+                                 "margin-bottom:15px "),
+                    css_class="col-lg-5 col-md-6 col-sm-6")
+            )
+            super(GwasForm, self).__init__(*args, **kwargs)
+
+        def get_taxids(self):
+            indices = self.cleaned_data["genomes_with_trait"]
+            taxids = []
+            for index in indices:
+                taxid = rev_index[int(index)]
+                taxids.append(taxid)
+            return taxids
+
+    return GwasForm
