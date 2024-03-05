@@ -115,7 +115,7 @@ class GwasMetadata(AnalysisViewMetadata):
     title = "Genome Wide Association Study"
     _description = "Association of {} with user-defined phenotype"
     _url = "/gwas_{}/"
-    icon = "/img/bioinformatics.png"
+    icon = "/img/gwas.png"
 
 
 analysis_views_metadata = [EntryListMetadata,
