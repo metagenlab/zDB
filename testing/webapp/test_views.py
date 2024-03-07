@@ -3,6 +3,7 @@ import re
 from unittest import skip
 
 from chlamdb.urls import urlpatterns
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import SimpleTestCase
 from django.urls import resolve
 
@@ -338,7 +339,11 @@ class ComparisonViewsTestMixin():
 
     @property
     def gwas_form_data(self):
-        return {"targets": ["0", "1"]}
+        phenotype = SimpleUploadedFile(
+            "phenotype.csv", b"1,1\n2,1\n3,0", content_type="text/csv")
+        return {"max_number_of_hits": "all",
+                "bonferroni_cutoff": 0.99,
+                "phenotype_file": phenotype}
 
     def test_comparison_index_view(self):
         resp = self.client.get(f"/index_comp/{self.view_type}")
@@ -439,19 +444,20 @@ class ComparisonViewsTestMixin():
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/gwas.html')
         self.assertPageTitle(resp, self.page_title)
-        self.assertSelection(resp)
         self.assertNoGwasTable(resp)
         self.assertNav(resp)
+        self.assertNotContains(resp, 'id="error"')
 
         resp = self.client.post(self.gwas_view,
                                 data=self.gwas_form_data)
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/gwas.html')
         self.assertPageTitle(resp, self.page_title)
-        self.assertSelection(resp, selected=True)
         # No results because there is no hit.
         self.assertNoGwasTable(resp)
         self.assertNav(resp)
+        self.assertContains(resp, 'id="error"')
+        self.assertContains(resp, 'No significant association')
 
         maybe_dump_html(resp, "with_results")
 
