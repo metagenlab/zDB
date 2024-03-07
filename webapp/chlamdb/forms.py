@@ -473,14 +473,10 @@ def make_gwas_form(biodb):
 
     class GwasForm(forms.Form):
 
-        genomes_with_trait = forms.MultipleChoiceField(
-            choices=accession_choices,
-            widget=forms.SelectMultiple(
-                attrs={"class": "selectpicker",
-                       "data-live-search": "true",
-                       "data-actions-box": "true",
-                       "size": 1})
-            )
+        file_help = "CSV file containing 2 columns: taxon IDs or taxon names "\
+                    "in the first column and presence (1) or absence (0) "\
+                    "of the trait in the second."
+        phenotype_file = forms.FileField(help_text=file_help)
 
         max_number_of_hits = forms.TypedChoiceField(
             choices=[("all", "all"),
@@ -505,7 +501,7 @@ def make_gwas_form(biodb):
             self.helper.layout = Layout(
                 Fieldset(
                     "",
-                    Row("genomes_with_trait"),
+                    Row("phenotype_file"),
                     Row('bonferroni_cutoff', style="margin-top:1em"),
                     Row('max_number_of_hits', style="margin-top:1em"),
                     Submit('submit', 'Submit',
@@ -514,13 +510,5 @@ def make_gwas_form(biodb):
                     css_class="col-lg-5 col-md-6 col-sm-6")
             )
             super(GwasForm, self).__init__(*args, **kwargs)
-
-        def get_taxids(self):
-            indices = self.cleaned_data["genomes_with_trait"]
-            taxids = []
-            for index in indices:
-                taxid = rev_index[int(index)]
-                taxids.append(taxid)
-            return taxids
 
     return GwasForm
