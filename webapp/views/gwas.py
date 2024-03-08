@@ -99,7 +99,7 @@ class GWASBaseView(View):
         for key in self._gwas_data_accessors:
             results[key] = results[key].apply(self.format_float)
 
-        e_tree = self.prepare_tree(phenotype, hits)
+        e_tree = self.prepare_tree(phenotype, hits, results)
         self.tree_path = "/temp/gwas_tree.svg"
         path = settings.BASE_DIR + "/assets/" + self.tree_path
         e_tree.render(path, dpi=500)
@@ -113,7 +113,7 @@ class GWASBaseView(View):
             )
         return render(request, self.template, context)
 
-    def prepare_tree(self, phenotype, hits):
+    def prepare_tree(self, phenotype, hits, results):
         # unique_og = intersect.orthogroup.unique().tolist()
         # red_color = set(tuple(entry) for entry in intersect.to_numpy())
         # df_og_count = db.get_og_count(list(unique_og), search_on="orthogroup").T
@@ -129,15 +129,20 @@ class GWASBaseView(View):
         e_tree.rename_leaves(ref_names)
 
         phenotype.trait = phenotype.trait.astype(int)
-        phenotype = phenotype.set_index("taxids").to_dict()["trait"]
+        phenotype = phenotype.set_index("taxids")
+        neg_phenotype = 1 - phenotype
+        neg_phenotype = neg_phenotype.to_dict()["trait"]
+        phenotype = phenotype.to_dict()["trait"]
+
         e_tree.add_column(ValueColoredColumn(
             phenotype,
             header="Phenotype",
             col_func=lambda x: EteTree.BLUE if x == 0 else EteTree.RED))
 
-        for gene, hit in hits.iterrows():
+        positive = results["supporting"] > results["opposing"]
+        for ((gene, hit), pos) in zip(hits.iterrows(), positive):
             col_column = MatchingColorColumn(
-                hit.to_dict(), phenotype, header=gene,
+                hit.to_dict(), phenotype if pos else neg_phenotype, header=gene,
                 col_func=lambda x: EteTree.BLUE if x == 0 else EteTree.RED)
             e_tree.add_column(col_column)
         return e_tree
