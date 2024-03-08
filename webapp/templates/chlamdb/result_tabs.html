@@ -1,0 +1,29 @@
+<div class="col-lg-12">
+  <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+    <br>
+    {% for tab in result_tabs %}
+      {% if forloop.first %}
+        <li class="active">
+      {% else %}
+        <li>
+      {% endif %}
+        <a href=#{{tab.id}} data-toggle="tab">
+          <b>{{tab.title}}</b>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <div id="my-tab-content" class="tab-content">
+    {% for tab in result_tabs %}
+      {% if forloop.first %}
+        <div class="tab-pane active" id={{tab.id}} style="margin-top: 2em;">
+      {% else %}
+        <div class="tab-pane" id={{tab.id}} style="margin-top: 2em;">
+      {% endif %}
+
+      {% include tab.template with tab=tab %}
+      </div>
+    {% endfor %}
+  </div>
+</div>

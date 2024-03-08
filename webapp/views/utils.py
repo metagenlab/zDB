@@ -1,3 +1,5 @@
+import collections
+
 import pandas as pd
 from django.conf import settings
 from lib.db_utils import DB
@@ -178,3 +180,6 @@ def format_ko_modules(hsh_modules, ko):
 
 def format_refseqid_to_ncbi(seqid):
     return f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{seqid}\">{seqid}</a>"
+
+
+ResultTab = collections.namedtuple("Tab", ["id", "title", "template"])

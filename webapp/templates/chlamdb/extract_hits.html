@@ -3,8 +3,6 @@
 <head> 
 
 {% load custom_tags %}
-{% load static %}
-{% load static %}
 {% load crispy_forms_tags %}
 {% include "chlamdb/header.html" %}
 
@@ -90,29 +88,7 @@
                   {% endif %}
                 </div>
               </div>
-
-              <div class="col-lg-12">
-                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                  <br>
-                  {% for tab in result_tabs %}
-                    {% if forloop.first %}
-                      <li class="active">
-                    {% else %}
-                      <li>
-                    {% endif %}
-                      <a href=#{{tab.id}} data-toggle="tab">
-                        <b>{{tab.title}}</b>
-                      </a>
-                    </li>
-                  {% endfor %}
-                </ul>
-
-                <div id="my-tab-content" class="tab-content">
-                  {% for tab in result_tabs %}
-                    {% include tab.template with tabid=tab.id %}
-                  {% endfor %}
-                </div>
-              </div>
+              {% include "chlamdb/result_tabs.html" %}
             </div>
           {% endif %}
 

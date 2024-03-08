@@ -1,4 +1,4 @@
-import collections
+
 
 import pandas as pd
 from chlamdb.forms import make_extract_form
@@ -8,11 +8,9 @@ from django.views import View
 from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
-from views.utils import (format_cog, format_cog_url, format_ko,
+from views.utils import (ResultTab, format_cog, format_cog_url, format_ko,
                          format_ko_modules, format_ko_path, format_ko_url,
                          format_locus, format_lst_to_html, format_orthogroup)
-
-ResultTab = collections.namedtuple("Tab", ["id", "title", "template"])
 
 
 class ExtractHitsBaseView(View):
