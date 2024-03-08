@@ -12,6 +12,7 @@ from views.analysis_view_metadata import GwasMetadata
 from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
+from views.utils import ResultTab
 
 
 class GWASBaseView(View):
@@ -40,9 +41,16 @@ class GWASBaseView(View):
                 *self._gwas_data_accessors,
                 *mixin_accessors[1:]]
 
+    @property
+    def result_tabs(self):
+        return [
+            ResultTab("gwas_table", self.object_name_plural, "chlamdb/result_table.html"),
+            ]
+
     def get_context(self, **kwargs):
         context = super(GWASBaseView, self).get_context(**kwargs)
         context["description"] = self.metadata.description
+        context["result_tabs"] = self.result_tabs
         return context
 
     def dispatch(self, request, *args, **kwargs):
