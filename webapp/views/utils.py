@@ -182,4 +182,11 @@ def format_refseqid_to_ncbi(seqid):
     return f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{seqid}\">{seqid}</a>"
 
 
-ResultTab = collections.namedtuple("Tab", ["id", "title", "template"])
+class ResultTab():
+
+    def __init__(self, tabid, title, template, **kwargs):
+        self.id = tabid
+        self.title = title
+        self.template = template
+        for key, val in kwargs.items():
+            setattr(self, key, val)

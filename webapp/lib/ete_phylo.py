@@ -206,6 +206,46 @@ class SimpleColorColumn(Column):
         return text_face
 
 
+class ValueColoredColumn(Column):
+    """Gets the color by applying col_func to the value.
+    """
+    def __init__(self, values, col_func, header=None,
+                 face_params=None, header_params=None):
+        self.values = values
+        self.col_func = col_func
+        self.header = header
+        self.face_params = face_params,
+        self.header_params = header_params
+
+    def get_color(self, index, val):
+        return self.col_func(val)
+
+    def get_face(self, index):
+        index = int(index)
+        val = self.values.get(index)
+        text_face = TextFace(str(val))
+        text_face.inner_background.color = self.get_color(index, val)
+        self.set_default_params(text_face)
+        return text_face
+
+
+class MatchingColorColumn(ValueColoredColumn):
+    """Will color a face only if its value matches the value in
+    to_match. In that case it gets the color by applying col_func
+    to the value.
+    """
+    def __init__(self, values, to_match, col_func, header=None,
+                 face_params=None, header_params=None):
+        self.to_match = to_match
+        super(MatchingColorColumn, self).__init__(
+            values, col_func, header=header, face_params=face_params,
+            header_params=header_params)
+
+    def get_color(self, index, val):
+        if val == self.to_match.get(index):
+            return self.col_func(val)
+
+
 class ModuleCompletenessColumn(Column):
     """
     Straightforward class: 
