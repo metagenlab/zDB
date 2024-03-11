@@ -375,7 +375,6 @@ class ExtractCogView(ExtractHitsBaseView, CogViewMixin):
         '<br>A longer light-blue bar can be interpreted as an enrichment of '
         'that shared COG category in the selected genomes compared to their '
         'complete COG profiles.'
-        '<br> <b>Locus list reference</b>'
     )
 
     @property
