@@ -2577,6 +2577,29 @@ class DB:
         df = DB.to_pandas_frame(results, columns)
         return df
 
+    def get_number_of_amr_entries(self):
+        columns = ["type", "class", "subclass", "gene", "seq_name", "scope",
+                   "hmm_id"]
+        query = "SELECT COUNT(*) FROM "\
+                f"(SELECT DISTINCT {', '.join(columns)} FROM amr_hits)"
+        return self.server.adaptor.execute_and_fetchall(query)[0][0]
+
+    def get_number_of_swissprot_entries(self):
+        query = "SELECT COUNT(*) FROM swissprot_defs"
+        return self.server.adaptor.execute_and_fetchall(query)[0][0]
+
+    def get_number_of_pfam_entries(self):
+        query = "SELECT COUNT(*) FROM pfam_table"
+        return self.server.adaptor.execute_and_fetchall(query)[0][0]
+
+    def get_number_of_cog_entries(self):
+        query = "SELECT COUNT(*) FROM (SELECT DISTINCT cog_id FROM cog_hits)"
+        return self.server.adaptor.execute_and_fetchall(query)[0][0]
+
+    def get_number_of_ko_entries(self):
+        query = "SELECT COUNT(*) FROM (SELECT DISTINCT ko_id FROM ko_hits)"
+        return self.server.adaptor.execute_and_fetchall(query)[0][0]
+
     def gen_placeholder_string(self, args):
         return ",".join(self.placeholder for _ in args)
 

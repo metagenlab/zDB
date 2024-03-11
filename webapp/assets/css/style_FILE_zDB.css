@@ -161,7 +161,7 @@
 }
 
 .summary_data{
-    float: left;
+    text-align: left;
     font-size: 1.6em;
 }
 

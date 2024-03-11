@@ -37,23 +37,60 @@
                     <div class="col-lg-4 col-md-12 col-sm-12" >
                       <div class="serviceBox_2"  >
                         <h3 class="title">The database contains:</h3>
-                        <ul  style="list-style-type:none;">
+                        <ul>
                           {% if number_of_files %}
-                            <br>
-                              <li class="summary_data" >
-                                <a href="{% url 'genomes' %}" >
-                                  <b>{{number_of_files}}  </b>
-                                </a>genomes
-                              </li>
-                            {% endif %}
-                            <br>
-                          {% if number_ort %}
-                            <br>
-                              <li class="summary_data">
-                                <a href="{% url 'index_comp' 'orthogroup' %}" >
-                                  <b>{{number_ort}}  </b>
-                                </a>orthogroups
-                              </li>
+                            <li class="summary_data" >
+                              <a href="{% url 'genomes' %}" >
+                                <b>{{number_of_files}}  </b>
+                              </a>genomes
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"orthogroup" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'orthogroup' %}" >
+                                <b>{{number_ort}}  </b>
+                              </a>orthogroups
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"COG" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'cog' %}" >
+                                <b>{{number_cog}}  </b>
+                              </a>COGs
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"pfam" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'pfam' %}" >
+                                <b>{{number_pfam}}  </b>
+                              </a>Pfam domains
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"KEGG" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'ko' %}" >
+                                <b>{{number_ort}}  </b>
+                              </a>orthogroups
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"AMR" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'amr' %}" >
+                                <b>{{number_amr}}  </b>
+                              </a>AMRs
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"BLAST_vfdb" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'vf' %}" >
+                                <b>{{number_vf}}  </b>
+                              </a>VF genes
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"BLAST_swissprot" == 1 %}
+                            <li class="summary_data">
+                              <b>{{number_swissprot}}  </b>VF genes
+                            </li>
                           {% endif %}
                           <br>
                         </ul>
