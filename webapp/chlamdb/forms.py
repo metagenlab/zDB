@@ -466,3 +466,49 @@ def make_blast_form(biodb):
             return rev_index[int(target)]
 
     return BlastForm
+
+
+def make_gwas_form(biodb):
+    accession_choices, rev_index = get_accessions(biodb, all=True)
+
+    class GwasForm(forms.Form):
+
+        file_help = "CSV file containing 2 columns: taxon IDs or taxon names "\
+                    "in the first column and presence (1) or absence (0) "\
+                    "of the trait in the second."
+        phenotype_file = forms.FileField(help_text=file_help)
+
+        max_number_of_hits = forms.TypedChoiceField(
+            choices=[("all", "all"),
+                     ("10", "10"),
+                     ("20", "20"),
+                     ("50", "50"),
+                     ("100", "100")],
+            coerce=lambda x: int(x) if x != "all" else None)
+
+        bonferroni_cutoff = forms.FloatField(
+            initial=0.1,
+            widget=forms.NumberInput(
+                attrs={"max": 1, "min": 0, "step": 0.01, "default": 0.1})
+            )
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            self.helper.label_class = 'col-lg-1 col-md-6 col-sm-6'
+            self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                Fieldset(
+                    "",
+                    Row("phenotype_file"),
+                    Row('bonferroni_cutoff', style="margin-top:1em"),
+                    Row('max_number_of_hits', style="margin-top:1em"),
+                    Submit('submit', 'Submit',
+                           style="padding-left:15px; margin-top:1em; "
+                                 "margin-bottom:15px "),
+                    css_class="col-lg-5 col-md-6 col-sm-6")
+            )
+            super(GwasForm, self).__init__(*args, **kwargs)
+
+    return GwasForm

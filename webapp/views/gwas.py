@@ -1,9 +1,8 @@
-
 import os
 from tempfile import TemporaryDirectory
 
 import pandas as pd
-from chlamdb.forms import make_venn_from
+from chlamdb.forms import make_gwas_form
 from django.shortcuts import render
 from django.views import View
 from ete3 import Tree
@@ -47,8 +46,7 @@ class GWASBaseView(View):
         return context
 
     def dispatch(self, request, *args, **kwargs):
-        self.form_class = make_venn_from(self.db, label=self.object_name_plural,
-                                         action=self.view_name)
+        self.form_class = make_gwas_form(self.db)
         self.metadata = GwasMetadata(self.object_type, self.object_name_plural)
         return super(GWASBaseView, self).dispatch(request, *args, **kwargs)
 
@@ -57,19 +55,28 @@ class GWASBaseView(View):
         return render(request, self.template, self.get_context())
 
     def post(self, request, *args, **kwargs):
-        self.form = self.form_class(request.POST)
+        self.form = self.form_class(request.POST, request.FILES)
         if not self.form.is_valid():
             self.form = self.form_class()
             return render(request, self.template,
                           self.get_context(**errors["invalid_form"]))
 
-        self.targets = self.form.get_taxids()
-        results = self.run_gwas()
+        qval_threshold = self.form.cleaned_data["bonferroni_cutoff"]
+        max_genes = self.form.cleaned_data["max_number_of_hits"]
+        phenotype = self.get_phenotype()
+
+        if phenotype is None:
+            context = self.get_context(
+                error=True, error_title="Invalid phenotype file",
+                error_message="File could not be parsed and matched to genomes.")
+            return render(request, self.template, context)
+
+        results = self.run_gwas(phenotype, qval_threshold, max_genes)
         if results is None:
             context = self.get_context(
                 error=True, error_title="No significant association",
                 error_message=f"No association of {self.object_name} with the"
-                " phenotype had p-value<0.05")
+                f" phenotype had q-value<{qval_threshold}")
             return render(request, self.template, context)
 
         descriptions = self.get_hit_descriptions(results["Gene"].to_list())
@@ -85,20 +92,32 @@ class GWASBaseView(View):
             table_data_accessors=self.table_data_accessors,
             table_data=results,
             show_results=True,
+            qval_threshold=qval_threshold,
             )
         return render(request, self.template, context)
 
-    def run_gwas(self):
+    def get_phenotype(self):
+        phenotype = pd.read_csv(self.form.cleaned_data["phenotype_file"],
+                                header=None, names=["taxids", "trait"])
+        phenotype["trait"] = phenotype["trait"].astype(bool)
+        genomes = self.db.get_genomes_description()
+        if all(phenotype.taxids.isin(genomes.index)):
+            return phenotype
+        elif all(phenotype.taxids.isin(genomes.description)):
+            mapping = {genome.description: taxid
+                       for taxid, genome in genomes.iterrows()}
+            phenotype.taxids = phenotype.taxids.apply(lambda x: mapping[x])
+        else:
+            return None
+        return phenotype
+
+    def run_gwas(self, phenotype, qval_threshold, max_genes):
         genomes_data = self.db.get_genomes_infos()
         all_taxids_str = [str(i) for i in genomes_data.index.to_list()]
         all_taxids = [i for i in genomes_data.index.to_list()]
-        all_hits = self.get_hit_counts(all_taxids_str, search_on="taxid")
+        all_hits = self.get_hit_counts(all_taxids, search_on="taxid")
         if all_hits.empty:
             return None
-
-        for i in all_taxids:
-            if i not in all_hits:
-                all_hits[i] = 0
 
         with TemporaryDirectory() as tmp:
             genotype_path = os.path.join(tmp, "genotype")
@@ -109,22 +128,24 @@ class GWASBaseView(View):
                     fh.write(",".join(row) + "\n")
 
             phenotype_path = os.path.join(tmp, "phenotype")
-            with open(phenotype_path, "w") as fh:
-                fh.write("Trait,trait-1\n")
-                for taxid in all_taxids:
-                    fh.write(f"{taxid},{taxid in self.targets}\n")
+            phenotype.to_csv(phenotype_path, index=False)
 
             tree_path = os.path.join(tmp, "tree.nw")
             tree = Tree(self.db.get_reference_phylogeny())
             tree.write(format=8, outfile=tree_path)
 
-            scoary(genotype_path, phenotype_path, os.path.join(tmp, "out"),
-                   newicktree=tree_path)
+            scoary(genotype_path,
+                   phenotype_path,
+                   os.path.join(tmp, "out"),
+                   newicktree=tree_path,
+                   multiple_testing=f'bonferroni:{qval_threshold}',
+                   max_genes=max_genes)
+
             # Summary file is absent if no gene passed filtering
             if not os.path.isfile(os.path.join(tmp, "out", "summary.tsv")):
                 return None
             res = pd.read_csv(
-                os.path.join(tmp, "out", "traits", "trait-1", "result.tsv"),
+                os.path.join(tmp, "out", "traits", "trait", "result.tsv"),
                 sep="\t")
 
         return res
