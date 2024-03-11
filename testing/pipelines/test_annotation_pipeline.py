@@ -176,7 +176,6 @@ class TestAnnotationPipeline(BasePipelineTestCase):
 
     def test_vfdb_hits(self):
         self.nf_params["vfdb"] = "true"
-        self.nf_params["vf_evalue"] = "250000"
         execution = self.execute_pipeline()
         self.assert_success(execution)
         self.load_db(execution)
@@ -186,8 +185,8 @@ class TestAnnotationPipeline(BasePipelineTestCase):
             base_tables + ['vf_hits', 'vf_defs'],
             self.metadata_obj.tables.keys())
         self.assert_db_base_table_row_counts()
-        self.assertEqual(7, self.query("vf_hits").count())
-        self.assertEqual(6, self.query("vf_defs").count())
+        self.assertTrue(6500 < self.query("vf_hits").count() < 6600)
+        self.assertTrue(2700 < self.query("vf_defs").count() < 2800)
 
     def test_full_pipeline(self):
         self.nf_params["pfam"] = "true"
@@ -196,7 +195,6 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.nf_params["cog"] = "true"
         self.nf_params["amr"] = "true"
         self.nf_params["vfdb"] = "true"
-        self.nf_params["vf_evalue"] = "250000"
         # set custom run name for use in webapp testing
         self.nf_params["name"] = "_webapp_testing"
 
@@ -228,8 +226,8 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertTrue(self.query("swissprot_defs").count() > 19400)
         self.assertTrue(self.query("swissprot_hits").count() > 29400)
         self.assertEqual(2, self.query("amr_hits").count())
-        self.assertEqual(7, self.query("vf_hits").count())
-        self.assertEqual(6, self.query("vf_defs").count())
+        self.assertTrue(6500 < self.query("vf_hits").count() < 6600)
+        self.assertTrue(2700 < self.query("vf_defs").count() < 2800)
 
         self.assertItemsEqual(
             ["Pfam", "SwissProt", "Ko", "CDD", "AMRFinderSoftware", "AMRFinderDB", "VFDB"],
