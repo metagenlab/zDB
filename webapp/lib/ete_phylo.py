@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-from ete3 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, BarChartFace, StackedBarFace, NodeStyle, faces, PhyloTree, PhyloNode
-import ete3
-
-from matplotlib.colors import rgb2hex
-
 import math
 
+import ete3
+from ete3 import (BarChartFace, NodeStyle, PhyloNode, PhyloTree, SeqMotifFace,
+                  StackedBarFace, TextFace, Tree, TreeStyle, add_face_to_node,
+                  faces)
+from matplotlib.colors import rgb2hex
+
 from lib import colors
+
 
 def layout(node):
     return
@@ -45,7 +47,7 @@ class EteTree:
     def add_column(self, face):
         self.columns.append(face)
 
-    # Default style, may be overriden in a children class to change 
+    # Default style, may be overriden in a children class to change
     # the behaviour
     def get_style(self):
         tss = TreeStyle()
@@ -206,9 +208,49 @@ class SimpleColorColumn(Column):
         return text_face
 
 
+class ValueColoredColumn(Column):
+    """Gets the color by applying col_func to the value.
+    """
+    def __init__(self, values, col_func, header=None,
+                 face_params=None, header_params=None):
+        self.values = values
+        self.col_func = col_func
+        self.header = header
+        self.face_params = face_params,
+        self.header_params = header_params
+
+    def get_color(self, index, val):
+        return self.col_func(val)
+
+    def get_face(self, index):
+        index = int(index)
+        val = self.values.get(index)
+        text_face = TextFace(str(val))
+        text_face.inner_background.color = self.get_color(index, val)
+        self.set_default_params(text_face)
+        return text_face
+
+
+class MatchingColorColumn(ValueColoredColumn):
+    """Will color a face only if its value matches the value in
+    to_match. In that case it gets the color by applying col_func
+    to the value.
+    """
+    def __init__(self, values, to_match, col_func, header=None,
+                 face_params=None, header_params=None):
+        self.to_match = to_match
+        super(MatchingColorColumn, self).__init__(
+            values, col_func, header=header, face_params=face_params,
+            header_params=header_params)
+
+    def get_color(self, index, val):
+        if val == self.to_match.get(index):
+            return self.col_func(val)
+
+
 class ModuleCompletenessColumn(Column):
     """
-    Straightforward class: 
+    Straightforward class:
     * the values contains the number of missing KO for a complete module
     * the text_face are colored according to the number of missing KOs:
     *  - none missing: green
@@ -242,14 +284,14 @@ class KOAndCompleteness(Column):
     """
     This class should be used when displaying the number of KO
     in a module. The text faces are then colored according to the
-    number of missing KOs in a module. 
+    number of missing KOs in a module.
     If the module is complete (0 missing): text face is green
     If the module lacks some KOs: text face is orange
     """
 
     def __init__(self, n_kos, n_missing_kos, module):
         """
-        The values should have two columns: 
+        The values should have two columns:
         * one for the number of ko in the module
         * one for the number of missing kos
         """
@@ -285,8 +327,8 @@ class EteTool():
 
     '''
     Plot ete3 phylogenetic profiles.
-    
-    - self.add_simple_barplot: add a barplot face from taxon2value dictionnary 
+
+    - self.add_simple_barplot: add a barplot face from taxon2value dictionnary
     - self.add_text_face: add text face
     - self.add_heatmap: add column with cells with value + colored background
     - self.rename_leaves: rename tree leaves from a dictionnary (old_name2new_name)
@@ -294,15 +336,15 @@ class EteTool():
 
     def __init__(self,
                  tree_file):
-               
+
         self.column_count = 0
 
         self.default_colors = ['#fc8d59', '#91bfdb', '#99d594', '#c51b7d', '#f1a340', '#999999']
-        
+
         self.color_index = 0
-         
+
         self.rotate = False
-        
+
         # if not tree instance, considfer it as a path or a newick string
         print("TREE TYOE:", type(tree_file))
         if isinstance(tree_file, Tree):
@@ -318,20 +360,20 @@ class EteTool():
             self.tree.set_outgroup(R)
         except:
             pass
-    
+
         self.tree.ladderize()
-        
+
         self.tss = TreeStyle()
         self.tss.draw_guiding_lines = True
         self.tss.guiding_lines_color = "gray"
-        self.tss.show_leaf_name = False     
+        self.tss.show_leaf_name = False
 
 
     def add_stacked_barplot(self,
                             taxon2value_list,
                             header_name,
                             color_list=False):
-        
+
         pass
 
     def rename_leaves(self,
@@ -362,22 +404,22 @@ class EteTool():
                 lf.add_face(n, 0)
             lf.name = label
             #print(lf)
-    
-    def add_heatmap(self, 
-                    taxon2value, 
+
+    def add_heatmap(self,
+                    taxon2value,
                     header_name,
                     continuous_scale=False,
                     show_text=False):
-        
+
         from lib.colors import get_continuous_scale
-        
+
         self._add_header(header_name)
-                
+
         if continuous_scale:
             color_scale = get_continuous_scale(taxon2value.values())
-        
+
         for i, lf in enumerate(self.tree.iter_leaves()):
-            
+
             if not lf.name in taxon2value:
                 n = TextFace('')
             else:
@@ -404,14 +446,14 @@ class EteTool():
             if self.rotate:
                 n.rotation = 270
             lf.add_face(n, self.column_count, position="aligned")
-        
+
         self.column_count += 1
 
 
-    def _add_header(self, 
+    def _add_header(self,
                    header_name,
                    column_add=0):
-        
+
         n = TextFace(f'{header_name}')
         n.margin_top = 1
         n.margin_right = 1
@@ -426,19 +468,19 @@ class EteTool():
         self.tss.aligned_header.add_face(n, self.column_count-1+column_add)
 
     def _get_default_barplot_color(self,):
-        
+
         col = self.default_colors[self.color_index]
-        
+
         if self.color_index == 5:
             self.color_index = 0
         else:
             self.color_index += 1
-        
-        return col
-        
 
-    def add_simple_barplot(self, 
-                           taxon2value, 
+        return col
+
+
+    def add_simple_barplot(self,
+                           taxon2value,
                            header_name,
                            color=False,
                            show_values=False,
@@ -451,11 +493,11 @@ class EteTool():
             self._add_header(header_name, column_add=0)
         else:
             self._add_header(header_name, column_add=1)
-        
+
         values_lists = [float(i) for i in taxon2value.values()]
 
         min_value = min(values_lists)
-        
+
         if substract_min:
             values_lists = [i-min_value for i in values_lists]
             for taxon in list(taxon2value.keys()):
@@ -463,7 +505,7 @@ class EteTool():
 
         if not color:
             color = self._get_default_barplot_color()
-                
+
         for i, lf in enumerate(self.tree.iter_leaves()):
 
             try:
@@ -513,7 +555,7 @@ class EteTool():
                         lcolor = color
             else:
                 lcolor = color
-            
+
             b = StackedBarFace([fraction_biggest, fraction_rest], width=100, height=15,colors=[lcolor, 'white'])
             b.rotation= 0
             b.inner_border.color = "grey"
@@ -526,13 +568,13 @@ class EteTool():
 
         self.column_count += (1 + barplot_column)
 
-    
+
     def add_barplot_counts(self,):
          # todo
         pass
-    
+
     def remove_dots(self,):
-        
+
         nstyle = NodeStyle()
         nstyle["shape"] = "sphere"
         nstyle["size"] = 0
@@ -543,19 +585,19 @@ class EteTool():
         # if "nstyle" is modified, changes will affect to all nodes
         for n in self.tree.traverse():
             n.set_style(nstyle)
-            
+
     def add_text_face(self,
                       taxon2text,
                       header_name,
                       color_scale=False):
-        
+
         from lib.colors import get_categorical_color_scale
-        
+
         if color_scale:
             value2color = get_categorical_color_scale(taxon2text.values())
-        
+
         self._add_header(header_name)
-       
+
         # add column
         for i, lf in enumerate(self.tree.iter_leaves()):
             if lf.name in taxon2text:
@@ -573,17 +615,17 @@ class EteTool():
             if self.rotate:
                 n.rotation= 270
             lf.add_face(n, self.column_count, position="aligned")
-            
+
         self.column_count += 1
-        
-        
+
+
 
 class EteToolCompact():
 
     '''
     Plot ete3 phylogenetic profiles.
-    
-    - self.add_simple_barplot: add a barplot face from taxon2value dictionnary 
+
+    - self.add_simple_barplot: add a barplot face from taxon2value dictionnary
     - self.add_heatmap: add column with cells with value + colored background
     - self.rename_leaves: rename tree leaves from a dictionnary (old_name2new_name)
     - self.add_categorical_colorscale_legend: add legend
@@ -593,27 +635,27 @@ class EteToolCompact():
     def __init__(self,
                  tree_file):
 
-        import math 
-        
+        import math
+
         self.column_count = 0
-        
+
         self.rotate = False
-             
+
         self.tree = Tree(tree_file)
-        
+
         self.tree_length = len([i for i in self.tree.iter_leaves()])
-        
+
         self.text_scale = (self.tree_length)*0.01 # math.log2
-        
+
         self.default_colors = ['#fc8d59', '#91bfdb', '#99d594', '#c51b7d', '#f1a340', '#999999']
-        
+
         self.color_index = 0
-        
+
         # Calculate the midpoint node
         R = self.tree.get_midpoint_outgroup()
         # and set it as tree outgroup
         self.tree.set_outgroup(R)
-    
+
         self.tss = TreeStyle()
         self.tss.draw_guiding_lines = True
         self.tss.guiding_lines_color = "gray"
@@ -622,20 +664,20 @@ class EteToolCompact():
 
 
     def _get_default_barplot_color(self,):
-        
+
         col = self.default_colors[self.color_index]
-        
+
         if self.color_index == 5:
             self.color_index = 0
         else:
             self.color_index += 1
-        
+
         return col
 
-    def _add_header(self, 
+    def _add_header(self,
                    header_name,
                    column_add=0):
-        
+
         n = TextFace(f'{header_name}')
         n.margin_top = 1
         n.margin_right = 1
@@ -648,23 +690,23 @@ class EteToolCompact():
         n.opacity = 1.
         # add header
         self.tss.aligned_header.add_face(n, self.column_count-1+column_add)
- 
- 
+
+
     def rename_leaves(self,
                       taxon2new_taxon):
         for i, lf in enumerate(self.tree.iter_leaves()):
             n = TextFace(taxon2new_taxon[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
             lf.add_face(n, 0)
-            
- 
+
+
     def add_continuous_colorscale_legend(self,
                                          title,
-                                         min_val, 
+                                         min_val,
                                          max_val,
                                          scale):
-        
+
         self.tss.legend.add_face(TextFace(f"{title}", fsize = 4 * self.text_scale), column=0)
-        
+
         if min_val != max_val:
             n = TextFace(" " * int(self.text_scale), fsize = 4 * self.text_scale)
             n.margin_top = 1
@@ -672,7 +714,7 @@ class EteToolCompact():
             n.margin_left = 10
             n.margin_bottom = 1
             n.inner_background.color = rgb2hex(scale[0].to_rgba(float(max_val)))
-            
+
             n2 = TextFace(" " * int(self.text_scale), fsize = 4 * self.text_scale)
             n2.margin_top = 1
             n2.margin_right = 1
@@ -683,7 +725,7 @@ class EteToolCompact():
             self.tss.legend.add_face(n, column=1)
             self.tss.legend.add_face(TextFace(f"{max_val} % (max)", fsize = 4 * self.text_scale), column=2)
             self.tss.legend.add_face(n2, column=1)
-            self.tss.legend.add_face(TextFace(f"{min_val} % (min)", fsize = 4 * self.text_scale), column=2)   
+            self.tss.legend.add_face(TextFace(f"{min_val} % (min)", fsize = 4 * self.text_scale), column=2)
         else:
             n2 = TextFace(" " * int(self.text_scale), fsize = 4 * self.text_scale)
             n2.margin_top = 1
@@ -693,18 +735,18 @@ class EteToolCompact():
             n2.inner_background.color = rgb2hex(scale[0].to_rgba(float(min_val)))
 
             self.tss.legend.add_face(n2, column=0)
-            self.tss.legend.add_face(TextFace(f"{max_val} % Id", fsize = 4 * self.text_scale), column=1) 
-    
-    
+            self.tss.legend.add_face(TextFace(f"{max_val} % Id", fsize = 4 * self.text_scale), column=1)
+
+
     def add_categorical_colorscale_legend(self,
                                           title,
                                           scale):
-        
+
         self.tss.legend.add_face(TextFace(f"{title}", fsize = 4 * self.text_scale), column=0)
-        
+
         col = 1
-        for n,value in enumerate(scale): 
-            
+        for n,value in enumerate(scale):
+
             n2 = TextFace(" " * int(self.text_scale), fsize = 4 * self.text_scale)
             n2.margin_top = 1
             n2.margin_right = 1
@@ -714,15 +756,15 @@ class EteToolCompact():
 
             self.tss.legend.add_face(n2, column=col)
             self.tss.legend.add_face(TextFace(f"{value}", fsize = 4 * self.text_scale), column=col+1)
-            
+
             col+=2
             if col>16:
                 self.tss.legend.add_face(TextFace(f"    ", fsize = 4 * self.text_scale), column=0)
                 col = 1
-    
 
-    def add_simple_barplot(self, 
-                           taxon2value, 
+
+    def add_simple_barplot(self,
+                           taxon2value,
                            header_name,
                            color=False,
                            show_values=False,
@@ -735,20 +777,20 @@ class EteToolCompact():
             self._add_header(header_name, column_add=0)
         else:
             self._add_header(header_name, column_add=1)
-        
-        
+
+
         values_lists = [float(i) for i in taxon2value.values()]
-        
+
         min_value = min(values_lists)
-        
+
         if substract_min:
             values_lists = [i-min_value for i in values_lists]
             for taxon in list(taxon2value.keys()):
                 taxon2value[taxon] = taxon2value[taxon]-min_value
-            
+
         if not color:
             color = self._get_default_barplot_color()
-                
+
         for i, lf in enumerate(self.tree.iter_leaves()):
 
             try:
@@ -777,8 +819,8 @@ class EteToolCompact():
                 fraction_biggest = (float(value)/max_value)*100
             fraction_rest = 100-fraction_biggest
 
-            b = StackedBarFace([fraction_biggest, fraction_rest], 
-                               width=100 * (self.text_scale/3), 
+            b = StackedBarFace([fraction_biggest, fraction_rest],
+                               width=100 * (self.text_scale/3),
                                height=18,
                                colors=[color, 'white'])
             b.rotation= 0
@@ -797,13 +839,13 @@ class EteToolCompact():
 
 
     def add_heatmap(self,
-                    taxon2value, 
+                    taxon2value,
                     header_name,
                     scale_type="continuous",
                     palette=False):
-        
-        from lib.colors import get_categorical_color_scale
-        from lib.colors import get_continuous_scale
+
+        from lib.colors import (get_categorical_color_scale,
+                                get_continuous_scale)
         
         if scale_type == "continuous":
             scale = get_continuous_scale(taxon2value.values())

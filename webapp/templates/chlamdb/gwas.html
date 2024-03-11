@@ -56,62 +56,13 @@
                   </ul>
                 </p>
               </div>
-
-              <div style="margin: 1em; margin-top: 3em;">
-                <table id="gwas_table" class="display" width="100%">
-                  <thead>
-                    <tr>
-                      <td></td>
-                      {% for header in table_headers %}
-                        <td>{{ header|safe }}</td>
-                      {% endfor %}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for index, row in table_data.iterrows %}
-                      <tr>
-                        <td>{{forloop.counter}}</td>
-                        {% for attrname in table_data_accessors%}
-                          <td>{{row|keyvalue:attrname|safe}}</td>
-                        {% endfor %}
-                      </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
+              {% include "chlamdb/result_tabs.html" %}
             </div>
           {% endif %}
         </div>
       </div>
     </div>
   </div>
-
-
-  <script>
-$(document).ready(function() {
-  $('#gwas_table').DataTable( {
-    dom: 'lBfrtip',
-    buttons: [
-        {
-            extend: 'colvis',
-            columns: ':not(.noVis)',
-        },
-        {
-            extend: 'excel',
-            title: 'gwas_table'
-        },
-        {
-            extend: 'csv',
-            title: 'gwas_table'
-        }
-    ],
-    "paging": true,
-    "ordering": true,
-    "info":     false,
-    } );
-} );
-
-  </script>
 
 </body>
 {% include "chlamdb/style_menu.html" %}

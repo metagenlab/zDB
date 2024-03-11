@@ -3,15 +3,18 @@ from tempfile import TemporaryDirectory
 
 import pandas as pd
 from chlamdb.forms import make_gwas_form
+from django.conf import settings
 from django.shortcuts import render
 from django.views import View
 from ete3 import Tree
+from lib.ete_phylo import EteTree, MatchingColorColumn, ValueColoredColumn
 from scoary import scoary
 
 from views.analysis_view_metadata import GwasMetadata
 from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
+from views.utils import ResultTab
 
 
 class GWASBaseView(View):
@@ -40,9 +43,18 @@ class GWASBaseView(View):
                 *self._gwas_data_accessors,
                 *mixin_accessors[1:]]
 
+    @property
+    def result_tabs(self):
+        return [
+            ResultTab("gwas_table", "Table", "chlamdb/result_table.html"),
+            ResultTab("gwas_tree", "Phylogenetic tree",
+                      "chlamdb/result_asset.html", asset_path=getattr(self, "tree_path", None))
+            ]
+
     def get_context(self, **kwargs):
         context = super(GWASBaseView, self).get_context(**kwargs)
         context["description"] = self.metadata.description
+        context["result_tabs"] = self.result_tabs
         return context
 
     def dispatch(self, request, *args, **kwargs):
@@ -71,7 +83,7 @@ class GWASBaseView(View):
                 error_message="File could not be parsed and matched to genomes.")
             return render(request, self.template, context)
 
-        results = self.run_gwas(phenotype, qval_threshold, max_genes)
+        results, hits = self.run_gwas(phenotype, qval_threshold, max_genes)
         if results is None:
             context = self.get_context(
                 error=True, error_title="No significant association",
@@ -87,6 +99,11 @@ class GWASBaseView(View):
         for key in self._gwas_data_accessors:
             results[key] = results[key].apply(self.format_float)
 
+        e_tree = self.prepare_tree(phenotype, hits, results)
+        self.tree_path = "/temp/gwas_tree.svg"
+        path = settings.BASE_DIR + "/assets/" + self.tree_path
+        e_tree.render(path, dpi=500)
+
         context = self.get_context(
             table_headers=self.table_headers,
             table_data_accessors=self.table_data_accessors,
@@ -95,6 +112,40 @@ class GWASBaseView(View):
             qval_threshold=qval_threshold,
             )
         return render(request, self.template, context)
+
+    def prepare_tree(self, phenotype, hits, results):
+        # unique_og = intersect.orthogroup.unique().tolist()
+        # red_color = set(tuple(entry) for entry in intersect.to_numpy())
+        # df_og_count = db.get_og_count(list(unique_og), search_on="orthogroup").T
+        ref_tree = self.db.get_reference_phylogeny()
+        ref_names = self.db.get_genomes_description().description.to_dict()
+
+        tree = Tree(ref_tree)
+        R = tree.get_midpoint_outgroup()
+        if R is not None:
+            tree.set_outgroup(R)
+        tree.ladderize()
+        e_tree = EteTree(tree)
+        e_tree.rename_leaves(ref_names)
+
+        phenotype.trait = phenotype.trait.astype(int)
+        phenotype = phenotype.set_index("taxids")
+        neg_phenotype = 1 - phenotype
+        neg_phenotype = neg_phenotype.to_dict()["trait"]
+        phenotype = phenotype.to_dict()["trait"]
+
+        e_tree.add_column(ValueColoredColumn(
+            phenotype,
+            header="Phenotype",
+            col_func=lambda x: EteTree.BLUE if x == 0 else EteTree.RED))
+
+        positive = results["supporting"] > results["opposing"]
+        for ((gene, hit), pos) in zip(hits.iterrows(), positive):
+            col_column = MatchingColorColumn(
+                hit.to_dict(), phenotype if pos else neg_phenotype, header=gene,
+                col_func=lambda x: EteTree.BLUE if x == 0 else EteTree.RED)
+            e_tree.add_column(col_column)
+        return e_tree
 
     def get_phenotype(self):
         phenotype = pd.read_csv(self.form.cleaned_data["phenotype_file"],
@@ -117,7 +168,7 @@ class GWASBaseView(View):
         all_taxids = [i for i in genomes_data.index.to_list()]
         all_hits = self.get_hit_counts(all_taxids, search_on="taxid")
         if all_hits.empty:
-            return None
+            return (None, None)
 
         with TemporaryDirectory() as tmp:
             genotype_path = os.path.join(tmp, "genotype")
@@ -143,12 +194,12 @@ class GWASBaseView(View):
 
             # Summary file is absent if no gene passed filtering
             if not os.path.isfile(os.path.join(tmp, "out", "summary.tsv")):
-                return None
+                return (None, None)
             res = pd.read_csv(
                 os.path.join(tmp, "out", "traits", "trait", "result.tsv"),
                 sep="\t")
 
-        return res
+        return res, all_hits.loc[res["Gene"]]
 
     @staticmethod
     def format_float(val, precision=2):
