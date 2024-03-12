@@ -24,13 +24,12 @@ All the results are stored either in a SQLite database or directly as files and 
 
 ### zDB Installation
 
-zDB can be installed from conda with the following command
+zDB can be installed from bioconda with the following command
 ```
-conda install zdb -c bioconda
+mamba install zdb -c bioconda
 ```
-For now, the project is hosted on our own conda channel. A bioconda package is also available, but is currently not up to date.
 
-Once zDB is installed, we advise you to run the analysis and/or webapp in containers, especially for **MacOSX users**. For this, you'll need to install either **docker** or **singularity**. Both the analyses and the webapp can also be run in conda, but this comes with several drawbacks:
+Once zDB is installed, we advise you to run the analysis and/or webapp in containers, especially for **MacOSX users**. For this, you'll need to install either **docker** or **singularity**. Both the analyses and the webapp can also be run in conda environments, but this comes with several drawbacks:
 - django will be run in native mode, without nginx and gunicorn and should not be used to set up a web-facing database (it is fine for a local access)
 - containers allow us to have a precise control of the environment where the webapp is run; it is less the case for conda environment. Despite our best care, running the webapp in conda might not work due to local differences.
 - *some conda environments have numerous dependencies: to speed the installation, we strongly recommend the use of [libmamba](https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community)* or to have a fresh conda installation.
@@ -39,7 +38,7 @@ Once zDB is installed, we advise you to run the analysis and/or webapp in contai
 Of note, zDB has been tested on singularity v3.8.3 and v3.8.4 but should work on more recent versions. 
 If you opt to use singularity, it can be installed with the following command:
 ```
-conda install singularity=3.8.4 -c conda-forge
+mamba install singularity=3.8.4 -c conda-forge
 ```
 For the installation of docker, please have a look [here](https://docs.docker.com/get-docker/).
 
@@ -55,8 +54,8 @@ and replace it by the directory where you downloaded the project (this should po
 Add zdb's bin directory to PATH and voila, zdb should run smoothly.
 
 Note that zDB depends on nextflow (version 22.10 or lower) and singularity, so you'll need to install these packages, e.g. with conda:
-- `conda env create -p ./env -f conda/main.yaml`
-- `conda activate ./env`
+- `mamba env create -p ./env -f conda/main.yaml`
+- `mamba activate ./env`
 
 ## Overview
 
@@ -80,9 +79,9 @@ wget https://github.com/metagenlab/zDB/raw/master/test_dataset.tar.gz
 tar xvf test_dataset.tar.gz
 ```
 
-For a minimal database (assuming that singularity is installed):
+For a minimal database (*assuming that singularity is installed*):
 ```
-conda install zdb -c bioconda
+mamba install zdb -c bioconda
 zdb run --input=input.csv --name=simple_run # runs the analysis
 zdb webapp --name=simple_run # Launches the webapp on simple run
 ```
@@ -90,14 +89,14 @@ The minimal database should take around 5 minutes to complete in a recent Deskto
 
 To do the same in conda environments:
 ```
-conda install zdb -c bioconda
+mamba install zdb -c bioconda
 zdb run --input=input.csv --name=simple_run_conda --conda # runs the analysis
 zdb webapp --conda --name=simple_run_conda # Launches the webapp on the latest run
 ```
 
 To have a more complete set of analyses (includes cog and pfam annotation):
 ```
-conda install zdb -c bioconda
+mamba install zdb -c bioconda
 zdb setup --pfam --cog --conda
 zdb run --input=input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
 zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
@@ -110,7 +109,6 @@ Depending on which analysis are to be run, reference databases will need to be d
 This is done using the ```zdb setup``` command.
 You'll need to specifiy which databases are to be downloaded.
 Of note, in minimal mode, zdb does not require any database to run.
-
 
 The following databases can be downloaded:
 ```
