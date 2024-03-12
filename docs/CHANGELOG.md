@@ -9,6 +9,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Changed
 
+- Improve layout for various views, making better use of available space. ([#70](https://github.com/metagenlab/zDB/pull/70)) (Niklaus Johner)
 - Configure repository to publish the docs to [readthedocs](https://zdb.readthedocs.io)
 - Port nextflow pipelines to DSL2 language. ([#26](https://github.com/metagenlab/zDB/pull/26)) (Niklaus Johner)
 - Add CHANGELOG file. ([#25](https://github.com/metagenlab/zDB/pull/25)) (Niklaus Johner)
@@ -20,6 +21,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add new statistics to home view. ([#70](https://github.com/metagenlab/zDB/pull/70)) (Niklaus Johner)
 - Add GWAS views. The associations are calculated using Scoary2. ([#62](https://github.com/metagenlab/zDB/pull/62)) (Niklaus Johner)
 - Add VF details view. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)
 - Add VF accumulation/rarefaction plot view. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)
