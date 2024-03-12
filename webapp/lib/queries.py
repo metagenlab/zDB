@@ -2,7 +2,7 @@
 class VFQueries():
 
     hit_table = "vf_hits"
-    decription_table = "vf_defs"
+    description_table = "vf_defs"
     id_col = "vf_gene_id"
 
     def __init__(self, db):
@@ -26,6 +26,10 @@ class VFQueries():
             raise RuntimeError(f"Searching on {search_on} is not supported")
         return where_clause
 
+    def get_number_of_entries(self):
+        query = f"SELECT COUNT(*) FROM {self.description_table}"
+        return self.server.adaptor.execute_and_fetchall(query)[0][0]
+
     def get_hits(self, taxids):
         where_clause = self.gen_where_clause("taxid", taxids)
         columns = ["bioentry.taxon_id",
@@ -39,7 +43,7 @@ class VFQueries():
         query = (
             f"SELECT {', '.join(columns)} "
             f"FROM {self.hit_table} "
-            f"INNER JOIN {self.decription_table} ON {self.decription_table}.{self.id_col} = {self.hit_table}.{self.id_col} "
+            f"INNER JOIN {self.description_table} ON {self.description_table}.{self.id_col} = {self.hit_table}.{self.id_col} "
             f"INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = {self.hit_table}.hsh "
             "INNER JOIN seqfeature ON hsh.seqid = seqfeature.seqfeature_id "
             "INNER JOIN bioentry ON seqfeature.bioentry_id = bioentry.bioentry_id "
@@ -145,7 +149,7 @@ class VFQueries():
         col_selection = ", ".join([f"descr.{col}" for col in columns])
         query = (
             f"SELECT {col_selection} "
-            f"FROM {self.decription_table} as descr "
+            f"FROM {self.description_table} as descr "
             f"{where};"
         )
         results = self.server.adaptor.execute_and_fetchall(query, hit_ids)

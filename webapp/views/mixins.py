@@ -117,6 +117,14 @@ class BaseViewMixin():
         context.update(kwargs)
         return my_locals(context)
 
+    def _format_column_headers_to_str(self, with_object_name=True):
+        if with_object_name:
+            first_col = 1
+        else:
+            first_col = 0
+        return ", ".join(self.table_headers[first_col:-1]) + " and " + \
+               self.table_headers[-1]
+
 
 class AmrViewMixin(BaseViewMixin):
 

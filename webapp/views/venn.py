@@ -16,6 +16,8 @@ class VennBaseView(View):
 
     template = 'chlamdb/venn_generic.html'
 
+    _table_data_descr = "The table contains a list of the {0}, their {1}."
+
     @property
     def view_name(self):
         return f"venn_{self.object_type}"
@@ -94,23 +96,24 @@ class VennBaseView(View):
         self.show_results = True
         return counts
 
+    @property
+    def table_data_descr(self):
+        return self._table_data_descr.format(
+            self.object_name_plural, self._format_column_headers_to_str())
+
 
 class VennOrthogroupView(VennBaseView, OrthogroupViewMixin):
 
-    table_data_descr = "The table contains a list of the genes annotated "\
-                       "in each Orthogroup and their description."
+    pass
 
 
 class VennPfamView(VennBaseView, PfamViewMixin):
 
-    table_data_descr = "The table contains a list of the Pfam entries and "\
-                       "their description."
+    pass
 
 
 class VennKoMixin():
 
-    table_data_descr = "The table contains a list of the Kegg Orthologs and "\
-                       "their description."
     table_data_accessors = ["ko", "description"]
 
 
@@ -156,9 +159,6 @@ class VennKoSubsetView(VennSubsetBaseView, VennKoMixin, KoViewMixin):
 
 class VennCogView(VennBaseView, CogViewMixin):
 
-    table_data_descr = "The table contains a list of COG definitions, their "\
-                       "description and the category to which they belong."
-
     def filter_data(self, data, counts):
         return data, counts.reindex(data.index)
 
@@ -172,11 +172,9 @@ class VennCogSubsetView(VennSubsetBaseView, VennCogView):
 
 class VennAmrView(VennBaseView, AmrViewMixin):
 
-    table_data_descr = "The table contains a list of the Pfam entries and "\
-                       "their description."
+    pass
 
 
 class VennVfView(VennBaseView, VfViewMixin):
 
-    table_data_descr = "The table contains a list of the Pfam entries and "\
-                       "their description."
+    pass

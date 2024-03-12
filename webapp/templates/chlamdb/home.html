@@ -34,32 +34,69 @@
                 <!-- Images and boxes menu-->
                 <div class="container-fluid" id="main_container" style="width: 90%;">
                   <div class="row">
-                    <div class="col-lg-3 col-md-12 col-sm-12" >
+                    <div class="col-lg-4 col-md-12 col-sm-12" >
                       <div class="serviceBox_2"  >
                         <h3 class="title">The database contains:</h3>
-                        <ul  style="list-style-type:none;">
+                        <ul>
                           {% if number_of_files %}
-                            <br>
-                              <li class="summary_data" >
-                                <a href="{% url 'genomes' %}" >
-                                  <b>{{number_of_files}}  </b>
-                                </a>genomes
-                              </li>
-                            {% endif %}
-                            <br>
-                          {% if number_ort %}
-                            <br>
-                              <li class="summary_data">
-                                <a href="{% url 'index_comp' 'orthogroup' %}" >
-                                  <b>{{number_ort}}  </b>
-                                </a>orthogroups
-                              </li>
+                            <li class="summary_data" >
+                              <a href="{% url 'genomes' %}" >
+                                <b>{{number_of_files}}  </b>
+                              </a>genomes
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"orthogroup" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'orthogroup' %}" >
+                                <b>{{number_ort}}  </b>
+                              </a>orthogroups
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"COG" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'cog' %}" >
+                                <b>{{number_cog}}  </b>
+                              </a>COGs
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"pfam" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'pfam' %}" >
+                                <b>{{number_pfam}}  </b>
+                              </a>Pfam domains
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"KEGG" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'ko' %}" >
+                                <b>{{number_ort}}  </b>
+                              </a>orthogroups
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"AMR" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'amr' %}" >
+                                <b>{{number_amr}}  </b>
+                              </a>AMRs
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"BLAST_vfdb" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'vf' %}" >
+                                <b>{{number_vf}}  </b>
+                              </a>VF genes
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"BLAST_swissprot" == 1 %}
+                            <li class="summary_data">
+                              <b>{{number_swissprot}}  </b>VF genes
+                            </li>
                           {% endif %}
                           <br>
                         </ul>
                       </div>
                     </div>
-                    <div class="col-lg-3 col-md-12 col-sm-12">
+                    <div class="col-lg-4 col-md-12 col-sm-12">
                       <div class="serviceBox">
                         <a  href="{% url 'genomes' %}">
                           <div class="service-icon">
@@ -71,7 +108,7 @@
                         <p class="description">Display the summary table of the genomes contained in the database and navigate to the list of proteins for each of them. <br> Fasta files and .gbk files are available for downloading. </p>
                       </div>
                     </div>
-                    <div class="col-lg-3 col-md-12 col-sm-12" >
+                    <div class="col-lg-4 col-md-12 col-sm-12" >
                       <div class="serviceBox">
                         <a  href="{% url 'phylogeny' %}">
                           <div class="service-icon">
@@ -94,13 +131,15 @@
                         <h3 class="title" >Homology search</h3>
                         <p class="description"> Blast an input sequence against the genomes of the database. You can select among blastn, blastp, or the six-frame translation-based approaches, blastx and tblastn. </p>
                         <br>
-                        <div class= "col-md-3 col-sm-6">
-                          <button type="button_analyses" class="fill" >
-                            <a  class="link_boxes"  href="{% url 'blast' %}">
-                              <span class="link"></span> Blast
-                            </a>
-                          </button>
-                        </div>
+                        <ul style="padding-left:10px;">
+                          <li style="float:left; margin-right:25px;">
+                            <button type="button_analyses" class="fill" >
+                              <a  class="link_boxes"  href="{% url 'blast' %}">
+                                <span class="link"></span> Blast
+                              </a>
+                            </button>
+                          </li>
+                        </ul>
                       </div>
                     </div>
                     <div class="col-lg-4 col-md-12 col-sm-12"    style=" min-width: 200px;" >
@@ -111,13 +150,15 @@
                         <h3 class="title">Orthology</h3>
                         <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}{% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}{% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.</p>
                         <br>
-                        <div class= "col-md-4 col-sm-7">
-                          <button type="button_analyses" class="fill" >
-                            <a class="link_boxes" href="{% url 'index_comp' 'orthogroup' %}">
-                              <span class="link"></span> Orthogroups
-                            </a>
-                          </button>
-                        </div>
+                        <ul style="padding-left:10px;">
+                          <li style="float:left; margin-right:25px;">
+                            <button type="button_analyses" class="fill" >
+                              <a class="link_boxes" href="{% url 'index_comp' 'orthogroup' %}">
+                                <span class="link"></span> Orthogroups
+                              </a>
+                            </button>
+                          </li>
+                        </ul>
                       </div>
                     </div>
                     <div class="col-lg-4 col-md-12 col-sm-12">
@@ -128,43 +169,53 @@
                         <h3 class="title">Annotations</h3>
                         <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}{% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}{% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %}{% if optional2status|keyvalue:"AMR" == 1 %}, Antimicrobial Resistance{% endif %}{% if optional2status|keyvalue:"BLAST_vfdb" == 1 %}, Virulence Factors{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.</p>
                         <br>
-                        <div class= "col-md-4 col-sm-7">
+                        <ul style="padding-left:10px;">
                           {% if optional2status|keyvalue:"COG" == 1 %}
-                            <button type="button_analyses" class="fill" >
-                              <a class="link_boxes"  href="{% url 'index_comp' 'cog' %}">
-                                <span class="link"></span>COGs
-                              </a>
-                            </button>
+                            <li style="float:left; margin-right:25px;">
+                              <button type="button_analyses" class="fill" >
+                                <a class="link_boxes"  href="{% url 'index_comp' 'cog' %}">
+                                  <span class="link"></span>COGs
+                                </a>
+                              </button>
+                            </li>
                           {% endif %}
                           {% if optional2status|keyvalue:"KEGG" %}
-                            <button type="button_analyses" class="fill" >
-                              <a class="link_boxes" href="{% url 'index_comp' 'ko' %}">
-                                <span class="link"></span>Kegg Orthologs
-                              </a>
-                            </button>
+                            <li style="float:left; margin-right:25px;">
+                              <button type="button_analyses" class="fill" >
+                                <a class="link_boxes" href="{% url 'index_comp' 'ko' %}">
+                                  <span class="link"></span>Kegg Orthologs
+                                </a>
+                              </button>
+                            </li>
                           {% endif %}
                           {% if optional2status|keyvalue:"pfam" == 1 %}
-                            <button type="button_analyses" class="fill" >
-                              <a  class="link_boxes"  href="{% url 'index_comp' 'pfam' %}">
-                                <span class="link"></span>Pfam domains
-                              </a>
-                            </button>
+                            <li style="float:left; margin-right:25px;">
+                              <button type="button_analyses" class="fill" >
+                                <a  class="link_boxes"  href="{% url 'index_comp' 'pfam' %}">
+                                  <span class="link"></span>Pfam domains
+                                </a>
+                              </button>
+                            </li>
                           {% endif %}
                           {% if optional2status|keyvalue:"AMR" == 1 %}
-                            <button type="button_analyses" class="fill" >
-                              <a  class="link_boxes"  href="{% url 'index_comp' 'amr' %}">
-                                <span class="link"></span>Antimicrobial Resistance
-                              </a>
-                            </button>
+                            <li style="float:left; margin-right:25px;">
+                              <button type="button_analyses" class="fill" >
+                                <a  class="link_boxes"  href="{% url 'index_comp' 'amr' %}">
+                                  <span class="link"></span>Antimicrobial Resistance
+                                </a>
+                              </button>
+                            </li>
                           {% endif %}
                           {% if optional2status|keyvalue:"BLAST_vfdb" == 1 %}
-                            <button type="button_analyses" class="fill" >
-                              <a  class="link_boxes"  href="{% url 'index_comp' 'vf' %}">
-                                <span class="link"></span>Virulence Factor
-                              </a>
-                            </button>
+                            <li style="float:left; margin-right:25px;">
+                              <button type="button_analyses" class="fill" >
+                                <a  class="link_boxes"  href="{% url 'index_comp' 'vf' %}">
+                                  <span class="link"></span>Virulence Factor
+                                </a>
+                              </button>
+                            </li>
                           {% endif %}
-                        </div>
+                        </ul>
                       </div>
                     </div>
                   </div>
@@ -179,18 +230,22 @@
                         <p class="description"> Generate a clickable version of circos plot indicating the presence/absence of homologous proteins in one or multiple genomes, the GC content and navigate to the description of the locus tags of interest. </p>
                         <br>
                         <p class="description"> Align target genomic regions of two or more genomes and plot them. </p>
-                        <div class= "col-md-3 col-sm-6">
-                          <button type="button_analyses" class="fill" >
-                            <a  class="link_boxes"   href="{% url 'circos' %}">
-                              <span class="link"></span>Plot region
-                            </a>
-                          </button>
-                          <button type="button_analyses" class="fill" >
-                            <a  class="link_boxes"   href="{% url 'circos' %}">
-                              <span class="link"></span>Circos
-                            </a>
-                          </button>
-                        </div>
+                        <ul style="padding-left:10px;">
+                          <li style="float:left; margin-right:25px;">
+                            <button type="button_analyses" class="fill" >
+                              <a  class="link_boxes"   href="{% url 'circos' %}">
+                                <span class="link"></span>Plot region
+                              </a>
+                            </button>
+                          </li>
+                          <li style="float:left; margin-right:25px;">
+                            <button type="button_analyses" class="fill" >
+                              <a  class="link_boxes"   href="{% url 'circos' %}">
+                                <span class="link"></span>Circos
+                              </a>
+                            </button>
+                          </li>
+                        </ul>
                       </div>
                     </div>
 
@@ -203,13 +258,15 @@
                           <h3 class="title" >Metabolism</h3>
                           <p class="description"> Discover which metabolic pathways are present in the genomes. KEGG categories can be investigated checking which KEGG entries are present in each KEGG module. Entries can be visualized in lists or used to generate an annotated phylogeny. In addition, you can visualize in the KEGG maps which genes of a specific pathway are carried by a genome of interest. </p>
                           <br>
-                          <div class= "col-lg-4 col-md-12 col-sm-7">
-                            <button type="button_analyses" class="fill" >
-                              <a class="link_boxes"  href="{% url 'kegg' %}">
-                                <span class="link"></span>Kegg based
-                              </a>
-                            </button>
-                          </div>
+                          <ul style="padding-left:10px;">
+                            <li style="float:left; margin-right:25px;">
+                              <button type="button_analyses" class="fill" >
+                                <a class="link_boxes"  href="{% url 'kegg' %}">
+                                  <span class="link"></span>Kegg based
+                                </a>
+                              </button>
+                            </li>
+                          </ul>
                         </div>
                       </div>
                     {% endif %}

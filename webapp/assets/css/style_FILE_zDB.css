@@ -161,7 +161,7 @@
 }
 
 .summary_data{
-    float: left;
+    text-align: left;
     font-size: 1.6em;
 }
 
@@ -346,7 +346,6 @@
     line-height: 100px;
     height: 100px;
     width: 100px;
-    margin: 0 0 30px;
     border-radius: 50%;
     box-shadow: 0 0 40px rgba(0,0,0,0.5);
     display: inline-block;
@@ -383,7 +382,6 @@
     line-height: 100px;
     height: 100px;
     width: 100px;
-    margin: 0 0 30px;
     border-radius: 50%;
     display: inline-block;
     position: relative;

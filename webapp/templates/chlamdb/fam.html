@@ -180,17 +180,19 @@
                         <td>{{ fam }} is associated with <strong>{{ all_locus_data|length }} different proteins</strong> (see tab "<a href="#tab2" data-toggle="tab">Protein list</a>" and "<a href="#tab3" data-toggle="tab">Profile</a>")</td>
                       </tr>
                       <tr>
-                        <td> The {{ all_locus_data|length }} proteins are classified into <strong>{{ group_count|length }} different orthogroup(s)</strong></td>
+                        <td>
+                          The {{ all_locus_data|length }} proteins are classified into <strong>{{ group_count|length }} different orthogroup(s)</strong>
+                          <div style="padding-left:20px">
+                            <ul style="list-style-type:disc; width:100%;">
+                              {% for group in group_count %}
+                                <li style="float:left;margin-right:10px;width:120px;">{{group|safe}}</li>
+                              {% endfor %}
+                            </ul>
+                          </div>
+                        </td>
                       </tr>
                     </table>
 
-                    <div style="padding-left:40px">
-                      <ul style="list-style-type:disc;">
-                        {% for group in group_count %}
-                          <li>{{group|safe}}</li>
-                        {% endfor %}
-                      </ul>
-                    </div>
                   </div>
                 </div>
 

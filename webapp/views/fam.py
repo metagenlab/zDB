@@ -154,7 +154,7 @@ class FamVfView(FamBaseView, VfViewMixin):
 
 class FamCogView(FamBaseView, CogViewMixin):
 
-    accessors = ["description", "function"]
+    accessors = ["description", "function_descr"]
 
     def get(self, request, entry_id, *args, **kwargs):
         entry_id = int(entry_id[3:])
