@@ -4,16 +4,16 @@
     <thead>
       <tr>
         <th></th>
-        {% for header in table_headers %}
+        {% for header in results.table_headers %}
           <th>{{ header|safe }}</th>
         {% endfor %}
       </tr>
     </thead>
     <tbody>
-      {% for index, row in table_data.iterrows %}
+      {% for index, row in results.table_data.iterrows %}
         <tr>
           <td>{{forloop.counter}}</td>
-          {% for attrname in table_data_accessors%}
+          {% for attrname in results.table_data_accessors%}
             <td>{{row|keyvalue:attrname|safe}}</td>
           {% endfor %}
         </tr>
@@ -33,11 +33,11 @@ $(document).ready(function() {
         },
         {
             extend: 'excel',
-            title: '{{tab.id}}'
+            title: '{{results.id}}'
         },
         {
             extend: 'csv',
-            title: '{{tab.id}}'
+            title: '{{results.id}}'
         }
     ],
     "paging": true,
