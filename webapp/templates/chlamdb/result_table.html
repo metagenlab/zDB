@@ -1,6 +1,6 @@
 {% load custom_tags %}
-<div style="margin-top: 3em;">
-  <table id="{{results.data_table_config.table_id}}" class="data-table table-striped" width="100%" >
+<div style="{{results.data_table_config.style}}" >
+  <table id="{{results.data_table_config.table_id}}" class="table table-striped" width="100%" >
     <thead>
       <tr>
         {% if results.data_table_config.display_index%}
@@ -30,7 +30,9 @@
 
 $(document).ready(function() {
   var table_config = {{results.data_table_config.to_json|safe}};
-  $('#{{results.data_table_config.table_id}}').DataTable( table_config );
+  if (table_config.display_as_datatable) {
+    $('#{{results.data_table_config.table_id}}').DataTable( table_config );
+  }
 } );
 
 </script>

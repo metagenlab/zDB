@@ -266,7 +266,7 @@
             </div>
             {% endif %}
 
-           {% if amr_entries|length > 0 %}
+           {% if AMR_data|keyvalue:"table_data"|length > 0 %}
             <div class="row">
               <div class="panel panel-default">
               <div class="panel-heading">
@@ -276,28 +276,10 @@
                   </a>
                 </h3>
               </div>
-              <table class="table table-striped" style="width: 100%">
-                <thead>
-                  <tr>
-                    {% for entry in amr_header %}
-                      <th> {{entry|safe}} </th>
-                    {% endfor %}
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for row in amr_entries %}
-                    <tr>
-                      {% for e in row %}
-                        <td> {{e|safe}}</td>
-                      {% endfor %}
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+              {% include "chlamdb/result_table.html" with results=AMR_data %}
               </div>
             </div>
             {% endif %}
-
 
             {% if length_distrib %}
               <div class="row">

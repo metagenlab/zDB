@@ -185,14 +185,20 @@ def format_refseqid_to_ncbi(seqid):
 
 class DataTableConfig():
 
-    def __init__(self, table_id="results", ordering=True, paging=True, export_buttons=True,
-                 colvis_button=False, display_index=False):
+    def __init__(self, table_id="results", ordering=True, paging=True,
+                 export_buttons=True, colvis_button=False, display_index=False,
+                 display_as_datatable=True):
         self.table_id = table_id
         self.ordering = ordering
         self.paging = paging
         self.export_buttons = export_buttons
         self.colvis_button = colvis_button
         self.display_index = display_index
+        self.display_as_datatable = display_as_datatable
+        if self.display_as_datatable:
+            self.style = "margin-top: 3em;"
+        else:
+            self.style = ""
 
     @property
     def buttons(self):
@@ -220,6 +226,7 @@ class DataTableConfig():
                 "info": False,
                 "buttons": self.buttons,
                 "dom": self.dom,
+                "display_as_datatable": self.display_as_datatable,
             },
             cls=DjangoJSONEncoder)
 

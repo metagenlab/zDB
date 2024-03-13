@@ -172,6 +172,10 @@
     margin: 10px 10px 10px 10px
 }
 
+.panel > div > .table {
+    margin-bottom: 0;
+}
+
 .jumbotron {
     padding-top: 10px;
     padding-bottom: 10px;

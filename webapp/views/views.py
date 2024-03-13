@@ -43,13 +43,13 @@ from lib.KO_module import ModuleParser
 from reportlab.lib import colors
 
 from views.errors import errors
-from views.mixins import (CogViewMixin, ComparisonViewMixin, KoViewMixin,
-                          VfViewMixin)
-from views.utils import (DataTableConfig, format_amr, format_cog,
-                         format_hmm_url, format_ko, format_ko_modules,
-                         format_ko_path, format_locus, format_orthogroup,
-                         format_pfam, format_refseqid_to_ncbi, my_locals,
-                         optional2status, page2title, to_s)
+from views.mixins import (AmrViewMixin, CogViewMixin, ComparisonViewMixin,
+                          KoViewMixin, VfViewMixin)
+from views.utils import (DataTableConfig, format_cog, format_ko,
+                         format_ko_modules, format_ko_path, format_locus,
+                         format_orthogroup, format_pfam,
+                         format_refseqid_to_ncbi, my_locals, optional2status,
+                         page2title, to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -536,21 +536,18 @@ def og_tab_get_kegg_annot(db, seqids, from_taxid=None):
 
 
 def og_tab_get_amr_annot(db, seqids):
-    amr_hits = db.get_amr_hits_from_seqids(seqids)
-    if amr_hits.empty:
+    mixin = AmrViewMixin()
+    hits = mixin.get_hit_counts(seqids, search_on="seqid", indexing="seqid")
+    if hits.empty:
         return {}
 
-    col_titles = {"closest_seq": "Closest Sequence",
-                  "hmm_id": "HMM"}
-
-    amr_hits["closest_seq"] = amr_hits["closest_seq"].map(format_refseqid_to_ncbi)
-    amr_hits["gene"] = amr_hits["gene"].apply(format_amr, to_url=True)
-    amr_hits["hmm_id"] = amr_hits["hmm_id"].apply(format_hmm_url)
-    return {
-        "amr_entries": amr_hits.values,
-        "amr_header": [col_titles.get(col, col.capitalize())
-                       for col in amr_hits.columns]
-    }
+    descriptions = mixin.get_hit_descriptions(
+        hits[mixin.object_column].to_list())
+    return {"table_headers": mixin.table_headers,
+            "table_data": descriptions,
+            "table_data_accessors": mixin.table_data_accessors,
+            "data_table_config": DataTableConfig(export_buttons=False,
+                                                 display_as_datatable=False)}
 
 
 def og_tab_get_vf_annot(db, seqids):
@@ -705,7 +702,7 @@ def orthogroup(request, og):
             product = "-"
         product_annotations.append([index + 1, product, cnt])
 
-    cog_ctx, kegg_ctx, pfam_ctx, amr_ctx = {}, {}, {}, {}
+    cog_ctx, kegg_ctx, pfam_ctx = {}, {}, {}
     best_hit_phylo = {}
     context = {}
     if optional2status.get("COG", False):
@@ -729,7 +726,7 @@ def orthogroup(request, og):
         best_hit_phylo = tab_og_best_hits(db, og_id)
 
     if optional2status.get("AMR", False):
-        amr_ctx = og_tab_get_amr_annot(db, annotations.index.tolist())
+        context["AMR_data"] = og_tab_get_amr_annot(db, annotations.index.tolist())
 
     if optional2status.get("BLAST_vfdb", False):
         vf_ctx = og_tab_get_vf_annot(db, annotations.index.tolist())
@@ -748,7 +745,7 @@ def orthogroup(request, og):
         **length_tab_ctx,
         **og_conserv_ctx, **best_hit_phylo,
         **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx,
-        **amr_ctx, **vf_ctx
+        **vf_ctx
     })
     return render(request, "chlamdb/og.html", my_locals(context))
 
@@ -1092,7 +1089,7 @@ def locusx(request, locus=None, menu=True):
         homolog_tab_ctx = {"n_genomes": "1 genome"}
         og_phylogeny_ctx = {}
 
-    kegg_ctx, cog_ctx, pfam_ctx, amr_ctx = {}, {}, {}, {}
+    kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
     diamond_matches_ctx = {}
     best_hit_phylo = {}
     context = {}
@@ -1116,7 +1113,7 @@ def locusx(request, locus=None, menu=True):
         best_hit_phylo = tab_og_best_hits(db, og_id, locus=locus)
 
     if optional2status.get("AMR", False):
-        amr_ctx = og_tab_get_amr_annot(db, [seqid])
+        context["AMR_data"] = og_tab_get_amr_annot(db, [seqid])
 
     if optional2status.get("BLAST_vfdb", False):
         vf_ctx = og_tab_get_vf_annot(db, [seqid])
@@ -1144,7 +1141,6 @@ def locusx(request, locus=None, menu=True):
         **genomic_region_ctx,
         **diamond_matches_ctx,
         **best_hit_phylo,
-        **amr_ctx,
         **vf_ctx,
     })
     return render(request, 'chlamdb/locus.html', my_locals(context))
