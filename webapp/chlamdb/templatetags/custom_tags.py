@@ -4,6 +4,11 @@ register = template.Library()
 
 
 @register.filter
+def attrvalue(obj, key):
+    return getattr(obj, key, "")
+
+
+@register.filter
 def keyvalue(dict, key):
     return dict.get(key)
 

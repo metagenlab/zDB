@@ -18,7 +18,7 @@
             <td>{{forloop.counter}}</td>
           {% endif %}
           {% for attrname in results.table_data_accessors%}
-            <td>{{row|keyvalue:attrname|safe}}</td>
+            <td>{{row|attrvalue:attrname|safe}}</td>
           {% endfor %}
         </tr>
       {% endfor %}

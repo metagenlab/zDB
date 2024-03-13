@@ -352,28 +352,11 @@
           <div class="row">
             <div class="panel panel-default">
 
-            {% if n_swissprot_hits != 0 %}
+            {% if swissprot.n_swissprot_hits != 0 %}
               <div class="panel-heading">
-                <h3 class="panel-title">Annotations of the {{n_swissprot_hits}} SwissProt hits</h3>
+                <h3 class="panel-title">Annotations of the {{swissprot.n_swissprot_hits}} SwissProt hits</h3>
               </div>
-              <div style="margin-top:10px; margin-left:3px; margin-right:3px; margin-bottom:3px">
-              <table class="table table-striped" style="width: 100%" id="swissprot_hits">
-                <thead>
-                  <tr>
-                    <th>Annotation</th>
-                    <th>Number of occurrences</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {% for swissprot in reviewed %}
-                    <tr>
-                      <td>{{swissprot.0}}</td>
-                      <td>{{swissprot.1}}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-              </table>
-              </div>
+              {% include "chlamdb/result_table.html" with results=swissprot %}
             {% else %}
               <div class="panel-heading">
                 <h3 class="panel-title">No swissprot homolog </h3>
@@ -419,21 +402,6 @@ h3.panel-title > a{
   color: #337ab7;
 }
 </style>
-
-<script>
-
-$(document).ready(function() {
-  $('#swissprot_hits').DataTable( {
-    dom: 'lBfrtip',
-    buttons: [],
-  "paging":   true,
-  "ordering": true,
-  "info":     false
-  });
-});
-
-
-</script>
 
 </body>
 </html>

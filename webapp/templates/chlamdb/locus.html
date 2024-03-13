@@ -79,10 +79,10 @@
           </li>
         {% endif %}
 
-        {% if optional2status|keyvalue:"BLAST_swissprot" and n_swissprot_hits > 0 %}
+        {% if optional2status|keyvalue:"BLAST_swissprot" and swissprot.n_swissprot_hits > 0 %}
           <li>
             <a href="#swissprot_homologs_tab" data-toggle="tab">
-              SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span>
+              SwissProt homologs <span class="badge">{{swissprot.n_swissprot_hits}}</span>
             </a>
           </li>
         {% endif %}
@@ -143,30 +143,7 @@
 
         <div class="tab-pane" id="swissprot_homologs_tab">
           <div class="col-md-12 col-lg-10" style="padding-top:20px">
-
-          <table id="blast_swissprot_table" class="table">
-            <thead>
-            <tr>
-              {% for entry in swissprot_headers %}
-              <th> {{entry}} </th>
-              {% endfor %}
-            </tr>
-            </thead>
-            <tbody>
-              {% for values in swissprot_blast_data %}
-              <tr>
-                {% for entry in values %}
-                    {% if forloop.counter0 == 0 %}
-                      <td><a href="https://www.uniprot.org/uniprot/{{entry|safe}}">{{entry|safe}}</a></td>
-                  {% else %}
-                      <td>{{entry|safe}}</td>
-                  {% endif %}
-
-                {% endfor %}
-              </tr>
-              {%  endfor %}
-            </tbody>
-          </table>
+            {% include "chlamdb/result_table.html" with results=swissprot %}
           </div>
         </div>
 
@@ -572,32 +549,6 @@ $(document).ready(function() {
 $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();
 });
-
-{% if n_swissprot_hits > 0 %}
-$(document).ready(function() {
-  $('#blast_swissprot_table').DataTable( {
-    dom: 'lBfrtip',
-    buttons: [
-      {
-        extend: 'colvis',
-        columns: ':not(.noVis)',
-      },
-      {
-        extend: 'excel',
-        title: 'blast_swissprot'
-      },
-      {
-        extend: 'csv',
-        title: 'blast_swissprot'
-      }
-    ],
-    "paging":   true,
-    "ordering": true,
-    "info":     false,
-    } );
-});
-{% endif %}
-
 
 {% if pfam_def|length > 0 %}
 window.onload = function() {

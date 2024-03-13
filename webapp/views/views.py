@@ -386,10 +386,13 @@ def og_tab_get_swissprot_homologs(db, annotations):
     homologs = db.get_swissprot_homologs(annotations.index.tolist(),
                                          indexing="accession")
     summary = homologs.groupby("definition").count()
-    swissprot = []
-    for definition, data in summary.iterrows():
-        swissprot.append([definition, data.accession])
-    return {"reviewed": swissprot, "n_swissprot_hits": len(homologs)}
+    return {"table_data": summary,
+            "table_data_accessors": ["name", "accession"],
+            "table_headers": ["Annotation", "Number of occurrences"],
+            "data_table_config": DataTableConfig(table_id="swissprot",
+                                                 display_index=False),
+            "n_swissprot_hits": len(homologs)
+            }
 
 
 def prepare_default_tree(og_phylogeny):
@@ -702,8 +705,9 @@ def orthogroup(request, og):
             product = "-"
         product_annotations.append([index + 1, product, cnt])
 
-    swissprot, cog_ctx, kegg_ctx, pfam_ctx, amr_ctx = {}, {}, {}, {}, {}
+    cog_ctx, kegg_ctx, pfam_ctx, amr_ctx = {}, {}, {}, {}
     best_hit_phylo = {}
+    context = {}
     if optional2status.get("COG", False):
         cog_ctx = og_tab_get_cog_annot(db, annotations.index.tolist())
 
@@ -714,7 +718,7 @@ def orthogroup(request, og):
         pfam_ctx = og_tab_get_pfams(db, annotations)
 
     if optional2status.get("BLAST_swissprot", False):
-        swissprot = og_tab_get_swissprot_homologs(db, annotations)
+        context["swissprot"] = og_tab_get_swissprot_homologs(db, annotations)
 
     try:
         og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
@@ -733,7 +737,7 @@ def orthogroup(request, og):
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
     homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms, og=og_id)
-    context = {
+    context.update({
         "valid_id": valid_id,
         "n_homologues": n_homologues,
         "og": og,
@@ -743,9 +747,9 @@ def orthogroup(request, og):
         **homolog_tab_ctx,
         **length_tab_ctx,
         **og_conserv_ctx, **best_hit_phylo,
-        **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx, **swissprot,
+        **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx,
         **amr_ctx, **vf_ctx
-    }
+    })
     return render(request, "chlamdb/og.html", my_locals(context))
 
 
@@ -1090,8 +1094,8 @@ def locusx(request, locus=None, menu=True):
 
     kegg_ctx, cog_ctx, pfam_ctx, amr_ctx = {}, {}, {}, {}
     diamond_matches_ctx = {}
-    swissprot_ctx = {}
     best_hit_phylo = {}
+    context = {}
     if optional2status.get("KEGG", False):
         taxids = db.get_organism([seqid], as_taxid=True)
         kegg_ctx = og_tab_get_kegg_annot(db, [seqid], from_taxid=taxids[seqid])
@@ -1103,7 +1107,7 @@ def locusx(request, locus=None, menu=True):
         pfam_ctx = tab_get_pfam_annot(db, [seqid])
 
     if optional2status.get("BLAST_swissprot", False):
-        swissprot_ctx = locus_tab_swissprot_hits(db, seqid)
+        context["swissprot"] = locus_tab_swissprot_hits(db, seqid)
 
     if optional2status.get("BLAST_database", False):
         diamond_matches_ctx = tab_get_refseq_homologs(db, seqid)
@@ -1117,7 +1121,7 @@ def locusx(request, locus=None, menu=True):
     if optional2status.get("BLAST_vfdb", False):
         vf_ctx = og_tab_get_vf_annot(db, [seqid])
 
-    context = {
+    context.update({
         "valid_id": valid_id,
         "menu": True,
         "n_homologues": n_homologues,
@@ -1139,11 +1143,10 @@ def locusx(request, locus=None, menu=True):
         **pfam_ctx,
         **genomic_region_ctx,
         **diamond_matches_ctx,
-        **swissprot_ctx,
         **best_hit_phylo,
         **amr_ctx,
         **vf_ctx,
-    }
+    })
     return render(request, 'chlamdb/locus.html', my_locals(context))
 
 
@@ -2064,7 +2067,8 @@ def format_gene(gene):
         return gene
 
 
-def format_taxid_to_ncbi(organism, taxid):
+def format_taxid_to_ncbi(organism_and_taxid):
+    organism, taxid = organism_and_taxid
     val = (
         f"""<a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={taxid}" target="_top">"""
         f"""{organism}</a>"""
@@ -2072,26 +2076,29 @@ def format_taxid_to_ncbi(organism, taxid):
     return val
 
 
+def format_swissprot_entry(entry_id):
+    return f'<a href="https://www.uniprot.org/uniprot/{entry_id}">{entry_id}</a>'
+
+
 def locus_tab_swissprot_hits(db, seqid):
     swissprot_homologs = db.get_swissprot_homologs([seqid])
-
-    blast_data = []
     header = ["Swissprot accession", "Eval", "Score", "ID (%)", "N gaps",
               "Alignment length", "Annot score", "Gene", "Description",
               "Organism"]
+    swissprot_homologs["ncbi"] = swissprot_homologs[["organism", "taxid"]].apply(
+        format_taxid_to_ncbi, axis=1)
+    swissprot_homologs["accession"] = swissprot_homologs["accession"].apply(
+        format_swissprot_entry)
 
-    for num, data in swissprot_homologs.iterrows():
-        line = [data.accession, data.evalue, data.bitscore, data.perc_id,
-                data.gaps, data.match_len, data.pe, data.gene, data.definition,
-                format_taxid_to_ncbi(data.organism, data.taxid)]
-        blast_data.append(line)
-
-    ctx = {
-        "n_swissprot_hits": len(swissprot_homologs),
-        "swissprot_blast_data": blast_data,
-        "swissprot_headers": header
-    }
-    return ctx
+    accessors = ["accession", "evalue", "bitscore", "perc_id", "gaps",
+                 "match_len", "pe", "gene", "definition", "ncbi"]
+    return {"table_data": swissprot_homologs,
+            "table_data_accessors": accessors,
+            "table_headers": header,
+            "data_table_config": DataTableConfig(table_id="swissprot",
+                                                 display_index=False),
+            "n_swissprot_hits": len(swissprot_homologs)
+            }
 
 
 # Might be interesting to draw the regions in the same order as they appear
