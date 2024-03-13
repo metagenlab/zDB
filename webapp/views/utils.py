@@ -185,7 +185,7 @@ def format_refseqid_to_ncbi(seqid):
 
 class DataTableConfig():
 
-    def __init__(self, table_id, ordering=True, paging=True, export_buttons=True,
+    def __init__(self, table_id="results", ordering=True, paging=True, export_buttons=True,
                  colvis_button=False, display_index=False):
         self.table_id = table_id
         self.ordering = ordering

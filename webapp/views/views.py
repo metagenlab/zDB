@@ -43,12 +43,13 @@ from lib.KO_module import ModuleParser
 from reportlab.lib import colors
 
 from views.errors import errors
-from views.mixins import CogViewMixin, ComparisonViewMixin, KoViewMixin
-from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
-                         format_ko_modules, format_ko_path, format_locus,
-                         format_orthogroup, format_pfam,
-                         format_refseqid_to_ncbi, my_locals, optional2status,
-                         page2title, to_s)
+from views.mixins import (CogViewMixin, ComparisonViewMixin, KoViewMixin,
+                          VfViewMixin)
+from views.utils import (DataTableConfig, format_amr, format_cog,
+                         format_hmm_url, format_ko, format_ko_modules,
+                         format_ko_path, format_locus, format_orthogroup,
+                         format_pfam, format_refseqid_to_ncbi, my_locals,
+                         optional2status, page2title, to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -549,6 +550,20 @@ def og_tab_get_amr_annot(db, seqids):
     }
 
 
+def og_tab_get_vf_annot(db, seqids):
+    mixin = VfViewMixin()
+    hits = mixin.get_hit_counts(seqids, search_on="seqid", indexing="seqid")
+    if hits.empty:
+        return {}
+
+    descriptions = mixin.get_hit_descriptions(
+        hits[mixin.object_column].to_list())
+    return {"VF_data": {"table_headers": mixin.table_headers,
+                        "table_data": descriptions,
+                        "table_data_accessors": mixin.table_data_accessors,
+                        "data_table_config": DataTableConfig(export_buttons=False)}}
+
+
 def og_tab_get_cog_annot(db, seqids):
     cog_hits = db.get_cog_hits(seqids, indexing="seqid", search_on="seqid")
 
@@ -712,6 +727,9 @@ def orthogroup(request, og):
     if optional2status.get("AMR", False):
         amr_ctx = og_tab_get_amr_annot(db, annotations.index.tolist())
 
+    if optional2status.get("BLAST_vfdb", False):
+        vf_ctx = og_tab_get_vf_annot(db, annotations.index.tolist())
+
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
     homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms, og=og_id)
@@ -726,7 +744,7 @@ def orthogroup(request, og):
         **length_tab_ctx,
         **og_conserv_ctx, **best_hit_phylo,
         **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx, **swissprot,
-        **amr_ctx
+        **amr_ctx, **vf_ctx
     }
     return render(request, "chlamdb/og.html", my_locals(context))
 
@@ -1096,6 +1114,9 @@ def locusx(request, locus=None, menu=True):
     if optional2status.get("AMR", False):
         amr_ctx = og_tab_get_amr_annot(db, [seqid])
 
+    if optional2status.get("BLAST_vfdb", False):
+        vf_ctx = og_tab_get_vf_annot(db, [seqid])
+
     context = {
         "valid_id": valid_id,
         "menu": True,
@@ -1120,7 +1141,8 @@ def locusx(request, locus=None, menu=True):
         **diamond_matches_ctx,
         **swissprot_ctx,
         **best_hit_phylo,
-        **amr_ctx
+        **amr_ctx,
+        **vf_ctx,
     }
     return render(request, 'chlamdb/locus.html', my_locals(context))
 

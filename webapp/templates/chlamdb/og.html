@@ -383,6 +383,17 @@
           </div>
           {% endif %}
 
+         {% if VF_data|keyvalue:"table_data"|length > 0 %}
+          <div class="row">
+            <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Virulence factors</h3>
+            </div>
+            {% include "chlamdb/result_table.html" with results=VF_data %}
+            </div>
+          </div>
+          {% endif %}
+
           </div>
           </div>
 
