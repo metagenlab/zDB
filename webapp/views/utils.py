@@ -1,7 +1,8 @@
-import collections
+import json
 
 import pandas as pd
 from django.conf import settings
+from django.core.serializers.json import DjangoJSONEncoder
 from lib.db_utils import DB
 
 
@@ -182,6 +183,47 @@ def format_refseqid_to_ncbi(seqid):
     return f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{seqid}\">{seqid}</a>"
 
 
+class DataTableConfig():
+
+    def __init__(self, table_id, ordering=True, paging=True, export_buttons=True,
+                 colvis_button=False, display_index=False):
+        self.table_id = table_id
+        self.ordering = ordering
+        self.paging = paging
+        self.export_buttons = export_buttons
+        self.colvis_button = colvis_button
+        self.display_index = display_index
+
+    @property
+    def buttons(self):
+        buttons = []
+        if self.colvis_button:
+            buttons.append({"extend": 'colvis', "columns": ':not(.noVis)'})
+        if self.export_buttons:
+            buttons.extend([
+                {"extend": 'excel', "title": self.table_id},
+                {"extend": 'csv', "title": self.table_id}
+            ])
+        return buttons
+
+    @property
+    def dom(self):
+        if self.export_buttons or self.colvis_button:
+            return 'lBfrtip'
+        return 'lfrtip'
+
+    def to_json(self):
+        return json.dumps(
+            {
+                "paging": self.paging,
+                "ordering": self.ordering,
+                "info": False,
+                "buttons": self.buttons,
+                "dom": self.dom,
+            },
+            cls=DjangoJSONEncoder)
+
+
 class ResultTab():
 
     def __init__(self, tabid, title, template, **kwargs):
@@ -190,3 +232,15 @@ class ResultTab():
         self.template = template
         for key, val in kwargs.items():
             setattr(self, key, val)
+
+
+class TabularResultTab(ResultTab):
+
+    def __init__(self, tabid, title, template, ordering=True, paging=True,
+                 export_buttons=True, colvis_button=False,
+                 display_index=False, **kwargs):
+        self.data_table_config = DataTableConfig(
+            table_id=tabid, ordering=ordering, paging=paging,
+            export_buttons=export_buttons, colvis_button=colvis_button,
+            display_index=display_index)
+        super(TabularResultTab, self).__init__(tabid, title, template, **kwargs)

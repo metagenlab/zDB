@@ -14,7 +14,7 @@ from views.analysis_view_metadata import GwasMetadata
 from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
-from views.utils import ResultTab
+from views.utils import ResultTab, TabularResultTab
 
 
 class GWASBaseView(View):
@@ -43,13 +43,16 @@ class GWASBaseView(View):
                 *self._gwas_data_accessors,
                 *mixin_accessors[1:]]
 
-    @property
     def get_result_tabs(self, results):
         return [
-            ResultTab("gwas_table", "Table", "chlamdb/result_table.html",
-                      table_headers=self.table_headers,
-                      table_data=results,
-                      table_data_accessors=self.table_data_accessors),
+            TabularResultTab(
+                "gwas_table", "Table", "chlamdb/result_table.html",
+                table_headers=self.table_headers,
+                table_data=results,
+                table_data_accessors=self.table_data_accessors,
+                display_index=True,
+                colvis_button=True
+                ),
             ResultTab("gwas_tree", "Phylogenetic tree",
                       "chlamdb/result_asset.html",
                       asset_path=getattr(self, "tree_path", None))

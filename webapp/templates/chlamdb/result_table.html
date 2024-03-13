@@ -3,7 +3,9 @@
   <table class="data-table" width="100%" >
     <thead>
       <tr>
-        <th></th>
+        {% if results.data_table_config.display_index%}
+          <th></th>
+        {% endif %}
         {% for header in results.table_headers %}
           <th>{{ header|safe }}</th>
         {% endfor %}
@@ -12,7 +14,9 @@
     <tbody>
       {% for index, row in results.table_data.iterrows %}
         <tr>
-          <td>{{forloop.counter}}</td>
+          {% if results.data_table_config.display_index%}
+            <td>{{forloop.counter}}</td>
+          {% endif %}
           {% for attrname in results.table_data_accessors%}
             <td>{{row|keyvalue:attrname|safe}}</td>
           {% endfor %}
@@ -23,27 +27,10 @@
 </div>
 
 <script>
+
 $(document).ready(function() {
-  $('.data-table').DataTable( {
-    dom: 'lBfrtip',
-    buttons: [
-        {
-            extend: 'colvis',
-            columns: ':not(.noVis)',
-        },
-        {
-            extend: 'excel',
-            title: '{{results.id}}'
-        },
-        {
-            extend: 'csv',
-            title: '{{results.id}}'
-        }
-    ],
-    "paging": true,
-    "ordering": true,
-    "info":     false,
-    } );
+  var table_config = {{results.data_table_config.to_json|safe}};
+  $('.data-table').DataTable( table_config );
 } );
 
 </script>
