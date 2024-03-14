@@ -260,24 +260,35 @@ class KoViewMixin(BaseViewMixin):
                 raise NotImplementedError(
                     "Can only use extended_data with transformed=True")
             modules = self.db.get_ko_modules(ids, as_pandas=True)
-            modules = modules.groupby("ko_id").apply(self.format_modules)
+            if not modules.empty:
+                modules = modules.groupby("ko_id").apply(self.format_modules)
+                descriptions = descriptions.merge(
+                    modules.rename("modules"), how="left",
+                    left_index=True, right_index=True)
+            else:
+                descriptions["modules"] = None
             pathways = self.db.get_ko_pathways(ids, as_df=True)
-            pathways = pathways.groupby("ko").apply(self.format_pathways)
-            descriptions = descriptions.merge(
-                pathways.rename("pathways"), how="left",
-                left_index=True, right_index=True)
-            descriptions = descriptions.merge(
-                modules.rename("modules"), how="left",
-                left_index=True, right_index=True)
+            if not pathways.empty:
+                pathways = pathways.groupby("ko").apply(
+                    self.format_pathways)
+                descriptions = descriptions.merge(
+                    pathways.rename("pathways"), how="left",
+                    left_index=True, right_index=True)
+            else:
+                descriptions["pathways"] = None
+
         if transformed:
             descriptions = self.transform_data(descriptions)
             return descriptions.where(descriptions.notna(), "-")
         return descriptions
 
     @staticmethod
-    def format_modules(modules):
-        return "<br>".join(format_ko_module(row.module_id, row.desc)
-                           for i, row in modules.iterrows())
+    def format_modules(modules, as_list=False):
+        gen = (format_ko_module(row.module_id, row.desc)
+               for i, row in modules.iterrows())
+        if as_list:
+            return list(gen)
+        return "<br>".join(gen)
 
     @staticmethod
     def format_pathways(pathways, with_taxid=None):
@@ -285,8 +296,9 @@ class KoViewMixin(BaseViewMixin):
             fmt_str = "<a href=\"/KEGG_mapp_ko/map{id:05d}\">{descr}</a>"
         else:
             fmt_str = "<a href=\"/KEGG_mapp_ko/map{id:05d}/{with_taxid}\">{descr}</a>"
-        return "<br>".join(fmt_str.format(id=row.pathway, descr=row.description, taxid=with_taxid)
-                           for i, row in pathways.iterrows())
+        gen = (fmt_str.format(id=row.pathway, descr=row.description, taxid=with_taxid)
+               for i, row in pathways.iterrows())
+        return "<br>".join(gen)
 
     @staticmethod
     def format_entry(entry, to_url=False):

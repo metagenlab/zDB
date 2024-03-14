@@ -112,17 +112,9 @@ class VennPfamView(VennBaseView, PfamViewMixin):
     pass
 
 
-class VennKoMixin():
+class VennKoView(VennBaseView, KoViewMixin):
 
-    table_data_accessors = ["ko", "description"]
-
-
-class VennKoView(VennBaseView, VennKoMixin, KoViewMixin):
-
-    def get_hit_counts(self, targets):
-        counts = self.db.get_ko_count(targets)["count"].unstack(
-            level=0, fill_value=0)
-        return counts
+    pass
 
 
 class VennSubsetBaseView(VennBaseView):
@@ -145,7 +137,9 @@ class VennSubsetBaseView(VennBaseView):
         return self.render_venn(request)
 
 
-class VennKoSubsetView(VennSubsetBaseView, VennKoMixin, KoViewMixin):
+class VennKoSubsetView(VennSubsetBaseView, KoViewMixin):
+
+    table_data_accessors = ["ko", "description"]
 
     def get_hit_counts(self, targets):
         counts = self.db.get_ko_count_cat(
