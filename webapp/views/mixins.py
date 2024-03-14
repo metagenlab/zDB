@@ -194,8 +194,8 @@ class CogViewMixin(BaseViewMixin):
 
     _base_colname_to_header_mapping = {
         "cog": "ID",
-        "function": "Function(s)",
-        "function_descr": "Function(s)",
+        "function": "Function(s) cat.",
+        "function_descr": "Function(s) descr.",
     }
 
     _cog_code_descriptions = None
@@ -216,9 +216,9 @@ class CogViewMixin(BaseViewMixin):
         descr = [f"{self.cog_code_descriptions[abbr]} ({abbr})" for abbr in func]
         return format_lst_to_html(descr, False)
 
-    def get_hit_descriptions(self, ids, transformed=True, **kwargs):
+    def get_hit_descriptions(self, ids, transformed=True, only_cog_desc=True, **kwargs):
         descriptions = self.db.get_cog_summaries(
-            ids, only_cog_desc=True, as_df=True)
+            ids, only_cog_desc=only_cog_desc, as_df=True)
         if transformed:
             descriptions = self.transform_data(descriptions)
         return descriptions

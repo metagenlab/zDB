@@ -319,35 +319,15 @@
 
       {% endif %}
 
-           {% if cog_entries|length > 0 %}
-            <div class="row">
-              <div class="panel panel-default">
-              <div class="panel-heading">
-                <h3 class="panel-title">COG annotation(s)</h3>
+            {% if COG_data|keyvalue:"table_data"|length > 0 %}
+              <div class="row">
+                <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h3 class="panel-title">COG annotation(s)</h3>
+                </div>
+                {% include "chlamdb/result_table.html" with results=COG_data %}
+                </div>
               </div>
-                <table class="table table-striped" style="width: 100%">
-                  <thead>
-
-                      <tr>
-                        {% for h in cog_header %}
-                          <th> {{h|safe}} </th>
-                        {% endfor %}
-                      </tr>
-                  </thead>
-
-                  <tbody>
-                    {% for row in cog_entries %}
-                    <tr>
-                      {% for entry in row %}
-                      <td> {{ entry|safe }}</td>
-                      {% endfor %}
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-
-                </table>
-              </div>
-            </div>
             {% endif %}
 
            {% if pfam_def|length > 0 %}

@@ -565,41 +565,25 @@ def og_tab_get_vf_annot(db, seqids):
 
 
 def og_tab_get_cog_annot(db, seqids):
-    cog_hits = db.get_cog_hits(seqids, indexing="seqid", search_on="seqid")
-
-    if cog_hits.empty:
+    mixin = CogViewMixin()
+    mixin.table_data_accessors = mixin.table_data_accessors.copy()
+    mixin.table_data_accessors.insert(1, "function")
+    mixin.table_data_accessors.insert(1, "occurences")
+    hits = mixin.get_hit_counts(seqids, search_on="seqid", indexing="seqid")
+    if hits.empty:
         return {}
 
-    n_entries = cog_hits["cog"].value_counts()
-    cog_summ = db.get_cog_summaries(n_entries.index.tolist())
-    cog_entries = []
-    for cog_id, count in n_entries.items():
-        if cog_id not in cog_summ:
-            # should add a warning on the web page
-            continue
-
-        entry = [format_cog(cog_id, as_url=True), count]
-        funcs = []
-        func_descrs = []
-        cog_descrs = []
-        for func, func_descr, cog_descr in cog_summ[cog_id]:
-            funcs.append(func)
-            func_descrs.append(func_descr)
-            cog_descrs.append(cog_descr)
-        entry.append(cog_descrs.pop())
-        entry.append("<br>".join(funcs))
-        entry.append("<br>".join(func_descrs))
-        cog_entries.append(entry)
-
-    if len(cog_entries) == 0:
-        return {}
-
-    cog_header = ["COG", "Occurences", "Description",
-                  "Category", "Category description"]
-    return {
-        "cog_header": cog_header,
-        "cog_entries": cog_entries
-    }
+    counts = hits["cog"].value_counts()
+    counts.name = "occurences"
+    descriptions = mixin.get_hit_descriptions(
+        hits[mixin.object_column].to_list())
+    descriptions = descriptions.merge(
+        counts, left_index=True, right_index=True)
+    return {"table_headers": mixin.table_headers,
+            "table_data": descriptions,
+            "table_data_accessors": mixin.table_data_accessors,
+            "data_table_config": DataTableConfig(export_buttons=False,
+                                                 display_as_datatable=False)}
 
 
 def og_tab_get_pfams(db, annotations):
@@ -706,7 +690,7 @@ def orthogroup(request, og):
     best_hit_phylo = {}
     context = {}
     if optional2status.get("COG", False):
-        cog_ctx = og_tab_get_cog_annot(db, annotations.index.tolist())
+        context["COG_data"] = og_tab_get_cog_annot(db, annotations.index.tolist())
 
     if optional2status.get("KEGG", False):
         kegg_ctx = og_tab_get_kegg_annot(db, annotations.index.tolist())
@@ -744,7 +728,7 @@ def orthogroup(request, og):
         **homolog_tab_ctx,
         **length_tab_ctx,
         **og_conserv_ctx, **best_hit_phylo,
-        **cog_ctx, **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx,
+        **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx,
         **vf_ctx
     })
     return render(request, "chlamdb/og.html", my_locals(context))
@@ -1089,7 +1073,7 @@ def locusx(request, locus=None, menu=True):
         homolog_tab_ctx = {"n_genomes": "1 genome"}
         og_phylogeny_ctx = {}
 
-    kegg_ctx, cog_ctx, pfam_ctx = {}, {}, {}
+    kegg_ctx, pfam_ctx = {}, {}
     diamond_matches_ctx = {}
     best_hit_phylo = {}
     context = {}
@@ -1098,7 +1082,7 @@ def locusx(request, locus=None, menu=True):
         kegg_ctx = og_tab_get_kegg_annot(db, [seqid], from_taxid=taxids[seqid])
 
     if optional2status.get("COG", False):
-        cog_ctx = og_tab_get_cog_annot(db, [seqid])
+        context["COG_data"] = og_tab_get_cog_annot(db, [seqid])
 
     if optional2status.get("pfam", False):
         pfam_ctx = tab_get_pfam_annot(db, [seqid])
@@ -1131,7 +1115,6 @@ def locusx(request, locus=None, menu=True):
         "locus": locus,
         "feature_type": "CDS",
         "page_title": page_title,
-        **cog_ctx,
         **kegg_ctx,
         **homolog_tab_ctx,
         **general_tab,
