@@ -44,7 +44,7 @@ from reportlab.lib import colors
 
 from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, ComparisonViewMixin,
-                          KoViewMixin, VfViewMixin)
+                          KoViewMixin, PfamViewMixin, VfViewMixin)
 from views.utils import (DataTableConfig, format_cog, format_ko,
                          format_ko_modules, format_ko_path, format_locus,
                          format_orthogroup, format_pfam,
@@ -586,21 +586,24 @@ def og_tab_get_cog_annot(db, seqids):
                                                  display_as_datatable=False)}
 
 
-def og_tab_get_pfams(db, annotations):
-    seqids = annotations.index.tolist()
-
-    pfam_hits = db.get_pfam_hits(seqids, search_on="seqid", indexing="seqid")
-    pfam_hits_count = pfam_hits.groupby(["pfam"]).count()
-    pfam_defs = db.get_pfam_def(pfam_hits_count.index.tolist())
-    all_infos = pfam_hits_count.join(pfam_defs)
-
-    all_infos_tab = []
-    for pfam, data in all_infos.iterrows():
-        all_infos_tab.append(
-            [format_pfam(pfam, to_url=True), data.seqid, data["def"]])
-    return {
-        "pfam_def": all_infos_tab
-    }
+def og_tab_get_pfams(db, seqids):
+    mixin = PfamViewMixin()
+    mixin.table_data_accessors = mixin.table_data_accessors.copy()
+    mixin.table_data_accessors.insert(1, "occurences")
+    hits = mixin.get_hit_counts(seqids, search_on="seqid", indexing="seqid")
+    if hits.empty:
+        return {}
+    counts = hits["pfam"].value_counts()
+    counts.name = "occurences"
+    descriptions = mixin.get_hit_descriptions(
+        hits[mixin.object_column].to_list())
+    descriptions = descriptions.merge(
+        counts, left_index=True, right_index=True)
+    return {"table_headers": mixin.table_headers,
+            "table_data": descriptions,
+            "table_data_accessors": mixin.table_data_accessors,
+            "data_table_config": DataTableConfig(export_buttons=False,
+                                                 display_as_datatable=False)}
 
 
 def tab_og_best_hits(db, orthogroup, locus=None):
@@ -686,7 +689,7 @@ def orthogroup(request, og):
             product = "-"
         product_annotations.append([index + 1, product, cnt])
 
-    cog_ctx, kegg_ctx, pfam_ctx = {}, {}, {}
+    kegg_ctx = {}
     best_hit_phylo = {}
     context = {}
     if optional2status.get("COG", False):
@@ -696,7 +699,7 @@ def orthogroup(request, og):
         kegg_ctx = og_tab_get_kegg_annot(db, annotations.index.tolist())
 
     if optional2status.get("pfam", False):
-        pfam_ctx = og_tab_get_pfams(db, annotations)
+        context["PFAM_data"] = og_tab_get_pfams(db, annotations.index.tolist())
 
     if optional2status.get("BLAST_swissprot", False):
         context["swissprot"] = og_tab_get_swissprot_homologs(db, annotations)
@@ -728,7 +731,7 @@ def orthogroup(request, og):
         **homolog_tab_ctx,
         **length_tab_ctx,
         **og_conserv_ctx, **best_hit_phylo,
-        **kegg_ctx, **pfam_ctx, **og_phylogeny_ctx,
+        **kegg_ctx, **og_phylogeny_ctx,
         **vf_ctx
     })
     return render(request, "chlamdb/og.html", my_locals(context))

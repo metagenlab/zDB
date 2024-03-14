@@ -170,35 +170,16 @@
             </div>
           </div>
 
-           {% if pfam_def|length > 0 %}
+           {% if PFAM_data|keyvalue:"table_data"|length > 0 %}
             <div class="row">
               <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h3 class="panel-title">PFAM domains </h3>
-                </div>
-
-                <table id="panel_table" class="table table-striped" style="width: 100%">
-                  <thead>
-                    <tr>
-                      <th>Domain</th>
-                      <th>Domain definition</th>
-                      <th>N. occurrences</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for val in pfam_def %}
-                    <tr>
-                      <th>{{val.0|safe}}</th>
-                      <td>{{val.2}}</td>
-                      <td>{{val.1}}</td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
+              <div class="panel-heading">
+                <h3 class="panel-title">PFAM domains</h3>
+              </div>
+              {% include "chlamdb/result_table.html" with results=PFAM_data %}
               </div>
             </div>
-           {% endif %}
-
+            {% endif %}
 
         </div>
         </div>
