@@ -252,7 +252,8 @@ class KoViewMixin(BaseViewMixin):
     def get_hit_counts(self):
         return self.db.get_ko_hits
 
-    def get_hit_descriptions(self, ids, transformed=True, extended_data=True, **kwargs):
+    def get_hit_descriptions(self, ids, transformed=True, extended_data=True,
+                             taxid_for_pathway_formatting=None, **kwargs):
         descriptions = self.db.get_ko_desc(ids, as_df=True)
         descriptions = descriptions.set_index(["ko"], drop=False)
         if extended_data:
@@ -270,7 +271,8 @@ class KoViewMixin(BaseViewMixin):
             pathways = self.db.get_ko_pathways(ids, as_df=True)
             if not pathways.empty:
                 pathways = pathways.groupby("ko").apply(
-                    self.format_pathways)
+                    self.format_pathways,
+                    with_taxid=taxid_for_pathway_formatting)
                 descriptions = descriptions.merge(
                     pathways.rename("pathways"), how="left",
                     left_index=True, right_index=True)
@@ -295,7 +297,7 @@ class KoViewMixin(BaseViewMixin):
         if with_taxid is None:
             fmt_str = "<a href=\"/KEGG_mapp_ko/map{id:05d}\">{descr}</a>"
         else:
-            fmt_str = "<a href=\"/KEGG_mapp_ko/map{id:05d}/{with_taxid}\">{descr}</a>"
+            fmt_str = "<a href=\"/KEGG_mapp_ko/map{id:05d}/{taxid}\">{descr}</a>"
         gen = (fmt_str.format(id=row.pathway, descr=row.description, taxid=with_taxid)
                for i, row in pathways.iterrows())
         return "<br>".join(gen)

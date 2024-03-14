@@ -198,30 +198,13 @@
             </div>
             {% endif %}
 
-           {% if ko_entries|length > 0 %}
+           {% if KO_data|keyvalue:"table_data"|length > 0 %}
             <div class="row">
               <div class="panel panel-default">
               <div class="panel-heading">
                 <h3 class="panel-title">Kegg Ortholog annotation(s)</h3>
               </div>
-              <table class="table table-striped" style="width: 100%">
-                <thead>
-                  <tr>
-                    {% for entry in ko_header %}
-                      <th> {{entry|safe}} </th>
-                    {% endfor %}
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for row in ko_entries %}
-                    <tr>
-                      {% for e in row %}
-                        <td> {{e|safe}}</td>
-                      {% endfor %}
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+              {% include "chlamdb/result_table.html" with results=KO_data %}
               </div>
             </div>
             {% endif %}

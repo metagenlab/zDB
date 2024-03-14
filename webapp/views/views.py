@@ -509,30 +509,25 @@ def tab_og_conservation_tree(db, group, compare_to=None):
 
 
 def og_tab_get_kegg_annot(db, seqids, from_taxid=None):
-    ko_hits = db.get_ko_hits(seqids, search_on="seqid", indexing="seqid")
-    if ko_hits.empty:
+    mixin = KoViewMixin()
+    mixin.table_data_accessors = mixin.table_data_accessors.copy()
+    mixin.table_data_accessors.insert(1, "occurences")
+    hits = mixin.get_hit_counts(seqids, search_on="seqid", indexing="seqid")
+    if hits.empty:
         return {}
 
-    n_occurences = ko_hits["ko"].value_counts()
-    ko_ids = n_occurences.index.tolist()
-    ko_descr = db.get_ko_desc(ko_ids)
-    ko_pathways = db.get_ko_pathways(ko_ids)
-    ko_modules = db.get_ko_modules(ko_ids)
-
-    ko_entries = []
-    for ko_id, count in n_occurences.items():
-        entry = [format_ko(ko_id, as_url=True), count]
-        descr = ko_descr.get(ko_id, "-")
-        entry.append(descr)
-        entry.append(format_ko_path(ko_pathways, ko_id, with_taxid=from_taxid))
-        entry.append(format_ko_modules(ko_modules, ko_id))
-        ko_entries.append(entry)
-
-    ko_header = ["KO", "Occurences", "Description", "Pathways", "Modules"]
-    return {
-        "ko_entries": ko_entries,
-        "ko_header": ko_header
-    }
+    counts = hits["ko"].value_counts()
+    counts.name = "occurences"
+    descriptions = mixin.get_hit_descriptions(
+        hits[mixin.object_column].to_list(),
+        taxid_for_pathway_formatting=from_taxid)
+    descriptions = descriptions.merge(
+        counts, left_index=True, right_index=True)
+    return {"table_headers": mixin.table_headers,
+            "table_data": descriptions,
+            "table_data_accessors": mixin.table_data_accessors,
+            "data_table_config": DataTableConfig(export_buttons=False,
+                                                 display_as_datatable=False)}
 
 
 def og_tab_get_amr_annot(db, seqids):
@@ -689,14 +684,13 @@ def orthogroup(request, og):
             product = "-"
         product_annotations.append([index + 1, product, cnt])
 
-    kegg_ctx = {}
     best_hit_phylo = {}
     context = {}
     if optional2status.get("COG", False):
         context["COG_data"] = og_tab_get_cog_annot(db, annotations.index.tolist())
 
     if optional2status.get("KEGG", False):
-        kegg_ctx = og_tab_get_kegg_annot(db, annotations.index.tolist())
+        context["KO_data"] = og_tab_get_kegg_annot(db, annotations.index.tolist())
 
     if optional2status.get("pfam", False):
         context["PFAM_data"] = og_tab_get_pfams(db, annotations.index.tolist())
@@ -730,8 +724,9 @@ def orthogroup(request, og):
         "product_annotations": product_annotations,
         **homolog_tab_ctx,
         **length_tab_ctx,
-        **og_conserv_ctx, **best_hit_phylo,
-        **kegg_ctx, **og_phylogeny_ctx,
+        **og_conserv_ctx,
+        **best_hit_phylo,
+        **og_phylogeny_ctx,
         **vf_ctx
     })
     return render(request, "chlamdb/og.html", my_locals(context))
@@ -1076,13 +1071,13 @@ def locusx(request, locus=None, menu=True):
         homolog_tab_ctx = {"n_genomes": "1 genome"}
         og_phylogeny_ctx = {}
 
-    kegg_ctx, pfam_ctx = {}, {}
+    pfam_ctx = {}
     diamond_matches_ctx = {}
     best_hit_phylo = {}
     context = {}
     if optional2status.get("KEGG", False):
         taxids = db.get_organism([seqid], as_taxid=True)
-        kegg_ctx = og_tab_get_kegg_annot(db, [seqid], from_taxid=taxids[seqid])
+        context["KO_data"] = og_tab_get_kegg_annot(db, [seqid], from_taxid=taxids[seqid])
 
     if optional2status.get("COG", False):
         context["COG_data"] = og_tab_get_cog_annot(db, [seqid])
@@ -1118,7 +1113,6 @@ def locusx(request, locus=None, menu=True):
         "locus": locus,
         "feature_type": "CDS",
         "page_title": page_title,
-        **kegg_ctx,
         **homolog_tab_ctx,
         **general_tab,
         **og_conserv_ctx,
