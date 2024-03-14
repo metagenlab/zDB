@@ -4,7 +4,8 @@ from lib.db_utils import DB
 
 from views.analysis_view_metadata import analysis_views_metadata
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
-                         format_lst_to_html, format_orthogroup, format_pfam,
+                         format_ko_module, format_lst_to_html,
+                         format_orthogroup, format_pfam,
                          format_refseqid_to_ncbi, my_locals, page2title,
                          safe_replace)
 
@@ -245,18 +246,47 @@ class KoViewMixin(BaseViewMixin):
         "ko": "KO",
     }
 
-    table_data_accessors = ["ko", "description", "modules", "pathways"]
+    table_data_accessors = ["ko", "description", "pathways", "modules"]
 
     @property
     def get_hit_counts(self):
         return self.db.get_ko_hits
 
-    def get_hit_descriptions(self, ids, transformed=True, **kwargs):
+    def get_hit_descriptions(self, ids, transformed=True, extended_data=True, **kwargs):
         descriptions = self.db.get_ko_desc(ids, as_df=True)
         descriptions = descriptions.set_index(["ko"], drop=False)
+        if extended_data:
+            if not transformed:
+                raise NotImplementedError(
+                    "Can only use extended_data with transformed=True")
+            modules = self.db.get_ko_modules(ids, as_pandas=True)
+            modules = modules.groupby("ko_id").apply(self.format_modules)
+            pathways = self.db.get_ko_pathways(ids, as_df=True)
+            pathways = pathways.groupby("ko").apply(self.format_pathways)
+            descriptions = descriptions.merge(
+                pathways.rename("pathways"), how="left",
+                left_index=True, right_index=True)
+            descriptions = descriptions.merge(
+                modules.rename("modules"), how="left",
+                left_index=True, right_index=True)
         if transformed:
             descriptions = self.transform_data(descriptions)
+            return descriptions.where(descriptions.notna(), "-")
         return descriptions
+
+    @staticmethod
+    def format_modules(modules):
+        return "<br>".join(format_ko_module(row.module_id, row.desc)
+                           for i, row in modules.iterrows())
+
+    @staticmethod
+    def format_pathways(pathways, with_taxid=None):
+        if with_taxid is None:
+            fmt_str = "<a href=\"/KEGG_mapp_ko/map{id:05d}\">{descr}</a>"
+        else:
+            fmt_str = "<a href=\"/KEGG_mapp_ko/map{id:05d}/{with_taxid}\">{descr}</a>"
+        return "<br>".join(fmt_str.format(id=row.pathway, descr=row.description, taxid=with_taxid)
+                           for i, row in pathways.iterrows())
 
     @staticmethod
     def format_entry(entry, to_url=False):

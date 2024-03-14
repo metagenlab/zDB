@@ -331,28 +331,9 @@ class ExtractVfView(ExtractHitsBaseView, VfViewMixin):
 
 class ExtractKoView(ExtractHitsBaseView, KoViewMixin):
 
-    _table_headers = ["KO", "Description", "Kegg Pathways", "Kegg Modules"]
-
     _col_descriptions = {"Description": "description including the corresponding"
                                         " EC numbers used in enzyme nomenclature",
-                         "Kegg Modules": "Kegg modules to whihch it belongs"}
-
-    def prepare_data(self, hit_counts, hit_counts_all):
-        ko_desc = self.get_hit_descriptions(self.selection)
-        ko_mod = self.db.get_ko_modules(self.selection)
-        ko_path = self.db.get_ko_pathways(self.selection)
-        self.table_data = []
-        for ko in self.selection:
-            kof = format_ko(ko, as_url=True)
-            kod = ko_desc.get(ko, "-")
-            kop = format_ko_path(ko_path, ko)
-            kom = format_ko_modules(ko_mod, ko)
-            kot = hit_counts_all.loc[ko]
-            data = [kof, kod, kop, kom, hit_counts.presence.loc[ko], kot]
-            self.table_data.append(data)
-
-        self.show_results = True
-        return self.get_context()
+                         "Modules": "Kegg modules to which it belongs"}
 
 
 class ExtractCogView(ExtractHitsBaseView, CogViewMixin):
