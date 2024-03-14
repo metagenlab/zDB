@@ -553,10 +553,10 @@ def og_tab_get_vf_annot(db, seqids):
 
     descriptions = mixin.get_hit_descriptions(
         hits[mixin.object_column].to_list())
-    return {"VF_data": {"table_headers": mixin.table_headers,
-                        "table_data": descriptions,
-                        "table_data_accessors": mixin.table_data_accessors,
-                        "data_table_config": DataTableConfig(export_buttons=False)}}
+    return {"table_headers": mixin.table_headers,
+            "table_data": descriptions,
+            "table_data_accessors": mixin.table_data_accessors,
+            "data_table_config": DataTableConfig(export_buttons=False)}
 
 
 def og_tab_get_cog_annot(db, seqids):
@@ -710,7 +710,7 @@ def orthogroup(request, og):
         context["AMR_data"] = og_tab_get_amr_annot(db, annotations.index.tolist())
 
     if optional2status.get("BLAST_vfdb", False):
-        vf_ctx = og_tab_get_vf_annot(db, annotations.index.tolist())
+        context["VF_data"] = og_tab_get_vf_annot(db, annotations.index.tolist())
 
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
@@ -727,7 +727,6 @@ def orthogroup(request, og):
         **og_conserv_ctx,
         **best_hit_phylo,
         **og_phylogeny_ctx,
-        **vf_ctx
     })
     return render(request, "chlamdb/og.html", my_locals(context))
 
@@ -1098,7 +1097,7 @@ def locusx(request, locus=None, menu=True):
         context["AMR_data"] = og_tab_get_amr_annot(db, [seqid])
 
     if optional2status.get("BLAST_vfdb", False):
-        vf_ctx = og_tab_get_vf_annot(db, [seqid])
+        context["VF_data"] = og_tab_get_vf_annot(db, [seqid])
 
     context.update({
         "valid_id": valid_id,
@@ -1121,7 +1120,6 @@ def locusx(request, locus=None, menu=True):
         **genomic_region_ctx,
         **diamond_matches_ctx,
         **best_hit_phylo,
-        **vf_ctx,
     })
     return render(request, 'chlamdb/locus.html', my_locals(context))
 
