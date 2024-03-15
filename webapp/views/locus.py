@@ -537,12 +537,14 @@ def locusx(request, locus=None, menu=True):
     diamond_matches_ctx = {}
     best_hit_phylo = {}
     context = {}
-    if optional2status.get("KEGG", False):
-        taxids = db.get_organism([seqid], as_taxid=True)
-        context["KO_data"] = KoAnnotationTable(from_taxid=taxids[seqid]).get_results([seqid])
-
-    if optional2status.get("COG", False):
-        context["COG_data"] = CogAnnotationTable().get_results([seqid])
+    taxid = db.get_organism([seqid], as_taxid=True)[seqid]
+    annot_tables = [CogAnnotationTable(), KoAnnotationTable(from_taxid=taxid),
+                    AmrAnnotationTable(), VfAnnotationTable()]
+    for annotation_table in annot_tables:
+        if not annotation_table.is_enabled:
+            continue
+        key = f"{annotation_table.object_type.upper()}_data"
+        context[key] = annotation_table.get_results([seqid])
 
     if optional2status.get("pfam", False):
         pfam_ctx = tab_get_pfam_annot(db, [seqid])
@@ -555,12 +557,6 @@ def locusx(request, locus=None, menu=True):
 
     if optional2status.get("BBH_phylogenies", False):
         best_hit_phylo = tab_og_best_hits(db, og_id, locus=locus)
-
-    if optional2status.get("AMR", False):
-        context["AMR_data"] = AmrAnnotationTable().get_results([seqid])
-
-    if optional2status.get("BLAST_vfdb", False):
-        context["VF_data"] = VfAnnotationTable().get_results([seqid])
 
     context.update({
         "valid_id": valid_id,
@@ -694,17 +690,17 @@ def orthogroup(request, og):
 
     best_hit_phylo = {}
     context = {}
-    if optional2status.get("COG", False):
-        context["COG_data"] = CogAnnotationTable(include_occurences=True)\
-                                .get_results(annotations.index.tolist())
-
-    if optional2status.get("KEGG", False):
-        context["KO_data"] = KoAnnotationTable(include_occurences=True)\
-                                .get_results(annotations.index.tolist())
-
-    if optional2status.get("pfam", False):
-        context["PFAM_data"] = PfamAnnotationTable(include_occurences=True)\
-                                .get_results(annotations.index.tolist())
+    annot_tables = [CogAnnotationTable(include_occurences=True),
+                    KoAnnotationTable(include_occurences=True),
+                    PfamAnnotationTable(include_occurences=True),
+                    AmrAnnotationTable(include_occurences=True),
+                    VfAnnotationTable(include_occurences=True)]
+    seqids = annotations.index.tolist()
+    for annotation_table in annot_tables:
+        if not annotation_table.is_enabled:
+            continue
+        key = f"{annotation_table.object_type.upper()}_data"
+        context[key] = annotation_table.get_results(seqids)
 
     if optional2status.get("BLAST_swissprot", False):
         context["swissprot"] = og_tab_get_swissprot_homologs(db, annotations)
@@ -717,13 +713,6 @@ def orthogroup(request, og):
     if optional2status.get("BBH_phylogenies", False):
         best_hit_phylo = tab_og_best_hits(db, og_id)
 
-    if optional2status.get("AMR", False):
-        context["AMR_data"] = AmrAnnotationTable(include_occurences=True)\
-                                .get_results(annotations.index.tolist())
-
-    if optional2status.get("BLAST_vfdb", False):
-        context["VF_data"] = VfAnnotationTable(include_occurences=True)\
-                                .get_results(annotations.index.tolist())
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
     homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms, og=og_id)
