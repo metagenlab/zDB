@@ -200,97 +200,68 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
             "og_alignment": algn_file}
 
 
-def og_tab_get_amr_annot(db, seqids):
-    mixin = AmrViewMixin()
-    hits = mixin.get_hit_counts(seqids, search_on="seqid", indexing="seqid")
-    if hits.empty:
-        return {}
+class AnnotationTableBase():
 
-    descriptions = mixin.get_hit_descriptions(
-        hits[mixin.object_column].to_list())
-    return {"table_headers": mixin.table_headers,
-            "table_data": descriptions,
-            "table_data_accessors": mixin.table_data_accessors,
-            "data_table_config": DataTableConfig(export_buttons=False,
-                                                 display_as_datatable=False)}
+    def __init__(self, include_occurences=False, from_taxid=None):
+        self.include_occurences = include_occurences
+        self.from_taxid = from_taxid
 
+    @property
+    def table_data_accessors(self):
+        accessors = super(AnnotationTableBase, self).table_data_accessors.copy()
+        if self.include_occurences:
+            accessors.insert(1, "occurences")
+        return accessors
 
-def og_tab_get_vf_annot(db, seqids):
-    mixin = VfViewMixin()
-    hits = mixin.get_hit_counts(seqids, search_on="seqid", indexing="seqid")
-    if hits.empty:
-        return {}
+    def get_results(self, seqids):
+        hits = self.get_hit_counts(seqids, search_on="seqid", indexing="seqid")
+        if hits.empty:
+            return {}
 
-    descriptions = mixin.get_hit_descriptions(
-        hits[mixin.object_column].to_list())
-    return {"table_headers": mixin.table_headers,
-            "table_data": descriptions,
-            "table_data_accessors": mixin.table_data_accessors,
-            "data_table_config": DataTableConfig(export_buttons=False)}
+        descriptions = self.get_hit_descriptions(
+            hits[self.object_column].to_list(),
+            taxid_for_pathway_formatting=self.from_taxid)
 
+        if self.include_occurences:
+            counts = hits[self.object_column].value_counts()
+            counts.name = "occurences"
+            descriptions = descriptions.merge(
+                counts, left_index=True, right_index=True)
 
-def og_tab_get_pfams(db, seqids):
-    mixin = PfamViewMixin()
-    mixin.table_data_accessors = mixin.table_data_accessors.copy()
-    mixin.table_data_accessors.insert(1, "occurences")
-    hits = mixin.get_hit_counts(seqids, search_on="seqid", indexing="seqid")
-    if hits.empty:
-        return {}
-    counts = hits["pfam"].value_counts()
-    counts.name = "occurences"
-    descriptions = mixin.get_hit_descriptions(
-        hits[mixin.object_column].to_list())
-    descriptions = descriptions.merge(
-        counts, left_index=True, right_index=True)
-    return {"table_headers": mixin.table_headers,
-            "table_data": descriptions,
-            "table_data_accessors": mixin.table_data_accessors,
-            "data_table_config": DataTableConfig(export_buttons=False,
-                                                 display_as_datatable=False)}
+        return {"table_headers": self.table_headers,
+                "table_data": descriptions,
+                "table_data_accessors": self.table_data_accessors,
+                "data_table_config": DataTableConfig(export_buttons=False,
+                                                     display_as_datatable=False)}
 
 
-def og_tab_get_kegg_annot(db, seqids, from_taxid=None):
-    mixin = KoViewMixin()
-    mixin.table_data_accessors = mixin.table_data_accessors.copy()
-    mixin.table_data_accessors.insert(1, "occurences")
-    hits = mixin.get_hit_counts(seqids, search_on="seqid", indexing="seqid")
-    if hits.empty:
-        return {}
+class KoAnnotationTable(AnnotationTableBase, KoViewMixin):
 
-    counts = hits["ko"].value_counts()
-    counts.name = "occurences"
-    descriptions = mixin.get_hit_descriptions(
-        hits[mixin.object_column].to_list(),
-        taxid_for_pathway_formatting=from_taxid)
-    descriptions = descriptions.merge(
-        counts, left_index=True, right_index=True)
-    return {"table_headers": mixin.table_headers,
-            "table_data": descriptions,
-            "table_data_accessors": mixin.table_data_accessors,
-            "data_table_config": DataTableConfig(export_buttons=False,
-                                                 display_as_datatable=False)}
+    pass
 
 
-def og_tab_get_cog_annot(db, seqids):
-    mixin = CogViewMixin()
-    mixin.table_data_accessors = mixin.table_data_accessors.copy()
-    mixin.table_data_accessors.insert(1, "function")
-    mixin.table_data_accessors.insert(1, "occurences")
-    hits = mixin.get_hit_counts(seqids, search_on="seqid", indexing="seqid")
-    if hits.empty:
-        return {}
+class CogAnnotationTable(AnnotationTableBase, CogViewMixin):
 
-    counts = hits["cog"].value_counts()
-    counts.name = "occurences"
-    descriptions = mixin.get_hit_descriptions(
-        hits[mixin.object_column].to_list())
-    descriptions = descriptions.merge(
-        counts, left_index=True, right_index=True)
-    return {"table_headers": mixin.table_headers,
-            "table_data": descriptions,
-            "table_data_accessors": mixin.table_data_accessors,
-            "data_table_config": DataTableConfig(export_buttons=False,
-                                                 display_as_datatable=False)}
+    @property
+    def table_data_accessors(self):
+        accessors = super(CogAnnotationTable, self).table_data_accessors
+        accessors.insert(2, "function")
+        return accessors
+
+
+class PfamAnnotationTable(AnnotationTableBase, PfamViewMixin):
+
+    pass
+
+
+class AmrAnnotationTable(AnnotationTableBase, AmrViewMixin):
+
+    pass
+
+
+class VfAnnotationTable(AnnotationTableBase, VfViewMixin):
+
+    pass
 
 
 class SimpleTextColumn(Column):
@@ -568,10 +539,10 @@ def locusx(request, locus=None, menu=True):
     context = {}
     if optional2status.get("KEGG", False):
         taxids = db.get_organism([seqid], as_taxid=True)
-        context["KO_data"] = og_tab_get_kegg_annot(db, [seqid], from_taxid=taxids[seqid])
+        context["KO_data"] = KoAnnotationTable(from_taxid=taxids[seqid]).get_results([seqid])
 
     if optional2status.get("COG", False):
-        context["COG_data"] = og_tab_get_cog_annot(db, [seqid])
+        context["COG_data"] = CogAnnotationTable().get_results([seqid])
 
     if optional2status.get("pfam", False):
         pfam_ctx = tab_get_pfam_annot(db, [seqid])
@@ -586,10 +557,10 @@ def locusx(request, locus=None, menu=True):
         best_hit_phylo = tab_og_best_hits(db, og_id, locus=locus)
 
     if optional2status.get("AMR", False):
-        context["AMR_data"] = og_tab_get_amr_annot(db, [seqid])
+        context["AMR_data"] = AmrAnnotationTable().get_results([seqid])
 
     if optional2status.get("BLAST_vfdb", False):
-        context["VF_data"] = og_tab_get_vf_annot(db, [seqid])
+        context["VF_data"] = VfAnnotationTable().get_results([seqid])
 
     context.update({
         "valid_id": valid_id,
@@ -724,13 +695,16 @@ def orthogroup(request, og):
     best_hit_phylo = {}
     context = {}
     if optional2status.get("COG", False):
-        context["COG_data"] = og_tab_get_cog_annot(db, annotations.index.tolist())
+        context["COG_data"] = CogAnnotationTable(include_occurences=True)\
+                                .get_results(annotations.index.tolist())
 
     if optional2status.get("KEGG", False):
-        context["KO_data"] = og_tab_get_kegg_annot(db, annotations.index.tolist())
+        context["KO_data"] = KoAnnotationTable(include_occurences=True)\
+                                .get_results(annotations.index.tolist())
 
     if optional2status.get("pfam", False):
-        context["PFAM_data"] = og_tab_get_pfams(db, annotations.index.tolist())
+        context["PFAM_data"] = PfamAnnotationTable(include_occurences=True)\
+                                .get_results(annotations.index.tolist())
 
     if optional2status.get("BLAST_swissprot", False):
         context["swissprot"] = og_tab_get_swissprot_homologs(db, annotations)
@@ -744,11 +718,12 @@ def orthogroup(request, og):
         best_hit_phylo = tab_og_best_hits(db, og_id)
 
     if optional2status.get("AMR", False):
-        context["AMR_data"] = og_tab_get_amr_annot(db, annotations.index.tolist())
+        context["AMR_data"] = AmrAnnotationTable(include_occurences=True)\
+                                .get_results(annotations.index.tolist())
 
     if optional2status.get("BLAST_vfdb", False):
-        context["VF_data"] = og_tab_get_vf_annot(db, annotations.index.tolist())
-
+        context["VF_data"] = VfAnnotationTable(include_occurences=True)\
+                                .get_results(annotations.index.tolist())
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
     homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms, og=og_id)
