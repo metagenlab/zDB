@@ -2,8 +2,8 @@
 from django.urls import re_path
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
-from views import (entry_lists, fam, gwas, hits_extraction, tabular_comparison,
-                   venn, views)
+from views import (entry_lists, fam, gwas, hits_extraction, locus,
+                   tabular_comparison, venn, views)
 
 favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
@@ -25,12 +25,12 @@ urlpatterns = [
     re_path(r'^pfam_comparison', tabular_comparison.PfamComparisonView.as_view(), name="pfam_comparison"),  # noqa
     re_path(r'^pan_genome/([a-zA-Z0-9_]+)', views.PanGenome.as_view(), name="pan_genome"),  # noqa
     re_path(r'^orthogroup_comparison', tabular_comparison.OrthogroupComparisonView.as_view(), name="orthogroup_comparison"),  # noqa
-    re_path(r'^orthogroup/([a-zA-Z0-9_\.\-]+)', views.orthogroup, name="orthogroup"),  # noqa
+    re_path(r'^orthogroup/([a-zA-Z0-9_\.\-]+)', locus.orthogroup, name="orthogroup"),  # noqa
     re_path(r'^module_comparison/$', views.module_comparison, name="module_comparison"),  # noqa
     re_path(r'^module_cat_info/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\+-]+)$', views.module_cat_info, name="module_cat_info"),  # noqa
-    re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)', views.locusx, name="locusx"),  # noqa
-    re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)', views.locusx, name="locusx"),
-    re_path(r'^locusx$', views.locusx, name="locusx"),
+    re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)', locus.locusx, name="locusx"),  # noqa
+    re_path(r'^locusx/([a-zA-Z0-9_\.\-]+)', locus.locusx, name="locusx"),
+    re_path(r'^locusx$', locus.locusx, name="locusx"),
     re_path(r'^ko_venn_subset/([a-zA-Z0-9_\.\+-]+)$', venn.VennKoSubsetView.as_view(), name="ko_venn_subset"),  # noqa
     re_path(r'^ko_comparison', tabular_comparison.KoComparisonView.as_view(), name="ko_comparison"),  # noqa
     re_path(r'^ko_barchart/$', views.KoBarchart.as_view(), name="ko_barchart"),

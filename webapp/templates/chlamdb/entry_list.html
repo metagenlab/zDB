@@ -18,12 +18,12 @@
             {% include "chlamdb/menu.html" %}
             {% include "chlamdb/extract_nav_tabs_template.html" with active_tab="index" %}
             <br><br><br>
-            <table id="pfam_table">
+            <table id="pfam_table" class="table table-striped">
               <thead>
                 <tr>
-                  <td></td>
+                  <th></th>
                   {% for header in table_headers %}
-                    <td>{{ header }}</td>
+                    <th>{{ header }}</th>
                   {% endfor %}
                 </tr>
               </thead>
