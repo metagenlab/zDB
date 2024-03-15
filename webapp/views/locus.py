@@ -232,7 +232,8 @@ class AnnotationTableBase():
                 "table_data": descriptions,
                 "table_data_accessors": self.table_data_accessors,
                 "data_table_config": DataTableConfig(export_buttons=False,
-                                                     display_as_datatable=False)}
+                                                     display_as_datatable=False),
+                "title": f"{self.object_name} Annotation(s)"}
 
 
 class KoAnnotationTable(AnnotationTableBase, KoViewMixin):
@@ -299,7 +300,7 @@ def og_tab_get_swissprot_homologs(db, annotations):
             "table_headers": ["Annotation", "Number of occurrences"],
             "data_table_config": DataTableConfig(table_id="swissprot",
                                                  display_index=False),
-            "n_swissprot_hits": len(homologs)
+            "title": f"Annotations of the {len(homologs)} SwissProt hits"
             }
 
 
@@ -540,11 +541,11 @@ def locusx(request, locus=None, menu=True):
     taxid = db.get_organism([seqid], as_taxid=True)[seqid]
     annot_tables = [CogAnnotationTable(), KoAnnotationTable(from_taxid=taxid),
                     AmrAnnotationTable(), VfAnnotationTable()]
+    context["result_tables"] = []
     for annotation_table in annot_tables:
         if not annotation_table.is_enabled:
             continue
-        key = f"{annotation_table.object_type.upper()}_data"
-        context[key] = annotation_table.get_results([seqid])
+        context["result_tables"].append(annotation_table.get_results([seqid]))
 
     if optional2status.get("pfam", False):
         pfam_ctx = tab_get_pfam_annot(db, [seqid])
@@ -695,15 +696,17 @@ def orthogroup(request, og):
                     PfamAnnotationTable(include_occurences=True),
                     AmrAnnotationTable(include_occurences=True),
                     VfAnnotationTable(include_occurences=True)]
+
+    context["result_tables"] = []
     seqids = annotations.index.tolist()
     for annotation_table in annot_tables:
         if not annotation_table.is_enabled:
             continue
-        key = f"{annotation_table.object_type.upper()}_data"
-        context[key] = annotation_table.get_results(seqids)
+        context["result_tables"].append(annotation_table.get_results(seqids))
 
     if optional2status.get("BLAST_swissprot", False):
-        context["swissprot"] = og_tab_get_swissprot_homologs(db, annotations)
+        context["result_tables"].append(
+            og_tab_get_swissprot_homologs(db, annotations))
 
     try:
         og_phylogeny_ctx = tab_og_phylogeny(db, og_id)

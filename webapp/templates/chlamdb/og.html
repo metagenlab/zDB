@@ -173,58 +173,23 @@
                           </div>
                         </div>
 
-                        {% if PFAM_data|keyvalue:"table_data"|length > 0 %}
-                          <div class="row">
-                            <div class="panel panel-default">
-                              <div class="panel-heading">
-                                <h3 class="panel-title">PFAM domains</h3>
-                              </div>
-                              {% include "chlamdb/result_table.html" with results=PFAM_data %}
-                            </div>
-                          </div>
-                        {% endif %}
-
                       </div>
                     </div>
 
                     <div class="col-md-12 col-lg-8">
                       <div class="container-fluid">
-                        {% if COG_data|keyvalue:"table_data"|length > 0 %}
-                          <div class="row">
-                            <div class="panel panel-default">
-                              <div class="panel-heading">
-                                <h3 class="panel-title">COG annotation(s)</h3>
+                        {% for result_table in result_tables%}
+                          {% if result_table|keyvalue:"table_data"|length > 0 %}
+                            <div class="row">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">{{result_table|keyvalue:"title"}}</h3>
+                                </div>
+                                {% include "chlamdb/result_table.html" with results=result_table %}
                               </div>
-                              {% include "chlamdb/result_table.html" with results=COG_data %}
                             </div>
-                          </div>
-                        {% endif %}
-
-                        {% if KO_data|keyvalue:"table_data"|length > 0 %}
-                          <div class="row">
-                            <div class="panel panel-default">
-                              <div class="panel-heading">
-                                <h3 class="panel-title">Kegg Ortholog annotation(s)</h3>
-                              </div>
-                              {% include "chlamdb/result_table.html" with results=KO_data %}
-                            </div>
-                          </div>
-                        {% endif %}
-
-                        {% if AMR_data|keyvalue:"table_data"|length > 0 %}
-                          <div class="row">
-                            <div class="panel panel-default">
-                              <div class="panel-heading">
-                                <h3 class="panel-title">Antibiotic resistance annotations
-                                  <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='For more information on the fields see the AMRFinderPlus documentation'>
-                                    <span class="glyphicon glyphicon-question-sign" aria-hidden="true"/>
-                                  </a>
-                                </h3>
-                              </div>
-                              {% include "chlamdb/result_table.html" with results=AMR_data %}
-                            </div>
-                          </div>
-                        {% endif %}
+                          {% endif %}
+                        {% endfor %}
 
                         {% if length_distrib %}
                           <div class="row">
@@ -271,35 +236,6 @@
                             </div>
                           </div>
                         {% endif %}
-
-                        {% if optional2status|keyvalue:"BLAST_swissprot" %}
-                          <div class="row">
-                            <div class="panel panel-default">
-                              {% if swissprot.n_swissprot_hits != 0 %}
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">Annotations of the {{swissprot.n_swissprot_hits}} SwissProt hits</h3>
-                                </div>
-                                {% include "chlamdb/result_table.html" with results=swissprot %}
-                              {% else %}
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">No swissprot homolog </h3>
-                                </div>
-                              {% endif %}
-                            </div>
-                          </div>
-                        {% endif %}
-
-                        {% if VF_data|keyvalue:"table_data"|length > 0 %}
-                          <div class="row">
-                            <div class="panel panel-default">
-                              <div class="panel-heading">
-                                <h3 class="panel-title">Virulence factors</h3>
-                              </div>
-                              {% include "chlamdb/result_table.html" with results=VF_data %}
-                            </div>
-                          </div>
-                        {% endif %}
-
                       </div>
                     </div>
                   </div>

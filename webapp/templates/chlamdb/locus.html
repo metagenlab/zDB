@@ -279,17 +279,6 @@
                     </div>
                   </div>
 
-                  {% if COG_data|keyvalue:"table_data"|length > 0 %}
-                    <div class="row">
-                      <div class="panel panel-default">
-                        <div class="panel-heading">
-                          <h3 class="panel-title">COG annotation(s)</h3>
-                        </div>
-                        {% include "chlamdb/result_table.html" with results=COG_data %}
-                      </div>
-                    </div>
-                  {% endif %}
-
                   {% if pfam_def|length > 0 %}
                     <div class="row">
                       <div class="panel panel-default">
@@ -310,41 +299,19 @@
                     </div>
                   {% endif %}
 
-                  {% if KO_data|keyvalue:"table_data"|length > 0 %}
-                    <div class="row">
-                      <div class="panel panel-default">
-                      <div class="panel-heading">
-                        <h3 class="panel-title">Kegg Ortholog annotation(s)</h3>
+                  {% for result_table in result_tables%}
+                    {% if result_table|keyvalue:"table_data"|length > 0 %}
+                      <div class="row">
+                        <div class="panel panel-default">
+                          <div class="panel-heading">
+                            <h3 class="panel-title">{{result_table|keyvalue:"title"}}</h3>
+                          </div>
+                          {% include "chlamdb/result_table.html" with results=result_table %}
+                        </div>
                       </div>
-                      {% include "chlamdb/result_table.html" with results=KO_data %}
-                      </div>
-                    </div>
-                  {% endif %}
+                    {% endif %}
+                  {% endfor %}
 
-                  {% if AMR_data|keyvalue:"table_data"|length > 0 %}
-                    <div class="row">
-                      <div class="panel panel-default">
-                      <div class="panel-heading">
-                        <h3 class="panel-title">Antibiotic resistance annotations</h3>
-                          <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='For more information on the fields see the AMRFinderPlus documentation'>
-                             <span class="glyphicon glyphicon-question-sign" aria-hidden="true"/>
-                          </a>
-                      </div>
-                      {% include "chlamdb/result_table.html" with results=AMR_data %}
-                      </div>
-                    </div>
-                  {% endif %}
-
-                  {% if VF_data|keyvalue:"table_data"|length > 0 %}
-                    <div class="row">
-                      <div class="panel panel-default">
-                      <div class="panel-heading">
-                        <h3 class="panel-title">Virulence factors</h3>
-                      </div>
-                      {% include "chlamdb/result_table.html" with results=VF_data %}
-                      </div>
-                    </div>
-                  {% endif %}
                 </div> <!-- second column -->
               </div> <!-- first tab -->
               <div class="tab-pane" id="tab3" width="100%" height="100%">
