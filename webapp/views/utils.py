@@ -48,6 +48,11 @@ with DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
     hsh_config = db.get_config_table(ret_mandatory=True)
     optional2status = {name: value for name,
                        (mandatory, value) in hsh_config.items() if not mandatory}
+    optional2status["cog"] = optional2status["COG"]
+    optional2status["ko"] = optional2status["KEGG"]
+    optional2status["amr"] = optional2status["AMR"]
+    optional2status["vf"] = optional2status["BLAST_vfdb"]
+
     missing_mandatory = [name for name, (mandatory, value) in hsh_config.items()
                          if mandatory and not value]
 

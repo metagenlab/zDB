@@ -6,8 +6,8 @@ from views.analysis_view_metadata import analysis_views_metadata
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_ko_module, format_lst_to_html,
                          format_orthogroup, format_pfam,
-                         format_refseqid_to_ncbi, my_locals, page2title,
-                         safe_replace)
+                         format_refseqid_to_ncbi, my_locals, optional2status,
+                         page2title, safe_replace)
 
 
 class Transform():
@@ -55,6 +55,11 @@ class BaseViewMixin():
     _db = None
     _base_colname_to_header_mapping = {}
     _specific_colname_to_header_mapping = {}
+
+    @property
+    @staticmethod
+    def is_enabled(self):
+        return optional2status.get(self.object_type, False)
 
     @property
     def db(self):
@@ -346,6 +351,7 @@ class OrthogroupViewMixin(BaseViewMixin):
     }
 
     table_data_accessors = ["orthogroup", "product", "gene"]
+    is_enabled = True
 
     @property
     def get_hit_counts(self):
