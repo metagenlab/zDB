@@ -51,26 +51,43 @@ function createGenomicRegion(div, div_width, svg_id, regions, connections, highl
 		let stop = feature.end;
 		let top_y = 0;
 		let bot_y = arrow_height;
+		let diff = (arrow_height-arrow_tube_size)/2;
 
-		if(stop-start <= max_arrow_size) {
-			top_left = {x: start , y:top_y};
-			bottom_left = {x:start, y:bot_y};
-			spike = {x:stop, y:(top_y+bot_y)/2};
-			points = [top_left, bottom_left, spike];
-		} else {
-			let diff = (arrow_height-arrow_tube_size)/2;
-			arrow_top = {x: stop-max_arrow_size, y:top_y};
-			arrow_bot = {x: stop-max_arrow_size, y:bot_y};
-			arrow_spike = {x: stop, y:(top_y+bot_y)/2};
+		// the order is important here : if the gene is overflowing, 
+		// but still smaller than arrow_size, it should not be 
+		// represented as an arrow.
+		if((feature.strand == -1 && start < region_start) ||
+				(feature.strand == 1 && stop > region_end)) {
+			start = (start < region_start)? region_start: start;
+			stop = (stop > region_end)? region_end: stop;
 			tube_beg_top = {x:start, y: diff};
 			tube_beg_bot = {x:start, y: diff+arrow_tube_size};
-			tube_end_top = {x: stop-max_arrow_size, y:diff}
-			tube_end_bot = {x: stop-max_arrow_size, y:diff+arrow_tube_size}
-			points = [tube_beg_top, tube_end_top, arrow_top, arrow_spike, arrow_bot, tube_end_bot, tube_beg_bot];
+			tube_end_top = {x:stop, y:diff}
+			tube_end_bot = {x:stop, y:diff+arrow_tube_size}
+			points = [tube_beg_top, tube_end_top, tube_end_bot, tube_beg_bot];
+		} else {
+			start = (start < region_start)? region_start: start;
+			stop = (stop > region_end)? region_end: stop;
+			if(stop-start <= max_arrow_size) {
+				top_left = {x: start , y:top_y};
+				bottom_left = {x:start, y:bot_y};
+				spike = {x:stop, y:(top_y+bot_y)/2};
+				points = [top_left, bottom_left, spike];
+			} else {
+				arrow_top = {x: stop-max_arrow_size, y:top_y};
+				arrow_bot = {x: stop-max_arrow_size, y:bot_y};
+				arrow_spike = {x: stop, y:(top_y+bot_y)/2};
+				tube_beg_top = {x:start, y: diff};
+				tube_beg_bot = {x:start, y: diff+arrow_tube_size};
+				tube_end_top = {x: stop-max_arrow_size, y:diff}
+				tube_end_bot = {x: stop-max_arrow_size, y:diff+arrow_tube_size}
+				points = [tube_beg_top, tube_end_top, arrow_top,
+					arrow_spike, arrow_bot, tube_end_bot, tube_beg_bot];
+			}
 		}
 
 		if(feature.strand == -1) {
-			let midpoint = (feature.start+feature.end)/2;
+			let midpoint = (start+stop)/2;
 			for(point in points) {
 				let x_coord = points[point].x;
 				points[point].y += arrow_height+base_line_width;
@@ -81,31 +98,12 @@ function createGenomicRegion(div, div_width, svg_id, regions, connections, highl
 			}
 		}
 
-		for(var i=0; i<points.length;i++) {
-			cur_point = points[i];
-			if(cur_point.x < region_start) {
-				cur_point.x = region_start;
-			} else if (cur_point.x > region_end) {
-				cur_point.x = region_end;
-			}
-		}
 		return points;
 	}
 
 	function draw_genes_arrow(svg, region, x_scale, y_scale) {
-		// if a gene is partly in the region, only draw those
-		// whose arrow can be completely drawn, discard the other ones.
 		let start=region.start;
 		let end=region.end;
-		/* let filtered_features = region.features.filter(function(d) {
-			return (d.start<=end-max_arrow_size)&&(d.end>=start+max_arrow_size);
-		}); */
-	
-		for (let i=0; i<region.features.length;i++) {
-			if(region.features[i].end-start <= max_arrow_size) {
-				region.features[i].start = start;
-			}
-		}
 		let filtered_features = region.features;
 		let locus_to_position = {};
 
