@@ -1,42 +1,34 @@
 
 from chlamdb.forms import make_venn_from
-from django.conf import settings
 from django.shortcuts import render
 from django.views import View
-from lib.db_utils import DB
 
-from views.mixins import AmrAnnotationsMixin, ComparisonViewMixin
-from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
-                         format_lst_to_html, format_orthogroup, format_pfam,
-                         my_locals)
+from views.errors import errors
+from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
+                          OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
 
 
 def escape_quotes(unsafe):
     return unsafe.replace("\"", "\\\"")
 
 
-class VennBaseView(View, ComparisonViewMixin):
+class VennBaseView(View):
 
     template = 'chlamdb/venn_generic.html'
 
+    _table_data_descr = "The table contains a list of the {0}, their {1}."
+
     @property
     def view_name(self):
-        return f"venn_{self.comp_type}"
+        return f"venn_{self.object_type}"
 
     def dispatch(self, request, *args, **kwargs):
-        biodb_path = settings.BIODB_DB_PATH
-        self.db = DB.load_db_from_name(biodb_path)
-        self.form_class = make_venn_from(self.db, label=self.compared_obj_name,
+        self.form_class = make_venn_from(self.db, label=self.object_name_plural,
                                          limit=6, action=self.view_name)
         return super(VennBaseView, self).dispatch(request, *args, **kwargs)
 
     def get_context(self, **kwargs):
-        context = {
-            "page_title": self.page_title,
-            "comp_type": self.comp_type,
-            "compared_obj_name": self.compared_obj_name,
-            "form_venn": self.form,
-        }
+        context = super(VennBaseView, self).get_context(**kwargs)
         if getattr(self, "show_results", False):
             context.update({
                 "show_results": True,
@@ -45,8 +37,7 @@ class VennBaseView(View, ComparisonViewMixin):
                 "series": self.series,
                 "data_dict": self.data_dict,
                 })
-        context.update(kwargs)
-        return my_locals(context)
+        return context
 
     def get(self, request, *args, **kwargs):
         self.form = self.form_class()
@@ -60,15 +51,23 @@ class VennBaseView(View, ComparisonViewMixin):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
             self.form = self.form_class()
-            # add error message in web page
-            return render(request, self.template, self.get_context())
+            return render(request, self.template,
+                          self.get_context(**errors["invalid_form"]))
 
         self.targets = self.form.get_taxids()
+        if len(self.targets) > 6:
+            self.form = self.form_class()
+            return render(request, self.template,
+                          self.get_context(**errors["too_many_targets"]))
         return self.render_venn(request)
 
     def render_venn(self, request):
         genomes = self.db.get_genomes_description()
-        counts = self.get_counts(self.targets)
+        counts = self.get_hit_counts(self.targets)
+        if counts.empty:
+            return render(request, self.template,
+                          self.get_context(**errors["no_hits"]))
+
         counts = self.prepare_data(counts, genomes)
 
         self.series = []
@@ -78,100 +77,49 @@ class VennBaseView(View, ComparisonViewMixin):
                 "data": [self.format_entry(key)
                          for key, cnt in taxon_counts.items() if cnt > 0]
                 })
-
         context = self.get_context()
         return render(request, self.template, context)
 
-
-class VennOrthogroupView(VennBaseView):
-
-    comp_type = "orthogroup"
-    table_headers = ["Orthogroup", "Gene", "Description"]
-    table_data_descr = "The table contains a list of the genes annotated "\
-                       "in each Orthogroup and their description."
-
-    @staticmethod
-    def format_entry(entry, to_url=False):
-        return format_orthogroup(entry, to_url=to_url)
-
-    @property
-    def get_counts(self):
-        return self.db.get_og_count
+    def filter_data(self, data, counts):
+        return data, counts
 
     def prepare_data(self, counts, genomes):
-        og_list = counts.index.tolist()
-        annotations = self.db.get_genes_from_og(
-            orthogroups=og_list, taxon_ids=genomes.index.tolist())
-        grouped = annotations.groupby("orthogroup")
-        genes = grouped["gene"].apply(list)
-        products = grouped["product"].apply(list)
-
+        data = self.get_hit_descriptions(counts.index.tolist())
+        data, counts = self.filter_data(data, counts)
         self.data_dict = {}
-        for og in og_list:
-            gene_data = "-"
-            if og in genes.index:
-                g = genes.loc[og]
-                gene_data = format_lst_to_html(g, add_count=False)
-            prod_data = "-"
-            if og in products.index:
-                p = products.loc[og]
-                prod_data = format_lst_to_html(p, add_count=False)
-            self.data_dict[self.format_entry(og)] = [
-                self.format_entry(og, to_url=True), gene_data, prod_data]
+        for key, info in data.iterrows():
+            row = [info[accessor]
+                   for accessor in self.table_data_accessors]
+            row = [el if el is not None else "-" for el in row]
+            self.data_dict[self.format_entry(key)] = row
+
         self.show_results = True
         return counts
 
-
-class VennPfamView(VennBaseView):
-
-    comp_type = "pfam"
-    table_headers = ["PFAM", "Description"]
-    table_data_descr = "The table contains a list of the Pfam entries and "\
-                       "their description."
-
-    @staticmethod
-    def format_entry(entry, to_url=False):
-        return format_pfam(entry, to_url=to_url)
-
     @property
-    def get_counts(self):
-        return self.db.get_pfam_hits
+    def table_data_descr(self):
+        return self._table_data_descr.format(
+            self.object_name_plural, self._format_column_headers_to_str())
 
-    def prepare_data(self, counts, genomes):
-        data = self.db.get_pfam_def(counts.index.tolist())
-        self.data_dict = {}
-        for pfam, pfam_info in data.iterrows():
-            self.data_dict[self.format_entry(pfam)] = [
-                self.format_entry(pfam, to_url=True), pfam_info["def"]]
-        self.show_results = True
-        return counts
+
+class VennOrthogroupView(VennBaseView, OrthogroupViewMixin):
+
+    pass
+
+
+class VennPfamView(VennBaseView, PfamViewMixin):
+
+    pass
 
 
 class VennKoMixin():
 
-    comp_type = "ko"
-    table_headers = ["KO", "Description"]
-    table_data_descr = "The table contains a list of the Kegg Orthologs and "\
-                       "their description."
-
-    @staticmethod
-    def format_entry(entry, to_url=False):
-        return format_ko(entry, as_url=to_url)
-
-    def prepare_data(self, counts, genomes):
-        ko_list = counts.index.get_level_values("KO").unique().to_list()
-        data = self.db.get_ko_desc(ko_list)
-        self.data_dict = {}
-        for ko, ko_desc in data.items():
-            self.data_dict[self.format_entry(ko)] = [
-                self.format_entry(ko, to_url=True), ko_desc]
-        self.show_results = True
-        return counts
+    table_data_accessors = ["ko", "description"]
 
 
-class VennKoView(VennBaseView, VennKoMixin):
+class VennKoView(VennBaseView, VennKoMixin, KoViewMixin):
 
-    def get_counts(self, targets):
+    def get_hit_counts(self, targets):
         counts = self.db.get_ko_count(targets)["count"].unstack(
             level=0, fill_value=0)
         return counts
@@ -197,9 +145,9 @@ class VennSubsetBaseView(VennBaseView):
         return self.render_venn(request)
 
 
-class VennKoSubsetView(VennSubsetBaseView, VennKoMixin):
+class VennKoSubsetView(VennSubsetBaseView, VennKoMixin, KoViewMixin):
 
-    def get_counts(self, targets):
+    def get_hit_counts(self, targets):
         counts = self.db.get_ko_count_cat(
             taxon_ids=targets, subcategory_name=self.category, index=False)
         counts = counts.drop("module_id", axis=1)
@@ -209,83 +157,24 @@ class VennKoSubsetView(VennSubsetBaseView, VennKoMixin):
         return counts
 
 
-class VennCogView(VennBaseView):
+class VennCogView(VennBaseView, CogViewMixin):
 
-    comp_type = "cog"
-    table_headers = ["ID", "Function(s)", "Description"]
-    table_data_descr = "The table contains a list of COG definitions, their "\
-                       "description and the category to which they belong."
-    category = None
-
-    @staticmethod
-    def format_entry(entry, to_url=False):
-        return format_cog(entry, as_url=to_url)
-
-    def get_counts(self, targets):
-        return self.db.get_cog_hits(targets, search_on="taxid")
-
-    def prepare_data(self, counts, genomes):
-        data = self.db.get_cog_summaries(
-            counts.index.tolist(), only_cog_desc=True, as_df=True)
-
-        # Fitler for VennCogSubsetView
-        if self.category:
-            data = data[data.function.str.contains(self.category)]
-        # Filters out COGs without description and COGs not of the correct
-        # category (if a category was selected).
-        counts = counts.reindex(data.index)
-
-        cog_codes = self.db.get_cog_code_description()
-        self.data_dict = {}
-        for cog, cog_data in data.iterrows():
-            functions = [f"{cog_codes[abbr]} ({abbr})"
-                         for abbr in cog_data.function]
-            functions = format_lst_to_html(functions, False)
-            self.data_dict[self.format_entry(cog)] = [
-                self.format_entry(cog, to_url=True),
-                functions,
-                cog_data.description]
-        self.show_results = True
-        return counts
+    def filter_data(self, data, counts):
+        return data, counts.reindex(data.index)
 
 
 class VennCogSubsetView(VennSubsetBaseView, VennCogView):
 
+    def filter_data(self, data, counts):
+        filtered_data = data[data.function.str.contains(self.category)]
+        return (filtered_data, counts.reindex(filtered_data.index))
+
+
+class VennAmrView(VennBaseView, AmrViewMixin):
+
     pass
 
 
-class VennAmrView(VennBaseView, AmrAnnotationsMixin):
+class VennVfView(VennBaseView, VfViewMixin):
 
-    comp_type = "amr"
-    table_data_descr = "The table contains a list of the Pfam entries and "\
-                       "their description."
-
-    table_headers = ["Gene", "Description", "Scope", "Type", "Class",
-                     "Subclass", "HMM"]
-    table_data_accessors = ["seq_name", "scope", "type", "class", "subclass"]
-
-    @staticmethod
-    def format_entry(entry, to_url=False):
-        return format_amr(entry, to_url=to_url)
-
-    @property
-    def get_counts(self):
-        return self.db.get_amr_hit_counts
-
-    def prepare_data(self, counts, genomes):
-        data = self.db.get_amr_descriptions(counts.index.tolist())
-        self.aggregate_amr_annotations(data)
-        data = data.drop_duplicates(subset=["gene"]).set_index("gene")
-        self.data_dict = {}
-        for amr, amr_info in data.iterrows():
-            row = [
-                self.format_entry(amr, to_url=True),
-                *[amr_info[accessor] or ""
-                  for accessor in self.table_data_accessors]
-            ]
-            row.append(format_hmm_url(amr_info["hmm_id"]))
-            row = [el if el is not None else "-" for el in row]
-            self.data_dict[self.format_entry(amr)] = row
-
-        self.show_results = True
-        return counts
+    pass

@@ -18,7 +18,7 @@
             <div class="row">
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
-                 {% include "chlamdb/extract_nav_tabs_template.html" with type="ko" active_tab="bar" %}
+                 {% include "chlamdb/extract_nav_tabs_template.html" with active_tab="bar" %}
 
                   <br>
                   <p class="page-title"><b>Distribution of Kegg Orthologs within KO categories </b><a href="/docs/index.html" id="show-option" title="Compare Kegg Orthologs between genomes of interest (targets) and visualize them in barcharts."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
@@ -234,8 +234,8 @@
                           .attr("class", "btn btn-primary btn-sm")
                           .text("Download SVG")
                           .on("click", function() {
-							  var svg_elem = document.querySelector("#ko_barchart");
-							  svgExport.downloadSvg(svg_elem, "ko_cat_chart");
+                var svg_elem = document.querySelector("#ko_barchart");
+                svgExport.downloadSvg(svg_elem, "ko_cat_chart");
                           });
 
                   </script>

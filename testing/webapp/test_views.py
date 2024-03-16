@@ -3,19 +3,13 @@ import re
 from unittest import skip
 
 from chlamdb.urls import urlpatterns
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import SimpleTestCase
 from django.urls import resolve
 
 dump_html = False
 html_dumps_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               "html_dumps")
-
-broken_views = [
-    '/circos_main/',
-    '/genomes_intro/',
-    '/orthogroup_list_cog_barchart/',
-    '/orthogroup_list_cog_barchart/True/',
-]
 
 untested_patterns = {
     '^favicon\\.ico$',
@@ -32,6 +26,7 @@ urls = [
     '/amr_comparison',
     '/blast/',
     '/circos/',
+    '/circos_main/',
     '/cog_barchart/',
     '/cog_comparison',
     '/cog_phylo_heatmap/False',
@@ -41,25 +36,35 @@ urls = [
     '/entry_list_cog',
     '/entry_list_ko',
     '/entry_list_pfam',
+    '/entry_list_vf',
     '/extract_amr/',
     '/extract_cog/',
     '/extract_contigs/1',
     '/extract_ko/',
     '/extract_orthogroup/',
     '/extract_pfam/',
+    '/extract_vf/',
     '/fam_amr/ybtP',
     '/fam_cog/COG0775',
     '/fam_ko/K01241',
     '/fam_pfam/PF10423',
+    '/fam_vf/VFG029227',
     '/FAQ',
     '/genomes',
     '/get_cog/3/L?h=1&h=2&h=3',
+    '/gwas_amr/',
+    '/gwas_cog/',
+    '/gwas_ko/',
+    '/gwas_orthogroup/',
+    '/gwas_pfam/',
+    '/gwas_vf/',
     '/help',
     '/home/',
     '/index_comp/cog',
     '/index_comp/ko',
     '/index_comp/orthogroup',
     '/index_comp/pfam',
+    '/index_comp/vf',
     '/invalid/url',
     '/kegg/',
     '/kegg_genomes/',
@@ -84,6 +89,7 @@ urls = [
     '/pan_genome/ko',
     '/pan_genome/orthogroup',
     '/pan_genome/pfam',
+    '/pan_genome/vf',
     '/pfam_comparison',
     '/phylogeny',
     '/plot_heatmap/cog',
@@ -91,11 +97,14 @@ urls = [
     '/plot_heatmap/orthogroup',
     '/plot_heatmap/pfam',
     '/plot_heatmap/amr',
+    '/plot_heatmap/vf',
     '/venn_amr/',
     '/venn_cog/',
     '/venn_ko/',
     '/venn_orthogroup/',
     '/venn_pfam/',
+    '/venn_vf/',
+    '/vf_comparison/',
 ]
 
 
@@ -124,24 +133,17 @@ class TestViewsAreHealthy(SimpleTestCase):
             resp = self.client.get(url)
             self.assertEqual(200, resp.status_code, f"{url} is broken")
 
-    def test_broken_views(self):
-        for url in broken_views:
-            self.assertRaises(Exception, self.client.get, url)
-
     def test_all_urlpatterns_are_tested(self):
         all_patterns = set(el.pattern._regex for el in urlpatterns)
         tested_patterns = set()
         for url in urls:
             tested_patterns.add(resolve(url.rsplit("?")[0]).route)
 
-        for url in broken_views:
-            tested_patterns.add(resolve(url.rsplit("?")[0]).route)
-
         covered_patterns = tested_patterns | untested_patterns
         self.assertFalse(
             all_patterns - covered_patterns,
             "Some patterns are not covered in the tests: please add them to "
-            "one of broken_views, untested_patterns or urls")
+            "untested_patterns or urls")
 
     def test_all_views_render_valid_html(self):
         for url in urls:
@@ -213,6 +215,31 @@ class TestViewsContent(SimpleTestCase):
         self.assertPlot(resp)
         self.assertContains(resp, "Distribution of COGs within COG categories")
 
+    def test_blast(self):
+        resp = self.client.get("/blast/")
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/blast.html')
+        self.assertTitle(resp, "Homology search: Blast")
+        self.assertNotIn("envoi", resp.context.keys())
+        self.assertNotContains(resp, "Help to interpret the results")
+        self.assertNotContains(resp, 'id="phylo_distrib"')
+        self.assertNotContains(resp, 'id="blast_details"')
+
+        data = {
+            "blast_input": "ATCGCCACGGTGGTGCAGGCGCAGAAAGCGGGCAAAACGCTCAGCGTCG",
+            "blast": "blastn_ffn",
+            "max_number_of_hits": 10,
+            "target": "all"
+        }
+        resp = self.client.post("/blast/", data=data)
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/blast.html')
+        self.assertTitle(resp, "Homology search: Blast")
+        self.assertIn("envoi", resp.context.keys())
+        self.assertContains(resp, "Help to interpret the results")
+        self.assertContains(resp, 'id="phylo_distrib"')
+        self.assertContains(resp, 'id="blast_details"')
+
 
 class ComparisonViewsTestMixin():
 
@@ -226,6 +253,7 @@ class ComparisonViewsTestMixin():
     venn_html = '<div id="venn_diagram" '
     heatmap_html = '<div id="heatmap" '
     rarefaction_plot_html = 'id="rarefaction_plot"'
+    gwas_table_html = '<table id="gwas_table"'
 
     def assertPageTitle(self, resp, title):
         self.assertContains(
@@ -273,13 +301,21 @@ class ComparisonViewsTestMixin():
         self.assertTrue(resp.context.get("envoi", False))
         self.assertContains(resp, self.rarefaction_plot_html)
 
+    def assertNoGwasTable(self, resp):
+        self.assertFalse(resp.context.get("show_results", False))
+        self.assertNotContains(resp, self.gwas_table_html)
+
+    def assertGwasTable(self, resp):
+        self.assertTrue(resp.context.get("show_results", False))
+        self.assertContains(resp, self.gwas_table_html)
+
     @property
     def tab_comp_view(self):
         return f"/{self.view_type}_comparison"
 
     @property
-    def tab_comp_form_data(self):
-        return {"targets": ["0", "1"]}
+    def tab_comp_form_data_list(self):
+        return [{"targets": ["0", "1"]}]
 
     @property
     def venn_view(self):
@@ -296,6 +332,18 @@ class ComparisonViewsTestMixin():
     @property
     def heatmap_form_data(self):
         return {"targets": ["0", "1"]}
+
+    @property
+    def gwas_view(self):
+        return f"/gwas_{self.view_type}/"
+
+    @property
+    def gwas_form_data(self):
+        phenotype = SimpleUploadedFile(
+            "phenotype.csv", b"1,1\n2,1\n3,0", content_type="text/csv")
+        return {"max_number_of_hits": "all",
+                "bonferroni_cutoff": 0.99,
+                "phenotype_file": phenotype}
 
     def test_comparison_index_view(self):
         resp = self.client.get(f"/index_comp/{self.view_type}")
@@ -321,14 +369,15 @@ class ComparisonViewsTestMixin():
         self.assertNoCompTable(resp)
         self.assertNav(resp)
 
-        resp = self.client.post(self.tab_comp_view,
-                                data=self.tab_comp_form_data)
-        self.assertEqual(200, resp.status_code)
-        self.assertTemplateUsed(resp, 'chlamdb/tabular_comparison.html')
-        self.assertPageTitle(resp, self.page_title)
-        self.assertSelection(resp, selected=True)
-        self.assertCompTable(resp)
-        self.assertNav(resp)
+        for tab_comp_form_data in self.tab_comp_form_data_list:
+            resp = self.client.post(self.tab_comp_view,
+                                    data=tab_comp_form_data)
+            self.assertEqual(200, resp.status_code)
+            self.assertTemplateUsed(resp, 'chlamdb/tabular_comparison.html')
+            self.assertPageTitle(resp, self.page_title)
+            self.assertSelection(resp, selected=True)
+            self.assertCompTable(resp)
+            self.assertNav(resp)
 
         maybe_dump_html(resp, "with_results")
 
@@ -376,7 +425,7 @@ class ComparisonViewsTestMixin():
         resp = self.client.get(f"/pan_genome/{self.view_type}")
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
-        self.assertEqual(self.view_type, resp.context["type"])
+        self.assertEqual(self.view_type, resp.context["object_type"])
         self.assertPageTitle(resp, self.page_title)
         self.assertNoRarefactionPlot(resp)
 
@@ -384,9 +433,31 @@ class ComparisonViewsTestMixin():
                                 data={"targets": ["0", "1"]})
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
-        self.assertEqual(self.view_type, resp.context["type"])
+        self.assertEqual(self.view_type, resp.context["object_type"])
         self.assertPageTitle(resp, self.page_title)
         self.assertRarefactionPlot(resp)
+
+        maybe_dump_html(resp, "with_results")
+
+    def test_gwas_view(self):
+        resp = self.client.get(self.gwas_view)
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/gwas.html')
+        self.assertPageTitle(resp, self.page_title)
+        self.assertNoGwasTable(resp)
+        self.assertNav(resp)
+        self.assertNotContains(resp, 'id="error"')
+
+        resp = self.client.post(self.gwas_view,
+                                data=self.gwas_form_data)
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/gwas.html')
+        self.assertPageTitle(resp, self.page_title)
+        # No results because there is no hit.
+        self.assertNoGwasTable(resp)
+        self.assertNav(resp)
+        self.assertContains(resp, 'id="error"')
+        self.assertContains(resp, 'No significant association')
 
         maybe_dump_html(resp, "with_results")
 
@@ -441,12 +512,29 @@ class TestAMRViews(SimpleTestCase, ComparisonViewsTestMixin):
     page_title = "Comparisons: Antimicrobial Resistance"
 
     @property
-    def tab_comp_form_data(self):
-        return {"targets": ["0", "1"], "comp_type": "gene"}
+    def tab_comp_form_data_list(self):
+        """Tests for class and subclass are not worth much as none
+        of the AMRs in the DB have a class or subclass...
+        """
+        return [{"targets": ["0", "1"], "comp_type": "gene"},
+                {"targets": ["0", "1"], "comp_type": "class"},
+                {"targets": ["0", "1"], "comp_type": "subclass"}]
 
     @skip("Heatmap plot fails because the test data does not provide enough hits")
     def test_plot_heatmap_view(self):
         super(TestAMRViews, self).test_plot_heatmap_view()
+
+
+class TestVFViews(SimpleTestCase, ComparisonViewsTestMixin):
+
+    view_type = "vf"
+    page_title = "Comparisons: Virulence Factors"
+
+    @property
+    def tab_comp_form_data_list(self):
+        return [{"targets": ["0", "1"], "comp_type": "vf_gene_id"},
+                {"targets": ["0", "1"], "comp_type": "vfid"},
+                {"targets": ["0", "1"], "comp_type": "category"},]
 
 
 class TestOrthogroupViews(SimpleTestCase, ComparisonViewsTestMixin):

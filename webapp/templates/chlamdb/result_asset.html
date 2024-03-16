@@ -1,0 +1,6 @@
+{% load static %}
+
+<a download="{{tab.id}}.svg" class="btn" href="{% static tab.asset_path %}"> <i class="fa fa-download"></i> Download SVG
+</a>
+<object type="image/svg+xml" data="{% static tab.asset_path %}" id="{{tab.id}}"></object>
+

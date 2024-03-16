@@ -1,14 +1,14 @@
 import os
+import re
 from collections import defaultdict, namedtuple
+from datetime import datetime
 
 import pandas as pd
+import xlrd
+from Bio import SeqIO, SeqUtils
+from lib import KO_module, search_bar
+from lib.db_utils import DB
 
-from Bio import AlignIO, SeqIO, SeqUtils
-
-from db_utils import DB
-
-import KO_module
-import search_bar
 
 # assumes orthofinder named: OG000N
 # returns the N as int
@@ -259,7 +259,7 @@ def load_alignments_results(args, identity_csvs, db_file):
     db.commit()
 
 
-def load_cog(params, filelist, db_file, cdd_to_cog):
+def load_cog(params, filelist, db_file, cdd_to_cog, cog_db_dir):
     db = DB.load_db(db_file, params)
     hsh_cdd_to_cog = {}
     with open(cdd_to_cog, "r") as cdd_to_cog_file:
@@ -286,6 +286,14 @@ def load_cog(params, filelist, db_file, cdd_to_cog):
     db.set_status_in_config_table("COG", 1)
     db.commit()
 
+    # Determine reference DB version
+    with open(os.path.join(cog_db_dir, "cdd.info")) as fh:
+        dbname, _, version = fh.readline().split()
+        if dbname != "cdd":
+            raise ValueError("Could not determine Cog DB version")
+    db.load_data_into_table("versions", [("CDD", version.strip())])
+    db.commit()
+
 
 def amr_hit_to_db_entry(hit):
     columns = ["Gene symbol",
@@ -305,7 +313,7 @@ def amr_hit_to_db_entry(hit):
     return entry
 
 
-def load_amr(params, filelist, db_file):
+def load_amr(params, filelist, db_file, version_file):
     db = DB.load_db(db_file, params)
 
     data = []
@@ -314,6 +322,17 @@ def load_amr(params, filelist, db_file):
         data.extend(amr_hit_to_db_entry(hit) for i, hit in amr_hits.iterrows())
     db.load_amr_hits(data)
     db.set_status_in_config_table("AMR", 1)
+    db.commit()
+
+    # Determine software and reference DB version
+    with open(version_file) as fh:
+        for line in fh:
+            if line.startswith("Software version"):
+                soft_version = line.rsplit(":", 1)[1].strip()
+            elif line.startswith("Database version"):
+                db_version = line.rsplit(":", 1)[1].strip()
+    db.load_data_into_table("versions", [("AMRFinderSoftware", soft_version),
+                                         ("AMRFinderDB", db_version)])
     db.commit()
 
 
@@ -400,7 +419,7 @@ def get_gen_stats(gbk_list):
         cds_length = 0
         for record in SeqIO.parse(gbk_file, "genbank"):
             ttl_length += len(record)
-            gc_cum += SeqUtils.GC(record.seq) * len(record)
+            gc_cum += SeqUtils.gc_fraction(record.seq) * len(record)
             for fet in record.features:
                 if fet.type in ["CDS", "tmRNA", "rRNA", "ncRNA", "tRNA"]:
                     if "pseudo" in fet.qualifiers:
@@ -456,7 +475,7 @@ def parse_pfam_entry(file_iter):
             description = line[len("#=GF DE   "):-1]
 
 
-def load_pfam(params, pfam_files, db, pfam_def_file):
+def load_pfam(params, pfam_files, db, pfam_def_file, ref_db_dir):
     db = DB.load_db(db, params)
 
     db.create_pfam_hits_table()
@@ -478,6 +497,7 @@ def load_pfam(params, pfam_files, db, pfam_def_file):
                 pfam_ids.add(pfam_i)
 
         db.load_data_into_table("pfam_hits", entries)
+
     db.commit()
 
     pfam_entries = []
@@ -491,8 +511,16 @@ def load_pfam(params, pfam_files, db, pfam_def_file):
     db.set_status_in_config_table("pfam", 1)
     db.commit()
 
+    # Determine reference DB version
+    with open(os.path.join(ref_db_dir, "Pfam.version")) as fh:
+        title, version = fh.readline().split(":")
+        if "Pfam release" not in title:
+            raise ValueError("Could not determine Pfam DB version")
+    db.load_data_into_table("versions", [("Pfam", version.strip())])
+    db.commit()
 
-class SwissProtIdCount(defaultdict):
+
+class ProtIdCounter(defaultdict):
     def __init__(self):
         super().__init__()
         self.id_count = 0
@@ -536,9 +564,30 @@ def parse_swissprot_id(to_parse):
     return db, ident, name
 
 
-def load_swissprot(params, blast_results, db_name, swissprot_fasta):
+vf_gene_id_expr = re.compile(r"(.*)\(gb\|(.*)\)")
+
+
+def parse_vf_gene_id(to_parse):
+    """IDs in vfdb.fasta are either of the form VFID(gb_accession) or VFID
+    """
+    if "(" in to_parse:
+        return vf_gene_id_expr.match(to_parse).groups()
+    return to_parse, None
+
+
+vfdb_descr_expr = re.compile(r"\(.*?\) (.*?) \[.*?\((VF.*?)\) - (.*?) \((VFC.*?)\)\] \[(.*?)\]")
+
+
+def parse_vfdb_entry(description):
+    description = description.split(" ", 1)[1]
+    prot_name, vfid, category, cat_id, organism = vfdb_descr_expr.match(
+        description).groups()
+    return prot_name, vfid, category, cat_id, organism
+
+
+def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db_dir):
     db = DB.load_db(db_name, params)
-    hsh_swissprot_id = SwissProtIdCount()
+    hsh_swissprot_id = ProtIdCounter()
     db.create_swissprot_tables()
 
     # Note: this is not really scalable to x genomes, as
@@ -572,11 +621,78 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta):
     db.set_status_in_config_table("BLAST_swissprot", 1)
     db.commit()
 
+    # Determine reference DB version
+    with open(os.path.join(swissprot_db_dir, "relnotes.txt")) as fh:
+        dbname, _,  version = fh.readline().split()
+        if dbname != "UniProt":
+            raise ValueError("Could not determine SwissProt DB version")
+    db.load_data_into_table("versions", [("SwissProt", version.strip())])
+    db.commit()
+
+
+def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs):
+    db = DB.load_db(db_name, params)
+    included_vf_genes = set()
+    db.create_vf_tables()
+
+    # Note: this is not really scalable to x genomes, as
+    # it necessitates to keep the prot id in memory
+    # may need to process the blast results in batch instead (slower but
+    # spares memory).
+    for blast_file in blast_results:
+        data = []
+        with open(blast_file, "r") as blast_fh:
+            for line in blast_fh:
+                crc, gene_id, perid, leng, n_mis, n_gap, qs, qe, ss, se, e, score = line.split()
+                hsh = simplify_hash(crc)
+                vf_gene_id, _ = parse_vf_gene_id(gene_id)
+                included_vf_genes.add(vf_gene_id)
+                data.append((hsh, vf_gene_id, float(e), int(float(score)),
+                             int(float(perid)), int(n_gap), int(leng)))
+        db.load_vf_hits(data)
+
+    # Definitions are constructed from two data sources.
+    # vfdb_fasta contains matching entries for every hit, with a
+    # VFID relating to more information in VFs.xls
+    vf_defs = pd.read_excel(vfdb_defs, header=1)
+    vf_defs = vf_defs.set_index("VFID")
+
+    vfdb_prot_defs = []
+    for record in SeqIO.parse(vfdb_fasta, "fasta"):
+        vf_gene_id, gb_accession = parse_vf_gene_id(record.name)
+        if vf_gene_id not in included_vf_genes:
+            continue
+        prot_name, vfid, category, cat_id, organism = parse_vfdb_entry(
+            record.description)
+        # Get info from definitions.
+        # Note that not all vfids have an entry in the definitions table
+        if vfid in vf_defs.index:
+            vf_data = vf_defs.loc[vfid]
+        else:
+            vf_data = {}
+        vfdb_prot_defs.append(
+            (vf_gene_id, gb_accession, prot_name, vfid, category, cat_id,
+             vf_data.get("Characteristics"), vf_data.get("Structure"),
+             vf_data.get("Function"), vf_data.get("Mechanism")))
+    db.load_vf_defs(vfdb_prot_defs)
+    db.set_status_in_config_table("BLAST_vfdb", 1)
+    db.commit()
+
+    # There is no version of the VFdb, only a download date
+    # As there is a new version of the DB every week, the download date
+    # will have to do.
+    book = xlrd.open_workbook(vfdb_defs)
+    sheet = book.sheet_by_index(0)
+    download_date = re.match(r".*\[(.*)\]", sheet.row(0)[3].value).groups()[0]
+    download_date = datetime.strptime(download_date, "%a %b %d %H:%M:%S %Y")
+    db.load_data_into_table("versions", [("VFDB", download_date.date().isoformat())])
+    db.commit()
+
 
 # NOTE:
 # Several KO marked as significant can be assigned to the same locus
 # only take the hit with the lowest evalue (the first in the list)
-def load_KO(params, ko_files, db_name):
+def load_KO(params, ko_files, db_name, ko_db_dir):
     db = DB.load_db(db_name, params)
     data = []
     for ko_file in ko_files:
@@ -604,6 +720,12 @@ def load_KO(params, ko_files, db_name):
                 data.append(entry)
     db.load_ko_hits(data)
     db.set_status_in_config_table("KEGG", 1)
+    db.commit()
+
+    # Determine reference DB version
+    with open(os.path.join(ko_db_dir, "version.txt")) as fh:
+        version = fh.readline()
+    db.load_data_into_table("versions", [("Ko", version.strip())])
     db.commit()
 
 

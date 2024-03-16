@@ -15,19 +15,18 @@
           <div class="row">
             <div class="col-lg-12">
               {% include "chlamdb/menu.html" %}
-              {% include "chlamdb/extract_nav_tabs_template.html" with type=comp_type active_tab="venn" %}
-
+              {% include "chlamdb/extract_nav_tabs_template.html" with active_tab="venn" %}
               <br>
               <p class="page-title">
-                <b>Visual representation of unique and shared {{compared_obj_name}} among selected genomes </b>
+                <b>Visual representation of unique and shared {{object_name_plural}} among selected genomes </b>
                 <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank"  title="Venn diagramm with a maximum of 6 genomes">
                   <i class="fab fa-info-circle " style="size: 5em;" ></i>
                 </a>
               </p>
-
+              {% include "chlamdb/error.html" %}
               {% block content %}
-  			      {% csrf_token %}
-  			      {% crispy form_venn %}
+              {% csrf_token %}
+              {% crispy form %}
               {% endblock %}
 
             </div>
@@ -42,9 +41,9 @@
                     <h5 class="panel-title">Help to interpret the results</h5>
                 </div>
                 <p style="margin: 10px 10px 10px 10px">
-                  The interactive Venn diagram lets you visualize how many {{compared_obj_name}} are shared among the selected genomes or a subset of genomes of interest, and how many are unique to each genome.
-                  <br> Clicking on the reported numbers, the list of identified {{compared_obj_name}} is displayed below. {{table_data_descr}}
-                  <br> Additionally, the total number of {{compared_obj_name}} identified in each genome can be visualized in the barplot, while the number of unique or shared ones can be appreciated in the last plot.
+                  The interactive Venn diagram lets you visualize how many {{object_name_plural}} are shared among the selected genomes or a subset of genomes of interest, and how many are unique to each genome.
+                  <br> Clicking on the reported numbers, the corresponding list of identified {{object_name_plural}} is displayed below. {{table_data_descr}}
+                  <br> Additionally, the total number of {{object_name_plural}} identified in each genome can be visualized in the barplot, while the number of unique or shared ones can be appreciated in the last plot.
                 </p>
               </div>
               {% include "chlamdb/venn_representation_template.html" %}

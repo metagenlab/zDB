@@ -3,11 +3,12 @@
 process download_cog_cdd {
 
     output:
-        tuple path("COG*.smp"), path("Cog.pn")
+        tuple path("COG*.smp"), path("Cog.pn"), path("cdd.info")
 
     script:
     """
     wget ftp://ftp.ncbi.nih.gov/pub/mmdb/cdd/cdd.tar.gz
+    wget ftp://ftp.ncbi.nih.gov/pub/mmdb/cdd/cdd.info
     tar xvf cdd.tar.gz && rm cdd.tar.gz
     """
 }
@@ -20,7 +21,7 @@ process setup_cog_cdd {
     publishDir "$params.cog_db", mode: "move"
 
     input:
-        tuple path(smps), path(pn)
+        tuple path(smps), path(pn), path(info)
 
     output:
         file "cog_db*"
@@ -32,6 +33,8 @@ process setup_cog_cdd {
         -scale 100.0 -dbtype rps -index true
     grep "tag id" COG* | sed 's/.smp:.*tag id//' | \
                         sed 's/COG//' > cdd_to_cog
+    mkdir -p $params.cog_db
+    mv \$(readlink $info) $params.cog_db
     """
 }
 
@@ -53,17 +56,18 @@ process diamond_refseq {
 
 
 process download_pfam_db {
-    publishDir "$params.pfam_db"
 
     output:
-        tuple path("Pfam-A.hmm"), path("Pfam-A.hmm.dat")
+        tuple path("Pfam-A.hmm"), path("Pfam-A.hmm.dat"), path("Pfam.version")
 
     script:
     """
     wget ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
     wget ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.dat.gz
+    wget ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam.version.gz
     gunzip < Pfam-A.hmm.gz > Pfam-A.hmm && rm -f Pfam-A.hmm.gz
     gunzip < Pfam-A.hmm.dat.gz > Pfam-A.hmm.dat && rm -f Pfam-A.hmm.dat.gz
+    gunzip < Pfam.version.gz > Pfam.version && rm -f Pfam.version.gz
     """
 }
 
@@ -72,19 +76,21 @@ process prepare_hmm {
     container "$params.pfam_scan_container"
     conda "$baseDir/conda/pfam_scan.yaml"
 
-    publishDir "$params.pfam_db", mode: "copy"
+    publishDir "$params.pfam_db", mode: "move"
 
     input:
-        tuple path(pfam_hmm), path(pfam_defs)
+        tuple path(pfam_hmm), path(pfam_defs), path(pfam_version)
 
     output:
         path "${pfam_hmm}.h3*"
-        path "Pfam-A.hmm.dat"
-        path "Pfam-A.hmm"
 
     script:
     """
         hmmpress $pfam_hmm
+        mkdir -p $params.pfam_db
+        mv \$(readlink $pfam_hmm) $params.pfam_db
+        mv \$(readlink $pfam_defs) $params.pfam_db
+        mv \$(readlink $pfam_version) $params.pfam_db
     """
 }
 
@@ -96,6 +102,7 @@ process download_ko_profiles {
         path "ko_list"
         path "profiles/*.hmm"
         path "profiles/prokaryote.hal"
+        path "version.txt"
 
     script:
     version="2022-03-01"
@@ -106,20 +113,20 @@ process download_ko_profiles {
     gunzip < ko_list.gz > ko_list && rm -f ko_list.gz
     tar xvf profiles.tar.gz
     rm profiles.tar.gz
+    echo $version > version.txt
     """
 }
 
 
 process download_swissprot {
-    // not optimal... might be a bit slow to move
-    publishDir "$params.swissprot_db", mode: "copy"
 
     output:
-        path "swissprot.fasta"
+        tuple path("swissprot.fasta"), path("relnotes.txt")
 
     script:
     """
     wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
+    wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/relnotes.txt
     gunzip < uniprot_sprot.fasta.gz > swissprot.fasta
     rm uniprot_sprot.fasta.gz
     """
@@ -133,15 +140,54 @@ process prepare_swissprot {
     publishDir "$params.swissprot_db", mode: "move"
 
     input:
-        path swissprot_fasta
+        tuple path(swissprot_fasta), path(relnotes)
 
     output:
-        file "*"
+        path("*")
 
     script:
     """
     makeblastdb -dbtype prot -in swissprot.fasta
-    rm $swissprot_fasta
+    mkdir -p $params.swissprot_db
+    mv \$(readlink $swissprot_fasta) $params.swissprot_db
+    mv \$(readlink $relnotes) $params.swissprot_db
+    """
+}
+
+process download_vfdb {
+
+    output:
+        tuple path("vfdb.fasta"), path("VFs.xls")
+
+    script:
+    """
+    wget http://www.mgc.ac.cn/VFs/Down/VFDB_setB_pro.fas.gz
+    wget http://www.mgc.ac.cn/VFs/Down/VFs.xls.gz
+    gunzip < VFDB_setB_pro.fas.gz > vfdb.fasta
+    gunzip < VFs.xls.gz > VFs.xls
+    rm VFDB_setB_pro.fas.gz
+    rm VFs.xls.gz
+    """
+}
+
+process prepare_vfdb {
+    container "$params.blast_container"
+    conda "$baseDir/conda/blast.yaml"
+
+    publishDir "$params.vf_db", mode: "move"
+
+    input:
+        tuple path(vfdb_fasta), path(vf_descr)
+
+    output:
+        path("*")
+
+    script:
+    """
+    makeblastdb -dbtype prot -in $vfdb_fasta
+    mkdir -p $params.vf_db
+    mv \$(readlink $vfdb_fasta) $params.vf_db
+    mv \$(readlink $vf_descr) $params.vf_db
     """
 }
 
@@ -170,6 +216,10 @@ workflow setup_swissprot_db {
     download_swissprot() | prepare_swissprot
 }
 
+workflow setup_vfdb {
+    download_vfdb() | prepare_vfdb
+}
+
 workflow {
     if( params.cog )
         setup_cogg_db()
@@ -185,4 +235,7 @@ workflow {
 
     if ( params.blast_swissprot )
         setup_swissprot_db()
+
+    if ( params.vfdb )
+        setup_vfdb()
 }

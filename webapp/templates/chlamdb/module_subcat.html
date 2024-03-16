@@ -21,6 +21,7 @@
 
                   </div>
                   <b> Subcategory:  {{subcat_name}} </b>
+                  {% include "chlamdb/error.html" %}
                   <div class="panel panel-success" style="width:100%; top: 200px; margin-top: 2em;">
                     <div class="panel-heading" style="width:100%">
                         <h3 class="panel-title">Help</h3>
@@ -61,7 +62,7 @@
                         <div class="tab-pane" id="tab2">
                     <div class="tab-pane active" id="tab2" style="height:1000px; margin-top: 2em;">
                       <object type="image/svg+xml" data="{% static asset_path %}" id="metabo_tree"></object>
-					  <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+                      <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
                     </div>
                   </div>
               </div>

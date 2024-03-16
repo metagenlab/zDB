@@ -16,9 +16,9 @@
                         <div class="col-lg-12">
                             {% include "chlamdb/menu.html" %}
                             {% if freq == "True" %}
-                                {% include "chlamdb/extract_nav_tabs_template.html" with type="cog" active_tab="COG_freq" %}
+                                {% include "chlamdb/extract_nav_tabs_template.html" with active_tab="cat_freq" %}
                             {% else %}
-                                {% include "chlamdb/extract_nav_tabs_template.html" with type="cog" active_tab="COG_counts" %}
+                                {% include "chlamdb/extract_nav_tabs_template.html" with active_tab="cat_count" %}
                             {% endif %}
                         
 
@@ -47,7 +47,7 @@
 
                         <div class="tab-pane" id="tab2">
                             <object style="max-width:90%; padding-top: 2em;" type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
-						    <a download="cog_heatmap.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+                            <a download="cog_heatmap.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
                         </div>
                     </div>
                 </div>

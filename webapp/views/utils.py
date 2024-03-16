@@ -1,3 +1,5 @@
+import collections
+
 import pandas as pd
 from django.conf import settings
 from lib.db_utils import DB
@@ -12,27 +14,15 @@ def safe_replace(string, search_string, replace_string):
 title2page = {
     'Antimicrobial Resistance Gene': ["fam_amr"],
     'COG Ortholog': ['fam_cog'],
-    'Comparisons: Antimicrobial Resistance': [
-        'amr_comparison', 'index_comp_amr', 'entry_list_amr', 'extract_amr',
-        'plot_heatmap_amr', 'pan_genome_amr', 'venn_amr'],
-    'Comparisons: Clusters of Orthologous groups (COGs)': [
-        'cog_barchart', 'index_comp_cog', 'cog_phylo_heatmap',
-        'cog_comparison', 'entry_list_cog', 'extract_cog', 'heatmap_COG',
-        'pan_genome_cog', 'plot_heatmap_cog', 'venn_cog'],
-    'Comparisons: Kegg Orthologs (KO)': [
-        'entry_list_ko', 'extract_ko', 'heatmap_ko', 'index_comp_ko',
-        'ko_comparison', 'ko_barchart', 'pan_genome_ko', 'plot_heatmap_ko',
-        'venn_ko'],
-    'Comparisons: PFAM domains': [
-        'entry_list_pfam', 'extract_pfam', 'heatmap_pfam', 'pan_genome_pfam',
-        'pfam_comparison', 'venn_pfam', 'index_comp_pfam', 'plot_heatmap_pfam'],
-    'Comparisons: orthologous groups': [
-        'extract_orthogroup', 'heatmap_orthogroup', 'index_comp_orthogroup',
-        'orthogroup_comparison', 'pan_genome_orthogroup', 'plot_heatmap_orthogroup',
-        'venn_orthogroup'],
+    'Comparisons: Antimicrobial Resistance': ['amr_comparison'],
+    'Comparisons: Clusters of Orthologous groups (COGs)': ['cog_comparison'],
+    'Comparisons: Kegg Orthologs (KO)': ['ko_comparison'],
+    'Comparisons: PFAM domains': ['pfam_comparison'],
+    'Comparisons: orthologous groups': ['orthogroup_comparison'],
+    'Comparisons: Virulence Factors': ['vf_comparison'],
     'Genome alignments: Circos plot': ['circos'],
     'Genome alignments: Plot region': ['plot_region'],
-    'Genomes: table of contents': ['extract_contigs', 'genomes_intro'],
+    'Genomes: table of contents': ['extract_contigs'],
     'Homology search: Blast': ['blast'],
     'Kegg Ortholog': ['fam_ko'],
     'Kegg metabolic pathways': ['kegg_genomes'],
@@ -43,6 +33,7 @@ title2page = {
     'Pfam domain': ['fam_pfam'],
     'Phylogeny': ['phylogeny_intro'],
     'Table of content: Genomes': ['genomes'],
+    'Virulence Factor Gene': ["fam_vf"],
 }
 
 page2title = {}
@@ -185,3 +176,17 @@ def format_ko_modules(hsh_modules, ko):
     if len(modules) == 0:
         return "-"
     return "<br>".join([format_ko_module(i, d) for i, d in modules])
+
+
+def format_refseqid_to_ncbi(seqid):
+    return f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{seqid}\">{seqid}</a>"
+
+
+class ResultTab():
+
+    def __init__(self, tabid, title, template, **kwargs):
+        self.id = tabid
+        self.title = title
+        self.template = template
+        for key, val in kwargs.items():
+            setattr(self, key, val)

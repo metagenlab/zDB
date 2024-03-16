@@ -2,7 +2,6 @@ name: testing
 channels:
     - conda-forge
     - bioconda
-    - metagenlab
 dependencies:
     - python=3.9
     - whoosh
@@ -10,7 +9,6 @@ dependencies:
     - biopython>=1.8
     - numpy
     - pandas
-    - metagenlab_libs
     - singularity=3.8.4
     - nextflow <=22.10
     - sqlalchemy

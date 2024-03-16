@@ -1,82 +1,8 @@
 
-
-{% if type == "cog" %}
-    <nav>
-        <ul id="tabs_main" class="nav nav-tabs">
-            <li class={% if active_tab == "index" %}"active"{%endif%}><a href="{% url 'entry_list_cog' %}">Index</a></li>
-            <li class={% if active_tab == "det" %}"active"{%endif%}><a href="{% url 'extract_cog' %}">Extract form</a></li>
-            <li class={% if active_tab == "venn" %}"active"{%endif%}><a href="{% url 'venn_cog' %}">Venn</a></li>
-            <li class={% if active_tab == "comp" %}"active"{%endif%}><a href="{% url 'cog_comparison' %}">Presence/absence table</a></li>
-            <li class={% if active_tab == "heat" %}"active"{%endif%}><a href="{% url 'plot_heatmap' 'cog' %}">Heatmap</a></li>
-            <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'cog' %}">Accumulation/rarefaction plot</a></li>
-            <li class={% if active_tab == "bar" %}"active"{%endif%}><a href="{% url 'cog_barchart' %}">Categories barchart</a></li>
-            <li class={% if active_tab == "COG_freq" %}"active"{%endif%}><a href="{% url 'cog_phylo_heatmap' True %}">Cat. heatmap freq.</a></li>
-            <li class={% if active_tab == "COG_counts" %}"active"{%endif%}><a href="{% url 'cog_phylo_heatmap' False %}">Cat. heatmap counts</a></li>
-        </ul>
-    </nav>
-{% elif type == "ko" %}
-    <nav>
-        <ul id="tabs_main" class="nav nav-tabs">
-            <li class={% if active_tab == "index" %}"active"{%endif%}><a href="{% url 'entry_list_ko' %}">Index</a></li>
-            <li class={% if active_tab == "det" %}"active"{%endif%}><a href="{% url 'extract_ko' %}">Extract form</a></li>
-            <li class={% if active_tab == "venn" %}"active"{%endif%}><a href="{% url 'venn_ko' %}">Venn</a></li>
-            <li class={% if active_tab == "comp" %}"active"{%endif%}><a href="{% url 'ko_comparison' %}">Presence/absence table</a></li>
-            <li class={% if active_tab == "heat" %}"active"{%endif%}><a href="{% url 'plot_heatmap' 'ko' %}">Heatmap</a></li>
-            <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'ko' %}">Accumulation/rarefaction plot </a></li>
-            <li class={% if active_tab == "bar" %}"active"{%endif%}><a href="{% url 'ko_barchart' %}">Categories barchart</a></li>
-        </ul>
-    </nav>
-
-{% elif type == "pfam" %}
-    <nav>
-        <ul id="tabs_main" class="nav nav-tabs">
-            <li class={% if active_tab == "index" %}"active"{%endif%}><a href="{% url 'entry_list_pfam' %}">Index</a></li>
-            <li class={% if active_tab == "det" %}"active"{%endif%}><a href="{% url 'extract_pfam' %}">Extract form</a></li>
-            <li class={% if active_tab == "venn" %}"active"{%endif%}><a href="{% url 'venn_pfam' %}">Venn</a></li>
-            <li class={% if active_tab == "comp" %}"active"{%endif%}><a href="{% url 'pfam_comparison' %}">Presence/absence table</a></li>
-            <li class={% if active_tab == "heat" %}"active"{%endif%}><a href="{% url 'plot_heatmap' 'pfam' %}">Heatmaps</a></li>
-            <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'pfam' %}">Accumulation/rarefaction plot </a></li>
-        </ul>
-    </nav>
-
-{% elif type == "EC" %}
-    <nav>
-        <ul id="tabs_main" class="nav nav-tabs">
-            <li class={% if active_tab == "det" %}"active"{%endif%}><a href="{% url 'extract_EC' %}">Extract form</a></li>
-            <li class={% if active_tab == "venn" %}"active"{%endif%}><a href="{% url 'venn_EC' %}">Venn diagram</a></li>
-            <li class={% if active_tab == "heat" %}"active"{%endif%}><a href="{% url 'plot_heatmap' 'EC' %}">Heatmaps</a></li>
-            <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'EC' %}">Accumulation/rarefaction plot </a></li>
-        </ul>
-    </nav>
-{% elif type == "interpro" %}
-    <nav>
-        <ul id="tabs_main" class="nav nav-tabs">
-            <li class={% if active_tab == "det" %}"active"{%endif%}><a href="{% url 'extract_interpro' %}">Extract form</a></li>
-            <li class={% if active_tab == "venn" %}"active"{%endif%}><a href="{% url 'venn_interpro' %}">Venn</a></li>
-            <li class={% if active_tab == "heat" %}"active"{%endif%}><a href="{% url 'plot_heatmap' 'interpro' %}">Heatmaps</a></li>
-            <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'interpro' %}">Accumulation/rarefaction plot </a></li>
-        </ul>
-    </nav>
-{% elif type == 'orthogroup' %}
-    <nav>
-        <ul id="tabs_main" class="nav nav-tabs">
-            <li class={% if active_tab == "det" %}"active"{%endif%}><a href="{% url 'extract_orthogroup' %}">Extract form</a></li>
-            <li class={% if active_tab == "venn" %}"active"{%endif%}><a href="{% url 'venn_orthogroup' %}">Venn</a></li>
-            <li class={% if active_tab == "comp" %}"active"{%endif%}><a href="{% url 'orthogroup_comparison' %}">Presence/absence table</a></li>
-            <li class={% if active_tab == "heat" %}"active"{%endif%}><a href="{% url 'plot_heatmap' 'orthogroup' %}">Heatmap</a></li>
-            <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'orthogroup' %}">Accumulation/rarefaction plot </a></li>
-        </ul>
-    </nav>
-{% elif type == 'amr' %}
-    <nav>
-        <ul id="tabs_main" class="nav nav-tabs">
-            <li class={% if active_tab == "index" %}"active"{%endif%}><a href="{% url 'entry_list_amr' %}">Index</a></li>
-            <li class={% if active_tab == "det" %}"active"{%endif%}><a href="{% url 'extract_amr' %}">Extract form</a></li>
-            <li class={% if active_tab == "venn" %}"active"{%endif%}><a href="{% url 'venn_amr' %}">Venn</a></li>
-            <li class={% if active_tab == "comp" %}"active"{%endif%}><a href="{% url 'amr_comparison' %}">Presence/absence table</a></li>
-            <li class={% if active_tab == "heat" %}"active"{%endif%}><a href="{% url 'plot_heatmap' 'amr' %}">Heatmaps</a></li>
-            <li class={% if active_tab == "pan" %}"active"{%endif%}><a href="{% url 'pan_genome' 'amr' %}">Accumulation/rarefaction plot </a></li>
-        </ul>
-    </nav>
-{% endif %}
-
+<nav>
+  <ul id="tabs_main" class="nav nav-tabs">
+    {% for view in available_views %}
+      <li class={% if active_tab == view.name %}"active"{%endif%}><a href={{view.url}}>{{view.title}}</a></li>
+    {% endfor %}
+  </ul>
+</nav>

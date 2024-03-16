@@ -3,8 +3,6 @@
 <head> 
 
 {% load custom_tags %}
-{% load static %}
-{% load static %}
 {% load crispy_forms_tags %}
 {% include "chlamdb/header.html" %}
 
@@ -20,46 +18,25 @@
           <div class="row">
             <div class="col-lg-12">
               {% include "chlamdb/menu.html" %}
-              {% include "chlamdb/extract_nav_tabs_template.html" with type=comp_type active_tab="det" %}
+              {% include "chlamdb/extract_nav_tabs_template.html" with active_tab="extract" %}
 
               <br>
               <p class="page-title">
-                <b>{{compared_obj_name|capfirst}} shared by selected genomes </b>
-                <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Get the list of {{compared_obj_name}} shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
+                <b>{{object_name_plural|capfirst}} shared by selected genomes </b>
+                <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" title="Get the list of {{object_name_plural}} shared between genomes (selected in panel A) and absent in others (selected in panel B)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
               </p>
-
+              {% include "chlamdb/error.html" %}
               {% block content %}
-			          {% csrf_token %}
-			          {% crispy form %}
+                {% csrf_token %}
+                {% crispy form %}
               {% endblock %}
             </div>
 
           </div>
 
-          {% if wrong_n_missing%}
-            <div class="row">
-              <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                  <div class="panel-heading" style="width:100%">
-                      <h3 class="panel-title">Help</h3>
-                  </div>
-                  <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
-              </div>
-            </div>
+          {% if show_results %}
 
-          {% elif no_match%}
-            <div class="row">
-              <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                  <div class="panel-heading" style="width:100%">
-                      <h3 class="panel-title"></h3>
-                  </div>
-                  <p style="margin: 10px 10px 10px 10px">No match</p>
-              </div>
-            </div>
-
-          {% endif %}
-    			{% if show_results %}
-
-      			<div class="row" style="background-color: rgba(245, 245, 245, 0.986)">
+            <div class="row" style="background-color: rgba(245, 245, 245, 0.986)">
               <div class="col-lg-12">
                 <br>
                 <div class="panel panel-success" style="width:60%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
@@ -69,7 +46,7 @@
                   <p style="margin: 10px 10px 10px 10px; line-height: 180%">{{ table_help|safe }}</p>
                 </div>
                 <div style="padding-top:10px">
-   			          <table class="table" style="width:600px">
+                  <table class="table" style="width:600px">
                     <tr>
                       <th>Number of included genomes</th>
                       <td> {{ included_taxids|length }} </td>
@@ -84,54 +61,34 @@
                       <td> {{ n_missing }} </td>
                     </tr>
                     <tr>
-                      <th>Number of {{ compared_obj_name }} identified</th>
+                      <th>Number of {{ object_name_plural }} identified</th>
                       <td> {{ n_hits }}  </td>
                     </tr>
                   </table>
 
-                  <div class="box" style="width:30%; top: 200px; padding: 10px 10px 10px 10px;">
+                  {% if show_circos_form %}
+                    <div class="box" style="width:30%; top: 200px; padding: 10px 10px 10px 10px;">
 
-                    <form action="/circos_main/" method="POST" id="carform" >
-                      <h5><b>Show the comparison on circular map</b></h5>
-                      {% csrf_token %}
-                      <input type="hidden" name="exclude_taxids" value="{{excluded_taxids}}">
-                      <input type="hidden" name="include_taxids" value="{{included_taxids}}">
-                      <input type="hidden" name="og_list" value="{{selection}}">
-                      <select name="reference_taxid" id="reference_taxid" class="bootstrap-select" style="height:36px; margin-bottom: 1em;">
-                        {% for row in ref_genomes.itertuples %}
-                          <option value="{{row.taxon_id}}">{{row.description}}</option>
-                        {% endfor %}
-                      </select>
-                      <br>
-                      <button type="submit">Show</button>
-                    </form>
+                      <form action="/circos_main/" method="POST" id="carform" >
+                        <h5><b>Show the comparison on circular map</b></h5>
+                        {% csrf_token %}
+                        <input type="hidden" name="exclude_taxids" value="{{excluded_taxids}}">
+                        <input type="hidden" name="include_taxids" value="{{included_taxids}}">
+                        <input type="hidden" name="og_list" value="{{selection}}">
+                        <select name="reference_taxid" id="reference_taxid" class="bootstrap-select" style="height:36px; margin-bottom: 1em;">
+                          {% for row in ref_genomes.itertuples %}
+                            <option value="{{row.taxon_id}}">{{row.description}}</option>
+                          {% endfor %}
+                        </select>
+                        <br>
+                        <button type="submit">Show</button>
+                      </form>
 
-                  </div>
+                    </div>
+                  {% endif %}
                 </div>
               </div>
-
-              <div class="col-lg-12">
-                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                  <br>
-                  {% for tab in result_tabs %}
-                    {% if forloop.first %}
-                      <li class="active">
-                    {% else %}
-                      <li>
-                    {% endif %}
-                      <a href=#{{tab.id}} data-toggle="tab">
-                        <b>{{tab.title}}</b>
-                      </a>
-                    </li>
-                  {% endfor %}
-                </ul>
-
-                <div id="my-tab-content" class="tab-content">
-                  {% for tab in result_tabs %}
-                    {% include tab.template with tabid=tab.id %}
-                  {% endfor %}
-                </div>
-              </div>
+              {% include "chlamdb/result_tabs.html" %}
             </div>
           {% endif %}
 
@@ -143,13 +100,13 @@
 <script>
 
   $(document).ready(function() {
-	  $('.data-table').DataTable({
-		dom: 'Bfrtip',
-		"paging":   true,
-		"ordering": true,
-		"info":     false,
-		buttons: [{extend: 'excel', title: 'ko_table'},
-		{ extend: 'csv', title: 'ko_table'}] }); 
+    $('.data-table').DataTable({
+    dom: 'Bfrtip',
+    "paging":   true,
+    "ordering": true,
+    "info":     false,
+    buttons: [{extend: 'excel', title: 'ko_table'},
+    { extend: 'csv', title: 'ko_table'}] });
   } );
 
 

@@ -4,6 +4,8 @@ import pandas as pd
 from Bio.Seq import Seq
 from BioSQL import BioSeqDatabase
 
+from lib.queries import VFQueries
+
 # This file defines a class DB, that encapsulates all the SQL requests
 # necessary to create the zDB database.
 # In the future, the goal is to import all database queries needed by the
@@ -36,6 +38,7 @@ class DB:
         self.conn_refseq = None
         # this will need to be changed in case a MySQL database is used
         self.placeholder = "?"
+        self.vf = VFQueries(self)
 
     # the next two methods are necessary for DB objects to be used
     # in 'with' blocks.
@@ -299,6 +302,38 @@ class DB:
     def load_swissprot_defs(self, data):
         self.load_data_into_table("swissprot_defs", data)
 
+    def create_vf_tables(self):
+        query = (
+            "CREATE TABLE vf_hits ("
+            " hsh INT, vf_gene_id INT, evalue INT, score INT,"
+            " perc_id INT, gaps INT, leng INT"
+            ");"
+        )
+        self.server.adaptor.execute(query,)
+        query = (
+            "CREATE INDEX vfhi ON vf_hits(hsh);"
+        )
+        self.server.adaptor.execute(query,)
+        query = (
+            "CREATE TABLE vf_defs ("
+            " vf_gene_id varchar(15), gb_accession varchar(15),"
+            " prot_name tinytext, vfid varchar(10), category tinytext,"
+            " vf_category_id varchar(10), characteristics TEXT,"
+            " structure TEXT, function TEXT, mechanism TEXT"
+            ");"
+        )
+        self.server.adaptor.execute(query,)
+        query = (
+            "CREATE INDEX vfdi ON vf_defs(vf_gene_id);"
+        )
+        self.server.adaptor.execute(query,)
+
+    def load_vf_hits(self, data):
+        self.load_data_into_table("vf_hits", data)
+
+    def load_vf_defs(self, data):
+        self.load_data_into_table("vf_defs", data)
+
     def create_diamond_refseq_match_id(self):
         query = (
             "CREATE TABLE diamond_refseq_match_id ( "
@@ -340,6 +375,13 @@ class DB:
         for key, (rank, value) in hsh.items():
             lst_values.append((key, rank, value))
         self.load_data_into_table("taxonomy_mapping", lst_values)
+
+    def create_versions_table(self):
+        sql = (
+            "CREATE TABLE versions"
+            "(name varchar(200), version varchar(50));"
+        )
+        self.server.adaptor.execute(sql)
 
     def load_data_into_table(self, table, data):
         if len(data) == 0:
@@ -423,7 +465,7 @@ class DB:
         query_string = ",".join(["\"" + a + "\"" for a in accession])
         query = (
             f"SELECT accession, taxid FROM accession2taxid "
-            f"WHERE accession IN ({query_string});" 
+            f"WHERE accession IN ({query_string});"
         )
         results = cursor.execute(query,).fetchall()
         hsh_results = {}
@@ -623,7 +665,7 @@ class DB:
         results = self.server.adaptor.execute_and_fetchall(query)
         return [(line[0], line[1]) for line in results]
 
-    def get_ko_desc(self, ko_ids):
+    def get_ko_desc(self, ko_ids, as_df=False):
         if ko_ids is None:
             where = (
                 "INNER JOIN ko_hits AS hit ON hit.ko_id=ko.ko_id "
@@ -640,6 +682,8 @@ class DB:
             f"{where};"
         )
         results = self.server.adaptor.execute_and_fetchall(query, ko_ids)
+        if as_df:
+            return DB.to_pandas_frame(results, ["ko", "description"])
         hsh_results = {}
         for line in results:
             hsh_results[line[0]] = line[1]
@@ -1145,6 +1189,11 @@ class DB:
         else:
             return {val[0]: val[2] for val in values}
 
+    def get_versions_table(self, ret_mandatory=False):
+        sql = "SELECT * from versions;"
+        values = self.server.adaptor.execute_and_fetchall(sql)
+        return {val[0]: val[1] for val in values}
+
     def create_biosql_database(self, args):
         self.server.new_database(self.db_name)
 
@@ -1241,7 +1290,7 @@ class DB:
             "SELECT entry.taxon_id, txn_name.name,  "
             f" CASE WHEN EXISTS ({has_plasmid_query}) THEN 1 ELSE 0 END "
             "FROM bioentry AS entry "
-            "INNER JOIN bioentry_qualifier_value AS orga ON entry.bioentry_id=orga.bioentry_id " 
+            "INNER JOIN bioentry_qualifier_value AS orga ON entry.bioentry_id=orga.bioentry_id "
             "INNER JOIN taxon_name as txn_name ON entry.taxon_id=txn_name.taxon_id "
             "INNER JOIN term AS orga_term ON orga.term_id=orga_term.term_id "
             " AND orga_term.name=\"organism\" "
@@ -1441,7 +1490,9 @@ class DB:
                 hsh_results[line[0]] = (line[1], line[2])
             return hsh_results
         elif only_cog_desc:
-            return DB.to_pandas_frame(results, ["cog", "function", "description"]).set_index(["cog"])
+            return DB.to_pandas_frame(
+                results, ["cog", "function", "description"]).set_index(
+                    ["cog"], drop=False)
 
         funcs = "SELECT function, description FROM cog_functions;"
         functions = self.server.adaptor.execute_and_fetchall(funcs)
@@ -1699,6 +1750,7 @@ class DB:
     #
     # NOTE: may be interesting to use int8/16 whenever possible
     # to spare memory.
+    @staticmethod
     def to_pandas_frame(db_results, columns, types=None):
         return pd.DataFrame(db_results, columns=columns)
 
@@ -2075,7 +2127,7 @@ class DB:
         # df_pivot = df.pivot_table(index=["seqfeature_id_1"], columns="target_taxid",values="identity", aggfunc=lambda x: max(x))
         return df
 
-    def get_pfam_def(self, pfam_ids, add_ttl_count=False):
+    def get_pfam_def(self, pfam_ids, add_ttl_count=False, **kwargs):
         ttl_cnt, ttl_join, ttl_grp = "", "", ""
         ttl_join_template = (
             " INNER JOIN pfam_hits AS hits ON hits.pfam_id=pfam_defs.pfam_id "
@@ -2106,7 +2158,7 @@ class DB:
         cols = ["pfam", "def"]
         if add_ttl_count:
             cols.append("ttl_cnt")
-        return DB.to_pandas_frame(results, cols).set_index(["pfam"])
+        return DB.to_pandas_frame(results, cols).set_index(["pfam"], drop=False)
 
     def gen_pfam_where_clause(self, search_on, entries):
         entries = self.gen_placeholder_string(entries)
@@ -2234,7 +2286,7 @@ class DB:
     #   seqid1 cog1
     #   seqid2 cog2
     #   seqid3 cog3
-    def get_cog_hits(self, ids, indexing="taxid", search_on="bioentry",
+    def get_cog_hits(self, ids, indexing="taxid", search_on="taxid",
                      keep_taxid=False, plasmids=None):
 
         where_clause = self.gen_cog_where_clause(search_on, ids)
@@ -2426,7 +2478,7 @@ class DB:
             where_clause = f" bioentry.bioentry_id IN ({entries}) "
         elif search_on == "seqid":
             where_clause = f" hsh.seqid IN ({entries}) "
-        elif search_on == "amr":
+        elif search_on == "amr" or search_on == "gene":
             where_clause = f" gene IN ({entries}) "
         elif search_on == "taxid":
             where_clause = f" bioentry.taxon_id IN ({entries}) "
@@ -2486,12 +2538,16 @@ class DB:
                 column_names.insert(1, "plasmid")
                 index.insert(1, "plasmid")
             df = DB.to_pandas_frame(results, column_names)
+            if df.empty:
+                return df
             df = df.set_index(index).unstack(level=0, fill_value=0)
-
             if plasmids is not None:
                 return df.unstack(level=0, fill_value=0)
             else:
                 df.columns = [col for col in df["count"].columns.values]
+                for taxid in ids:
+                    if taxid not in df.columns:
+                        df[taxid] = 0
 
         elif indexing == "seqid":
             if plasmids is not None:
@@ -2520,6 +2576,29 @@ class DB:
         results = self.server.adaptor.execute_and_fetchall(query, gene_ids)
         df = DB.to_pandas_frame(results, columns)
         return df
+
+    def get_number_of_amr_entries(self):
+        columns = ["type", "class", "subclass", "gene", "seq_name", "scope",
+                   "hmm_id"]
+        query = "SELECT COUNT(*) FROM "\
+                f"(SELECT DISTINCT {', '.join(columns)} FROM amr_hits)"
+        return self.server.adaptor.execute_and_fetchall(query)[0][0]
+
+    def get_number_of_swissprot_entries(self):
+        query = "SELECT COUNT(*) FROM swissprot_defs"
+        return self.server.adaptor.execute_and_fetchall(query)[0][0]
+
+    def get_number_of_pfam_entries(self):
+        query = "SELECT COUNT(*) FROM pfam_table"
+        return self.server.adaptor.execute_and_fetchall(query)[0][0]
+
+    def get_number_of_cog_entries(self):
+        query = "SELECT COUNT(*) FROM (SELECT DISTINCT cog_id FROM cog_hits)"
+        return self.server.adaptor.execute_and_fetchall(query)[0][0]
+
+    def get_number_of_ko_entries(self):
+        query = "SELECT COUNT(*) FROM (SELECT DISTINCT ko_id FROM ko_hits)"
+        return self.server.adaptor.execute_and_fetchall(query)[0][0]
 
     def gen_placeholder_string(self, args):
         return ",".join(self.placeholder for _ in args)

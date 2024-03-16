@@ -91,6 +91,11 @@
                 <a   href="{% url 'index_comp' 'amr' %}">Antimicrobial Resistance</a>
               </li>
             {% endif %}
+            {% if optional2status|keyvalue:"BLAST_vfdb" == 1 %}
+              <li class="analyses_intra" >
+                <a   href="{% url 'index_comp' 'vf' %}">Virulence Factors</a>
+              </li>
+            {% endif %}
 
             <li class="sidebar-dropdown" >
               <p> Genome alignments</p>
