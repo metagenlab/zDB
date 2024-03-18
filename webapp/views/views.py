@@ -44,7 +44,7 @@ from views.mixins import CogViewMixin, ComparisonViewMixin, KoViewMixin
 from views.utils import (format_cog, format_gene, format_ko, format_locus,
                          format_orthogroup, format_pfam,
                          genomic_region_df_to_js, locusx_genomic_region,
-                         my_locals, page2title, to_s)
+                         make_div, my_locals, page2title, to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):

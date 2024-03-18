@@ -17,7 +17,8 @@ from views.utils import (DataTableConfig, format_gene, format_locus,
                          format_orthogroup, format_pfam,
                          format_refseqid_to_ncbi, format_swissprot_entry,
                          format_taxid_to_ncbi, genomic_region_df_to_js,
-                         locusx_genomic_region, my_locals, optional2status)
+                         locusx_genomic_region, make_div, my_locals,
+                         optional2status)
 
 
 def tab_general(db, seqid):
@@ -604,28 +605,6 @@ class LocusX(ViewBase):
 
     def show_homology_info(self):
         return self.n_homologues > 1
-
-
-def make_div(figure_or_data, include_plotlyjs=False, show_link=False,
-             div_id=None):
-    from plotly import offline
-    div = offline.plot(
-        figure_or_data,
-        include_plotlyjs=include_plotlyjs,
-        show_link=show_link,
-        output_type="div",
-    )
-    if ".then(function ()" in div:
-        div = """{div.partition(".then(function ()")[0]}</script>"""
-    if div_id:
-        import re
-
-        try:
-            existing_id = re.findall(r'id="(.*?)"|$', div)[0]
-            div = div.replace(existing_id, div_id)
-        except IndexError:
-            pass
-    return div
 
 
 def tab_lengths(n_homologues, annotations):

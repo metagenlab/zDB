@@ -384,3 +384,25 @@ def genomic_region_df_to_js(df, start, end, name=None):
     if name is not None:
         genome_name = f"name: {to_s(name)}, "
     return f"{{{genome_name} start: {start}, end: {end}, features: {features_str}}}"
+
+
+def make_div(figure_or_data, include_plotlyjs=False, show_link=False,
+             div_id=None):
+    from plotly import offline
+    div = offline.plot(
+        figure_or_data,
+        include_plotlyjs=include_plotlyjs,
+        show_link=show_link,
+        output_type="div",
+    )
+    if ".then(function ()" in div:
+        div = """{div.partition(".then(function ()")[0]}</script>"""
+    if div_id:
+        import re
+
+        try:
+            existing_id = re.findall(r'id="(.*?)"|$', div)[0]
+            div = div.replace(existing_id, div_id)
+        except IndexError:
+            pass
+    return div
