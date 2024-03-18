@@ -6,6 +6,7 @@ import seaborn as sns
 from Bio.SeqFeature import FeatureLocation, SeqFeature
 from django.conf import settings
 from django.shortcuts import render
+from django.views import View
 from ete3 import SeqMotifFace, TextFace, Tree, TreeStyle
 from lib.db_utils import DB, NoPhylogenyException
 from lib.ete_phylo import Column, EteTree, SimpleColorColumn
@@ -169,7 +170,8 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
         seqids.append(compare_to)
         seqid_to_locus = db.get_proteins_info(seqids, to_return=["locus_tag"],
                                               as_df=True)
-        all_infos = identity_matrix.join(seqid_to_locus).set_index("locus_tag").round(1)
+        all_infos = identity_matrix.join(seqid_to_locus).set_index(
+            "locus_tag").round(1)
         all_infos.loc[seqid_to_locus.loc[compare_to].locus_tag] = 100.0
 
         ident_col = SimpleColorColumn.fromSeries(
@@ -231,8 +233,8 @@ class AnnotationTableBase():
         return {"table_headers": self.table_headers,
                 "table_data": descriptions,
                 "table_data_accessors": self.table_data_accessors,
-                "data_table_config": DataTableConfig(export_buttons=False,
-                                                     display_as_datatable=False),
+                "data_table_config": DataTableConfig(
+                    export_buttons=False, display_as_datatable=False),
                 "title": f"{self.object_name} Annotation(s)"}
 
 
@@ -316,7 +318,8 @@ def tab_get_pfam_annot(db, seqid):
     for pfam, starts in pfam_starts.items():
         ends = pfam_ends.loc[pfam]
         name = format_pfam(pfam)
-        data = "[" + ",".join(f"{{x: {start}, y: {end}}}" for start, end in zip(starts, ends)) + "]"
+        data = "[" + ",".join(f"{{x: {start}, y: {end}}}"
+                              for start, end in zip(starts, ends)) + "]"
         feature = (
             f"{{data: {data}, "
             f" name: \"{name}\", "
@@ -392,7 +395,8 @@ def tab_og_best_hits(db, orthogroup, locus=None):
         shortened = leaf.name.split(".")[0]
         if shortened in acc_to_orga.index:
             orga_name = acc_to_orga.loc[shortened]
-            leaf.add_face(TextFace(f"{leaf.name} | {orga_name}"), 0, "branch-right")
+            leaf.add_face(TextFace(f"{leaf.name} | {orga_name}"), 0,
+                          "branch-right")
             continue
 
         color = "red"
@@ -467,124 +471,143 @@ def get_sequence(db, seqid, flanking=0):
         extracted[red_start:red_stop] + "</font>" + extracted[red_stop:]
 
 
-def locusx(request, locus=None, menu=True):
-    biodb = settings.BIODB_DB_PATH
-    db = DB.load_db(biodb, settings.BIODB_CONF)
+class ViewBase(View):
+    locus = None
+    seqid = None
+    _db = None
 
-    if locus is None:
-        return render(request, 'chlamdb/locus.html',
-                      my_locals({"valid_id": False}))
-    try:
-        seqid, feature_type, is_pseudogene = db.get_seqid(locus_tag=locus,
-                                                          feature_type=True)
-    except Exception:
-        return render(request, 'chlamdb/locus.html',
-                      my_locals({"valid": False}))
-    else:
-        valid_id = True
+    @property
+    def db(self):
+        if self._db is None:
+            biodb = settings.BIODB_DB_PATH
+            self._db = DB.load_db(biodb, settings.BIODB_CONF)
+        return self._db
 
-    page_title = f'Locus tag: {locus}'
-    sequence = get_sequence(db, seqid, flanking=50)
-    window_size = 8000
-    all_infos, wd_start, wd_end = locusx_genomic_region(
-        db, seqid, window=window_size)
-    region_js = genomic_region_df_to_js(all_infos, wd_start, wd_end)
-    genomic_region_ctx = {"genomic_region": region_js,
-                          "window_size": window_size*2}
-    general_tab = tab_general(db, seqid)
+    def render_invalid(self, request, **kwargs):
+        return render(request, self.template, my_locals({"valid_id": False,
+                                                         **kwargs}))
 
-    if feature_type != "CDS" or is_pseudogene:
-        if is_pseudogene:
-            feature_type = "Pseudogene"
-        context = {
-            "valid_id": valid_id,
-            "menu": True,
-            "seq": sequence,
-            "feature_type": feature_type,
-            "page_title": page_title,
-            **general_tab,
-            **genomic_region_ctx
-        }
-        return render(request, 'chlamdb/locus.html', my_locals(context))
+    def get(self, request, context):
+        self.og_counts = self.db.get_og_count(
+            [self.og_id], search_on="orthogroup")
 
-    translation = db.get_translation(seqid)
+        self.og_annot = self.db.get_genes_from_og(
+            orthogroups=[self.og_id],
+            terms=["locus_tag", "gene", "product", "length"])
 
-    # a bit of an hack
-    general_tab["length"] = len(translation)
-    og_inf = db.get_og_count([seqid], search_on="seqid")
-    og_id = int(og_inf.loc[seqid].orthogroup)  # need to convert from numpy64 to int
-    og_annot = db.get_genes_from_og(
-        orthogroups=[og_id], terms=["locus_tag", "gene", "product", "length"])
-    all_og_c = db.get_og_count([og_id], search_on="orthogroup")
-    all_org = db.get_organism(og_annot.index.tolist())
+        self.all_org = self.db.get_organism(self.og_annot.index.tolist())
 
-    n_homologues = all_og_c.loc[og_id].sum() - 1
-    og_size = n_homologues + 1
-    og_num_genomes = len(set(all_org.values()))
+        if self.show_homology_info:
+            context.update(tab_og_conservation_tree(
+                self.db, self.og_id, compare_to=self.seqid))
+            context.update(tab_homologs(self.db, self.og_annot, self.all_org,
+                                        ref_seqid=self.seqid, og=self.og_id))
+            try:
+                context.update(tab_og_phylogeny(
+                    self.db, self.og_id, compare_to=self.seqid))
+            except NoPhylogenyException:
+                pass
+        else:
+            context["n_genomes"] = "1 genome"
 
-    if n_homologues > 1:
-        og_conserv_ctx = tab_og_conservation_tree(db, og_id, compare_to=seqid)
-        homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
+        context["result_tables"] = []
+        for annotation_table in self.annotation_tables:
+            if not annotation_table.is_enabled:
+                continue
+            context["result_tables"].append(
+                annotation_table.get_results(self.seqids))
+
+        if optional2status.get("BBH_phylogenies", False):
+            context.update(tab_og_best_hits(
+                self.db, self.og_id, locus=self.locus))
+        return context
+
+
+class LocusX(ViewBase):
+    template = 'chlamdb/locus.html'
+
+    @property
+    def annotation_tables(self):
+        taxid = self.db.get_organism(self.seqids, as_taxid=True)[self.seqid]
+        return [CogAnnotationTable(),
+                KoAnnotationTable(from_taxid=taxid),
+                AmrAnnotationTable(),
+                VfAnnotationTable()]
+
+    @property
+    def seqids(self):
+        return [self.seqid]
+
+    def get(self, request, locus=None, menu=True):
+        context = {"menu": True, "valid_id": True}
+        if locus is None:
+            return self.render_invalid(request)
+        self.locus = locus
         try:
-            og_phylogeny_ctx = tab_og_phylogeny(db, og_id, compare_to=seqid)
-        except NoPhylogenyException:
-            og_phylogeny_ctx = {}
-    else:
-        og_conserv_ctx = {}
-        homolog_tab_ctx = {"n_genomes": "1 genome"}
-        og_phylogeny_ctx = {}
+            self.seqid, feature_type, is_pseudogene = self.db.get_seqid(
+                locus_tag=locus, feature_type=True)
+        except Exception:
+            return self.render_invalid(request)
 
-    pfam_ctx = {}
-    diamond_matches_ctx = {}
-    best_hit_phylo = {}
-    context = {}
-    taxid = db.get_organism([seqid], as_taxid=True)[seqid]
-    annot_tables = [CogAnnotationTable(), KoAnnotationTable(from_taxid=taxid),
-                    AmrAnnotationTable(), VfAnnotationTable()]
-    context["result_tables"] = []
-    for annotation_table in annot_tables:
-        if not annotation_table.is_enabled:
-            continue
-        context["result_tables"].append(annotation_table.get_results([seqid]))
+        context["page_title"] = f'Locus tag: {locus}'
+        context["seq"] = get_sequence(self.db, self.seqid, flanking=50)
+        context["feature_type"] = feature_type
 
-    if optional2status.get("pfam", False):
-        pfam_ctx = tab_get_pfam_annot(db, [seqid])
+        window_size = 8000
+        all_infos, wd_start, wd_end = locusx_genomic_region(
+            self.db, self.seqid, window=window_size)
+        context["genomic_region"] = genomic_region_df_to_js(
+            all_infos, wd_start, wd_end)
+        context["window_size"] = window_size*2
+        context.update(tab_general(self.db, self.seqid))
 
-    if optional2status.get("BLAST_swissprot", False):
-        context["swissprot"] = locus_tab_swissprot_hits(db, seqid)
+        if feature_type != "CDS" or is_pseudogene:
+            if is_pseudogene:
+                context["feature_type"] = "Pseudogene"
+            return render(request, self.template, my_locals(context))
+        else:
+            context["sequence_type"] = feature_type
 
-    if optional2status.get("BLAST_database", False):
-        diamond_matches_ctx = tab_get_refseq_homologs(db, seqid)
+        og_inf = self.db.get_og_count(self.seqids, search_on="seqid")
+        # need to convert from numpy64 to int
+        self.og_id = int(og_inf.loc[self.seqid].orthogroup)
 
-    if optional2status.get("BBH_phylogenies", False):
-        best_hit_phylo = tab_og_best_hits(db, og_id, locus=locus)
+        super(LocusX, self).get(request, context)
 
-    context.update({
-        "valid_id": valid_id,
-        "menu": True,
-        "n_homologues": n_homologues,
-        "og_id": format_orthogroup(og_id, to_url=True),
-        "og_size": og_size,
-        "og_num_genomes": og_num_genomes,
-        "translation": translation,
-        "seq": sequence,
-        "sequence_type": feature_type,
-        "locus": locus,
-        "feature_type": "CDS",
-        "page_title": page_title,
-        **homolog_tab_ctx,
-        **general_tab,
-        **og_conserv_ctx,
-        **og_phylogeny_ctx,
-        **pfam_ctx,
-        **genomic_region_ctx,
-        **diamond_matches_ctx,
-        **best_hit_phylo,
-    })
-    return render(request, 'chlamdb/locus.html', my_locals(context))
+        # a bit of an hack
+        translation = self.db.get_translation(self.seqid)
+        context["length"] = len(translation)
+
+        n_homologues = self.og_counts.loc[self.og_id].sum() - 1
+        og_size = n_homologues + 1
+        og_num_genomes = len(set(self.all_org.values()))
+
+        if optional2status.get("pfam", False):
+            context.update(tab_get_pfam_annot(self.db, self.seqids))
+
+        if optional2status.get("BLAST_swissprot", False):
+            context["swissprot"] = locus_tab_swissprot_hits(
+                self.db, self.seqid)
+
+        if optional2status.get("BLAST_database", False):
+            context.update(tab_get_refseq_homologs(self.db, self.seqid))
+
+        context.update({
+            "n_homologues": n_homologues,
+            "og_id": format_orthogroup(self.og_id, to_url=True),
+            "og_size": og_size,
+            "og_num_genomes": og_num_genomes,
+            "translation": translation,
+            "locus": locus,
+        })
+        return render(request, self.template, my_locals(context))
+
+    def show_homology_info(self):
+        return self.n_homologues > 1
 
 
-def make_div(figure_or_data, include_plotlyjs=False, show_link=False, div_id=None):
+def make_div(figure_or_data, include_plotlyjs=False, show_link=False,
+             div_id=None):
     from plotly import offline
     div = offline.plot(
         figure_or_data,
@@ -647,89 +670,68 @@ def format_lst(lst):
     return hsh_values
 
 
-def orthogroup(request, og):
-    tokens = og.split("_")
-    try:
-        og_id = int(tokens[1])
-    except Exception:
-        menu = True
-        invalid_id = True
-        return render(request, "chlamdb/og.html", my_locals(locals()))
-    else:
-        valid_id = True
+class Orthogroup(ViewBase):
 
-    biodb = settings.BIODB_DB_PATH
-    db = DB.load_db(biodb, settings.BIODB_CONF)
+    template = 'chlamdb/og.html'
 
-    og_counts = db.get_og_count([og_id], search_on="orthogroup")
+    @property
+    def annotation_tables(self):
+        return [CogAnnotationTable(include_occurences=True),
+                KoAnnotationTable(include_occurences=True),
+                PfamAnnotationTable(include_occurences=True),
+                AmrAnnotationTable(include_occurences=True),
+                VfAnnotationTable(include_occurences=True)]
 
-    if len(og_counts.index) == 0:
-        valid_id = False
-        return render(request, "chlamdb/og.html", my_locals(locals()))
+    @property
+    def seqids(self):
+        return self.og_annot.index.tolist()
 
-    annotations = db.get_genes_from_og(
-        orthogroups=[og_id], terms=["locus_tag", "gene", "product", "length"])
+    def get(self, request, og):
+        context = {"valid_id": True}
 
-    hsh_organisms = db.get_organism(annotations.index.tolist())
-    hsh_genes = format_lst(annotations["gene"].tolist())
-    hsh_products = format_lst(annotations["product"].tolist())
-    n_homologues = og_counts.loc[og_id].sum()
+        tokens = og.split("_")
+        try:
+            self.og_id = int(tokens[1])
+        except Exception:
+            return self.render_invalid(request, menu=True)
 
-    gene_annotations = []
-    for index, values in enumerate(hsh_genes.items()):
-        gene, cnt = values
-        if pd.isna(gene):
-            gene = "-"
-        gene_annotations.append([index + 1, gene, cnt])
+        super(Orthogroup, self).get(request, context)
 
-    product_annotations = []
-    for index, values in enumerate(hsh_products.items()):
-        product, cnt = values
-        if pd.isna(product):
-            product = "-"
-        product_annotations.append([index + 1, product, cnt])
+        if len(self.og_counts.index) == 0:
+            return self.render_invalid(request)
 
-    best_hit_phylo = {}
-    context = {}
-    annot_tables = [CogAnnotationTable(include_occurences=True),
-                    KoAnnotationTable(include_occurences=True),
-                    PfamAnnotationTable(include_occurences=True),
-                    AmrAnnotationTable(include_occurences=True),
-                    VfAnnotationTable(include_occurences=True)]
+        hsh_genes = format_lst(self.og_annot["gene"].tolist())
+        hsh_products = format_lst(self.og_annot["product"].tolist())
 
-    context["result_tables"] = []
-    seqids = annotations.index.tolist()
-    for annotation_table in annot_tables:
-        if not annotation_table.is_enabled:
-            continue
-        context["result_tables"].append(annotation_table.get_results(seqids))
+        n_homologues = self.og_counts.loc[self.og_id].sum()
 
-    if optional2status.get("BLAST_swissprot", False):
-        context["result_tables"].append(
-            og_tab_get_swissprot_homologs(db, annotations))
+        gene_annotations = []
+        for index, values in enumerate(hsh_genes.items()):
+            gene, cnt = values
+            if pd.isna(gene):
+                gene = "-"
+            gene_annotations.append([index + 1, gene, cnt])
 
-    try:
-        og_phylogeny_ctx = tab_og_phylogeny(db, og_id)
-    except NoPhylogenyException:
-        og_phylogeny_ctx = {}
+        product_annotations = []
+        for index, values in enumerate(hsh_products.items()):
+            product, cnt = values
+            if pd.isna(product):
+                product = "-"
+            product_annotations.append([index + 1, product, cnt])
 
-    if optional2status.get("BBH_phylogenies", False):
-        best_hit_phylo = tab_og_best_hits(db, og_id)
+        if optional2status.get("BLAST_swissprot", False):
+            context["result_tables"].append(
+                og_tab_get_swissprot_homologs(self.db, self.og_annot))
 
-    og_conserv_ctx = tab_og_conservation_tree(db, og_id)
-    length_tab_ctx = tab_lengths(n_homologues, annotations)
-    homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms, og=og_id)
-    context.update({
-        "valid_id": valid_id,
-        "n_homologues": n_homologues,
-        "og": og,
-        "menu": True,
-        "gene_annotations": gene_annotations,
-        "product_annotations": product_annotations,
-        **homolog_tab_ctx,
-        **length_tab_ctx,
-        **og_conserv_ctx,
-        **best_hit_phylo,
-        **og_phylogeny_ctx,
-    })
-    return render(request, "chlamdb/og.html", my_locals(context))
+        context.update(tab_lengths(n_homologues, self.og_annot))
+        context.update({
+            "n_homologues": n_homologues,
+            "og": og,
+            "menu": True,
+            "gene_annotations": gene_annotations,
+            "product_annotations": product_annotations,
+        })
+        return render(request, self.template, my_locals(context))
+
+    def show_homology_info(self):
+        return True
