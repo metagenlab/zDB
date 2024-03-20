@@ -137,11 +137,7 @@ class VFQueries():
             columns = [self.id_col, "prot_name", "vfid", "category",
                        "vf_category_id"]
         if hit_ids is None:
-            where = (
-                f"INNER JOIN {self.hit_table} AS hit ON hit.{self.id_col}=descr.{self.id_col} "
-                "INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh=hit.hsh "
-                f"GROUP BY descr.{self.id_col}"
-            )
+            where = ""
         else:
             entries = self.gen_placeholder_string(hit_ids)
             where = f"WHERE descr.{self.id_col} IN ({entries})"

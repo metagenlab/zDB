@@ -7,7 +7,7 @@ import requests
 
 class ViewTimer():
 
-    object_types = ["cog", "pfam", "ko", "amr", "orthogroup"]
+    object_types = ["cog", "pfam", "ko", "amr", "orthogroup", "vf"]
 
     @property
     def comparison_views(self):
