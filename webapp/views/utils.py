@@ -1,7 +1,8 @@
-import collections
+import json
 
 import pandas as pd
 from django.conf import settings
+from django.core.serializers.json import DjangoJSONEncoder
 from lib.db_utils import DB
 
 
@@ -47,6 +48,11 @@ with DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
     hsh_config = db.get_config_table(ret_mandatory=True)
     optional2status = {name: value for name,
                        (mandatory, value) in hsh_config.items() if not mandatory}
+    optional2status["cog"] = optional2status["COG"]
+    optional2status["ko"] = optional2status["KEGG"]
+    optional2status["amr"] = optional2status["AMR"]
+    optional2status["vf"] = optional2status["BLAST_vfdb"]
+
     missing_mandatory = [name for name, (mandatory, value) in hsh_config.items()
                          if mandatory and not value]
 
@@ -182,6 +188,74 @@ def format_refseqid_to_ncbi(seqid):
     return f"<a href=\"http://www.ncbi.nlm.nih.gov/protein/{seqid}\">{seqid}</a>"
 
 
+def format_gene(gene):
+    if pd.isna(gene):
+        return "-"
+    else:
+        return gene
+
+
+def format_taxid_to_ncbi(organism_and_taxid):
+    organism, taxid = organism_and_taxid
+    val = (
+        f"""<a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={taxid}" target="_top">"""
+        f"""{organism}</a>"""
+    )
+    return val
+
+
+def format_swissprot_entry(entry_id):
+    return f'<a href="https://www.uniprot.org/uniprot/{entry_id}">{entry_id}</a>'
+
+
+class DataTableConfig():
+
+    def __init__(self, table_id="results", ordering=True, paging=True,
+                 export_buttons=True, colvis_button=False, display_index=False,
+                 display_as_datatable=True):
+        self.table_id = table_id
+        self.ordering = ordering
+        self.paging = paging
+        self.export_buttons = export_buttons
+        self.colvis_button = colvis_button
+        self.display_index = display_index
+        self.display_as_datatable = display_as_datatable
+        if self.display_as_datatable:
+            self.style = "margin-top: 3em;"
+        else:
+            self.style = ""
+
+    @property
+    def buttons(self):
+        buttons = []
+        if self.colvis_button:
+            buttons.append({"extend": 'colvis', "columns": ':not(.noVis)'})
+        if self.export_buttons:
+            buttons.extend([
+                {"extend": 'excel', "title": self.table_id},
+                {"extend": 'csv', "title": self.table_id}
+            ])
+        return buttons
+
+    @property
+    def dom(self):
+        if self.export_buttons or self.colvis_button:
+            return 'lBfrtip'
+        return 'lfrtip'
+
+    def to_json(self):
+        return json.dumps(
+            {
+                "paging": self.paging,
+                "ordering": self.ordering,
+                "info": False,
+                "buttons": self.buttons,
+                "dom": self.dom,
+                "display_as_datatable": self.display_as_datatable,
+            },
+            cls=DjangoJSONEncoder)
+
+
 class ResultTab():
 
     def __init__(self, tabid, title, template, **kwargs):
@@ -190,3 +264,145 @@ class ResultTab():
         self.template = template
         for key, val in kwargs.items():
             setattr(self, key, val)
+
+
+class TabularResultTab(ResultTab):
+
+    def __init__(self, tabid, title, template, ordering=True, paging=True,
+                 export_buttons=True, colvis_button=False,
+                 display_index=False, **kwargs):
+        self.data_table_config = DataTableConfig(
+            table_id=tabid, ordering=ordering, paging=paging,
+            export_buttons=export_buttons, colvis_button=colvis_button,
+            display_index=display_index)
+        super(TabularResultTab, self).__init__(tabid, title, template, **kwargs)
+
+
+def locusx_genomic_region(db, seqid, window):
+    hsh_loc = db.get_gene_loc([seqid])
+    strand, start, end = hsh_loc[seqid]
+    window_start, window_stop = start - window, start + window
+
+    bioentry, _, contig_size, _ = db.get_bioentry_list(seqid, search_on="seqid")
+    qualifiers = db.get_bioentry_qualifiers(bioentry)
+    is_circular = "circular" in qualifiers["value"].values
+    df_seqids = db.get_features_location(bioentry, search_on="bioentry_id")
+
+    if 2*window >= contig_size:
+        window_start = 0
+        window_stop = contig_size
+    elif window_start < 0 and not is_circular:
+        window_start = 0
+        df_seqids = df_seqids[df_seqids.start_pos < window_stop]
+    elif window_stop > contig_size and not is_circular:
+        window_stop = contig_size
+        df_seqids = df_seqids[df_seqids.end_pos > window_start]
+    elif window_start < 0:
+        # circular contig
+        diff = contig_size+window_start
+        mask_circled = (df_seqids.end_pos >= diff)
+        mask_same = (df_seqids.start_pos <= window_stop)
+
+        df_seqids.loc[mask_same, "start_pos"] -= window_start
+        df_seqids.loc[mask_same, "end_pos"] -= window_start
+        df_seqids.loc[mask_circled, "start_pos"] -= diff
+        df_seqids.loc[mask_circled, "end_pos"] -= diff
+        df_seqids = df_seqids.loc[mask_same | mask_circled]
+        window_stop -= window_start
+        window_start = 0
+        min_val = df_seqids["start_pos"].min()
+        if min_val < 0:
+            df_seqids["start_pos"] -= min_val
+            df_seqids["end_pos"] -= min_val
+            window_start -= min_val
+            window_stop -= min_val
+
+    elif window_stop > contig_size:
+        # circular contig
+        diff = window_stop-contig_size
+
+        mask_same = (df_seqids.end_pos >= window_start)
+        mask_circled = (df_seqids.start_pos <= diff)
+
+        df_seqids.loc[mask_same, "start_pos"] -= diff
+        df_seqids.loc[mask_same, "end_pos"] -= diff
+        df_seqids.loc[mask_circled, "start_pos"] += (contig_size-diff)
+        df_seqids.loc[mask_circled, "end_pos"] += (contig_size-diff)
+        df_seqids = df_seqids.loc[mask_same | mask_circled]
+        window_start -= diff
+        window_stop = contig_size
+    else:
+        df_seqids = df_seqids[(df_seqids.end_pos>window_start)]
+        df_seqids = df_seqids[(df_seqids.start_pos < window_stop)]
+
+    if len(df_seqids) != len(df_seqids["seqfeature_id"].unique()):
+        # This case may happen when a gene overlaps the break of a circular contig.
+        # The location of this gene will be coded as join(...,...) in the gbk file
+        # and stored as two separate genes with the same seqid in BioSQL.
+        # If we want to display the whole contig as a continuous sequence, it is necessary
+        # to detect this and manually merge this overlapping gene.
+        grouped = df_seqids[["seqfeature_id", "strand", "end_pos",
+                             "start_pos"]].groupby("seqfeature_id")
+        start = grouped["start_pos"].min()
+        end = grouped["end_pos"].max()
+        strands = df_seqids[["seqfeature_id", "strand"]].drop_duplicates(
+            "seqfeature_id")
+        df_seqids = start.to_frame().join(end).join(
+            strands.set_index("seqfeature_id"))
+    else:
+        df_seqids = df_seqids.set_index("seqfeature_id")
+
+    # Some parts are redundant with get_features_location
+    # those two function should be merged at some point
+    infos = db.get_proteins_info(df_seqids.index.tolist(),
+                                 to_return=["gene", "locus_tag", "product"],
+                                 as_df=True, inc_non_CDS=True, inc_pseudo=True)
+    cds_type = db.get_CDS_type(df_seqids.index.tolist())
+    all_infos = infos.join(cds_type)
+    all_infos = all_infos.join(df_seqids)
+    return all_infos, window_start, window_stop
+
+
+def genomic_region_df_to_js(df, start, end, name=None):
+    features = []
+    for curr_seqid, data in df.iterrows():
+        feature_name = ""
+        if "gene" in data and not pd.isna(data.gene):
+            feature_name = data.gene
+        feature_type = data.type
+        if data.is_pseudo:
+            feature_type = "pseudo"
+
+        prod = to_s(data["product"])
+        features.append((
+            f"{{start: {data.start_pos}, gene: {to_s(feature_name)}, end: {data.end_pos},"
+            f"strand: {data.strand}, type: {to_s(feature_type)}, product: {prod},"
+            f"locus_tag: {to_s(data.locus_tag)}}}"
+        ))
+    features_str = "[" + ",".join(features) + "]"
+    genome_name = ""
+    if name is not None:
+        genome_name = f"name: {to_s(name)}, "
+    return f"{{{genome_name} start: {start}, end: {end}, features: {features_str}}}"
+
+
+def make_div(figure_or_data, include_plotlyjs=False, show_link=False,
+             div_id=None):
+    from plotly import offline
+    div = offline.plot(
+        figure_or_data,
+        include_plotlyjs=include_plotlyjs,
+        show_link=show_link,
+        output_type="div",
+    )
+    if ".then(function ()" in div:
+        div = """{div.partition(".then(function ()")[0]}</script>"""
+    if div_id:
+        import re
+
+        try:
+            existing_id = re.findall(r'id="(.*?)"|$', div)[0]
+            div = div.replace(existing_id, div_id)
+        except IndexError:
+            pass
+    return div

@@ -11,418 +11,252 @@
 
 <body>
 
-
 {% if not menu %}
   <div class="container-fluid" id="container_no_margin" height="100%">
 {% else %}
   <div class="container-fluid" id="main_container">
 {% endif %}
   <div class="row">
-  <div id="wrapper">
-    <div id="page-content-wrapper">
-    <div class="row">
-      <div class="col-lg-12">
-
-      {% include "chlamdb/menu.html" with page_title="Orthogroup annotation" %}
-      <br>
-
-      <p class="page-title"><b>
-        Orthogroup:{{og}}
-        <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#orthogroup-annotation-summary" id="show-option" target="_blank" title="Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified."><i class="fab fa-info-circle " style="size: 5em;" ></i></a></b></p>
-         <hr class="lines-home">
-
-    {% if not valid_id %}
-      <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
-      <p>
-    {% else %}
-
-    <nav>
-    <ul id="tabs_main" class="nav nav-tabs">
-      <li class="active"><a data-toggle="tab" href="#overview_tab">Overview</a></li>
-
-      <li><a href="#homologs_tab" data-toggle="tab">Homologs <span class="badge">{{n_homologues}}</span></a></li>
-      <li><a href="#og_distribution_tab" data-toggle="tab">Phylogenetic distribution</a></li>
-
-      {% if n_homologues > 2 and optional2status|keyvalue:"gene_phylogenies" %}
-      <li><a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a></li>
-      {% endif %}
-
-      {% if has_refseq_phylo and optional2status|keyvalue:"BBH_phylogenies" %}
-      <li><a href="#refseq_phylogeny" data-toggle="tab" >RefSeq best hits phylogeny</a></li>
-      {% endif %}
-
-    </ul>
-  </nav>
-
-
-    <div id="form" class="col-lg-12 col-md-12 col-sm-12">
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.48.1/plotly.min.js"></script>
-
-
-      <div class="tab-content">
-
-      <div class="tab-pane" id="homologs_tab">
-        {% include "chlamdb/homologs.html" %}
-      </div>
-
-      <div class="tab-pane" id="og_distribution_tab">
-        {% include "chlamdb/orthogroup_conservation.html" %}
-      </div>
-
-      <div class="tab-pane" id="og_phylogeny">
-        <br>
-        <p class="page-title"><b>
-        Phylogeny of {{og}} {{root}}
-        </b></p>
-        <div>
-          <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
-          <a download="profile.svg" class="btn" href="{% static og_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
-
-
-        <a download="{{og}}.faa" class="btn" href="{% static og_alignment %}">
-          <i class="fa fa-download"></i> Download alignment file</a>
-        </div>
-      </div>
-
-
-      <div class="tab-pane" id="refseq_phylogeny">
-      <br>
-      <p class="page-title"><b>
-        Phylogeny of the RefSeq best hits of {{og}}
-         </b></p>
-        <div>
-          <object type="image/svg+xml" data="{% static best_hits_phylogeny %}"></object>
-          <a download="profile.svg" class="btn" href="{% static best_hits_phylogeny %}"><i class="fa fa-download"></i> Download SVG</a>
-        </div>
-      </div>
-
-
-      <div class="tab-pane active" id="overview_tab">
-      <h4>Orthogroup content: <strong>{{n_homologues}} members</strong></h4>
-
-        <div class="panel panel-success" style="width:100%; top: 200px">
-          <div class="panel-heading" style="width:100%">
-            <h3 class="panel-title">Help</h3>
-          </div>
-          <p style="margin: 10px 10px 10px 10px">
-          This page summarizes the annotation of all members of the orthologous group <strong>{{og}}</strong>.
-          <br>Gene name(s), gene product(s), a summary of protein lenght, and annotations (when available) are provided. Additionally, the number of times (occurence) an annotation is observed in the orthogroup is reported for each annotation.
-          <br><br>Orthologs were identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. The annotation of orthologous proteins can differ depending the approach used
-          to annotate the source genomes. Automated annotations are also subject to errors. Spurious clustering of non-orthologous proteins can also happen. This page allows to check for eventual inconsistencies. <br>
-          </p>
-        </div>
-
-
-        <div class="col-md-12 col-lg-4" style="margin-right: 0; margin-left:0">
-
-        <div class="container-fluid">
-
+    <div id="wrapper">
+      <div id="page-content-wrapper">
         <div class="row">
-          <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3 class="panel-title">Gene</h3>
-          </div>
-            <table class="table table-striped" style="width: 100%">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Gene name</th>
-                  <th>Occurence</th>
-                </tr>
-              </thead>
+          <div class="col-lg-12">
+            {% include "chlamdb/menu.html" with page_title="Orthogroup annotation" %}
+            <br>
 
-              <tbody>
-                {% for row in gene_annotations %}
-                  <tr>
-                  <td>{{row.0}}</td>
-                  <td>{{row.1}}</td>
-                  <td>{{row.2}}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
+            <p class="page-title">
+              <b>
+                Orthogroup:{{og}}
+                <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#orthogroup-annotation-summary" id="show-option" target="_blank" title="Compare how many times the Pfam domains shared by the selected genomes (targets) have been identified.">
+                  <i class="fab fa-info-circle " style="size: 5em;" ></i>
+                </a>
+              </b>
+            </p>
+            <hr class="lines-home">
 
-          <div class="row">
-            <div class="panel panel-default">
-            <div class="panel-heading">
-              <h3 class="panel-title">Product</h3>
-            </div>
-              <table class="table table-striped" style="width: 100%">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Product</th>
-                    <th>Occurence</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for row in product_annotations %}
-                    <tr>
-                    <td>{{row.0}}</td>
-                    <td>{{row.1}}</td>
-                    <td>{{row.2}}</td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-           {% if pfam_def|length > 0 %}
-            <div class="row">
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h3 class="panel-title">PFAM domains </h3>
-                </div>
-
-                <table id="panel_table" class="table table-striped" style="width: 100%">
-                  <thead>
-                    <tr>
-                      <th>Domain</th>
-                      <th>Domain definition</th>
-                      <th>N. occurrences</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for val in pfam_def %}
-                    <tr>
-                      <th>{{val.0|safe}}</th>
-                      <td>{{val.2}}</td>
-                      <td>{{val.1}}</td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-           {% endif %}
-
-
-        </div>
-        </div>
-
-        <div class="col-md-12 col-lg-8">
-          <div class="container-fluid">
-
-           {% if cog_entries|length > 0 %}
-            <div class="row">
-              <div class="panel panel-default">
-              <div class="panel-heading">
-                <h3 class="panel-title">COG annotation(s)</h3>
-              </div>
-                <table class="table table-striped" style="width: 100%">
-                  <thead>
-
-                      <tr>
-                        {% for h in cog_header %}
-                          <th> {{h|safe}} </th>
-                        {% endfor %}
-                      </tr>
-                  </thead>
-
-                  <tbody>
-                    {% for row in cog_entries %}
-                    <tr>
-                      {% for entry in row %}
-                      <td> {{ entry|safe }}</td>
-                      {% endfor %}
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-
-                </table>
-              </div>
-            </div>
-            {% endif %}
-
-
-           {% if ko_entries|length > 0 %}
-            <div class="row">
-              <div class="panel panel-default">
-              <div class="panel-heading">
-                <h3 class="panel-title">Kegg Ortholog annotation(s)</h3>
-              </div>
-              <table class="table table-striped" style="width: 100%">
-                <thead>
-                  <tr>
-                    {% for entry in ko_header %}
-                      <th> {{entry|safe}} </th>
-                    {% endfor %}
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for row in ko_entries %}
-                    <tr>
-                      {% for e in row %}
-                        <td> {{e|safe}}</td>
-                      {% endfor %}
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-              </div>
-            </div>
-            {% endif %}
-
-           {% if amr_entries|length > 0 %}
-            <div class="row">
-              <div class="panel panel-default">
-              <div class="panel-heading">
-                <h3 class="panel-title">Antibiotic resistance annotations
-                  <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='For more information on the fields see the AMRFinderPlus documentation'>
-                     <span class="glyphicon glyphicon-question-sign" aria-hidden="true"/>
-                  </a>
-                </h3>
-              </div>
-              <table class="table table-striped" style="width: 100%">
-                <thead>
-                  <tr>
-                    {% for entry in amr_header %}
-                      <th> {{entry|safe}} </th>
-                    {% endfor %}
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for row in amr_entries %}
-                    <tr>
-                      {% for e in row %}
-                        <td> {{e|safe}}</td>
-                      {% endfor %}
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-              </div>
-            </div>
-            {% endif %}
-
-
-            {% if length_distrib %}
-              <div class="row">
-               <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h3 class="panel-title">Protein length</h3>
-                </div>
-                <table class="table" id="length" style="width:300px">
-                  <tbody>
-
-                  {% if single_length %}
-                    <tr>
-                      <th>Unique protein length </th>
-                      <td>{{prot_length}}</td>
-                    </tr>
-
-                  {% else %}
-                    <tr>
-                      <th>Min length</th>
-                      <td>{{min_protein_length}}</td>
-                    </tr>
-                     <tr>
-                      <th>Max length</th>
-                      <td>{{max_protein_length}}</td>
-                    </tr>
-                    <tr>
-                      <th>Mean length (sd)</th>
-                      <td>{{mean_protein_length}} ({{std_protein_length}})</td>
-                    </tr>
-                    <tr>
-                      <th>Median length</th>
-                      <td>{{median_protein_length}}</td>
-                    </tr>
-                  {% endif %}
-
-                  </tbody>
-                </table>
-
-                <div class="panel-heading">
-                  <h3 class="panel-title">Protein length distribution</h3>
-                </div>
-
-                <div style="width:80%">
-                     {{html_plot_prot_length|safe}}
-                </div>
-               </div>
-            </div>
-                    {% endif %}
-
-
-          {% if optional2status|keyvalue:"BLAST_swissprot" %}
-          <div class="row">
-            <div class="panel panel-default">
-
-            {% if n_swissprot_hits != 0 %}
-              <div class="panel-heading">
-                <h3 class="panel-title">Annotations of the {{n_swissprot_hits}} SwissProt hits</h3>
-              </div>
-              <div style="margin-top:10px; margin-left:3px; margin-right:3px; margin-bottom:3px">
-              <table class="table table-striped" style="width: 100%" id="swissprot_hits">
-                <thead>
-                  <tr>
-                    <th>Annotation</th>
-                    <th>Number of occurrences</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {% for swissprot in reviewed %}
-                    <tr>
-                      <td>{{swissprot.0}}</td>
-                      <td>{{swissprot.1}}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-              </table>
+            {% if not valid_id %}
+              <div class="alert alert-warning" role="alert" style="width:50%">
+                <a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a>
               </div>
             {% else %}
-              <div class="panel-heading">
-                <h3 class="panel-title">No swissprot homolog </h3>
+
+              <nav>
+                <ul id="tabs_main" class="nav nav-tabs">
+                  <li class="active"><a data-toggle="tab" href="#overview_tab">Overview</a></li>
+                  <li><a href="#homologs_tab" data-toggle="tab">Homologs <span class="badge">{{n_homologues}}</span></a></li>
+                  <li><a href="#og_distribution_tab" data-toggle="tab">Phylogenetic distribution</a></li>
+
+                  {% if n_homologues > 2 and optional2status|keyvalue:"gene_phylogenies" %}
+                    <li><a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a></li>
+                  {% endif %}
+
+                  {% if has_refseq_phylo and optional2status|keyvalue:"BBH_phylogenies" %}
+                    <li><a href="#refseq_phylogeny" data-toggle="tab" >RefSeq best hits phylogeny</a></li>
+                  {% endif %}
+                </ul>
+              </nav>
+
+              <div id="form" class="col-lg-12 col-md-12 col-sm-12">
+                <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.48.1/plotly.min.js"></script>
+                <div class="tab-content">
+                  <div class="tab-pane" id="homologs_tab">
+                    {% include "chlamdb/homologs.html" %}
+                  </div>
+
+                  <div class="tab-pane" id="og_distribution_tab">
+                    {% include "chlamdb/orthogroup_conservation.html" %}
+                  </div>
+
+                  <div class="tab-pane" id="og_phylogeny">
+                    <br>
+                    <p class="page-title">
+                      <b>
+                        Phylogeny of {{og}} {{root}}
+                      </b>
+                    </p>
+                    <div>
+                      <object type="image/svg+xml" data="{% static og_phylogeny %}"></object>
+                      <a download="profile.svg" class="btn" href="{% static og_phylogeny %}">
+                        <i class="fa fa-download"></i> Download SVG
+                      </a>
+
+                      <a download="{{og}}.faa" class="btn" href="{% static og_alignment %}">
+                        <i class="fa fa-download"></i> Download alignment file
+                      </a>
+                    </div>
+                  </div>
+
+
+                  <div class="tab-pane" id="refseq_phylogeny">
+                    <br>
+                    <p class="page-title">
+                      <b>
+                        Phylogeny of the RefSeq best hits of {{og}}
+                      </b>
+                    </p>
+                    <div>
+                      <object type="image/svg+xml" data="{% static best_hits_phylogeny %}"></object>
+                      <a download="profile.svg" class="btn" href="{% static best_hits_phylogeny %}">
+                        <i class="fa fa-download"></i> Download SVG
+                      </a>
+                    </div>
+                  </div>
+
+                  <div class="tab-pane active" id="overview_tab">
+                    <h4>Orthogroup content: <strong>{{n_homologues}} members</strong></h4>
+
+                    <div class="panel panel-success" style="width:100%; top: 200px">
+                      <div class="panel-heading" style="width:100%">
+                        <h3 class="panel-title">Help</h3>
+                      </div>
+                      <p style="margin: 10px 10px 10px 10px">
+                        This page summarizes the annotation of all members of the orthologous group <strong>{{og}}</strong>.
+                        <br>Gene name(s), gene product(s), a summary of protein lenght, and annotations (when available) are provided. Additionally, the number of times (occurence) an annotation is observed in the orthogroup is reported for each annotation.
+                        <br><br>Orthologs were identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. The annotation of orthologous proteins can differ depending the approach used
+                        to annotate the source genomes. Automated annotations are also subject to errors. Spurious clustering of non-orthologous proteins can also happen. This page allows to check for eventual inconsistencies. <br>
+                      </p>
+                    </div>
+
+                    <div class="col-md-12 col-lg-4" style="margin-right: 0; margin-left:0">
+                      <div class="container-fluid">
+
+                        <div class="row">
+                          <div class="panel panel-default">
+                            <div class="panel-heading">
+                              <h3 class="panel-title">Gene</h3>
+                            </div>
+                            <table class="table table-striped" style="width: 100%">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>Gene name</th>
+                                  <th>Occurence</th>
+                                </tr>
+                              </thead>
+
+                              <tbody>
+                                {% for row in gene_annotations %}
+                                  <tr>
+                                    <td>{{row.0}}</td>
+                                    <td>{{row.1}}</td>
+                                    <td>{{row.2}}</td>
+                                  </tr>
+                                {% endfor %}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="panel panel-default">
+                            <div class="panel-heading">
+                              <h3 class="panel-title">Product</h3>
+                            </div>
+                            <table class="table table-striped" style="width: 100%">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>Product</th>
+                                  <th>Occurence</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {% for row in product_annotations %}
+                                  <tr>
+                                    <td>{{row.0}}</td>
+                                    <td>{{row.1}}</td>
+                                    <td>{{row.2}}</td>
+                                  </tr>
+                                {% endfor %}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+
+                    <div class="col-md-12 col-lg-8">
+                      <div class="container-fluid">
+                        {% for result_table in result_tables%}
+                          {% if result_table|keyvalue:"table_data"|length > 0 %}
+                            <div class="row">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">{{result_table|keyvalue:"title"}}</h3>
+                                </div>
+                                {% include "chlamdb/result_table.html" with results=result_table %}
+                              </div>
+                            </div>
+                          {% endif %}
+                        {% endfor %}
+
+                        {% if length_distrib %}
+                          <div class="row">
+                            <div class="panel panel-default">
+                              <div class="panel-heading">
+                                <h3 class="panel-title">Protein length</h3>
+                              </div>
+                              <table class="table" id="length" style="width:300px">
+                                <tbody>
+                                  {% if single_length %}
+                                    <tr>
+                                      <th>Unique protein length </th>
+                                      <td>{{prot_length}}</td>
+                                    </tr>
+
+                                  {% else %}
+                                    <tr>
+                                      <th>Min length</th>
+                                      <td>{{min_protein_length}}</td>
+                                    </tr>
+                                    <tr>
+                                      <th>Max length</th>
+                                      <td>{{max_protein_length}}</td>
+                                    </tr>
+                                    <tr>
+                                      <th>Mean length (sd)</th>
+                                      <td>{{mean_protein_length}} ({{std_protein_length}})</td>
+                                    </tr>
+                                    <tr>
+                                      <th>Median length</th>
+                                      <td>{{median_protein_length}}</td>
+                                    </tr>
+                                  {% endif %}
+                                </tbody>
+                              </table>
+
+                              <div class="panel-heading">
+                                <h3 class="panel-title">Protein length distribution</h3>
+                              </div>
+
+                              <div style="width:80%">
+                                {{html_plot_prot_length|safe}}
+                              </div>
+                            </div>
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             {% endif %}
-            </div>
           </div>
-          {% endif %}
-
-          </div>
-          </div>
-
-              {% endif %}
-          </div>
-      </div>
-      </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-</div>
-
-
-
 <style>
-#description_field{
-    width:100px;
-}
-h3.panel-title > a{
-  color: #337ab7;
-}
+  #description_field{
+      width:100px;
+  }
+  h3.panel-title > a{
+    color: #337ab7;
+  }
 </style>
-
-<script>
-
-$(document).ready(function() {
-  $('#swissprot_hits').DataTable( {
-    dom: 'lBfrtip',
-    buttons: [],
-  "paging":   true,
-  "ordering": true,
-  "info":     false
-  });
-});
-
-
-</script>
 
 </body>
 </html>

@@ -21,6 +21,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add VFs to locus and orthogroup views. ([#71](https://github.com/metagenlab/zDB/pull/71)) (Niklaus Jo
 - Add new statistics to home view. ([#70](https://github.com/metagenlab/zDB/pull/70)) (Niklaus Johner)
 - Add GWAS views. The associations are calculated using Scoary2. ([#62](https://github.com/metagenlab/zDB/pull/62)) (Niklaus Johner)
 - Add VF details view. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)

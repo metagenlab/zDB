@@ -1,20 +1,24 @@
 {% load custom_tags %}
-<div style="margin-top: 3em;">
-  <table class="data-table" width="100%" >
+<div style="{{results.data_table_config.style}}" >
+  <table id="{{results.data_table_config.table_id}}" class="table table-striped" width="100%" >
     <thead>
       <tr>
-        <th></th>
-        {% for header in table_headers %}
+        {% if results.data_table_config.display_index%}
+          <th></th>
+        {% endif %}
+        {% for header in results.table_headers %}
           <th>{{ header|safe }}</th>
         {% endfor %}
       </tr>
     </thead>
     <tbody>
-      {% for index, row in table_data.iterrows %}
+      {% for index, row in results.table_data.iterrows %}
         <tr>
-          <td>{{forloop.counter}}</td>
-          {% for attrname in table_data_accessors%}
-            <td>{{row|keyvalue:attrname|safe}}</td>
+          {% if results.data_table_config.display_index%}
+            <td>{{forloop.counter}}</td>
+          {% endif %}
+          {% for attrname in results.table_data_accessors%}
+            <td>{{row|attrvalue:attrname|safe}}</td>
           {% endfor %}
         </tr>
       {% endfor %}
@@ -23,27 +27,12 @@
 </div>
 
 <script>
+
 $(document).ready(function() {
-  $('.data-table').DataTable( {
-    dom: 'lBfrtip',
-    buttons: [
-        {
-            extend: 'colvis',
-            columns: ':not(.noVis)',
-        },
-        {
-            extend: 'excel',
-            title: '{{tab.id}}'
-        },
-        {
-            extend: 'csv',
-            title: '{{tab.id}}'
-        }
-    ],
-    "paging": true,
-    "ordering": true,
-    "info":     false,
-    } );
+  var table_config = {{results.data_table_config.to_json|safe}};
+  if (table_config.display_as_datatable) {
+    $('table#{{results.data_table_config.table_id}}').DataTable( table_config );
+  }
 } );
 
 </script>

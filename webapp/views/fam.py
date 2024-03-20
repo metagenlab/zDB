@@ -113,7 +113,8 @@ class FamBaseView(View):
 
         orthogroups = self.db.get_og_count(seqids, search_on="seqid",
                                            keep_taxid=True)
-        infos = self.get_hit_descriptions([entry_id], columns=self.accessors)
+        infos = self.get_hit_descriptions(
+            [entry_id], columns=self.accessors, extended_data=False)
         infos = infos.iloc[0]
         all_locus_data, group_count = get_all_prot_infos(
             self.db, seqids, orthogroups)

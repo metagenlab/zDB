@@ -4,9 +4,10 @@ from lib.db_utils import DB
 
 from views.analysis_view_metadata import analysis_views_metadata
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
-                         format_lst_to_html, format_orthogroup, format_pfam,
-                         format_refseqid_to_ncbi, my_locals, page2title,
-                         safe_replace)
+                         format_ko_module, format_lst_to_html,
+                         format_orthogroup, format_pfam,
+                         format_refseqid_to_ncbi, my_locals, optional2status,
+                         page2title, safe_replace)
 
 
 class Transform():
@@ -54,6 +55,11 @@ class BaseViewMixin():
     _db = None
     _base_colname_to_header_mapping = {}
     _specific_colname_to_header_mapping = {}
+
+    @property
+    @staticmethod
+    def is_enabled(self):
+        return optional2status.get(self.object_type, False)
 
     @property
     def db(self):
@@ -194,8 +200,8 @@ class CogViewMixin(BaseViewMixin):
 
     _base_colname_to_header_mapping = {
         "cog": "ID",
-        "function": "Function(s)",
-        "function_descr": "Function(s)",
+        "function": "Function(s) cat.",
+        "function_descr": "Function(s) descr.",
     }
 
     _cog_code_descriptions = None
@@ -216,9 +222,9 @@ class CogViewMixin(BaseViewMixin):
         descr = [f"{self.cog_code_descriptions[abbr]} ({abbr})" for abbr in func]
         return format_lst_to_html(descr, False)
 
-    def get_hit_descriptions(self, ids, transformed=True, **kwargs):
+    def get_hit_descriptions(self, ids, transformed=True, only_cog_desc=True, **kwargs):
         descriptions = self.db.get_cog_summaries(
-            ids, only_cog_desc=True, as_df=True)
+            ids, only_cog_desc=only_cog_desc, as_df=True)
         if transformed:
             descriptions = self.transform_data(descriptions)
         return descriptions
@@ -245,18 +251,61 @@ class KoViewMixin(BaseViewMixin):
         "ko": "KO",
     }
 
-    table_data_accessors = ["ko", "description", "modules", "pathways"]
+    table_data_accessors = ["ko", "description", "pathways", "modules"]
 
     @property
     def get_hit_counts(self):
         return self.db.get_ko_hits
 
-    def get_hit_descriptions(self, ids, transformed=True, **kwargs):
+    def get_hit_descriptions(self, ids, transformed=True, extended_data=True,
+                             taxid_for_pathway_formatting=None, **kwargs):
         descriptions = self.db.get_ko_desc(ids, as_df=True)
         descriptions = descriptions.set_index(["ko"], drop=False)
+        if extended_data:
+            if not transformed:
+                raise NotImplementedError(
+                    "Can only use extended_data with transformed=True")
+            modules = self.db.get_ko_modules(ids, as_pandas=True)
+            if not modules.empty:
+                modules = modules.groupby("ko_id").apply(self.format_modules)
+                descriptions = descriptions.merge(
+                    modules.rename("modules"), how="left",
+                    left_index=True, right_index=True)
+            else:
+                descriptions["modules"] = None
+            pathways = self.db.get_ko_pathways(ids, as_df=True)
+            if not pathways.empty:
+                pathways = pathways.groupby("ko").apply(
+                    self.format_pathways,
+                    with_taxid=taxid_for_pathway_formatting)
+                descriptions = descriptions.merge(
+                    pathways.rename("pathways"), how="left",
+                    left_index=True, right_index=True)
+            else:
+                descriptions["pathways"] = None
+
         if transformed:
             descriptions = self.transform_data(descriptions)
+            return descriptions.where(descriptions.notna(), "-")
         return descriptions
+
+    @staticmethod
+    def format_modules(modules, as_list=False):
+        gen = (format_ko_module(row.module_id, row.desc)
+               for i, row in modules.iterrows())
+        if as_list:
+            return list(gen)
+        return "<br>".join(gen)
+
+    @staticmethod
+    def format_pathways(pathways, with_taxid=None):
+        if with_taxid is None:
+            fmt_str = "<a href=\"/KEGG_mapp_ko/map{id:05d}\">{descr}</a>"
+        else:
+            fmt_str = "<a href=\"/KEGG_mapp_ko/map{id:05d}/{taxid}\">{descr}</a>"
+        gen = (fmt_str.format(id=row.pathway, descr=row.description, taxid=with_taxid)
+               for i, row in pathways.iterrows())
+        return "<br>".join(gen)
 
     @staticmethod
     def format_entry(entry, to_url=False):
@@ -302,6 +351,7 @@ class OrthogroupViewMixin(BaseViewMixin):
     }
 
     table_data_accessors = ["orthogroup", "product", "gene"]
+    is_enabled = True
 
     @property
     def get_hit_counts(self):
