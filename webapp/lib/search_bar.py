@@ -1,11 +1,10 @@
 
 import os
-
 from collections import namedtuple
 
-from whoosh.fields import SchemaClass, TEXT, KEYWORD, ID
-from whoosh.qparser import MultifieldParser
 from whoosh import index
+from whoosh.fields import ID, KEYWORD, TEXT, SchemaClass
+from whoosh.qparser import MultifieldParser
 
 
 class SearchBarSchema(SchemaClass):
@@ -22,12 +21,14 @@ SearchResult = namedtuple("SearchResult", field_list)
 
 
 class EntryTypes:
-    COG  = "C"
+    COG = "C"
     Gene = "G"
-    KO   = "K"
+    KO = "K"
     PFAM = "D"
     Module = "M"
     Pathway = "P"
+    AMR = "R"
+    VF = "V"
 
 
 class ChlamdbIndex:
