@@ -1,5 +1,4 @@
 
-import os
 from collections import namedtuple
 
 from whoosh import index

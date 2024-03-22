@@ -79,6 +79,22 @@
                                     </li>
                                 {% endif %}
 
+                                {% if amr|length > 0 %}
+                                    <li>
+                                        <a href="#AMR" data-toggle="tab">
+                                        AMR genes <span class="badge">{{amr|length}}</span><br>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% if vf|length > 0 %}
+                                    <li>
+                                        <a href="#VF" data-toggle="tab">
+                                        Virulence factors <span class="badge">{{vf|length}}</span><br>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
                                 </ul>
 
 
@@ -210,6 +226,50 @@
                                             <tbody>
                                                 {% load static %}
                                                 {% for values in pfam %}
+                                                    <tr>
+                                                    {% for val in values %}
+                                                        <td>{{val|safe}} </td>
+                                                    {% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- panel -->
+
+                                    <div class="tab-pane {{amr_active}}" id="AMR">
+                                        <table class="table table-striped" id="search_table7" name="search">
+                                            <thead>
+                                                <tr>
+                                                    {% for col in amr_headers %}
+                                                    <th> {{col}} </th>
+                                                    {% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% load static %}
+                                                {% for values in amr %}
+                                                    <tr>
+                                                    {% for val in values %}
+                                                        <td>{{val|safe}} </td>
+                                                    {% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- panel -->
+
+                                    <div class="tab-pane {{vf_active}}" id="VF">
+                                        <table class="table table-striped" id="search_table8" name="search">
+                                            <thead>
+                                                <tr>
+                                                    {% for col in vf_headers %}
+                                                    <th> {{col}} </th>
+                                                    {% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% load static %}
+                                                {% for values in vf %}
                                                     <tr>
                                                     {% for val in values %}
                                                         <td>{{val|safe}} </td>
