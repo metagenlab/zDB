@@ -40,11 +40,13 @@ from lib.KO_module import ModuleParser
 from reportlab.lib import colors
 
 from views.errors import errors
-from views.mixins import CogViewMixin, ComparisonViewMixin, KoViewMixin
-from views.utils import (format_cog, format_gene, format_ko, format_locus,
-                         format_orthogroup, format_pfam,
+from views.mixins import (CogViewMixin, ComparisonViewMixin, KoViewMixin,
+                          VfViewMixin)
+from views.utils import (format_amr, format_cog, format_gene, format_ko,
+                         format_locus, format_orthogroup, format_pfam,
                          genomic_region_df_to_js, locusx_genomic_region,
-                         make_div, my_locals, page2title, to_s)
+                         make_div, my_locals, optional2status, page2title,
+                         to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -305,8 +307,6 @@ def search_suggest(request,):
 
 
 def search_bar(request):
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    option2status = db.get_config_table()
     index = sb.ChlamdbIndex.use_index(settings.SEARCH_INDEX)
     user_query = request.GET.get("search2")
 
@@ -316,11 +316,12 @@ def search_bar(request):
         ctx = {"search_failed": True, "search_term": user_query}
         return render(request, "chlamdb/search.html", my_locals(ctx))
 
-    has_ko = option2status.get("KEGG", False)
-    has_cog = option2status.get("COG", False)
-    has_pfam = option2status.get("pfam", False)
-
-    genes, cog, ko, pfam, pat, mod = [], [], [], [], [], []
+    has_ko = optional2status.get("KEGG", False)
+    has_cog = optional2status.get("COG", False)
+    has_pfam = optional2status.get("pfam", False)
+    has_amr = optional2status.get("amr", False)
+    has_vf = optional2status.get("vfdb", False)
+    genes, cog, ko, pfam, pat, mod, amr, vf = [], [], [], [], [], [], [], []
     for result in results:
         if result.entry_type == sb.EntryTypes.Gene:
             locus_tag = format_locus(result.locus_tag, to_url=True)
@@ -342,9 +343,15 @@ def search_bar(request):
         elif result.entry_type == sb.EntryTypes.Pathway and has_ko:
             pat.append([format_pathway(None, base=result.name, to_url=True),
                         result.description])
+        elif result.entry_type == sb.EntryTypes.AMR and has_amr:
+            amr.append([format_amr(result.name, to_url=True),
+                        result.description])
+        elif result.entry_type == sb.EntryTypes.VF and has_vf:
+            vf.append([VfViewMixin.format_entry(result.name, to_url=True),
+                      result.description])
 
     gene_active = "active"
-    cogs_active = ko_active = pfam_active = pat_active = mod_active = ""
+    cogs_active = ko_active = pfam_active = pat_active = mod_active = amr_active = vf_active = ""
     if len(genes) == 0:
         gene_active = ""
         if len(cog) > 0:
@@ -357,6 +364,10 @@ def search_bar(request):
             pat_active = "active"
         elif len(mod) > 0:
             mod_active = "active"
+        elif len(amr) > 0:
+            amr_active = "active"
+        elif len(vf) > 0:
+            vf_active = "active"
 
     genes_headers = ["Accession", "Gene", "Product", "Organism"]
     cog_headers = ["COG", "Description"]
@@ -364,6 +375,8 @@ def search_bar(request):
     pfam_headers = ["PFAM domain", "Description"]
     pat_headers = ["KEGG Pathway", "Description"]
     mod_headers = ["KEGG Module", "Description"]
+    amr_headers = ["AMR gene", "Description"]
+    vf_headers = ["VF gene ID", "Description"]
     ctx = {"search_term": user_query,
            "gene_active": gene_active,
            "cogs_active": cogs_active,
@@ -371,6 +384,8 @@ def search_bar(request):
            "pfam_active": pfam_active,
            "pat_active": pat_active,
            "mod_active": mod_active,
+           "amr_active": amr_active,
+           "vf_active": vf_active,
            "genes_headers": genes_headers,
            "genes": genes,
            "cog_headers": cog_headers,
@@ -378,13 +393,18 @@ def search_bar(request):
            "ko_headers": ko_headers,
            "pat_headers": pat_headers,
            "mod_headers": mod_headers,
+           "amr_headers": amr_headers,
+           "vf_headers": vf_headers,
            "modules": mod,
            "pathways": pat,
            "cogs": cog,
            "pfam": pfam,
            "ko": ko,
            "pat": pat,
-           "mod": mod}
+           "mod": mod,
+           "amr": amr,
+           "vf": vf
+           }
     return render(request, "chlamdb/search.html", my_locals(ctx))
 
 

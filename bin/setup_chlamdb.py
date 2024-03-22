@@ -793,6 +793,8 @@ def setup_chlamdb_search_index(params, db_name, index_name):
     has_cog = params.get("cog", False)
     has_ko = params.get("ko", False)
     has_pfam = params.get("pfam_scan", False)
+    has_amr = params.get("amr", False)
+    has_vf = params.get("vfdb", False)
 
     genomes = db.get_genomes_description()
     index = search_bar.ChlamdbIndex.new_index(index_name)
@@ -853,4 +855,18 @@ def setup_chlamdb_search_index(params, db_name, index_name):
             index.add(name=format_pfam(pfam),
                       description=data["def"],
                       entry_type=search_bar.EntryTypes.PFAM)
+
+    if has_amr:
+        amr_data = db.get_amr_descriptions()
+        for amr, data in amr_data.iterrows():
+            index.add(name=data["gene"],
+                      description=data["seq_name"],
+                      entry_type=search_bar.EntryTypes.AMR)
+
+    if has_vf:
+        vf_data = db.vf.get_hit_descriptions(hit_ids=None)
+        for vf, data in vf_data.iterrows():
+            index.add(name=data["vf_gene_id"],
+                      description=data["prot_name"],
+                      entry_type=search_bar.EntryTypes.VF)
     index.done_adding()

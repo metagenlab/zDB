@@ -32,7 +32,7 @@
                                 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
 
                                 {% if genes|length > 0%}
-                                    <li>
+                                    <li class="{{gene_active}}">
                                         <a href="#genes" data-toggle="tab">
                                         Genes <span class="badge">{{genes|length}}</span><br>
                                         </a>
@@ -40,7 +40,7 @@
                                 {% endif %}
 
                                 {% if cogs|length > 0 %}
-                                    <li>
+                                    <li class="{{cogs_active}}">
                                         <a href="#cogs" data-toggle="tab">
                                         COG <span class="badge">{{cogs|length}}</span><br>
                                         </a>
@@ -48,7 +48,7 @@
                                 {% endif %}
 
                                 {% if ko|length > 0 %}
-                                    <li>
+                                    <li class="{{ko_active}}">
                                         <a href="#KO" data-toggle="tab">
                                         KEGG orthologs <span class="badge">{{ko|length}}</span><br>
                                         </a>
@@ -56,7 +56,7 @@
                                 {% endif %}
 
                                 {% if pat|length > 0 %}
-                                    <li>
+                                    <li class="{{pat_active}}">
                                         <a href="#KO_path" data-toggle="tab">
                                         KEGG Pathways<span class="badge">{{pat|length}}</span><br>
                                         </a>
@@ -64,7 +64,7 @@
                                 {% endif %}
 
                                 {% if mod|length > 0 %}
-                                    <li>
+                                    <li class="{{mod_active}}">
                                         <a href="#KO_mod" data-toggle="tab">
                                         KEGG Modules<span class="badge">{{mod|length}}</span><br>
                                         </a>
@@ -72,9 +72,25 @@
                                 {% endif %}
 
                                 {% if pfam|length > 0 %}
-                                    <li>
+                                    <li class="{{pfam_active}}">
                                         <a href="#PFAM" data-toggle="tab">
                                         PFAM domains <span class="badge">{{pfam|length}}</span><br>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% if amr|length > 0 %}
+                                    <li class="{{amr_active}}">
+                                        <a href="#AMR" data-toggle="tab">
+                                        AMR genes <span class="badge">{{amr|length}}</span><br>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% if vf|length > 0 %}
+                                    <li class="{{vf_active}}">
+                                        <a href="#VF" data-toggle="tab">
+                                        Virulence factors <span class="badge">{{vf|length}}</span><br>
                                         </a>
                                     </li>
                                 {% endif %}
@@ -210,6 +226,50 @@
                                             <tbody>
                                                 {% load static %}
                                                 {% for values in pfam %}
+                                                    <tr>
+                                                    {% for val in values %}
+                                                        <td>{{val|safe}} </td>
+                                                    {% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- panel -->
+
+                                    <div class="tab-pane {{amr_active}}" id="AMR">
+                                        <table class="table table-striped" id="search_table7" name="search">
+                                            <thead>
+                                                <tr>
+                                                    {% for col in amr_headers %}
+                                                    <th> {{col}} </th>
+                                                    {% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% load static %}
+                                                {% for values in amr %}
+                                                    <tr>
+                                                    {% for val in values %}
+                                                        <td>{{val|safe}} </td>
+                                                    {% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- panel -->
+
+                                    <div class="tab-pane {{vf_active}}" id="VF">
+                                        <table class="table table-striped" id="search_table8" name="search">
+                                            <thead>
+                                                <tr>
+                                                    {% for col in vf_headers %}
+                                                    <th> {{col}} </th>
+                                                    {% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% load static %}
+                                                {% for values in vf %}
                                                     <tr>
                                                     {% for val in values %}
                                                         <td>{{val|safe}} </td>
