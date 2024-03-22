@@ -297,8 +297,8 @@ def search_suggest(request,):
     user_query = params["term"]
     results = list(index.search(user_query, limit=None))
     data = [
-        {"label": f"{i.name}: {i.description} ({i.entry_type})",
-         "value": f"{i.name}: {i.description}"}
+        {"label": f"{i.get('name')}: {i.get('description')} ({i.get('entry_type')})",
+         "value": f"{i.get('name')}: {i.get('description')}"}
         for i in results
     ]
     return JsonResponse(data, safe=False)
@@ -310,12 +310,22 @@ def search_bar(request):
     index = sb.ChlamdbIndex.use_index(settings.SEARCH_INDEX)
     user_query = request.GET.get("search2")
 
-    results = list(index.search(user_query, limit=None))
-
+    results = index.search(user_query, limit=None)
+    df = pd.DataFrame.from_records([res.fields() for res in results])
     if len(results) == 0:
         ctx = {"search_failed": True, "search_term": user_query}
         return render(request, "chlamdb/search.html", my_locals(ctx))
 
+    for entry_type in df.entry_type.unique():
+        metadata = object_type_to_metadata[entry_type_to_object_type[entry_type]]
+    import pdb; pdb.set_trace()
+    from views.utils import TabularResultTab
+    tabs = []
+    tabs.append(TabularResultTab(
+        "Genes",
+        table_headers=["Accession", "Gene", "Product", "Organism"],
+        table_data=filter(lambda res: res.entry_type == sb.GeneEntry.entry_type, results),
+        table_data_accessors=""))
     has_ko = optional2status.get("KEGG", False)
     has_cog = optional2status.get("COG", False)
     has_pfam = optional2status.get("pfam", False)
@@ -324,6 +334,10 @@ def search_bar(request):
     genes, cog, ko, pfam, pat, mod, amr, vf = [], [], [], [], [], [], [], []
     for result in results:
         if result.entry_type == sb.GeneEntry.entry_type:
+            result.locus_tag = format_locus(result.locus_tag, to_url=True)
+            result.name = str_if_none(result.name)
+            result.description = str_if_none(result.description)
+            genes.append(result)
         elif result.entry_type == sb.CogEntry.entry_type and has_cog:
             cog.append([format_cog(None, base=result.name, as_url=True),
                         result.description])

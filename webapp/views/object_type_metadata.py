@@ -84,3 +84,8 @@ class VfMetadata(BaseObjectMetadata):
         if to_url:
             return f"<a href=\"/fam_vf/{entry}\">{entry}</a>"
         return entry
+
+
+metadata_classes = [AmrMetadata, CogMetadata, KoMetadata, PfamMetadata,
+                    OrthogroupMetadata, VfMetadata]
+object_type_to_metadata = {cls.object_type: cls for cls in metadata_classes}

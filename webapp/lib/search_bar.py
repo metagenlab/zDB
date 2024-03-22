@@ -1,6 +1,4 @@
 
-from collections import namedtuple
-
 import pandas as pd
 from whoosh import index
 from whoosh.fields import ID, KEYWORD, TEXT, SchemaClass
@@ -16,8 +14,6 @@ class SearchBarSchema(SchemaClass):
     og = KEYWORD(stored=True)
 
 
-field_list = ["entry_type", "name", "description", "organism", "locus_tag"]
-SearchResult = namedtuple("SearchResult", field_list)
 class EntryType():
 
     @property
@@ -110,6 +106,9 @@ entry_classes = [KoEntry, CogEntry, ModuleEntry, PathwayEntry, PfamEntry,
 entry_type_to_object_type = {cls.entry_type: cls.object_type
                              for cls in entry_classes}
 
+field_list = ["entry_type", "name", "description", "organism", "locus_tag"]
+
+
 class ChlamdbIndex:
 
     def new_index(name):
@@ -129,12 +128,7 @@ class ChlamdbIndex:
     def search(self, user_query, limit=10):
         parser = MultifieldParser(field_list, self.index.schema)
         query = parser.parse(user_query)
-
-        for result in self.index.searcher().search(query, limit=limit):
-            hsh_res = {}
-            for item in field_list:
-                hsh_res[item] = result.get(item, None)
-            yield SearchResult(**hsh_res)
+        return self.index.searcher().search(query, limit=limit)
 
     def done_adding(self):
         self.writer.commit(optimize=True)
