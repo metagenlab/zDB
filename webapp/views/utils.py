@@ -268,9 +268,9 @@ class ResultTab():
 
 class TabularResultTab(ResultTab):
 
-    def __init__(self, tabid, title, template, ordering=True, paging=True,
-                 export_buttons=True, colvis_button=False,
-                 display_index=False, **kwargs):
+    def __init__(self, tabid, title, template="chlamdb/result_table.html",
+                 ordering=True, paging=True, export_buttons=True,
+                 colvis_button=False, display_index=False, **kwargs):
         self.data_table_config = DataTableConfig(
             table_id=tabid, ordering=ordering, paging=paging,
             export_buttons=export_buttons, colvis_button=colvis_button,

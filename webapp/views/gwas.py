@@ -46,7 +46,7 @@ class GWASBaseView(View):
     def get_result_tabs(self, results):
         return [
             TabularResultTab(
-                "gwas_table", "Table", "chlamdb/result_table.html",
+                "gwas_table", "Table",
                 table_headers=self.table_headers,
                 table_data=results,
                 table_data_accessors=self.table_data_accessors,
