@@ -756,34 +756,8 @@ def load_module_completeness(params, db_name):
     db.commit()
 
 
-def format_cog(cog_n):
-    if pd.isna(cog_n):
-        return None
-    return f"COG{int(cog_n):04}"
-
-
-def format_ko(ko_n):
-    if pd.isna(ko_n):
-        return None
-    return f"K{int(ko_n):05}"
-
-
 def format_og(og_n):
     return f"group_{int(og_n)}"
-
-
-def format_pfam(pfam_n):
-    if pd.isna(pfam_n):
-        return None
-    return f"PF{int(pfam_n):05}"
-
-
-def format_module(mod):
-    return f"M{mod:05d}"
-
-
-def format_pathway(pat):
-    return f"map{pat:05d}"
 
 
 def setup_chlamdb_search_index(params, db_name, index_name):
@@ -825,48 +799,40 @@ def setup_chlamdb_search_index(params, db_name, index_name):
                 og = format_og(data.orthogroup)
 
             organism = genomes.loc[taxid].description
-            index.add(locus_tag=locus_tag,
-                      name=gene, description=product, organism=organism,
-                      entry_type=search_bar.EntryTypes.Gene, og=og)
+            search_bar.GeneEntry.add_to_index(
+                index, locus_tag, gene, product, organism, og)
 
     if has_cog:
         cog_data = db.get_cog_summaries(cog_ids=None, only_cog_desc=True)
         for cog, (func, descr) in cog_data.items():
-            index.add(name=format_cog(cog),
-                      description=descr, entry_type=search_bar.EntryTypes.COG)
+            search_bar.CogEntry.add_to_index(index, cog, descr)
 
     if has_ko:
         ko_data = db.get_ko_desc(ko_ids=None)
         for ko, descr in ko_data.items():
-            index.add(name=format_ko(ko), description=descr,
-                      entry_type=search_bar.EntryTypes.KO)
+            search_bar.KoEntry.add_to_index(index, ko, descr)
+
         mod_data = db.get_modules_info(ids=None, search_on=None)
         for mod_id, mod_desc, _, _, _ in mod_data:
-            index.add(name=format_module(mod_id), description=mod_desc,
-                      entry_type=search_bar.EntryTypes.Module)
+            search_bar.ModuleEntry.add_to_index(index, mod_id, mod_desc)
+
         pat_data = db.get_pathways()
         for pat_id, path_desc in pat_data:
-            index.add(name=format_pathway(pat_id), description=path_desc,
-                      entry_type=search_bar.EntryTypes.Pathway)
+            search_bar.PathwayEntry.add_to_index(index, pat_id, path_desc)
 
     if has_pfam:
         pfam_data = db.get_pfam_def(pfam_ids=None)
         for pfam, data in pfam_data.iterrows():
-            index.add(name=format_pfam(pfam),
-                      description=data["def"],
-                      entry_type=search_bar.EntryTypes.PFAM)
+            search_bar.PfamEntry.add_to_index(index, pfam, data["def"])
 
     if has_amr:
         amr_data = db.get_amr_descriptions()
         for amr, data in amr_data.iterrows():
-            index.add(name=data["gene"],
-                      description=data["seq_name"],
-                      entry_type=search_bar.EntryTypes.AMR)
+            search_bar.AmrEntry.add_to_index(index, data["gene"], data["seq_name"])
 
     if has_vf:
         vf_data = db.vf.get_hit_descriptions(hit_ids=None)
         for vf, data in vf_data.iterrows():
-            index.add(name=data["vf_gene_id"],
-                      description=data["prot_name"],
-                      entry_type=search_bar.EntryTypes.VF)
+            search_bar.VfEntry.add_to_index(index, data["vf_gene_id"], data["prot_name"])
+
     index.done_adding()

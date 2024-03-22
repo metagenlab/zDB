@@ -323,30 +323,26 @@ def search_bar(request):
     has_vf = optional2status.get("vfdb", False)
     genes, cog, ko, pfam, pat, mod, amr, vf = [], [], [], [], [], [], [], []
     for result in results:
-        if result.entry_type == sb.EntryTypes.Gene:
-            locus_tag = format_locus(result.locus_tag, to_url=True)
-            gene = str_if_none(result.name)
-            product = str_if_none(result.description)
-            genes.append([locus_tag, gene, product, result.organism])
-        elif result.entry_type == sb.EntryTypes.COG and has_cog:
+        if result.entry_type == sb.GeneEntry.entry_type:
+        elif result.entry_type == sb.CogEntry.entry_type and has_cog:
             cog.append([format_cog(None, base=result.name, as_url=True),
                         result.description])
-        elif result.entry_type == sb.EntryTypes.KO and has_ko:
+        elif result.entry_type == sb.KoEntry.entry_type and has_ko:
             ko.append([format_ko(None, base=result.name, as_url=True),
                        result.description])
-        elif result.entry_type == sb.EntryTypes.PFAM and has_pfam:
+        elif result.entry_type == sb.PfamEntry.entry_type and has_pfam:
             pfam.append([format_pfam(None, base=result.name, to_url=True),
                          result.description])
-        elif result.entry_type == sb.EntryTypes.Module and has_ko:
+        elif result.entry_type == sb.ModuleEntry.entry_type and has_ko:
             mod.append([format_module(None, base=result.name, to_url=True),
                         result.description])
-        elif result.entry_type == sb.EntryTypes.Pathway and has_ko:
+        elif result.entry_type == sb.PathwayEntry.entry_type and has_ko:
             pat.append([format_pathway(None, base=result.name, to_url=True),
                         result.description])
-        elif result.entry_type == sb.EntryTypes.AMR and has_amr:
+        elif result.entry_type == sb.AmrEntry.entry_type and has_amr:
             amr.append([format_amr(result.name, to_url=True),
                         result.description])
-        elif result.entry_type == sb.EntryTypes.VF and has_vf:
+        elif result.entry_type == sb.VfEntry.entry_type and has_vf:
             vf.append([VfViewMixin.format_entry(result.name, to_url=True),
                       result.description])
 
