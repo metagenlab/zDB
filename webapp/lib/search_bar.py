@@ -24,6 +24,10 @@ class EntryType():
     def _name_prefix(self):
         return self.entry_type
 
+    @property
+    def entry_type(self):
+        return self.object_type[0].upper()
+
     def add_to_index(self, index, entry_id, descr):
         index.writer.add_document(entry_type=self.entry_type,
                                   name=self.get_name(entry_id),
@@ -32,7 +36,7 @@ class EntryType():
 
 class KoEntry(EntryType):
 
-    entry_type = "K"
+    object_type = "ko"
     _name_format_spec = '05'
 
     def get_name(self, entry_id):
@@ -43,14 +47,14 @@ class KoEntry(EntryType):
 
 class CogEntry(KoEntry):
 
-    entry_type = "C"
+    object_type = "cog"
     _name_prefix = "COG"
     _name_format_spec = '04'
 
 
 class ModuleEntry(EntryType):
 
-    entry_type = "M"
+    object_type = "module"
     _name_format_spec = '05d'
 
     def get_name(self, entry_id):
@@ -59,19 +63,21 @@ class ModuleEntry(EntryType):
 
 class PathwayEntry(ModuleEntry):
 
-    entry_type = "P"
+    object_type = "pathway"
     _name_prefix = "map"
 
 
 class PfamEntry(KoEntry):
 
     entry_type = "D"
+    object_type = "pfam"
     _name_prefix = "PF"
 
 
 class AmrEntry(EntryType):
 
     entry_type = "R"
+    object_type = "amr"
 
     def get_name(self, entry_id):
         return entry_id
@@ -79,7 +85,7 @@ class AmrEntry(EntryType):
 
 class VfEntry(EntryType):
 
-    entry_type = "V"
+    object_type = "vf"
 
     def get_name(self, entry_id):
         return entry_id
@@ -88,6 +94,7 @@ class VfEntry(EntryType):
 class GeneEntry():
 
     entry_type = "G"
+    object_type = "locus"
 
     def add_to_index(self, index, locus_tag, gene, product, organism, og):
         index.writer.add_document(entry_type=self.entry_type,
@@ -97,6 +104,11 @@ class GeneEntry():
                                   organism=organism,
                                   og=og)
 
+
+entry_classes = [KoEntry, CogEntry, ModuleEntry, PathwayEntry, PfamEntry,
+                 AmrEntry, VfEntry, GeneEntry]
+entry_type_to_object_type = {cls.entry_type: cls.object_type
+                             for cls in entry_classes}
 
 class ChlamdbIndex:
 
