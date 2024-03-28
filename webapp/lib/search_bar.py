@@ -1,6 +1,4 @@
 
-from collections import namedtuple
-
 import pandas as pd
 from whoosh import index
 from whoosh.fields import ID, KEYWORD, TEXT, SchemaClass
@@ -16,8 +14,6 @@ class SearchBarSchema(SchemaClass):
     og = KEYWORD(stored=True)
 
 
-field_list = ["entry_type", "name", "description", "organism", "locus_tag"]
-SearchResult = namedtuple("SearchResult", field_list)
 class EntryType():
 
     @property
@@ -32,6 +28,9 @@ class EntryType():
         index.writer.add_document(entry_type=self.entry_type,
                                   name=self.get_name(entry_id),
                                   description=descr)
+
+    def get_entry_id(cls, name):
+        return name.lstrip(cls._name_prefix)
 
 
 class KoEntry(EntryType):
@@ -59,6 +58,9 @@ class ModuleEntry(EntryType):
 
     def get_name(self, entry_id):
         return f"{self._name_prefix}{entry_id:{self._name_format_spec}}"
+
+    def get_entry_id(cls, name):
+        return name
 
 
 class PathwayEntry(ModuleEntry):
@@ -107,8 +109,10 @@ class GeneEntry():
 
 entry_classes = [KoEntry, CogEntry, ModuleEntry, PathwayEntry, PfamEntry,
                  AmrEntry, VfEntry, GeneEntry]
-entry_type_to_object_type = {cls.entry_type: cls.object_type
-                             for cls in entry_classes}
+entry_type_to_cls = {cls().entry_type: cls for cls in entry_classes}
+
+field_list = ["entry_type", "name", "description", "organism", "locus_tag"]
+
 
 class ChlamdbIndex:
 
@@ -129,12 +133,7 @@ class ChlamdbIndex:
     def search(self, user_query, limit=10):
         parser = MultifieldParser(field_list, self.index.schema)
         query = parser.parse(user_query)
-
-        for result in self.index.searcher().search(query, limit=limit):
-            hsh_res = {}
-            for item in field_list:
-                hsh_res[item] = result.get(item, None)
-            yield SearchResult(**hsh_res)
+        return self.index.searcher().search(query, limit=limit)
 
     def done_adding(self):
         self.writer.commit(optimize=True)
