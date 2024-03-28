@@ -84,3 +84,37 @@ class VfMetadata(BaseObjectMetadata):
         if to_url:
             return f"<a href=\"/fam_vf/{entry}\">{entry}</a>"
         return entry
+
+
+class ModuleMetadata(BaseObjectMetadata):
+
+    object_type = "module"
+    object_name = "KEGG Module"
+
+    @staticmethod
+    def format_entry(entry, to_url=False):
+        """Will point to the details page as soon as it exists
+        """
+        if to_url:
+            return f"<a href=/KEGG_module_map/{entry}>{entry}</a>"
+        return entry
+
+
+class PathwayMetadata(BaseObjectMetadata):
+
+    object_type = "pathway"
+    object_name = "KEGG Pathway"
+
+    @staticmethod
+    def format_entry(entry, to_url=False):
+        """Will point to the details page as soon as it exists
+        """
+        if to_url:
+            return f"<a href=/KEGG_mapp_ko/{entry}>{entry}</a>"
+        return entry
+
+
+metadata_classes = [AmrMetadata, CogMetadata, KoMetadata, PfamMetadata,
+                    OrthogroupMetadata, VfMetadata, ModuleMetadata,
+                    PathwayMetadata]
+object_type_to_metadata = {cls.object_type: cls() for cls in metadata_classes}
