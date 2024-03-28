@@ -50,6 +50,8 @@ with DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
                        (mandatory, value) in hsh_config.items() if not mandatory}
     optional2status["cog"] = optional2status["COG"]
     optional2status["ko"] = optional2status["KEGG"]
+    optional2status["module"] = optional2status["KEGG"]
+    optional2status["pathway"] = optional2status["KEGG"]
     optional2status["amr"] = optional2status["AMR"]
     optional2status["vf"] = optional2status["BLAST_vfdb"]
 
