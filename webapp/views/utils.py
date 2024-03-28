@@ -260,10 +260,12 @@ class DataTableConfig():
 
 class ResultTab():
 
-    def __init__(self, tabid, title, template, **kwargs):
+    def __init__(self, tabid, title, template, show_badge=False, badge=None, **kwargs):
         self.id = tabid
         self.title = title
         self.template = template
+        self.show_badge = show_badge
+        self.badge = badge
         for key, val in kwargs.items():
             setattr(self, key, val)
 
@@ -272,12 +274,18 @@ class TabularResultTab(ResultTab):
 
     def __init__(self, tabid, title, template="chlamdb/result_table.html",
                  ordering=True, paging=True, export_buttons=True,
-                 colvis_button=False, display_index=False, **kwargs):
+                 colvis_button=False, display_index=False,
+                 show_badge=False, **kwargs):
         self.data_table_config = DataTableConfig(
             table_id=tabid, ordering=ordering, paging=paging,
             export_buttons=export_buttons, colvis_button=colvis_button,
             display_index=display_index)
-        super(TabularResultTab, self).__init__(tabid, title, template, **kwargs)
+        if show_badge:
+            badge = len(kwargs["table_data"])
+        else:
+            badge = None
+        super(TabularResultTab, self).__init__(
+            tabid, title, template, show_badge=show_badge, badge=badge, **kwargs)
 
 
 def locusx_genomic_region(db, seqid, window):
