@@ -41,11 +41,11 @@ from reportlab.lib import colors
 
 from views.errors import errors
 from views.mixins import CogViewMixin, ComparisonViewMixin, KoViewMixin
-from views.object_type_metadata import object_type_to_metadata
+from views.object_type_metadata import MetadataGetter, my_locals
 from views.utils import (TabularResultTab, format_cog, format_gene, format_ko,
                          format_locus, format_orthogroup,
                          genomic_region_df_to_js, locusx_genomic_region,
-                         make_div, my_locals, page2title, to_s)
+                         make_div, page2title, to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -333,7 +333,7 @@ def search_bar(request):
                 table_data=sel,
                 table_data_accessors=[object_type, "gene", "description", "organism"]))
         else:
-            metadata = object_type_to_metadata[object_type]
+            metadata = MetadataGetter().object_type_to_metadata[object_type]
             if not metadata.is_enabled:
                 continue
             sel[object_type] = sel.name.apply(entry_type.get_entry_id).apply(
