@@ -148,7 +148,7 @@
                           <span><i class="fa fa-object-ungroup"></i></span>
                         </div>
                         <h3 class="title">Orthology</h3>
-                        <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}{% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}{% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.</p>
+                        <p class="description"> Get a list of Orthogroups shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.</p>
                         <br>
                         <ul style="padding-left:10px;">
                           <li style="float:left; margin-right:25px;">
@@ -167,7 +167,7 @@
                           <span><i class="fa fa-asterisk"></i></span>
                         </div>
                         <h3 class="title">Annotations</h3>
-                        <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}{% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}{% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %}{% if optional2status|keyvalue:"AMR" == 1 %}, Antimicrobial Resistance{% endif %}{% if optional2status|keyvalue:"BLAST_vfdb" == 1 %}, Virulence Factors{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.</p>
+                        <p class="description"> Get a list of {% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}{% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}{% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %}{% if optional2status|keyvalue:"AMR" == 1 %}, Antimicrobial Resistance{% endif %}{% if optional2status|keyvalue:"BLAST_vfdb" == 1 %}, Virulence Factors{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.</p>
                         <br>
                         <ul style="padding-left:10px;">
                           {% if optional2status|keyvalue:"COG" == 1 %}
