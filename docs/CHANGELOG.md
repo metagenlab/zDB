@@ -21,7 +21,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
-- Add VFs to locus and orthogroup views. ([#71](https://github.com/metagenlab/zDB/pull/71)) (Niklaus Jo
+- Add AMRs and VFs to search index. ([#73](https://github.com/metagenlab/zDB/pull/73)) (Niklaus Johner)
+- Add VFs to locus and orthogroup views. ([#71](https://github.com/metagenlab/zDB/pull/71)) (Niklaus Johner)
 - Add new statistics to home view. ([#70](https://github.com/metagenlab/zDB/pull/70)) (Niklaus Johner)
 - Add GWAS views. The associations are calculated using Scoary2. ([#62](https://github.com/metagenlab/zDB/pull/62)) (Niklaus Johner)
 - Add VF details view. ([#58](https://github.com/metagenlab/zDB/pull/58)) (Niklaus Johner)
@@ -51,6 +52,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix displaying active tab in search results view. ([#73](https://github.com/metagenlab/zDB/pull/73)) (Niklaus Johner)
 - Fix missing page title for kegg_mapp_ko view. ([#66](https://github.com/metagenlab/zDB/pull/66)) (Niklaus Johner)
 - Handle empty result set in heatmap, venn and pan_genome views. ([#66](https://github.com/metagenlab/zDB/pull/66)) (Niklaus Johner)
 - Fix tabular comparison views navigation tabs. ([#30](https://github.com/metagenlab/zDB/pull/30), [#31](https://github.com/metagenlab/zDB/pull/31)) (Niklaus Johner)

@@ -2564,14 +2564,16 @@ class DB:
             df = df.set_index(["seqid"])
         return df
 
-    def get_amr_descriptions(self, gene_ids):
+    def get_amr_descriptions(self, gene_ids=None):
         columns = ["type", "class", "subclass", "gene", "seq_name", "scope",
                    "hmm_id"]
-        plchd = self.gen_placeholder_string(gene_ids)
+        where_clause = ""
+        if gene_ids:
+            plchd = self.gen_placeholder_string(gene_ids)
+            where_clause = f"WHERE gene IN ({plchd})"
         query = (
             f"SELECT DISTINCT {', '.join(columns)} "
-            "FROM amr_hits "
-            f"WHERE gene IN ({plchd});"
+            f"FROM amr_hits {where_clause};"
         )
         results = self.server.adaptor.execute_and_fetchall(query, gene_ids)
         df = DB.to_pandas_frame(results, columns)

@@ -3,6 +3,9 @@ from django.conf import settings
 from lib.db_utils import DB
 
 from views.analysis_view_metadata import analysis_views_metadata
+from views.object_type_metadata import (AmrMetadata, CogMetadata, KoMetadata,
+                                        OrthogroupMetadata, PfamMetadata,
+                                        VfMetadata)
 from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
                          format_ko_module, format_lst_to_html,
                          format_orthogroup, format_pfam,
@@ -57,11 +60,6 @@ class BaseViewMixin():
     _specific_colname_to_header_mapping = {}
 
     @property
-    @staticmethod
-    def is_enabled(self):
-        return optional2status.get(self.object_type, False)
-
-    @property
     def db(self):
         if self._db is None:
             biodb_path = settings.BIODB_DB_PATH
@@ -71,14 +69,6 @@ class BaseViewMixin():
     def page_title(self):
         return page2title.get(getattr(self, "view_name", None),
                               page2title[f"{self.object_type}_comparison"])
-
-    @property
-    def object_name_plural(self):
-        return f"{self.object_name}s"
-
-    @property
-    def object_name_singular_or_plural(self):
-        return f"{self.object_name}(s)"
 
     @property
     def object_column(self):
@@ -132,10 +122,8 @@ class BaseViewMixin():
                self.table_headers[-1]
 
 
-class AmrViewMixin(BaseViewMixin):
+class AmrViewMixin(BaseViewMixin, AmrMetadata):
 
-    object_type = "amr"
-    object_name = "AMR gene"
     object_column = "gene"
 
     _base_colname_to_header_mapping = {
@@ -168,10 +156,6 @@ class AmrViewMixin(BaseViewMixin):
             descriptions = self.transform_data(descriptions)
         return descriptions
 
-    @staticmethod
-    def format_entry(gene, to_url=False):
-        return format_amr(gene, to_url=to_url)
-
     def aggregate_amr_annotations(self, amr_annotations):
         gene_annot_counts = amr_annotations.gene.value_counts()
         for gene in gene_annot_counts[gene_annot_counts > 1].keys():
@@ -191,12 +175,7 @@ class AmrViewMixin(BaseViewMixin):
         return aggregated
 
 
-class CogViewMixin(BaseViewMixin):
-
-    object_type = "cog"
-    object_name = "COG entry"
-    object_name_plural = "COG entries"
-    object_name_singular_or_plural = "COG entry(ies)"
+class CogViewMixin(BaseViewMixin, CogMetadata):
 
     _base_colname_to_header_mapping = {
         "cog": "ID",
@@ -237,15 +216,8 @@ class CogViewMixin(BaseViewMixin):
                       outcolname="function_descr"),
         ]
 
-    @staticmethod
-    def format_entry(entry, to_url=False):
-        return format_cog(entry, as_url=to_url)
 
-
-class KoViewMixin(BaseViewMixin):
-
-    object_type = "ko"
-    object_name = "Kegg Ortholog"
+class KoViewMixin(BaseViewMixin, KoMetadata):
 
     _base_colname_to_header_mapping = {
         "ko": "KO",
@@ -307,15 +279,8 @@ class KoViewMixin(BaseViewMixin):
                for i, row in pathways.iterrows())
         return "<br>".join(gen)
 
-    @staticmethod
-    def format_entry(entry, to_url=False):
-        return format_ko(entry, as_url=to_url)
 
-
-class PfamViewMixin(BaseViewMixin):
-
-    object_type = "pfam"
-    object_name = "Pfam domain"
+class PfamViewMixin(BaseViewMixin, PfamMetadata):
 
     _base_colname_to_header_mapping = {
         "pfam": "Domain ID",
@@ -335,15 +300,8 @@ class PfamViewMixin(BaseViewMixin):
             descriptions = self.transform_data(descriptions)
         return descriptions
 
-    @staticmethod
-    def format_entry(entry, to_url=False):
-        return format_pfam(entry, to_url=to_url)
 
-
-class OrthogroupViewMixin(BaseViewMixin):
-
-    object_type = "orthogroup"
-    object_name = "Orthologous group"
+class OrthogroupViewMixin(BaseViewMixin, OrthogroupMetadata):
 
     _base_colname_to_header_mapping = {
         "product": "Products",
@@ -351,7 +309,6 @@ class OrthogroupViewMixin(BaseViewMixin):
     }
 
     table_data_accessors = ["orthogroup", "product", "gene"]
-    is_enabled = True
 
     @property
     def get_hit_counts(self):
@@ -373,16 +330,10 @@ class OrthogroupViewMixin(BaseViewMixin):
 
         return descriptions
 
-    @staticmethod
-    def format_entry(entry, to_url=False):
-        return format_orthogroup(entry, to_url=to_url)
 
+class VfViewMixin(BaseViewMixin, VfMetadata):
 
-class VfViewMixin(BaseViewMixin):
-
-    object_type = "vf"
     object_column = "vf_gene_id"
-    object_name = "Virulence factor"
 
     _base_colname_to_header_mapping = {
         "vf_gene_id": "VF gene ID",
@@ -412,14 +363,6 @@ class VfViewMixin(BaseViewMixin):
         if transformed:
             descriptions = self.transform_data(descriptions)
         return descriptions
-
-    @staticmethod
-    def format_entry(entry, to_url=False):
-        """Will point to the details page as soon as it exists
-        """
-        if to_url:
-            return f"<a href=\"/fam_vf/{entry}\">{entry}</a>"
-        return entry
 
     @staticmethod
     def format_vfid(vfid):

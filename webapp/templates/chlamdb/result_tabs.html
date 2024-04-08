@@ -9,6 +9,9 @@
       {% endif %}
         <a href=#{{tab.id}} data-toggle="tab">
           <b>{{tab.title}}</b>
+          {% if tab.show_badge %}
+            <span class="badge">{{tab.badge}}</span>
+          {% endif %}
         </a>
       </li>
     {% endfor %}

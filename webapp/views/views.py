@@ -41,8 +41,9 @@ from reportlab.lib import colors
 
 from views.errors import errors
 from views.mixins import CogViewMixin, ComparisonViewMixin, KoViewMixin
-from views.utils import (format_cog, format_gene, format_ko, format_locus,
-                         format_orthogroup, format_pfam,
+from views.object_type_metadata import object_type_to_metadata
+from views.utils import (TabularResultTab, format_cog, format_gene, format_ko,
+                         format_locus, format_orthogroup,
                          genomic_region_df_to_js, locusx_genomic_region,
                          make_div, my_locals, page2title, to_s)
 
@@ -295,8 +296,8 @@ def search_suggest(request,):
     user_query = params["term"]
     results = list(index.search(user_query, limit=None))
     data = [
-        {"label": f"{i.name}: {i.description} ({i.entry_type})",
-         "value": f"{i.name}: {i.description}"}
+        {"label": f"{i.get('name')}: {i.get('description')} ({i.get('entry_type')})",
+         "value": f"{i.get('name')}: {i.get('description')}"}
         for i in results
     ]
     return JsonResponse(data, safe=False)
@@ -305,86 +306,49 @@ def search_suggest(request,):
 
 
 def search_bar(request):
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    option2status = db.get_config_table()
     index = sb.ChlamdbIndex.use_index(settings.SEARCH_INDEX)
     user_query = request.GET.get("search2")
 
-    results = list(index.search(user_query, limit=None))
-
+    results = index.search(user_query, limit=None)
+    df = pd.DataFrame.from_records([res.fields() for res in results])
     if len(results) == 0:
         ctx = {"search_failed": True, "search_term": user_query}
         return render(request, "chlamdb/search.html", my_locals(ctx))
 
-    has_ko = option2status.get("KEGG", False)
-    has_cog = option2status.get("COG", False)
-    has_pfam = option2status.get("pfam", False)
+    tabs = []
+    for entry_type_name in df.entry_type.unique():
+        entry_type = sb.entry_type_to_cls[entry_type_name]()
+        object_type = entry_type.object_type
+        sel = df[df.entry_type == entry_type_name]
+        if object_type == "locus":
+            sel[object_type] = sel.locus_tag.apply(format_locus, to_url=True)
+            # when iterating over the df, accessing the name attribute will
+            # give back the name of the series, so we cannot use that attribute
+            sel["gene"] = sel["name"]
+            tabs.append(TabularResultTab(
+                object_type,
+                "Genes",
+                show_badge=True,
+                table_headers=["Accession", "Gene", "Product", "Organism"],
+                table_data=sel,
+                table_data_accessors=[object_type, "gene", "description", "organism"]))
+        else:
+            metadata = object_type_to_metadata[object_type]
+            if not metadata.is_enabled:
+                continue
+            sel[object_type] = sel.name.apply(entry_type.get_entry_id).apply(
+                metadata.format_entry, to_url=True)
+            tabs.append(TabularResultTab(
+                object_type,
+                metadata.object_name_plural,
+                show_badge=True,
+                table_headers=[metadata.object_name, "Description"],
+                table_data=sel,
+                table_data_accessors=[object_type, "description"]))
 
-    genes, cog, ko, pfam, pat, mod = [], [], [], [], [], []
-    for result in results:
-        if result.entry_type == sb.EntryTypes.Gene:
-            locus_tag = format_locus(result.locus_tag, to_url=True)
-            gene = str_if_none(result.name)
-            product = str_if_none(result.description)
-            genes.append([locus_tag, gene, product, result.organism])
-        elif result.entry_type == sb.EntryTypes.COG and has_cog:
-            cog.append([format_cog(None, base=result.name, as_url=True),
-                        result.description])
-        elif result.entry_type == sb.EntryTypes.KO and has_ko:
-            ko.append([format_ko(None, base=result.name, as_url=True),
-                       result.description])
-        elif result.entry_type == sb.EntryTypes.PFAM and has_pfam:
-            pfam.append([format_pfam(None, base=result.name, to_url=True),
-                         result.description])
-        elif result.entry_type == sb.EntryTypes.Module and has_ko:
-            mod.append([format_module(None, base=result.name, to_url=True),
-                        result.description])
-        elif result.entry_type == sb.EntryTypes.Pathway and has_ko:
-            pat.append([format_pathway(None, base=result.name, to_url=True),
-                        result.description])
-
-    gene_active = "active"
-    cogs_active = ko_active = pfam_active = pat_active = mod_active = ""
-    if len(genes) == 0:
-        gene_active = ""
-        if len(cog) > 0:
-            cogs_active = "active"
-        elif len(ko) > 0:
-            ko_active = "active"
-        elif len(pfam) > 0:
-            pfam_active = "active"
-        elif len(pat) > 0:
-            pat_active = "active"
-        elif len(mod) > 0:
-            mod_active = "active"
-
-    genes_headers = ["Accession", "Gene", "Product", "Organism"]
-    cog_headers = ["COG", "Description"]
-    ko_headers = ["KO", "Description"]
-    pfam_headers = ["PFAM domain", "Description"]
-    pat_headers = ["KEGG Pathway", "Description"]
-    mod_headers = ["KEGG Module", "Description"]
     ctx = {"search_term": user_query,
-           "gene_active": gene_active,
-           "cogs_active": cogs_active,
-           "ko_active": ko_active,
-           "pfam_active": pfam_active,
-           "pat_active": pat_active,
-           "mod_active": mod_active,
-           "genes_headers": genes_headers,
-           "genes": genes,
-           "cog_headers": cog_headers,
-           "pfam_headers": pfam_headers,
-           "ko_headers": ko_headers,
-           "pat_headers": pat_headers,
-           "mod_headers": mod_headers,
-           "modules": mod,
-           "pathways": pat,
-           "cogs": cog,
-           "pfam": pfam,
-           "ko": ko,
-           "pat": pat,
-           "mod": mod}
+           "result_tabs": tabs,
+           }
     return render(request, "chlamdb/search.html", my_locals(ctx))
 
 
