@@ -819,10 +819,18 @@ class KoBarchart(KoViewMixin, View):
             string = f"{{label: {to_s(taxid)}, values: [" + ",".join(str_entry_data) + "]}"
             series_data.append(string)
 
+        taxon2description = self.db.get_genomes_description().description.to_dict()
+        taxon_map = 'var taxon2description = {'
+        taxon_map_lst = (f"\"{target}\": \"{taxon2description[target]}\""
+                         for target in taxids)
+        taxon_map = taxon_map + ",".join(taxon_map_lst) + '};'
+
         taxids = "?" + "&".join((f"h={i}" for i in taxids))
         series = "[" + ",".join(series_data) + "]"
+
         context = self.get_context(
-            envoi=True, series=series, labels=labels, taxids=taxids)
+            envoi=True, series=series, labels=labels, taxids=taxids,
+            taxon_map=taxon_map)
         return render(request, 'chlamdb/ko_barplot.html', context)
 
 
