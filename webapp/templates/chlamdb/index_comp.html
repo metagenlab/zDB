@@ -26,7 +26,7 @@
                     <div class="serviceBox linkdiv" onclick='location.href="{{box.url}}";' style="cursor: pointer;">
                       <div class="service-icon">
                         {% if box.static_icon %}
-                          <span><img src={% static box.icon %}/></span>
+                          <span><img src={% static box.icon %} /></span>
                         {% else %}
                           <span><img src={{box.icon}} /></span>
                         {% endif %}
