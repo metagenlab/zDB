@@ -13,231 +13,226 @@
 
 
 <div class="container-fluid" id="main_container">
-    <div class="row">
-      <div id="wrapper">
-          <div id="page-content-wrapper">
-            {% include "chlamdb/comparison_header.html" %}
+  <div class="row">
+    <div id="wrapper">
+      <div id="page-content-wrapper">
+        {% include "chlamdb/comparison_header.html" %}
 
-            {% if envoi %}
-              <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em">
-              <div class="panel panel-success" style="margin: 1em;" >
-                <div class="panel-heading" style="width:100%">
-                  <h5 class="panel-title">Help to interpret the results</h5>
-                </div>
-                <p style="margin: 10px 10px 10px 10px">
-                  This analysis let you compare the distribution of COGs for each COG category within genomes of interest.
-                  Each bar represent the number of COG identified.
-                  <br>Multiples occurences of a single COG definitions/genome are clustered as one. COGs definitions associated with multiple categories are counted as multiple separate entities. <br>
-                  <br>- Click on bars to get a list of the corresponding loci.<br>
-                 - Click on labels to get venn diagram of the category (max 6 species will be diplayed).
-                  
-                </p>
+        {% if envoi %}
+          <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em">
+            <div class="panel panel-success" style="margin: 1em;" >
+              <div class="panel-heading" style="width:100%">
+                <h5 class="panel-title">Help to interpret the results</h5>
               </div>
-              </div>
+              <p style="margin: 10px 10px 10px 10px">
+                This analysis let you compare the distribution of COGs for each COG category within genomes of interest.
+                Each bar represent the number of COG identified.<br>
+                Multiples occurences of a single COG definitions/genome are clustered as one. COGs definitions associated with multiple categories are counted as multiple separate entities.<br>
+                <br>
+                - Click on bars to get a list of the corresponding loci.<br>
+                - Click on labels to get venn diagram of the category (max 6 species will be diplayed).
+              </p>
+            </div>
+          </div>
 
 
-                  <style>
+          <style>
+            /*
+            .chart rect {
+              fill: steelblue;
+            }
+            */
+            .chart .legend {
+              fill: black;
+              font: 14px sans-serif;
+              text-anchor: start;
+              font-size: 12px;
+            }
 
-                  /*
-                  .chart rect {
-                    fill: steelblue;
-                  }
-                  */
-                  .chart .legend {
-                    fill: black;
-                    font: 14px sans-serif;
-                    text-anchor: start;
-                    font-size: 12px;
-                  }
+            .chart text {
+              fill: black;
+              font: 10px sans-serif;
+              text-anchor: end;
+            }
 
-                  .chart text {
-                    fill: black;
-                    font: 10px sans-serif;
-                    text-anchor: end;
-                  }
+            .chart .label:hover {
+              fill: red;
+            }
 
-                  .chart .label:hover {
-                    fill: red;
-                  }
+            .chart .label {
+              fill: black;
+              font: 14px sans-serif;
+              text-anchor: end;
+            }
 
-                  .chart .label {
-                    fill: black;
-                    font: 14px sans-serif;
-                    text-anchor: end;
-                  }
+            .bar:hover {
+              fill: brown;
+            }
 
-                  .bar:hover {
-                    fill: brown;
-                  }
-
-                  .axis path,
-                  .axis line {
-                    fill: none;
-                    stroke: #000;
-                    shape-rendering: crispEdges;
-                  }
-
-
-                  </style>
+            .axis path,
+            .axis line {
+              fill: none;
+              stroke: #000;
+              shape-rendering: crispEdges;
+            }
+          </style>
 
 
-                  <div id="mydiv" style="float: left"></div>
-                  <svg id="bar_plot_chart" class="chart"></svg>
+          <div id="mydiv" style="float: left"></div>
+          <svg id="bar_plot_chart" class="chart"></svg>
+
+          <script src="http://d3js.org/d3.v3.min.js"></script>
+          <script>
+
+            var data = {
+              labels: {{labels|safe}},
+              series: {{series|safe}}
+            };
+
+            {{category_map|safe}}
+            {{taxon_map|safe}}
+
+            var chartWidth       = 300,
+                barHeight        = 10,
+                groupHeight      = barHeight * data.series.length,
+                gapBetweenGroups = 10,
+                spaceForLabels   = 450,
+                spaceForLegend   = 250;
+
+            // Zip the series data together (first values, second values, etc.)
+            var zippedData = [];
+            for (var i=0; i<data.labels.length; i++) {
+              for (var j=0; j<data.series.length; j++) {
+                zippedData.push(data.series[j].values[i]);
+              }
+            }
+
+            // Color scale
+            var color = d3.scale.category20();
+            var chartHeight = barHeight * zippedData.length + gapBetweenGroups * data.labels.length;
+
+            var x = d3.scale.linear()
+                .domain([0, d3.max(zippedData)])
+                .range([0, chartWidth]);
+
+            var y = d3.scale.linear()
+                .range([chartHeight + gapBetweenGroups, 0]);
+
+            var yAxis = d3.svg.axis()
+                .scale(y)
+                .tickFormat('')
+                .tickSize(0)
+                .orient("left");
+
+            // Specify the chart area and dimensions
+            var chart = d3.select(".chart")
+                .attr("width", spaceForLabels + chartWidth + spaceForLegend)
+                .attr("height", chartHeight);
+
+            // Create bars
+            var bar = chart.selectAll("g")
+                .data(zippedData)
+                .enter().append("g")
+                .attr("transform", function(d, i) {
+                  return "translate(" + spaceForLabels + "," + (i * barHeight + gapBetweenGroups * (0.5 + Math.floor(i/data.series.length))) + ")";
+                }
+                )
+                 //   Math.floor(i/data.series.length)
+                .attr("taxon_id", function(d,i) { return (i % data.series.length) ; })
+                .attr("category_id", function(d,i) { return (Math.floor(i/data.series.length)) ; });
 
 
-
-                  <script src="http://d3js.org/d3.v3.min.js"></script>
-                  <script>
-
-                  var data = {
-                    labels: {{labels|safe}},
-                    series: {{series|safe}}
-                  };
-
-                  {{category_map|safe}}
-                  {{taxon_map|safe}}
-
-                  var chartWidth       = 300,
-                      barHeight        = 10,
-                      groupHeight      = barHeight * data.series.length,
-                      gapBetweenGroups = 10,
-                      spaceForLabels   = 450,
-                      spaceForLegend   = 250;
-
-                  // Zip the series data together (first values, second values, etc.)
-                  var zippedData = [];
-                  for (var i=0; i<data.labels.length; i++) {
-                    for (var j=0; j<data.series.length; j++) {
-                      zippedData.push(data.series[j].values[i]);
-                    }
-                  }
-
-                  // Color scale
-                  var color = d3.scale.category20();
-                  var chartHeight = barHeight * zippedData.length + gapBetweenGroups * data.labels.length;
-
-                  var x = d3.scale.linear()
-                      .domain([0, d3.max(zippedData)])
-                      .range([0, chartWidth]);
-
-                  var y = d3.scale.linear()
-                      .range([chartHeight + gapBetweenGroups, 0]);
-
-                  var yAxis = d3.svg.axis()
-                      .scale(y)
-                      .tickFormat('')
-                      .tickSize(0)
-                      .orient("left");
-
-                  // Specify the chart area and dimensions
-                  var chart = d3.select(".chart")
-                      .attr("width", spaceForLabels + chartWidth + spaceForLegend)
-                      .attr("height", chartHeight);
-
-                  // Create bars
-                  var bar = chart.selectAll("g")
-                      .data(zippedData)
-                      .enter().append("g")
-                      .attr("transform", function(d, i) {
-                        return "translate(" + spaceForLabels + "," + (i * barHeight + gapBetweenGroups * (0.5 + Math.floor(i/data.series.length))) + ")";
-                      }
-                      )
-                       //   Math.floor(i/data.series.length)
-                      .attr("taxon_id", function(d,i) { return (i % data.series.length) ; })
-                      .attr("category_id", function(d,i) { return (Math.floor(i/data.series.length)) ; });
+            // Create rectangles of the correct width
+            bar.append("rect")
+                .attr("fill", function(d,i) { return color(i % data.series.length); })
+                .attr("class", "bar")
+                .attr("width", x)
+                .attr("height", barHeight - 1)
+                .on("click",drill);
 
 
-                  // Create rectangles of the correct width
-                  bar.append("rect")
-                      .attr("fill", function(d,i) { return color(i % data.series.length); })
-                      .attr("class", "bar")
-                      .attr("width", x)
-                      .attr("height", barHeight - 1)
-                      .on("click",drill);
+            // Add text label in bar
+            bar.append("text")
+                .attr("x", function(d) { return x(d) + -3; })
+                .attr("y", barHeight / 2)
+                .attr("fill", "red")
+                .attr("dy", ".35em")
+                .text(function(d) { return d; });
+
+            // Draw labels
+            bar.append("text")
+                .attr("class", "label")
+                .attr("x", function(d) { return - 10; })
+                .attr("y", groupHeight / 2)
+                .attr("dy", ".35em")
+                .text(function(d,i) {
+                  if (i % data.series.length === 0)
+                    return data.labels[Math.floor(i/data.series.length)];
+                  else
+                    return ""})
+                .on("click",drill2);
+
+            function drill(d, i) {
+                var taxon = data.series[d3.select(this.parentNode).attr("taxon_id")].label; //data object
+                var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
+                window.open("/chlamdb/get_cog/" + taxon + "/" + category + "{{taxids|safe}}");
+            }
+            function drill2(d,j) {
+                    var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
+                    window.open("/chlamdb/cog_venn_subset/" + category + "{{taxids|safe}}") };
+
+            //bar.on("click", drill);
 
 
-                  // Add text label in bar
-                  bar.append("text")
-                      .attr("x", function(d) { return x(d) + -3; })
-                      .attr("y", barHeight / 2)
-                      .attr("fill", "red")
-                      .attr("dy", ".35em")
-                      .text(function(d) { return d; });
+            chart.append("g")
+                  .attr("class", "y axis")
+                  .attr("transform", "translate(" + spaceForLabels + ", " + -gapBetweenGroups/2 + ")")
+                  .call(yAxis);
 
-                  // Draw labels
-                  bar.append("text")
-                      .attr("class", "label")
-                      .attr("x", function(d) { return - 10; })
-                      .attr("y", groupHeight / 2)
-                      .attr("dy", ".35em")
-                      .text(function(d,i) {
-                        if (i % data.series.length === 0)
-                          return data.labels[Math.floor(i/data.series.length)];
-                        else
-                          return ""})
-                      .on("click",drill2);
+            // Draw legend
+            var legendRectSize = 18,
+                legendSpacing  = 4;
 
-                  function drill(d, i) {
-                      var taxon = data.series[d3.select(this.parentNode).attr("taxon_id")].label; //data object
-                      var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
-                      window.open("/chlamdb/get_cog/" + taxon + "/" + category + "{{taxids|safe}}");
-                  }
-                  function drill2(d,j) {
-                          var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
-                          window.open("/chlamdb/cog_venn_subset/" + category + "{{taxids|safe}}") };
+            var legend = chart.selectAll('.legend')
+                .data(data.series)
+                .enter()
+                .append('g')
+                .attr('transform', function (d, i) {
+                    var height = legendRectSize + legendSpacing;
+                    var offset = -gapBetweenGroups/2;
+                    var horz = spaceForLabels + chartWidth + 40 - legendRectSize;
+                    var vert = i * height - offset;
+                    return 'translate(' + horz + ',' + vert + ')';
+                });
 
-                  //bar.on("click", drill);
+            legend.append('rect')
+                .attr('width', legendRectSize)
+                .attr('height', legendRectSize)
+                .style('fill', function (d, i) { return color(i); })
+                .style('stroke', function (d, i) { return color(i); });
 
+            legend.append('text')
+                .attr('class', 'legend')
+                .attr('x', legendRectSize + legendSpacing)
+                .attr('y', legendRectSize - legendSpacing)
+                .text(function (d) { return taxon2description[d.label]; });
 
-                  chart.append("g")
-                        .attr("class", "y axis")
-                        .attr("transform", "translate(" + spaceForLabels + ", " + -gapBetweenGroups/2 + ")")
-                        .call(yAxis);
+            d3.select("#mydiv").append("button")
+                    .attr("type","button")
+                    .attr("class", "btn btn-primary btn-sm")
+                    .text("Download SVG")
+                    .on("click", function() {
+              var svg_elem = document.querySelector("#bar_plot_chart");
+              svgExport.downloadSvg(svg_elem, "cog_bar_plot");
+              });
 
-                  // Draw legend
-                  var legendRectSize = 18,
-                      legendSpacing  = 4;
+          </script>
 
-                  var legend = chart.selectAll('.legend')
-                      .data(data.series)
-                      .enter()
-                      .append('g')
-                      .attr('transform', function (d, i) {
-                          var height = legendRectSize + legendSpacing;
-                          var offset = -gapBetweenGroups/2;
-                          var horz = spaceForLabels + chartWidth + 40 - legendRectSize;
-                          var vert = i * height - offset;
-                          return 'translate(' + horz + ',' + vert + ')';
-                      });
+        {% endif %}
 
-                  legend.append('rect')
-                      .attr('width', legendRectSize)
-                      .attr('height', legendRectSize)
-                      .style('fill', function (d, i) { return color(i); })
-                      .style('stroke', function (d, i) { return color(i); });
-
-                  legend.append('text')
-                      .attr('class', 'legend')
-                      .attr('x', legendRectSize + legendSpacing)
-                      .attr('y', legendRectSize - legendSpacing)
-                      .text(function (d) { return taxon2description[d.label]; });
-
-                  d3.select("#mydiv").append("button")
-                          .attr("type","button")
-                          .attr("class", "btn btn-primary btn-sm")
-                          .text("Download SVG")
-                          .on("click", function() {
-                var svg_elem = document.querySelector("#bar_plot_chart");
-                svgExport.downloadSvg(svg_elem, "cog_bar_plot");
-                          });
-
-                  </script>
-
-              {% endif %}
-
-        </div>
       </div>
     </div>
   </div>
+</div>
 </body>
 </html>

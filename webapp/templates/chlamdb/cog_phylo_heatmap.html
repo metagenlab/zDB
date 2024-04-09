@@ -8,39 +8,38 @@
 {% include "chlamdb/header.html" %}
 </head>
 <body>
-    <div class="container-fluid" id="main_container">
-        <div class="row">
-            <div id="wrapper">
-                <div id="page-content-wrapper">
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+        <div id="page-content-wrapper">
 
-                    {% include "chlamdb/comparison_header.html" %}
+          {% include "chlamdb/comparison_header.html" %}
 
-                    <div class="row">
-                        <div class="col-lg-12">
-
-                              <div class="panel panel-success">
-                                <div class="panel-heading" style="width:100%">
-                                  <h5 class="panel-title">Help to interpret the results
-                                </div>
-                                <p style="margin: 10px 10px 10px 10px">
-                                    {% if freq == "False"%}
-                                    Phylogenetic tree annotated with the number of genes distributed in each COG category. For each of the COG cateogries displayed on the x axis, the number of genes that fit in each category is reported for each genome. Colors are used to easily interpret the increment or decrement of members in each category within the whole collections.
-                                    {% elif freq == "True" %}
-                                    Phylogenetic tree annotated with the frequency of genes distributed in each COG category over the total amount of genes of each genome. Colors are used to easily interpret the increment or decrement of members in each category within the whole collections.
-                                    {% endif %}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="tab-pane" id="tab2">
-                            <object style="max-width:90%; padding-top: 2em;" type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
-                            <a download="cog_heatmap.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
-                        </div>
-                    </div>
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="panel panel-success">
+                <div class="panel-heading" style="width:100%">
+                  <h5 class="panel-title">Help to interpret the results</h5>
                 </div>
+                <p style="margin: 10px 10px 10px 10px">
+                  {% if freq == "False"%}
+                    Phylogenetic tree annotated with the number of genes distributed in each COG category. For each of the COG cateogries displayed on the x axis, the number of genes that fit in each category is reported for each genome. Colors are used to easily interpret the increment or decrement of members in each category within the whole collections.
+                  {% elif freq == "True" %}
+                    Phylogenetic tree annotated with the frequency of genes distributed in each COG category over the total amount of genes of each genome. Colors are used to easily interpret the increment or decrement of members in each category within the whole collections.
+                  {% endif %}
+                </p>
+              </div>
             </div>
+
+            <div class="tab-pane" id="tab2">
+              <object style="max-width:90%; padding-top: 2em;" type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
+              <a download="cog_heatmap.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
   {% include "chlamdb/style_menu.html" %}
 </body>
 </html>

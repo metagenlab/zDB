@@ -45,28 +45,28 @@
 
 <script>
 
-$(document).ready(function() {
-  $('#pfam_table').DataTable( {
-    dom: 'lBfrtip',
-    buttons: [
-        {
-            extend: 'colvis',
-            columns: ':not(.noVis)',
-        },
-        {
-            extend: 'excel',
-            title: 'plast_refseq'
-        },
-        {
-            extend: 'csv',
-            title: 'plast_refseq'
-        }
-    ],
+  $(document).ready(function() {
+    $('#pfam_table').DataTable( {
+      dom: 'lBfrtip',
+      buttons: [
+          {
+              extend: 'colvis',
+              columns: ':not(.noVis)',
+          },
+          {
+              extend: 'excel',
+              title: 'plast_refseq'
+          },
+          {
+              extend: 'csv',
+              title: 'plast_refseq'
+          }
+      ],
 
-    "ordering": true,
-    "info":     false,
-    } );
-} );
+      "ordering": true,
+      "info":     false,
+      } );
+  } );
 
 </script>
 

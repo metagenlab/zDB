@@ -119,95 +119,80 @@
   </div> <!-- /#sidebar-wrapper -->
 
 <script>
+  $("#menu-toggle").click(function(e) {
+    e.preventDefault();
+    $("#wrapper").toggleClass("toggled");
 
-/*
-$(document).ready(function(){ 
-    $("#searchbar").autocomplete({
-        source: "/search_suggest/",
-        minLength: 3,
-        position: {
-        offset: '20 4' // Shift 20px to the left, 4px down.
+  });
+
+
+  $(document).ready(function() {
+      breakpoint = 800;
+      function changeMenuStyle() {
+          var w = document.documentElement.clientWidth;
+          console.log('size');
+          console.log(w);
+          if (w < breakpoint) {
+            $("#wrapper").toggleClass("toggled");
+          }
+        }
+
+      window.addEventListener("resize", changeMenuStyle);
+      changeMenuStyle();
+  });
+
+
+  $(window).scroll(function() {
+    if ($(this).scrollTop() > 0) {
+      $('#page_title').fadeOut();
+    } else {
+      $('#page_title').fadeIn();
     }
-      });        
-});
-*/
-
-$("#menu-toggle").click(function(e) {
-  e.preventDefault();
-  $("#wrapper").toggleClass("toggled"); 
-
-});
-
-
-$(document).ready(function() {
-    breakpoint = 800;
-    function changeMenuStyle() {
-        var w = document.documentElement.clientWidth;
-        console.log('size');
-        console.log(w);
-        if (w < breakpoint) {
-          $("#wrapper").toggleClass("toggled"); 
-        } 
-      }
-
-    window.addEventListener("resize", changeMenuStyle);
-    changeMenuStyle();
-});
-
-
-$(window).scroll(function() {
-  if ($(this).scrollTop() > 0) {
-    $('#page_title').fadeOut();
-  } else {
-    $('#page_title').fadeIn();
-  }
-});
+  });
 </script>
+
 <style>
-.ui-autocomplete { position: absolute; cursor: default;z-index:3000 !important; background: #29a0e6}  
-.right-caret {
-    border-bottom: 4px solid transparent;
-    border-top: 4px solid #FAFAFA;
-    border-left: 0px solid transparent;
-    border-right: 0px solid transparent;
-    display: inline-block;
-    height: 0;
-    opacity: 1;
-    width: 0;
-}
-.bottom-caret {
-    border-bottom: 4px solid transparent;
-    border-top: 4px solid #FAFAFA;
-    border-left: 0px solid transparent;
-    border-right: 0px solid transparent;
-    display: inline-block;
-    height: 0;
-    opacity: 1;
-    width: 0;
-}
-ul{
-  list-style-type: none;
-  padding-left: 0px;
-}
+  .ui-autocomplete { position: absolute; cursor: default;z-index:3000 !important; background: #29a0e6}
+  .right-caret {
+      border-bottom: 4px solid transparent;
+      border-top: 4px solid #FAFAFA;
+      border-left: 0px solid transparent;
+      border-right: 0px solid transparent;
+      display: inline-block;
+      height: 0;
+      opacity: 1;
+      width: 0;
+  }
+  .bottom-caret {
+      border-bottom: 4px solid transparent;
+      border-top: 4px solid #FAFAFA;
+      border-left: 0px solid transparent;
+      border-right: 0px solid transparent;
+      display: inline-block;
+      height: 0;
+      opacity: 1;
+      width: 0;
+  }
+  ul{
+    list-style-type: none;
+    padding-left: 0px;
+  }
 
-.accordion-toggle:after {
-    /* symbol for "opening" panels */
-    font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
-    content: "\e114";    /* adjust as needed, taken from bootstrap.css */
-    float: right;        /* adjust as needed */
-    padding-right: 0px;
-    color: grey;         /* adjust as needed */
-}
+  .accordion-toggle:after {
+      /* symbol for "opening" panels */
+      font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+      content: "\e114";    /* adjust as needed, taken from bootstrap.css */
+      float: right;        /* adjust as needed */
+      padding-right: 0px;
+      color: grey;         /* adjust as needed */
+  }
 
-.accordion-toggle.collapsed:after {
-    /* symbol for "collapsed" panels */
-    content: "\e080";    /* adjust as needed, taken from bootstrap.css */
-}
-* {
-  box-sizing: border-box;
-}
-
-
-
+  .accordion-toggle.collapsed:after {
+      /* symbol for "collapsed" panels */
+      content: "\e080";    /* adjust as needed, taken from bootstrap.css */
+  }
+  * {
+    box-sizing: border-box;
+  }
 
 </style>

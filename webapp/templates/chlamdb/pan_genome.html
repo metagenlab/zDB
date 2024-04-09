@@ -67,217 +67,216 @@
 
 <script>
 
-var image_size_x = 900;
+  var image_size_x = 900;
 
-var data_count = {{ js_data_count |safe }};
-var data_acc = {{ js_data_acc|safe }};
-var data_core = {{ js_data_core| safe }};
-var margins = {top: 10, bottom:80, left:100, right:100};
+  var data_count = {{ js_data_count |safe }};
+  var data_acc = {{ js_data_acc|safe }};
+  var data_core = {{ js_data_core| safe }};
+  var margins = {top: 10, bottom:80, left:100, right:100};
 
-var width = image_size_x-margins.left-margins.right;
-var height = 500-margins.bottom-margins.top;
+  var width = image_size_x-margins.left-margins.right;
+  var height = 500-margins.bottom-margins.top;
 
-var acc_color="#69b3a2";
-var shared_color="#FF6347";
-var core_color="#5499c7";
+  var acc_color="#69b3a2";
+  var shared_color="#FF6347";
+  var core_color="#5499c7";
 
-var x_scale = d3.scaleLinear().
-  domain([1, data_count.length]).
-  range([0, width]);
+  var x_scale = d3.scaleLinear().
+    domain([1, data_count.length]).
+    range([0, width]);
 
-var y_scale_acc = d3.scaleLinear().
-  domain([0.95*d3.min(data_acc), 1.05*d3.max(data_acc)]).
-  range([height, 0]);
+  var y_scale_acc = d3.scaleLinear().
+    domain([0.95*d3.min(data_acc), 1.05*d3.max(data_acc)]).
+    range([height, 0]);
 
-var y_scale_count = d3.scaleLinear().
-  domain([0, 1.05*d3.max(data_count)]).
-  range([height, 0]);
+  var y_scale_count = d3.scaleLinear().
+    domain([0, 1.05*d3.max(data_count)]).
+    range([height, 0]);
 
-var y_scale_core = d3.scaleLinear().
-  domain([0, 1.05*d3.max(data_core)]).
-  range([height, 0]);
-
-
-var svg = d3.select("#rarefaction_plot").
-  append("svg").
-  attr("id", "current_plot").
-  attr("width", image_size_x).
-  attr("height", height+margins.bottom+margins.top).
-  append("g").
-  attr("transform",
-    "translate(" + margins.left + "," + margins.top +")");
-
-svg.append("text").
-  attr("text-anchor", "middle").
-  attr("x", width/2).
-  attr("y", height+margins.bottom/2).
-  text("Number of genomes");
+  var y_scale_core = d3.scaleLinear().
+    domain([0, 1.05*d3.max(data_core)]).
+    range([height, 0]);
 
 
-svg.append("text").
-  attr("text-anchor", "middle").
-  attr("x", -margins.left/2).
-  attr("y", height/2).
-  attr("transform", "rotate(-90," + -margins.left/2+ ","+height/2+")").
-  attr("id", "y-axis-label").
-  text("Number of {{object_name_plural}}");
+  var svg = d3.select("#rarefaction_plot").
+    append("svg").
+    attr("id", "current_plot").
+    attr("width", image_size_x).
+    attr("height", height+margins.bottom+margins.top).
+    append("g").
+    attr("transform",
+      "translate(" + margins.left + "," + margins.top +")");
+
+  svg.append("text").
+    attr("text-anchor", "middle").
+    attr("x", width/2).
+    attr("y", height+margins.bottom/2).
+    text("Number of genomes");
 
 
-svg.append("g").
-  attr("transform", "translate(0,"+ height +")").
-  call(d3.axisBottom(x_scale));
+  svg.append("text").
+    attr("text-anchor", "middle").
+    attr("x", -margins.left/2).
+    attr("y", height/2).
+    attr("transform", "rotate(-90," + -margins.left/2+ ","+height/2+")").
+    attr("id", "y-axis-label").
+    text("Number of {{object_name_plural}}");
 
 
-svg.append("g").
-  attr("id", "axis_acc").
-  call(d3.axisLeft(y_scale_acc));
-
-svg.append("g").
-  attr("id", "axis_core").
-  call(d3.axisLeft(y_scale_core));
-
-svg.append("g").
-  attr("id", "axis_distrib").
-  call(d3.axisLeft(y_scale_count));
-
-var enumerate = function(d) {
-  let arr = [];
-  for(var i=0; i<d.length; i++) {
-    arr.push([i+1, d[i]]);
-  }
-  return arr;
-}
+  svg.append("g").
+    attr("transform", "translate(0,"+ height +")").
+    call(d3.axisBottom(x_scale));
 
 
-svg.append("path").
-  attr("id", "data_acc_path").
-  datum(enumerate(data_acc)).
-  attr("fill", "none").
-  attr("stroke", acc_color).
-  attr("stroke-width", 1.5).
-  attr("d", d3.line()
-    .x(function(d) { return x_scale(d[0]); })
-    .y(function(d) { return y_scale_acc(d[1]); })
-  );
+  svg.append("g").
+    attr("id", "axis_acc").
+    call(d3.axisLeft(y_scale_acc));
 
-svg.append("path").
-  attr("id", "data_distrib_path").
-  datum(enumerate(data_count)).
-  attr("fill", "none").
-  attr("stroke", shared_color).
-  attr("stroke-width", 1.5).
-  attr("d", d3.line()
-    .x(function(d) { return x_scale(d[0]); })
-    .y(function(d) { return y_scale_count(d[1]); })
-  );
+  svg.append("g").
+    attr("id", "axis_core").
+    call(d3.axisLeft(y_scale_core));
 
-svg.append("g").
-  attr("id", "data_acc_points").
-  selectAll("dot").
-  data(enumerate(data_acc)).
-  enter().
-  append("circle").
-  attr("cx", function(d) { return x_scale(d[0]); }).
-  attr("cy", function(d) { return y_scale_acc(d[1]); }).
-  attr("r", 3).
-  attr("fill", acc_color);
+  svg.append("g").
+    attr("id", "axis_distrib").
+    call(d3.axisLeft(y_scale_count));
 
-
-svg.append("path").
-  attr("id", "data_core_path").
-  datum(enumerate(data_core)).
-  attr("fill", "none").
-  attr("stroke", core_color).
-  attr("stroke-width", 1.5).
-  attr("d", d3.line()
-    .x(function(d) { return x_scale(d[0]); })
-    .y(function(d) { return y_scale_core(d[1]); })
-  );
-
-
-svg.append("g").
-  attr("id", "data_core_points").
-  selectAll("dot").
-  data(enumerate(data_core)).
-  enter().
-  append("circle").
-  attr("cx", function(d) { return x_scale(d[0]); }).
-  attr("cy", function(d) { return y_scale_core(d[1]); }).
-  attr("r", 3).
-  attr("fill", core_color);
-
-
-svg.append("g").
-  attr("id", "data_distrib_points").
-  selectAll("dot").
-  data(enumerate(data_count)).
-  enter().
-  append("circle").
-  attr("cx", function(d) { return x_scale(d[0]); }).
-  attr("cy", function(d) { return y_scale_count(d[1]); }).
-  attr("r", 3).
-  attr("fill", shared_color);
-
-
-/*
-To be added later
-
-on("click", clicked);
-
-
-function clicked(d) {
-  var checked_val = $("input[name='plot_type']:checked").val();
-  if(checked_val != "ortho_distrib") {
-    return;
+  var enumerate = function(d) {
+    let arr = [];
+    for(var i=0; i<d.length; i++) {
+      arr.push([i+1, d[i]]);
+    }
+    return arr;
   }
 
-  d3.select(this).attr("fill", "back");
-} */
+
+  svg.append("path").
+    attr("id", "data_acc_path").
+    datum(enumerate(data_acc)).
+    attr("fill", "none").
+    attr("stroke", acc_color).
+    attr("stroke-width", 1.5).
+    attr("d", d3.line()
+      .x(function(d) { return x_scale(d[0]); })
+      .y(function(d) { return y_scale_acc(d[1]); })
+    );
+
+  svg.append("path").
+    attr("id", "data_distrib_path").
+    datum(enumerate(data_count)).
+    attr("fill", "none").
+    attr("stroke", shared_color).
+    attr("stroke-width", 1.5).
+    attr("d", d3.line()
+      .x(function(d) { return x_scale(d[0]); })
+      .y(function(d) { return y_scale_count(d[1]); })
+    );
+
+  svg.append("g").
+    attr("id", "data_acc_points").
+    selectAll("dot").
+    data(enumerate(data_acc)).
+    enter().
+    append("circle").
+    attr("cx", function(d) { return x_scale(d[0]); }).
+    attr("cy", function(d) { return y_scale_acc(d[1]); }).
+    attr("r", 3).
+    attr("fill", acc_color);
 
 
-function change_plot() {
-  var new_checked = $("input[name='plot_type']:checked").val();
-  var is_pan = new_checked==="pangenome";
-  var is_core = new_checked==="coregenome";
-  var is_distrib = new_checked==="ortho_distrib";
-
-  d3.select("#axis_acc").attr("visibility", is_pan? "visible" : "hidden");
-  d3.select("#axis_distrib").attr("visibility", is_distrib? "visible" : "hidden");
-  d3.select("#axis_core").attr("visibility", is_core? "visible" : "hidden");
-
-  d3.select("#data_acc_path").attr("visibility", is_pan? "visible" : "hidden");
-  d3.select("#data_acc_points").attr("visibility", is_pan? "visible" : "hidden");
-  d3.select("#data_distrib_points").attr("visibility", is_distrib? "visible" : "hidden");
-  d3.select("#data_distrib_path").attr("visibility", is_distrib? "visible" : "hidden");
-  d3.select("#data_core_path").attr("visibility", is_core? "visible" : "hidden");
-  d3.select("#data_core_points").attr("visibility", is_core? "visible" : "hidden");
-}
+  svg.append("path").
+    attr("id", "data_core_path").
+    datum(enumerate(data_core)).
+    attr("fill", "none").
+    attr("stroke", core_color).
+    attr("stroke-width", 1.5).
+    attr("d", d3.line()
+      .x(function(d) { return x_scale(d[0]); })
+      .y(function(d) { return y_scale_core(d[1]); })
+    );
 
 
-d3.select("#plot_type").on("change", change_plot);
-$(document).ready(change_plot);
+  svg.append("g").
+    attr("id", "data_core_points").
+    selectAll("dot").
+    data(enumerate(data_core)).
+    enter().
+    append("circle").
+    attr("cx", function(d) { return x_scale(d[0]); }).
+    attr("cy", function(d) { return y_scale_core(d[1]); }).
+    attr("r", 3).
+    attr("fill", core_color);
 
-d3.select("#download_svg").append("button")
-  .attr("type","button")
-  .attr("class", "btn btn-primary btn-sm")
-  .text("Download SVG")
-  .on("click", function() {
-  var svg_elem = document.querySelector("#current_plot");
-  var new_checked = $("input[name='plot_type']:checked").val();
-  var is_pan = new_checked==="pangenome";
-  var is_core = new_checked==="coregenome";
-  var is_distrib = new_checked==="ortho_distrib";
 
-  var filename = "";
-  if(is_pan) {
-    filename="pangenome_plot";
-  } else if(is_core) {
-    filename="core_genome_plot";
-  } else if(is_distrib) {
-    filename="distribution_plot";
+  svg.append("g").
+    attr("id", "data_distrib_points").
+    selectAll("dot").
+    data(enumerate(data_count)).
+    enter().
+    append("circle").
+    attr("cx", function(d) { return x_scale(d[0]); }).
+    attr("cy", function(d) { return y_scale_count(d[1]); }).
+    attr("r", 3).
+    attr("fill", shared_color);
+
+
+  /*
+  To be added later
+
+  on("click", clicked);
+
+  function clicked(d) {
+    var checked_val = $("input[name='plot_type']:checked").val();
+    if(checked_val != "ortho_distrib") {
+      return;
+    }
+
+    d3.select(this).attr("fill", "back");
+  } */
+
+
+  function change_plot() {
+    var new_checked = $("input[name='plot_type']:checked").val();
+    var is_pan = new_checked==="pangenome";
+    var is_core = new_checked==="coregenome";
+    var is_distrib = new_checked==="ortho_distrib";
+
+    d3.select("#axis_acc").attr("visibility", is_pan? "visible" : "hidden");
+    d3.select("#axis_distrib").attr("visibility", is_distrib? "visible" : "hidden");
+    d3.select("#axis_core").attr("visibility", is_core? "visible" : "hidden");
+
+    d3.select("#data_acc_path").attr("visibility", is_pan? "visible" : "hidden");
+    d3.select("#data_acc_points").attr("visibility", is_pan? "visible" : "hidden");
+    d3.select("#data_distrib_points").attr("visibility", is_distrib? "visible" : "hidden");
+    d3.select("#data_distrib_path").attr("visibility", is_distrib? "visible" : "hidden");
+    d3.select("#data_core_path").attr("visibility", is_core? "visible" : "hidden");
+    d3.select("#data_core_points").attr("visibility", is_core? "visible" : "hidden");
   }
-  svgExport.downloadSvg(svg_elem, filename);
-  });
+
+
+  d3.select("#plot_type").on("change", change_plot);
+  $(document).ready(change_plot);
+
+  d3.select("#download_svg").append("button")
+    .attr("type","button")
+    .attr("class", "btn btn-primary btn-sm")
+    .text("Download SVG")
+    .on("click", function() {
+    var svg_elem = document.querySelector("#current_plot");
+    var new_checked = $("input[name='plot_type']:checked").val();
+    var is_pan = new_checked==="pangenome";
+    var is_core = new_checked==="coregenome";
+    var is_distrib = new_checked==="ortho_distrib";
+
+    var filename = "";
+    if(is_pan) {
+      filename="pangenome_plot";
+    } else if(is_core) {
+      filename="core_genome_plot";
+    } else if(is_distrib) {
+      filename="distribution_plot";
+    }
+    svgExport.downloadSvg(svg_elem, filename);
+    });
 
 </script>
 
