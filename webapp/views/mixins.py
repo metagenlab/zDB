@@ -99,7 +99,7 @@ class BaseViewMixin():
 
     @property
     def metadata(self):
-        if self._metadata_cls:
+        if getattr(self, "_metadata_cls", None):
             return self._metadata_cls(self.object_type, self.object_name_plural)
 
     def get_context(self, **kwargs):
