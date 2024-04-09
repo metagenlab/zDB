@@ -39,6 +39,11 @@ from lib.ete_phylo import (Column, EteTree, KOAndCompleteness,
 from lib.KO_module import ModuleParser
 from reportlab.lib import colors
 
+from views.analysis_view_metadata import (AccumulationRarefactionMetadata,
+                                          CategoriesBarchartMetadata,
+                                          CategoriesCountHeatmapMetadata,
+                                          CategoriesFreqHeatmapMetadata,
+                                          HeatmapMetadata)
 from views.errors import errors
 from views.mixins import CogViewMixin, ComparisonViewMixin, KoViewMixin
 from views.object_type_metadata import MetadataGetter, my_locals
@@ -371,6 +376,10 @@ class CogPhyloHeatmap(CogViewMixin, View):
 
     def get(self, request, frequency, *args, **kwargs):
         freq = frequency != "False"
+        if freq:
+            self._metadata_cls = CategoriesFreqHeatmapMetadata
+        else:
+            self._metadata_cls = CategoriesCountHeatmapMetadata
 
         tree = self.db.get_reference_phylogeny()
         descr = self.db.get_genomes_description()
@@ -758,16 +767,20 @@ def js_bioentries_to_description(hsh):
 
 class KoBarchart(KoViewMixin, View):
 
+    _metadata_cls = CategoriesBarchartMetadata
+
+    @property
+    def form_class(self):
+        return make_venn_from(self.db, label=self.object_name_plural,
+                              action="/ko_barchart/")
+
     def get(self, request, *args, **kwargs):
-        venn_form_class = make_venn_from(self.db)
-        self.form = venn_form_class()
+        self.form = self.form_class()
         return render(request, 'chlamdb/ko_barplot.html', self.get_context())
 
     def post(self, request, *args, **kwargs):
-        venn_form_class = make_venn_from(self.db)
-        self.form = venn_form_class(request.POST)
+        self.form = self.form_class(request.POST)
         if not self.form.is_valid():
-            self.form = venn_form_class(request.POST)
             return render(request, 'chlamdb/ko_barplot.html',
                           self.get_context())
 
@@ -789,7 +802,6 @@ class KoBarchart(KoViewMixin, View):
         subcategories_list = cat_count.index.unique(level="subcat").to_list()
         subcategories = ",".join(f"{to_s(cat)}" for cat in subcategories_list)
         labels = f"[{subcategories}]"
-
         series_data = []
 
         # not ideal, but I'm really fed up with multi-indices. Be my guest
@@ -809,7 +821,6 @@ class KoBarchart(KoViewMixin, View):
 
         taxids = "?" + "&".join((f"h={i}" for i in taxids))
         series = "[" + ",".join(series_data) + "]"
-        self.form = venn_form_class()
         context = self.get_context(
             envoi=True, series=series, labels=labels, taxids=taxids)
         return render(request, 'chlamdb/ko_barplot.html', context)
@@ -817,14 +828,19 @@ class KoBarchart(KoViewMixin, View):
 
 class CogBarchart(CogViewMixin, View):
 
+    _metadata_cls = CategoriesBarchartMetadata
+
+    @property
+    def form_class(self):
+        return make_venn_from(self.db, label=self.object_name_plural,
+                              action="/cog_barchart/")
+
     def get(self, request, *args, **kwargs):
-        venn_form_class = make_venn_from(self.db)
-        self.form = venn_form_class()
+        self.form = self.form_class()
         return render(request, 'chlamdb/cog_barplot.html', self.get_context())
 
     def post(self, request, *args, **kwargs):
-        venn_form_class = make_venn_from(self.db)
-        self.form = venn_form_class(request.POST)
+        self.form = self.form_class(request.POST)
         if not self.form.is_valid():
             return render(request, 'chlamdb/cog_barplot.html',
                           self.get_context(**errors["invalid_form"]))
@@ -901,17 +917,22 @@ class CogBarchart(CogViewMixin, View):
 
 class PanGenome(ComparisonViewMixin, View):
 
+    _metadata_cls = AccumulationRarefactionMetadata
+
+    @property
+    def form_class(self):
+        return make_venn_from(self.db, label=self.object_name_plural,
+                              action=f"/pan_genome/{self.object_type}")
+
     def get(self, request, *args, **kwargs):
-        venn_form_class = make_venn_from(self.db, plasmid=False)
-        self.form = venn_form_class()
+        self.form = self.form_class()
         return render(request, 'chlamdb/pan_genome.html',
                       self.get_context(form=self.form))
 
     def post(self, request, *args, **kwargs):
-        venn_form_class = make_venn_from(self.db)
-        self.form = venn_form_class(request.POST)
+        self.form = self.form_class(request.POST)
         if not self.form.is_valid():
-            self.form = venn_form_class()
+            self.form = self.form_class()
             return render(request, 'chlamdb/pan_genome.html',
                           self.get_context(**errors["invalid_form"],
                                            form=self.form))
@@ -1521,15 +1542,20 @@ def alignment(request, input_fasta):
 
 class PlotHeatmap(ComparisonViewMixin, View):
 
+    _metadata_cls = HeatmapMetadata
+
+    @property
+    def form_class(self):
+        return make_venn_from(self.db, label=self.object_name_plural,
+                              action=f"/plot_heatmap/{self.object_type}")
+
     def get(self, request, *args, **kwargs):
-        venn_form_class = make_venn_from(self.db)
-        self.form = venn_form_class()
+        self.form = self.form_class()
         return render(request, 'chlamdb/plot_heatmap.html',
                       self.get_context(form=self.form))
 
     def post(self, request, *args, **kwargs):
-        venn_form_class = make_venn_from(self.db)
-        self.form = venn_form_class(request.POST)
+        self.form = self.form_class(request.POST)
         if not self.form.is_valid():
             return render(request, 'chlamdb/plot_heatmap.html',
                           self.get_context(form=self.form,

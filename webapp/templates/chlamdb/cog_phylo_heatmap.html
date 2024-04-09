@@ -12,25 +12,12 @@
         <div class="row">
             <div id="wrapper">
                 <div id="page-content-wrapper">
+
+                    {% include "chlamdb/comparison_header.html" %}
+
                     <div class="row">
                         <div class="col-lg-12">
-                            {% include "chlamdb/menu.html" %}
-                            {% if freq == "True" %}
-                                {% include "chlamdb/extract_nav_tabs_template.html" with active_tab="cat_freq" %}
-                            {% else %}
-                                {% include "chlamdb/extract_nav_tabs_template.html" with active_tab="cat_count" %}
-                            {% endif %}
-                        
 
-                            <br>
-                            <p class="page-title"><b> {% if freq == "False"%}
-                                Heatmap of genes identifed in each COG category
-                                {% elif freq == "True" %}
-                                Heatmap of frequency of genes identifed in each COG category
-                                {% endif %}
-                            </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#additional-plots-for-kegg-orthologs-and-cluster-of-orthologous-groups-cogs" id="show-option" target="_blank"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
-          
-                           
                               <div class="panel panel-success">
                                 <div class="panel-heading" style="width:100%">
                                   <h5 class="panel-title">Help to interpret the results

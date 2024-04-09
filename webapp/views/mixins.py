@@ -100,9 +100,16 @@ class BaseViewMixin():
                 for view_metadata in analysis_views_metadata
                 if view_metadata.available_for(self.object_type)]
 
+    @property
+    def metadata(self):
+        if self._metadata_cls:
+            return self._metadata_cls(self.object_type, self.object_name_plural)
+
     def get_context(self, **kwargs):
         context = {
             "page_title": self.page_title(),
+            "description": getattr(self.metadata, "description", ""),
+            "tab_name": getattr(self.metadata, "name", ""),
             "object_type": self.object_type,
             "object_name": self.object_name_plural,
             "object_name_plural": self.object_name_plural,
@@ -412,4 +419,6 @@ class ComparisonViewMixin():
     def dispatch(self, request, comp_type, *args, **kwargs):
         self.object_type = comp_type
         self.mixin = self.type2mixin[self.object_type]()
+        # Fix the metadata property
+        self.mixin._metadata_cls = getattr(self, "_metadata_cls", None)
         return super(ComparisonViewMixin, self).dispatch(request, *args, **kwargs)

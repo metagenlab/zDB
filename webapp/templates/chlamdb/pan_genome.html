@@ -12,30 +12,8 @@
   <div class="row">
     <div id="wrapper">
       <div id="page-content-wrapper">
-        <div class="row">
-          <div class="col-lg-12">
-            {% include "chlamdb/menu.html" %}
-            {% include "chlamdb/extract_nav_tabs_template.html" with active_tab="pan_genome" %}
-            <br>
-            <p class="page-title">
-              <b>
-                Accumulation/rarefaction plot of {{object_name_plural}}
-              </b>
-              <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#comparisons" id="show-option" target="_blank" >
-                <i class="fab fa-info-circle " style="size: 5em;" ></i>
-              </a>
-            </p>
-            {% include "chlamdb/error.html" %}
+        {% include "chlamdb/comparison_header.html" %}
 
-            <form action='{% url "pan_genome" object_type %}' method="post">
-              {% csrf_token %}
-              {{ form.as_p }}
-              <input type="submit" value="Submit" />
-            </form>
-
-
-          </div>
-        </div>
         {% if envoi %}
           <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em">
             <div class="panel panel-success" style="margin: 1em;" >

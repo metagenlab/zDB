@@ -32,6 +32,8 @@ class GWASBaseView(View):
         "fq*ep": "fq*ep",
     }
 
+    _metadata_cls = GwasMetadata
+
     @property
     def view_name(self):
         return f"gwas_{self.object_type}"
@@ -58,14 +60,8 @@ class GWASBaseView(View):
                       asset_path=getattr(self, "tree_path", None))
             ]
 
-    def get_context(self, **kwargs):
-        context = super(GWASBaseView, self).get_context(**kwargs)
-        context["description"] = self.metadata.description
-        return context
-
     def dispatch(self, request, *args, **kwargs):
         self.form_class = make_gwas_form(self.db)
-        self.metadata = GwasMetadata(self.object_type, self.object_name_plural)
         return super(GWASBaseView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):

@@ -5,6 +5,7 @@ from chlamdb.forms import make_extract_form
 from django.shortcuts import render
 from django.views import View
 
+from views.analysis_view_metadata import ExtractionMetadata
 from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
@@ -27,6 +28,8 @@ class ExtractHitsBaseView(View):
 
     _table_help_complement = ""
     _col_descriptions = {}
+
+    _metadata_cls = ExtractionMetadata
 
     @property
     def table_cols_description(self):
