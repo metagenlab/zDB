@@ -525,7 +525,10 @@ process blast_vfdb {
 
   n = seq.name
   """
-  blastp -db $vf_db/vfdb.fasta -query ${n} -outfmt 6 -evalue ${params.vf_evalue} -num_threads ${task.cpus} > ${n}.tab
+  blastp -db $vf_db/vfdb.fasta -query ${n} \
+  -outfmt "6 qaccver saccver pident length evalue bitscore qcovs" \
+  -evalue ${params.vf_evalue} -qcov_hsp_perc ${params.vf_coverage} \
+  -max_hsps 1 -num_threads ${task.cpus} > ${n}.tab
   """
 }
 
@@ -831,6 +834,7 @@ process load_vfdb_hits_into_db {
         path db
 
     script:
+    min_seqid = params.vf_seqid
     """
         #!/usr/bin/env python
         import setup_chlamdb
@@ -838,7 +842,7 @@ process load_vfdb_hits_into_db {
         kwargs = ${gen_python_args()}
         blast_results = "$blast_results".split()
 
-        setup_chlamdb.load_vfdb_hits(kwargs, blast_results, "$db", "$vf_db_fasta", "$vf_db_defs")
+        setup_chlamdb.load_vfdb_hits(kwargs, blast_results, "$db", "$vf_db_fasta", "$vf_db_defs", float("$min_seqid"))
     """
 }
 

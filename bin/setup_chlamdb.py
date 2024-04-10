@@ -630,25 +630,31 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db
     db.commit()
 
 
-def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs):
+def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs, min_seqid):
     db = DB.load_db(db_name, params)
     included_vf_genes = set()
     db.create_vf_tables()
 
-    # Note: this is not really scalable to x genomes, as
-    # it necessitates to keep the prot id in memory
-    # may need to process the blast results in batch instead (slower but
-    # spares memory).
     for blast_file in blast_results:
         data = []
-        with open(blast_file, "r") as blast_fh:
-            for line in blast_fh:
-                crc, gene_id, perid, leng, n_mis, n_gap, qs, qe, ss, se, e, score = line.split()
-                hsh = simplify_hash(crc)
-                vf_gene_id, _ = parse_vf_gene_id(gene_id)
-                included_vf_genes.add(vf_gene_id)
-                data.append((hsh, vf_gene_id, float(e), int(float(score)),
-                             int(float(perid)), int(n_gap), int(leng)))
+        hits = pd.read_csv(
+            blast_file, sep="\t", header=None,
+            names=["crc", "gene_id", "seqid", "leng", "evalue", "score", "qcov"])
+
+        # filter out hits with seqid too low
+        hits = hits[hits["seqid"] >= min_seqid]
+        # Select only the best hits: using pandas clearly is an overkill here
+        hits = hits.sort_values(
+            ["evalue", "seqid", "qcov"],
+            ascending=[True, False, False]).drop_duplicates("crc")
+
+        for index, row in hits.iterrows():
+            hsh = simplify_hash(row.crc)
+            vf_gene_id, _ = parse_vf_gene_id(row.gene_id)
+            included_vf_genes.add(vf_gene_id)
+            data.append((hsh, vf_gene_id, row.evalue, int(row.score),
+                         row.seqid, row.leng, row.qcov))
+
         db.load_vf_hits(data)
 
     # Definitions are constructed from two data sources.
@@ -799,40 +805,40 @@ def setup_chlamdb_search_index(params, db_name, index_name):
                 og = format_og(data.orthogroup)
 
             organism = genomes.loc[taxid].description
-            search_bar.GeneEntry.add_to_index(
+            search_bar.GeneEntry().add_to_index(
                 index, locus_tag, gene, product, organism, og)
 
     if has_cog:
         cog_data = db.get_cog_summaries(cog_ids=None, only_cog_desc=True)
         for cog, (func, descr) in cog_data.items():
-            search_bar.CogEntry.add_to_index(index, cog, descr)
+            search_bar.CogEntry().add_to_index(index, cog, descr)
 
     if has_ko:
         ko_data = db.get_ko_desc(ko_ids=None)
         for ko, descr in ko_data.items():
-            search_bar.KoEntry.add_to_index(index, ko, descr)
+            search_bar.KoEntry().add_to_index(index, ko, descr)
 
         mod_data = db.get_modules_info(ids=None, search_on=None)
         for mod_id, mod_desc, _, _, _ in mod_data:
-            search_bar.ModuleEntry.add_to_index(index, mod_id, mod_desc)
+            search_bar.ModuleEntry().add_to_index(index, mod_id, mod_desc)
 
         pat_data = db.get_pathways()
         for pat_id, path_desc in pat_data:
-            search_bar.PathwayEntry.add_to_index(index, pat_id, path_desc)
+            search_bar.PathwayEntry().add_to_index(index, pat_id, path_desc)
 
     if has_pfam:
         pfam_data = db.get_pfam_def(pfam_ids=None)
         for pfam, data in pfam_data.iterrows():
-            search_bar.PfamEntry.add_to_index(index, pfam, data["def"])
+            search_bar.PfamEntry().add_to_index(index, pfam, data["def"])
 
     if has_amr:
         amr_data = db.get_amr_descriptions()
         for amr, data in amr_data.iterrows():
-            search_bar.AmrEntry.add_to_index(index, data["gene"], data["seq_name"])
+            search_bar.AmrEntry().add_to_index(index, data["gene"], data["seq_name"])
 
     if has_vf:
         vf_data = db.vf.get_hit_descriptions(hit_ids=None)
         for vf, data in vf_data.iterrows():
-            search_bar.VfEntry.add_to_index(index, data["vf_gene_id"], data["prot_name"])
+            search_bar.VfEntry().add_to_index(index, data["vf_gene_id"], data["prot_name"])
 
     index.done_adding()
