@@ -305,8 +305,8 @@ class DB:
     def create_vf_tables(self):
         query = (
             "CREATE TABLE vf_hits ("
-            " hsh INT, vf_gene_id INT, evalue INT, score INT,"
-            " perc_id INT, gaps INT, leng INT"
+            " hsh INT, vf_gene_id INT, evalue DOUBLE, score INT,"
+            " perc_id FLOAT, leng INT, coverage INT"
             ");"
         )
         self.server.adaptor.execute(query,)

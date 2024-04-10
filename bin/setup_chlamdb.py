@@ -630,25 +630,31 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db
     db.commit()
 
 
-def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs):
+def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs, min_seqid):
     db = DB.load_db(db_name, params)
     included_vf_genes = set()
     db.create_vf_tables()
 
-    # Note: this is not really scalable to x genomes, as
-    # it necessitates to keep the prot id in memory
-    # may need to process the blast results in batch instead (slower but
-    # spares memory).
     for blast_file in blast_results:
         data = []
-        with open(blast_file, "r") as blast_fh:
-            for line in blast_fh:
-                crc, gene_id, perid, leng, n_mis, n_gap, qs, qe, ss, se, e, score = line.split()
-                hsh = simplify_hash(crc)
-                vf_gene_id, _ = parse_vf_gene_id(gene_id)
-                included_vf_genes.add(vf_gene_id)
-                data.append((hsh, vf_gene_id, float(e), int(float(score)),
-                             int(float(perid)), int(n_gap), int(leng)))
+        hits = pd.read_csv(
+            blast_file, sep="\t", header=None,
+            names=["crc", "gene_id", "seqid", "leng", "evalue", "score", "qcov"])
+
+        # filter out hits with seqid too low
+        hits = hits[hits["seqid"] >= min_seqid]
+        # Select only the best hits: using pandas clearly is an overkill here
+        hits = hits.sort_values(
+            ["evalue", "seqid", "qcov"],
+            ascending=[True, False, False]).drop_duplicates("crc")
+
+        for index, row in hits.iterrows():
+            hsh = simplify_hash(row.crc)
+            vf_gene_id, _ = parse_vf_gene_id(row.gene_id)
+            included_vf_genes.add(vf_gene_id)
+            data.append((hsh, vf_gene_id, row.evalue, int(row.score),
+                         row.seqid, row.leng, row.qcov))
+
         db.load_vf_hits(data)
 
     # Definitions are constructed from two data sources.
