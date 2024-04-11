@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views import View
 
+from views.analysis_view_metadata import EntryListMetadata
 from views.mixins import (AmrViewMixin, BaseViewMixin, CogViewMixin,
                           KoViewMixin, PfamViewMixin, VfViewMixin)
 
@@ -8,6 +9,7 @@ from views.mixins import (AmrViewMixin, BaseViewMixin, CogViewMixin,
 class EntryListViewBase(View, BaseViewMixin):
 
     _specific_colname_to_header_mapping = {"freq": "Frequency (n genomes)"}
+    _metadata_cls = EntryListMetadata
 
     def get(self, request):
         # retrieve taxid list

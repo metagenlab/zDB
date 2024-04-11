@@ -5,9 +5,9 @@
 
 <head>
   
-    {% load static %}
-    {% load custom_tags %}
-    {% include "chlamdb/header.html" %}
+  {% load static %}
+  {% load custom_tags %}
+  {% include "chlamdb/header.html" %}
     
 </head>
 
@@ -148,16 +148,18 @@
                           <span><i class="fa fa-object-ungroup"></i></span>
                         </div>
                         <h3 class="title">Orthology</h3>
-                        <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}{% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}{% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.</p>
+                        <p class="description"> Get a list of Orthogroups shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.</p>
                         <br>
                         <ul style="padding-left:10px;">
-                          <li style="float:left; margin-right:25px;">
-                            <button type="button_analyses" class="fill" >
-                              <a class="link_boxes" href="{% url 'index_comp' 'orthogroup' %}">
-                                <span class="link"></span> Orthogroups
-                              </a>
-                            </button>
-                          </li>
+                          {% for obj_type in metadata.get_orthology_metadata %}
+                            <li style="float:left; margin-right:25px;">
+                              <button type="button_analyses" class="fill" >
+                                <a class="link_boxes"  href="{{obj_type.index_comp_url}}">
+                                  <span class="link"></span>{{obj_type.object_name_plural}}
+                                </a>
+                              </button>
+                            </li>
+                          {% endfor %}
                         </ul>
                       </div>
                     </div>
@@ -167,54 +169,22 @@
                           <span><i class="fa fa-asterisk"></i></span>
                         </div>
                         <h3 class="title">Annotations</h3>
-                        <p class="description"> Get a list of Orthogroups{% if optional2status|keyvalue:"COG" == 1 %}, COGs{% endif %}{% if optional2status|keyvalue:"KEGG" == 1 %}, Kegg Orthologs{% endif %}{% if optional2status|keyvalue:"pfam" == 1 %}, Pfam domains{% endif %}{% if optional2status|keyvalue:"AMR" == 1 %}, Antimicrobial Resistance{% endif %}{% if optional2status|keyvalue:"BLAST_vfdb" == 1 %}, Virulence Factors{% endif %} shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.</p>
+                        <p class="description"> Get a list of
+                          {% for obj_type in metadata.get_annotations_metadata %}
+                            {{obj_type.object_name_plural}}{% if not forloop.last%},{% endif%}
+                          {% endfor %}
+                          shared by selected genomes and absent in others and display the result in a Venn diagram for an easier understanding or visualize their presence or absence in heatmaps. Identify orthogroups presenting more than one homolog in genomes of interest and draw barcharts to visualize the distribution of selected categories among the genomes.</p>
                         <br>
                         <ul style="padding-left:10px;">
-                          {% if optional2status|keyvalue:"COG" == 1 %}
+                          {% for obj_type in metadata.get_annotations_metadata %}
                             <li style="float:left; margin-right:25px;">
                               <button type="button_analyses" class="fill" >
-                                <a class="link_boxes"  href="{% url 'index_comp' 'cog' %}">
-                                  <span class="link"></span>COGs
+                                <a class="link_boxes"  href="{{obj_type.index_comp_url}}">
+                                  <span class="link"></span>{{obj_type.object_name_plural}}
                                 </a>
                               </button>
                             </li>
-                          {% endif %}
-                          {% if optional2status|keyvalue:"KEGG" %}
-                            <li style="float:left; margin-right:25px;">
-                              <button type="button_analyses" class="fill" >
-                                <a class="link_boxes" href="{% url 'index_comp' 'ko' %}">
-                                  <span class="link"></span>Kegg Orthologs
-                                </a>
-                              </button>
-                            </li>
-                          {% endif %}
-                          {% if optional2status|keyvalue:"pfam" == 1 %}
-                            <li style="float:left; margin-right:25px;">
-                              <button type="button_analyses" class="fill" >
-                                <a  class="link_boxes"  href="{% url 'index_comp' 'pfam' %}">
-                                  <span class="link"></span>Pfam domains
-                                </a>
-                              </button>
-                            </li>
-                          {% endif %}
-                          {% if optional2status|keyvalue:"AMR" == 1 %}
-                            <li style="float:left; margin-right:25px;">
-                              <button type="button_analyses" class="fill" >
-                                <a  class="link_boxes"  href="{% url 'index_comp' 'amr' %}">
-                                  <span class="link"></span>Antimicrobial Resistance
-                                </a>
-                              </button>
-                            </li>
-                          {% endif %}
-                          {% if optional2status|keyvalue:"BLAST_vfdb" == 1 %}
-                            <li style="float:left; margin-right:25px;">
-                              <button type="button_analyses" class="fill" >
-                                <a  class="link_boxes"  href="{% url 'index_comp' 'vf' %}">
-                                  <span class="link"></span>Virulence Factor
-                                </a>
-                              </button>
-                            </li>
-                          {% endif %}
+                          {% endfor %}
                         </ul>
                       </div>
                     </div>

@@ -13,12 +13,12 @@ from lib.ete_phylo import Column, EteTree, SimpleColorColumn
 
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           PfamViewMixin, VfViewMixin)
+from views.object_type_metadata import my_locals
 from views.utils import (DataTableConfig, format_gene, format_locus,
                          format_orthogroup, format_pfam,
                          format_refseqid_to_ncbi, format_swissprot_entry,
                          format_taxid_to_ncbi, genomic_region_df_to_js,
-                         locusx_genomic_region, make_div, my_locals,
-                         optional2status)
+                         locusx_genomic_region, make_div, optional2status)
 
 
 def tab_general(db, seqid):

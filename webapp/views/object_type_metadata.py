@@ -1,5 +1,5 @@
 from views.utils import (format_amr, format_cog, format_ko, format_orthogroup,
-                         format_pfam, optional2status)
+                         format_pfam, missing_mandatory, optional2status)
 
 
 class BaseObjectMetadata():
@@ -16,6 +16,10 @@ class BaseObjectMetadata():
     @property
     def object_name_singular_or_plural(self):
         return f"{self.object_name}(s)"
+
+    @property
+    def index_comp_url(self):
+        return "/index_comp/{}".format(self.object_type)
 
 
 class AmrMetadata(BaseObjectMetadata):
@@ -99,6 +103,10 @@ class ModuleMetadata(BaseObjectMetadata):
             return f"<a href=/KEGG_module_map/{entry}>{entry}</a>"
         return entry
 
+    @property
+    def index_comp_url(self):
+        return None
+
 
 class PathwayMetadata(BaseObjectMetadata):
 
@@ -113,8 +121,37 @@ class PathwayMetadata(BaseObjectMetadata):
             return f"<a href=/KEGG_mapp_ko/{entry}>{entry}</a>"
         return entry
 
+    @property
+    def index_comp_url(self):
+        return None
 
-metadata_classes = [AmrMetadata, CogMetadata, KoMetadata, PfamMetadata,
-                    OrthogroupMetadata, VfMetadata, ModuleMetadata,
-                    PathwayMetadata]
-object_type_to_metadata = {cls.object_type: cls() for cls in metadata_classes}
+
+class MetadataGetter():
+
+    metadata_classes = [AmrMetadata, CogMetadata, KoMetadata, PfamMetadata,
+                        OrthogroupMetadata, VfMetadata, ModuleMetadata,
+                        PathwayMetadata]
+
+    _annotations = ["cog", "pfam", "ko", "amr", "vf"]
+    _orthology = ["orthogroup"]
+
+    def __init__(self):
+        self.metadata_instances = [cls() for cls in self.metadata_classes]
+        self.object_type_to_metadata = {obj.object_type: obj
+                                        for obj in self.metadata_instances}
+
+    def get_annotations_metadata(self):
+        return (self.object_type_to_metadata[object_type]
+                for object_type in self._annotations
+                if self.object_type_to_metadata[object_type].is_enabled)
+
+    def get_orthology_metadata(self):
+        return (self.object_type_to_metadata[object_type]
+                for object_type in self._orthology)
+
+
+def my_locals(local_dico):
+    local_dico["optional2status"] = optional2status
+    local_dico["missing_mandatory"] = missing_mandatory
+    local_dico["metadata"] = MetadataGetter()
+    return local_dico

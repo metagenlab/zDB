@@ -152,10 +152,10 @@ def make_metabo_from(db, add_box=False, type_choices=None):
 
             self.helper.layout = Layout(
 
-                Fieldset("Compare genomes",
+                Fieldset("",
                          Column(
                              *rows,
-                             Submit('submit', 'Submit'),
+                             Submit('submit', 'Submit', style="margin-top:15px"),
                              css_class='form-group col-lg-12 col-md-12 col-sm-12'),
                          )
             )
@@ -174,7 +174,7 @@ def make_metabo_from(db, add_box=False, type_choices=None):
 
 
 def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
-                   action="venn_orthogroup"):
+                   action=""):
 
     accession_choices, rev_index = get_accessions(db, plasmid=plasmid)
 
@@ -182,10 +182,16 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
         attrs = {'size': '1', "class": "selectpicker",
                  "data-live-search": "true",
                  "data-actions-box": "true"}
+        help_text = ""
         if limit is not None:
             attrs["data-max-options"] = f"{limit}"
-        targets = forms.MultipleChoiceField(choices=accession_choices,
-                                            widget=forms.SelectMultiple(attrs=attrs), required=True)
+            help_text = f"Select a maximum of {limit} genomes"
+
+        targets = forms.MultipleChoiceField(
+            choices=accession_choices,
+            widget=forms.SelectMultiple(attrs=attrs),
+            help_text=help_text,
+            required=True)
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)

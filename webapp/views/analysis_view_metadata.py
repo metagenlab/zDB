@@ -93,7 +93,7 @@ class CategoriesFreqHeatmapMetadata(AnalysisViewMetadata):
     name = "cat_freq"
     _types_available_for = ['cog']
     title = "Categories freq. heatmap"
-    _description = "Heatmap of frequencies of genes identifed in each {} category"
+    _description = "Heatmap of frequencies of genes identifed in each COG category"
     _url = "/{}_phylo_heatmap/True/"
     icon = "/img/icons8-heat-map-100.phylo.svg"
 
@@ -103,7 +103,7 @@ class CategoriesCountHeatmapMetadata(AnalysisViewMetadata):
     name = "cat_count"
     _types_available_for = ['cog']
     title = "Categories count heatmap"
-    _description = "Heatmap of counts of genes identifed in each {} category"
+    _description = "Heatmap of counts of genes identifed in each COG category"
     _url = "/{}_phylo_heatmap/False/"
     icon = "/img/icons8-heat-map-100.phylo.svg"
 

@@ -5,12 +5,9 @@ from lib.db_utils import DB
 from views.analysis_view_metadata import analysis_views_metadata
 from views.object_type_metadata import (AmrMetadata, CogMetadata, KoMetadata,
                                         OrthogroupMetadata, PfamMetadata,
-                                        VfMetadata)
-from views.utils import (format_amr, format_cog, format_hmm_url, format_ko,
-                         format_ko_module, format_lst_to_html,
-                         format_orthogroup, format_pfam,
-                         format_refseqid_to_ncbi, my_locals, optional2status,
-                         page2title, safe_replace)
+                                        VfMetadata, my_locals)
+from views.utils import (format_hmm_url, format_ko_module, format_lst_to_html,
+                         format_refseqid_to_ncbi, page2title, safe_replace)
 
 
 class Transform():
@@ -100,9 +97,16 @@ class BaseViewMixin():
                 for view_metadata in analysis_views_metadata
                 if view_metadata.available_for(self.object_type)]
 
+    @property
+    def metadata(self):
+        if getattr(self, "_metadata_cls", None):
+            return self._metadata_cls(self.object_type, self.object_name_plural)
+
     def get_context(self, **kwargs):
         context = {
             "page_title": self.page_title(),
+            "description": getattr(self.metadata, "description", ""),
+            "tab_name": getattr(self.metadata, "name", ""),
             "object_type": self.object_type,
             "object_name": self.object_name_plural,
             "object_name_plural": self.object_name_plural,
@@ -412,4 +416,6 @@ class ComparisonViewMixin():
     def dispatch(self, request, comp_type, *args, **kwargs):
         self.object_type = comp_type
         self.mixin = self.type2mixin[self.object_type]()
+        # Fix the metadata property
+        self.mixin._metadata_cls = getattr(self, "_metadata_cls", None)
         return super(ComparisonViewMixin, self).dispatch(request, *args, **kwargs)

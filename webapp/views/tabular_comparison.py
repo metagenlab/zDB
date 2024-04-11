@@ -2,6 +2,7 @@ from chlamdb.forms import make_metabo_from
 from django.shortcuts import render
 from django.views import View
 
+from views.analysis_view_metadata import TabularComparisonMetadata
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
 from views.utils import (format_cog, format_ko, format_lst_to_html,
@@ -13,6 +14,7 @@ class TabularComparisonViewBase(View):
     template = 'chlamdb/tabular_comparison.html'
     hist_colour_index_shift = 0
     table_headers = None
+    _metadata_cls = TabularComparisonMetadata
 
     def dispatch(self, request, *args, **kwargs):
         self.comp_metabo_form = self.make_metabo_from()

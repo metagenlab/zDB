@@ -3,6 +3,7 @@ from chlamdb.forms import make_venn_from
 from django.shortcuts import render
 from django.views import View
 
+from views.analysis_view_metadata import VennMetadata
 from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
@@ -15,7 +16,7 @@ def escape_quotes(unsafe):
 class VennBaseView(View):
 
     template = 'chlamdb/venn_generic.html'
-
+    _metadata_cls = VennMetadata
     _table_data_descr = "The table contains a list of the {0}, their {1}."
 
     @property

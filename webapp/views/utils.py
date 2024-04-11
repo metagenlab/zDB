@@ -59,12 +59,6 @@ with DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
                          if mandatory and not value]
 
 
-def my_locals(local_dico):
-    local_dico["optional2status"] = optional2status
-    local_dico["missing_mandatory"] = missing_mandatory
-    return local_dico
-
-
 def to_s(f):
     return "\"" + str(f) + "\""
 

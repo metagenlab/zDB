@@ -192,8 +192,8 @@ class TestViewsContent(SimpleTestCase):
         self.assertContains(resp, '<a href="/genomes" ><b>Genomes</b></a>', html=True)
         self.assertContains(resp, '<a href="/phylogeny"><b>Phylogeny</b></a>', html=True)
         self.assertContains(resp, '<a class="link_boxes" href="/blast/"><span class="link"></span> Blast </a>', html=True)
-        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/orthogroup"><span class="link"></span>Orthogroups</a>', html=True)
-        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/cog"><span class="link"></span>COGs</a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/orthogroup"><span class="link"></span>Orthologous groups</a>', html=True)
+        self.assertContains(resp, '<a class="link_boxes" href="/index_comp/cog"><span class="link"></span>COG entries</a>', html=True)
         self.assertContains(resp, '<a class="link_boxes" href="/index_comp/ko"><span class="link"></span>Kegg Orthologs</a>', html=True)
         self.assertContains(resp, '<a class="link_boxes" href="/index_comp/pfam"><span class="link"></span>Pfam domains</a>', html=True)
         self.assertContains(resp, '<a class="link_boxes" href="/circos/"><span class="link"></span>Plot region</a>', html=True)
@@ -206,14 +206,14 @@ class TestViewsContent(SimpleTestCase):
         self.assertTemplateUsed(resp, 'chlamdb/cog_barplot.html')
         self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
         self.assertNoPlot(resp)
-        self.assertContains(resp, "Distribution of COGs within COG categories")
+        self.assertContains(resp, "Barcharts of COG entries categories in selected genomes")
 
         resp = self.client.post("/cog_barchart/", data={"targets": ["0", "1"]})
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/cog_barplot.html')
         self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
         self.assertPlot(resp)
-        self.assertContains(resp, "Distribution of COGs within COG categories")
+        self.assertContains(resp, "Barcharts of COG entries categories in selected genomes")
 
     def test_blast(self):
         resp = self.client.get("/blast/")
