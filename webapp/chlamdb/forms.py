@@ -527,7 +527,9 @@ class CustomPlotsForm(forms.Form):
     entries_split_re = re.compile("[, \n]")
 
     help_text = """Entry IDs can be COG, KO, Pfam, VF, AMR or orthogroups.
-    IDs should be coma separated."""
+    IDs should be coma separated.
+    You can add custom labels by specifying them together with the entry ID
+    separated by a colon (i.e. entryID:label)."""
 
     entries = forms.CharField(
         widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}),
@@ -552,5 +554,12 @@ class CustomPlotsForm(forms.Form):
         )
 
     def get_entries(self):
-        entries = self.entries_split_re.split(self.cleaned_data["entries"])
-        return filter(None, entries)
+        raw_entries = self.entries_split_re.split(self.cleaned_data["entries"])
+        entries = []
+        entry2label = {}
+        for entry in filter(None, raw_entries):
+            if ":" in entry:
+                entry, label = entry.split(":", 1)
+                entry2label[entry] = label
+            entries.append(entry)
+        return entries, entry2label

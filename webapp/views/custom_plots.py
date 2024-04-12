@@ -61,7 +61,7 @@ class CusomPlotsView(View):
             return render(request, self.template,
                           self.get_context(**errors["invalid_form"]))
 
-        entries = self.form.get_entries()
+        entries, entry2label = self.form.get_entries()
 
         # We make 1 query for each entry, although we could of course make
         # a single query for each object type, but I don't expect any
@@ -71,10 +71,9 @@ class CusomPlotsView(View):
         counts = []
         for entry in entries:
             object_type, entry_id = entry_id_identifier.id_to_object_type(entry)
-            print(entry, entry_id)
             mixin = ComparisonViewMixin.type2mixin[object_type]
             hits = mixin().get_hit_counts([entry_id], search_on=object_type)
-            hits = hits.rename(str).rename({entry_id: entry})
+            hits = hits.rename({entry_id: entry2label.get(entry, entry)})
             counts.append(hits)
 
         genome_descriptions = self.db.get_genomes_description()

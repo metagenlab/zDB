@@ -294,19 +294,19 @@ class EntryIdIdentifier():
     def id_to_object_type(self, identifier):
         match = self.og_re.match(identifier)
         if match:
-            return "orthogroup", match.groups()[0]
+            return "orthogroup", int(match.groups()[0])
 
         match = self.cog_re.match(identifier)
         if match:
-            return "cog", match.groups()[0]
+            return "cog", int(match.groups()[0])
 
         match = self.pfam_re.match(identifier)
         if match:
-            return "pfam", match.groups()[0]
+            return "pfam", int(match.groups()[0])
 
         match = self.ko_re.match(identifier)
         if match:
-            return "ko", match.groups()[0]
+            return "ko", int(match.groups()[0])
 
         match = self.vf_re.match(identifier)
         if match:
