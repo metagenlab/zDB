@@ -524,8 +524,6 @@ def make_gwas_form(biodb):
 
 class CustomPlotsForm(forms.Form):
 
-    entries_split_re = re.compile("[, \n]")
-
     help_text = """Entry IDs can be COG, KO, Pfam, VF, AMR or orthogroups.
     IDs should be coma separated.
     You can add custom labels by specifying them together with the entry ID
@@ -554,10 +552,11 @@ class CustomPlotsForm(forms.Form):
         )
 
     def get_entries(self):
-        raw_entries = self.entries_split_re.split(self.cleaned_data["entries"])
+        raw_entries = self.cleaned_data["entries"].split(",")
         entries = []
         entry2label = {}
-        for entry in filter(None, raw_entries):
+        for entry in raw_entries:
+            entry = entry.strip()
             if ":" in entry:
                 entry, label = entry.split(":", 1)
                 entry2label[entry] = label
