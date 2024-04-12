@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
 from django import forms
@@ -518,3 +520,41 @@ def make_gwas_form(biodb):
             super(GwasForm, self).__init__(*args, **kwargs)
 
     return GwasForm
+
+
+def make_custom_plots_form(db):
+
+    class CustomPlotsForm(forms.Form):
+
+        entries_split_re = re.compile("[, \n]")
+
+        help_text = """Entry IDs can be COG, KO, Pfam, VF, AMR or orthogroups.
+        IDs should be coma separated."""
+
+        entries = forms.CharField(
+            widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}),
+            required=True, label="Entry IDs", help_text=help_text)
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+
+            self.helper.form_method = 'post'
+            self.helper.layout = Layout(Fieldset(
+                "",
+                Column(
+                    Row(Column(
+                            "entries",
+                            css_class='form-group col-lg-6 col-md-6 col-sm-12'),
+                        ),
+                    Row(Submit('submit', 'Make plot'),
+                        css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                    css_class="col-lg-8 col-md-8 col-sm-12")
+                )
+            )
+
+        def get_entries(self):
+            entries = self.entries_split_re.split(self.cleaned_data["entries"])
+            return filter(None, entries)
+
+    return CustomPlotsForm
