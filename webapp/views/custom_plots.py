@@ -15,7 +15,8 @@ from views.utils import EntryIdIdentifier, ResultTab, TabularResultTab
 class CusomPlotsView(View):
 
     title = "Custom plots"
-    description = "Produce phylogenetic trees including annotations of your choice."
+    description = "Produce phylogenetic trees and tables including "\
+                  "annotations of your choice."
     template = 'chlamdb/custom_plots.html'
     _db = None
 
