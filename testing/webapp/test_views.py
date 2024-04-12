@@ -32,6 +32,7 @@ urls = [
     '/cog_phylo_heatmap/False',
     '/cog_phylo_heatmap/True',
     '/cog_venn_subset/L?h=1&h=2',
+    '/custom_plots/',
     '/entry_list_amr',
     '/entry_list_cog',
     '/entry_list_ko',
@@ -243,6 +244,26 @@ class TestViewsContent(SimpleTestCase):
         self.assertContains(resp, "Help to interpret the results")
         self.assertContains(resp, 'id="phylo_distrib"')
         self.assertContains(resp, 'id="blast_details"')
+
+    def test_custom_plots(self):
+        resp = self.client.get("/custom_plots/")
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/custom_plots.html')
+        self.assertTitle(resp, "Custom plots")
+        self.assertNotIn("show_results", resp.context.keys())
+        self.assertNotContains(resp, '<a href=#phylogenetic_tree data-toggle="tab">')
+        self.assertNotContains(resp, '<a href=#gwas_table data-toggle="tab">')
+
+        data = {
+            "entries": "COG0775,K01241,PF10423:custom label, VFG048797,ybtP,group_85",
+        }
+        resp = self.client.post("/custom_plots/", data=data)
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/custom_plots.html')
+        self.assertTitle(resp, "Custom plots")
+        self.assertIn("show_results", resp.context.keys())
+        self.assertContains(resp, '<a href=#phylogenetic_tree data-toggle="tab">')
+        self.assertContains(resp, '<a href=#gwas_table data-toggle="tab">')
 
 
 class ComparisonViewsTestMixin():
