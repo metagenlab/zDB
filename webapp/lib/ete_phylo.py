@@ -55,6 +55,10 @@ class EteTree:
         tss.guiding_lines_color = "gray"
         tss.show_branch_support = False
         tss.show_leaf_name = False
+        tss.margin_top = 5
+        tss.margin_left = 5
+        tss.margin_left = 5
+        tss.margin_right = 5
         return tss
 
     # May be a good idea to be able to give custom parameters to the node names
@@ -71,7 +75,7 @@ class EteTree:
                 fgcolor = "red"
         label = self.leaves_name.get(idx, self.default_val)
         t = TextFace(label, fgcolor = fgcolor, fsize = 7, fstyle = "italic")
-        t.margin_right=10
+        t.margin_right=13
         return t
 
     def rename_leaves(self, hsh_names, default_val="-", leaf_name_type=int, highlight_leaves=None):
@@ -115,7 +119,7 @@ class Column:
         face.hz_align = 1
         face.vt_align = 1
         face.fsize = 7
-
+        face.margin_right = 10
         # Put after the default values to erase any default value
         # in favor of a new one
         if not self.header_params is None:
