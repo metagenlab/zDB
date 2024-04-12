@@ -130,7 +130,11 @@ class TestViewsAreHealthy(SimpleTestCase):
 
     def test_no_broken_views(self):
         for url in urls:
-            resp = self.client.get(url)
+            try:
+                resp = self.client.get(url)
+            except Exception as exc:
+                print(f"{url} is broken")
+                raise(exc)
             self.assertEqual(200, resp.status_code, f"{url} is broken")
 
     def test_all_urlpatterns_are_tested(self):
