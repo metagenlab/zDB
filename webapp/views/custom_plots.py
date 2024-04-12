@@ -1,4 +1,4 @@
-from chlamdb.forms import make_custom_plots_form
+from chlamdb.forms import CustomPlotsForm
 from django.conf import settings
 from django.shortcuts import render
 from django.views import View
@@ -18,6 +18,8 @@ class CusomPlotsView(View):
     description = "Produce phylogenetic trees including annotations of your choice."
     template = 'chlamdb/custom_plots.html'
     _db = None
+
+    form_class = CustomPlotsForm
 
     @property
     def view_name(self):
@@ -51,10 +53,6 @@ class CusomPlotsView(View):
         }
         context.update(kwargs)
         return my_locals(context)
-
-    @property
-    def form_class(self):
-        return make_custom_plots_form(self.db)
 
     def get(self, request, *args, **kwargs):
         self.form = self.form_class()
