@@ -102,7 +102,7 @@ class CusomPlotsView(View):
                 col = SimpleColorColumn.fromSeries(count, header=label, color_gradient=True)
                 e_tree.add_column(col)
         self.tree_path = "/temp/custom_tree.svg"
-        path = settings.BASE_DIR + "/assets/" + self.tree_path
+        path = settings.BASE_DIR + "/assets" + self.tree_path
         e_tree.render(path, dpi=500)
         return e_tree
 
