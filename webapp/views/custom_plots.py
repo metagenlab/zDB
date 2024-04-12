@@ -21,10 +21,6 @@ class CusomPlotsView(View):
 
     form_class = CustomPlotsForm
 
-    @property
-    def view_name(self):
-        return "custom_plots"
-
     def get_result_tabs(self, table):
         return [
             ResultTab("phylogenetic_tree", "Phylogenetic tree",
