@@ -47,9 +47,7 @@ def tab_gen_profile_tree(db, main_series, header, intersect):
     e_tree = EteTree(tree)
     e_tree.rename_leaves(ref_names)
 
-    face_params = {"color": EteTree.RED}
-    e_tree.add_column(SimpleColorColumn.fromSeries(main_series,
-                                                   header=header, face_params=face_params))
+    e_tree.add_column(SimpleColorColumn.fromSeries(main_series, header=header))
 
     for og in df_og_count:
         og_serie = df_og_count[og]
