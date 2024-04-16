@@ -2,8 +2,8 @@
 from django.urls import re_path
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
-from views import (entry_lists, fam, gwas, hits_extraction, locus,
-                   tabular_comparison, venn, views)
+from views import (custom_plots, entry_lists, fam, gwas, hits_extraction,
+                   locus, tabular_comparison, venn, views)
 
 favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
@@ -73,6 +73,7 @@ urlpatterns = [
     re_path(r'^entry_list_ko$', entry_lists.KoEntryListView.as_view(), name="entry_list_ko"),  # noqa
     re_path(r'^entry_list_cog$', entry_lists.CogEntryListView.as_view(), name="entry_list_cog"),  # noqa
     re_path(r'^entry_list_amr$', entry_lists.AmrEntryListView.as_view(), name="entry_list_amr"),  # noqa
+    re_path(r'^custom_plots/$', custom_plots.CusomPlotsView.as_view(), name="custom_plots"),
     re_path(r'^cog_venn_subset/([A-Z])$', venn.VennCogSubsetView.as_view(), name="cog_venn_subset"),  # noqa
     re_path(r'^cog_phylo_heatmap/([a-zA-Z0-9_\-]+)', views.CogPhyloHeatmap.as_view(), name="cog_phylo_heatmap"),  # noqa
     re_path(r'^cog_comparison', tabular_comparison.CogComparisonView.as_view(), name="cog_comparison"),  # noqa

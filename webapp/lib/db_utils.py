@@ -2340,7 +2340,6 @@ class DB:
                 index.insert(1, "plasmid")
             df = DB.to_pandas_frame(results, column_names)
             df = df.set_index(index).unstack(level=0, fill_value=0)
-
             if plasmids is not None:
                 return df.unstack(level=0, fill_value=0)
             else:
@@ -2529,7 +2528,6 @@ class DB:
         if plasmids is not None:
             all_ids += plasmids
         results = self.server.adaptor.execute_and_fetchall(query, all_ids)
-
         # ugly code, open for improvements
         if indexing == "taxid" or indexing == "bioentry":
             column_names = [indexing, "gene", "count"]
@@ -2545,9 +2543,10 @@ class DB:
                 return df.unstack(level=0, fill_value=0)
             else:
                 df.columns = [col for col in df["count"].columns.values]
-                for taxid in ids:
-                    if taxid not in df.columns:
-                        df[taxid] = 0
+                if search_on == "taxid":
+                    for taxid in ids:
+                        if taxid not in df.columns:
+                            df[taxid] = 0
 
         elif indexing == "seqid":
             if plasmids is not None:

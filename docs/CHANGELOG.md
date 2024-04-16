@@ -22,6 +22,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add view to produce custom plots (phylogenetic trees and table). ([#78](https://github.com/metagenlab/zDB/pull/78)) (Niklaus Johner)
 - Add AMRs and VFs to search index. ([#73](https://github.com/metagenlab/zDB/pull/73)) (Niklaus Johner)
 - Add VFs to locus and orthogroup views. ([#71](https://github.com/metagenlab/zDB/pull/71)) (Niklaus Johner)
 - Add new statistics to home view. ([#70](https://github.com/metagenlab/zDB/pull/70)) (Niklaus Johner)

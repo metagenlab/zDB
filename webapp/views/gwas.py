@@ -103,7 +103,7 @@ class GWASBaseView(View):
 
         e_tree = self.prepare_tree(phenotype, hits, results)
         self.tree_path = "/temp/gwas_tree.svg"
-        path = settings.BASE_DIR + "/assets/" + self.tree_path
+        path = settings.BASE_DIR + "/assets" + self.tree_path
         e_tree.render(path, dpi=500)
 
         context = self.get_context(
@@ -114,9 +114,6 @@ class GWASBaseView(View):
         return render(request, self.template, context)
 
     def prepare_tree(self, phenotype, hits, results):
-        # unique_og = intersect.orthogroup.unique().tolist()
-        # red_color = set(tuple(entry) for entry in intersect.to_numpy())
-        # df_og_count = db.get_og_count(list(unique_og), search_on="orthogroup").T
         ref_tree = self.db.get_reference_phylogeny()
         ref_names = self.db.get_genomes_description().description.to_dict()
 

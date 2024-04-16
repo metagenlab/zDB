@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
 from django import forms
@@ -518,3 +520,45 @@ def make_gwas_form(biodb):
             super(GwasForm, self).__init__(*args, **kwargs)
 
     return GwasForm
+
+
+class CustomPlotsForm(forms.Form):
+
+    help_text = """Entry IDs can be COG, KO, Pfam, VF, AMR or orthogroups.
+    IDs should be coma separated.
+    You can add custom labels by specifying them together with the entry ID
+    separated by a colon (i.e. entryID:label)."""
+
+    entries = forms.CharField(
+        widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}),
+        required=True, label="Entry IDs", help_text=help_text)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+
+        self.helper.form_method = 'post'
+        self.helper.layout = Layout(Fieldset(
+            "",
+            Column(
+                Row(Column(
+                        "entries",
+                        css_class='form-group col-lg-6 col-md-6 col-sm-12'),
+                    ),
+                Row(Submit('submit', 'Make plot'),
+                    css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                css_class="col-lg-8 col-md-8 col-sm-12")
+            )
+        )
+
+    def get_entries(self):
+        raw_entries = self.cleaned_data["entries"].split(",")
+        entries = []
+        entry2label = {}
+        for entry in raw_entries:
+            entry = entry.strip()
+            if ":" in entry:
+                entry, label = entry.split(":", 1)
+                entry2label[entry] = label
+            entries.append(entry)
+        return entries, entry2label
