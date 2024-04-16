@@ -45,13 +45,11 @@
                               </a>genomes
                             </li>
                           {% endif %}
-                          {% if optional2status|keyvalue:"orthogroup" == 1 %}
-                            <li class="summary_data">
-                              <a href="{% url 'index_comp' 'orthogroup' %}" >
-                                <b>{{number_ort}}  </b>
-                              </a>orthogroups
-                            </li>
-                          {% endif %}
+                          <li class="summary_data">
+                            <a href="{% url 'index_comp' 'orthogroup' %}" >
+                              <b>{{number_ort}}  </b>
+                            </a>orthogroups
+                          </li>
                           {% if optional2status|keyvalue:"COG" == 1 %}
                             <li class="summary_data">
                               <a href="{% url 'index_comp' 'cog' %}" >
@@ -69,8 +67,8 @@
                           {% if optional2status|keyvalue:"KEGG" == 1 %}
                             <li class="summary_data">
                               <a href="{% url 'index_comp' 'ko' %}" >
-                                <b>{{number_ort}}  </b>
-                              </a>orthogroups
+                                <b>{{number_ko}}  </b>
+                              </a>KOs
                             </li>
                           {% endif %}
                           {% if optional2status|keyvalue:"AMR" == 1 %}
