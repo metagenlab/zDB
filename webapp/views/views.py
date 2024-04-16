@@ -50,7 +50,7 @@ from views.object_type_metadata import MetadataGetter, my_locals
 from views.utils import (TabularResultTab, format_cog, format_gene, format_ko,
                          format_locus, format_orthogroup,
                          genomic_region_df_to_js, locusx_genomic_region,
-                         make_div, page2title, to_s)
+                         make_div, optional2status, page2title, to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -115,12 +115,19 @@ def home(request):
     number_of_files = len(hsh_files)
 
     number_ort = db.get_n_orthogroups()
-    number_swissprot = db.get_number_of_swissprot_entries()
-    number_vf = db.vf.get_number_of_entries()
-    number_amr = db.get_number_of_amr_entries()
-    number_cog = db.get_number_of_cog_entries()
-    number_ko = db.get_number_of_ko_entries()
-    number_pfam = db.get_number_of_pfam_entries()
+
+    if optional2status.get("BLAST_swissprot", False):
+        number_swissprot = db.get_number_of_swissprot_entries()
+    if optional2status.get("vf", False):
+        number_vf = db.vf.get_number_of_entries()
+    if optional2status.get("amr", False):
+        number_amr = db.get_number_of_amr_entries()
+    if optional2status.get("cog", False):
+        number_cog = db.get_number_of_cog_entries()
+    if optional2status.get("ko", False):
+        number_ko = db.get_number_of_ko_entries()
+    if optional2status.get("pfam", False):
+        number_pfam = db.get_number_of_pfam_entries()
     versions = db.get_versions_table()
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
