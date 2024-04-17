@@ -214,7 +214,7 @@ class ValueColoredColumn(Column):
         self.values = values
         self.col_func = col_func
         self.header = header
-        self.face_params = face_params,
+        self.face_params = face_params
         self.header_params = header_params
 
     def get_color(self, index, val):
