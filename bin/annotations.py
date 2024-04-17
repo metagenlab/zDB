@@ -94,14 +94,16 @@ def parse_csv(csv_file):
 
 def check_gbk(csv_file):
     """
+    This method ensures that we do not run into name conflicts in zDB.
+    For this we check that the taxid, the contig name, accession
+    and locus_tags are unique and if not we assign them new names.
+
     As BioSQL uses the organism/source entries of the records to assign
     a taxid when it is not allowed to access the ncbi online,
     we need to ensure that the same organism name is not used
     twice in the genomes to prevent bioentries from different genbank
-    files to be entered under the same taxon_id (as chlamdb uses the taxon_id
+    files to be entered under the same taxon_id (as zdb uses the taxon_id
     to differentiate between genomes).
-
-    Display an error message and stop the pipeline if this arises
     """
 
     # NOTE: biosql uses source to assign taxid. One must ensure
