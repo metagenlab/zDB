@@ -10,6 +10,10 @@ class BaseTestCase(TestCase):
     def assertItemsEqual(self, actual, expected):
         self.assertEqual(sorted(actual), sorted(expected))
 
+    @property
+    def test_dir(self):
+        return os.path.dirname(os.path.abspath(__file__))
+
 
 class BasePipelineTestCase(BaseTestCase):
 
@@ -18,8 +22,8 @@ class BasePipelineTestCase(BaseTestCase):
 
     def setUp(self):
         super(BasePipelineTestCase, self).setUp()
-        self.execution_dir = os.path.dirname(os.path.abspath(__file__))
-        self.basedir = os.path.dirname(self.execution_dir)
+        self.execution_dir = self.test_dir
+        self.basedir = os.path.dirname(os.path.dirname(self.execution_dir))
         self.nf_file_path = os.path.join(self.basedir, self.nf_filename)
         self.singularity_dir = tempfile.TemporaryDirectory()
 

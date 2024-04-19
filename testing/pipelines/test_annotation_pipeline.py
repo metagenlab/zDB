@@ -2,7 +2,7 @@ import os
 
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.orm import Session
-from testing.base import BasePipelineTestCase
+from testing.pipelines.base import BasePipelineTestCase
 
 base_tables = [
     'biodatabase',
@@ -72,18 +72,13 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.session = Session(self.engine)
         self.metadata_obj.reflect(bind=self.engine)
 
-    @property
-    def test_dir(self):
-        return os.path.dirname(os.path.abspath(__file__))
-
     def query(self, tablename):
         return self.session.query(self.metadata_obj.tables[tablename])
 
     def setUp(self):
         super(TestAnnotationPipeline, self).setUp()
-        filedir = os.path.dirname(os.path.abspath(__file__))
         self.nf_params["input"] = os.path.join(
-            filedir, "assets", "test_input.csv")
+            self.test_dir, "assets", "test_input.csv")
 
     def assert_created_files(self, proc, files):
         created_files = os.listdir(proc.path)

@@ -2,7 +2,7 @@ import glob
 import os
 import tempfile
 
-from testing.base import BasePipelineTestCase
+from testing.pipelines.base import BasePipelineTestCase
 
 
 class TestDBSetupPipeline(BasePipelineTestCase):
