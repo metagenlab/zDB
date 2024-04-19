@@ -88,6 +88,7 @@ class InputHandler():
             if i not in self.header_entries:
                 raise Exception("Unknown entry in header: " + i)
 
+        filenames = set()
         entries = []
         for index, entry in csv.iterrows():
             name = None
@@ -99,7 +100,12 @@ class InputHandler():
 
             # only get the filename, as nextflow will symlink it
             # in the current work directory
-            entries.append(self.CsvEntry(name, os.path.basename(entry.file)))
+            filename = os.path.basename(entry.file)
+            if filename in filenames:
+                raise Exception(f"File {filename} appears twice in the input file.")
+            filenames.add(filename)
+
+            entries.append(self.CsvEntry(name, filename))
 
         if len(entries) == 0:
             raise Exception(csv_file + " is empty")
