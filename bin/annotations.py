@@ -78,24 +78,19 @@ class InputHandler():
     def parse_csv(self, csv_file):
         csv = pd.read_csv(csv_file).fillna('')
         entries = []
-        has_names = False
-
         names = set()
 
         for i in csv.columns:
-            if i == "name":
-                has_names = True
             if i not in self.header_entries:
                 raise Exception("Unknown entry in header: " + i)
 
         filenames = set()
         entries = []
         for index, entry in csv.iterrows():
-            name = None
-            if has_names and len(entry["name"]) > 0:
-                name = entry["name"]
+            name = entry.get("name", None) or None
+            if name:
                 if name in names:
-                    raise Exception(name + " is duplicated")
+                    raise Exception(f"Name {name} appears twice in the input file.")
                 names.add(name)
 
             # only get the filename, as nextflow will symlink it

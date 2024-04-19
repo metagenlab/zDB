@@ -44,4 +44,11 @@ class TestInputHandler(BaseTestCase):
         with self.assertRaises(Exception) as exc:
             InputHandler(input_file)
         self.assertEqual('File file1.gbk appears twice in the input file.',
-                         str(exc))
+                         str(exc.exception))
+
+    def test_raises_for_dupplicate_name(self):
+        input_file = StringIO("file,name\nfile1.gbk,foo\nfile2.gbk,foo")
+        with self.assertRaises(Exception) as exc:
+            InputHandler(input_file)
+        self.assertEqual('Name foo appears twice in the input file.',
+                         str(exc.exception))
