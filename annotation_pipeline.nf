@@ -84,7 +84,7 @@ process check_gbk {
         if not os.path.isdir("filtered"):
           os.mkdir("filtered")
 
-        annotations.InputHandler().check_and_revise_gbks("$input_file")
+        annotations.InputHandler("$input_file").check_and_revise_gbks()
     """
 }
 

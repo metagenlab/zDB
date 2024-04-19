@@ -42,6 +42,19 @@ class InputHandler():
     CsvEntry = namedtuple("CsvEntry", "name file")
     header_entries = ["name", "file"]
 
+    def __init__(self, csv_file):
+        self.csv_entries = self.parse_csv(csv_file)
+
+        # NOTE: biosql uses source to assign taxid. One must ensure
+        # that the source are unique to each gbk file to avoid conflicts
+        # with taxids.
+        self.organisms = defaultdict(lambda: 0)
+        self.locuses = defaultdict(lambda: 0)
+        self.accessions = defaultdict(lambda: 0)
+
+        # contig name also need to be unique as they are used by blast
+        self.contigs = defaultdict(lambda: 0)
+
     def gen_new_locus_tag(self, hsh_prev_values):
         curr_value = len(hsh_prev_values)
         prefix = "ZDB_"
@@ -52,14 +65,14 @@ class InputHandler():
         hsh_prev_values[locus_tag] += 1
         return locus_tag
 
-    def gen_new_organism(self, organism, hsh_prev_values):
+    def gen_new_organism(self, organism):
         cnt = 1
         prefix = organism + "_"
         new_name = f"{prefix}{cnt}"
-        while new_name in hsh_prev_values:
+        while new_name in self.organisms:
             cnt += 1
             new_name = f"{prefix}{cnt}"
-        hsh_prev_values[new_name] += 1
+        self.organisms[new_name] += 1
         return new_name
 
     def parse_csv(self, csv_file):
@@ -93,7 +106,7 @@ class InputHandler():
 
         return entries
 
-    def check_and_revise_gbks(self, csv_file):
+    def check_and_revise_gbks(self):
         """
         This method ensures that we do not run into name conflicts in zDB.
         For this we check that the taxid, the contig name, accession
@@ -107,23 +120,12 @@ class InputHandler():
         to differentiate between genomes).
         """
 
-        # NOTE: biosql uses source to assign taxid. One must ensure
-        # that the source are unique to each gbk file to avoid conflicts
-        # with taxids.
-        organisms = defaultdict(lambda: 0)
-        locuses = defaultdict(lambda: 0)
-        accessions = defaultdict(lambda: 0)
-
-        # contig name also need to be unique as they are used by blast
-        contigs = defaultdict(lambda: 0)
-        csv_entries = self.parse_csv(csv_file)
-
         gbk_passed = []
         gbk_to_revise = []
 
         custom_names = {}
 
-        for entry in csv_entries:
+        for entry in self.csv_entries:
             gbk_file = entry.file
             curr_organism = None
             n_cds = 0
@@ -142,22 +144,22 @@ class InputHandler():
                     raise Exception(f"No scientific name for record {record.id} "
                                     f"in {gbk_file}.")
 
-                if record.name in contigs:
+                if record.name in self.contigs:
                     needs_revision = True
-                contigs[record.name] += 1
+                self.contigs[record.name] += 1
 
                 if "accessions" not in record.annotations:
                     needs_revision = True
                 else:
                     acc = record.annotations["accessions"][0]
-                    if acc in accessions:
+                    if acc in self.accessions:
                         needs_revision = True
-                    accessions[acc] += 1
+                    self.accessions[acc] += 1
 
                 if curr_organism is None:
                     curr_organism = sci_name
-                    organisms[sci_name] += 1
-                    if organisms[sci_name] > 1:
+                    self.organisms[sci_name] += 1
+                    if self.organisms[sci_name] > 1:
                         needs_revision = True
                 elif curr_organism != sci_name:
                     raise Exception(f"Two different organisms in {gbk_file}: {curr_organism}/{sci_name}")
@@ -180,9 +182,9 @@ class InputHandler():
                         continue
 
                     locus_tag = feature.qualifiers["locus_tag"][0]
-                    if locus_tag in locuses:
+                    if locus_tag in self.locuses:
                         needs_revision = True
-                    locuses[locus_tag] += 1
+                    self.locuses[locus_tag] += 1
 
             if n_cds == 0:
                 raise Exception(
@@ -194,7 +196,7 @@ class InputHandler():
                 gbk_passed.append(gbk_file)
 
         for filename, name in custom_names.items():
-            if organisms[name] > 1:
+            if self.organisms[name] > 1:
                 raise Exception(
                     f"The custom name {name} is already used in another file")
 
@@ -206,15 +208,15 @@ class InputHandler():
             for record in SeqIO.parse(failed_gbk, "genbank"):
                 if sci_name is None:
                     sci_name = record.annotations["organism"]
-                    if organisms[sci_name] > 1:
-                        sci_name = self.gen_new_organism(sci_name, organisms)
-                        organisms[sci_name] -= 1
+                    if self.organisms[sci_name] > 1:
+                        sci_name = self.gen_new_organism(sci_name)
+                        self.organisms[sci_name] -= 1
                 record.annotations["source"] = sci_name
                 record.annotations["organism"] = sci_name
 
-                if contigs[record.name] > 1:
-                    record.name = self.gen_new_locus_tag(contigs)
-                    contigs[record.name] -= 1
+                if self.contigs[record.name] > 1:
+                    record.name = self.gen_new_locus_tag(self.contigs)
+                    self.contigs[record.name] -= 1
 
                 # NOTE: for a reason I do not understand, Biopython will
                 # store the accession into the "accessions" entry of a record when parsing
@@ -222,14 +224,14 @@ class InputHandler():
                 # when writing the same record. It instead recognizes the "accession" entry.
                 if "accessions" not in record.annotations:
                     record.annotations["accession"] = [
-                        self.gen_new_locus_tag(accessions)]
-                elif accessions[record.annotations["accessions"][0]] > 1:
-                    new_acc = self.gen_new_locus_tag(accessions)
+                        self.gen_new_locus_tag(self.accessions)]
+                elif self.accessions[record.annotations["accessions"][0]] > 1:
+                    new_acc = self.gen_new_locus_tag(self.accessions)
                     if "accession" not in record.annotations:
                         record.annotations["accession"] = [new_acc]
                     else:
                         record.annotations["accession"][0] = new_acc
-                    accessions[new_acc] -= 1
+                    self.accessions[new_acc] -= 1
 
                 for feature in record.features:
                     if feature.type == "source":
@@ -243,11 +245,11 @@ class InputHandler():
                     curr_locus = feature.qualifiers.get("locus_tag", None)
                     if curr_locus is None:
                         feature.qualifiers["locus_tag"] = self.gen_new_locus_tag(
-                            locuses)
-                    elif locuses[curr_locus[0]] > 1:
+                            self.locuses)
+                    elif self.locuses[curr_locus[0]] > 1:
                         feature.qualifiers["locus_tag"] = self.gen_new_locus_tag(
-                            locuses)
-                        locuses[curr_locus[0]] -= 1
+                            self.locuses)
+                        self.locuses[curr_locus[0]] -= 1
                 records.append(record)
             SeqIO.write(records, "filtered/" + failed_gbk, "genbank")
 
