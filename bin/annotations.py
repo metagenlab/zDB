@@ -33,225 +33,226 @@ def orthogroups_to_fasta(genomes_list):
                     SeqIO.write(new_fasta, out_handle, "fasta")
 
 
-def gen_new_locus_tag(hsh_prev_values):
-    curr_value = len(hsh_prev_values)
-    prefix = "ZDB_"
-    locus_tag = f"{prefix}{curr_value}"
-    while locus_tag in hsh_prev_values:
-        curr_value += 1
+class InputHandler():
+    """
+    This class is in charge of parsing the input csv, checking
+    and if necessary revising the GBK files.
+    """
+
+    CsvEntry = namedtuple("CsvEntry", "name file")
+    header_entries = ["name", "file"]
+
+    def gen_new_locus_tag(self, hsh_prev_values):
+        curr_value = len(hsh_prev_values)
+        prefix = "ZDB_"
         locus_tag = f"{prefix}{curr_value}"
-    hsh_prev_values[locus_tag] += 1
-    return locus_tag
+        while locus_tag in hsh_prev_values:
+            curr_value += 1
+            locus_tag = f"{prefix}{curr_value}"
+        hsh_prev_values[locus_tag] += 1
+        return locus_tag
 
-
-def gen_new_organism(organism, hsh_prev_values):
-    cnt = 1
-    prefix = organism + "_"
-    new_name = f"{prefix}{cnt}"
-    while new_name in hsh_prev_values:
-        cnt += 1
+    def gen_new_organism(self, organism, hsh_prev_values):
+        cnt = 1
+        prefix = organism + "_"
         new_name = f"{prefix}{cnt}"
-    hsh_prev_values[new_name] += 1
-    return new_name
+        while new_name in hsh_prev_values:
+            cnt += 1
+            new_name = f"{prefix}{cnt}"
+        hsh_prev_values[new_name] += 1
+        return new_name
 
+    def parse_csv(self, csv_file):
+        csv = pd.read_csv(csv_file).fillna('')
+        entries = []
+        has_names = False
 
-CsvEntry = namedtuple("CsvEntry", "name file")
+        names = set()
 
-header_entries = ["name", "file"]
+        for i in csv.columns:
+            if i == "name":
+                has_names = True
+            if i not in self.header_entries:
+                raise Exception("Unknown entry in header: " + i)
 
+        entries = []
+        for index, entry in csv.iterrows():
+            name = None
+            if has_names and len(entry["name"]) > 0:
+                name = entry["name"]
+                if name in names:
+                    raise Exception(name + " is duplicated")
+                names.add(name)
 
-def parse_csv(csv_file):
-    csv = pd.read_csv(csv_file).fillna('')
-    entries = []
-    has_names = False
+            # only get the filename, as nextflow will symlink it
+            # in the current work directory
+            entries.append(self.CsvEntry(name, os.path.basename(entry.file)))
 
-    names = set()
+        if len(entries) == 0:
+            raise Exception(csv_file + " is empty")
 
-    for i in csv.columns:
-        if i == "name":
-            has_names = True
-        if i not in header_entries:
-            raise Exception("Unknown entry in header: " + i)
+        return entries
 
-    entries = []
-    for index, entry in csv.iterrows():
-        name = None
-        if has_names and len(entry["name"]) > 0:
-            name = entry["name"]
-            if name in names:
-                raise Exception(name + " is duplicated")
-            names.add(name)
+    def check_and_revise_gbks(self, csv_file):
+        """
+        This method ensures that we do not run into name conflicts in zDB.
+        For this we check that the taxid, the contig name, accession
+        and locus_tags are unique and if not we assign them new names.
 
-        # only get the filename, as nextflow will symlink it
-        # in the current work directory
-        entries.append(CsvEntry(name, os.path.basename(entry.file)))
+        As BioSQL uses the organism/source entries of the records to assign
+        a taxid when it is not allowed to access the ncbi online,
+        we need to ensure that the same organism name is not used
+        twice in the genomes to prevent bioentries from different genbank
+        files to be entered under the same taxon_id (as zdb uses the taxon_id
+        to differentiate between genomes).
+        """
 
-    if len(entries) == 0:
-        raise Exception(csv_file + " is empty")
+        # NOTE: biosql uses source to assign taxid. One must ensure
+        # that the source are unique to each gbk file to avoid conflicts
+        # with taxids.
+        organisms = defaultdict(lambda: 0)
+        locuses = defaultdict(lambda: 0)
+        accessions = defaultdict(lambda: 0)
 
-    return entries
+        # contig name also need to be unique as they are used by blast
+        contigs = defaultdict(lambda: 0)
+        csv_entries = self.parse_csv(csv_file)
 
+        gbk_passed = []
+        gbk_to_revise = []
 
-def check_and_revise_gbks(csv_file):
-    """
-    This method ensures that we do not run into name conflicts in zDB.
-    For this we check that the taxid, the contig name, accession
-    and locus_tags are unique and if not we assign them new names.
+        custom_names = {}
 
-    As BioSQL uses the organism/source entries of the records to assign
-    a taxid when it is not allowed to access the ncbi online,
-    we need to ensure that the same organism name is not used
-    twice in the genomes to prevent bioentries from different genbank
-    files to be entered under the same taxon_id (as zdb uses the taxon_id
-    to differentiate between genomes).
-    """
+        for entry in csv_entries:
+            gbk_file = entry.file
+            curr_organism = None
+            n_cds = 0
+            needs_revision = False
+            for record in SeqIO.parse(gbk_file, "genbank"):
+                sci_name = record.annotations.get("organism", None)
+                common_name = record.annotations.get("source", None)
 
-    # NOTE: biosql uses source to assign taxid. One must ensure
-    # that the source are unique to each gbk file to avoid conflicts
-    # with taxids.
-    organisms = defaultdict(lambda: 0)
-    locuses = defaultdict(lambda: 0)
-    accessions = defaultdict(lambda: 0)
-
-    # contig name also need to be unique as they are used by blast
-    contigs = defaultdict(lambda: 0)
-    csv_entries = parse_csv(csv_file)
-
-    gbk_passed = []
-    gbk_to_revise = []
-
-    custom_names = {}
-
-    for entry in csv_entries:
-        gbk_file = entry.file
-        curr_organism = None
-        n_cds = 0
-        needs_revision = False
-        for record in SeqIO.parse(gbk_file, "genbank"):
-            sci_name = record.annotations.get("organism", None)
-            common_name = record.annotations.get("source", None)
-
-            if entry.name is not None:
-                custom_names[entry.file] = entry.name
-                needs_revision = True
-                sci_name = entry.name
-                common_name = entry.name
-
-            if sci_name is None:
-                raise Exception(f"No scientific name for record {record.id} "
-                                f"in {gbk_file}.")
-
-            if record.name in contigs:
-                needs_revision = True
-            contigs[record.name] += 1
-
-            if "accessions" not in record.annotations:
-                needs_revision = True
-            else:
-                acc = record.annotations["accessions"][0]
-                if acc in accessions:
+                if entry.name is not None:
+                    custom_names[entry.file] = entry.name
                     needs_revision = True
-                accessions[acc] += 1
+                    sci_name = entry.name
+                    common_name = entry.name
 
-            if curr_organism is None:
-                curr_organism = sci_name
-                organisms[sci_name] += 1
-                if organisms[sci_name] > 1:
+                if sci_name is None:
+                    raise Exception(f"No scientific name for record {record.id} "
+                                    f"in {gbk_file}.")
+
+                if record.name in contigs:
                     needs_revision = True
-            elif curr_organism != sci_name:
-                raise Exception(f"Two different organisms in {gbk_file}: {curr_organism}/{sci_name}")
+                contigs[record.name] += 1
 
-            # necessary, as BioSQL will use whatever matches in the
-            # common or scientific names to assign taxid. So if the common name
-            # of two assemblies is foo, but the scientific are different, BioSQL
-            # will still assign them the same taxid.
-            if common_name != sci_name:
-                needs_revision = True
-
-            for feature in record.features:
-                if feature.type == "CDS":
-                    n_cds += 1
-                elif feature.type not in ["tmRNA", "rRNA", "ncRNA", "tRNA"]:
-                    continue
-
-                if "locus_tag" not in feature.qualifiers:
+                if "accessions" not in record.annotations:
                     needs_revision = True
-                    continue
-
-                locus_tag = feature.qualifiers["locus_tag"][0]
-                if locus_tag in locuses:
-                    needs_revision = True
-                locuses[locus_tag] += 1
-
-        if n_cds == 0:
-            raise Exception(
-                f"No CDS in {gbk_file}, has it been correctly annotated?")
-
-        if needs_revision:
-            gbk_to_revise.append(gbk_file)
-        else:
-            gbk_passed.append(gbk_file)
-
-    for filename, name in custom_names.items():
-        if organisms[name] > 1:
-            raise Exception(
-                f"The custom name {name} is already used in another file")
-
-    # at one point, will have to rewrite this to avoid
-    # re-parsing the genbank files that failed the check
-    for failed_gbk in gbk_to_revise:
-        records = []
-        sci_name = custom_names.get(failed_gbk, None)
-        for record in SeqIO.parse(failed_gbk, "genbank"):
-            if sci_name is None:
-                sci_name = record.annotations["organism"]
-                if organisms[sci_name] > 1:
-                    sci_name = gen_new_organism(sci_name, organisms)
-                    organisms[sci_name] -= 1
-            record.annotations["source"] = sci_name
-            record.annotations["organism"] = sci_name
-
-            if contigs[record.name] > 1:
-                record.name = gen_new_locus_tag(contigs)
-                contigs[record.name] -= 1
-
-            # NOTE: for a reason I do not understand, Biopython will
-            # store the accession into the "accessions" entry of a record when parsing
-            # a genbank file, but won't recognize the "accessions" entry
-            # when writing the same record. It instead recognizes the "accession" entry.
-            if "accessions" not in record.annotations:
-                record.annotations["accession"] = [
-                    gen_new_locus_tag(accessions)]
-            elif accessions[record.annotations["accessions"][0]] > 1:
-                new_acc = gen_new_locus_tag(accessions)
-                if "accession" not in record.annotations:
-                    record.annotations["accession"] = [new_acc]
                 else:
-                    record.annotations["accession"][0] = new_acc
-                accessions[new_acc] -= 1
+                    acc = record.annotations["accessions"][0]
+                    if acc in accessions:
+                        needs_revision = True
+                    accessions[acc] += 1
 
-            for feature in record.features:
-                if feature.type == "source":
-                    if "db_xref" in feature.qualifiers:
-                        # need to remove this as BioSQL uses it to assign
-                        # taxids and this messes with the rest of the DB
-                        # XXX Ugly hack, will have to go
-                        del feature.qualifiers["db_xref"]
-                if feature.type not in ["CDS", "tmRNA", "rRNA", "ncRNA", "tRNA"]:
-                    continue
-                curr_locus = feature.qualifiers.get("locus_tag", None)
-                if curr_locus is None:
-                    feature.qualifiers["locus_tag"] = gen_new_locus_tag(
-                        locuses)
-                elif locuses[curr_locus[0]] > 1:
-                    feature.qualifiers["locus_tag"] = gen_new_locus_tag(
-                        locuses)
-                    locuses[curr_locus[0]] -= 1
-            records.append(record)
-        SeqIO.write(records, "filtered/" + failed_gbk, "genbank")
+                if curr_organism is None:
+                    curr_organism = sci_name
+                    organisms[sci_name] += 1
+                    if organisms[sci_name] > 1:
+                        needs_revision = True
+                elif curr_organism != sci_name:
+                    raise Exception(f"Two different organisms in {gbk_file}: {curr_organism}/{sci_name}")
 
-    for passed in gbk_passed:
-        os.symlink(os.readlink(passed), "filtered/" + passed)
+                # necessary, as BioSQL will use whatever matches in the
+                # common or scientific names to assign taxid. So if the common name
+                # of two assemblies is foo, but the scientific are different, BioSQL
+                # will still assign them the same taxid.
+                if common_name != sci_name:
+                    needs_revision = True
+
+                for feature in record.features:
+                    if feature.type == "CDS":
+                        n_cds += 1
+                    elif feature.type not in ["tmRNA", "rRNA", "ncRNA", "tRNA"]:
+                        continue
+
+                    if "locus_tag" not in feature.qualifiers:
+                        needs_revision = True
+                        continue
+
+                    locus_tag = feature.qualifiers["locus_tag"][0]
+                    if locus_tag in locuses:
+                        needs_revision = True
+                    locuses[locus_tag] += 1
+
+            if n_cds == 0:
+                raise Exception(
+                    f"No CDS in {gbk_file}, has it been correctly annotated?")
+
+            if needs_revision:
+                gbk_to_revise.append(gbk_file)
+            else:
+                gbk_passed.append(gbk_file)
+
+        for filename, name in custom_names.items():
+            if organisms[name] > 1:
+                raise Exception(
+                    f"The custom name {name} is already used in another file")
+
+        # at one point, will have to rewrite this to avoid
+        # re-parsing the genbank files that failed the check
+        for failed_gbk in gbk_to_revise:
+            records = []
+            sci_name = custom_names.get(failed_gbk, None)
+            for record in SeqIO.parse(failed_gbk, "genbank"):
+                if sci_name is None:
+                    sci_name = record.annotations["organism"]
+                    if organisms[sci_name] > 1:
+                        sci_name = self.gen_new_organism(sci_name, organisms)
+                        organisms[sci_name] -= 1
+                record.annotations["source"] = sci_name
+                record.annotations["organism"] = sci_name
+
+                if contigs[record.name] > 1:
+                    record.name = self.gen_new_locus_tag(contigs)
+                    contigs[record.name] -= 1
+
+                # NOTE: for a reason I do not understand, Biopython will
+                # store the accession into the "accessions" entry of a record when parsing
+                # a genbank file, but won't recognize the "accessions" entry
+                # when writing the same record. It instead recognizes the "accession" entry.
+                if "accessions" not in record.annotations:
+                    record.annotations["accession"] = [
+                        self.gen_new_locus_tag(accessions)]
+                elif accessions[record.annotations["accessions"][0]] > 1:
+                    new_acc = self.gen_new_locus_tag(accessions)
+                    if "accession" not in record.annotations:
+                        record.annotations["accession"] = [new_acc]
+                    else:
+                        record.annotations["accession"][0] = new_acc
+                    accessions[new_acc] -= 1
+
+                for feature in record.features:
+                    if feature.type == "source":
+                        if "db_xref" in feature.qualifiers:
+                            # need to remove this as BioSQL uses it to assign
+                            # taxids and this messes with the rest of the DB
+                            # XXX Ugly hack, will have to go
+                            del feature.qualifiers["db_xref"]
+                    if feature.type not in ["CDS", "tmRNA", "rRNA", "ncRNA", "tRNA"]:
+                        continue
+                    curr_locus = feature.qualifiers.get("locus_tag", None)
+                    if curr_locus is None:
+                        feature.qualifiers["locus_tag"] = self.gen_new_locus_tag(
+                            locuses)
+                    elif locuses[curr_locus[0]] > 1:
+                        feature.qualifiers["locus_tag"] = self.gen_new_locus_tag(
+                            locuses)
+                        locuses[curr_locus[0]] -= 1
+                records.append(record)
+            SeqIO.write(records, "filtered/" + failed_gbk, "genbank")
+
+        for passed in gbk_passed:
+            os.symlink(os.readlink(passed), "filtered/" + passed)
 
 
 def convert_gbk_to_fasta(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=False):
