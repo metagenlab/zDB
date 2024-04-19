@@ -92,7 +92,7 @@ def parse_csv(csv_file):
     return entries
 
 
-def check_gbk(csv_file):
+def check_and_revise_gbks(csv_file):
     """
     This method ensures that we do not run into name conflicts in zDB.
     For this we check that the taxid, the contig name, accession
@@ -126,38 +126,38 @@ def check_gbk(csv_file):
         gbk_file = entry.file
         curr_organism = None
         n_cds = 0
-        failed = False
+        needs_revision = False
         for record in SeqIO.parse(gbk_file, "genbank"):
             sci_name = record.annotations.get("organism", None)
             common_name = record.annotations.get("source", None)
 
             if entry.name is not None:
                 custom_names[entry.file] = entry.name
-                failed = True
+                needs_revision = True
                 sci_name = entry.name
                 common_name = entry.name
 
             if sci_name is None:
-                raise Exception(f"No scientific for record {record.id} "
+                raise Exception(f"No scientific name for record {record.id} "
                                 f"in {gbk_file}.")
 
             if record.name in contigs:
-                failed = True
+                needs_revision = True
             contigs[record.name] += 1
 
             if "accessions" not in record.annotations:
-                failed = True
+                needs_revision = True
             else:
                 acc = record.annotations["accessions"][0]
                 if acc in accessions:
-                    failed = True
+                    needs_revision = True
                 accessions[acc] += 1
 
             if curr_organism is None:
                 curr_organism = sci_name
                 organisms[sci_name] += 1
                 if organisms[sci_name] > 1:
-                    failed = True
+                    needs_revision = True
             elif curr_organism != sci_name:
                 raise Exception(f"Two different organisms in {gbk_file}: {curr_organism}/{sci_name}")
 
@@ -166,7 +166,7 @@ def check_gbk(csv_file):
             # of two assemblies is foo, but the scientific are different, BioSQL
             # will still assign them the same taxid.
             if common_name != sci_name:
-                failed = True
+                needs_revision = True
 
             for feature in record.features:
                 if feature.type == "CDS":
@@ -175,19 +175,19 @@ def check_gbk(csv_file):
                     continue
 
                 if "locus_tag" not in feature.qualifiers:
-                    failed = True
+                    needs_revision = True
                     continue
 
                 locus_tag = feature.qualifiers["locus_tag"][0]
                 if locus_tag in locuses:
-                    failed = True
+                    needs_revision = True
                 locuses[locus_tag] += 1
 
         if n_cds == 0:
             raise Exception(
                 f"No CDS in {gbk_file}, has it been correctly annotated?")
 
-        if failed:
+        if needs_revision:
             gbk_to_revise.append(gbk_file)
         else:
             gbk_passed.append(gbk_file)
