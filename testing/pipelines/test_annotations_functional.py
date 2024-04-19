@@ -6,7 +6,7 @@ from testing.pipelines.base import BaseTestCase
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))), "bin"))
 
-from annotations import InputHandler  # noqa
+from annotations import InputHandler, InvalidInput  # noqa
 
 
 class TestInputHandler(BaseTestCase):
@@ -41,21 +41,21 @@ class TestInputHandler(BaseTestCase):
 
     def test_raises_for_dupplicate_filename(self):
         input_file = StringIO("file\nfile1.gbk\nfile1.gbk")
-        with self.assertRaises(Exception) as exc:
+        with self.assertRaises(InvalidInput) as exc:
             InputHandler(input_file)
-        self.assertEqual('File file1.gbk appears twice in the input file.',
+        self.assertEqual('File "file1.gbk" appears twice in the input file.',
                          str(exc.exception))
 
     def test_raises_for_dupplicate_name(self):
         input_file = StringIO("file,name\nfile1.gbk,foo\nfile2.gbk,foo")
-        with self.assertRaises(Exception) as exc:
+        with self.assertRaises(InvalidInput) as exc:
             InputHandler(input_file)
-        self.assertEqual('Name foo appears twice in the input file.',
+        self.assertEqual('Name "foo" appears twice in the input file.',
                          str(exc.exception))
 
     def test_raises_for_invalid_column_header(self):
         input_file = StringIO("filee,name\nfile1.gbk,foo\nfile2.gbk,foo")
-        with self.assertRaises(Exception) as exc:
+        with self.assertRaises(InvalidInput) as exc:
             InputHandler(input_file)
-        self.assertEqual("Invalid column header filee in input file",
+        self.assertEqual('Invalid column header "filee" in input file.',
                          str(exc.exception))

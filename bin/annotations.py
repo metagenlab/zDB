@@ -34,6 +34,10 @@ def orthogroups_to_fasta(genomes_list):
                     SeqIO.write(new_fasta, out_handle, "fasta")
 
 
+class InvalidInput(Exception):
+    pass
+
+
 class InputHandler():
     """
     This class is in charge of parsing the input csv, checking
@@ -83,7 +87,8 @@ class InputHandler():
 
         for colname in csv.columns:
             if not self.allowed_headers_expr.fullmatch(colname):
-                raise Exception(f"Invalid column header {colname} in input file")
+                raise InvalidInput(
+                    f'Invalid column header "{colname}" in input file.')
 
         filenames = set()
         entries = []
@@ -91,14 +96,16 @@ class InputHandler():
             name = entry.get("name", None) or None
             if name:
                 if name in names:
-                    raise Exception(f"Name {name} appears twice in the input file.")
+                    raise InvalidInput(
+                        f'Name "{name}" appears twice in the input file.')
                 names.add(name)
 
             # only get the filename, as nextflow will symlink it
             # in the current work directory
             filename = os.path.basename(entry.file)
             if filename in filenames:
-                raise Exception(f"File {filename} appears twice in the input file.")
+                raise InvalidInput(
+                    f'File "{filename}" appears twice in the input file.')
             filenames.add(filename)
 
             entries.append(self.CsvEntry(name, filename))
