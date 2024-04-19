@@ -52,3 +52,10 @@ class TestInputHandler(BaseTestCase):
             InputHandler(input_file)
         self.assertEqual('Name foo appears twice in the input file.',
                          str(exc.exception))
+
+    def test_raises_for_invalid_column_header(self):
+        input_file = StringIO("filee,name\nfile1.gbk,foo\nfile2.gbk,foo")
+        with self.assertRaises(Exception) as exc:
+            InputHandler(input_file)
+        self.assertEqual("Invalid column header filee in input file",
+                         str(exc.exception))

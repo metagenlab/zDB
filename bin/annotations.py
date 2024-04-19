@@ -5,6 +5,7 @@ import pandas as pd
 from Bio import AlignIO, SeqIO
 from Bio.Align import MultipleSeqAlignment
 from Bio.SeqUtils import CheckSum
+import re
 
 
 def chunks(lst, n):
@@ -40,7 +41,7 @@ class InputHandler():
     """
 
     CsvEntry = namedtuple("CsvEntry", "name file")
-    header_entries = ["name", "file"]
+    allowed_headers_expr = re.compile("name|file")
 
     def __init__(self, csv_file):
         self.csv_entries = self.parse_csv(csv_file)
@@ -80,9 +81,9 @@ class InputHandler():
         entries = []
         names = set()
 
-        for i in csv.columns:
-            if i not in self.header_entries:
-                raise Exception("Unknown entry in header: " + i)
+        for colname in csv.columns:
+            if not self.allowed_headers_expr.fullmatch(colname):
+                raise Exception(f"Invalid column header {colname} in input file")
 
         filenames = set()
         entries = []
