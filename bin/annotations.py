@@ -1,11 +1,11 @@
 import os
+import re
 from collections import defaultdict, namedtuple
 
 import pandas as pd
 from Bio import AlignIO, SeqIO
 from Bio.Align import MultipleSeqAlignment
 from Bio.SeqUtils import CheckSum
-import re
 
 
 def chunks(lst, n):
@@ -44,8 +44,9 @@ class InputHandler():
     and if necessary revising the GBK files.
     """
 
-    CsvEntry = namedtuple("CsvEntry", "name file")
-    allowed_headers_expr = re.compile("name|file")
+    CsvEntry = namedtuple("CsvEntry", "name file groups")
+    allowed_headers_expr = re.compile(r"name|file|group:[\w\s]*")
+    group_header_expr = re.compile(r"group:([\w\s]*)")
 
     def __init__(self, csv_file):
         self.csv_entries = self.parse_csv(csv_file)
@@ -80,15 +81,41 @@ class InputHandler():
         self.organisms[new_name] += 1
         return new_name
 
+    @classmethod
+    def is_header_allowed(cls, header):
+        return bool(cls.allowed_headers_expr.fullmatch(header))
+
+    @classmethod
+    def header_to_group_label(cls, header):
+        return cls.group_header_expr.fullmatch(header).groups()[0]
+
+    @classmethod
+    def header_is_group(cls, header):
+        return bool(cls.group_header_expr.fullmatch(header))
+
+    @staticmethod
+    def is_in_group(entry, groupname):
+        value = entry.get(groupname)
+        if value.lower() in ["no", "n", "false", "0", ""]:
+            return False
+        if value.lower() in ["yes", "y", "true", "1", "x"]:
+            return True
+        raise InvalidInput(
+            f'Invalid entry "{value}" in group column. Should be one of '
+            '"yes", "true", "x", "1", "no", "false", "0" or empty')
+
     def parse_csv(self, csv_file):
-        csv = pd.read_csv(csv_file).fillna('')
+        csv = pd.read_csv(csv_file, dtype=str).fillna('')
         entries = []
         names = set()
 
+        group_names = {}
         for colname in csv.columns:
-            if not self.allowed_headers_expr.fullmatch(colname):
+            if not self.is_header_allowed(colname):
                 raise InvalidInput(
                     f'Invalid column header "{colname}" in input file.')
+            if self.header_is_group(colname):
+                group_names[colname] = self.header_to_group_label(colname)
 
         filenames = set()
         entries = []
@@ -108,7 +135,11 @@ class InputHandler():
                     f'File "{filename}" appears twice in the input file.')
             filenames.add(filename)
 
-            entries.append(self.CsvEntry(name, filename))
+            groups = []
+            for group_name, group_label in group_names.items():
+                if self.is_in_group(entry, group_name):
+                    groups.append(group_label)
+            entries.append(self.CsvEntry(name, filename, groups))
 
         if len(entries) == 0:
             raise Exception(csv_file + " is empty")
