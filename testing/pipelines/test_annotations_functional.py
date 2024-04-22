@@ -30,7 +30,7 @@ class TestInputHandler(BaseTestCase):
                                     'R6728_16315_small.gbk'])
 
     def test_handles_name_column(self):
-        input_file = StringIO("name,file\nfoo,file1.gbk\nbar,file2.gbk")
+        input_file = StringIO("name, file\nfoo,file1.gbk\nbar, file2.gbk")
         handler = InputHandler(input_file)
         self.assertEqual(2, len(handler.csv_entries))
         self.assert_names(handler, ["foo", "bar"])

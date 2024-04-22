@@ -105,7 +105,8 @@ class InputHandler():
             '"yes", "true", "x", "1", "no", "false", "0" or empty')
 
     def parse_csv(self, csv_file):
-        csv = pd.read_csv(csv_file, dtype=str).fillna('')
+        csv = pd.read_csv(csv_file, dtype=str,
+                          skipinitialspace=True).fillna('')
         entries = []
         names = set()
 
