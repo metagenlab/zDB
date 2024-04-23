@@ -49,7 +49,7 @@ class InputHandler():
     group_header_expr = re.compile(r"group:([\w\s]*)")
 
     def __init__(self, csv_file):
-        self.csv_entries = self.parse_csv(csv_file)
+        self.csv_entries, self.group_names = self.parse_csv(csv_file)
 
         # NOTE: biosql uses source to assign taxid. One must ensure
         # that the source are unique to each gbk file to avoid conflicts
@@ -104,7 +104,8 @@ class InputHandler():
             f'Invalid entry "{value}" in group column. Should be one of '
             '"yes", "true", "x", "1", "no", "false", "0" or empty')
 
-    def parse_csv(self, csv_file):
+    @classmethod
+    def parse_csv(cls, csv_file):
         csv = pd.read_csv(csv_file, dtype=str,
                           skipinitialspace=True).fillna('')
         entries = []
@@ -112,11 +113,11 @@ class InputHandler():
 
         group_names = {}
         for colname in csv.columns:
-            if not self.is_header_allowed(colname):
+            if not cls.is_header_allowed(colname):
                 raise InvalidInput(
                     f'Invalid column header "{colname}" in input file.')
-            if self.header_is_group(colname):
-                group_names[colname] = self.header_to_group_label(colname)
+            if cls.header_is_group(colname):
+                group_names[colname] = cls.header_to_group_label(colname)
 
         filenames = set()
         entries = []
@@ -138,14 +139,14 @@ class InputHandler():
 
             groups = []
             for group_name, group_label in group_names.items():
-                if self.is_in_group(entry, group_name):
+                if cls.is_in_group(entry, group_name):
                     groups.append(group_label)
-            entries.append(self.CsvEntry(name, filename, groups))
+            entries.append(cls.CsvEntry(name, filename, groups))
 
         if len(entries) == 0:
             raise Exception(csv_file + " is empty")
 
-        return entries
+        return entries, group_names
 
     def check_and_revise_gbks(self):
         """

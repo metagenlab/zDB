@@ -22,6 +22,7 @@ base_tables = [
     'filenames',
     'gene_phylogeny',
     'genome_summary',
+    'groups',
     'ko_class',
     'ko_def',
     'ko_module_def',
@@ -42,6 +43,7 @@ base_tables = [
     'seqfeature_relationship',
     'sequence_hash_dictionnary',
     'taxon',
+    'taxon_in_group',
     'taxon_name',
     'term',
     'term_dbxref',
@@ -92,13 +94,14 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertEqual(304, self.query("og_hits").count())
         self.assertEqual(304, self.query("sequence_hash_dictionnary").count())
         self.assertEqual(32, self.query("term").count())
+        self.assertEqual(3, self.query("groups").count())
+        self.assertEqual(6, self.query("taxon_in_group").count())
 
     def test_base_pipeline(self):
         execution = self.execute_pipeline()
         self.assert_success(execution)
 
         self.load_db(execution)
-
         # Let's check that tables were correctly created and filled
         self.assertItemsEqual(base_tables, self.metadata_obj.tables.keys())
         self.assert_db_base_table_row_counts()

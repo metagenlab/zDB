@@ -1453,10 +1453,29 @@ class DB:
 
     def load_filenames(self, data):
         sql = (
-            "CREATE TABLE filenames (taxon_id INTEGER, filename TEXT);"
+            "CREATE TABLE filenames (taxon_id INTEGER, filename TEXT, "
+            "PRIMARY KEY (taxon_id));"
         )
         self.server.adaptor.execute(sql)
         self.load_data_into_table("filenames", data)
+
+    def load_groups(self, groups, group_taxons):
+        sql = (
+            "CREATE TABLE groups "
+            "(group_name TINYTEXT, PRIMARY KEY (group_name));"
+        )
+        self.server.adaptor.execute(sql)
+        sql = (
+            "CREATE TABLE taxon_in_group "
+            "(group_name INT, taxon_id INT, "
+            "FOREIGN KEY (group_name) REFERENCES groups(group_name), "
+            "FOREIGN KEY (taxon_id) REFERENCES filenames(taxon_id), "
+            "PRIMARY KEY (group_name, taxon_id));"
+        )
+        self.server.adaptor.execute(sql)
+
+        self.load_data_into_table("groups", groups)
+        self.load_data_into_table("taxon_in_group", group_taxons)
 
     def load_genomes_info(self, data):
         sql = (
