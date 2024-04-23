@@ -11,7 +11,6 @@ from lib.ete_phylo import EteTree, MatchingColorColumn, ValueColoredColumn
 from scoary import scoary
 
 from views.analysis_view_metadata import GwasMetadata
-from views.errors import errors
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
 from views.utils import ResultTab, TabularResultTab
@@ -71,9 +70,7 @@ class GWASBaseView(View):
     def post(self, request, *args, **kwargs):
         self.form = self.form_class(request.POST, request.FILES)
         if not self.form.is_valid():
-            self.form = self.form_class()
-            return render(request, self.template,
-                          self.get_context(**errors["invalid_form"]))
+            return render(request, self.template, self.get_context())
 
         qval_threshold = self.form.cleaned_data["bonferroni_cutoff"]
         max_genes = self.form.cleaned_data["max_number_of_hits"]
@@ -145,19 +142,26 @@ class GWASBaseView(View):
         return e_tree
 
     def get_phenotype(self):
-        phenotype = pd.read_csv(self.form.cleaned_data["phenotype_file"],
-                                header=None, names=["taxids", "trait"])
-        phenotype["trait"] = phenotype["trait"].astype(bool)
         genomes = self.db.get_genomes_description()
-        if all(phenotype.taxids.isin(genomes.index)):
+        if self.form.cleaned_data["phenotype_file"]:
+            phenotype = pd.read_csv(self.form.cleaned_data["phenotype_file"],
+                                    header=None, names=["taxids", "trait"])
+            phenotype["trait"] = phenotype["trait"].astype(bool)
+            if all(phenotype.taxids.isin(genomes.index)):
+                return phenotype
+            elif all(phenotype.taxids.isin(genomes.description)):
+                mapping = {genome.description: taxid
+                           for taxid, genome in genomes.iterrows()}
+                phenotype.taxids = phenotype.taxids.apply(lambda x: mapping[x])
+            else:
+                return None
             return phenotype
-        elif all(phenotype.taxids.isin(genomes.description)):
-            mapping = {genome.description: taxid
-                       for taxid, genome in genomes.iterrows()}
-            phenotype.taxids = phenotype.taxids.apply(lambda x: mapping[x])
         else:
-            return None
-        return phenotype
+            taxids_with_phenotype = set(self.db.get_taxids_for_groups(
+                self.form.cleaned_data["groups"]))
+            phenotype = [[taxid, 1 if taxid in taxids_with_phenotype else 0]
+                         for taxid in genomes.index]
+            return pd.DataFrame(phenotype, columns=["taxids", "trait"])
 
     def run_gwas(self, phenotype, qval_threshold, max_genes):
         genomes_data = self.db.get_genomes_infos()

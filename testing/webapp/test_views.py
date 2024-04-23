@@ -370,6 +370,12 @@ class ComparisonViewsTestMixin():
                 "bonferroni_cutoff": 0.99,
                 "phenotype_file": phenotype}
 
+    @property
+    def gwas_groups_form_data(self):
+        return {"max_number_of_hits": "all",
+                "bonferroni_cutoff": 0.99,
+                "groups": ["positive"]}
+
     def test_comparison_index_view(self):
         resp = self.client.get(f"/index_comp/{self.view_type}")
         self.assertEqual(200, resp.status_code)
@@ -475,6 +481,17 @@ class ComparisonViewsTestMixin():
 
         resp = self.client.post(self.gwas_view,
                                 data=self.gwas_form_data)
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, 'chlamdb/gwas.html')
+        self.assertPageTitle(resp, self.page_title)
+        # No results because there is no hit.
+        self.assertNoGwasTable(resp)
+        self.assertNav(resp)
+        self.assertContains(resp, 'id="error"')
+        self.assertContains(resp, 'No significant association')
+
+        resp = self.client.post(self.gwas_view,
+                                data=self.gwas_groups_form_data)
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/gwas.html')
         self.assertPageTitle(resp, self.page_title)

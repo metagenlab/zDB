@@ -1477,6 +1477,16 @@ class DB:
         self.load_data_into_table("groups", groups)
         self.load_data_into_table("taxon_in_group", group_taxons)
 
+    def get_groups(self):
+        query = "SELECT * FROM groups;"
+        return self.server.adaptor.execute_and_fetchall(query)
+
+    def get_taxids_for_groups(self, group_names):
+        plchd = self.gen_placeholder_string(group_names)
+        query = f"SELECT taxon_id from taxon_in_group WHERE group_name IN ({plchd})"
+        results = self.server.adaptor.execute_and_fetchall(query, group_names)
+        return (el[0] for el in results)
+
     def load_genomes_info(self, data):
         sql = (
             "CREATE TABLE genome_summary (taxon_id INTEGER, completeness FLOAT, "

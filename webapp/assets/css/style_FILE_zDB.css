@@ -117,6 +117,17 @@
 }
 
 
+form > div.alert-block.alert-error:before {
+    content: 'Invalid input';
+    font-weight: bold;
+    font-size: 17px;
+}
+
+
+form > div.alert-block.alert-error {
+    background-color: mistyrose;
+    position: sticky;
+}
 
 
 .genome_search {
