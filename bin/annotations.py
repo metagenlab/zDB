@@ -79,6 +79,7 @@ class InputHandler():
             cnt += 1
             new_name = f"{prefix}{cnt}"
         self.organisms[new_name] += 1
+        self.organisms[organism] -= 1
         return new_name
 
     @classmethod
@@ -252,7 +253,6 @@ class InputHandler():
                     sci_name = record.annotations["organism"]
                     if self.organisms[sci_name] > 1:
                         sci_name = self.gen_new_organism(sci_name)
-                        self.organisms[sci_name] -= 1
                 record.annotations["source"] = sci_name
                 record.annotations["organism"] = sci_name
 
