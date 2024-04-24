@@ -4,7 +4,6 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 from chlamdb.forms import make_gwas_form
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.shortcuts import render
 from django.views import View
 from ete3 import Tree
@@ -75,10 +74,7 @@ class GWASBaseView(View):
 
         qval_threshold = self.form.cleaned_data["bonferroni_cutoff"]
         max_genes = self.form.cleaned_data["max_number_of_hits"]
-        phenotype = self.get_phenotype()
-
-        if phenotype is None:
-            return render(request, self.template, self.get_context())
+        phenotype = self.form.phenotype
 
         results, hits = self.run_gwas(phenotype, qval_threshold, max_genes)
         if results is None:
@@ -138,38 +134,6 @@ class GWASBaseView(View):
                 col_func=lambda x: EteTree.BLUE if x == 0 else EteTree.RED)
             e_tree.add_column(col_column)
         return e_tree
-
-    def get_phenotype(self):
-        genomes = self.db.get_genomes_description()
-        if self.form.cleaned_data["phenotype_file"]:
-            phenotype = pd.read_csv(self.form.cleaned_data["phenotype_file"],
-                                    header=None, names=["taxids", "trait"])
-            phenotype["trait"] = phenotype["trait"].astype(bool)
-            if all(phenotype.taxids.isin(genomes.index)):
-                return phenotype
-            elif all(phenotype.taxids.isin(genomes.description)):
-                mapping = {genome.description: taxid
-                           for taxid, genome in genomes.iterrows()}
-                phenotype.taxids = phenotype.taxids.apply(lambda x: mapping[x])
-            else:
-                err = ValidationError(
-                    "File could not be parsed and matched to genomes.",
-                    code="invalid")
-                self.form.add_error("phenotype_file", err)
-                return None
-            return phenotype
-        else:
-            taxids_with_phenotype = set(self.db.get_taxids_for_groups(
-                self.form.cleaned_data["groups"]))
-            if not set(genomes.index).difference(taxids_with_phenotype):
-                err = ValidationError(
-                    "Your selection is invalid as it contains all genomes.",
-                    code="invalid")
-                self.form.add_error("groups", err)
-                return None
-            phenotype = [[taxid, 1 if taxid in taxids_with_phenotype else 0]
-                         for taxid in genomes.index]
-            return pd.DataFrame(phenotype, columns=["taxids", "trait"])
 
     def run_gwas(self, phenotype, qval_threshold, max_genes):
         genomes_data = self.db.get_genomes_infos()

@@ -502,6 +502,7 @@ def get_groups(db):
 
 
 def make_gwas_form(biodb):
+    import pandas as pd
 
     group_choices = get_groups(biodb)
 
@@ -557,18 +558,50 @@ def make_gwas_form(biodb):
                                  "margin-bottom:15px "),
                     css_class="col-lg-5 col-md-6 col-sm-6")
             )
+            self.db = biodb
             super(GwasForm, self).__init__(*args, **kwargs)
 
         def clean(self):
             cleaned_data = super(GwasForm, self).clean()
-            self.phenotype_file_or_groups()
+            self.phenotype = self.get_phenotype()
             return cleaned_data
 
-        def phenotype_file_or_groups(self):
+        def get_phenotype(self):
             has_groups = bool(self.cleaned_data["groups"])
             has_file = bool(self.cleaned_data["phenotype_file"])
             if (has_groups and has_file) or not (has_groups or has_file):
-                raise ValidationError('You have to provide either "Groups" or "Phenotype file" but not both.')
+                msg = 'You have to provide either "Groups" or '\
+                      '"Phenotype file" but not both.'
+                raise ValidationError(msg, code="invalid")
+
+            genomes = self.db.get_genomes_description()
+            if self.cleaned_data["phenotype_file"]:
+                phenotype = pd.read_csv(self.cleaned_data["phenotype_file"],
+                                        header=None, names=["taxids", "trait"])
+                phenotype["trait"] = phenotype["trait"].astype(bool)
+                if all(phenotype.taxids.isin(genomes.index)):
+                    return phenotype
+                elif all(phenotype.taxids.isin(genomes.description)):
+                    mapping = {genome.description: taxid
+                               for taxid, genome in genomes.iterrows()}
+                    phenotype.taxids = phenotype.taxids.apply(lambda x: mapping[x])
+                else:
+                    err = ValidationError(
+                        "File could not be parsed and matched to genomes.",
+                        code="invalid")
+                    self.add_error("phenotype_file", err)
+                return phenotype
+            else:
+                taxids_with_phenotype = set(self.db.get_taxids_for_groups(
+                    self.cleaned_data["groups"]))
+                if not set(genomes.index).difference(taxids_with_phenotype):
+                    err = ValidationError(
+                        "Your selection is invalid as it contains all genomes.",
+                        code="invalid")
+                    self.add_error("groups", err)
+                phenotype = [[taxid, 1 if taxid in taxids_with_phenotype else 0]
+                             for taxid in genomes.index]
+                return pd.DataFrame(phenotype, columns=["taxids", "trait"])
 
     return GwasForm
 
