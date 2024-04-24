@@ -937,6 +937,7 @@ class PanGenome(ComparisonViewMixin, View):
     @property
     def form_class(self):
         return make_venn_from(self.db, label=self.object_name_plural,
+                              limit=2, limit_type="lower",
                               action=f"/pan_genome/{self.object_type}")
 
     def get(self, request, *args, **kwargs):
@@ -947,10 +948,8 @@ class PanGenome(ComparisonViewMixin, View):
     def post(self, request, *args, **kwargs):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
-            self.form = self.form_class()
             return render(request, 'chlamdb/pan_genome.html',
-                          self.get_context(**errors["invalid_form"],
-                                           form=self.form))
+                          self.get_context(form=self.form))
 
         taxids = self.form.get_taxids()
         df_hits = self.get_hit_counts(taxids, search_on="taxid")
