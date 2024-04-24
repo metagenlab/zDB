@@ -1215,7 +1215,6 @@ def coalesce_regions(genomic_regions, seqids):
 
 
 def plot_region(request):
-    max_region_size = 100000
     db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     page_title = page2title["plot_region"]
     form_class = make_plot_form(db)
@@ -1227,23 +1226,12 @@ def plot_region(request):
 
     form = form_class(request.POST)
     if not form.is_valid():
-        # add error message
         return render(request, 'chlamdb/plot_region.html',
                       my_locals({"form": form, "page_title": page_title}))
 
-    accession = form.get_accession()
-    prot_info = db.get_proteins_info(
-        ids=[accession], search_on="locus_tag", as_df=True)
-    if prot_info.empty:
-        context = {"form": form,
-                   "errors": ["Accession not found"],
-                   "error": True,
-                   "page_title": page_title}
-        return render(request, 'chlamdb/plot_region.html', my_locals(context))
-
+    seqid = form.get_seqid()
     genomes = form.get_genomes()
     all_homologs = form.get_all_homologs()
-    seqid = int(prot_info.index[0])
     hsh_loc = db.get_gene_loc([seqid])
     ids = db.get_og_identity(ref_seqid=seqid)
     all_seqids = ids.index.unique().tolist()
@@ -1281,23 +1269,7 @@ def plot_region(request):
         }
         return render(request, 'chlamdb/plot_region.html', my_locals(context))
 
-    try:
-        region_size = form.get_region_size()
-        if region_size > max_region_size or region_size < 5000:
-            context = {
-                "form": form,
-                "error": True,
-                "errors": [f"Region size should be between 5000 and {max_region_size} bp"],
-                "page_title": page_title
-            }
-            return render(request, 'chlamdb/plot_region.html',
-                          my_locals(context))
-    except ValueError:
-        context = {"form": form,
-                   "error": True,
-                   "errors": ["Wrong format for region size"],
-                   "page_title": page_title}
-        return render(request, 'chlamdb/plot_region.html', my_locals(context))
+    region_size = form.get_region_size()
 
     locus_tags = db.get_proteins_info(
         seqids, to_return=["locus_tag"], as_df=True)
@@ -1374,7 +1346,6 @@ def plot_region(request):
 
     ctx = {"form": form,
            "genomic_regions": "[" + "\n,".join(all_regions) + "]",
-           "window_size": max_region_size,
            "to_highlight": to_highlight,
            "envoi": True,
            "connections": "[" + ",".join(connections) + "]",

@@ -109,14 +109,13 @@
 var regions = {{genomic_regions|safe}};
 var to_highlight = {{to_highlight|safe}};
 var connections = {{connections | safe}};
-var window_size = {{window_size}};
 var ident_range = [{{min_ident}}, {{max_ident}}];
 var genomic_region_rect = document.querySelector("#div_alignment_bounding")
     .getBoundingClientRect();
 var genomic_width = genomic_region_rect.right-genomic_region_rect.left;
 
 createGenomicRegion(d3.select("#div_alignment"), genomic_width*0.95, "genomic_region",
-    regions, connections, to_highlight, window_size, ident_range);
+    regions, connections, to_highlight, ident_range);
 
 document.querySelector("#download_svg_button").onclick = function() {
   var svg_elem = document.querySelector("#genomic_region");

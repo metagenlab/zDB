@@ -53,8 +53,11 @@ def make_plot_form(db):
         accession = forms.CharField(max_length=100,
                                     required=True,
                                     label=f"locus_tag (e.g. {locus})")
-        region_size = forms.CharField(max_length=5,
-                                      label="Region size (bp)", initial=8000, required=False)
+        region_size = forms.IntegerField(min_value=5000,
+                                         max_value=100000,
+                                         label="Region size (bp)",
+                                         initial=8000,
+                                         required=True)
         genomes = forms.MultipleChoiceField(choices=accession_choices,
                                             widget=forms.SelectMultiple(attrs={
                                                 'size': '1',
@@ -90,8 +93,18 @@ def make_plot_form(db):
                     css_class="col-lg-8 col-md-8 col-sm-12")
                 )
             )
+            self.db = db
 
-        def get_accession(self):
+        def clean_accession(self):
+            accession = self.cleaned_data["accession"]
+            prot_info = db.get_proteins_info(
+                ids=[accession], search_on="locus_tag", as_df=True)
+            if prot_info.empty:
+                raise ValidationError("Accession not found", code="invalid")
+            # Accession is now the sequence id
+            return int(prot_info.index[0])
+
+        def get_seqid(self):
             return self.cleaned_data["accession"]
 
         def get_all_homologs(self):
