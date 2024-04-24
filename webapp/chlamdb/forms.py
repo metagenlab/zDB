@@ -3,7 +3,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
 from django import forms
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxLengthValidator
+from django.core.validators import MaxLengthValidator, MinLengthValidator
 
 
 def get_accessions(db, all=False, plasmid=False):
@@ -167,7 +167,7 @@ def make_metabo_from(db, type_choices=None):
 
 
 def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
-                   action=""):
+                   limit_type="upper", action=""):
 
     accession_choices, rev_index = get_accessions(db, plasmid=plasmid)
 
@@ -177,13 +177,20 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
                  "data-actions-box": "true"}
         help_text = ""
         targets_validators = []
-        if limit is not None:
+        if limit is not None and limit_type == "upper":
             attrs["data-max-options"] = f"{limit}"
             help_text = f"Select a maximum of {limit} genomes"
             targets_validators.append(
                 MaxLengthValidator(
                     limit,
-                    message=f"Select a maximum of {limit} genomes")
+                    message=f"Please select at most {limit} genomes")
+            )
+        elif limit is not None and limit_type == "lower":
+            help_text = f"Select a minimum of {limit} genomes"
+            targets_validators.append(
+                MinLengthValidator(
+                    limit,
+                    message=f"Please select at least {limit} genomes")
             )
 
         targets = forms.MultipleChoiceField(

@@ -1562,6 +1562,7 @@ class PlotHeatmap(ComparisonViewMixin, View):
     @property
     def form_class(self):
         return make_venn_from(self.db, label=self.object_name_plural,
+                              limit=2, limit_type="lower",
                               action=f"/plot_heatmap/{self.object_type}")
 
     def get(self, request, *args, **kwargs):
@@ -1573,27 +1574,15 @@ class PlotHeatmap(ComparisonViewMixin, View):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
             return render(request, 'chlamdb/plot_heatmap.html',
-                          self.get_context(form=self.form,
-                                           **errors["invalid_form"]))
+                          self.get_context(form=self.form))
 
         import plotly.graph_objects as go
         import scipy.cluster.hierarchy as shc
         from scipy.cluster import hierarchy
 
         taxon_ids = self.form.get_taxids()
-
-        if len(taxon_ids) <= 1:
-            error_message = "Please select at least two genomes"
-            error_title = "Wrong input"
-            ctx = self.get_context(error=True, error_title=error_title,
-                                   error_message=error_message,
-                                   form=self.form)
-            return render(request, 'chlamdb/plot_heatmap.html', ctx)
-
         mat = self.get_hit_counts(taxon_ids, search_on="taxid")
         if mat.empty:
-            error_message = "No hits were found for the current selection."
-            error_title = "No hits"
             ctx = self.get_context(**errors["no_hits"],
                                    form=self.form)
             return render(request, 'chlamdb/plot_heatmap.html', ctx)
