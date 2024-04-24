@@ -111,7 +111,7 @@ def make_plot_form(db):
     return PlotForm
 
 
-def make_metabo_from(db, add_box=False, type_choices=None):
+def make_metabo_from(db, type_choices=None):
 
     accession_choices, rev_index = get_accessions(db)
 
@@ -127,10 +127,6 @@ def make_metabo_from(db, add_box=False, type_choices=None):
             required=True
         )
 
-        if add_box:
-            input_box = forms.CharField(
-                widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
-
         if type_choices:
             comp_type = forms.ChoiceField(
                 choices=type_choices,
@@ -144,8 +140,6 @@ def make_metabo_from(db, add_box=False, type_choices=None):
             self.helper.label_class = 'col-lg-1 col-md-6 col-sm-6'
             self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
             rows = [Row('targets')]
-            if add_box:
-                rows.append(Row('input_box'))
             if type_choices:
                 rows.append(Row('comp_type'))
 
