@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 from chlamdb.forms import make_gwas_form
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.shortcuts import render
 from django.views import View
 from ete3 import Tree
@@ -77,10 +78,7 @@ class GWASBaseView(View):
         phenotype = self.get_phenotype()
 
         if phenotype is None:
-            context = self.get_context(
-                error=True, error_title="Invalid phenotype file",
-                error_message="File could not be parsed and matched to genomes.")
-            return render(request, self.template, context)
+            return render(request, self.template, self.get_context())
 
         results, hits = self.run_gwas(phenotype, qval_threshold, max_genes)
         if results is None:
@@ -154,11 +152,21 @@ class GWASBaseView(View):
                            for taxid, genome in genomes.iterrows()}
                 phenotype.taxids = phenotype.taxids.apply(lambda x: mapping[x])
             else:
+                err = ValidationError(
+                    "File could not be parsed and matched to genomes.",
+                    code="invalid")
+                self.form.add_error("phenotype_file", err)
                 return None
             return phenotype
         else:
             taxids_with_phenotype = set(self.db.get_taxids_for_groups(
                 self.form.cleaned_data["groups"]))
+            if not set(genomes.index).difference(taxids_with_phenotype):
+                err = ValidationError(
+                    "Your selection is invalid as it contains all genomes.",
+                    code="invalid")
+                self.form.add_error("groups", err)
+                return None
             phenotype = [[taxid, 1 if taxid in taxids_with_phenotype else 0]
                          for taxid in genomes.index]
             return pd.DataFrame(phenotype, columns=["taxids", "trait"])
