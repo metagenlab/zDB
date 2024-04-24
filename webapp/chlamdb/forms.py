@@ -3,6 +3,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxLengthValidator
 
 
 def get_accessions(db, all=False, plasmid=False):
@@ -181,15 +182,22 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
                  "data-live-search": "true",
                  "data-actions-box": "true"}
         help_text = ""
+        targets_validators = []
         if limit is not None:
             attrs["data-max-options"] = f"{limit}"
             help_text = f"Select a maximum of {limit} genomes"
+            targets_validators.append(
+                MaxLengthValidator(
+                    limit,
+                    message=f"Select a maximum of {limit} genomes")
+            )
 
         targets = forms.MultipleChoiceField(
             choices=accession_choices,
             widget=forms.SelectMultiple(attrs=attrs),
             help_text=help_text,
-            required=True)
+            required=True,
+            validators=targets_validators)
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -487,6 +495,9 @@ def make_gwas_form(biodb):
                     "of the trait in the second."
         phenotype_file = forms.FileField(help_text=file_help, required=False)
 
+        groups_help = "Select groups having a given phenotype. Genomes not in"\
+                      " any of the selected groups will be considered as not"\
+                      " having the phenotype."
         groups = forms.MultipleChoiceField(
             choices=group_choices,
             widget=forms.SelectMultiple(attrs={
@@ -494,7 +505,8 @@ def make_gwas_form(biodb):
                 "class": "selectpicker",
                 "data-live-search": "true",
                 "multiple data-actions-box": "true"}),
-            required=False)
+            required=False,
+            help_text=groups_help)
 
         max_number_of_hits = forms.TypedChoiceField(
             choices=[("all", "all"),
