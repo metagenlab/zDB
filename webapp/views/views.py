@@ -858,7 +858,7 @@ class CogBarchart(CogViewMixin, View):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
             return render(request, 'chlamdb/cog_barplot.html',
-                          self.get_context(**errors["invalid_form"]))
+                          self.get_context())
 
         target_bioentries = self.form.get_taxids()
 
