@@ -377,6 +377,22 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
             )
 
             super(ExtractForm, self).__init__(*args, **kwargs)
+
+        def clean(self):
+            cleaned_data = super(ExtractForm, self).clean()
+            self.included_taxids, self.included_plasmids = self.get_include_choices()
+            self.excluded_taxids, self.excluded_plasmids = self.get_exclude_choices()
+            self.n_missing = self.get_n_missing()
+            self.n_included = len(self.included_taxids)
+            if self.included_plasmids is not None:
+                self.n_included += len(self.included_plasmids)
+            if self.n_missing >= self.n_included:
+                err = ValidationError(
+                    "This must be smaller than the number of included genomes.",
+                    code="invalid")
+                self.add_error("frequency", err)
+            return cleaned_data
+
     return ExtractForm
 
 

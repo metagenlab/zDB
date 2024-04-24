@@ -81,12 +81,12 @@ class ExtractHitsBaseView(View):
         if getattr(self, "show_results", False):
             context.update({
                 "show_results": True,
-                "n_missing": self.n_missing,
+                "n_missing": self.form.n_missing,
                 "n_hits": self.n_hits,
                 "table_headers": self.table_headers,
                 "table_data": self.table_data,
-                "included_taxids": self.included_taxids,
-                "excluded_taxids": self.excluded_taxids,
+                "included_taxids": self.form.included_taxids,
+                "excluded_taxids": self.form.excluded_taxids,
                 "selection": self.selection,
                 "result_tabs": self.result_tabs,
                 })
@@ -103,49 +103,36 @@ class ExtractHitsBaseView(View):
     def post(self, request, *args, **kwargs):
         self.form = self.extract_form_class(request.POST)
         if not self.form.is_valid():
-            self.form = self.extract_form_class()
-            return render(request, self.template,
-                          self.get_context(**errors["invalid_form"]))
+            return render(request, self.template, self.get_context())
 
         # Extract form data
-        self.included_taxids, self.included_plasmids = self.form.get_include_choices()
-        self.excluded_taxids, self.excluded_plasmids = self.form.get_exclude_choices()
-        self.n_missing = self.form.get_n_missing()
         self.single_copy = "checkbox_single_copy" in request.POST
 
-        self.n_included = len(self.included_taxids)
-        if self.included_plasmids is not None:
-            self.n_included += len(self.included_plasmids)
+        self.min_fraq = int((self.form.n_included - self.form.n_missing) /
+                            self.form.n_included * 100)
 
-        if self.n_missing >= self.n_included:
-            context = self.get_context(**errors["wrong_n_missing"])
-            return render(request, self.template, context)
-
-        self.min_fraq = int((self.n_included - self.n_missing) /
-                            self.n_included * 100)
-
-        self.n_excluded = len(self.excluded_taxids)
-        if self.excluded_plasmids is not None:
-            self.n_excluded += len(self.excluded_plasmids)
+        self.n_excluded = len(self.form.excluded_taxids)
+        if self.form.excluded_plasmids is not None:
+            self.n_excluded += len(self.form.excluded_plasmids)
 
         # Count hits for selection
-        hit_counts = self.get_hit_counts(self.included_taxids,
-                                         plasmids=self.included_plasmids,
+        hit_counts = self.get_hit_counts(self.form.included_taxids,
+                                         plasmids=self.form.included_plasmids,
                                          search_on="taxid")
         if not self.single_copy:
             hit_counts["presence"] = self._to_percent(
-                hit_counts[hit_counts > 0].count(axis=1), self.n_included)
+                hit_counts[hit_counts > 0].count(axis=1), self.form.n_included)
             hit_counts["selection"] = hit_counts.presence >= self.min_fraq
         else:
             excluded_hits = hit_counts[hit_counts > 1].count(axis=1)
             hit_counts["presence"] = self._to_percent(
-                hit_counts[hit_counts == 1].count(axis=1), self.n_included)
+                hit_counts[hit_counts == 1].count(axis=1), self.form.n_included)
             hit_counts["selection"] = ((hit_counts.presence >= self.min_fraq)
                                        & (excluded_hits == 0))
 
         if self.n_excluded > 0:
             mat_exclude = self.get_hit_counts(
-                self.excluded_taxids, plasmids=self.excluded_plasmids,
+                self.form.excluded_taxids, plasmids=self.form.excluded_plasmids,
                 search_on="taxid")
             mat_exclude["presence"] = mat_exclude[mat_exclude > 0].count(axis=1)
             mat_exclude["exclude"] = mat_exclude.presence > 0
@@ -262,9 +249,9 @@ class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
     def prepare_data(self, hit_counts, hit_counts_all):
         self.table_data = []
 
-        all_taxids = self.included_taxids
-        if self.included_plasmids is not None:
-            all_taxids += self.included_plasmids
+        all_taxids = self.form.included_taxids
+        if self.form.included_plasmids is not None:
+            all_taxids += self.form.included_plasmids
 
         annotations = self.db.get_genes_from_og(
             orthogroups=self.selection,
@@ -304,7 +291,7 @@ class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
             self.table_data.append(entry)
 
         ref_genomes = self.db.get_genomes_description(
-        ).loc[self.included_taxids].reset_index()
+        ).loc[self.form.included_taxids].reset_index()
 
         details_header, details_data = self.get_table_details(self.db, annotations)
 
