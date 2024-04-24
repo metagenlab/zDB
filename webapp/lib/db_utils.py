@@ -1483,7 +1483,8 @@ class DB:
 
     def get_taxids_for_groups(self, group_names):
         plchd = self.gen_placeholder_string(group_names)
-        query = f"SELECT taxon_id from taxon_in_group WHERE group_name IN ({plchd})"
+        query = f"SELECT DISTINCT taxon_id from taxon_in_group "\
+            f"WHERE group_name IN ({plchd})"
         results = self.server.adaptor.execute_and_fetchall(query, group_names)
         return (el[0] for el in results)
 
