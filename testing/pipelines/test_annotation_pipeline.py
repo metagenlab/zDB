@@ -2,7 +2,7 @@ import os
 
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.orm import Session
-from testing.base import BasePipelineTestCase
+from testing.pipelines.base import BasePipelineTestCase
 
 base_tables = [
     'biodatabase',
@@ -22,6 +22,7 @@ base_tables = [
     'filenames',
     'gene_phylogeny',
     'genome_summary',
+    'groups',
     'ko_class',
     'ko_def',
     'ko_module_def',
@@ -42,6 +43,7 @@ base_tables = [
     'seqfeature_relationship',
     'sequence_hash_dictionnary',
     'taxon',
+    'taxon_in_group',
     'taxon_name',
     'term',
     'term_dbxref',
@@ -72,18 +74,13 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.session = Session(self.engine)
         self.metadata_obj.reflect(bind=self.engine)
 
-    @property
-    def test_dir(self):
-        return os.path.dirname(os.path.abspath(__file__))
-
     def query(self, tablename):
         return self.session.query(self.metadata_obj.tables[tablename])
 
     def setUp(self):
         super(TestAnnotationPipeline, self).setUp()
-        filedir = os.path.dirname(os.path.abspath(__file__))
         self.nf_params["input"] = os.path.join(
-            filedir, "assets", "test_input.csv")
+            self.test_dir, "assets", "test_input.csv")
 
     def assert_created_files(self, proc, files):
         created_files = os.listdir(proc.path)
@@ -97,13 +94,14 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertEqual(304, self.query("og_hits").count())
         self.assertEqual(304, self.query("sequence_hash_dictionnary").count())
         self.assertEqual(32, self.query("term").count())
+        self.assertEqual(3, self.query("groups").count())
+        self.assertEqual(6, self.query("taxon_in_group").count())
 
     def test_base_pipeline(self):
         execution = self.execute_pipeline()
         self.assert_success(execution)
 
         self.load_db(execution)
-
         # Let's check that tables were correctly created and filled
         self.assertItemsEqual(base_tables, self.metadata_obj.tables.keys())
         self.assert_db_base_table_row_counts()

@@ -84,7 +84,7 @@ process check_gbk {
         if not os.path.isdir("filtered"):
           os.mkdir("filtered")
 
-        annotations.check_gbk("$input_file")
+        annotations.InputHandler("$input_file").check_and_revise_gbks()
     """
 }
 
@@ -562,6 +562,7 @@ process load_base_db {
 
     input:
         path db_base
+        path input_file
         path gbks
         path orthofinder
         path alignments
@@ -587,6 +588,9 @@ process load_base_db {
 
     print("Loading gbks", flush=True)
     setup_chlamdb.load_gbk(gbk_list, kwargs, "$db_base")
+
+    print("Loading groups", flush=True)
+    setup_chlamdb.load_groups("$input_file", kwargs, "$db_base")
 
     # kept for now, need to check whether this is really necessary to keep the hash
     print("Loading seq hashes", flush=True)
@@ -964,7 +968,7 @@ workflow {
     checkm_table = checkm_analyse(faa_files.collect())
 
     db = setup_db(Channel.fromPath("${params.zdb.file}"))
-    db = load_base_db(db, checked_gbks, orthogroups, to_load_alignment.collect(), nr_mapping_to_db_setup, checkm_table, core_genome_phylogeny, gene_phylogeny.collect(), og_summary)
+    db = load_base_db(db, input_file, checked_gbks, orthogroups, to_load_alignment.collect(), nr_mapping_to_db_setup, checkm_table, core_genome_phylogeny, gene_phylogeny.collect(), og_summary)
 
     if(params.pfam) {
         Channel.fromPath("${params.pfam_db}", type: "dir").set { pfam_db }

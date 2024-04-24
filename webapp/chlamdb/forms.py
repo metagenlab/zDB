@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-
-import re
-
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
 from django import forms
-
-choices = []
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxLengthValidator
 
 
 def get_accessions(db, all=False, plasmid=False):
@@ -185,15 +182,22 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
                  "data-live-search": "true",
                  "data-actions-box": "true"}
         help_text = ""
+        targets_validators = []
         if limit is not None:
             attrs["data-max-options"] = f"{limit}"
             help_text = f"Select a maximum of {limit} genomes"
+            targets_validators.append(
+                MaxLengthValidator(
+                    limit,
+                    message=f"Select a maximum of {limit} genomes")
+            )
 
         targets = forms.MultipleChoiceField(
             choices=accession_choices,
             widget=forms.SelectMultiple(attrs=attrs),
             help_text=help_text,
-            required=True)
+            required=True,
+            validators=targets_validators)
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -476,15 +480,33 @@ def make_blast_form(biodb):
     return BlastForm
 
 
+def get_groups(db):
+    return [(el[0], el[0]) for el in db.get_groups()]
+
+
 def make_gwas_form(biodb):
-    accession_choices, rev_index = get_accessions(biodb, all=True)
+
+    group_choices = get_groups(biodb)
 
     class GwasForm(forms.Form):
 
         file_help = "CSV file containing 2 columns: taxon IDs or taxon names "\
                     "in the first column and presence (1) or absence (0) "\
                     "of the trait in the second."
-        phenotype_file = forms.FileField(help_text=file_help)
+        phenotype_file = forms.FileField(help_text=file_help, required=False)
+
+        groups_help = "Select groups having a given phenotype. Genomes not in"\
+                      " any of the selected groups will be considered as not"\
+                      " having the phenotype."
+        groups = forms.MultipleChoiceField(
+            choices=group_choices,
+            widget=forms.SelectMultiple(attrs={
+                'size': '1',
+                "class": "selectpicker",
+                "data-live-search": "true",
+                "multiple data-actions-box": "true"}),
+            required=False,
+            help_text=groups_help)
 
         max_number_of_hits = forms.TypedChoiceField(
             choices=[("all", "all"),
@@ -510,6 +532,7 @@ def make_gwas_form(biodb):
                 Fieldset(
                     "",
                     Row("phenotype_file"),
+                    Row("groups", style="margin-top:1em"),
                     Row('bonferroni_cutoff', style="margin-top:1em"),
                     Row('max_number_of_hits', style="margin-top:1em"),
                     Submit('submit', 'Submit',
@@ -518,6 +541,17 @@ def make_gwas_form(biodb):
                     css_class="col-lg-5 col-md-6 col-sm-6")
             )
             super(GwasForm, self).__init__(*args, **kwargs)
+
+        def clean(self):
+            cleaned_data = super(GwasForm, self).clean()
+            self.phenotype_file_or_groups()
+            return cleaned_data
+
+        def phenotype_file_or_groups(self):
+            has_groups = bool(self.cleaned_data["groups"])
+            has_file = bool(self.cleaned_data["phenotype_file"])
+            if (has_groups and has_file) or not (has_groups or has_file):
+                raise ValidationError('You have to provide either "Groups" or "Phenotype file" but not both.')
 
     return GwasForm
 

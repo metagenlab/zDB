@@ -9,6 +9,8 @@ from Bio import SeqIO, SeqUtils
 from lib import KO_module, search_bar
 from lib.db_utils import DB
 
+from annotations import InputHandler
+
 
 # assumes orthofinder named: OG000N
 # returns the N as int
@@ -76,6 +78,20 @@ def load_gbk(gbks, args, db_file):
     db.commit()
     db.update_plasmid_status(bioentry_plasmids)
     db.set_status_in_config_table("gbk_files", 1)
+    db.commit()
+
+
+def load_groups(input_file, kwargs, db_file):
+    db = DB.load_db(db_file, kwargs)
+    csv_entries, group_names = InputHandler.parse_csv(input_file)
+    filenames_to_taxid = db.get_filenames_to_taxon_id()
+    group_taxon = []
+    for entry in csv_entries:
+        taxon_id = filenames_to_taxid[os.path.splitext(entry.file)[0]]
+        for group in entry.groups:
+            group_taxon.append((group, taxon_id))
+
+    db.load_groups([[name] for name in group_names.values()], group_taxon)
     db.commit()
 
 
