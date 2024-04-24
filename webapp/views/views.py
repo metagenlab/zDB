@@ -1512,8 +1512,6 @@ def circos(request):
         form = circos_form_class()
 
     local_vars = my_locals(locals())
-    # local_vars["form"] = form
-
     return render(request, 'chlamdb/circos.html', local_vars)
 
 
@@ -1612,7 +1610,6 @@ def kegg_genomes(request):
 
     form = single_genome_form(request.POST)
     if not form.is_valid():
-        form = single_genome_form()
         return render(request, 'chlamdb/kegg_genomes.html',
                       my_locals(locals()))
 
@@ -1660,7 +1657,6 @@ def kegg_genomes_modules(request):
 
     form = single_genome_form(request.POST)
     if not form.is_valid():
-        form = single_genome_form()
         return render(request, 'chlamdb/kegg_genomes_modules.html',
                       my_locals(locals()))
 
@@ -1737,10 +1733,8 @@ def kegg_module_subcat(request):
 
     form = module_overview_form(request.POST)
     if not form.is_valid():
-        form = module_overview_form()
-        context = my_locals(locals())
-        context.update(errors["invalid_form"])
-        return render(request, 'chlamdb/module_subcat.html', context)
+        return render(request, 'chlamdb/module_subcat.html',
+                      my_locals(locals()))
 
     cat = form.cleaned_data["subcategory"]
     ko_count_subcat = db.get_ko_count_cat(subcategory=cat)
@@ -1810,10 +1804,8 @@ def kegg_module(request):
 
     form = module_overview_form(request.POST)
     if not form.is_valid():
-        context = my_locals(locals())
-        context.update(errors["invalid_form"])
-        form = module_overview_form()
-        return render(request, 'chlamdb/module_overview.html', context)
+        return render(request, 'chlamdb/module_overview.html',
+                      my_locals(locals()))
 
     cat = form.cleaned_data["category"]
     modules_infos = db.get_modules_info(ids=[cat], search_on="category")
@@ -1880,14 +1872,9 @@ def module_comparison(request):
 
     form = comp_metabo_form(request.POST)
     if not form.is_valid():
-        form = comp_metabo_form()
         return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
 
     taxids = form.get_choices()
-
-    if len(taxids) == 0:
-        form = comp_metabo_form()
-        return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
 
     module_hits = db.get_ko_count_cat(taxon_ids=taxids)
     tipo = type(taxids)
