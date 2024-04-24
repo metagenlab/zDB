@@ -124,7 +124,7 @@ def make_metabo_from(db, add_box=False, type_choices=None):
                        "data-live-search": "true",
                        "multiple data-actions-box": "true"}
                 ),
-            required=False
+            required=True
         )
 
         if add_box:
