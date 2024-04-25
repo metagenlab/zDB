@@ -703,7 +703,7 @@ class CustomPlotsForm(forms.Form):
             Column(
                 Row(Column(
                         "entries",
-                        css_class='form-group col-lg-6 col-md-6 col-sm-12'),
+                        css_class='form-group col-lg-12 col-md-12 col-sm-12'),
                     ),
                 Row(Submit('submit', 'Make plot'),
                     css_class='form-group col-lg-12 col-md-12 col-sm-12'),
