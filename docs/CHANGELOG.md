@@ -9,6 +9,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Changed
 
+- Display form validation errors next to the corresponding fields. ([#83](https://github.com/metagenlab/zDB/pull/83)) (Niklaus Johner)
 - Filter VF hits by SeqID and coverage and keep one hit per locus. ([#77](https://github.com/metagenlab/zDB/pull/77)) (Niklaus Johner)
 - Improve layout for various views, making better use of available space. ([#70](https://github.com/metagenlab/zDB/pull/70)) (Niklaus Johner)
 - Configure repository to publish the docs to [readthedocs](https://zdb.readthedocs.io)
