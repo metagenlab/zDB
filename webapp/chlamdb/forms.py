@@ -488,21 +488,27 @@ def make_blast_form(biodb):
                                        "data-live-search": "true"})
             )
 
+        input_help = "This can be either an amino-acid or a nucleotide "\
+                     "sequence, or a set (one or more) of fasta sequences."
         blast_input = forms.CharField(
-            widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
+            widget=forms.Textarea(attrs={"placeholder": input_help, "rows": 10}))
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.helper = FormHelper()
             self.helper.form_method = 'post'
-            self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
-            self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
             self.helper.layout = Layout(
                 Fieldset(
-                    Row("BLAST"),
-                    Row('target'),
-                    Row('blast_input'),
-                    css_class="col-lg-5 col-md-6 col-sm-6")
+                    "",
+                    Row(
+                        Column("blast", css_class='col-lg-4 col-md-4 col-sm-12'),
+                        Column("max_number_of_hits", css_class='col-lg-4 col-md-4 col-sm-12'),
+                        Column('target', css_class='col-lg-4 col-md-4 col-sm-12'),
+                    ),
+                    Row(Column('blast_input', css_class='col-lg-12 col-md-12 col-sm-12')),
+                    Submit('submit', 'Submit',
+                           style="padding-left:15px; margin-top:1em"),
+                    css_class="col-lg-10 col-md-10 col-sm-12")
             )
             super(BlastForm, self).__init__(*args, **kwargs)
 

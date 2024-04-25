@@ -144,6 +144,8 @@ margin-top: 15em;
 <script type="text/javascript" src="{% static 'js/blaster.min.js' %}"></script>
 
 {% include "chlamdb/header.html" %}
+{% load crispy_forms_tags %}
+
 </head>
 
 <body>
@@ -175,17 +177,10 @@ margin-top: 15em;
         </div>
 
 
-
-      <div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
-        <a href="#" class="close" data-dismiss="alert">&times;</a>
-        <strong>Note!</strong>  The blast input can be either an amino-acid or a nucleotide sequence, or a set (one or more) of fasta sequences.
-      </div>
-
-                  <form action="{% url "blast" %}" method="post">{% csrf_token %}
-                    {{ form.as_p }}
-                    <input type="submit" value="Submit" />
-                  </form>
-
+                  {% block content %}
+                    {% csrf_token %}
+                    {% crispy form %}
+                  {% endblock %}
 
                   {% if wrong_format %}
             <div class="panel panel-danger" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
