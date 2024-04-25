@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+from io import StringIO
+
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
 from django import forms
@@ -500,6 +505,58 @@ def make_blast_form(biodb):
                     css_class="col-lg-5 col-md-6 col-sm-6")
             )
             super(BlastForm, self).__init__(*args, **kwargs)
+
+        def _get_records(self):
+            input_sequence = self.cleaned_data['blast_input']
+
+            if '>' in input_sequence:
+                self.no_query_name = False
+                try:
+                    records = [i for i in SeqIO.parse(
+                        StringIO(input_sequence), 'fasta')]
+                    for record in records:
+                        if len(record.seq) == 0:
+                            raise ValidationError(
+                                "Empty sequence in input", code="invalid")
+
+                except Exception:
+                    raise ValidationError(
+                        "Error while parsing the fasta query", code="invalid")
+            else:
+                self.no_query_name = True
+                input_sequence = "".join(input_sequence.split()).upper()
+                records = [SeqRecord(Seq(input_sequence))]
+            return records
+
+        def _check_sequence_contents(self, records):
+            dna = set("ATGCNRYKMSWBDHV")
+            prot = set('ACDEFGHIKLMNPQRSTVWYXZJOU')
+            sequence_set = set()
+            for rec in records:
+                sequence_set = sequence_set.union(set(rec.seq.upper()))
+            check_seq_DNA = sequence_set - dna
+            check_seq_prot = sequence_set - prot
+
+            blast_type = self.cleaned_data["blast"]
+            if check_seq_prot and blast_type in ["blastp", "tblastn"]:
+                plural = len(check_seq_prot) > 1
+                wrong_chars = ", ".join(check_seq_prot)
+                errmsg = (f"Unexpected character{'s' if plural else ''}"
+                          f" in amino-acid query: {wrong_chars}")
+                raise ValidationError(errmsg, code="invalid")
+
+            elif check_seq_DNA and blast_type in ["blastn", "blastn_ffn",
+                                                  "blast_fna", "blastx"]:
+                wrong_chars = ", ".join(check_seq_DNA)
+                plural = len(check_seq_DNA) > 1
+                errmsg = (f"Unexpected character{'s' if plural else ''}"
+                          f" in nucleotide query: {wrong_chars}")
+                raise ValidationError(errmsg, code="invalid")
+
+        def clean_blast_input(self):
+            self.records = self._get_records()
+            self._check_sequence_contents(self.records)
+            return self.cleaned_data['blast_input']
 
         def get_target(self):
             target = self.cleaned_data["target"]

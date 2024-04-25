@@ -21,8 +21,6 @@ from Bio.Blast.Applications import (NcbiblastnCommandline,
                                     NcbiblastpCommandline,
                                     NcbiblastxCommandline,
                                     NcbitblastnCommandline)
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord
 from chlamdb.forms import (make_blast_form, make_circos_form, make_metabo_from,
                            make_module_overview_form,
                            make_pathway_overview_form, make_plot_form,
@@ -1083,67 +1081,12 @@ def blast(request):
         return render(request, 'chlamdb/blast.html',
                       my_locals({"form": form, "page_title": page_title}))
 
-    input_sequence = form.cleaned_data['blast_input']
     number_blast_hits = form.cleaned_data['max_number_of_hits']
     blast_type = form.cleaned_data['blast']
     target = form.get_target()
-    no_query_name = False
-
-    if '>' in input_sequence:
-        try:
-            records = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
-            for record in records:
-                if len(record.seq) == 0:
-                    context = {
-                        "error_message": "Empty sequence in input",
-                        "error_title": "Query format error", "envoi": True,
-                        "form": form, "wrong_format": True,
-                        "page_title": page_title}
-                    return render(request, 'chlamdb/blast.html',
-                                  my_locals(context))
-        except Exception:
-            context = {"error_message": "Error while parsing the fasta query",
-                       "error_title": "Query format error",
-                       "envoi": True, "form": form, "wrong_format": True,
-                       "page_title": page_title}
-            return render(request, 'chlamdb/blast.html', my_locals(context))
-    else:
-        no_query_name = True
-        input_sequence = "".join(input_sequence.split()).upper()
-        records = [SeqRecord(Seq(input_sequence))]
-
-    dna = set("ATGCNRYKMSWBDHV")
-    prot = set('ACDEFGHIKLMNPQRSTVWYXZJOU')
-    sequence_set = set()
-    for rec in records:
-        sequence_set = sequence_set.union(set(rec.seq.upper()))
-    check_seq_DNA = sequence_set - dna
-    check_seq_prot = sequence_set - prot
-
-    if check_seq_prot and blast_type in ["blastp", "tblastn"]:
-        wrong_chars = ", ".join(check_seq_prot)
-        if len(check_seq_prot) > 1:
-            errmsg = f"Unexpected characters in amino-acid query: {wrong_chars}"
-        else:
-            errmsg = f"Unexpected character in amino-acid query: {wrong_chars}"
-        context = {"error_message": errmsg, "error_title": "Query format error",
-                   "envoi": True, "form": form, "wrong_format": True,
-                   "page_title": page_title}
-        return render(request, 'chlamdb/blast.html', my_locals(context))
-    elif check_seq_DNA and blast_type in ["blastn", "blastn_ffn",
-                                          "blast_fna", "blastx"]:
-        wrong_chars = ", ".join(check_seq_DNA)
-        if len(check_seq_DNA) > 1:
-            errmsg = f"Unexpected characters in nucleotide query: {wrong_chars}"
-        else:
-            errmsg = f"Unexpected character in nucleotide query: {wrong_chars}"
-        context = {"error_message": errmsg, "wrong_format": True,
-                   "error_title": "Query format error", "envoi": True,
-                   "form": form, "page_title": page_title}
-        return render(request, 'chlamdb/blast.html', my_locals(context))
 
     query_file = NamedTemporaryFile(mode='w')
-    SeqIO.write(records, query_file, "fasta")
+    SeqIO.write(form.records, query_file, "fasta")
     query_file.flush()
 
     if target == 'all':
@@ -1179,7 +1122,7 @@ def blast(request):
     else:
         if target == "all":
             asset_path = gen_blast_heatmap(db, blast_stdout,
-                                           blast_type, no_query_name)
+                                           blast_type, form.no_query_name)
         rand_id = id_generator(6)
         blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
         f = open(blast_file_l, 'w')
