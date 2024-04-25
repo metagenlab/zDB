@@ -507,7 +507,7 @@ def make_blast_form(biodb):
                     ),
                     Row(Column('blast_input', css_class='col-lg-12 col-md-12 col-sm-12')),
                     Submit('submit', 'Submit',
-                           style="padding-left:15px; margin-top:1em"),
+                           style="padding-left:15px; margin-top:1em; margin-bottom:15px "),
                     css_class="col-lg-10 col-md-10 col-sm-12")
             )
             super(BlastForm, self).__init__(*args, **kwargs)
