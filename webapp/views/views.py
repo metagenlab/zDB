@@ -457,9 +457,8 @@ def KEGG_module_map(request, module_name):
     try:
         module_id = int(module_name[len("M"):])
     except Exception:
-        error = True
-        error_title = "Unknown accession"
-        error_message = "Accepts protein ids, locus tags and orthogroup IDs"
+        context = my_locals(locals())
+        context.update(errors["unknown_accession"])
         return render(request, 'chlamdb/KEGG_module_map.html',
                       my_locals(locals()))
 

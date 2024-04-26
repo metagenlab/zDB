@@ -5,24 +5,14 @@ errors = {
         "error_title": "Empty result set.",
         "error_message":  "No hits were found for the current selection."
     },
-    "invalid_form": {
-        "error": True,
-        "error_title": "Invalid input.",
-        "error_message":  "Form data is invalid."
-    },
-    "generic_error": {
-        "error": True,
-        "error_title": "Error.",
-        "error_message":  "Something went wrong."
-    },
     "no_module_info": {
         "error": True,
         "error_title": "No information.",
         "error_message":  "No information was found for this module."
     },
-    "too_many_targets": {
+    "unknown_accession": {
         "error": True,
-        "error_title": "Invalid form.",
-        "error_message":  "Venn diagrams are limited to 6 genomes."
-    }
+        "error_title": "Unknown accession.",
+        "error_message":  "Accepts protein ids, locus tags and orthogroup IDs."
+    },
 }
