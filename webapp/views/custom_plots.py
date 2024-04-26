@@ -58,9 +58,7 @@ class CusomPlotsView(View):
     def post(self, request, *args, **kwargs):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
-            self.form = self.form_class()
-            return render(request, self.template,
-                          self.get_context(**errors["invalid_form"]))
+            return render(request, self.template, self.get_context())
 
         entries, entry2label = self.form.get_entries()
 
