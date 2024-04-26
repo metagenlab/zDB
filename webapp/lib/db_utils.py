@@ -2631,6 +2631,28 @@ class DB:
         query = "SELECT COUNT(*) FROM (SELECT DISTINCT ko_id FROM ko_hits)"
         return self.server.adaptor.execute_and_fetchall(query)[0][0]
 
+    def check_entry_existence(self, entry_id, entry_col, table):
+        query = f'SELECT 1 FROM {table} WHERE {entry_col}="{entry_id}" LIMIT 1'
+        return bool(self.server.adaptor.execute_one(query))
+
+    def check_og_entry_id(self, entry_id):
+        return self.check_entry_existence(entry_id, "orthogroup", "og_hits")
+
+    def check_ko_entry_id(self, entry_id):
+        return self.check_entry_existence(entry_id, "ko_id", "ko_def")
+
+    def check_cog_entry_id(self, entry_id):
+        return self.check_entry_existence(entry_id, "cog_id", "cog_names")
+
+    def check_pfam_entry_id(self, entry_id):
+        return self.check_entry_existence(entry_id, "pfam_id", "pfam_table")
+
+    def check_vf_entry_id(self, entry_id):
+        return self.check_entry_existence(entry_id, "vf_gene_id", "vf_defs")
+
+    def check_amr_entry_id(self, entry_id):
+        return self.check_entry_existence(entry_id, "gene", "amr_hits")
+
     def gen_placeholder_string(self, args):
         return ",".join(self.placeholder for _ in args)
 

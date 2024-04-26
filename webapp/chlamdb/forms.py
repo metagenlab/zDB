@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import namedtuple
 from io import StringIO
 
 from Bio import SeqIO
@@ -9,6 +10,7 @@ from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, MinLengthValidator
+from views.utils import EntryIdParser
 
 
 def get_accessions(db, all=False, plasmid=False):
@@ -693,8 +695,11 @@ class CustomPlotsForm(forms.Form):
         widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}),
         required=True, label="Entry IDs", help_text=help_text)
 
-    def __init__(self, *args, **kwargs):
+    Entry = namedtuple("Entry", "id label type")
+
+    def __init__(self, db, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.db = db
         self.helper = FormHelper()
 
         self.helper.form_method = 'post'
@@ -711,14 +716,20 @@ class CustomPlotsForm(forms.Form):
             )
         )
 
-    def get_entries(self):
+    def clean_entries(self):
         raw_entries = self.cleaned_data["entries"].split(",")
+        parser = EntryIdParser(self.db)
         entries = []
-        entry2label = {}
         for entry in raw_entries:
             entry = entry.strip()
             if ":" in entry:
                 entry, label = entry.split(":", 1)
-                entry2label[entry] = label
-            entries.append(entry)
-        return entries, entry2label
+            else:
+                label = entry
+            try:
+                object_type, entry_id = parser.id_to_object_type(entry)
+            except Exception:
+                raise ValidationError(f'Invalid identifier "{entry}".',
+                                      code="invalid")
+            entries.append(self.Entry(entry_id, label, object_type))
+        return entries
