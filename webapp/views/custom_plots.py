@@ -6,10 +6,9 @@ from ete3 import Tree
 from lib.db_utils import DB
 from lib.ete_phylo import EteTree, SimpleColorColumn
 
-from views.errors import errors
 from views.mixins import ComparisonViewMixin
 from views.object_type_metadata import my_locals
-from views.utils import EntryIdIdentifier, ResultTab, TabularResultTab
+from views.utils import ResultTab, TabularResultTab
 
 
 class CusomPlotsView(View):
@@ -52,29 +51,25 @@ class CusomPlotsView(View):
         return my_locals(context)
 
     def get(self, request, *args, **kwargs):
-        self.form = self.form_class()
+        self.form = self.form_class(self.db)
         return render(request, self.template, self.get_context())
 
     def post(self, request, *args, **kwargs):
-        self.form = self.form_class(request.POST)
+        self.form = self.form_class(self.db, request.POST)
         if not self.form.is_valid():
-            self.form = self.form_class()
-            return render(request, self.template,
-                          self.get_context(**errors["invalid_form"]))
+            return render(request, self.template, self.get_context())
 
-        entries, entry2label = self.form.get_entries()
+        entries = self.form.cleaned_data["entries"]
 
         # We make 1 query for each entry, although we could of course make
         # a single query for each object type, but I don't expect any
         # performance issues here, so I'd rather keep it simple (and maintain
         # the order of the entries as defined by the user).
-        entry_id_identifier = EntryIdIdentifier()
         counts = []
         for entry in entries:
-            object_type, entry_id = entry_id_identifier.id_to_object_type(entry)
-            mixin = ComparisonViewMixin.type2mixin[object_type]
-            hits = mixin().get_hit_counts([entry_id], search_on=object_type)
-            hits = hits.rename({entry_id: entry2label.get(entry, entry)})
+            mixin = ComparisonViewMixin.type2mixin[entry.type]
+            hits = mixin().get_hit_counts([entry.id], search_on=entry.type)
+            hits = hits.rename({entry.id: entry.label})
             counts.append(hits)
 
         genome_descriptions = self.db.get_genomes_description()

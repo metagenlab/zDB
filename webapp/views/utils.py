@@ -283,7 +283,7 @@ class TabularResultTab(ResultTab):
             tabid, title, template, show_badge=show_badge, badge=badge, **kwargs)
 
 
-class EntryIdIdentifier():
+class EntryIdParser():
 
     og_re = re.compile("group_([0-9]*)")
     cog_re = re.compile("COG([0-9]{4})")
@@ -291,27 +291,38 @@ class EntryIdIdentifier():
     ko_re = re.compile("K([0-9]{5})")
     vf_re = re.compile("VFG[0-9]{6}")
 
+    def __init__(self, db):
+        self.db = db
+
     def id_to_object_type(self, identifier):
         match = self.og_re.match(identifier)
-        if match:
-            return "orthogroup", int(match.groups()[0])
+        parsed_id = match and int(match.groups()[0])
+        if parsed_id and self.db.check_orthogroup_entry_id(parsed_id):
+            return "orthogroup", parsed_id
 
         match = self.cog_re.match(identifier)
-        if match:
-            return "cog", int(match.groups()[0])
+        parsed_id = match and int(match.groups()[0])
+        if parsed_id and self.db.check_cog_entry_id(parsed_id):
+            return "cog", parsed_id
 
         match = self.pfam_re.match(identifier)
-        if match:
-            return "pfam", int(match.groups()[0])
+        parsed_id = match and int(match.groups()[0])
+        if parsed_id and self.db.check_pfam_entry_id(parsed_id):
+            return "pfam", parsed_id
 
         match = self.ko_re.match(identifier)
-        if match:
-            return "ko", int(match.groups()[0])
+        parsed_id = match and int(match.groups()[0])
+        if parsed_id and self.db.check_ko_entry_id(parsed_id):
+            return "ko", parsed_id
 
         match = self.vf_re.match(identifier)
-        if match:
+        if match and self.db.check_vf_entry_id(identifier):
             return "vf", identifier
-        return "amr", identifier
+
+        if self.db.check_amr_entry_id(identifier):
+            return "amr", identifier
+
+        return None
 
 
 def locusx_genomic_region(db, seqid, window):

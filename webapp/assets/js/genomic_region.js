@@ -10,7 +10,7 @@
 //   	strand: either +1 or -1
 //   	locus_tag
 //   highlight: a list of locus tag to highlight in red
-function createGenomicRegion(div, div_width, svg_id, regions, connections, highlight, window_size, ident_range) {
+function createGenomicRegion(div, div_width, svg_id, regions, connections, highlight, ident_range) {
 	const text_field_size = 40;
 	const margin = { top:5, right: 5, bottom:5, left:5 };
 	const max_arrow_size = 350;

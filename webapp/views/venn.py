@@ -51,15 +51,9 @@ class VennBaseView(View):
     def post(self, request, *args, **kwargs):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
-            self.form = self.form_class()
-            return render(request, self.template,
-                          self.get_context(**errors["invalid_form"]))
+            return render(request, self.template, self.get_context())
 
         self.targets = self.form.get_taxids()
-        if len(self.targets) > 6:
-            self.form = self.form_class()
-            return render(request, self.template,
-                          self.get_context(**errors["too_many_targets"]))
         return self.render_venn(request)
 
     def render_venn(self, request):

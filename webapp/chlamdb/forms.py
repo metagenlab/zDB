@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
+from collections import namedtuple
+from io import StringIO
+
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
 from django import forms
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxLengthValidator
+from django.core.validators import MaxLengthValidator, MinLengthValidator
+from views.utils import EntryIdParser
 
 
 def get_accessions(db, all=False, plasmid=False):
@@ -53,8 +60,11 @@ def make_plot_form(db):
         accession = forms.CharField(max_length=100,
                                     required=True,
                                     label=f"locus_tag (e.g. {locus})")
-        region_size = forms.CharField(max_length=5,
-                                      label="Region size (bp)", initial=8000, required=False)
+        region_size = forms.IntegerField(min_value=5000,
+                                         max_value=100000,
+                                         label="Region size (bp)",
+                                         initial=8000,
+                                         required=True)
         genomes = forms.MultipleChoiceField(choices=accession_choices,
                                             widget=forms.SelectMultiple(attrs={
                                                 'size': '1',
@@ -90,8 +100,18 @@ def make_plot_form(db):
                     css_class="col-lg-8 col-md-8 col-sm-12")
                 )
             )
+            self.db = db
 
-        def get_accession(self):
+        def clean_accession(self):
+            accession = self.cleaned_data["accession"]
+            prot_info = db.get_proteins_info(
+                ids=[accession], search_on="locus_tag", as_df=True)
+            if prot_info.empty:
+                raise ValidationError("Accession not found", code="invalid")
+            # Accession is now the sequence id
+            return int(prot_info.index[0])
+
+        def get_seqid(self):
             return self.cleaned_data["accession"]
 
         def get_all_homologs(self):
@@ -111,7 +131,7 @@ def make_plot_form(db):
     return PlotForm
 
 
-def make_metabo_from(db, add_box=False, type_choices=None):
+def make_metabo_from(db, type_choices=None):
 
     accession_choices, rev_index = get_accessions(db)
 
@@ -124,12 +144,8 @@ def make_metabo_from(db, add_box=False, type_choices=None):
                        "data-live-search": "true",
                        "multiple data-actions-box": "true"}
                 ),
-            required=False
+            required=True
         )
-
-        if add_box:
-            input_box = forms.CharField(
-                widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
 
         if type_choices:
             comp_type = forms.ChoiceField(
@@ -144,8 +160,6 @@ def make_metabo_from(db, add_box=False, type_choices=None):
             self.helper.label_class = 'col-lg-1 col-md-6 col-sm-6'
             self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
             rows = [Row('targets')]
-            if add_box:
-                rows.append(Row('input_box'))
             if type_choices:
                 rows.append(Row('comp_type'))
 
@@ -173,7 +187,7 @@ def make_metabo_from(db, add_box=False, type_choices=None):
 
 
 def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
-                   action=""):
+                   limit_type="upper", action=""):
 
     accession_choices, rev_index = get_accessions(db, plasmid=plasmid)
 
@@ -183,13 +197,20 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
                  "data-actions-box": "true"}
         help_text = ""
         targets_validators = []
-        if limit is not None:
+        if limit is not None and limit_type == "upper":
             attrs["data-max-options"] = f"{limit}"
             help_text = f"Select a maximum of {limit} genomes"
             targets_validators.append(
                 MaxLengthValidator(
                     limit,
-                    message=f"Select a maximum of {limit} genomes")
+                    message=f"Please select at most {limit} genomes")
+            )
+        elif limit is not None and limit_type == "lower":
+            help_text = f"Select a minimum of {limit} genomes"
+            targets_validators.append(
+                MinLengthValidator(
+                    limit,
+                    message=f"Please select at least {limit} genomes")
             )
 
         targets = forms.MultipleChoiceField(
@@ -377,6 +398,22 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
             )
 
             super(ExtractForm, self).__init__(*args, **kwargs)
+
+        def clean(self):
+            cleaned_data = super(ExtractForm, self).clean()
+            self.included_taxids, self.included_plasmids = self.get_include_choices()
+            self.excluded_taxids, self.excluded_plasmids = self.get_exclude_choices()
+            self.n_missing = self.get_n_missing()
+            self.n_included = len(self.included_taxids)
+            if self.included_plasmids is not None:
+                self.n_included += len(self.included_plasmids)
+            if self.n_missing >= self.n_included:
+                err = ValidationError(
+                    "This must be smaller than the number of included genomes.",
+                    code="invalid")
+                self.add_error("frequency", err)
+            return cleaned_data
+
     return ExtractForm
 
 
@@ -453,23 +490,81 @@ def make_blast_form(biodb):
                                        "data-live-search": "true"})
             )
 
+        input_help = "This can be either an amino-acid or a nucleotide "\
+                     "sequence, or a set (one or more) of fasta sequences."
         blast_input = forms.CharField(
-            widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
+            widget=forms.Textarea(attrs={"placeholder": input_help, "rows": 10}))
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.helper = FormHelper()
             self.helper.form_method = 'post'
-            self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
-            self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
             self.helper.layout = Layout(
                 Fieldset(
-                    Row("BLAST"),
-                    Row('target'),
-                    Row('blast_input'),
-                    css_class="col-lg-5 col-md-6 col-sm-6")
+                    "",
+                    Row(
+                        Column("blast", css_class='col-lg-4 col-md-4 col-sm-12'),
+                        Column("max_number_of_hits", css_class='col-lg-4 col-md-4 col-sm-12'),
+                        Column('target', css_class='col-lg-4 col-md-4 col-sm-12'),
+                    ),
+                    Row(Column('blast_input', css_class='col-lg-12 col-md-12 col-sm-12')),
+                    Submit('submit', 'Submit',
+                           style="padding-left:15px; margin-top:1em; margin-bottom:15px "),
+                    css_class="col-lg-10 col-md-10 col-sm-12")
             )
             super(BlastForm, self).__init__(*args, **kwargs)
+
+        def _get_records(self):
+            input_sequence = self.cleaned_data['blast_input']
+
+            if '>' in input_sequence:
+                self.no_query_name = False
+                try:
+                    records = [i for i in SeqIO.parse(
+                        StringIO(input_sequence), 'fasta')]
+                    for record in records:
+                        if len(record.seq) == 0:
+                            raise ValidationError(
+                                "Empty sequence in input", code="invalid")
+
+                except Exception:
+                    raise ValidationError(
+                        "Error while parsing the fasta query", code="invalid")
+            else:
+                self.no_query_name = True
+                input_sequence = "".join(input_sequence.split()).upper()
+                records = [SeqRecord(Seq(input_sequence))]
+            return records
+
+        def _check_sequence_contents(self, records):
+            dna = set("ATGCNRYKMSWBDHV")
+            prot = set('ACDEFGHIKLMNPQRSTVWYXZJOU')
+            sequence_set = set()
+            for rec in records:
+                sequence_set = sequence_set.union(set(rec.seq.upper()))
+            check_seq_DNA = sequence_set - dna
+            check_seq_prot = sequence_set - prot
+
+            blast_type = self.cleaned_data["blast"]
+            if check_seq_prot and blast_type in ["blastp", "tblastn"]:
+                plural = len(check_seq_prot) > 1
+                wrong_chars = ", ".join(check_seq_prot)
+                errmsg = (f"Unexpected character{'s' if plural else ''}"
+                          f" in amino-acid query: {wrong_chars}")
+                raise ValidationError(errmsg, code="invalid")
+
+            elif check_seq_DNA and blast_type in ["blastn", "blastn_ffn",
+                                                  "blast_fna", "blastx"]:
+                wrong_chars = ", ".join(check_seq_DNA)
+                plural = len(check_seq_DNA) > 1
+                errmsg = (f"Unexpected character{'s' if plural else ''}"
+                          f" in nucleotide query: {wrong_chars}")
+                raise ValidationError(errmsg, code="invalid")
+
+        def clean_blast_input(self):
+            self.records = self._get_records()
+            self._check_sequence_contents(self.records)
+            return self.cleaned_data['blast_input']
 
         def get_target(self):
             target = self.cleaned_data["target"]
@@ -485,6 +580,7 @@ def get_groups(db):
 
 
 def make_gwas_form(biodb):
+    import pandas as pd
 
     group_choices = get_groups(biodb)
 
@@ -540,18 +636,50 @@ def make_gwas_form(biodb):
                                  "margin-bottom:15px "),
                     css_class="col-lg-5 col-md-6 col-sm-6")
             )
+            self.db = biodb
             super(GwasForm, self).__init__(*args, **kwargs)
 
         def clean(self):
             cleaned_data = super(GwasForm, self).clean()
-            self.phenotype_file_or_groups()
+            self.phenotype = self.get_phenotype()
             return cleaned_data
 
-        def phenotype_file_or_groups(self):
+        def get_phenotype(self):
             has_groups = bool(self.cleaned_data["groups"])
             has_file = bool(self.cleaned_data["phenotype_file"])
             if (has_groups and has_file) or not (has_groups or has_file):
-                raise ValidationError('You have to provide either "Groups" or "Phenotype file" but not both.')
+                msg = 'You have to provide either "Groups" or '\
+                      '"Phenotype file" but not both.'
+                raise ValidationError(msg, code="invalid")
+
+            genomes = self.db.get_genomes_description()
+            if self.cleaned_data["phenotype_file"]:
+                phenotype = pd.read_csv(self.cleaned_data["phenotype_file"],
+                                        header=None, names=["taxids", "trait"])
+                phenotype["trait"] = phenotype["trait"].astype(bool)
+                if all(phenotype.taxids.isin(genomes.index)):
+                    return phenotype
+                elif all(phenotype.taxids.isin(genomes.description)):
+                    mapping = {genome.description: taxid
+                               for taxid, genome in genomes.iterrows()}
+                    phenotype.taxids = phenotype.taxids.apply(lambda x: mapping[x])
+                else:
+                    err = ValidationError(
+                        "File could not be parsed and matched to genomes.",
+                        code="invalid")
+                    self.add_error("phenotype_file", err)
+                return phenotype
+            else:
+                taxids_with_phenotype = set(self.db.get_taxids_for_groups(
+                    self.cleaned_data["groups"]))
+                if not set(genomes.index).difference(taxids_with_phenotype):
+                    err = ValidationError(
+                        "Your selection is invalid as it contains all genomes.",
+                        code="invalid")
+                    self.add_error("groups", err)
+                phenotype = [[taxid, 1 if taxid in taxids_with_phenotype else 0]
+                             for taxid in genomes.index]
+                return pd.DataFrame(phenotype, columns=["taxids", "trait"])
 
     return GwasForm
 
@@ -567,8 +695,11 @@ class CustomPlotsForm(forms.Form):
         widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}),
         required=True, label="Entry IDs", help_text=help_text)
 
-    def __init__(self, *args, **kwargs):
+    Entry = namedtuple("Entry", "id label type")
+
+    def __init__(self, db, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.db = db
         self.helper = FormHelper()
 
         self.helper.form_method = 'post'
@@ -577,7 +708,7 @@ class CustomPlotsForm(forms.Form):
             Column(
                 Row(Column(
                         "entries",
-                        css_class='form-group col-lg-6 col-md-6 col-sm-12'),
+                        css_class='form-group col-lg-12 col-md-12 col-sm-12'),
                     ),
                 Row(Submit('submit', 'Make plot'),
                     css_class='form-group col-lg-12 col-md-12 col-sm-12'),
@@ -585,14 +716,20 @@ class CustomPlotsForm(forms.Form):
             )
         )
 
-    def get_entries(self):
+    def clean_entries(self):
         raw_entries = self.cleaned_data["entries"].split(",")
+        parser = EntryIdParser(self.db)
         entries = []
-        entry2label = {}
         for entry in raw_entries:
             entry = entry.strip()
             if ":" in entry:
                 entry, label = entry.split(":", 1)
-                entry2label[entry] = label
-            entries.append(entry)
-        return entries, entry2label
+            else:
+                label = entry
+            try:
+                object_type, entry_id = parser.id_to_object_type(entry)
+            except Exception:
+                raise ValidationError(f'Invalid identifier "{entry}".',
+                                      code="invalid")
+            entries.append(self.Entry(entry_id, label, object_type))
+        return entries
