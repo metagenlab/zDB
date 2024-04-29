@@ -2538,7 +2538,7 @@ class DB:
             )
             plasmid_join = (
                 "INNER JOIN bioentry_qualifier_value AS is_plasmid ON "
-                "  is_plasmid.bioentry_id=entry.bioentry_id "
+                "  is_plasmid.bioentry_id=bioentry.bioentry_id "
                 "INNER JOIN term AS plasmid_term ON plasmid_term.term_id=is_plasmid.term_id "
                 "  AND plasmid_term.name=\"plasmid\""
             )
