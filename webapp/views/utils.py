@@ -453,3 +453,50 @@ def make_div(figure_or_data, include_plotlyjs=False, show_link=False,
         except IndexError:
             pass
     return div
+
+
+class AccessionFieldHandler():
+
+    plasmid_prefix = "plasmid:"
+    _db = None
+
+    @classmethod
+    def is_plasmid(cls, key):
+        return key.startswith(cls.plasmid_prefix)
+
+    def plasmid_key_to_id(self, key):
+        return int(key.lstrip(self.plasmid_prefix))
+
+    def plasmid_id_to_key(self, identifier):
+        return f"{self.plasmid_prefix}{identifier}"
+
+    @property
+    def db(self):
+        if self._db is None:
+            biodb_path = settings.BIODB_DB_PATH
+            self._db = DB.load_db_from_name(biodb_path)
+        return self._db
+
+    def get_choices(self, with_plasmids=True, to_exclude=[]):
+        result = self.db.get_genomes_description()
+        result.set_index(result.index.astype(str), inplace=True)
+        accession_choices = []
+        for taxid, data in result.iterrows():
+            if taxid not in to_exclude:
+                accession_choices.append((taxid, data.description))
+            if with_plasmids and data.has_plasmid:
+                # Distinguish plasmids from taxons
+                plasmid = self.plasmid_id_to_key(taxid)
+                if plasmid not in to_exclude:
+                    accession_choices.append((plasmid,
+                                             f"{data.description} plasmid"))
+        return accession_choices
+
+    def extract_choices(self, indices, include_plasmids):
+        if include_plasmids:
+            plasmids = [self.plasmid_key_to_id(key)
+                        for key in indices if self.is_plasmid(key)]
+        else:
+            plasmids = None
+        taxids = [int(key) for key in indices if not self.is_plasmid(key)]
+        return taxids, plasmids

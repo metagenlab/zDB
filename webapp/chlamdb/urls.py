@@ -2,8 +2,8 @@
 from django.urls import re_path
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
-from views import (custom_plots, entry_lists, fam, gwas, hits_extraction,
-                   locus, tabular_comparison, venn, views)
+from views import (autocomplete, custom_plots, entry_lists, fam, gwas,
+                   hits_extraction, locus, tabular_comparison, venn, views)
 
 favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
@@ -73,7 +73,7 @@ urlpatterns = [
     re_path(r'^entry_list_ko$', entry_lists.KoEntryListView.as_view(), name="entry_list_ko"),  # noqa
     re_path(r'^entry_list_cog$', entry_lists.CogEntryListView.as_view(), name="entry_list_cog"),  # noqa
     re_path(r'^entry_list_amr$', entry_lists.AmrEntryListView.as_view(), name="entry_list_amr"),  # noqa
-    re_path(r'^custom_plots/$', custom_plots.CusomPlotsView.as_view(), name="custom_plots"),
+    re_path(r'^custom_plots/$', custom_plots.CusomPlotsView.as_view(), name="custom_plots"),  # noqa
     re_path(r'^cog_venn_subset/([A-Z])$', venn.VennCogSubsetView.as_view(), name="cog_venn_subset"),  # noqa
     re_path(r'^cog_phylo_heatmap/([a-zA-Z0-9_\-]+)', views.CogPhyloHeatmap.as_view(), name="cog_phylo_heatmap"),  # noqa
     re_path(r'^cog_comparison', tabular_comparison.CogComparisonView.as_view(), name="cog_comparison"),  # noqa
@@ -81,6 +81,8 @@ urlpatterns = [
     re_path(r'^circos_main/$', views.circos_main, name="circos_main"),
     re_path(r'^circos/$', views.circos, name="circos"),
     re_path(r'^blast/$', views.blast, name="blast"),
+    re_path(r'^autocomplete_taxid/$', autocomplete.AutocompleteTaxid.as_view(), name="autocomplete_taxid"),  # noqa
+    re_path(r'^autocomplete_n_missing/$', autocomplete.AutocompleteNMissing.as_view(), name="autocomplete_n_missing"),  # noqa
     re_path(r'^amr_comparison', tabular_comparison.AmrComparisonView.as_view(), name="amr_comparison"),  # noqa
     re_path(r'^about$', views.about, name="about"),
     re_path(r'^.*$', views.home, name="home"),
