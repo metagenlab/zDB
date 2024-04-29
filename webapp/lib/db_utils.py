@@ -1270,12 +1270,11 @@ class DB:
             gc_term_id = result[0][0]
         return gc_term_id
 
-    def get_genomes_description(self, lst_plasmids=True):
+    def get_genomes_description(self):
         """
         Returns the description of the genome as it has been read from the
         genbank files, indexed by taxon_id. The output also contains a flag
-        has_plasmid indicating whether the genome contains a plasmid or not,
-        if the lst_plasmid flag has been set.
+        has_plasmid indicating whether the genome contains a plasmid or not.
         """
 
         has_plasmid_query = (

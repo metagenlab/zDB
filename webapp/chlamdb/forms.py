@@ -16,7 +16,7 @@ from views.utils import AccessionFieldHandler, EntryIdParser
 
 
 def get_accessions(db, all=False, plasmid=False):
-    result = db.get_genomes_description(lst_plasmids=plasmid)
+    result = db.get_genomes_description()
     accession_choices = []
     index = 0
     reverse_index = []
