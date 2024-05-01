@@ -18,6 +18,8 @@ class AutocompleteTaxid(Select2ListView):
 class AutocompleteNMissing(Select2ListView):
 
     def get_list(self):
-        n_max = len(self.forwarded["included"])
+        taxids, plasmids = AccessionFieldHandler().extract_choices(
+            self.forwarded["included"], self.forwarded["include_plasmids"])
+        n_max = len(taxids) + len(plasmids)
         choices = [(i, i) for i in range(n_max)]
         return choices

@@ -351,7 +351,8 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
                         range(len(accession_choices))),
             widget=ListSelect2(
                 url="autocomplete_n_missing",
-                forward=(forward.Field("orthologs_in", "included"),)),
+                forward=(forward.Field("orthologs_in", "included"),
+                         forward.Field("checkbox_accessions", "include_plasmids"))),
             required=False)
 
         def extract_choices(self, indices, include_plasmids):
@@ -394,12 +395,14 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
 
         def clean(self):
             cleaned_data = super(ExtractForm, self).clean()
+
             self.included_taxids, self.included_plasmids = self.extract_choices(
                 self.cleaned_data["orthologs_in"],
                 self.cleaned_data["checkbox_accessions"])
             self.excluded_taxids, self.excluded_plasmids = self.extract_choices(
                 self.cleaned_data["no_orthologs_in"],
                 self.cleaned_data["checkbox_accessions"])
+
             self.n_missing = self.get_n_missing()
             self.n_included = len(self.included_taxids)
             if self.included_plasmids is not None:
