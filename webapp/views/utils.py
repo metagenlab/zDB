@@ -482,15 +482,16 @@ class AccessionFieldHandler():
         result.set_index(result.index.astype(str), inplace=True)
         accession_choices = []
         for taxid, data in result.iterrows():
-            if taxid not in to_exclude:
-                accession_choices.append((taxid, data.description))
+            accession_choices.append((taxid, data.description))
             if with_plasmids and data.has_plasmid:
                 # Distinguish plasmids from taxons
                 plasmid = self.plasmid_id_to_key(taxid)
-                if plasmid not in to_exclude:
-                    accession_choices.append((plasmid,
-                                             f"{data.description} plasmid"))
-        return accession_choices
+                accession_choices.append((plasmid,
+                                          f"{data.description} plasmid"))
+
+        accession_choices = filter(lambda choice: choice[0] not in to_exclude,
+                                   accession_choices)
+        return tuple(accession_choices)
 
     def extract_choices(self, indices, include_plasmids):
         if include_plasmids:
