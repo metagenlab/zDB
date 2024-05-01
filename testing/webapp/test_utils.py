@@ -39,32 +39,28 @@ class TestAccessionFieldHandler(SimpleTestCase):
 
     def test_get_choices_handles_plasmids(self):
         self.assertItemsEqual(
-            self.taxons,
-            self.handler.get_choices(with_groups=False))
+            self.taxons + self.groups,
+            self.handler.get_choices())
 
         self.add_plasmid_for_taxids([1, 3])
         self.assertItemsEqual(
-            self.taxons + self.plasmids[::2],
-            self.handler.get_choices(with_groups=False))
-
-        self.assertItemsEqual(
-            self.taxons,
-            self.handler.get_choices(with_groups=False, with_plasmids=False))
-
-    def test_get_choices_handles_groups(self):
-        self.assertItemsEqual(
-            self.taxons,
-            self.handler.get_choices(with_groups=False))
+            self.taxons + self.groups + self.plasmids[::2],
+            self.handler.get_choices())
 
         self.assertItemsEqual(
             self.taxons + self.groups,
-            self.handler.get_choices(with_groups=True))
+            self.handler.get_choices(with_plasmids=False))
+
+    def test_get_choices_handles_groups(self):
+        self.assertItemsEqual(
+            self.taxons + self.groups,
+            self.handler.get_choices())
 
     def test_get_choices_handles_taxid_exclusion(self):
         to_exclude = [el[0] for el in self.taxons[1:]]
         self.assertItemsEqual(
-            self.taxons[:1],
-            self.handler.get_choices(with_groups=False, to_exclude=to_exclude))
+            self.taxons[:1] + self.groups,
+            self.handler.get_choices(to_exclude=to_exclude))
 
         self.assertItemsEqual(
             self.taxons[:1] + self.groups,
