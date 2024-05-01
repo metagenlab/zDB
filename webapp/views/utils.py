@@ -504,6 +504,11 @@ class AccessionFieldHandler():
             accession_choices.extend([(self.group_id_to_key(group[0]), group[0])
                                       for group in self.db.get_groups()])
 
+        # We also exclude taxids contained in the excluded groups
+        groups_to_exclude = [self.group_key_to_id(key) for key in to_exclude
+                             if self.is_group(key)]
+        in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
+        to_exclude = set(to_exclude).union({str(el) for el in in_groups})
         accession_choices = filter(lambda choice: choice[0] not in to_exclude,
                                    accession_choices)
         return tuple(accession_choices)
