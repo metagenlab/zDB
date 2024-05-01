@@ -1487,6 +1487,13 @@ class DB:
         results = self.server.adaptor.execute_and_fetchall(query, group_names)
         return (el[0] for el in results)
 
+    def get_groups_containing_taxids(self, taxids):
+        plchd = self.gen_placeholder_string(taxids)
+        query = f"SELECT DISTINCT group_name FROM taxon_in_group "\
+                f"WHERE taxon_id IN ({plchd});"
+        results = self.server.adaptor.execute_and_fetchall(query, taxids)
+        return (el[0] for el in results)
+
     def load_genomes_info(self, data):
         sql = (
             "CREATE TABLE genome_summary (taxon_id INTEGER, completeness FLOAT, "
