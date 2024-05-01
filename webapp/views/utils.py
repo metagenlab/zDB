@@ -458,6 +458,7 @@ def make_div(figure_or_data, include_plotlyjs=False, show_link=False,
 class AccessionFieldHandler():
 
     plasmid_prefix = "plasmid:"
+    group_prefix = "group:"
     _db = None
 
     @classmethod
@@ -470,6 +471,16 @@ class AccessionFieldHandler():
     def plasmid_id_to_key(self, identifier):
         return f"{self.plasmid_prefix}{identifier}"
 
+    @classmethod
+    def is_group(cls, key):
+        return key.startswith(cls.group_prefix)
+
+    def group_key_to_id(self, key):
+        return key.rsplit(self.group_prefix, 1)[-1]
+
+    def group_id_to_key(self, identifier):
+        return f"{self.group_prefix}{identifier}"
+
     @property
     def db(self):
         if self._db is None:
@@ -477,7 +488,7 @@ class AccessionFieldHandler():
             self._db = DB.load_db_from_name(biodb_path)
         return self._db
 
-    def get_choices(self, with_plasmids=True, to_exclude=[]):
+    def get_choices(self, with_plasmids=True, with_groups=True, to_exclude=[]):
         result = self.db.get_genomes_description()
         result.set_index(result.index.astype(str), inplace=True)
         accession_choices = []
@@ -489,15 +500,28 @@ class AccessionFieldHandler():
                 accession_choices.append((plasmid,
                                           f"{data.description} plasmid"))
 
+        if with_groups:
+            accession_choices.extend([(self.group_id_to_key(group[0]), group[0])
+                                      for group in self.db.get_groups()])
+
         accession_choices = filter(lambda choice: choice[0] not in to_exclude,
                                    accession_choices)
         return tuple(accession_choices)
 
     def extract_choices(self, indices, include_plasmids):
-        if include_plasmids:
-            plasmids = [self.plasmid_key_to_id(key)
-                        for key in indices if self.is_plasmid(key)]
-        else:
+        plasmids = []
+        groups = []
+        taxids = set()
+        for key in indices:
+            if self.is_plasmid(key):
+                plasmids.append(self.plasmid_key_to_id(key))
+            elif self.is_group(key):
+                groups.append(self.group_key_to_id(key))
+            else:
+                taxids.add(int(key))
+
+        if not include_plasmids:
             plasmids = None
-        taxids = [int(key) for key in indices if not self.is_plasmid(key)]
-        return taxids, plasmids
+
+        taxids.update(self.db.get_taxids_for_groups(groups))
+        return list(taxids), plasmids

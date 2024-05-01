@@ -13,6 +13,10 @@ class TestAccessionFieldHandler(SimpleTestCase):
                 ('plasmid:2', 'Klebsiella pneumoniae R6726_16314 plasmid'),
                 ('plasmid:3', 'Klebsiella pneumoniae R6728_16315 plasmid')]
 
+    groups = [('group:all', 'all'),
+              ('group:negative', 'negative'),
+              ('group:positive', 'positive')]
+
     def setUp(self):
         self.handler = AccessionFieldHandler()
         # Because we will not commit, we need to make all modification
@@ -34,37 +38,59 @@ class TestAccessionFieldHandler(SimpleTestCase):
         self.assertEqual(sorted(expected), sorted(choices))
 
     def test_get_choices_handles_plasmids(self):
-        self.assertItemsEqual(self.taxons, self.handler.get_choices())
+        self.assertItemsEqual(
+            self.taxons,
+            self.handler.get_choices(with_groups=False))
 
         self.add_plasmid_for_taxids([1, 3])
-        self.assertItemsEqual(self.taxons + self.plasmids[::2],
-                              self.handler.get_choices())
+        self.assertItemsEqual(
+            self.taxons + self.plasmids[::2],
+            self.handler.get_choices(with_groups=False))
 
-        self.assertItemsEqual(self.taxons,
-                              self.handler.get_choices(with_plasmids=False))
+        self.assertItemsEqual(
+            self.taxons,
+            self.handler.get_choices(with_groups=False, with_plasmids=False))
+
+    def test_get_choices_handles_groups(self):
+        self.assertItemsEqual(
+            self.taxons,
+            self.handler.get_choices(with_groups=False))
+
+        self.assertItemsEqual(
+            self.taxons + self.groups,
+            self.handler.get_choices(with_groups=True))
 
     def test_get_choices_handles_exclusion(self):
         to_exclude = [el[0] for el in self.taxons[1:]]
-        self.assertItemsEqual(self.taxons[:1],
-                              self.handler.get_choices(to_exclude=to_exclude))
+        self.assertItemsEqual(
+            self.taxons[:1],
+            self.handler.get_choices(with_groups=False, to_exclude=to_exclude))
+
+        self.assertItemsEqual(
+            self.taxons[:1] + self.groups,
+            self.handler.get_choices(to_exclude=to_exclude))
 
         self.add_plasmid_for_taxids([1, 2, 3])
-        self.assertItemsEqual(self.taxons + self.plasmids,
+        self.assertItemsEqual(self.taxons + self.groups + self.plasmids,
                               self.handler.get_choices())
 
         to_exclude = [self.taxons[-1][0]]
-        self.assertItemsEqual(self.taxons[:-1] + self.plasmids,
+        self.assertItemsEqual(self.taxons[:-1] + self.groups + self.plasmids,
                               self.handler.get_choices(to_exclude=to_exclude))
-        self.assertItemsEqual(self.taxons[:-1],
+        self.assertItemsEqual(self.taxons[:-1] + self.groups,
                               self.handler.get_choices(to_exclude=to_exclude,
                                                        with_plasmids=False))
 
         to_exclude = [self.plasmids[-1][0]]
-        self.assertItemsEqual(self.taxons + self.plasmids[:-1],
+        self.assertItemsEqual(self.taxons + self.groups + self.plasmids[:-1],
                               self.handler.get_choices(to_exclude=to_exclude))
 
         to_exclude = [el[0] for el in self.plasmids]
-        self.assertItemsEqual(self.taxons,
+        self.assertItemsEqual(self.taxons + self.groups,
+                              self.handler.get_choices(to_exclude=to_exclude))
+
+        to_exclude = [el[0] for el in self.groups[1:]]
+        self.assertItemsEqual(self.taxons + self.groups[0:1] + self.plasmids,
                               self.handler.get_choices(to_exclude=to_exclude))
 
     def test_extract_choices_returns_none_when_include_plasmids_is_false(self):
@@ -84,3 +110,12 @@ class TestAccessionFieldHandler(SimpleTestCase):
         self.assertEqual(
             ([2], None),
             self.handler.extract_choices(["plasmid:1", "2", "plasmid:3"], False))
+
+    def test_extract_choices_handles_groups(self):
+        self.assertEqual(
+            ([3], []),
+            self.handler.extract_choices(["group:negative"], True))
+
+        self.assertEqual(
+            ([2, 3], [1]),
+            self.handler.extract_choices(["plasmid:1", "2", "group:negative"], True))
