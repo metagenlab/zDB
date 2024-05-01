@@ -7,9 +7,12 @@ class AutocompleteTaxid(Select2ListView):
 
     def get_list(self):
         with_plasmids = self.forwarded["include_plasmids"]
-        to_exclude = self.forwarded["to_exclude"]
-        return AccessionFieldHandler().get_choices(with_plasmids=with_plasmids,
-                                                   to_exclude=to_exclude)
+        exclude = self.forwarded["exclude"]
+        exclude_taxids_in_groups = self.forwarded["exclude_taxids_in_groups"]
+        return AccessionFieldHandler().get_choices(
+            with_plasmids=with_plasmids,
+            exclude=exclude,
+            exclude_taxids_in_groups=exclude_taxids_in_groups)
 
 
 class AutocompleteNMissing(Select2ListView):

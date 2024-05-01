@@ -326,7 +326,8 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
             choices=accession_choices,
             widget=Select2Multiple(
                 url="autocomplete_taxid",
-                forward=(forward.Field("no_orthologs_in", "to_exclude"),
+                forward=(forward.Field("no_orthologs_in", "exclude"),
+                         forward.Field("orthologs_in", "exclude_taxids_in_groups"),
                          forward.Field("checkbox_accessions", "include_plasmids")),
                 attrs={"data-close-on-select": "false",
                        "data-placeholder": "Nothing selected"}),
@@ -337,7 +338,8 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
             choices=accession_choices,
             widget=Select2Multiple(
                 url="autocomplete_taxid",
-                forward=(forward.Field("orthologs_in", "to_exclude"),
+                forward=(forward.Field("orthologs_in", "exclude"),
+                         forward.Field("no_orthologs_in", "exclude_taxids_in_groups"),
                          forward.Field("checkbox_accessions", "include_plasmids")),
                 attrs={"data-close-on-select": "false",
                        "data-placeholder": "Nothing selected"}),
