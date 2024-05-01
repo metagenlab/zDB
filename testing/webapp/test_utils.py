@@ -94,6 +94,17 @@ class TestAccessionFieldHandler(SimpleTestCase):
         self.assertItemsEqual([],
                               self.handler.get_choices(exclude=exclude))
 
+    def test_get_choices_handles_exclude_taxids_in_groups(self):
+        exclude = [self.groups[1][0]]
+        self.assertItemsEqual(
+            self.taxons[:-1] + self.groups,
+            self.handler.get_choices(exclude_taxids_in_groups=exclude))
+
+        exclude.append(self.groups[2][0])
+        self.assertItemsEqual(
+            self.groups,
+            self.handler.get_choices(exclude_taxids_in_groups=exclude))
+
     def test_extract_choices_returns_none_when_include_plasmids_is_false(self):
         self.assertEqual(
             ([1, 3], None),

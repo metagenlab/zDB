@@ -492,7 +492,7 @@ class AccessionFieldHandler():
             self._db = DB.load_db_from_name(biodb_path)
         return self._db
 
-    def get_choices(self, with_plasmids=True, exclude=[]):
+    def get_choices(self, with_plasmids=True, exclude=[], exclude_taxids_in_groups=[]):
         result = self.db.get_genomes_description()
         result.set_index(result.index.astype(str), inplace=True)
         accession_choices = []
@@ -518,6 +518,13 @@ class AccessionFieldHandler():
         exclude = exclude.union(
             {self.group_id_to_key(groupid) for groupid in
              self.db.get_groups_containing_taxids(taxids_to_exclude)})
+
+        # Finally we exclude taxids from groups in exclude_taxids_in_groups
+        groups_to_exclude = [self.group_key_to_id(key)
+                             for key in exclude_taxids_in_groups
+                             if self.is_group(key)]
+        in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
+        exclude = set(exclude).union({str(el) for el in in_groups})
 
         accession_choices = filter(lambda choice: choice[0] not in exclude,
                                    accession_choices)
