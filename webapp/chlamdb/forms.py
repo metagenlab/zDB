@@ -254,11 +254,14 @@ def make_venn_from(db, label="Orthologs", limit=None,
 
 def make_circos_form(database_name):
 
-    accession_choices, reverse_index = get_accessions(database_name)
+    accession_choices = AccessionFieldHandler().get_choices(
+        with_plasmids=False)
+    accession_choices_no_groups = AccessionFieldHandler().get_choices(
+        with_plasmids=False, with_groups=False)
 
     class CircosForm(forms.Form):
         circos_reference = forms.ChoiceField(
-            choices=accession_choices,
+            choices=accession_choices_no_groups,
             widget=forms.Select(attrs={
                 "class": "selectpicker",
                 "data-live-search": "true"
@@ -266,10 +269,11 @@ def make_circos_form(database_name):
             ))
         targets = forms.MultipleChoiceField(
             choices=accession_choices,
-            widget=forms.SelectMultiple(attrs={'size': '1',
-                                               "class": "selectpicker",
-                                               "data-live-search": "true",
-                                               "data-max-options": "10"}),
+            widget=Select2Multiple(
+                url="autocomplete_taxid",
+                forward=(forward.Field("targets", "exclude_taxids_in_groups"),),
+                attrs={"data-close-on-select": "false",
+                       "data-placeholder": "Nothing selected"}),
             required=False)
 
         def __init__(self, *args, **kwargs):
@@ -295,16 +299,15 @@ def make_circos_form(database_name):
 
         def get_target_taxids(self):
             indices = self.cleaned_data["targets"]
-            taxids = []
-            for index in indices:
-                taxid = reverse_index[int(index)]
-                taxids.append(taxid)
+            taxids, plasmids = AccessionFieldHandler().extract_choices(
+                indices, False)
             return taxids
 
         def get_ref_taxid(self):
-            indice = self.cleaned_data["circos_reference"]
-            taxid = reverse_index[int(indice)]
-            return taxid
+            index = self.cleaned_data["circos_reference"]
+            taxids, plasmids = AccessionFieldHandler().extract_choices(
+                [index], False)
+            return taxids[0]
 
     return CircosForm
 
