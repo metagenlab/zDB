@@ -14,32 +14,6 @@ from django.core.exceptions import ValidationError
 from views.utils import AccessionFieldHandler, EntryIdParser
 
 
-def get_accessions(db, all=False, plasmid=False):
-    result = db.get_genomes_description()
-    accession_choices = []
-    index = 0
-    reverse_index = []
-
-    # cannot use taxid because plasmids have the same
-    # taxids as the chromosome
-    for taxid, data in result.iterrows():
-        accession_choices.append((index, data.description))
-        index += 1
-
-        if plasmid:
-            reverse_index.append((taxid, False))
-        else:
-            reverse_index.append(taxid)
-        if plasmid and data.has_plasmid == 1:
-            accession_choices.append((index, data.description + " plasmid"))
-            reverse_index.append((taxid, True))
-            index += 1
-
-    if all:
-        accession_choices = [["all", "all"]] + accession_choices
-    return accession_choices, reverse_index
-
-
 def make_plot_form(db):
     import pandas as pd
     accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
