@@ -9,7 +9,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Changed
 
-- Handle groups in hit extraction view. ([#84](https://github.com/metagenlab/zDB/pull/84)) (Niklaus Johner)
+- Handle groups when selecting genomes wherever pertinent. ([#84](https://github.com/metagenlab/zDB/pull/84) and [#85](https://github.com/metagenlab/zDB/pull/85)) (Niklaus Johner)
 - Allow using groups to define phenotype in GWAS view. ([#82](https://github.com/metagenlab/zDB/pull/82)) (Niklaus Johner)
 - Display form validation errors next to the corresponding fields. ([#83](https://github.com/metagenlab/zDB/pull/83)) (Niklaus Johner)
 - Filter VF hits by SeqID and coverage and keep one hit per locus. ([#77](https://github.com/metagenlab/zDB/pull/77)) (Niklaus Johner)
