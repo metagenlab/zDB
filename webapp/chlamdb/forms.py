@@ -459,7 +459,8 @@ def make_pathway_overview_form(db):
 
 
 def make_single_genome_form(db):
-    accession_choices, rev_index = get_accessions(db)
+    accession_choices = AccessionFieldHandler().get_choices(
+        with_plasmids=False, with_groups=False)
 
     class SingleGenomeForm(forms.Form):
         genome = forms.ChoiceField(choices=accession_choices, widget=forms.Select(
@@ -467,7 +468,9 @@ def make_single_genome_form(db):
 
         def get_genome(self):
             target = self.cleaned_data["genome"]
-            return rev_index[int(target)]
+            taxids, plasmids = AccessionFieldHandler().extract_choices(
+                [target], False)
+            return taxids[0]
 
     return SingleGenomeForm
 
