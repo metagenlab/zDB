@@ -297,7 +297,7 @@ class EntryIdParser():
     def id_to_object_type(self, identifier):
         match = self.og_re.match(identifier)
         parsed_id = match and int(match.groups()[0])
-        if parsed_id and self.db.check_orthogroup_entry_id(parsed_id):
+        if parsed_id and self.db.check_og_entry_id(parsed_id):
             return "orthogroup", parsed_id
 
         match = self.cog_re.match(identifier)
