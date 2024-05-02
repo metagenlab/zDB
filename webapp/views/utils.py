@@ -511,21 +511,24 @@ class AccessionFieldHandler():
         # We also exclude taxids contained in the excluded groups
         groups_to_exclude = [self.group_key_to_id(key) for key in exclude
                              if self.is_group(key)]
-        in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
-        exclude = set(exclude).union({str(el) for el in in_groups})
+        if groups_to_exclude:
+            in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
+            exclude = set(exclude).union({str(el) for el in in_groups})
 
         # And we exclude groups containing an excluded taxid
         taxids_to_exclude = list(filter(self.is_taxid, exclude))
-        exclude = exclude.union(
-            {self.group_id_to_key(groupid) for groupid in
-             self.db.get_groups_containing_taxids(taxids_to_exclude)})
+        if taxids_to_exclude:
+            exclude = exclude.union(
+                {self.group_id_to_key(groupid) for groupid in
+                 self.db.get_groups_containing_taxids(taxids_to_exclude)})
 
         # Finally we exclude taxids from groups in exclude_taxids_in_groups
         groups_to_exclude = [self.group_key_to_id(key)
                              for key in exclude_taxids_in_groups
                              if self.is_group(key)]
-        in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
-        exclude = set(exclude).union({str(el) for el in in_groups})
+        if groups_to_exclude:
+            in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
+            exclude = set(exclude).union({str(el) for el in in_groups})
 
         accession_choices = filter(lambda choice: choice[0] not in exclude,
                                    accession_choices)
