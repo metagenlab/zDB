@@ -476,7 +476,9 @@ def make_single_genome_form(db):
 
 
 def make_blast_form(biodb):
-    accession_choices, rev_index = get_accessions(biodb, all=True)
+    accession_choices = AccessionFieldHandler().get_choices(
+        with_plasmids=False, with_groups=False)
+    accession_choices = (("all", "all"),) + accession_choices
 
     class BlastForm(forms.Form):
         DEFAULT_E_VALUE = 10
@@ -577,7 +579,9 @@ def make_blast_form(biodb):
             target = self.cleaned_data["target"]
             if target == "all":
                 return target
-            return rev_index[int(target)]
+            taxids, plasmids = AccessionFieldHandler().extract_choices(
+                [target], False)
+            return taxids[0]
 
     return BlastForm
 
