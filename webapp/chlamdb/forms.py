@@ -279,9 +279,7 @@ def make_circos_form(database_name):
 
         def get_ref_taxid(self):
             index = self.cleaned_data["circos_reference"]
-            taxids, plasmids = AccessionFieldHandler().extract_choices(
-                [index], False)
-            return taxids[0]
+            return AccessionFieldHandler().extract_taxid(index)
 
     return CircosForm
 
@@ -442,9 +440,7 @@ def make_single_genome_form(db):
 
         def get_genome(self):
             target = self.cleaned_data["genome"]
-            taxids, plasmids = AccessionFieldHandler().extract_choices(
-                [target], False)
-            return taxids[0]
+            return AccessionFieldHandler().extract_taxid(target)
 
     return SingleGenomeForm
 
@@ -553,9 +549,7 @@ def make_blast_form(biodb):
             target = self.cleaned_data["target"]
             if target == "all":
                 return target
-            taxids, plasmids = AccessionFieldHandler().extract_choices(
-                [target], False)
-            return taxids[0]
+            return AccessionFieldHandler().extract_taxid(target)
 
     return BlastForm
 

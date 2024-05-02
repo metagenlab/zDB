@@ -534,6 +534,9 @@ class AccessionFieldHandler():
                                    accession_choices)
         return tuple(accession_choices)
 
+    def extract_taxid(self, index):
+        return int(index)
+
     def extract_choices(self, indices, include_plasmids):
         plasmids = []
         groups = []
