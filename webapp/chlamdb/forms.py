@@ -11,7 +11,6 @@ from dal import forward
 from dal.autocomplete import ListSelect2, Select2Multiple
 from django import forms
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxLengthValidator, MinLengthValidator
 from views.utils import AccessionFieldHandler, EntryIdParser
 
 
@@ -43,7 +42,7 @@ def get_accessions(db, all=False, plasmid=False):
 
 def make_plot_form(db):
     import pandas as pd
-    accession_choices, reverse_index = get_accessions(db)
+    accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
 
     # selct random locus present in at least 50% of genomes
     og_df = pd.DataFrame(db.get_all_orthogroups())
@@ -67,16 +66,19 @@ def make_plot_form(db):
                                          label="Region size (bp)",
                                          initial=8000,
                                          required=True)
-        genomes = forms.MultipleChoiceField(choices=accession_choices,
-                                            widget=forms.SelectMultiple(attrs={
-                                                'size': '1',
-                                                "class": "selectpicker",
-                                                "data-live-search": "true",
-                                                "multiple data-max-options": "8",
-                                                "multiple data-actions-box": "true"}),
-                                            required=False)
+        genomes = forms.MultipleChoiceField(
+            choices=accession_choices,
+            widget=Select2Multiple(
+                url="autocomplete_taxid",
+                forward=(forward.Field("genomes", "exclude_taxids_in_groups"),),
+                attrs={"class": "data-selectpicker",
+                       "data-close-on-select": "false",
+                       "data-placeholder": "Nothing selected"}),
+            required=False)
         all_homologs = forms.ChoiceField(
             choices=choices, initial="no", label="Homologs")
+
+        limit = 8
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -113,6 +115,12 @@ def make_plot_form(db):
             # Accession is now the sequence id
             return int(prot_info.index[0])
 
+        def clean_genomes(self):
+            n_taxids = len(self.get_genomes())
+            if n_taxids > self.limit:
+                raise ValidationError(f"Please select at most {self.limit} genomes")
+            return self.cleaned_data["genomes"]
+
         def get_seqid(self):
             return self.cleaned_data["accession"]
 
@@ -124,10 +132,8 @@ def make_plot_form(db):
 
         def get_genomes(self):
             indices = self.cleaned_data["genomes"]
-            taxids = []
-            for index in indices:
-                taxid = reverse_index[int(index)]
-                taxids.append(taxid)
+            taxids, plasmids = AccessionFieldHandler().extract_choices(
+                indices, False)
             return taxids
 
     return PlotForm
