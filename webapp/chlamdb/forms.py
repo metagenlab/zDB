@@ -191,36 +191,26 @@ def make_metabo_from(db, type_choices=None):
 def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
                    limit_type="upper", action=""):
 
-    accession_choices, rev_index = get_accessions(db, plasmid=plasmid)
+    accession_choices = AccessionFieldHandler().get_choices(with_plasmids=plasmid)
 
     class VennForm(forms.Form):
-        attrs = {'size': '1', "class": "selectpicker",
-                 "data-live-search": "true",
-                 "data-actions-box": "true"}
+        attrs = {"data-close-on-select": "false",
+                 "data-placeholder": "Nothing selected"}
+
         help_text = ""
-        targets_validators = []
         if limit is not None and limit_type == "upper":
-            attrs["data-max-options"] = f"{limit}"
             help_text = f"Select a maximum of {limit} genomes"
-            targets_validators.append(
-                MaxLengthValidator(
-                    limit,
-                    message=f"Please select at most {limit} genomes")
-            )
         elif limit is not None and limit_type == "lower":
             help_text = f"Select a minimum of {limit} genomes"
-            targets_validators.append(
-                MinLengthValidator(
-                    limit,
-                    message=f"Please select at least {limit} genomes")
-            )
 
         targets = forms.MultipleChoiceField(
             choices=accession_choices,
-            widget=forms.SelectMultiple(attrs=attrs),
+            widget=Select2Multiple(
+                url="autocomplete_taxid",
+                forward=(forward.Field("targets", "exclude_taxids_in_groups"),),
+                attrs=attrs),
             help_text=help_text,
-            required=True,
-            validators=targets_validators)
+            required=True)
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -242,11 +232,19 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
 
         def get_taxids(self):
             indices = self.cleaned_data["targets"]
-            taxids = []
-            for index in indices:
-                taxid = rev_index[int(index)]
-                taxids.append(taxid)
+            taxids, plasmids = AccessionFieldHandler().extract_choices(
+                indices, plasmid)
             return taxids
+
+        def clean_targets(self):
+            if not limit:
+                return self.cleaned_data["targets"]
+            n_taxids = len(self.get_taxids())
+            if limit_type == "upper" and n_taxids > limit:
+                raise ValidationError(f"Please select at most {limit} genomes")
+            elif limit_type == "lower" and n_taxids < limit:
+                raise ValidationError(f"Please select at least {limit} genomes")
+            return self.cleaned_data["targets"]
 
     return VennForm
 
