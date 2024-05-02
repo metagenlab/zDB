@@ -135,16 +135,16 @@ def make_plot_form(db):
 
 def make_metabo_from(db, type_choices=None):
 
-    accession_choices, rev_index = get_accessions(db)
+    accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
 
     class MetaboForm(forms.Form):
         targets = forms.MultipleChoiceField(
             choices=accession_choices,
-            widget=forms.SelectMultiple(
-                attrs={'size': '%s' % (20),
-                       "class": "selectpicker",
-                       "data-live-search": "true",
-                       "multiple data-actions-box": "true"}
+            widget=Select2Multiple(
+                url="autocomplete_taxid",
+                forward=(forward.Field("targets", "exclude_taxids_in_groups"),),
+                attrs={"data-close-on-select": "false",
+                       "data-placeholder": "Nothing selected"}
                 ),
             required=True
         )
@@ -166,7 +166,6 @@ def make_metabo_from(db, type_choices=None):
                 rows.append(Row('comp_type'))
 
             self.helper.layout = Layout(
-
                 Fieldset("",
                          Column(
                              *rows,
@@ -179,10 +178,8 @@ def make_metabo_from(db, type_choices=None):
 
         def get_choices(self):
             targets = self.cleaned_data["targets"]
-            taxids = []
-            for index in targets:
-                taxid = rev_index[int(index)]
-                taxids.append(taxid)
+            taxids, plasmids = AccessionFieldHandler().extract_choices(
+                targets, False)
             return taxids
 
     return MetaboForm
