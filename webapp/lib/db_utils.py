@@ -1270,12 +1270,11 @@ class DB:
             gc_term_id = result[0][0]
         return gc_term_id
 
-    def get_genomes_description(self, lst_plasmids=True):
+    def get_genomes_description(self):
         """
         Returns the description of the genome as it has been read from the
         genbank files, indexed by taxon_id. The output also contains a flag
-        has_plasmid indicating whether the genome contains a plasmid or not,
-        if the lst_plasmid flag has been set.
+        has_plasmid indicating whether the genome contains a plasmid or not.
         """
 
         has_plasmid_query = (
@@ -1486,6 +1485,13 @@ class DB:
         query = f"SELECT DISTINCT taxon_id from taxon_in_group "\
             f"WHERE group_name IN ({plchd})"
         results = self.server.adaptor.execute_and_fetchall(query, group_names)
+        return (el[0] for el in results)
+
+    def get_groups_containing_taxids(self, taxids):
+        plchd = self.gen_placeholder_string(taxids)
+        query = f"SELECT DISTINCT group_name FROM taxon_in_group "\
+                f"WHERE taxon_id IN ({plchd});"
+        results = self.server.adaptor.execute_and_fetchall(query, taxids)
         return (el[0] for el in results)
 
     def load_genomes_info(self, data):
@@ -2538,7 +2544,7 @@ class DB:
             )
             plasmid_join = (
                 "INNER JOIN bioentry_qualifier_value AS is_plasmid ON "
-                "  is_plasmid.bioentry_id=entry.bioentry_id "
+                "  is_plasmid.bioentry_id=bioentry.bioentry_id "
                 "INNER JOIN term AS plasmid_term ON plasmid_term.term_id=is_plasmid.term_id "
                 "  AND plasmid_term.name=\"plasmid\""
             )

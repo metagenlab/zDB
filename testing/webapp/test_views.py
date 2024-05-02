@@ -24,6 +24,8 @@ untested_patterns = {
 urls = [
     '/about',
     '/amr_comparison',
+    '/autocomplete_n_missing/',
+    '/autocomplete_taxid/',
     '/blast/',
     '/circos/',
     '/circos_main/',
@@ -150,9 +152,17 @@ class TestViewsAreHealthy(SimpleTestCase):
             "Some patterns are not covered in the tests: please add them to "
             "untested_patterns or urls")
 
-    def test_all_views_render_valid_html(self):
+    def test_all_views_render_valid_html_or_json(self):
         for url in urls:
             resp = self.client.get(url)
+            if resp.get("Content-Type") == 'application/json':
+                try:
+                    resp.json()
+                except Exception as exc:
+                    print(f"\n\nInvalid json for {url}")
+                    raise exc
+                finally:
+                    continue
             try:
                 self.assertContains(resp, "", html=True)
             except Exception as exc:

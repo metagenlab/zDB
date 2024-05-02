@@ -76,7 +76,7 @@ class VFQueries():
             )
             plasmid_join = (
                 "INNER JOIN bioentry_qualifier_value AS is_plasmid ON "
-                "  is_plasmid.bioentry_id=entry.bioentry_id "
+                "  is_plasmid.bioentry_id=bioentry.bioentry_id "
                 "INNER JOIN term AS plasmid_term ON plasmid_term.term_id=is_plasmid.term_id "
                 "  AND plasmid_term.name=\"plasmid\""
             )
@@ -93,7 +93,7 @@ class VFQueries():
         )
 
         all_ids = ids
-        if plasmids is not None:
+        if plasmids:
             all_ids += plasmids
         results = self.server.adaptor.execute_and_fetchall(query, all_ids)
 

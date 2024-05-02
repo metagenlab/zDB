@@ -297,7 +297,7 @@ class EntryIdParser():
     def id_to_object_type(self, identifier):
         match = self.og_re.match(identifier)
         parsed_id = match and int(match.groups()[0])
-        if parsed_id and self.db.check_orthogroup_entry_id(parsed_id):
+        if parsed_id and self.db.check_og_entry_id(parsed_id):
             return "orthogroup", parsed_id
 
         match = self.cog_re.match(identifier)
@@ -453,3 +453,97 @@ def make_div(figure_or_data, include_plotlyjs=False, show_link=False,
         except IndexError:
             pass
     return div
+
+
+class AccessionFieldHandler():
+
+    plasmid_prefix = "plasmid:"
+    group_prefix = "group:"
+    _db = None
+
+    @classmethod
+    def is_plasmid(cls, key):
+        return key.startswith(cls.plasmid_prefix)
+
+    def plasmid_key_to_id(self, key):
+        return int(key.lstrip(self.plasmid_prefix))
+
+    def plasmid_id_to_key(self, identifier):
+        return f"{self.plasmid_prefix}{identifier}"
+
+    @classmethod
+    def is_group(cls, key):
+        return key.startswith(cls.group_prefix)
+
+    def group_key_to_id(self, key):
+        return key.rsplit(self.group_prefix, 1)[-1]
+
+    def group_id_to_key(self, identifier):
+        return f"{self.group_prefix}{identifier}"
+
+    @classmethod
+    def is_taxid(cls, key):
+        return not (cls.is_group(key) or cls.is_plasmid(key))
+
+    @property
+    def db(self):
+        if self._db is None:
+            biodb_path = settings.BIODB_DB_PATH
+            self._db = DB.load_db_from_name(biodb_path)
+        return self._db
+
+    def get_choices(self, with_plasmids=True, exclude=[], exclude_taxids_in_groups=[]):
+        result = self.db.get_genomes_description()
+        result.set_index(result.index.astype(str), inplace=True)
+        accession_choices = []
+        for taxid, data in result.iterrows():
+            accession_choices.append((taxid, data.description))
+            if with_plasmids and data.has_plasmid:
+                # Distinguish plasmids from taxons
+                plasmid = self.plasmid_id_to_key(taxid)
+                accession_choices.append((plasmid,
+                                          f"{data.description} plasmid"))
+
+        accession_choices.extend([(self.group_id_to_key(group[0]), group[0])
+                                  for group in self.db.get_groups()])
+
+        # We also exclude taxids contained in the excluded groups
+        groups_to_exclude = [self.group_key_to_id(key) for key in exclude
+                             if self.is_group(key)]
+        in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
+        exclude = set(exclude).union({str(el) for el in in_groups})
+
+        # And we exclude groups containing an excluded taxid
+        taxids_to_exclude = list(filter(self.is_taxid, exclude))
+        exclude = exclude.union(
+            {self.group_id_to_key(groupid) for groupid in
+             self.db.get_groups_containing_taxids(taxids_to_exclude)})
+
+        # Finally we exclude taxids from groups in exclude_taxids_in_groups
+        groups_to_exclude = [self.group_key_to_id(key)
+                             for key in exclude_taxids_in_groups
+                             if self.is_group(key)]
+        in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
+        exclude = set(exclude).union({str(el) for el in in_groups})
+
+        accession_choices = filter(lambda choice: choice[0] not in exclude,
+                                   accession_choices)
+        return tuple(accession_choices)
+
+    def extract_choices(self, indices, include_plasmids):
+        plasmids = []
+        groups = []
+        taxids = set()
+        for key in indices:
+            if self.is_plasmid(key):
+                plasmids.append(self.plasmid_key_to_id(key))
+            elif self.is_group(key):
+                groups.append(self.group_key_to_id(key))
+            else:
+                taxids.add(int(key))
+
+        if not include_plasmids:
+            plasmids = None
+
+        taxids.update(self.db.get_taxids_for_groups(groups))
+        return list(taxids), plasmids

@@ -7,14 +7,16 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Fieldset, Layout, Row, Submit
+from dal import forward
+from dal.autocomplete import ListSelect2, Select2Multiple
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, MinLengthValidator
-from views.utils import EntryIdParser
+from views.utils import AccessionFieldHandler, EntryIdParser
 
 
 def get_accessions(db, all=False, plasmid=False):
-    result = db.get_genomes_description(lst_plasmids=plasmid)
+    result = db.get_genomes_description()
     accession_choices = []
     index = 0
     reverse_index = []
@@ -307,7 +309,8 @@ def make_circos_form(database_name):
 
 
 def make_extract_form(db, action, plasmid=False, label="Orthologs"):
-    accession_choices, rev_index = get_accessions(db, plasmid=plasmid)
+
+    accession_choices = AccessionFieldHandler().get_choices()
 
     class ExtractForm(forms.Form):
         checkbox_accessions = forms.BooleanField(
@@ -321,52 +324,43 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
         orthologs_in = forms.MultipleChoiceField(
             label=f"{label} conserved in",
             choices=accession_choices,
-            widget=forms.SelectMultiple(attrs={'size': '%s' % "17",
-                                               "class": "selectpicker",
-                                               "data-live-search": "true"}),
+            widget=Select2Multiple(
+                url="autocomplete_taxid",
+                forward=(forward.Field("no_orthologs_in", "exclude"),
+                         forward.Field("orthologs_in", "exclude_taxids_in_groups"),
+                         forward.Field("checkbox_accessions", "include_plasmids")),
+                attrs={"data-close-on-select": "false",
+                       "data-placeholder": "Nothing selected"}),
             required=True)
 
         no_orthologs_in = forms.MultipleChoiceField(
             label="%s absent from (optional)" % label,
             choices=accession_choices,
-            widget=forms.SelectMultiple(attrs={'size': '%s' % "17",
-                                               "class": "selectpicker remove-example",
-                                               "data-live-search": "true"}),
+            widget=Select2Multiple(
+                url="autocomplete_taxid",
+                forward=(forward.Field("orthologs_in", "exclude"),
+                         forward.Field("no_orthologs_in", "exclude_taxids_in_groups"),
+                         forward.Field("checkbox_accessions", "include_plasmids")),
+                attrs={"data-close-on-select": "false",
+                       "data-placeholder": "Nothing selected"}),
             required=False)
 
-        new_choices = [['None', 'None']] + accession_choices
-
-        frequency_choices = ((i, i) for i in range(len(accession_choices)))
-        frequency = forms.ChoiceField(
-            choices=frequency_choices,
+        _n_missing = forms.ChoiceField(
             label='Missing data (optional)',
+            choices=zip(range(len(accession_choices)),
+                        range(len(accession_choices))),
+            widget=ListSelect2(
+                url="autocomplete_n_missing",
+                forward=(forward.Field("orthologs_in", "included"),
+                         forward.Field("checkbox_accessions", "include_plasmids"))),
             required=False)
 
-        def extract_choices(self, indices):
-            keep_plasmids = self.cleaned_data["checkbox_accessions"]
-            taxids = []
-            plasmids = None
-            if keep_plasmids:
-                plasmids = []
-
-            for index in indices:
-                taxid, is_plasmid = rev_index[index]
-                if keep_plasmids and is_plasmid:
-                    plasmids.append(taxid)
-                elif is_plasmid:
-                    continue
-                else:
-                    taxids.append(taxid)
-            return taxids, plasmids
+        def extract_choices(self, indices, include_plasmids):
+            return AccessionFieldHandler().extract_choices(
+                indices, include_plasmids)
 
         def get_n_missing(self):
-            return int(self.cleaned_data["frequency"])
-
-        def get_include_choices(self):
-            return self.extract_choices((int(i) for i in self.cleaned_data["orthologs_in"]))
-
-        def get_exclude_choices(self):
-            return self.extract_choices((int(i) for i in self.cleaned_data["no_orthologs_in"]))
+            return int(self.cleaned_data.get("_n_missing") or 0)
 
         def __init__(self, *args, **kwargs):
             self.helper = FormHelper()
@@ -386,7 +380,7 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
                             css_class='form-group col-lg-6 col-md-6 col-sm-12')
                         ),
                     Column(
-                        Row('frequency'),
+                        Row('_n_missing'),
                         Submit('submit',
                                'Compare %s' % label,
                                style="margin-top:15px"),
@@ -401,8 +395,14 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
 
         def clean(self):
             cleaned_data = super(ExtractForm, self).clean()
-            self.included_taxids, self.included_plasmids = self.get_include_choices()
-            self.excluded_taxids, self.excluded_plasmids = self.get_exclude_choices()
+
+            self.included_taxids, self.included_plasmids = self.extract_choices(
+                self.cleaned_data["orthologs_in"],
+                self.cleaned_data["checkbox_accessions"])
+            self.excluded_taxids, self.excluded_plasmids = self.extract_choices(
+                self.cleaned_data["no_orthologs_in"],
+                self.cleaned_data["checkbox_accessions"])
+
             self.n_missing = self.get_n_missing()
             self.n_included = len(self.included_taxids)
             if self.included_plasmids is not None:
@@ -411,7 +411,7 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
                 err = ValidationError(
                     "This must be smaller than the number of included genomes.",
                     code="invalid")
-                self.add_error("frequency", err)
+                self.add_error("_n_missing", err)
             return cleaned_data
 
     return ExtractForm

@@ -22,5 +22,6 @@ dependencies:
     - bibtexparser
     - blast>=2.9.0
     - gxx
+    - django-autocomplete-light
     - pip:
         - scoary-2
