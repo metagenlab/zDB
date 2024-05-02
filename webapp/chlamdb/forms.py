@@ -188,10 +188,10 @@ def make_metabo_from(db, type_choices=None):
     return MetaboForm
 
 
-def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
+def make_venn_from(db, label="Orthologs", limit=None,
                    limit_type="upper", action=""):
 
-    accession_choices = AccessionFieldHandler().get_choices(with_plasmids=plasmid)
+    accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
 
     class VennForm(forms.Form):
         attrs = {"data-close-on-select": "false",
@@ -233,7 +233,7 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
         def get_taxids(self):
             indices = self.cleaned_data["targets"]
             taxids, plasmids = AccessionFieldHandler().extract_choices(
-                indices, plasmid)
+                indices, False)
             return taxids
 
         def clean_targets(self):
