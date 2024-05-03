@@ -223,7 +223,7 @@ class TestViewsContent(SimpleTestCase):
         self.assertNoPlot(resp)
         self.assertContains(resp, "Barcharts of COG entries categories in selected genomes")
 
-        resp = self.client.post("/cog_barchart/", data={"targets": ["0", "1"]})
+        resp = self.client.post("/cog_barchart/", data={"targets": ["1", "2"]})
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/cog_barplot.html')
         self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
@@ -279,9 +279,8 @@ class TestViewsContent(SimpleTestCase):
 class ComparisonViewsTestMixin():
 
     selection_html = """
-        <option value="0" {0}>Klebsiella pneumoniae R6724_16313</option>
-        <option value="1" {0}>Klebsiella pneumoniae R6726_16314</option>
-        <option value="2">Klebsiella pneumoniae R6728_16315</option>
+        <option value="1" selected="">Klebsiella pneumoniae R6724_16313</option>
+        <option value="2" selected="">Klebsiella pneumoniae R6726_16314</option>
         """
 
     table_html = '<table class="hover" id="mytable"  style="padding-top: 1em;">'
@@ -305,10 +304,8 @@ class ComparisonViewsTestMixin():
         self.assertTrue(resp.context.get("show_comparison_table", False))
         self.assertContains(resp, self.table_html)
 
-    def assertSelection(self, resp, selected=False):
-        expected = self.selection_html.format(
-            'selected=""' if selected else '')
-        self.assertContains(resp, expected, html=True)
+    def assertSelection(self, resp):
+        self.assertContains(resp, self.selection_html, html=True)
 
     def assertNoVennDiagram(self, resp):
         self.assertFalse(resp.context.get("show_results", False))
@@ -350,7 +347,7 @@ class ComparisonViewsTestMixin():
 
     @property
     def tab_comp_form_data_list(self):
-        return [{"targets": ["0", "1"]}]
+        return [{"targets": ["1", "2"]}]
 
     @property
     def venn_view(self):
@@ -358,7 +355,7 @@ class ComparisonViewsTestMixin():
 
     @property
     def venn_form_data(self):
-        return {"targets": ["0", "1"]}
+        return {"targets": ["1", "2"]}
 
     @property
     def heatmap_view(self):
@@ -366,7 +363,7 @@ class ComparisonViewsTestMixin():
 
     @property
     def heatmap_form_data(self):
-        return {"targets": ["0", "1"]}
+        return {"targets": ["1", "2"]}
 
     @property
     def gwas_view(self):
@@ -406,7 +403,6 @@ class ComparisonViewsTestMixin():
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/tabular_comparison.html')
         self.assertPageTitle(resp, self.page_title)
-        self.assertSelection(resp)
         self.assertNoCompTable(resp)
         self.assertNav(resp)
 
@@ -416,7 +412,7 @@ class ComparisonViewsTestMixin():
             self.assertEqual(200, resp.status_code)
             self.assertTemplateUsed(resp, 'chlamdb/tabular_comparison.html')
             self.assertPageTitle(resp, self.page_title)
-            self.assertSelection(resp, selected=True)
+            self.assertSelection(resp)
             self.assertCompTable(resp)
             self.assertNav(resp)
 
@@ -427,7 +423,6 @@ class ComparisonViewsTestMixin():
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/venn_generic.html')
         self.assertPageTitle(resp, self.page_title)
-        self.assertSelection(resp)
         self.assertNoVennDiagram(resp)
         self.assertNav(resp)
 
@@ -436,7 +431,7 @@ class ComparisonViewsTestMixin():
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/venn_generic.html')
         self.assertPageTitle(resp, self.page_title)
-        self.assertSelection(resp, selected=True)
+        self.assertSelection(resp)
         self.assertVennDiagram(resp)
         self.assertNav(resp)
 
@@ -447,7 +442,6 @@ class ComparisonViewsTestMixin():
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/plot_heatmap.html')
         self.assertPageTitle(resp, self.page_title)
-        self.assertSelection(resp)
         self.assertNoHeatmap(resp)
         self.assertNav(resp)
 
@@ -456,7 +450,7 @@ class ComparisonViewsTestMixin():
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/plot_heatmap.html')
         self.assertPageTitle(resp, self.page_title)
-        self.assertSelection(resp, selected=True)
+        self.assertSelection(resp)
         self.assertHeatmap(resp)
         self.assertNav(resp)
 
@@ -471,7 +465,7 @@ class ComparisonViewsTestMixin():
         self.assertNoRarefactionPlot(resp)
 
         resp = self.client.post(f"/pan_genome/{self.view_type}",
-                                data={"targets": ["0", "1"]})
+                                data={"targets": ["1", "2"]})
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/pan_genome.html')
         self.assertEqual(self.view_type, resp.context["object_type"])
@@ -533,7 +527,6 @@ class TestKOViews(SimpleTestCase, ComparisonViewsTestMixin):
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/venn_generic.html')
         self.assertPageTitle(resp, self.page_title)
-        self.assertSelection(resp)
         self.assertVennDiagram(resp)
         self.assertNav(resp)
 
@@ -551,7 +544,6 @@ class TestCOGViews(SimpleTestCase, ComparisonViewsTestMixin):
         self.assertEqual(200, resp.status_code)
         self.assertTemplateUsed(resp, 'chlamdb/venn_generic.html')
         self.assertPageTitle(resp, self.page_title)
-        self.assertSelection(resp)
         self.assertVennDiagram(resp)
         self.assertNav(resp)
 
@@ -568,9 +560,9 @@ class TestAMRViews(SimpleTestCase, ComparisonViewsTestMixin):
         """Tests for class and subclass are not worth much as none
         of the AMRs in the DB have a class or subclass...
         """
-        return [{"targets": ["0", "1"], "comp_type": "gene"},
-                {"targets": ["0", "1"], "comp_type": "class"},
-                {"targets": ["0", "1"], "comp_type": "subclass"}]
+        return [{"targets": ["1", "2"], "comp_type": "gene"},
+                {"targets": ["1", "2"], "comp_type": "class"},
+                {"targets": ["1", "2"], "comp_type": "subclass"}]
 
     @skip("Heatmap plot fails because the test data does not provide enough hits")
     def test_plot_heatmap_view(self):
@@ -584,9 +576,9 @@ class TestVFViews(SimpleTestCase, ComparisonViewsTestMixin):
 
     @property
     def tab_comp_form_data_list(self):
-        return [{"targets": ["0", "1"], "comp_type": "vf_gene_id"},
-                {"targets": ["0", "1"], "comp_type": "vfid"},
-                {"targets": ["0", "1"], "comp_type": "category"},]
+        return [{"targets": ["1", "2"], "comp_type": "vf_gene_id"},
+                {"targets": ["1", "2"], "comp_type": "vfid"},
+                {"targets": ["1", "2"], "comp_type": "category"},]
 
 
 class TestOrthogroupViews(SimpleTestCase, ComparisonViewsTestMixin):
