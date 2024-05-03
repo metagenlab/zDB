@@ -11,39 +11,12 @@ from dal import forward
 from dal.autocomplete import ListSelect2, Select2Multiple
 from django import forms
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxLengthValidator, MinLengthValidator
 from views.utils import AccessionFieldHandler, EntryIdParser
-
-
-def get_accessions(db, all=False, plasmid=False):
-    result = db.get_genomes_description()
-    accession_choices = []
-    index = 0
-    reverse_index = []
-
-    # cannot use taxid because plasmids have the same
-    # taxids as the chromosome
-    for taxid, data in result.iterrows():
-        accession_choices.append((index, data.description))
-        index += 1
-
-        if plasmid:
-            reverse_index.append((taxid, False))
-        else:
-            reverse_index.append(taxid)
-        if plasmid and data.has_plasmid == 1:
-            accession_choices.append((index, data.description + " plasmid"))
-            reverse_index.append((taxid, True))
-            index += 1
-
-    if all:
-        accession_choices = [["all", "all"]] + accession_choices
-    return accession_choices, reverse_index
 
 
 def make_plot_form(db):
     import pandas as pd
-    accession_choices, reverse_index = get_accessions(db)
+    accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
 
     # selct random locus present in at least 50% of genomes
     og_df = pd.DataFrame(db.get_all_orthogroups())
@@ -67,16 +40,19 @@ def make_plot_form(db):
                                          label="Region size (bp)",
                                          initial=8000,
                                          required=True)
-        genomes = forms.MultipleChoiceField(choices=accession_choices,
-                                            widget=forms.SelectMultiple(attrs={
-                                                'size': '1',
-                                                "class": "selectpicker",
-                                                "data-live-search": "true",
-                                                "multiple data-max-options": "8",
-                                                "multiple data-actions-box": "true"}),
-                                            required=False)
+        genomes = forms.MultipleChoiceField(
+            choices=accession_choices,
+            widget=Select2Multiple(
+                url="autocomplete_taxid",
+                forward=(forward.Field("genomes", "exclude_taxids_in_groups"),),
+                attrs={"class": "data-selectpicker",
+                       "data-close-on-select": "false",
+                       "data-placeholder": "Nothing selected"}),
+            required=False)
         all_homologs = forms.ChoiceField(
             choices=choices, initial="no", label="Homologs")
+
+        limit = 8
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -113,6 +89,12 @@ def make_plot_form(db):
             # Accession is now the sequence id
             return int(prot_info.index[0])
 
+        def clean_genomes(self):
+            n_taxids = len(self.get_genomes())
+            if n_taxids > self.limit:
+                raise ValidationError(f"Please select at most {self.limit} genomes")
+            return self.cleaned_data["genomes"]
+
         def get_seqid(self):
             return self.cleaned_data["accession"]
 
@@ -124,10 +106,8 @@ def make_plot_form(db):
 
         def get_genomes(self):
             indices = self.cleaned_data["genomes"]
-            taxids = []
-            for index in indices:
-                taxid = reverse_index[int(index)]
-                taxids.append(taxid)
+            taxids, plasmids = AccessionFieldHandler().extract_choices(
+                indices, False)
             return taxids
 
     return PlotForm
@@ -135,16 +115,16 @@ def make_plot_form(db):
 
 def make_metabo_from(db, type_choices=None):
 
-    accession_choices, rev_index = get_accessions(db)
+    accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
 
     class MetaboForm(forms.Form):
         targets = forms.MultipleChoiceField(
             choices=accession_choices,
-            widget=forms.SelectMultiple(
-                attrs={'size': '%s' % (20),
-                       "class": "selectpicker",
-                       "data-live-search": "true",
-                       "multiple data-actions-box": "true"}
+            widget=Select2Multiple(
+                url="autocomplete_taxid",
+                forward=(forward.Field("targets", "exclude_taxids_in_groups"),),
+                attrs={"data-close-on-select": "false",
+                       "data-placeholder": "Nothing selected"}
                 ),
             required=True
         )
@@ -166,7 +146,6 @@ def make_metabo_from(db, type_choices=None):
                 rows.append(Row('comp_type'))
 
             self.helper.layout = Layout(
-
                 Fieldset("",
                          Column(
                              *rows,
@@ -179,48 +158,36 @@ def make_metabo_from(db, type_choices=None):
 
         def get_choices(self):
             targets = self.cleaned_data["targets"]
-            taxids = []
-            for index in targets:
-                taxid = rev_index[int(index)]
-                taxids.append(taxid)
+            taxids, plasmids = AccessionFieldHandler().extract_choices(
+                targets, False)
             return taxids
 
     return MetaboForm
 
 
-def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
+def make_venn_from(db, label="Orthologs", limit=None,
                    limit_type="upper", action=""):
 
-    accession_choices, rev_index = get_accessions(db, plasmid=plasmid)
+    accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
 
     class VennForm(forms.Form):
-        attrs = {'size': '1', "class": "selectpicker",
-                 "data-live-search": "true",
-                 "data-actions-box": "true"}
+        attrs = {"data-close-on-select": "false",
+                 "data-placeholder": "Nothing selected"}
+
         help_text = ""
-        targets_validators = []
         if limit is not None and limit_type == "upper":
-            attrs["data-max-options"] = f"{limit}"
             help_text = f"Select a maximum of {limit} genomes"
-            targets_validators.append(
-                MaxLengthValidator(
-                    limit,
-                    message=f"Please select at most {limit} genomes")
-            )
         elif limit is not None and limit_type == "lower":
             help_text = f"Select a minimum of {limit} genomes"
-            targets_validators.append(
-                MinLengthValidator(
-                    limit,
-                    message=f"Please select at least {limit} genomes")
-            )
 
         targets = forms.MultipleChoiceField(
             choices=accession_choices,
-            widget=forms.SelectMultiple(attrs=attrs),
+            widget=Select2Multiple(
+                url="autocomplete_taxid",
+                forward=(forward.Field("targets", "exclude_taxids_in_groups"),),
+                attrs=attrs),
             help_text=help_text,
-            required=True,
-            validators=targets_validators)
+            required=True)
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -242,22 +209,33 @@ def make_venn_from(db, plasmid=False, label="Orthologs", limit=None,
 
         def get_taxids(self):
             indices = self.cleaned_data["targets"]
-            taxids = []
-            for index in indices:
-                taxid = rev_index[int(index)]
-                taxids.append(taxid)
+            taxids, plasmids = AccessionFieldHandler().extract_choices(
+                indices, False)
             return taxids
+
+        def clean_targets(self):
+            if not limit:
+                return self.cleaned_data["targets"]
+            n_taxids = len(self.get_taxids())
+            if limit_type == "upper" and n_taxids > limit:
+                raise ValidationError(f"Please select at most {limit} genomes")
+            elif limit_type == "lower" and n_taxids < limit:
+                raise ValidationError(f"Please select at least {limit} genomes")
+            return self.cleaned_data["targets"]
 
     return VennForm
 
 
 def make_circos_form(database_name):
 
-    accession_choices, reverse_index = get_accessions(database_name)
+    accession_choices = AccessionFieldHandler().get_choices(
+        with_plasmids=False)
+    accession_choices_no_groups = AccessionFieldHandler().get_choices(
+        with_plasmids=False, with_groups=False)
 
     class CircosForm(forms.Form):
         circos_reference = forms.ChoiceField(
-            choices=accession_choices,
+            choices=accession_choices_no_groups,
             widget=forms.Select(attrs={
                 "class": "selectpicker",
                 "data-live-search": "true"
@@ -265,10 +243,11 @@ def make_circos_form(database_name):
             ))
         targets = forms.MultipleChoiceField(
             choices=accession_choices,
-            widget=forms.SelectMultiple(attrs={'size': '1',
-                                               "class": "selectpicker",
-                                               "data-live-search": "true",
-                                               "data-max-options": "10"}),
+            widget=Select2Multiple(
+                url="autocomplete_taxid",
+                forward=(forward.Field("targets", "exclude_taxids_in_groups"),),
+                attrs={"data-close-on-select": "false",
+                       "data-placeholder": "Nothing selected"}),
             required=False)
 
         def __init__(self, *args, **kwargs):
@@ -294,16 +273,13 @@ def make_circos_form(database_name):
 
         def get_target_taxids(self):
             indices = self.cleaned_data["targets"]
-            taxids = []
-            for index in indices:
-                taxid = reverse_index[int(index)]
-                taxids.append(taxid)
+            taxids, plasmids = AccessionFieldHandler().extract_choices(
+                indices, False)
             return taxids
 
         def get_ref_taxid(self):
-            indice = self.cleaned_data["circos_reference"]
-            taxid = reverse_index[int(indice)]
-            return taxid
+            index = self.cleaned_data["circos_reference"]
+            return AccessionFieldHandler().extract_taxid(index)
 
     return CircosForm
 
@@ -455,7 +431,8 @@ def make_pathway_overview_form(db):
 
 
 def make_single_genome_form(db):
-    accession_choices, rev_index = get_accessions(db)
+    accession_choices = AccessionFieldHandler().get_choices(
+        with_plasmids=False, with_groups=False)
 
     class SingleGenomeForm(forms.Form):
         genome = forms.ChoiceField(choices=accession_choices, widget=forms.Select(
@@ -463,13 +440,15 @@ def make_single_genome_form(db):
 
         def get_genome(self):
             target = self.cleaned_data["genome"]
-            return rev_index[int(target)]
+            return AccessionFieldHandler().extract_taxid(target)
 
     return SingleGenomeForm
 
 
 def make_blast_form(biodb):
-    accession_choices, rev_index = get_accessions(biodb, all=True)
+    accession_choices = AccessionFieldHandler().get_choices(
+        with_plasmids=False, with_groups=False)
+    accession_choices = (("all", "all"),) + accession_choices
 
     class BlastForm(forms.Form):
         DEFAULT_E_VALUE = 10
@@ -570,7 +549,7 @@ def make_blast_form(biodb):
             target = self.cleaned_data["target"]
             if target == "all":
                 return target
-            return rev_index[int(target)]
+            return AccessionFieldHandler().extract_taxid(target)
 
     return BlastForm
 

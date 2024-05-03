@@ -492,7 +492,8 @@ class AccessionFieldHandler():
             self._db = DB.load_db_from_name(biodb_path)
         return self._db
 
-    def get_choices(self, with_plasmids=True, exclude=[], exclude_taxids_in_groups=[]):
+    def get_choices(self, with_plasmids=True, with_groups=True,
+                    exclude=[], exclude_taxids_in_groups=[]):
         result = self.db.get_genomes_description()
         result.set_index(result.index.astype(str), inplace=True)
         accession_choices = []
@@ -503,32 +504,38 @@ class AccessionFieldHandler():
                 plasmid = self.plasmid_id_to_key(taxid)
                 accession_choices.append((plasmid,
                                           f"{data.description} plasmid"))
-
-        accession_choices.extend([(self.group_id_to_key(group[0]), group[0])
-                                  for group in self.db.get_groups()])
+        if with_groups:
+            accession_choices.extend([(self.group_id_to_key(group[0]), group[0])
+                                      for group in self.db.get_groups()])
 
         # We also exclude taxids contained in the excluded groups
         groups_to_exclude = [self.group_key_to_id(key) for key in exclude
                              if self.is_group(key)]
-        in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
-        exclude = set(exclude).union({str(el) for el in in_groups})
+        if groups_to_exclude:
+            in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
+            exclude = set(exclude).union({str(el) for el in in_groups})
 
         # And we exclude groups containing an excluded taxid
         taxids_to_exclude = list(filter(self.is_taxid, exclude))
-        exclude = exclude.union(
-            {self.group_id_to_key(groupid) for groupid in
-             self.db.get_groups_containing_taxids(taxids_to_exclude)})
+        if taxids_to_exclude:
+            exclude = exclude.union(
+                {self.group_id_to_key(groupid) for groupid in
+                 self.db.get_groups_containing_taxids(taxids_to_exclude)})
 
         # Finally we exclude taxids from groups in exclude_taxids_in_groups
         groups_to_exclude = [self.group_key_to_id(key)
                              for key in exclude_taxids_in_groups
                              if self.is_group(key)]
-        in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
-        exclude = set(exclude).union({str(el) for el in in_groups})
+        if groups_to_exclude:
+            in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
+            exclude = set(exclude).union({str(el) for el in in_groups})
 
         accession_choices = filter(lambda choice: choice[0] not in exclude,
                                    accession_choices)
         return tuple(accession_choices)
+
+    def extract_taxid(self, index):
+        return int(index)
 
     def extract_choices(self, indices, include_plasmids):
         plasmids = []
