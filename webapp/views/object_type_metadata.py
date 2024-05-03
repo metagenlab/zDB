@@ -1,3 +1,5 @@
+from urllib.parse import quote
+
 from views.utils import (format_amr, format_cog, format_ko, format_orthogroup,
                          format_pfam, missing_mandatory, optional2status)
 
@@ -134,6 +136,12 @@ class GroupMetadata(BaseObjectMetadata):
         "This page gives an overview of the groups of genomes that were "
         "defined in your database.<br>Groups can be used for easy selection "
         "of genomes in various analysis views.")
+
+    @staticmethod
+    def format_entry(entry, to_url=False):
+        if to_url:
+            return f"<a href=/groups/{quote(entry)}>{entry}</a>"
+        return entry
 
 
 class MetadataGetter():
