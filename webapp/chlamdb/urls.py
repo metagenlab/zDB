@@ -54,7 +54,7 @@ urlpatterns = [
     re_path(r'^gwas_amr/', gwas.AmrGwasView.as_view(), name="gwas_amr"),
     re_path(r'^groups/', groups.GroupsOverview.as_view(), name=groups.GroupsOverview.view_name),
     re_path(r'^get_cog/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\%]+)$', views.get_cog, name="get_cog"),  # noqa
-    re_path(r'^genomes', views.genomes, name='genomes'),
+    re_path(r'^genomes', views.Genomes.as_view(), name=views.Genomes.view_name),
     re_path(r'^favicon\.ico$', favicon_view),
     re_path(r'^FAQ', views.faq, name='FAQ'),
     re_path(r'^fam_vf/(VFG[0-9]+)$', fam.FamVfView.as_view(), name="fam_vf"),

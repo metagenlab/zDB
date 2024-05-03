@@ -43,7 +43,8 @@ from views.analysis_view_metadata import (AccumulationRarefactionMetadata,
                                           CategoriesFreqHeatmapMetadata,
                                           HeatmapMetadata)
 from views.errors import errors
-from views.mixins import CogViewMixin, ComparisonViewMixin, KoViewMixin
+from views.mixins import (BaseViewMixin, CogViewMixin, ComparisonViewMixin,
+                          KoViewMixin)
 from views.object_type_metadata import MetadataGetter, my_locals
 from views.utils import (DataTableConfig, TabularResultTab, format_cog,
                          format_gene, format_genome, format_ko, format_locus,
@@ -155,66 +156,68 @@ def get_genomes_data(db):
     return genomes_data
 
 
-def genomes(request):
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
-    page_title = page2title["genomes"]
-    genomes_data = get_genomes_data(db)
+class Genomes(BaseViewMixin, View):
 
-    filenames_tax_id = db.get_filenames_to_taxon_id()
-    filenames_tax_id_db = pd.DataFrame.from_dict(list(filenames_tax_id.items()))
-    filenames_tax_id_db.columns = ['filename', 'taxon_id']
-    filenames_tax_id_db.index = list(filenames_tax_id_db['taxon_id'])
-    filenames_list = list(filenames_tax_id_db["filename"])
+    template = 'chlamdb/genomes.html'
+    view_name = "genomes"
 
-    path_template = settings.BLAST_DB_PATH + "/{ext}/{filename}.{ext}"
-    link_template = '<a href="{}"> .{{ext}} </a>'.format(path_template)
-    for ext in ["faa", "fna", "ffn", "gbk"]:
-        filenames_tax_id_db[f'path_to_{ext}'] = [
-            link_template.format(filename=filename, ext=ext)
-            for filename in filenames_list]
+    def get(self, request, *args, **kwargs):
+        genomes_data = get_genomes_data(self.db)
 
-    filenames_tax_id_db = filenames_tax_id_db[["path_to_faa", "path_to_fna",
-                                               "path_to_ffn", "path_to_gbk"]]
-    genomes_data = genomes_data.join(filenames_tax_id_db, on="taxon_id")
+        filenames_tax_id = self.db.get_filenames_to_taxon_id()
+        filenames_tax_id_db = pd.DataFrame.from_dict(list(filenames_tax_id.items()))
+        filenames_tax_id_db.columns = ['filename', 'taxon_id']
+        filenames_tax_id_db.index = list(filenames_tax_id_db['taxon_id'])
+        filenames_list = list(filenames_tax_id_db["filename"])
 
-    genomes_data["accession"] = genomes_data[["id", "description"]].apply(format_genome, axis=1)
+        path_template = settings.BLAST_DB_PATH + "/{ext}/{filename}.{ext}"
+        link_template = '<a href="{}"> .{{ext}} </a>'.format(path_template)
+        for ext in ["faa", "fna", "ffn", "gbk"]:
+            filenames_tax_id_db[f'path_to_{ext}'] = [
+                link_template.format(filename=filename, ext=ext)
+                for filename in filenames_list]
 
-    data_table_header = [
-        "Name",
-        "GC %",
-        "N proteins",
-        "N contigs",
-        "Size (Mbp)",
-        "Coding %",
-        "N plasmid contigs",
-        "faa seq",
-        "fna seq",
-        "ffn seq",
-        "gbk file"
-    ]
+        filenames_tax_id_db = filenames_tax_id_db[
+            ["path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk"]]
+        genomes_data = genomes_data.join(filenames_tax_id_db, on="taxon_id")
 
-    table_data_accessors = [
-        "accession",
-        "gc",
-        "n_prot",
-        "n_contigs",
-        "length",
-        "coding_density",
-        "has_plasmid",
-        "path_to_faa",
-        "path_to_fna",
-        "path_to_ffn",
-        "path_to_gbk"]
+        genomes_data["accession"] = genomes_data[["id", "description"]].apply(
+            format_genome, axis=1)
 
-    table_data = genomes_data[table_data_accessors]
+        data_table_header = [
+            "Name",
+            "GC %",
+            "N proteins",
+            "N contigs",
+            "Size (Mbp)",
+            "Coding %",
+            "N plasmid contigs",
+            "faa seq",
+            "fna seq",
+            "ffn seq",
+            "gbk file"
+        ]
 
-    results = {"table_data": table_data,
-               "table_headers": data_table_header,
-               "data_table_config": DataTableConfig(),
-               "table_data_accessors": table_data_accessors}
-    return render(request, 'chlamdb/genomes.html',
-                  my_locals({"results": results}))
+        table_data_accessors = [
+            "accession",
+            "gc",
+            "n_prot",
+            "n_contigs",
+            "length",
+            "coding_density",
+            "has_plasmid",
+            "path_to_faa",
+            "path_to_fna",
+            "path_to_ffn",
+            "path_to_gbk"]
+
+        table_data = genomes_data[table_data_accessors]
+
+        results = {"table_data": table_data,
+                   "table_headers": data_table_header,
+                   "data_table_config": DataTableConfig(),
+                   "table_data_accessors": table_data_accessors}
+        return render(request, self.template, self.get_context(results=results))
 
 
 def extract_contigs(request, genome):

@@ -105,13 +105,19 @@ class BaseViewMixin():
     def get_context(self, **kwargs):
         context = {
             "page_title": self.page_title(),
-            "description": getattr(self.metadata, "description", ""),
-            "tab_name": getattr(self.metadata, "name", ""),
-            "object_type": self.object_type,
-            "object_name": self.object_name_plural,
-            "object_name_plural": self.object_name_plural,
-            "available_views": self.available_views,
         }
+        if hasattr(self, "metadata"):
+            context.update({
+                "description": getattr(self.metadata, "description", ""),
+                "tab_name": getattr(self.metadata, "name", ""),
+                })
+        if hasattr(self, "object_type"):
+            context.update({
+                "object_type": self.object_type,
+                "object_name": self.object_name_plural,
+                "object_name_plural": self.object_name_plural,
+                "available_views": self.available_views,
+                })
         if hasattr(self, "form"):
             context["form"] = self.form
         context.update(kwargs)
