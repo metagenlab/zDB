@@ -560,3 +560,14 @@ class AccessionFieldHandler():
 
         taxids.update(self.db.get_taxids_for_groups(groups))
         return list(taxids), plasmids
+
+def get_genomes_data(db):
+    genomes_data = db.get_genomes_infos()
+    genomes_descr = db.get_genomes_description()
+
+    genomes_data = genomes_data.join(genomes_descr)
+
+    genomes_data.gc = genomes_data.gc.apply(lambda x: round(100 * x))
+    genomes_data.coding_density = genomes_data.coding_density.apply(lambda x: round(100 * x))
+    genomes_data.length = genomes_data.length.apply(lambda x: round(x / pow(10, 6), 2))
+    return genomes_data
