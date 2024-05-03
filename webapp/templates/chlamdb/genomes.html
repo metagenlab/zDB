@@ -25,36 +25,8 @@
 
                     <hr class="lines-home">
                     <div class="tab-pane" id="genomes" style="margin-right: 1em; overflow-x:auto;">
-                            
-                          <table class="display" id="genomes_table">
-                            <thead>
 
-
-                                <tr>
-                            {% for header in data_table_header %}
-                            <th>{{header}}</th>
-                            {% endfor %}
-
-                                </tr>
-                            </thead>
-                            <tbody>
-                              {% for entry in data_table %}
-                                <tr>
-                                  <td><a href="{% url 'extract_contigs' entry.0  %}">{{entry.1}}</a></td>
-                                  <td>{{entry.2}}</td>
-                                  <td>{{entry.3}}</td>
-                                  <td>{{entry.4}}</td>
-                                  <td>{{entry.5}}</td>
-                                  <td>{{entry.6}}</td>
-                                  <td>{{entry.7}}</td>
-                                  <td><a href="{{ entry.8 }}"> .faa </a></td>
-                                  <td><a href="{{ entry.9 }}"> .fna </a></td>
-                                  <td><a href="{{ entry.10 }}"> .ffn </a></td>
-                                  <td><a href="{{ entry.11 }}"> .gbk </a></td>
-                                </tr>
-                              {% endfor %}
-                              </tbody>
-                        </table>     
+                        {% include "chlamdb/result_table.html" with results=results %}
                         
                         <div class="panel panel-success" style="  width:100%; margin-top: 2em;">
                           <div class="panel-heading" style="width:100%;">
@@ -67,25 +39,4 @@
                       </div>
            </div>
 
-<script>
-
-$(document).ready(function() {
-  $("#genomes_table").DataTable({
-    columns: [
-      { data: "genome", className: "editable" },
-      { data: "GC" },
-      { data: "n_prot"},
-      { data: "n_contigs"},
-      { data: "size" },
-      { data: "perc_coding"},
-      { data: "has_plasmid"},
-      { data: "faa_seq"},
-      { data: "fna_seq"},
-      { data: "ffn_seq"},
-      { data: "gbk_file"}
-    ]
-  });}
-);
-
-</script>
 </html>

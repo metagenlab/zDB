@@ -45,10 +45,11 @@ from views.analysis_view_metadata import (AccumulationRarefactionMetadata,
 from views.errors import errors
 from views.mixins import CogViewMixin, ComparisonViewMixin, KoViewMixin
 from views.object_type_metadata import MetadataGetter, my_locals
-from views.utils import (TabularResultTab, format_cog, format_gene, format_ko,
-                         format_locus, format_orthogroup,
-                         genomic_region_df_to_js, locusx_genomic_region,
-                         make_div, optional2status, page2title, to_s)
+from views.utils import (DataTableConfig, TabularResultTab, format_cog,
+                         format_gene, format_genome, format_ko, format_locus,
+                         format_orthogroup, genomic_region_df_to_js,
+                         locusx_genomic_region, make_div, optional2status,
+                         page2title, to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -166,22 +167,19 @@ def genomes(request):
     filenames_tax_id_db.index = list(filenames_tax_id_db['taxon_id'])
     filenames_list = list(filenames_tax_id_db["filename"])
 
-    path_faa = [settings.BLAST_DB_PATH + "/faa/" + filename + ".faa"
-                for filename in filenames_list]
-    path_fna = [settings.BLAST_DB_PATH + "/fna/" + filename + ".fna"
-                for filename in filenames_list]
-    path_ffn = [settings.BLAST_DB_PATH + "/ffn/" + filename + ".ffn"
-                for filename in filenames_list]
-    path_gbk = [settings.BLAST_DB_PATH + "/gbk/" + filename + ".gbk"
-                for filename in filenames_list]
+    path_template = settings.BLAST_DB_PATH + "/{ext}/{filename}.{ext}"
+    link_template = '<a href="{}"> .{{ext}} </a>'.format(path_template)
+    for ext in ["faa", "fna", "ffn", "gbk"]:
+        filenames_tax_id_db[f'path_to_{ext}'] = [
+            link_template.format(filename=filename, ext=ext)
+            for filename in filenames_list]
 
-    filenames_tax_id_db['path_to_faa'] = path_faa
-    filenames_tax_id_db['path_to_fna'] = path_fna
-    filenames_tax_id_db['path_to_ffn'] = path_ffn
-    filenames_tax_id_db['path_to_gbk'] = path_gbk
     filenames_tax_id_db = filenames_tax_id_db[["path_to_faa", "path_to_fna",
                                                "path_to_ffn", "path_to_gbk"]]
     genomes_data = genomes_data.join(filenames_tax_id_db, on="taxon_id")
+
+    genomes_data["accession"] = genomes_data[["id", "description"]].apply(format_genome, axis=1)
+
     data_table_header = [
         "Name",
         "GC %",
@@ -195,9 +193,9 @@ def genomes(request):
         "ffn seq",
         "gbk file"
     ]
-    data_table = genomes_data[[
-        "id",
-        "description",
+
+    table_data_accessors = [
+        "accession",
         "gc",
         "n_prot",
         "n_contigs",
@@ -207,8 +205,16 @@ def genomes(request):
         "path_to_faa",
         "path_to_fna",
         "path_to_ffn",
-        "path_to_gbk"]].values.tolist()
-    return render(request, 'chlamdb/genomes.html', my_locals(locals()))
+        "path_to_gbk"]
+
+    table_data = genomes_data[table_data_accessors]
+
+    results = {"table_data": table_data,
+               "table_headers": data_table_header,
+               "data_table_config": DataTableConfig(),
+               "table_data_accessors": table_data_accessors}
+    return render(request, 'chlamdb/genomes.html',
+                  my_locals({"results": results}))
 
 
 def extract_contigs(request, genome):

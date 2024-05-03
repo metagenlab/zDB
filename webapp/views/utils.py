@@ -206,6 +206,11 @@ def format_swissprot_entry(entry_id):
     return f'<a href="https://www.uniprot.org/uniprot/{entry_id}">{entry_id}</a>'
 
 
+def format_genome(taxid_and_description):
+    taxid, description = taxid_and_description
+    return f'<a href="/extract_contigs/{taxid}">{description}</a>'
+
+
 class DataTableConfig():
 
     def __init__(self, table_id="results", ordering=True, paging=True,
