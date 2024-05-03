@@ -126,6 +126,16 @@ class PathwayMetadata(BaseObjectMetadata):
         return None
 
 
+class GroupMetadata(BaseObjectMetadata):
+
+    object_type = "group"
+    object_name = "Genome Group"
+    overview_description = (
+        "This page gives an overview of the groups of genomes that were "
+        "defined in your database.<br>Groups can be used for easy selection "
+        "of genomes in various analysis views.")
+
+
 class MetadataGetter():
 
     metadata_classes = [AmrMetadata, CogMetadata, KoMetadata, PfamMetadata,
@@ -148,6 +158,10 @@ class MetadataGetter():
     def get_orthology_metadata(self):
         return (self.object_type_to_metadata[object_type]
                 for object_type in self._orthology)
+
+    @property
+    def group_metadata(self):
+        return GroupMetadata()
 
 
 def my_locals(local_dico):

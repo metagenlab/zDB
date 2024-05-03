@@ -252,6 +252,19 @@
                       </div>
                     </div>
 
+                    <div class="col-lg-4 col-md-12 col-sm-12" >
+                      <div class="serviceBox">
+                        <a  href="{% url 'groups' %}">
+                          <div class="service-icon">
+                            <span><img src="{% static '/img/icons8-group-96.png'%}" width="65"/></span>
+                          </div>
+                          <br>
+                        </a>
+                        <h3 class="title">{{metadata.group_metadata.object_name_plural}}</h3>
+                        <p class="description">{{metadata.group_metadata.overview_description|safe}}</p>
+                      </div>
+                    </div>
+
                   </div>
                   <br>
                   <br>

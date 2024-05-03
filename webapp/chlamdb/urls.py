@@ -2,7 +2,7 @@
 from django.urls import re_path
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
-from views import (autocomplete, custom_plots, entry_lists, fam, gwas,
+from views import (autocomplete, custom_plots, entry_lists, fam, groups, gwas,
                    hits_extraction, locus, tabular_comparison, venn, views)
 
 favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
@@ -52,6 +52,7 @@ urlpatterns = [
     re_path(r'^gwas_ko/', gwas.KoGwasView.as_view(), name="gwas_ko"),
     re_path(r'^gwas_cog/', gwas.CogGwasView.as_view(), name="gwas_cog"),
     re_path(r'^gwas_amr/', gwas.AmrGwasView.as_view(), name="gwas_amr"),
+    re_path(r'^groups/', groups.GroupsOverview.as_view(), name=groups.GroupsOverview.view_name),
     re_path(r'^get_cog/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\%]+)$', views.get_cog, name="get_cog"),  # noqa
     re_path(r'^genomes', views.genomes, name='genomes'),
     re_path(r'^favicon\.ico$', favicon_view),

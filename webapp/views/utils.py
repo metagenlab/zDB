@@ -25,6 +25,7 @@ title2page = {
     'Genome alignments: Circos plot': ['circos'],
     'Genome alignments: Plot region': ['plot_region'],
     'Genomes: table of contents': ['extract_contigs'],
+    'Overview of defined groups of genomes.':['groups'],
     'Homology search: Blast': ['blast'],
     'Kegg Ortholog': ['fam_ko'],
     'Kegg metabolic pathways': ['kegg_genomes'],
