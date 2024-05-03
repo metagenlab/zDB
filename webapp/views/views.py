@@ -148,6 +148,7 @@ class Genomes(BaseViewMixin, View, GenomesTableMixin):
 
     template = 'chlamdb/genomes.html'
     view_name = "genomes"
+    genome_source_object = "database"
 
     def get(self, request, *args, **kwargs):
         results = self.get_genomes_table()

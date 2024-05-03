@@ -431,6 +431,17 @@ class ComparisonViewMixin():
 
 class GenomesTableMixin():
 
+    _genome_table_help = (
+        "This table contains the list of genomes included in the {} and a "
+        "summary of their content. <br> Clicking on the genome name "
+        "(first column) a second table with the protein content is displayed. "
+        "It shows to which contig each protein belongs and provides the link "
+        "to the locus tags. <br> Fasta and gbk files can be downloaded.")
+
+    @property
+    def genome_table_help(self):
+        return self._genome_table_help.format(self.genome_source_object)
+
     def get_genomes_table(self):
         genomes_data = get_genomes_data(self.db)
 
@@ -486,4 +497,5 @@ class GenomesTableMixin():
         return {"table_data": table_data,
                 "table_headers": data_table_header,
                 "data_table_config": DataTableConfig(),
-                "table_data_accessors": table_data_accessors}
+                "table_data_accessors": table_data_accessors,
+                "table_help": self.genome_table_help}
