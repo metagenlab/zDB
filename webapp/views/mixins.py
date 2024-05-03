@@ -442,8 +442,8 @@ class GenomesTableMixin():
     def genome_table_help(self):
         return self._genome_table_help.format(self.genome_source_object)
 
-    def get_genomes_table(self):
-        genomes_data = get_genomes_data(self.db)
+    def get_genomes_table(self, taxids=None):
+        genomes_data = get_genomes_data(self.db, taxids=taxids)
 
         filenames_tax_id = self.db.get_filenames_to_taxon_id()
         filenames_tax_id_db = pd.DataFrame.from_dict(list(filenames_tax_id.items()))

@@ -1270,13 +1270,17 @@ class DB:
             gc_term_id = result[0][0]
         return gc_term_id
 
-    def get_genomes_description(self):
+    def get_genomes_description(self, taxids=None):
         """
         Returns the description of the genome as it has been read from the
         genbank files, indexed by taxon_id. The output also contains a flag
         has_plasmid indicating whether the genome contains a plasmid or not.
         """
-
+        if taxids:
+            plchd = self.gen_placeholder_string(taxids)
+            where_clause = f"WHERE entry.taxon_id IN ({plchd})"
+        else:
+            where_clause = ""
         has_plasmid_query = (
             "SELECT * "
             "FROM bioentry_qualifier_value AS has_plasmid "
@@ -1293,13 +1297,13 @@ class DB:
             "INNER JOIN taxon_name as txn_name ON entry.taxon_id=txn_name.taxon_id "
             "INNER JOIN term AS orga_term ON orga.term_id=orga_term.term_id "
             " AND orga_term.name=\"organism\" "
-            "GROUP BY entry.taxon_id;"
+            f"{where_clause} GROUP BY entry.taxon_id;"
         )
-        descr = self.server.adaptor.execute_and_fetchall(query)
+        descr = self.server.adaptor.execute_and_fetchall(query, taxids)
         columns = ["taxon_id", "description", "has_plasmid"]
         return DB.to_pandas_frame(descr, columns).set_index(["taxon_id"])
 
-    def get_genomes_infos(self):
+    def get_genomes_infos(self, taxids=None):
         """
         Note: for efficiency sake, it would be possible to order the different
          tables by taxon_id, walk through the table using zip in an iteator
@@ -1308,30 +1312,35 @@ class DB:
          However, given the small size of the dataset, it's probably not worth
          the implementation effort.
         """
+        if taxids:
+            plchd = self.gen_placeholder_string(taxids)
+            where_clause = f"WHERE taxon_id IN ({plchd})"
+        else:
+            where_clause = ""
 
         query = (
             "SELECT entry.taxon_id, entry.taxon_id, COUNT(*) "
             " FROM seqfeature AS seq "
             " INNER JOIN term AS cds ON cds.term_id = seq.type_term_id AND cds.name=\"CDS\" "
             " INNER JOIN bioentry AS entry ON entry.bioentry_id = seq.bioentry_id "
-            " GROUP BY entry.taxon_id;"
+            f"{where_clause} GROUP BY entry.taxon_id;"
         )
-        n_prot_results = self.server.adaptor.execute_and_fetchall(query)
+        n_prot_results = self.server.adaptor.execute_and_fetchall(query, taxids)
 
         query = (
             "SELECT entry.taxon_id, COUNT(*) "
             "FROM bioentry AS entry "
-            "GROUP BY entry.taxon_id;"
+            f"{where_clause} GROUP BY entry.taxon_id;"
         )
-        n_contigs = self.server.adaptor.execute_and_fetchall(query)
+        n_contigs = self.server.adaptor.execute_and_fetchall(query, taxids)
 
         cols = ["taxon_id", "completeness", "contamination",
                 "gc", "length", "coding_density"]
         query = (
             "SELECT taxon_id, completeness, contamination, gc, length, "
-            "coding_density from genome_summary;"
+            f"coding_density from genome_summary {where_clause};"
         )
-        all_other_results = self.server.adaptor.execute_and_fetchall(query)
+        all_other_results = self.server.adaptor.execute_and_fetchall(query, taxids)
 
         df_n_prot = DB.to_pandas_frame(
             n_prot_results, ["taxon_id", "id", "n_prot"]).set_index("taxon_id")

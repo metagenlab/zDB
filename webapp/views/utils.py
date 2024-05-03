@@ -561,9 +561,10 @@ class AccessionFieldHandler():
         taxids.update(self.db.get_taxids_for_groups(groups))
         return list(taxids), plasmids
 
-def get_genomes_data(db):
-    genomes_data = db.get_genomes_infos()
-    genomes_descr = db.get_genomes_description()
+
+def get_genomes_data(db, taxids=None):
+    genomes_data = db.get_genomes_infos(taxids=taxids)
+    genomes_descr = db.get_genomes_description(taxids=taxids)
 
     genomes_data = genomes_data.join(genomes_descr)
 
