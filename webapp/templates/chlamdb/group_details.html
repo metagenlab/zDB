@@ -42,7 +42,34 @@
               </div>
             </div>
           </div>
+          <div>
+            <a class="button_link" data-toggle="modal" data-target="#delete-item-modal">
+              <button type="submit" class="btn btn-danger">
+                Delete
+              </button>
+            </a>
+            <div class="modal fade" id="delete-item-modal">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                      <p>Are you sure, You want to remove this item?</p>
+                  </div>
+                  <div class="justify-content-between mb-2 mr-2 text-right">
+                    <form method="post" action="{% url 'groups_delete' group %}" >
+                      <button type="button" class="btn btn-secondary mr-1" data-dismiss="modal">
+                        Cancel
+                      </button>
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger">
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
 
+          </div>
         </div>
       </div>
     </div>

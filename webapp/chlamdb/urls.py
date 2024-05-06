@@ -53,6 +53,7 @@ urlpatterns = [
     re_path(r'^gwas_cog/', gwas.CogGwasView.as_view(), name="gwas_cog"),
     re_path(r'^gwas_amr/', gwas.AmrGwasView.as_view(), name="gwas_amr"),
     re_path(r'^groups/add/$', groups.GroupAdd.as_view(), name=groups.GroupAdd.view_name),  # noqa
+    re_path(r'^groups/([a-zA-Z0-9_\.\(\)\-\'\s]+)/delete/$', groups.GroupDelete.as_view(), name=groups.GroupDelete.view_name),  # noqa
     re_path(r'^groups/([a-zA-Z0-9_\.\(\)\-\'\s]+)', groups.GroupDetails.as_view(), name=groups.GroupDetails.view_name),  # noqa
     re_path(r'^groups/$', groups.GroupsOverview.as_view(), name=groups.GroupsOverview.view_name),   # noqa
     re_path(r'^get_cog/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\%]+)$', views.get_cog, name="get_cog"),  # noqa

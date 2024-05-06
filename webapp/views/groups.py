@@ -38,7 +38,18 @@ class GroupDetails(BaseViewMixin, View, GroupMetadata, GenomesTableMixin):
         self.group = group
         taxids = self.db.get_taxids_for_groups([group])
         genome_table = self.get_genomes_table(tuple(taxids))
-        return render(request, self.template, self.get_context(genome_table=genome_table))
+        return render(request, self.template, self.get_context(group=self.group, genome_table=genome_table))
+
+
+class GroupDelete(BaseViewMixin, View, GroupMetadata, GenomesTableMixin):
+
+    view_name = "groups_delete"
+    genome_source_object = "group"
+
+    def post(self, request, group, *args, **kwargs):
+        self.group = group
+        self.db.delete_group(group)
+        return redirect(reverse("groups"))
 
 
 class GroupAdd(BaseViewMixin, View, GroupMetadata):

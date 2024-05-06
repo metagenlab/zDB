@@ -1485,6 +1485,14 @@ class DB:
         self.load_data_into_table("groups", groups)
         self.load_data_into_table("taxon_in_group", group_taxons)
 
+    def delete_group(self, group_name):
+        sql = f"DELETE FROM taxon_in_group WHERE group_name='{group_name}';"
+        self.server.adaptor.execute(sql)
+        sql = f"DELETE FROM groups WHERE group_name='{group_name}';"
+        self.server.adaptor.execute(sql)
+        self.commit()
+        return
+
     def get_group(self, group_name):
         query = f"SELECT * FROM groups WHERE group_name='{group_name}' LIMIT 1;"
         return self.server.adaptor.execute_and_fetchall(query)
