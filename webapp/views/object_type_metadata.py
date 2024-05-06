@@ -132,10 +132,7 @@ class GroupMetadata(BaseObjectMetadata):
 
     object_type = "group"
     object_name = "Genome Group"
-    overview_description = (
-        "This page gives an overview of the groups of genomes that were "
-        "defined in your database.<br>Groups can be used for easy selection "
-        "of genomes in various analysis views.")
+    overview_description = "Overview of defined groups of genomes."
 
     @staticmethod
     def format_entry(entry, to_url=False):

@@ -1485,6 +1485,10 @@ class DB:
         self.load_data_into_table("groups", groups)
         self.load_data_into_table("taxon_in_group", group_taxons)
 
+    def get_group(self, group_name):
+        query = f"SELECT * FROM groups WHERE group_name='{group_name}' LIMIT 1;"
+        return self.server.adaptor.execute_and_fetchall(query)
+
     def get_groups(self):
         query = "SELECT * FROM groups;"
         return self.server.adaptor.execute_and_fetchall(query)

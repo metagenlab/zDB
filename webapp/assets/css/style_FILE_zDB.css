@@ -1781,3 +1781,5 @@ form.example input[type=text] {
 .bootstrap-select.form-control.input-group-btn {
     z-index: auto;
 }
+
+a.button_link { text-decoration: none; color: rgb(255, 255, 255);}
