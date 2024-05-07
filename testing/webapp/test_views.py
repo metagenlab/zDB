@@ -13,6 +13,7 @@ html_dumps_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 untested_patterns = {
     '^favicon\\.ico$',
+    r'^groups/([a-zA-Z0-9_\.\(\)\-\'\s]+)/delete/$',
     '^module_cat_info/([a-zA-Z0-9_\\.]+)/([a-zA-Z0-9_\\.\\+-]+)$',
     '^plot_region/$',
     '^robots.txt$',
@@ -55,6 +56,9 @@ urls = [
     '/FAQ',
     '/genomes',
     '/get_cog/3/L?h=1&h=2&h=3',
+    '/groups/',
+    '/groups/add/',
+    '/groups/positive',
     '/gwas_amr/',
     '/gwas_cog/',
     '/gwas_ko/',
