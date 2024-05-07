@@ -1,91 +1,46 @@
-
 <!DOCTYPE html>
-
 
 <html>
 
 <head>
 
-   <link rel= "stylesheet" href="style_home.css">
-    {% load static %}
-    {% load custom_tags %}
-    {% include "chlamdb/header.html" %}
-    {% include "chlamdb/style_menu.html" %}
+  <link rel= "stylesheet" href="style_home.css">
+  {% load static %}
+  {% load custom_tags %}
+  {% include "chlamdb/header.html" %}
+  {% include "chlamdb/style_menu.html" %}
  
 </head>
 
 <body>
-    <div class="container-fluid" id="main_container">
-      <div class="row">
-        <div id="wrapper">
-            <div id="page-content-wrapper">
-              <div class="row">
-                <div class="col-lg-12">
-                   {% include "chlamdb/menu.html" %}
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+              {% include "chlamdb/menu.html" %}
 
-                    <hr class="lines-home">
-                    <div class="tab-pane" id="genomes" style="margin-right: 1em; overflow-x:auto;">
-                            
-                          <table class="display" id="genomes_table">
-                            <thead>
+              <hr class="lines-home">
+              <div class="tab-pane" id="genomes" style="margin-right: 1em; overflow-x:auto;">
 
+                {% include "chlamdb/result_table.html" with results=results %}
 
-                                <tr>
-                            {% for header in data_table_header %}
-                            <th>{{header}}</th>
-                            {% endfor %}
+                <div class="panel panel-success" style="  width:100%; margin-top: 2em;">
+                  <div class="panel-heading" style="width:100%;">
+                    <h3 class="panel-title">Help</h3>
+                  </div>
 
-                                </tr>
-                            </thead>
-                            <tbody>
-                              {% for entry in data_table %}
-                                <tr>
-                                  <td><a href="{% url 'extract_contigs' entry.0  %}">{{entry.1}}</a></td>
-                                  <td>{{entry.2}}</td>
-                                  <td>{{entry.3}}</td>
-                                  <td>{{entry.4}}</td>
-                                  <td>{{entry.5}}</td>
-                                  <td>{{entry.6}}</td>
-                                  <td>{{entry.7}}</td>
-                                  <td><a href="{{ entry.8 }}"> .faa </a></td>
-                                  <td><a href="{{ entry.9 }}"> .fna </a></td>
-                                  <td><a href="{{ entry.10 }}"> .ffn </a></td>
-                                  <td><a href="{{ entry.11 }}"> .gbk </a></td>
-                                </tr>
-                              {% endfor %}
-                              </tbody>
-                        </table>     
-                        
-                        <div class="panel panel-success" style="  width:100%; margin-top: 2em;">
-                          <div class="panel-heading" style="width:100%;">
-                              <h3 class="panel-title">Help</h3>
-                          </div>
-
-                          <p style="padding:1em 3em 1em 1em; line-height: 160% ; width:100%" >This table contains the list of genomes included in the database and a summary of their content. <br> Clicking on the genome name (first column) a second table with the protein content is displayed. It shows to which contig each protein belongs and provides the link to the locus tags.
-                          <br> Fasta and gbk files can be downloaded.
-                          </p>
-                      </div>
-           </div>
-
-<script>
-
-$(document).ready(function() {
-  $("#genomes_table").DataTable({
-    columns: [
-      { data: "genome", className: "editable" },
-      { data: "GC" },
-      { data: "n_prot"},
-      { data: "n_contigs"},
-      { data: "size" },
-      { data: "perc_coding"},
-      { data: "has_plasmid"},
-      { data: "faa_seq"},
-      { data: "fna_seq"},
-      { data: "ffn_seq"},
-      { data: "gbk_file"}
-    ]
-  });}
-);
-
-</script>
+                  <p style="padding:1em 3em 1em 1em; line-height: 160% ; width:100%" >
+                    {{results.table_help|safe}}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
 </html>

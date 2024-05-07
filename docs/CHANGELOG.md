@@ -25,6 +25,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add views to add, delete, and display groups. ([#86](https://github.com/metagenlab/zDB/pull/86)) (Niklaus Johner)
 - Allow defining groups of genomes in input file. ([#82](https://github.com/metagenlab/zDB/pull/82)) (Niklaus Johner)
 - Add view to produce custom plots (phylogenetic trees and table). ([#78](https://github.com/metagenlab/zDB/pull/78)) (Niklaus Johner)
 - Add AMRs and VFs to search index. ([#73](https://github.com/metagenlab/zDB/pull/73)) (Niklaus Johner)

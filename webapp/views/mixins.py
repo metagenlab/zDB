@@ -6,8 +6,10 @@ from views.analysis_view_metadata import analysis_views_metadata
 from views.object_type_metadata import (AmrMetadata, CogMetadata, KoMetadata,
                                         OrthogroupMetadata, PfamMetadata,
                                         VfMetadata, my_locals)
-from views.utils import (format_hmm_url, format_ko_module, format_lst_to_html,
-                         format_refseqid_to_ncbi, page2title, safe_replace)
+from views.utils import (DataTableConfig, format_genome, format_hmm_url,
+                         format_ko_module, format_lst_to_html,
+                         format_refseqid_to_ncbi, get_genomes_data, page2title,
+                         safe_replace)
 
 
 class Transform():
@@ -64,8 +66,8 @@ class BaseViewMixin():
         return self._db
 
     def page_title(self):
-        return page2title.get(getattr(self, "view_name", None),
-                              page2title[f"{self.object_type}_comparison"])
+        return page2title.get(getattr(self, "view_name", None)) or \
+            page2title[f"{self.object_type}_comparison"]
 
     @property
     def object_column(self):
@@ -105,13 +107,19 @@ class BaseViewMixin():
     def get_context(self, **kwargs):
         context = {
             "page_title": self.page_title(),
-            "description": getattr(self.metadata, "description", ""),
-            "tab_name": getattr(self.metadata, "name", ""),
-            "object_type": self.object_type,
-            "object_name": self.object_name_plural,
-            "object_name_plural": self.object_name_plural,
-            "available_views": self.available_views,
         }
+        if hasattr(self, "metadata"):
+            context.update({
+                "description": getattr(self.metadata, "description", ""),
+                "tab_name": getattr(self.metadata, "name", ""),
+                })
+        if hasattr(self, "object_type"):
+            context.update({
+                "object_type": self.object_type,
+                "object_name": self.object_name_plural,
+                "object_name_plural": self.object_name_plural,
+                "available_views": self.available_views,
+                })
         if hasattr(self, "form"):
             context["form"] = self.form
         context.update(kwargs)
@@ -419,3 +427,75 @@ class ComparisonViewMixin():
         # Fix the metadata property
         self.mixin._metadata_cls = getattr(self, "_metadata_cls", None)
         return super(ComparisonViewMixin, self).dispatch(request, *args, **kwargs)
+
+
+class GenomesTableMixin():
+
+    _genome_table_help = (
+        "This table contains the list of genomes included in the {} and a "
+        "summary of their content. <br> Clicking on the genome name "
+        "(first column) a second table with the protein content is displayed. "
+        "It shows to which contig each protein belongs and provides the link "
+        "to the locus tags. <br> Fasta and gbk files can be downloaded.")
+
+    @property
+    def genome_table_help(self):
+        return self._genome_table_help.format(self.genome_source_object)
+
+    def get_genomes_table(self, taxids=None):
+        genomes_data = get_genomes_data(self.db, taxids=taxids)
+
+        filenames_tax_id = self.db.get_filenames_to_taxon_id()
+        filenames_tax_id_db = pd.DataFrame.from_dict(list(filenames_tax_id.items()))
+        filenames_tax_id_db.columns = ['filename', 'taxon_id']
+        filenames_tax_id_db.index = list(filenames_tax_id_db['taxon_id'])
+        filenames_list = list(filenames_tax_id_db["filename"])
+
+        path_template = settings.BLAST_DB_PATH + "/{ext}/{filename}.{ext}"
+        link_template = '<a href="{}"> .{{ext}} </a>'.format(path_template)
+        for ext in ["faa", "fna", "ffn", "gbk"]:
+            filenames_tax_id_db[f'path_to_{ext}'] = [
+                link_template.format(filename=filename, ext=ext)
+                for filename in filenames_list]
+
+        filenames_tax_id_db = filenames_tax_id_db[
+            ["path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk"]]
+        genomes_data = genomes_data.join(filenames_tax_id_db, on="taxon_id")
+
+        genomes_data["accession"] = genomes_data[["id", "description"]].apply(
+            format_genome, axis=1)
+
+        data_table_header = [
+            "Name",
+            "GC %",
+            "N proteins",
+            "N contigs",
+            "Size (Mbp)",
+            "Coding %",
+            "N plasmid contigs",
+            "faa seq",
+            "fna seq",
+            "ffn seq",
+            "gbk file"
+        ]
+
+        table_data_accessors = [
+            "accession",
+            "gc",
+            "n_prot",
+            "n_contigs",
+            "length",
+            "coding_density",
+            "has_plasmid",
+            "path_to_faa",
+            "path_to_fna",
+            "path_to_ffn",
+            "path_to_gbk"]
+
+        table_data = genomes_data[table_data_accessors]
+
+        return {"table_data": table_data,
+                "table_headers": data_table_header,
+                "data_table_config": DataTableConfig(),
+                "table_data_accessors": table_data_accessors,
+                "table_help": self.genome_table_help}

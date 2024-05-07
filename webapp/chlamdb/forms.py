@@ -712,3 +712,51 @@ class CustomPlotsForm(forms.Form):
                                       code="invalid")
             entries.append(self.Entry(entry_id, label, object_type))
         return entries
+
+
+def make_group_add_form(db):
+
+    accession_choices = AccessionFieldHandler().get_choices(
+        with_plasmids=False)
+
+    class GroupAddForm(forms.Form):
+        group_name = forms.CharField(max_length=50,
+                                     required=True)
+        genomes = forms.MultipleChoiceField(
+            choices=accession_choices,
+            widget=Select2Multiple(
+                url="autocomplete_taxid",
+                forward=(forward.Field("genomes", "exclude_taxids_in_groups"),),
+                attrs={"data-close-on-select": "false",
+                       "data-placeholder": "Nothing selected"}),
+            required=True)
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.db = db
+            self.helper = FormHelper()
+            self.helper.form_method = "post"
+
+            self.helper.layout = Layout(
+                Fieldset(
+                    " ",
+                    Row('group_name'),
+                    Row('genomes', style="margin-top:1em"),
+                    Submit('submit', 'Submit',
+                           style="padding-left:15px; margin-top:15px; margin-bottom:15px "),
+                    css_class="col-lg-5 col-md-6 col-sm-6")
+            )
+
+        def clean_group_name(self):
+            group_name = self.cleaned_data["group_name"]
+            if self.db.get_group(group_name):
+                raise ValidationError(f'Group "{group_name}" already exists.')
+            return group_name
+
+        def get_taxids(self):
+            indices = self.cleaned_data["genomes"]
+            taxids, plasmids = AccessionFieldHandler().extract_choices(
+                indices, False)
+            return taxids
+
+    return GroupAddForm

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% include "chlamdb/header.html" %}
+{% load custom_tags %}
+</head>
+
+<body>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+              {% include "chlamdb/menu.html" %}
+              <p class="page-title">
+                <b>{{description|safe}}</b>
+              </p>
+            </div>
+
+          </div>
+
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="tab-pane" id="genomes" style="margin-right: 1em; overflow-x:auto;">
+
+                {% include "chlamdb/result_table.html" with results=genome_table %}
+
+                <div class="panel panel-success" style="  width:100%; margin-top: 2em;">
+                  <div class="panel-heading" style="width:100%;">
+                    <h3 class="panel-title">Help</h3>
+                  </div>
+
+                  <p style="padding:1em 3em 1em 1em; line-height: 160% ; width:100%" >
+                    {{genome_table.table_help|safe}}
+                  </p>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <a class="button_link" data-toggle="modal" data-target="#delete-item-modal">
+              <button type="submit" class="btn btn-danger">
+                Delete
+              </button>
+            </a>
+            <div class="modal fade" id="delete-item-modal">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                      <p>Are you sure, You want to remove this item?</p>
+                  </div>
+                  <div class="justify-content-between mb-2 mr-2 text-right">
+                    <form method="post" action="{% url 'groups_delete' group %}" >
+                      <button type="button" class="btn btn-secondary mr-1" data-dismiss="modal">
+                        Cancel
+                      </button>
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger">
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+{% include "chlamdb/style_menu.html" %}
+</html>

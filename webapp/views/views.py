@@ -43,12 +43,14 @@ from views.analysis_view_metadata import (AccumulationRarefactionMetadata,
                                           CategoriesFreqHeatmapMetadata,
                                           HeatmapMetadata)
 from views.errors import errors
-from views.mixins import CogViewMixin, ComparisonViewMixin, KoViewMixin
+from views.mixins import (BaseViewMixin, CogViewMixin, ComparisonViewMixin,
+                          GenomesTableMixin, KoViewMixin)
 from views.object_type_metadata import MetadataGetter, my_locals
 from views.utils import (TabularResultTab, format_cog, format_gene, format_ko,
                          format_locus, format_orthogroup,
-                         genomic_region_df_to_js, locusx_genomic_region,
-                         make_div, optional2status, page2title, to_s)
+                         genomic_region_df_to_js, get_genomes_data,
+                         locusx_genomic_region, make_div, optional2status,
+                         page2title, to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -142,73 +144,15 @@ class ComparisonIndexView(ComparisonViewMixin, View):
         return render(request, 'chlamdb/index_comp.html', context)
 
 
-def get_genomes_data(db):
-    genomes_data = db.get_genomes_infos()
-    genomes_descr = db.get_genomes_description()
+class Genomes(BaseViewMixin, View, GenomesTableMixin):
 
-    genomes_data = genomes_data.join(genomes_descr)
+    template = 'chlamdb/genomes.html'
+    view_name = "genomes"
+    genome_source_object = "database"
 
-    genomes_data.gc = genomes_data.gc.apply(lambda x: round(100 * x))
-    genomes_data.coding_density = genomes_data.coding_density.apply(lambda x: round(100 * x))
-    genomes_data.length = genomes_data.length.apply(lambda x: round(x / pow(10, 6), 2))
-    return genomes_data
-
-
-def genomes(request):
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
-    page_title = page2title["genomes"]
-    genomes_data = get_genomes_data(db)
-
-    filenames_tax_id = db.get_filenames_to_taxon_id()
-    filenames_tax_id_db = pd.DataFrame.from_dict(list(filenames_tax_id.items()))
-    filenames_tax_id_db.columns = ['filename', 'taxon_id']
-    filenames_tax_id_db.index = list(filenames_tax_id_db['taxon_id'])
-    filenames_list = list(filenames_tax_id_db["filename"])
-
-    path_faa = [settings.BLAST_DB_PATH + "/faa/" + filename + ".faa"
-                for filename in filenames_list]
-    path_fna = [settings.BLAST_DB_PATH + "/fna/" + filename + ".fna"
-                for filename in filenames_list]
-    path_ffn = [settings.BLAST_DB_PATH + "/ffn/" + filename + ".ffn"
-                for filename in filenames_list]
-    path_gbk = [settings.BLAST_DB_PATH + "/gbk/" + filename + ".gbk"
-                for filename in filenames_list]
-
-    filenames_tax_id_db['path_to_faa'] = path_faa
-    filenames_tax_id_db['path_to_fna'] = path_fna
-    filenames_tax_id_db['path_to_ffn'] = path_ffn
-    filenames_tax_id_db['path_to_gbk'] = path_gbk
-    filenames_tax_id_db = filenames_tax_id_db[["path_to_faa", "path_to_fna",
-                                               "path_to_ffn", "path_to_gbk"]]
-    genomes_data = genomes_data.join(filenames_tax_id_db, on="taxon_id")
-    data_table_header = [
-        "Name",
-        "GC %",
-        "N proteins",
-        "N contigs",
-        "Size (Mbp)",
-        "Coding %",
-        "N plasmid contigs",
-        "faa seq",
-        "fna seq",
-        "ffn seq",
-        "gbk file"
-    ]
-    data_table = genomes_data[[
-        "id",
-        "description",
-        "gc",
-        "n_prot",
-        "n_contigs",
-        "length",
-        "coding_density",
-        "has_plasmid",
-        "path_to_faa",
-        "path_to_fna",
-        "path_to_ffn",
-        "path_to_gbk"]].values.tolist()
-    return render(request, 'chlamdb/genomes.html', my_locals(locals()))
+    def get(self, request, *args, **kwargs):
+        results = self.get_genomes_table()
+        return render(request, self.template, self.get_context(results=results))
 
 
 def extract_contigs(request, genome):

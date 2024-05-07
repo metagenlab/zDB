@@ -25,6 +25,7 @@ title2page = {
     'Genome alignments: Circos plot': ['circos'],
     'Genome alignments: Plot region': ['plot_region'],
     'Genomes: table of contents': ['extract_contigs'],
+    'Genome groups': ['groups'],
     'Homology search: Blast': ['blast'],
     'Kegg Ortholog': ['fam_ko'],
     'Kegg metabolic pathways': ['kegg_genomes'],
@@ -203,6 +204,11 @@ def format_taxid_to_ncbi(organism_and_taxid):
 
 def format_swissprot_entry(entry_id):
     return f'<a href="https://www.uniprot.org/uniprot/{entry_id}">{entry_id}</a>'
+
+
+def format_genome(taxid_and_description):
+    taxid, description = taxid_and_description
+    return f'<a href="/extract_contigs/{taxid}">{description}</a>'
 
 
 class DataTableConfig():
@@ -508,12 +514,13 @@ class AccessionFieldHandler():
             accession_choices.extend([(self.group_id_to_key(group[0]), group[0])
                                       for group in self.db.get_groups()])
 
+        exclude = set(exclude)
         # We also exclude taxids contained in the excluded groups
         groups_to_exclude = [self.group_key_to_id(key) for key in exclude
                              if self.is_group(key)]
         if groups_to_exclude:
             in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
-            exclude = set(exclude).union({str(el) for el in in_groups})
+            exclude = exclude.union({str(el) for el in in_groups})
 
         # And we exclude groups containing an excluded taxid
         taxids_to_exclude = list(filter(self.is_taxid, exclude))
@@ -528,7 +535,7 @@ class AccessionFieldHandler():
                              if self.is_group(key)]
         if groups_to_exclude:
             in_groups = self.db.get_taxids_for_groups(groups_to_exclude)
-            exclude = set(exclude).union({str(el) for el in in_groups})
+            exclude = exclude.union({str(el) for el in in_groups})
 
         accession_choices = filter(lambda choice: choice[0] not in exclude,
                                    accession_choices)
@@ -554,3 +561,15 @@ class AccessionFieldHandler():
 
         taxids.update(self.db.get_taxids_for_groups(groups))
         return list(taxids), plasmids
+
+
+def get_genomes_data(db, taxids=None):
+    genomes_data = db.get_genomes_infos(taxids=taxids)
+    genomes_descr = db.get_genomes_description(taxids=taxids)
+
+    genomes_data = genomes_data.join(genomes_descr)
+
+    genomes_data.gc = genomes_data.gc.apply(lambda x: round(100 * x))
+    genomes_data.coding_density = genomes_data.coding_density.apply(lambda x: round(100 * x))
+    genomes_data.length = genomes_data.length.apply(lambda x: round(x / pow(10, 6), 2))
+    return genomes_data
