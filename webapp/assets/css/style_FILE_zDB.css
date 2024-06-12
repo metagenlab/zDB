@@ -1067,6 +1067,10 @@ background: #81F7F3;
   padding-left: 10px;
 }
 
+table.dataTable {
+    margin-left: 0;
+}
+
 body {
 	/*background:#3B3B3B;*/
   background: #ffffff url(http://jackrugile.com/images/misc/noise-diagonal.png);

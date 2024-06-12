@@ -25,6 +25,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Control data exports from tables by making rows selectable. ([#88](https://github.com/metagenlab/zDB/pull/88)) (Niklaus Johner)
 - Add views to add, delete, and display groups. ([#86](https://github.com/metagenlab/zDB/pull/86)) (Niklaus Johner)
 - Allow defining groups of genomes in input file. ([#82](https://github.com/metagenlab/zDB/pull/82)) (Niklaus Johner)
 - Add view to produce custom plots (phylogenetic trees and table). ([#78](https://github.com/metagenlab/zDB/pull/78)) (Niklaus Johner)
@@ -59,6 +60,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix webapp conda environment for macOS. ([#87](https://github.com/metagenlab/zDB/pull/87)) (Niklaus Johner)
 - Fix displaying active tab in search results view. ([#73](https://github.com/metagenlab/zDB/pull/73)) (Niklaus Johner)
 - Fix missing page title for kegg_mapp_ko view. ([#66](https://github.com/metagenlab/zDB/pull/66)) (Niklaus Johner)
 - Handle empty result set in heatmap, venn and pan_genome views. ([#66](https://github.com/metagenlab/zDB/pull/66)) (Niklaus Johner)

@@ -215,7 +215,7 @@ class DataTableConfig():
 
     def __init__(self, table_id="results", ordering=True, paging=True,
                  export_buttons=True, colvis_button=False, display_index=False,
-                 display_as_datatable=True):
+                 display_as_datatable=True, selectable=False):
         self.table_id = table_id
         self.ordering = ordering
         self.paging = paging
@@ -223,6 +223,7 @@ class DataTableConfig():
         self.colvis_button = colvis_button
         self.display_index = display_index
         self.display_as_datatable = display_as_datatable
+        self.selectable = selectable
         if self.display_as_datatable:
             self.style = "margin-top: 3em;"
         else:
@@ -247,16 +248,26 @@ class DataTableConfig():
         return 'lfrtip'
 
     def to_json(self):
-        return json.dumps(
-            {
+        config = {
                 "paging": self.paging,
                 "ordering": self.ordering,
                 "info": False,
                 "buttons": self.buttons,
                 "dom": self.dom,
                 "display_as_datatable": self.display_as_datatable,
-            },
-            cls=DjangoJSONEncoder)
+            }
+        if self.selectable:
+            config["select"] = {
+                "items": 'row',
+                "style": 'os',
+                "headerCheckbox": True,
+            }
+            config["columnDefs"] = [{
+                "orderable": False,
+                "render": ["select"],
+                "target": 0
+            }]
+        return json.dumps(config, cls=DjangoJSONEncoder)
 
 
 class ResultTab():
@@ -276,11 +287,11 @@ class TabularResultTab(ResultTab):
     def __init__(self, tabid, title, template="chlamdb/result_table.html",
                  ordering=True, paging=True, export_buttons=True,
                  colvis_button=False, display_index=False,
-                 show_badge=False, **kwargs):
+                 show_badge=False, selectable=False, **kwargs):
         self.data_table_config = DataTableConfig(
             table_id=tabid, ordering=ordering, paging=paging,
             export_buttons=export_buttons, colvis_button=colvis_button,
-            display_index=display_index)
+            display_index=display_index, selectable=selectable)
         if show_badge:
             badge = len(kwargs["table_data"])
         else:

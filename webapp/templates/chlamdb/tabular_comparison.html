@@ -34,14 +34,10 @@
                 </div>
                 <br>
                 <div class="col-lg-12">
-                  <table class="hover" id="mytable"  style="padding-top: 1em;">
-                    <style>
-                      table {
-                        table-layout: fixed;
-                      }
-                    </style>
+                  <table class="hover table" id="mytable"  style="padding-top: 1em;">
                     <thead>
                       <tr>
+                        <th></th>
                         {% for title in table_headers %}
                           <th>{{title}}</th>
                         {% endfor %}
@@ -50,6 +46,7 @@
                     <tbody>
                       {% for row in table_rows %}
                         <tr>
+                          <td>{{forloop.counter}}</td>
                           {% for value in row|slice_up_to:n_data_columns %}
                             {% if forloop.counter0 < first_coloured_row %}
                               <td>{{value|safe}}</td>
@@ -96,6 +93,18 @@
 
   $(document).ready(function() {
     $('#mytable').DataTable( {
+      select: {
+          items: 'row',
+          style: 'os',
+          headerCheckbox: true,
+      },
+      columnDefs: [
+          {
+              orderable: false,
+              render: DataTable.render.select(),
+              target: 0
+          }
+      ],
       dom: 'lBfrtip',
       buttons: [
           {

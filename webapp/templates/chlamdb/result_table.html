@@ -3,6 +3,9 @@
   <table id="{{results.data_table_config.table_id}}" class="table table-striped" width="100%" >
     <thead>
       <tr>
+        {% if results.data_table_config.selectable%}
+          <th></th>
+        {% endif %}
         {% if results.data_table_config.display_index%}
           <th></th>
         {% endif %}
@@ -14,6 +17,9 @@
     <tbody>
       {% for index, row in results.table_data.iterrows %}
         <tr>
+          {% if results.data_table_config.selectable%}
+            <td>{{forloop.counter}}</td>
+          {% endif %}
           {% if results.data_table_config.display_index%}
             <td>{{forloop.counter}}</td>
           {% endif %}
