@@ -1,11 +1,9 @@
-<!DOCTYPE html> <html>  <head> {% load custom_tags %}
-  {% load static %}
+<!DOCTYPE html> <html>
+<head>
   {% load static %}
   {% load crispy_forms_tags %}
   {% load custom_tags %}
   {% include "chlamdb/header.html" %}
-
-
 </head>
 
 <body>
@@ -47,6 +45,18 @@
 
   $(document).ready(function() {
     $('#pfam_table').DataTable( {
+      select: {
+          items: 'row',
+          style: 'os',
+          headerCheckbox: true,
+      },
+      columnDefs: [
+          {
+              orderable: false,
+              render: DataTable.render.select(),
+              target: 0
+          }
+      ],
       dom: 'lBfrtip',
       buttons: [
           {
