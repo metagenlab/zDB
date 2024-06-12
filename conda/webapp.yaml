@@ -21,7 +21,7 @@ dependencies:
     - pyqt
     - bibtexparser
     - blast>=2.9.0
-    - gxx
     - django-autocomplete-light
     - pip:
         - scoary-2
+        - gxx ; sys_platform != 'darwin'
