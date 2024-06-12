@@ -4,18 +4,20 @@
     <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_ref_url|safe}}'">fasta aa</button>
   {% endif %}
 </div>
-<table class="hover data-table" id="details_table">
+<table class="hover data-table" id="details_table" >
   <thead>
     <tr>
-    {% for value in details_header %}
-      <th style="text-align:center; padding: 5px 30px"> {{value|safe}} </th>
-    {% endfor %}
+      <th></th>
+      {% for value in details_header %}
+        <th style="text-align:center; padding: 5px 30px"> {{value|safe}} </th>
+      {% endfor %}
     </tr>
   </thead>
 
   <tbody>
     {% for entry in details_data %}
       <tr>
+        <td>{{forloop.counter}}</td>
         {% for values in entry %}
           <td style="text-align: center;"> {{ values|safe }} </td>
         {% endfor %}
