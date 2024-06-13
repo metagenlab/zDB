@@ -50,6 +50,18 @@
 <script>
   $(document).ready(function() {
     $('#homologs').DataTable( {
+      select: {
+        items: 'row',
+        style: 'os',
+        headerCheckbox: true,
+      },
+      columnDefs: [
+        {
+          orderable: false,
+          render: DataTable.render.select(),
+          target: 0
+        }
+      ],
       dom: 'lBfrtip',
       buttons: [
         {
