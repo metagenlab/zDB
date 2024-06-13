@@ -485,12 +485,12 @@ def get_sequence(db, seqid, flanking=0):
     elif len(loc) == 1:
         _, strand, start, stop = (int(i) for i in loc.loc[0].tolist())
         start -= 1
-        if start < 50:
+        if start < flanking:
             start_w_flank = 0
             red_start = start
         else:
             start_w_flank = start - flanking
-            red_start = 50
+            red_start = flanking
 
         if stop + flanking > len(seq):
             stop_w_flank = len(seq) - 1
