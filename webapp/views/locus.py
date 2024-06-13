@@ -33,6 +33,7 @@ class DownloadSequences(View):
         db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
         data = json.loads(self.request.body)
         loci = data.get("loci", [])
+        dna = data.get("dna", False)
         sequences = []
         for locus in loci:
             seqid, is_pseudogene = db.get_seqid(locus_tag=locus)
@@ -44,7 +45,10 @@ class DownloadSequences(View):
             gene = hsh_infos.get(seqid)
             if gene:
                 description += f" {gene[0]}"
-            seq = db.get_translation(seqid)
+            if dna:
+                l_flank, seq, r_flank = get_sequence(db, seqid)
+            else:
+                seq = db.get_translation(seqid)
             sequences.append(
                 SeqRecord(seq, id=locus, description=description)
             )
@@ -502,8 +506,9 @@ def get_sequence(db, seqid, flanking=0):
         extracted = fet.extract(seq)
     else:
         raise Exception("Unsupported case of fragmented gene")
-    return extracted[0:red_start] + "<font color='red'>" + \
-        extracted[red_start:red_stop] + "</font>" + extracted[red_stop:]
+    return (extracted[0:red_start],
+            extracted[red_start:red_stop],
+            extracted[red_stop:])
 
 
 class ViewBase(View):
@@ -585,7 +590,10 @@ class LocusX(ViewBase):
             return self.render_invalid(request)
 
         context["page_title"] = f'Locus tag: {locus}'
-        context["seq"] = get_sequence(self.db, self.seqid, flanking=50)
+        l_flank, coding, r_flank = get_sequence(
+            self.db, self.seqid, flanking=50)
+        context["seq"] = (
+            l_flank + "<font color='red'>" + coding + "</font>" + r_flank)
         context["feature_type"] = feature_type
 
         window_size = 8000

@@ -57,7 +57,7 @@
       }
     }
 
-  function downloadSequences(dt) {
+  function downloadSequences(dt, dna=false) {
     let arr = [];
     let rows = dt.rows({selected: true})
     if (rows[0].length === 0) { rows = dt.rows() }
@@ -66,19 +66,20 @@
       var data = this.data()
       arr.push(data[0]);
     });
+    let filename = dna ? 'dna_sequences.fasta' : 'prot_sequences.fasta';
     let csrftoken = getCookie('csrftoken');
     fetch(
       "/download_sequences",
       {
         method: "POST",
-        body: JSON.stringify({"loci": arr}),
+        body: JSON.stringify({"loci": arr, "dna": dna}),
         headers: {
           'Content-Type': 'application/json',
           'responseType': "blob",
           "X-CSRFToken": csrftoken
         }
       }).then(res => res.blob())
-        .then(blob => saveAs(blob, 'prot_sequences.fasta'))
+        .then(blob => saveAs(blob, filename))
   }
 
   $(document).ready(function() {
@@ -113,6 +114,12 @@
           text: 'Download protein sequences',
           action: function(e, dt, node, config) {
             downloadSequences(dt);
+          },
+        },
+        {
+          text: 'Download DNA sequences',
+          action: function(e, dt, node, config) {
+            downloadSequences(dt, dna=true);
           },
         }
       ],
