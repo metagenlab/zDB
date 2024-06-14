@@ -287,7 +287,7 @@ class ComparisonViewsTestMixin():
         <option value="2" selected="">Klebsiella pneumoniae R6726_16314</option>
         """
 
-    table_html = '<table class="hover" id="mytable"  style="padding-top: 1em;">'
+    table_html = '<table class="hover table" id="mytable"  style="padding-top: 1em;">'
     venn_html = '<div id="venn_diagram" '
     heatmap_html = '<div id="heatmap" '
     rarefaction_plot_html = 'id="rarefaction_plot"'
