@@ -25,6 +25,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add buttons to download protein and DNA sequences in homologs tables. ([#89](https://github.com/metagenlab/zDB/pull/89)) (Niklaus Johner)
 - Control data exports from tables by making rows selectable. ([#88](https://github.com/metagenlab/zDB/pull/88)) (Niklaus Johner)
 - Add views to add, delete, and display groups. ([#86](https://github.com/metagenlab/zDB/pull/86)) (Niklaus Johner)
 - Allow defining groups of genomes in input file. ([#82](https://github.com/metagenlab/zDB/pull/82)) (Niklaus Johner)

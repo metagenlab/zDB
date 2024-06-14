@@ -1,10 +1,16 @@
 import collections
+import json
+from io import StringIO
+from wsgiref.util import FileWrapper
 
 import matplotlib.colors as mpl_col
 import pandas as pd
 import seaborn as sns
+from Bio import SeqIO
 from Bio.SeqFeature import FeatureLocation, SeqFeature
+from Bio.SeqRecord import SeqRecord
 from django.conf import settings
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.views import View
 from ete3 import SeqMotifFace, TextFace, Tree, TreeStyle
@@ -19,6 +25,39 @@ from views.utils import (DataTableConfig, format_gene, format_locus,
                          format_refseqid_to_ncbi, format_swissprot_entry,
                          format_taxid_to_ncbi, genomic_region_df_to_js,
                          locusx_genomic_region, make_div, optional2status)
+
+
+class DownloadSequences(View):
+
+    def post(self, request, *args, **kwargs):
+        db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+        data = json.loads(self.request.body)
+        loci = data.get("loci", [])
+        dna = data.get("dna", False)
+        sequences = []
+        for locus in loci:
+            seqid, is_pseudogene = db.get_seqid(locus_tag=locus)
+            hsh_infos = db.get_proteins_info(
+                [seqid], to_return=["gene"],
+                inc_non_CDS=True, inc_pseudo=True)
+            organism = db.get_organism([seqid])[seqid]
+            description = f"[organism={organism}]"
+            gene = hsh_infos.get(seqid)
+            if gene:
+                description += f" {gene[0]}"
+            if dna:
+                l_flank, seq, r_flank = get_sequence(db, seqid)
+            else:
+                seq = db.get_translation(seqid)
+            sequences.append(
+                SeqRecord(seq, id=locus, description=description)
+            )
+        out = StringIO()
+        SeqIO.write(sequences, out, "fasta")
+        out.seek(0)
+        response = HttpResponse(FileWrapper(out), content_type='application/octet-stream; charset=utf-8')
+        response['Content-Disposition'] = 'attachment; filename="bla.fasta"'
+        return response
 
 
 def tab_general(db, seqid):
@@ -104,12 +143,12 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
         headers.insert(2, "Identity")
 
     homologues = []
-    index = 0
     orga_set = set()
     for seqid, data in infos.iterrows():
         organism = hsh_organism[seqid]
+        locus = format_locus(data.locus_tag, to_url=False)
         locus_fmt = format_locus(data.locus_tag, to_url=True)
-        entry = [index + 1, locus_fmt, organism, format_gene(data.gene),
+        entry = [locus, locus_fmt, organism, format_gene(data.gene),
                  data["product"]]
         if ref_seqid is not None:
             if seqid == ref_seqid:
@@ -121,7 +160,6 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
                 ident = "-"
             entry.insert(2, ident)
         homologues.append(entry)
-        index += 1
 
     n_genomes = (len(orga_set) if ref_seqid is not None
                  else len(set(hsh_organism.values())))
@@ -451,12 +489,12 @@ def get_sequence(db, seqid, flanking=0):
     elif len(loc) == 1:
         _, strand, start, stop = (int(i) for i in loc.loc[0].tolist())
         start -= 1
-        if start < 50:
+        if start < flanking:
             start_w_flank = 0
             red_start = start
         else:
             start_w_flank = start - flanking
-            red_start = 50
+            red_start = flanking
 
         if stop + flanking > len(seq):
             stop_w_flank = len(seq) - 1
@@ -468,8 +506,9 @@ def get_sequence(db, seqid, flanking=0):
         extracted = fet.extract(seq)
     else:
         raise Exception("Unsupported case of fragmented gene")
-    return extracted[0:red_start] + "<font color='red'>" + \
-        extracted[red_start:red_stop] + "</font>" + extracted[red_stop:]
+    return (extracted[0:red_start],
+            extracted[red_start:red_stop],
+            extracted[red_stop:])
 
 
 class ViewBase(View):
@@ -551,7 +590,10 @@ class LocusX(ViewBase):
             return self.render_invalid(request)
 
         context["page_title"] = f'Locus tag: {locus}'
-        context["seq"] = get_sequence(self.db, self.seqid, flanking=50)
+        l_flank, coding, r_flank = get_sequence(
+            self.db, self.seqid, flanking=50)
+        context["seq"] = (
+            l_flank + "<font color='red'>" + coding + "</font>" + r_flank)
         context["feature_type"] = feature_type
 
         window_size = 8000

@@ -77,6 +77,7 @@ urlpatterns = [
     re_path(r'^entry_list_ko$', entry_lists.KoEntryListView.as_view(), name="entry_list_ko"),  # noqa
     re_path(r'^entry_list_cog$', entry_lists.CogEntryListView.as_view(), name="entry_list_cog"),  # noqa
     re_path(r'^entry_list_amr$', entry_lists.AmrEntryListView.as_view(), name="entry_list_amr"),  # noqa
+    re_path(r'^download_sequences$', locus.DownloadSequences.as_view(), name="download_sequences"),  # noqa
     re_path(r'^custom_plots/$', custom_plots.CusomPlotsView.as_view(), name="custom_plots"),  # noqa
     re_path(r'^cog_venn_subset/([A-Z])$', venn.VennCogSubsetView.as_view(), name="cog_venn_subset"),  # noqa
     re_path(r'^cog_phylo_heatmap/([a-zA-Z0-9_\-]+)', views.CogPhyloHeatmap.as_view(), name="cog_phylo_heatmap"),  # noqa

@@ -1,78 +1,131 @@
 
 <div id="content"> 
 
-<br>
-                    <p class="page-title"><b>
-                    Homologs in  {{og}} {{og_id|safe}}
-                   </b></p>
+  <br>
+  <p class="page-title">
+    <b>
+      Homologs in  {{og}} {{og_id|safe}}
+    </b>
+  </p>
 
+  <div class="container-fluid">
+    <div class="col-lg-12">
+      <div style="padding-top:20px">
+        <div class="panel panel-success" style="width:100%; top: 200px">
+          <div class="panel-heading" style="width:100%">
+            <h3 class="panel-title">Help</h3>
+          </div>
+          <p style="margin: 10px 10px 10px 10px">
+              {{homologues|length}} homologs were identified in {{n_genomes}} with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>.
 
-    <div class="container-fluid">
-        <div class="col-lg-12">
-            <div style="padding-top:20px">
-
-
-
-                <div class="panel panel-success" style="width:100%; top: 200px">
-                    <div class="panel-heading" style="width:100%">
-
-                            <h3 class="panel-title">Help</h3>
-                        </div>
-                        <p style="margin: 10px 10px 10px 10px">
-                        {{homologues|length}} homologs were identified in {{n_genomes}} with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>.
-
-                        <br> The following table displays the locus tag of each homolog, the organism to which it belongs, the gene name and product.
-
-                </div>
-            </div>
-
-            <div class="row">
-                <table class="display" id="homologs"> <!--  class="sortable" -->
-                    <thead>
-                        <tr>
-                            {% for entry in headers %}
-                            <th> {{entry}}  </th>
-                            {% endfor %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for values in homologues %}
-                        <tr>
-                        {% for entry in values %}
-                        <td> {{entry|safe}}</td>
-                        {% endfor %}
-                        </tr>
-
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            <br> The following table displays the locus tag of each homolog, the organism to which it belongs, the gene name and product.
+          </p>
         </div>
+      </div>
+
+      <div class="row">
+        <table class="table table-striped" width="100%" id="homologs"> <!--  class="sortable" -->
+          <thead>
+            <tr>
+              {% for entry in headers %}
+                <th> {{entry}}  </th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for values in homologues %}
+              <tr>
+                {% for entry in values %}
+                  <td> {{entry|safe}}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
+  </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.4/FileSaver.js"></script>
 <script>
+  function getCookie(name)
+    {
+      const regex = new RegExp(`(^| )${name}=([^;]+)`)
+      const match = document.cookie.match(regex)
+      if (match) {
+        return match[2]
+      }
+    }
 
-$(document).ready(function() {
-  $('#homologs').DataTable( {
-    dom: 'lBfrtip',
-    buttons: [
-        {
-            extend: 'colvis',
-            columns: ':not(.noVis)',
-        },
-        {
-            extend: 'excel',
-            title: 'homologs_{{orthogroup}}'
-        },
-        {
-            extend: 'csv',
-            title: 'homologs_{{orthogroup}}'
+  function downloadSequences(dt, dna=false) {
+    let arr = [];
+    let rows = dt.rows({selected: true})
+    if (rows[0].length === 0) { rows = dt.rows() }
+    rows.every(function(rowIdx, tableLoop, rowLoop) {
+      // Extract data from columns 3 and 17 to put in JSON
+      var data = this.data()
+      arr.push(data[0]);
+    });
+    let filename = dna ? 'dna_sequences.fasta' : 'prot_sequences.fasta';
+    let csrftoken = getCookie('csrftoken');
+    fetch(
+      "/download_sequences",
+      {
+        method: "POST",
+        body: JSON.stringify({"loci": arr, "dna": dna}),
+        headers: {
+          'Content-Type': 'application/json',
+          'responseType': "blob",
+          "X-CSRFToken": csrftoken
         }
-    ],
-  "paging":   true,
-  "ordering": true,
-  "info":     false
-  });
-});
+      }).then(res => res.blob())
+        .then(blob => saveAs(blob, filename))
+  }
 
+  $(document).ready(function() {
+    $('#homologs').DataTable( {
+      select: {
+        items: 'row',
+        style: 'os',
+        headerCheckbox: true,
+      },
+      columnDefs: [
+        {
+          orderable: false,
+          render: DataTable.render.select(),
+          target: 0
+        }
+      ],
+      dom: 'lBfrtip',
+      buttons: [
+        {
+          extend: 'colvis',
+          columns: ':not(.noVis)',
+        },
+        {
+          extend: 'excel',
+          title: 'homologs_{{orthogroup}}'
+        },
+        {
+          extend: 'csv',
+          title: 'homologs_{{orthogroup}}'
+        },
+        {
+          text: 'Download protein sequences',
+          action: function(e, dt, node, config) {
+            downloadSequences(dt);
+          },
+        },
+        {
+          text: 'Download DNA sequences',
+          action: function(e, dt, node, config) {
+            downloadSequences(dt, dna=true);
+          },
+        }
+      ],
+      "paging":   true,
+      "ordering": true,
+      "info":     false
+    });
+  });
 </script>
