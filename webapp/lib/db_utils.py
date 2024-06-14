@@ -1986,7 +1986,7 @@ class DB:
             "WHERE translation.seqfeature_id = ?;"
         )
         results = self.server.adaptor.execute_and_fetchall(query, [seqid])
-        if results==None or len(results) == 0:
+        if results is None or len(results) == 0:
             raise RuntimeError("No translation")
         return results[0][0]
 
