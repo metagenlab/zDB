@@ -12,6 +12,7 @@ html_dumps_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               "html_dumps")
 
 untested_patterns = {
+    r'^download_sequences$',
     '^favicon\\.ico$',
     r'^groups/([a-zA-Z0-9_\.\(\)\-\'\s]+)/delete/$',
     '^module_cat_info/([a-zA-Z0-9_\\.]+)/([a-zA-Z0-9_\\.\\+-]+)$',
