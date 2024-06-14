@@ -10,7 +10,18 @@ var data_dict = {{ data_dict|safe }};
 
 $(document).ready(function() {
     $("#names").DataTable ({
-        columns: columns
+        columns: columns,
+          dom: 'lBfrtip',
+          buttons: [
+            {
+              extend: 'excel',
+              title: 'homologs_{{orthogroup}}'
+            },
+            {
+              extend: 'csv',
+              title: 'homologs_{{orthogroup}}'
+            },
+          ],
     });
 
     // initially hide the table when no set is selected
@@ -38,9 +49,11 @@ $(document).ready(function() {
 </script>
 
 
-<div id="venn_diagram" style="display: table;margin: 0;">
-</div>
+<div class="col-lg-12">
+  <div id="venn_diagram" style="display: table;margin: 0;">
+  </div>
 
-<div id="names_div">
-    <table id="names" class="hover"></table>
+  <div id="names_div" style="margin-top: 3em;">
+    <table id="names" class="table table-striped" width="100%" class="hover"></table>
+  </div>
 </div>
