@@ -1,3 +1,4 @@
+{% load static %}
 
 <div id="content"> 
 
@@ -47,15 +48,8 @@
   </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.4/FileSaver.js"></script>
+<script src="{% static 'js/cookie.js' %}"></script>
 <script>
-  function getCookie(name)
-    {
-      const regex = new RegExp(`(^| )${name}=([^;]+)`)
-      const match = document.cookie.match(regex)
-      if (match) {
-        return match[2]
-      }
-    }
 
   function downloadSequences(dt, dna=false) {
     let arr = [];
