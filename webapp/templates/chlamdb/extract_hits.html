@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head> 
-{% load custom_tags %}
-{% include "chlamdb/header.html" %}
+  {% load static %}
+  {% load custom_tags %}
+  {% include "chlamdb/header.html" %}
 </head>
 
 <body>
@@ -76,6 +77,10 @@
     </div>  <!-- row -->
   </div>  <!-- container-fluid -->
 
+<script src="{% static 'js/cookie.js' %}"></script>
+<script src="{% static 'js/jquery.redirect.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/custom_plot.js' %}"></script>
+
 <script>
 
   $(document).ready(function() {
@@ -96,8 +101,16 @@
     "paging":   true,
     "ordering": true,
     "info":     false,
-    buttons: [{extend: 'excel', title: 'ko_table'},
-    { extend: 'csv', title: 'ko_table'}] });
+    buttons: [
+      {extend: 'excel', title: 'ko_table'},
+      {extend: 'csv', title: 'ko_table'},
+      {
+        text: 'Plot phylogeny',
+        action: function(e, dt, node, config) {
+          makeCustomPlot(dt);
+        },
+      }
+    ]});
   } );
 
 

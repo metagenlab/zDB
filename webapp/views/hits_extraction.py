@@ -68,7 +68,7 @@ class ExtractHitsBaseView(View):
 
     @property
     def table_headers(self):
-        return self._table_headers + self.table_count_headers
+        return [""] + self._table_headers + self.table_count_headers
 
     def dispatch(self, request, *args, **kwargs):
         self.extract_form_class = make_extract_form(
@@ -175,6 +175,7 @@ class ExtractHitsBaseView(View):
             data = [amr_annot[key] for key in self.table_data_accessors]
             data.extend([hit_counts.presence.loc[entry], hit_counts_all.loc[entry]])
             data = [el if el is not None else "-" for el in data]
+            data.insert(0, self.format_entry(entry))
             self.table_data.append(data)
 
         self.show_results = True
@@ -207,7 +208,7 @@ class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
 
     @property
     def table_headers(self):
-        return self._table_headers + getattr(self, "opt_header", [])\
+        return [""] + self._table_headers + getattr(self, "opt_header", [])\
                + self.table_count_headers
 
     @staticmethod
@@ -273,21 +274,21 @@ class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
         if "KO" in self.opt_header:
             kos = grouped["ko"].apply(list)
 
-        for row, count in hit_counts_all.items():
-            cnt_in = hit_counts.presence.loc[row]
-            g = genes.loc[row]
+        for entry_id, count in hit_counts_all.items():
+            cnt_in = hit_counts.presence.loc[entry_id]
+            g = genes.loc[entry_id]
             gene_data = format_lst_to_html(
                 "-" if pd.isna(entry) else entry for entry in g)
-            prod_data = format_lst_to_html(products.loc[row])
-            column_header = format_orthogroup(row, to_url=True)
+            prod_data = format_lst_to_html(products.loc[entry_id])
+            entry_link = format_orthogroup(entry_id, to_url=True)
             optional = []
-            if "KO" in self.opt_header and row in kos:
+            if "KO" in self.opt_header and entry_id in kos:
                 optional.append(format_lst_to_html(
-                    kos.loc[row], add_count=True, format_func=format_ko_url))
+                    kos.loc[entry_id], add_count=True, format_func=format_ko_url))
             if "COG" in self.opt_header:
                 optional.append(format_lst_to_html(
-                    cogs.loc[row], add_count=True, format_func=format_cog_url))
-            entry = [column_header, gene_data, prod_data, *optional, cnt_in, count]
+                    cogs.loc[entry_id], add_count=True, format_func=format_cog_url))
+            entry = [format_orthogroup(entry_id), entry_link, gene_data, prod_data, *optional, cnt_in, count]
             self.table_data.append(entry)
 
         ref_genomes = self.db.get_genomes_description(
@@ -372,7 +373,7 @@ class ExtractCogView(ExtractHitsBaseView, CogViewMixin):
                 inc, not_incl = cat_count.get(func, (0, 0))
                 cat_count[func] = (inc + hit_counts.presence.loc[cog_id], not_incl)
             funcs = "<br>".join(f"{func} ({func_desc})" for func, func_desc in func_acc)
-            data = (format_cog(cog_id, as_url=True), funcs, cog_descr,
+            data = (format_cog(cog_id), format_cog(cog_id, as_url=True), funcs, cog_descr,
                     hit_counts.presence.loc[cog_id], hit_counts_all.loc[cog_id])
             self.table_data.append(data)
 
