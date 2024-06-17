@@ -27,7 +27,7 @@ class CusomPlotsView(View):
                       "chlamdb/result_asset.html",
                       asset_path=getattr(self, "tree_path", None)),
             TabularResultTab(
-                "gwas_table", "Table",
+                "custom_plot_table", "Table",
                 table_headers=table["headers"],
                 table_data=table["data"],
                 table_data_accessors=table["accessors"],
