@@ -62,6 +62,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Correctly handle group_0 in EntryIdParser. ([#93](https://github.com/metagenlab/zDB/pull/93)) (Niklaus Johner)
 - Fix webapp conda environment for macOS. ([#87](https://github.com/metagenlab/zDB/pull/87)) (Niklaus Johner)
 - Fix displaying active tab in search results view. ([#73](https://github.com/metagenlab/zDB/pull/73)) (Niklaus Johner)
 - Fix missing page title for kegg_mapp_ko view. ([#66](https://github.com/metagenlab/zDB/pull/66)) (Niklaus Johner)

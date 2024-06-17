@@ -1,6 +1,8 @@
+from django.conf import settings
 from django.test import SimpleTestCase
+from lib.db_utils import DB
 
-from webapp.views.utils import AccessionFieldHandler
+from webapp.views.utils import AccessionFieldHandler, EntryIdParser
 
 
 class TestAccessionFieldHandler(SimpleTestCase):
@@ -131,3 +133,49 @@ class TestAccessionFieldHandler(SimpleTestCase):
         self.assertEqual(
             ([2, 3], [1]),
             self.handler.extract_choices(["plasmid:1", "2", "group:negative"], True))
+
+
+class TestEntryIdParser(SimpleTestCase):
+
+    def setUp(self):
+        biodb_path = settings.BIODB_DB_PATH
+        self.db = DB.load_db_from_name(biodb_path)
+        self.entry_id_parser = EntryIdParser(self.db)
+
+    def tearDown(self):
+        self.db.server.close()
+
+    def test_handles_orthogroups(self):
+        self.assertEqual(
+            ('orthogroup', 1),
+            self.entry_id_parser.id_to_object_type("group_1"))
+
+    def test_handles_orthogroup_0(self):
+        self.assertEqual(
+            ('orthogroup', 0),
+            self.entry_id_parser.id_to_object_type("group_0"))
+
+    def test_handles_cog(self):
+        self.assertEqual(
+            ('cog', 1234),
+            self.entry_id_parser.id_to_object_type("COG1234"))
+
+    def test_handles_pfam(self):
+        self.assertEqual(
+            ('pfam', 10423),
+            self.entry_id_parser.id_to_object_type("PF10423"))
+
+    def test_handles_ko(self):
+        self.assertEqual(
+            ('ko', 1241),
+            self.entry_id_parser.id_to_object_type("K01241"))
+
+    def test_handles_vf(self):
+        self.assertEqual(
+            ('vf', "VFG048797"),
+            self.entry_id_parser.id_to_object_type("VFG048797"))
+
+    def test_handles_amr(self):
+        self.assertEqual(
+            ('amr', "ybtP"),
+            self.entry_id_parser.id_to_object_type("ybtP"))

@@ -319,22 +319,22 @@ class EntryIdParser():
     def id_to_object_type(self, identifier):
         match = self.og_re.match(identifier)
         parsed_id = match and int(match.groups()[0])
-        if parsed_id and self.db.check_og_entry_id(parsed_id):
+        if match and self.db.check_og_entry_id(parsed_id):
             return "orthogroup", parsed_id
 
         match = self.cog_re.match(identifier)
         parsed_id = match and int(match.groups()[0])
-        if parsed_id and self.db.check_cog_entry_id(parsed_id):
+        if match and self.db.check_cog_entry_id(parsed_id):
             return "cog", parsed_id
 
         match = self.pfam_re.match(identifier)
         parsed_id = match and int(match.groups()[0])
-        if parsed_id and self.db.check_pfam_entry_id(parsed_id):
+        if match and self.db.check_pfam_entry_id(parsed_id):
             return "pfam", parsed_id
 
         match = self.ko_re.match(identifier)
         parsed_id = match and int(match.groups()[0])
-        if parsed_id and self.db.check_ko_entry_id(parsed_id):
+        if match and self.db.check_ko_entry_id(parsed_id):
             return "ko", parsed_id
 
         match = self.vf_re.match(identifier)
