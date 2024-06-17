@@ -215,7 +215,8 @@ class DataTableConfig():
 
     def __init__(self, table_id="results", ordering=True, paging=True,
                  export_buttons=True, colvis_button=False, display_index=False,
-                 display_as_datatable=True, selectable=False):
+                 display_as_datatable=True, selectable=False,
+                 custom_plot_button=False):
         self.table_id = table_id
         self.ordering = ordering
         self.paging = paging
@@ -224,6 +225,7 @@ class DataTableConfig():
         self.display_index = display_index
         self.display_as_datatable = display_as_datatable
         self.selectable = selectable
+        self.custom_plot_button = custom_plot_button
         if self.display_as_datatable:
             self.style = "margin-top: 3em;"
         else:
@@ -255,6 +257,7 @@ class DataTableConfig():
                 "buttons": self.buttons,
                 "dom": self.dom,
                 "display_as_datatable": self.display_as_datatable,
+                "custom_plot_button": self.custom_plot_button,
             }
         if self.selectable:
             config["select"] = {
@@ -287,11 +290,13 @@ class TabularResultTab(ResultTab):
     def __init__(self, tabid, title, template="chlamdb/result_table.html",
                  ordering=True, paging=True, export_buttons=True,
                  colvis_button=False, display_index=False,
-                 show_badge=False, selectable=False, **kwargs):
+                 show_badge=False, selectable=False, custom_plot_button=False,
+                 **kwargs):
         self.data_table_config = DataTableConfig(
             table_id=tabid, ordering=ordering, paging=paging,
             export_buttons=export_buttons, colvis_button=colvis_button,
-            display_index=display_index, selectable=selectable)
+            display_index=display_index, selectable=selectable,
+            custom_plot_button=custom_plot_button)
         if show_badge:
             badge = len(kwargs["table_data"])
         else:

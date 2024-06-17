@@ -267,7 +267,7 @@ class TestViewsContent(SimpleTestCase):
         self.assertTitle(resp, "Custom plots")
         self.assertNotIn("show_results", resp.context.keys())
         self.assertNotContains(resp, '<a href=#phylogenetic_tree data-toggle="tab">')
-        self.assertNotContains(resp, '<a href=#gwas_table data-toggle="tab">')
+        self.assertNotContains(resp, '<a href=#custom_plot_table data-toggle="tab">')
 
         data = {
             "entries": "COG0775,K01241,PF10423:custom label, VFG048797,ybtP,group_85",
@@ -278,7 +278,7 @@ class TestViewsContent(SimpleTestCase):
         self.assertTitle(resp, "Custom plots")
         self.assertIn("show_results", resp.context.keys())
         self.assertContains(resp, '<a href=#phylogenetic_tree data-toggle="tab">')
-        self.assertContains(resp, '<a href=#gwas_table data-toggle="tab">')
+        self.assertContains(resp, '<a href=#custom_plot_table data-toggle="tab">')
 
 
 class ComparisonViewsTestMixin():

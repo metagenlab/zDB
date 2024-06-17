@@ -1,4 +1,6 @@
+{% load static %}
 {% load custom_tags %}
+
 <div style="{{results.data_table_config.style}}" >
   <table id="{{results.data_table_config.table_id}}" class="table table-striped" width="100%" >
     <thead>
@@ -18,7 +20,7 @@
       {% for index, row in results.table_data.iterrows %}
         <tr>
           {% if results.data_table_config.selectable%}
-            <td>{{forloop.counter}}</td>
+            <td>{{index}}</td>
           {% endif %}
           {% if results.data_table_config.display_index%}
             <td>{{forloop.counter}}</td>
@@ -32,10 +34,21 @@
   </table>
 </div>
 
-<script>
+<script src="{% static 'js/cookie.js' %}"></script>
+<script src="{% static 'js/jquery.redirect.js' %}"></script>
+<script src="{% static 'js/custom_plot.js' %}"></script>
 
+<script>
 $(document).ready(function() {
   var table_config = {{results.data_table_config.to_json|safe}};
+  if (table_config.custom_plot_button) {
+    table_config["buttons"].push({
+      text: 'Plot phylogeny',
+      action: function(e, dt, node, config) {
+        makeCustomPlot(dt);
+      },
+    })
+  }
   if (table_config.display_as_datatable) {
     $('table#{{results.data_table_config.table_id}}').DataTable( table_config );
   }

@@ -4,7 +4,6 @@
 
 <head>
   {% load static %}
-  {% load static %}
   {% get_static_prefix as STATIC_PREFIX %}
   {% load custom_tags %}
   {% include "chlamdb/header.html" %}
@@ -37,7 +36,6 @@
                   <table class="hover table" id="mytable"  style="padding-top: 1em;">
                     <thead>
                       <tr>
-                        <th></th>
                         {% for title in table_headers %}
                           <th>{{title}}</th>
                         {% endfor %}
@@ -46,7 +44,6 @@
                     <tbody>
                       {% for row in table_rows %}
                         <tr>
-                          <td>{{forloop.counter}}</td>
                           {% for value in row|slice_up_to:n_data_columns %}
                             {% if forloop.counter0 < first_coloured_row %}
                               <td>{{value|safe}}</td>
@@ -77,6 +74,10 @@
 </body>
 
 <script src="{% static 'js/jquery.hottie.js' %}"></script>
+<script src="{% static 'js/cookie.js' %}"></script>
+<script src="{% static 'js/jquery.redirect.js' %}"></script>
+<script src="{% static 'js/custom_plot.js' %}"></script>
+
 <script>
   $(function(){
     $("#mytable td").hottie({
@@ -92,6 +93,29 @@
   });
 
   $(document).ready(function() {
+    let buttons = [
+          {
+              extend: 'colvis',
+              columns: ':not(.noVis)',
+          },
+          {
+              extend: 'excel',
+              title: 'plast_refseq'
+          },
+          {
+              extend: 'csv',
+              title: 'plast_refseq'
+          }
+      ]
+    var show_custom_plot_button = {{custom_plot_button|safe}};
+    if (show_custom_plot_button) {
+      buttons.push({
+        text: 'Plot phylogeny',
+        action: function(e, dt, node, config) {
+          makeCustomPlot(dt);
+        },
+      })
+    }
     $('#mytable').DataTable( {
       select: {
           items: 'row',
@@ -106,20 +130,7 @@
           }
       ],
       dom: 'lBfrtip',
-      buttons: [
-          {
-              extend: 'colvis',
-              columns: ':not(.noVis)',
-          },
-          {
-              extend: 'excel',
-              title: 'plast_refseq'
-          },
-          {
-              extend: 'csv',
-              title: 'plast_refseq'
-          }
-      ],
+      buttons: buttons,
 
       "ordering": true,
       "info":     false,
