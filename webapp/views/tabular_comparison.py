@@ -1,3 +1,5 @@
+import json
+
 from chlamdb.forms import make_metabo_from
 from django.shortcuts import render
 from django.views import View
@@ -15,6 +17,7 @@ class TabularComparisonViewBase(View):
     hist_colour_index_shift = 0
     table_headers = None
     _metadata_cls = TabularComparisonMetadata
+    custom_plot_button = True
 
     def dispatch(self, request, *args, **kwargs):
         self.comp_metabo_form = self.make_metabo_from()
@@ -61,6 +64,7 @@ class TabularComparisonViewBase(View):
             context["n_data_columns"] = len(self.base_info_headers) + \
                 len(self.targets)
             context["hist_colour_index_shift"] = self.hist_colour_index_shift
+            context["custom_plot_button"] = json.dumps(self.custom_plot_button)
         return context
 
     @property
@@ -111,8 +115,9 @@ class TabularComparisonViewBase(View):
 
     @property
     def base_info_headers(self):
-        return [self.colname_to_header(colname)
-                for colname in self.base_info_accessors]
+        # First column is used for checkboxes so we drop its header.
+        return [self.colname_to_header(colname) if i else ""
+                for i, colname in enumerate(self.base_info_accessors)]
 
 
 class PfamComparisonView(TabularComparisonViewBase, PfamViewMixin):
@@ -128,6 +133,10 @@ class PfamComparisonView(TabularComparisonViewBase, PfamViewMixin):
     corresponding Pfam entry.
     """
 
+    @property
+    def base_info_headers(self):
+        return [""] + super(PfamComparisonView, self).base_info_headers
+
     def get_table_rows(self):
         pfam_hits = self.get_hit_counts(ids=self.targets)
         pfam_defs = self.get_hit_descriptions(pfam_hits.index.tolist(),
@@ -138,14 +147,14 @@ class PfamComparisonView(TabularComparisonViewBase, PfamViewMixin):
             entry_infos = pfam_defs.loc[key]
             base_infos = [entry_infos[accessor]
                           for accessor in self.base_info_accessors]
-            table_rows.append(base_infos + values.values.tolist())
+            table_rows.append([self.format_entry(key)] + base_infos + values.values.tolist())
 
         return table_rows
 
 
 class CogComparisonView(TabularComparisonViewBase, CogViewMixin):
 
-    base_info_headers = ["COG accession", "Description", "# complete DB", "# genomes"]
+    base_info_headers = ["", "COG accession", "Description", "# complete DB", "# genomes"]
 
     table_help = """
     The ouput table contains the list of COG annotated in selected genomes and
@@ -185,19 +194,19 @@ class CogComparisonView(TabularComparisonViewBase, CogViewMixin):
                 cog_freq.rename('freq'),
                 left_index=True,
                 right_index=True).sort_values(["count"], ascending=False)
-
+        combined_df["entry_id"] = combined_df.index.map(self.format_entry)
         cols = combined_df.columns.to_list()
-        ordered_cols = cols[self.n_selected:] + cols[:self.n_selected]
+        ordered_cols = ["entry_id"] + cols[self.n_selected:-1] + cols[:self.n_selected]
         return combined_df[ordered_cols].values
 
     @property
     def first_coloured_row(self):
-        return 4
+        return 5
 
 
 class OrthogroupComparisonView(TabularComparisonViewBase, OrthogroupViewMixin):
 
-    base_info_headers = ["Orthogroup", "Annotaion"]
+    base_info_headers = ["", "Orthogroup", "Annotation"]
 
     table_help = """
     The ouput table contains the number of homologs in the shared orthogroups
@@ -218,7 +227,7 @@ class OrthogroupComparisonView(TabularComparisonViewBase, OrthogroupViewMixin):
 
         og_data = []
         for og, items in og_count.iterrows():
-            row = [format_orthogroup(og, to_url=True)]
+            row = [format_orthogroup(og), format_orthogroup(og, to_url=True)]
             if og in products.index:
                 row.append(format_lst_to_html(products.loc[og]))
             else:
@@ -242,7 +251,7 @@ class KoComparisonView(TabularComparisonViewBase, KoViewMixin):
     is part.
     """
 
-    base_info_headers = ["KO", "Annot", "tot"]
+    base_info_headers = ["", "KO", "Annot", "tot"]
 
     def get_table_rows(self):
         hits = self.db.get_ko_count(self.targets).unstack(level=0, fill_value=0)
@@ -253,7 +262,7 @@ class KoComparisonView(TabularComparisonViewBase, KoViewMixin):
         ko2total_count = df_ttl.groupby("KO").sum()["count"].to_dict()
         table_rows = []
         for key, values in hits.iterrows():
-            row = [format_ko(key, as_url=True), ko2annot[key], ko2total_count[key]]
+            row = [format_ko(key), format_ko(key, as_url=True), ko2annot[key], ko2total_count[key]]
             row.extend(values.values)
             table_rows.append(row)
         return table_rows
@@ -284,11 +293,15 @@ class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
     @property
     def base_info_accessors(self):
         if self.comp_type == "gene":
-            return ["gene", "scope", "class", "subclass", "seq_name", "hmm_id"]
+            return ["entry_id", "gene", "scope", "class", "subclass", "seq_name", "hmm_id"]
         elif self.comp_type == "subclass":
-            return ["subclass", "class"]
+            return ["subclass", "subclass", "class"]
         elif self.comp_type == "class":
-            return ["class"]
+            return ["class", "class"]
+
+    @property
+    def custom_plot_button(self):
+        return self.comp_type == "gene"
 
     @property
     def table_help(self):
@@ -299,6 +312,7 @@ class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
 
     def get_table_rows(self):
         hits = self.db.get_amr_hits_from_taxonids(self.targets)
+        hits["entry_id"] = hits["gene"].map(self.format_entry)
         hits = self.transform_data(hits)
 
         table_rows = []
@@ -340,11 +354,15 @@ class VfComparisonView(TabularComparisonViewBase, VfViewMixin):
     @property
     def base_info_accessors(self):
         if self.comp_type == "vf_gene_id":
-            return ["vf_gene_id", "prot_name", "vfid", "category"]
+            return ["entry_id", "vf_gene_id", "prot_name", "vfid", "category"]
         elif self.comp_type == "vfid":
-            return ["vfid", "category"]
+            return ["vfid", "vfid", "category"]
         elif self.comp_type == "category":
-            return ["category"]
+            return ["category", "category"]
+
+    @property
+    def custom_plot_button(self):
+        return self.comp_type == "vf_gene_id"
 
     @property
     def table_help(self):
@@ -352,6 +370,7 @@ class VfComparisonView(TabularComparisonViewBase, VfViewMixin):
 
     def get_table_rows(self):
         hits = self.get_hits(self.targets)
+        hits["entry_id"] = hits["vf_gene_id"].map(self.format_entry)
         hits = self.transform_data(hits)
         hits = hits.where(hits.notna(), "-")
         table_rows = []
