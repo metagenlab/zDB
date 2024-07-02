@@ -69,7 +69,7 @@ def format_lst_to_html(lst_elem, add_count=True, format_func=lambda x: x):
     dict_elem = {}
     for elem in lst_elem:
         if pd.isna(elem):
-            elem = "-"
+            continue
         cnt = dict_elem.get(elem, 0)
         dict_elem[elem] = cnt + 1
 
@@ -83,7 +83,7 @@ def format_lst_to_html(lst_elem, add_count=True, format_func=lambda x: x):
             elems.append(f"{token} ({v})")
         else:
             elems.append(f"{token}")
-    return "<br/>".join(elems)
+    return "<br/>".join(elems or ["-"])
 
 
 def format_orthogroup(og, to_url=False, from_str=False):
