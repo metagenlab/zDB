@@ -320,7 +320,7 @@ class OrthogroupViewMixin(BaseViewMixin, OrthogroupMetadata):
         "gene": "Genes"
     }
 
-    table_data_accessors = ["orthogroup", "product", "gene"]
+    table_data_accessors = ["orthogroup", "products", "gene"]
 
     @property
     def get_hit_counts(self):
@@ -335,7 +335,7 @@ class OrthogroupViewMixin(BaseViewMixin, OrthogroupMetadata):
                                     index=pd.Index(ids, name="orthogroup"))
 
         descriptions = descriptions.merge(
-            pd.DataFrame({"gene": genes, "product": products}),
+            pd.DataFrame({"gene": genes, "products": products}),
             "left", left_index=True, right_index=True)
         if transformed:
             descriptions = self.transform_data(descriptions)
