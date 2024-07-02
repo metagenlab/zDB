@@ -1744,6 +1744,9 @@ class DB:
                 return df
             df = df.set_index(["seqid", "name"]).unstack(level="name")
             df.columns = [col for col in df.value.columns.values]
+            for colname in to_return:
+                if colname not in df.columns:
+                    df[colname] = None
             return df
 
         hsh_results = {}

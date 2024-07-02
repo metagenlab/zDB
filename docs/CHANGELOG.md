@@ -62,6 +62,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix extract_contigs view error for contigs without any gene annotation. ([#99](https://github.com/metagenlab/zDB/pull/99)) (Niklaus Johner)
 - Correctly handle group_0 in EntryIdParser. ([#93](https://github.com/metagenlab/zDB/pull/93)) (Niklaus Johner)
 - Fix webapp conda environment for macOS. ([#87](https://github.com/metagenlab/zDB/pull/87)) (Niklaus Johner)
 - Fix displaying active tab in search results view. ([#73](https://github.com/metagenlab/zDB/pull/73)) (Niklaus Johner)
