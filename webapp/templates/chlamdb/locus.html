@@ -260,6 +260,23 @@
                       </div>
                     {% endif %}
 
+                    {% if sequence_type == "CDS" %}
+                      <div class="row">
+                        <div class="panel panel-default">
+                          <div class="panel-heading">
+                            <h3 class="panel-title">Actions</h3>
+                          </div>
+                          <div style="margin: 10px">
+                            <a class="button_link" href="https://papers.genomics.lbl.gov/cgi-bin/litSearch.cgi?query={{translation}}" target="_blank">
+                              <button class="btn btn-success">
+                                Paper blast
+                              </button>
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    {% endif %}
+
                   </div> <!-- fluid container -->
                 </div> <!-- first column -->
                 <div class="col-md-12 col-lg-8">
