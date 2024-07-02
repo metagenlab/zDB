@@ -2150,6 +2150,10 @@ class DB:
             ["bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand",
              "term_name", "qualifier_name"]).unstack("qualifier_name")
         df = df.reset_index()
+        # Make sure all expected columns are there.
+        for colname in ["gene", "locus_tag", "product"]:
+            if ("qualifier_value", colname) not in df.columns:
+                df[("qualifier_value", colname)] = None
         df.columns = ['_'.join(col).strip('_') for col in df.columns]
 
         # bioentry_id  start_pos  end_pos  strand  gene locus_tag product
