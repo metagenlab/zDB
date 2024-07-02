@@ -267,11 +267,17 @@
                             <h3 class="panel-title">Actions</h3>
                           </div>
                           <div style="margin: 10px">
+
                             <a class="button_link" href="https://papers.genomics.lbl.gov/cgi-bin/litSearch.cgi?query={{translation}}" target="_blank">
                               <button class="btn btn-success">
                                 Paper blast
                               </button>
                             </a>
+
+                            <button id="blast_protein_button" class="btn btn-success">
+                              Blast protein
+                            </button>
+
                           </div>
                         </div>
                       </div>
@@ -384,6 +390,9 @@
 
 {% csrf_token %}
 
+<script src="{% static 'js/cookie.js' %}"></script>
+<script src="{% static 'js/jquery.redirect.js' %}"></script>
+
 <script>
 
 $(document).ready(function() {
@@ -494,6 +503,19 @@ document.querySelector("#download_svg_button").onclick = function() {
   var svg_elem = document.querySelector("#genomic_region");
   svgExport.downloadSvg(svg_elem, "{{locus_tag}}");
 };
+
+document.querySelector("#blast_protein_button").onclick = function() {
+  let csrftoken = getCookie('csrftoken');
+  $.redirect('/blast/',
+             {'blast': 'blastp',
+              'csrfmiddlewaretoken': csrftoken,
+              'target': "all",
+              'max_number_of_hits': 10,
+              'blast_input': "{{translation}}" },
+             'POST',
+             '_blank');
+};
+
 </script>
 
 {% include "chlamdb/style_menu.html" %}
