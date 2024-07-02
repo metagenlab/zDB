@@ -144,7 +144,7 @@ def format_hmm_url(hmm_id):
 
 def format_pfam(pfam_id, base=None, to_url=False):
     if base is None:
-        fmt_entry = f"PF{pfam_id:04d}"
+        fmt_entry = f"PF{pfam_id:05d}"
     else:
         fmt_entry = base
     if to_url:

@@ -64,6 +64,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix PFAM identifiers missing leading 0. ([#105](https://github.com/metagenlab/zDB/pull/105)) (Niklaus Johner)
 - Fix product representation in GWAS view for orthogroups. ([#102](https://github.com/metagenlab/zDB/pull/102)) (Niklaus Johner)
 - Fix Scoary-2 integration. ([#101](https://github.com/metagenlab/zDB/pull/101)) (Niklaus Johner)
 - Fix search_bar results view when all loci miss any gene annotation. ([#99](https://github.com/metagenlab/zDB/pull/99)) (Niklaus Johner)
