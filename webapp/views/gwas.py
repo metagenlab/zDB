@@ -9,6 +9,7 @@ from django.views import View
 from ete3 import Tree
 from lib.ete_phylo import EteTree, MatchingColorColumn, ValueColoredColumn
 from scoary import scoary
+from scoary.permutations import CONFINT_CACHE
 
 from views.analysis_view_metadata import GwasMetadata
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
@@ -160,6 +161,9 @@ class GWASBaseView(View):
             tree = Tree(self.db.get_reference_phylogeny())
             tree.write(format=8, outfile=tree_path)
 
+            # Reset the db connection as it otherwise leads to issues with
+            # using an SQL object that was created in a separate thread.
+            CONFINT_CACHE.con, CONFINT_CACHE.cur = CONFINT_CACHE.get_cur()
             scoary(genotype_path,
                    phenotype_path,
                    os.path.join(tmp, "out"),

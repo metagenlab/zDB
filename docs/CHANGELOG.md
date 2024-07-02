@@ -62,6 +62,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix Scoary-2 integration. ([#101](https://github.com/metagenlab/zDB/pull/101)) (Niklaus Johner)
 - Fix search_bar results view when all loci miss any gene annotation. ([#99](https://github.com/metagenlab/zDB/pull/99)) (Niklaus Johner)
 - Fix locusx view error for loci with homologs without any gene annotation. ([#99](https://github.com/metagenlab/zDB/pull/99)) (Niklaus Johner)
 - Fix extract_contigs view error for contigs without any gene annotation. ([#99](https://github.com/metagenlab/zDB/pull/99)) (Niklaus Johner)
