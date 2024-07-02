@@ -52,7 +52,6 @@ class GWASBaseView(View):
                 table_headers=self.table_headers,
                 table_data=results,
                 table_data_accessors=self.table_data_accessors,
-                display_index=True,
                 colvis_button=True,
                 selectable=True,
                 custom_plot_button=True,
