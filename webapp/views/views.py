@@ -274,6 +274,8 @@ def search_bar(request):
     if sb.GeneEntry.entry_type in df.entry_type.values:
         df["gene"] = df.get("name")
 
+    df = df.where(df.notna(), "-")
+
     tabs = []
     for entry_type_name in df.entry_type.unique():
         entry_type = sb.entry_type_to_cls[entry_type_name]()
