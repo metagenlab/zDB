@@ -290,7 +290,7 @@
                                 <dd> - <a href="https://www.ncbi.nlm.nih.gov/COG/" target="_blank">COG</a> (clusters of orthologous groups, reference DB version {{versions|keyvalue:"CDD"}})</dd>
                               {% endif %}
                               {% if optional2status|keyvalue:"pfam" == 1 %}
-                                <dd> - <a href="http://pfam.xfam.org" target="_blank" >Pfam</a> (protein families, reference DB version {{versions|keyvalue:"Pfam"}})</dd>
+                                <dd> - <a href="https://interpro-documentation.readthedocs.io/en/latest/pfam.html" target="_blank" >Pfam</a> (protein families, reference DB version {{versions|keyvalue:"Pfam"}})</dd>
                               {% endif %}
                               {% if optional2status|keyvalue:"KEGG" == 1 %}
                                 <dd> - <a href="https://www.genome.jp/kegg/" target="_blank" >KEGG</a> (Kegg orthologs, reference DB version {{versions|keyvalue:"Ko"}})</dd>
@@ -321,7 +321,7 @@
                                   <dd> -<a href="https://www.ncbi.nlm.nih.gov/COG/" target="_blank">COG</a> (clusters of orthologous groups)</dd>
                                 {% endif %}
                                 {% if not optional2status|keyvalue:"pfam" == 1 %}
-                                  <dd> - <a href="http://pfam.xfam.org" target="_blank">Pfam</a> (protein families)</dd>
+                                  <dd> - <a href="https://interpro-documentation.readthedocs.io/en/latest/pfam.html" target="_blank">Pfam</a> (protein families)</dd>
                                 {% endif %}
                                 {% if not optional2status|keyvalue:"KEGG" == 1 %}
                                   <dd> - <a href="https://www.genome.jp/kegg/" target="_blank" >KEGG</a> (Kegg orthologs)</dd>
