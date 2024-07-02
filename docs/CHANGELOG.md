@@ -25,6 +25,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add button to blast protein sequence in the locus overview. ([#104](https://github.com/metagenlab/zDB/pull/104)) (Niklaus Johner)
 - Integrate link to paper blast in the locus overview. ([#103](https://github.com/metagenlab/zDB/pull/103)) (Niklaus Johner)
 - Add button to draw custom phylogeny from selection of entries in various tables. ([#92](https://github.com/metagenlab/zDB/pull/92)) (Niklaus Johner)
 - Add buttons to download protein and DNA sequences in homologs tables. ([#89](https://github.com/metagenlab/zDB/pull/89)) (Niklaus Johner)
