@@ -269,6 +269,13 @@ def search_bar(request):
         ctx = {"search_failed": True, "search_term": user_query}
         return render(request, "chlamdb/search.html", my_locals(ctx))
 
+    # when iterating over the df, accessing the name attribute will
+    # give back the name of the series, so we cannot use that attribute
+    if sb.GeneEntry.entry_type in df.entry_type.values:
+        df["gene"] = df.get("name")
+
+    df = df.where(df.notna(), "-")
+
     tabs = []
     for entry_type_name in df.entry_type.unique():
         entry_type = sb.entry_type_to_cls[entry_type_name]()
@@ -276,9 +283,6 @@ def search_bar(request):
         sel = df[df.entry_type == entry_type_name]
         if object_type == "locus":
             sel[object_type] = sel.locus_tag.apply(format_locus, to_url=True)
-            # when iterating over the df, accessing the name attribute will
-            # give back the name of the series, so we cannot use that attribute
-            sel["gene"] = sel["name"]
             tabs.append(TabularResultTab(
                 object_type,
                 "Genes",
