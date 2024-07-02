@@ -71,8 +71,8 @@ class HeatmapMetadata(AnalysisViewMetadata):
 class AccumulationRarefactionMetadata(AnalysisViewMetadata):
 
     name = "pan_genome"
-    title = "Acucmulation/rarefaction plot"
-    _description = "Accumulation/rarefaction plot of {} in selected genomes"
+    title = "Accumulation / rarefaction plot"
+    _description = "Accumulation / rarefaction plot of {} in selected genomes"
     _url = "/pan_genome/{}/"
     icon = "https://img.icons8.com/plasticine/100/000000/line-chart.png"
     static_icon = False
