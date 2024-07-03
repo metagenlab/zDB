@@ -962,11 +962,16 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
         if no_query_name:
             query = "query"
         for hit in record.alignments:
+            # We cannot use hit.accession as this strips part of the id when
+            # it ends with a version number (e.g. FLZO01000013.1). We recover
+            # the accessions from the hit_id, which sometimes contains a source
+            # in the form emb|FLZO01000013.1| and sometimes not.
+            accession = hit.hit_id.rstrip("|").split("|")[-1]
             hsp = hit.hsps[0]
             scores = hits[query]
-            scores.append((hit.accession,
+            scores.append((accession,
                            100.0 * hsp.identities / hsp.align_length))
-            accessions.add(hit.accession)
+            accessions.add(accession)
 
     if blast_type in ["blastp", "blastx", "blastn_ffn"]:
         acc_to_taxid = db.get_taxid_from_accession(list(accessions),
