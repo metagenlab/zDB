@@ -937,7 +937,7 @@ class PanGenome(ComparisonViewMixin, View):
 
 
 blast_input_dir = {"blastp": "faa",
-                   "tblastn": "ffn",
+                   "tblastn": "fna",
                    "blastn_fna": "fna",
                    "blastn_ffn": "ffn",
                    "blastx": "faa"}
