@@ -22,7 +22,7 @@ All the results are stored either in a SQLite database or directly as files and 
 
 - Demo of the website: https://zdb.metagenlab.ch/
 - Documentation: https://zdb.readthedocs.io
-
+- github repository: https://github.com/metagenlab/zDB
 
 ## Installation
 
@@ -50,7 +50,7 @@ For the installation of docker, please have a look [here](https://docs.docker.co
 
 You can also install zdb directly from the github repository. This is particularly useful if you want to make modifications or if you want to have a direct access to Nextflow config file for a better control of the execution.
 
-Check out the project or download and unpack a release, then edit this line of the bin/zdb bash script:
+Check out the project (`git clone git@github.com:metagenlab/zDB.git`) or download and unpack a release, then edit this line of the bin/zdb bash script:
 ```
 NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
 ```
@@ -61,7 +61,7 @@ Note that zDB depends on nextflow (version 22.10 or lower) and singularity, so y
 - `mamba env create -p ./env -f conda/main.yaml`
 - `mamba activate ./env`
 
-## Overview
+## Commands overview
 
 Several subcommands are available:
 ```
@@ -73,7 +73,7 @@ import - unpack an archive that was prepared with the export command in the curr
 list_runs - lists the completed runs available to start the website in a given directory
 ```
 
-### Quick start
+## Quick start
 
 Here are a few examples of workflows with a test dataset available from the git repository.
 To get the test dataset:
