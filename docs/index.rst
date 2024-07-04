@@ -9,6 +9,7 @@ Home
    :maxdepth: 2
 
    self
+   include_readme.rst
    annotation.rst
    website.rst
    CHANGELOG.md
