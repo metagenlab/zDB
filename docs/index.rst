@@ -1,5 +1,5 @@
 .. include:: ../README.md
-   :start-after: .. contents:: Table of Contents
+   :start-after: # zDB: comparative bacterial genomics made easy
    :end-before: ## Resources
    :parser: myst_parser.sphinx_
 
