@@ -12,6 +12,8 @@ Several analyses are currently supported, with more to come:
 - COG annotation
 - KEGG orthologs annotation and pathway completion analysis
 - PFAM domains annotation
+- Virulence factors
+- Antimicrobial resistance genes
 - Swissprot homologs search
 - RefSeq homologs search: implemented, but significantly slows down the analysis. You'll also have to download and prepare the database for diamond search, as this was not included in the database setup script.
 
@@ -116,8 +118,9 @@ Of note, in minimal mode, zdb does not require any database to run.
 The following databases can be downloaded:
 ```
 --cog: downloads the CDD profiles used for COG annotations
---ko: downloads and setups the hmm profiles of the ko database
---pfam: downloads and setups up the hmm profiles of the PFAM protein domains
+--ko: downloads and sets up the hmm profiles of the ko database
+--pfam: downloads and sets up the hmm profiles of the PFAM protein domains
+--vfdb: downloads and sets up the virulence factor database (VFDB)
 --swissprot: downloads and indexes the swissprot database
 ```
 
@@ -149,7 +152,7 @@ Several options are available and allow you to customize the run.
 
 By default, the analysis are run in singularity containers, but you can change this by using the ```--conda``` or ```--docker``` flags to have them run in conda environments or docker containers, respectively. If singularity is enabled, the containers will have to be downloaded. By default, they are stored in the singularity folder of the current directory, but this can be changed using the ```--singularity_dir``` option. This might be useful if you want to share containers between analyses.
 
-If the databases were set up, additional analyses can also be enabled with the ```--ko```, ```--cog```, ```--pfam``` and ```--swissprot``` flags. The directory (by default zdb_ref in the current directory) where the database were installed can be specified with the ```--ref_dir``` option.
+If the databases were set up, additional analyses can also be enabled with the ```--ko```, ```--cog```, ```--pfam```, ```--vfdb``` and ```--swissprot``` flags. The ```--amr``` flag will add annotations of antimicrobial resistance genes (no database needed). The directory (by default zdb_ref in the current directory) where the database were installed can be specified with the ```--ref_dir``` option.
 
 Other options include:
 ```
