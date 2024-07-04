@@ -153,6 +153,14 @@ foobar,foobar/baz.gbff
 ```
 The ```name``` column is optional and can be omitted from the input csv file. **By default, zdb will use the organism's name as defined in the genbank file to identify genomes in the web application**. Specifying a name for a genome will tell zdb to use that name instead of the organism name from the genbank file. This is practical when working with assembled genomes that haven't been named yet or when working with genomes of different strains of a same species. If the same name is used in different files, zdb will just add a numbering suffix to make the names unique.
 
+Any number of groups can also be specified in the input file, which will be available for selecting genomes easily in the web-application. They are specified as additional columns with headers of the form `group:groupname`, where `groupname` can be any string of your choice, and presence or absence is signified with `1` and `0` or other markers such as `yes`, `no`, e.g.:
+```
+name, file, group:first group, group: another one, group:third
+,foo/bar.gbk,yes,1,no
+,baz/bazz.gbk,0,1,1
+foobar,foobar/baz.gbff,no,yes,0
+```
+
 Before launching the analysis, zdb will also check for the uniqueness of locus tags and generate new ones if necessary. This is usually not necessary for genomes downloaded from RefSeq or other databases, but if genomes were annotated with automated tools, name collisions might happen.
 
 Several options are available and allow you to customize the run.
