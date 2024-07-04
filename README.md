@@ -2,6 +2,7 @@
 
 .. contents:: Table of Contents
 
+
 ## Overview
 
 zDB is designed to perform comparative genomics analyses and to integrate the results in a Django web-application.
@@ -26,6 +27,7 @@ All the results are stored either in a SQLite database or directly as files and 
 - Documentation: https://zdb.readthedocs.io
 - github repository: https://github.com/metagenlab/zDB
 
+
 ## Installation
 
 ### zDB Installation
@@ -48,6 +50,7 @@ mamba install singularity=3.8.4 -c conda-forge
 ```
 For the installation of docker, please have a look [here](https://docs.docker.com/get-docker/).
 
+
 ### zDB Installation from sources
 
 You can also install zdb directly from the github repository. This is particularly useful if you want to make modifications or if you want to have a direct access to Nextflow config file for a better control of the execution.
@@ -63,6 +66,7 @@ Note that zDB depends on nextflow (version 22.10 or lower) and singularity, so y
 - `mamba env create -p ./env -f conda/main.yaml`
 - `mamba activate ./env`
 
+
 ## Commands overview
 
 Several subcommands are available:
@@ -74,6 +78,7 @@ export - exports the results of a previous run in an archive
 import - unpack an archive that was prepared with the export command in the current directory so that the results can be used to start the webapp
 list_runs - lists the completed runs available to start the website in a given directory
 ```
+
 
 ## Quick start
 
@@ -108,6 +113,7 @@ zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest 
 ```
 For troubleshooting, please first read the more detailed sections below on how to set up reference databases, running the analysis and starting the webserver.
 
+
 ## Setting up the reference databases
 
 Depending on which analysis are to be run, reference databases will need to be downloaded and set up.
@@ -134,6 +140,7 @@ Example commmand, setting up all the databases in the current directory, using c
 ```
 zdb setup --pfam --swissprot --cog --ko --conda
 ```
+
 
 ## Running the analysis
 
@@ -181,6 +188,7 @@ zdb run --input=input.csv --ko --cog --pfam --resume
 ```
 in this case, only the pfam annotations will be performed as the other analysis have already completed.
 
+
 ## Starting the web server
 
 Once the analysis is complete, the web application can be run with the ```zdb webapp``` command. If the port 8080 is not in use, you can simply run the ```zdb webapp``` script without any parameters. zDB will launch the webapp on the last run of analysis.
@@ -217,6 +225,7 @@ The web server can then be started as if the analysis had been run locally.
 
 
 ## Bugs and feature requests
+
 Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/zDB/issues).
 
 We already have several idea to improve the tool:
@@ -225,6 +234,7 @@ We already have several idea to improve the tool:
 - add new annotations, in particular, we've already received some requests for antibiotic resistance and virulence
 
 But we're definitely open for suggestions and contributions.
+
 
 ### Known issues
 
@@ -247,6 +257,7 @@ Modify the 8000 to the same number you attributed to the port number of gunicorn
 
 Please run the webapp in docker containers, setting --allowed_host=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
 
+
 ## Developping zDB
 
 ### Setting up for local development
@@ -259,6 +270,7 @@ We advise to use the --debug and (the hidden) --dev_server flags when testing ch
 zdb webapp --debug --dev_server
 ```
 The changes you make in the web server code will then reflect directly in the web page, with more log available in the console.
+
 
 ### Testing
 
@@ -281,6 +293,7 @@ Careful though with the nextflow pipeline tests:
 - The test_db_setup module will download large volumes of data (tens of GBs), as the tests actually setup the zDB reference databases.
 - The test_annotation_pipeline module expects you to have setup the reference databases.
 
+
 #### Webapp
 
 The webapp is tested using the [django testing tools](https://docs.djangoproject.com/en/5.0/topics/testing/tools). To run the tests you need a python environment with the required dependencies:
@@ -295,6 +308,7 @@ python webapp/manage.py test --settings=settings.testing_settings testing.webapp
 ```
 
 Note that these tests will use the database created by the pipeline test `TestAnnotationPipeline.test_full_pipeline`, which therefore needs to have been executed first.
+
 
 ### Contributing
 
