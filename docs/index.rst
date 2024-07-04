@@ -13,4 +13,4 @@ Table of Contents
    include_readme.rst
    annotation.rst
    website.rst
-   CHANGELOG.md
+   include_changelog.rst
