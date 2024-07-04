@@ -9,8 +9,8 @@ zDB documentation
    :maxdepth: 2
    :caption: Contents:
 
-   methods/annotation.rst
-   tutorial/website.rst
+   annotation.rst
+   website.rst
    CHANGELOG.md
 
 zDB github page
