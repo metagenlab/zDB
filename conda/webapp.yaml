@@ -24,4 +24,3 @@ dependencies:
     - django-autocomplete-light
     - pip:
         - scoary-2
-        - gxx ; sys_platform != 'darwin'

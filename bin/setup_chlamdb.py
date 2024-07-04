@@ -290,9 +290,12 @@ def load_cog(params, filelist, db_file, cdd_to_cog, cog_db_dir):
                                        "qend", "sstart", "send", "evalue", "bitscore"])
 
         # Select only the best hits: using pandas clearly is an overkill here
-        min_hits = cogs_hits.groupby("seq_hsh")[["cdd", "evalue"]].min()
+        cogs_hits = cogs_hits[["seq_hsh", "cdd", "evalue", "pident"]]
+        min_hits = cogs_hits.sort_values(
+            ["evalue", "pident"],
+            ascending=[True, False]).drop_duplicates("seq_hsh")
         for index, row in min_hits.iterrows():
-            hsh = hsh_from_s(index[len("CRC-"):])
+            hsh = hsh_from_s(row["seq_hsh"][len("CRC-"):])
             #  cdd in the form cdd:N
             cog = hsh_cdd_to_cog[int(row["cdd"].split(":")[1])]
             evalue = float(row["evalue"])

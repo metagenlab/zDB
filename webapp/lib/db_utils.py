@@ -1744,7 +1744,7 @@ class DB:
                 return df
             df = df.set_index(["seqid", "name"]).unstack(level="name")
             df.columns = [col for col in df.value.columns.values]
-            for colname in to_return:
+            for colname in term_names:
                 if colname not in df.columns:
                     df[colname] = None
             return df
