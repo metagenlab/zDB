@@ -1,3 +1,3 @@
 .. include:: ../README.md
-   :start-after: .. contents:: Table of Contents
+   :start-after: ## Resources
    :parser: myst_parser.sphinx_
