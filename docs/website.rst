@@ -45,7 +45,7 @@ Set up:
 In the reported example the protein sequence of the genes of fliLMNOPQR operon extracted from *Enterobacter soli* genome are blasted (blastp) against all genomes of the database (**Fig.1**).
 
 
-.. figure:: ../img/blastp_search.svg
+.. figure:: img/blastp_search.svg
     :figclass: align-center
     :width: 100%
 
@@ -61,11 +61,11 @@ Through this analysis it is possible to identify whether any of these genes is p
 Additionally, the generated annotated phylogeny facilitate the interpretation of their distribution and conservation along all the genomes. As shown in **Fig.2 - Result 2**, four genomes carry all the investigated genes, fourteen genomes do not carry them, while the remaining ones have an incomplete set.
 
  
-.. figure:: ../img/blastp_result1.svg
+.. figure:: img/blastp_result1.svg
     :figclass: align-center
     :width: 100%
 
-.. figure:: ../img/blastp_result2.svg
+.. figure:: img/blastp_result2.svg
     :figclass: align-center
     :width: 100%
 
@@ -102,7 +102,7 @@ List of analyses:
     * **1B.** List of identified orthogroups, description and distribution in the selected genomes: clicking on a Orthogroup entry redirects the user to the *Orthogroup annotation summary* page.
     * **1C.** List of locus tags per each orthogroup and genome: clicking on a Orthogroup entry redirects the user to the ``Protein annotation view`` page.
 
-.. figure:: ../img/OverviewOrt_r1_r2.svg
+.. figure:: img/OverviewOrt_r1_r2.svg
     :figclass: align-center
 
     **Figure 3:** Orthogroups comparison overview of *Enterobacter soli, Enterobacter ausbriae, Enterobacter ludvigii, and Klebsiella variicola*. Analysis 2, 3, and 4 are reported in Fig. 4; analysis 5 is reported in Fig. 5.
@@ -113,7 +113,7 @@ In **Fig. 4**:
 | **3. Compare Orthogroup size**: Visualize the number of entries of each Orthogroup in common between a selected set of genomes. This representation higlights which orthogroups are enriched or poorly represented in the genomes of interest.
 | **4. Whole proteome heatmaps**: Heatmap of presence/absence of the pool of Orthogroups present in the selected genomes. Discover which Orthogroups are widely shared by a subset of interest and which genome differentiate from the others. Going over the plot with the mouse it displays the orthogroup name, the organism of interest and the nummber of hits associated to that Orthogroup.
 
-.. figure:: ../img/Ort_venSize_heat.svg
+.. figure:: img/Ort_venSize_heat.svg
     :figclass: align-center
 
     **Figure 4.** Orhogroup comparison analyses of *Enterobacter soli, Enterobacter ausbriae, Enterobacter ludvigii, and Klebsiella variicola*.
@@ -127,7 +127,7 @@ This analysis generates three plots that display the content and conservation of
     * **C**: the blue curve represents the number of Orthologous groups present in exactly n genomes displayed in the x-axis. This representation is useful to appreciate how many Orthologous groups are present in the totality of the genomes of interest, for example, or the diversity brought by single genomes. For example, if tot-1 is low it means that there are no specific genomes that bring a unique Orthologous groups.
 
 
-.. figure:: ../img/Core_pan_Ort_three.svg
+.. figure:: img/Core_pan_Ort_three.svg
     :figclass: align-center
 
     **Figure 5.** Accumulation/rarefaction plots.
@@ -141,7 +141,7 @@ As anticipated, the comparative analyses of Kegg and COGs come with additional p
 
 Focusing on the COG 'Cell motility' category, we see that *Klebsiella variicola* has fewer annotations of that category than *Enterobacter soli, Enterobacter ausbriae*, and *Enterobacter ludvigii*.
 
-.. figure:: ../img/COGs_overview_bar_o.svg
+.. figure:: img/COGs_overview_bar_o.svg
     :figclass: align-center
 
     **Figure 6.** COGs comparison page. Barchart for each COG category representing the number of entries identified in each genome. The 'Cell motility' category is highligthed in green to stress the differences between the four selected genomes. Analysis 2 and 3 are reported in Fig. 7.
@@ -149,7 +149,7 @@ Focusing on the COG 'Cell motility' category, we see that *Klebsiella variicola*
 **2 and 3. Heatmaps of the COGs along all the genomes expressed as fequency or number of identified entries** (These plots are available only for COGs)
 | Here the focus is again on the COG 'Cell motility' category where it emerges that *Klebsiella variicola* has 67 loci annotated in this category that represents 1.29% of total number of its loci, while *Enterobacter soli* has more than the double of its loci annotated in this category, 2.76% of them.
 
-.. figure:: ../img/COGs_heatmaps_o.svg
+.. figure:: img/COGs_heatmaps_o.svg
     :figclass: align-center
 
     **Figure 7.** Heatmaps of presence/absence of entries annotated with each COG category expressed as counts (2) or as frequencies (3). In the green box, the 'Cell motility' category, in purple, the two genomes of interest.
@@ -182,7 +182,7 @@ Plot region
 In **Fig. 8 B**, the focus is on the fliL gene of the fliLMNOPQR operon in *Enterobacter soli, Enterobacter ausbriae, Enterobacter ludvigii, and Klebsiella variicola*.
 The operon is highly conserved in the Enterobacter genomes, but absent in *Klebsiella variicola*, which is indeed not reported in the plot (Fig. 8 B). (Note that the phylogeny obtained in *Homology search - Blast*, already highlight the lack of these genes in *Klebsiella variicola* ).
 
-.. figure:: ../img/Plot_region_ENTAS_RS13815_fliL_Soli_o_vertical.svg
+.. figure:: img/Plot_region_ENTAS_RS13815_fliL_Soli_o_vertical.svg
     :figclass: align-center
     :width: 100%
 
@@ -199,7 +199,7 @@ Kegg maps
 With this analysis the **Kegg pathways** of a genome of interest can be discovered, which Kegg orthologs of the pathway are present and compare their distribution in the other genomes.
 In the following example (**Fig. 9**), the Kegg pathways present in the *Enterobacter Soli* genome are listed (235 pathways in total) and a heatmap of the Ko of the flagellar pathways is shown. In this page a direct link to the official Kegg page is provided to evaluate the state of composition of this Kegg map (in red the KOs present in *Enterobacter soli*.
 
-.. figure:: ../img/Metab_kegg_maps_o.svg
+.. figure:: img/Metab_kegg_maps_o.svg
     :figclass: align-center
 
     **Figure 9.** Metabolism/kegg maps analysis. Steps to identify the completeness of a Kegg pathway for a genome of interest. The flagellar assembly pathways of *Enterobacter soli* is shown.
@@ -215,7 +215,7 @@ Three types of search are available:
 | **Compare strains**: this search let the user focus on a selected set of genomes to compare all the Kegg modules carried by them and better appreciated their distribution within the genomes. In **Fig. 10 B**, the four genomes are compared.
 
 
-.. figure:: ../img/Metab_kegg_modules_Energy_met_o.svg
+.. figure:: img/Metab_kegg_modules_Energy_met_o.svg
     :figclass: align-center
 
     **Figure 10.** Metabolism/kegg module analysis. A 'Category heatmap' output, B: 'Compare strains' output.
@@ -228,7 +228,7 @@ This page is accessible clicking on the Kegg module entry from the 'Metabolism/K
 
 The reported example is based on the KO entries of the kegg module number M00049 which describes the Adenine ribonucleotide biosynthesis ( IMP => ADP,ATP), and it is part of the *Nucleotide metabolism* category and *Purine metabolism* subcategory. Four genes are required to have a complete module, and one of them can be one among a set of four redundant genes. Among the genomes of the dataset, all except three have a complete module.
 
-.. figure:: ../img/kegg_overview_page_IMP_o.svg
+.. figure:: img/kegg_overview_page_IMP_o.svg
     :figclass: align-center
 
     **Figure 11.** Phylogeny annotatedd with presence/absence of KO entries of kegg module M00049.
@@ -247,7 +247,7 @@ In the example reported (**Fig. 12**), the page displays the locus tag ENTAS_RS1
 | **3**: the genomic region around the locus tag of interest. This plot provides an interactive way to discover of the flanking region of the target.
 | **4**: Box with useful functional and metabolic annotations (adatpted to the requested annotations in the config file) 
 
-.. figure:: ../img/Locus_tag_filL_overview_m_o.svg
+.. figure:: img/Locus_tag_filL_overview_m_o.svg
     :figclass: align-center
 
     **Figure 12: Locus tag overview page**. Overview of the locus tag ENTAS_RS13815 of *Enterobacter soli* encoding fliL gene.
@@ -256,7 +256,7 @@ From the 'Overview' page further plots are accessible (**Fig. 13**):
 the phylogenetic distribution of the orthogroup of the locus tag (**A**),the homologs of which are reported in a phylogeny with a dedicated attention to the Pfam domains composing them (**D**). Additionally, SwissProt and RefSeq annotations are listed to further evaluate the best homologs according to their databases (**B** and **C**) and the best RefSeq hits are included in the homologs phylogeny (**E**).
 These analyses better characterize the locus whether the other annotations are not consistent for example, to infer horizontal gene transfer occurences, and also to observe potential dissimilarities/similarities in terms of Pfam domains between members of the same orthogroup. 
 
-.. figure:: ../img/Locus_tag_filL_plots_m_o.svg
+.. figure:: img/Locus_tag_filL_plots_m_o.svg
     :figclass: align-center
 
     **Figure 13: Locus tag page plots**. A: phylogenetic distribution of the orthogroup; B: Homologs of ENTAS_RS13815 locus tag identified in RefSeq; C: Homologs of ENTAS_RS13815 locus tag identified in SwissProt; D: Orthogroup phylogeny of group_2742 with Pfam domains annotation; E: Phylogeny of the orthogroup identified in the set of genomes plus the addition of the three best RefSeq hits of locus tag ENTAS_RS13815.
@@ -271,7 +271,7 @@ Orthogroup annotation summary
 This page represents several overlaps with the ``Protein annotation view`` page, however this is focused on the orthogroup rather than on a single member and its homologs. Indeed, it may occur that the homologs of a locus tag are split within more orthogroups.
 Of interest, in this page the alignment between the members of the orthogroup is available and amino acid substitutions can be easily observed (Fig.14 A)
 
-.. figure:: ../img/Orthogroup_page_overview_align_m_o.svg
+.. figure:: img/Orthogroup_page_overview_align_m_o.svg
     :figclass: align-center
 
     **Figure 14: Overview of orthogroup 2742 of fliL gene of *Enterobacter soli* and protein alignment of its members.**
@@ -287,7 +287,7 @@ It is organized in three sections that can be visualized in **Fig. 15** where Pf
     * **Protein list**: list of all locus tags with that annotation
     * **Profile**: phylogeny annotated with an heatmap of the entries with that annotation and their distribution into Orthogroups
 
-.. figure:: ../img/Pfam_overview_page_o.svg
+.. figure:: img/Pfam_overview_page_o.svg
     :figclass: align-center
 
     **Figure 15: Overview of Pfam domain PF03748.**

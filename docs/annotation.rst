@@ -18,7 +18,7 @@ A simplified scheme of ``zDB`` annotation workflow is shown in **Figure 1**. In 
     * Data were then integrated into a custom SQL database derived from the bioSQL_ relational model.
 
 
-.. figure:: ../img/workflowV2.png
+.. figure:: img/workflowV2.png
     :figclass: align-center
 
     **Figure 1**: Simplified annotation workflow.
@@ -141,7 +141,7 @@ Circular genome plots (Circos)
 
 Circular genome plots are generated dynamically with Circos_. These plots are not generated based on the alignment of DNA sequences but based on orthology data (see previous paragraphs). The two outer gray circles show the location of `open reading frames`_ (ORFs) encoded on the leading and lagging strand of the reference genome (**Figure 2 A and B**). The red/blue inner circles show the conservation of each protein encoding ORF in one or multiple other genomes. Identity values were pre-calculated from protein alignments (see previous paragraphs). If the compared genomes encode more than one ortholog, the highest identity is used to color the region.
 
-.. figure:: ../img/circos_method.png
+.. figure:: img/circos_method.png
     :figclass: align-center
     :width: 100%
 
@@ -170,7 +170,7 @@ Orthogroup exhibiting similar patterns of presence/absence were identified by ca
     2. Pairwise euclidean_ and jaccard_ distances were calculated between pairs of profiles
     3. The default euclidian distance cutoff to report interactions is ``2.2``. If more than 30 profiles had an euclidian distance smaller or equal to ``2.2``, the stringency was adjusted incrementally with cutoffs of ``2``, ``1`` and finally ``0``. If more than 30 profiles exhibit the exact same profile, nothing is reported. Indeed, it would by typically poorly informative profiles (e.g. proteins conserved in all species).
 
-.. figure:: ../img/profile.svg
+.. figure:: img/profile.svg
     :figclass: align-center
     :width: 500 px
 
@@ -194,7 +194,7 @@ Genes encoded in a close neighborhood in distantly related species were identifi
     4. the ratio of co-occurence of pairs of orthogroups was used to score the association between pairs of locus (**Figure 4.B**) 
     5. only proteins exhibiting a ``conservation score of 0.8`` are reported in the "interactions" tab of locus pages
 
-.. figure:: ../img/conserved_neig.svg
+.. figure:: img/conserved_neig.svg
     :figclass: align-center
     :width: 100 %
 
@@ -230,7 +230,7 @@ Only orders exhibiting a minimum of 5 genomes are reported of the figure.
 
 * see for instance the profile of the Pfam domain PF01823 (MAC/Perforin domain): https://chlamdb.ch/pfam_profile/PF01823/phylum
 
-.. figure:: ../img/PF08486_phylum_profile.svg
+.. figure:: img/PF08486_phylum_profile.svg
     :figclass: align-center
     :width: 600 px
 
