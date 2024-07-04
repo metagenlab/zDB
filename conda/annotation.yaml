@@ -1,7 +1,7 @@
 name: annotation-base
 channels:
-    - anaconda
     - conda-forge
+    - anaconda
 dependencies:
     - python=3.9
     - whoosh
