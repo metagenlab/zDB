@@ -1,5 +1,9 @@
 # zDB: comparative bacterial genomics made easy
 
+.. contents:: Table of Contents
+
+## Overview
+
 zDB is designed to perform comparative genomics analyses and to integrate the results in a Django web-application.
 
 Several analyses are currently supported, with more to come:
