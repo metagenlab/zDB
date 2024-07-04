@@ -65,6 +65,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix filtering of COGs in annotation pipeline. ([#108](https://github.com/metagenlab/zDB/pull/108)
 - Fix blast view for hits with identifier containing a version number. ([#106](https://github.com/metagenlab/zDB/pull/106)
 - Fix PFAM identifiers missing leading 0. ([#105](https://github.com/metagenlab/zDB/pull/105)) (Niklaus Johner)
 - Fix product representation in GWAS view for orthogroups. ([#102](https://github.com/metagenlab/zDB/pull/102)) (Niklaus Johner)
