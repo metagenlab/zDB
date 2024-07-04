@@ -65,8 +65,7 @@ setup - download and prepare the reference databases
 webapp - start the webapp
 run - run the analysis pipeline
 export - exports the results of a previous run in an archive
-import - unpack an archive that was prepared with the export command in the current directory
-       - so that the results can be used to start the webapp
+import - unpack an archive that was prepared with the export command in the current directory so that the results can be used to start the webapp
 list_runs - lists the completed runs available to start the website in a given directory
 ```
 
@@ -154,7 +153,6 @@ Other options include:
 --out: directory where the files necessary for the webapp will be stored
 --input: CSV file containing the path to the genbank files to include in the analysis
 --name: custom run name (defaults to the name given by nextflow). The latest completed run is also named latest.
-
 --cpu: number of parallel processes allowed (default 8)
 --mem: max memory usage allowed (default 8GB)
 --singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)
