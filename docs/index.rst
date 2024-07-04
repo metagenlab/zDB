@@ -4,7 +4,6 @@ zDB documentation
 .. note:: Problems and errors encountered on the **zDB** website can be announced on `the github page`_ of the website
 
 
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
