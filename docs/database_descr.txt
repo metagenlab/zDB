@@ -1,0 +1,20 @@
+bioentry -> contains the contigs of the query taxons (one row for each contig, taxon_id tells which go together)
+biosequences -> contains the sequences of the bioentries
+taxon and taxon_name -> more info about the taxons
+
+pfam_table -> defines protein families
+pfam_hits -> tells which protein family was found at which position in which sequence (hash)
+
+
+seq_feature -> tells which sequence features (term) are found on which bioentry.
+location -> start and end position of a seq_feature. Some sequence features have several locations.
+term -> defines the terms found in the seq_feature table
+seqfeature_qualifier_value -> defines the value of the sequence feature
+
+
+og_hits -> seq_id to orthogroup
+
+sequence_hash_dictionnary -> links a seqid (sequence_feature_id) with a sequence hash
+
+
+reference -> papers
