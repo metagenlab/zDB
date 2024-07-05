@@ -318,3 +318,11 @@ Note that these tests will use the database created by the pipeline test `TestAn
 ### Contributing
 
 If you want to contribute, feel free to open a PR describing your changes and make sure the tests still pass and request a review from one of the developers ([tpillone](https://github.com/tpillone), [bkm](https://github.com/bkm) or [njohner](https://github.com/njohner))
+
+
+## Citing
+
+If you use zDB in your work, please cite the following paper:
+
+**Marquis B**, Pillonel T, Carrara A, Bertelli C. 0. *zDB: bacterial comparative genomics made easy.* mSystems 0:e00473-24.
+https://doi.org/10.1128/msystems.00473-24
