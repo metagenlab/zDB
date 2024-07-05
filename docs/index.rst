@@ -14,3 +14,4 @@ Table of Contents
    annotation.rst
    website.rst
    include_changelog.rst
+   include_license.rst
