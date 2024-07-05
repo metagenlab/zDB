@@ -21,6 +21,8 @@ Here is an overview of its architecture:
 
 ![zDB architecture](https://github.com/metagenlab/zDB/blob/nj/docs/docs/img/zdb_architecture.png)
 
+If you are not setting up your own database, but instead simply want to use the webapplication of an existing installation, you can directly refer to the [website tutorial of the documentation](https://zdb.readthedocs.io/en/latest/website.html).
+
 ## Resources
 
 - Demo of the website: https://zdb.metagenlab.ch/
