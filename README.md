@@ -117,7 +117,7 @@ zdb setup --pfam --cog --conda
 zdb run --input=input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
 zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
 ```
-For troubleshooting, please first read the more detailed sections below on how to set up reference databases, running the analysis and starting the webserver.
+For troubleshooting, please first read the more detailed sections below on how to [set up reference databases](#setting-up-the-reference-databases), [running the analysis](#running-the-analysis) and [starting the webserver](#starting-the-web-server).
 
 
 ## Setting up the reference databases
