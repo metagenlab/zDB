@@ -17,6 +17,9 @@ Several analyses are currently supported, with more to come:
 
 All the results are stored either in a SQLite database or directly as files and displayed in the web application. Interactive visualizations facilitates the comparison of gene content and static figure can be downloaded for publication. 
 
+Here is an overview of its architecture:
+
+![zDB architecture](https://github.com/metagenlab/zDB/blob/nj/docs/docs/img/zdb_architecture.png)
 
 ## Resources
 
