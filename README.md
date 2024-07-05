@@ -23,6 +23,10 @@ Here is an overview of its architecture:
 
 If you are not setting up your own database, but instead simply want to use the webapplication of an existing installation, you can directly refer to the [website tutorial of the documentation](https://zdb.readthedocs.io/en/latest/website.html).
 
+If you are setting up your own database, you will need to install zDB, setup some reference databases, run the analysis pipeline and finally launch the web server. An overview of the workflow is shown below:
+
+![zDB workflow](https://github.com/metagenlab/zDB/blob/nj/docs/docs/img/zdb_workflow.png)
+
 ## Resources
 
 - Demo of the website: https://zdb.metagenlab.ch/
