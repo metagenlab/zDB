@@ -27,12 +27,8 @@ If you are setting up your own database, you will need to install zDB, setup som
 
 ![zDB workflow](https://github.com/metagenlab/zDB/blob/nj/docs/docs/img/zdb_workflow.png)
 
-## Resources
 
-- Demo of the website: https://zdb.metagenlab.ch/
-- Documentation: https://zdb.readthedocs.io
-- github repository: https://github.com/metagenlab/zDB
-
+<!--- First marker for documentation integration -->
 
 ## Installation
 
@@ -328,6 +324,17 @@ Note that these tests will use the database created by the pipeline test `TestAn
 
 If you want to contribute, feel free to open a PR describing your changes and make sure the tests still pass and request a review from one of the developers ([tpillone](https://github.com/tpillone), [bkm](https://github.com/bkm) or [njohner](https://github.com/njohner))
 
+
+<!--- Second marker for documentation integration -->
+
+## Resources
+
+- Demo of the website: https://zdb.metagenlab.ch/
+- Documentation: https://zdb.readthedocs.io
+- github repository: https://github.com/metagenlab/zDB
+
+
+<!--- Third marker for documentation integration -->
 
 ## Citing
 
