@@ -9,6 +9,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Changed
 
+- Update the documentation. ([#110](https://github.com/metagenlab/zDB/pull/110)) (Niklaus Johner)
 - Execute tblastn search against the fna (contigs) database. ([#106](https://github.com/metagenlab/zDB/pull/106)
 - Handle groups when selecting genomes wherever pertinent. ([#84](https://github.com/metagenlab/zDB/pull/84) and [#85](https://github.com/metagenlab/zDB/pull/85)) (Niklaus Johner)
 - Allow using groups to define phenotype in GWAS view. ([#82](https://github.com/metagenlab/zDB/pull/82)) (Niklaus Johner)
