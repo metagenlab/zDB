@@ -1,5 +1,7 @@
 # zDB: comparative bacterial genomics made easy
 
+## Overview
+
 zDB is designed to perform comparative genomics analyses and to integrate the results in a Django web-application.
 
 Several analyses are currently supported, with more to come:
@@ -8,17 +10,25 @@ Several analyses are currently supported, with more to come:
 - COG annotation
 - KEGG orthologs annotation and pathway completion analysis
 - PFAM domains annotation
+- Virulence factors
+- Antimicrobial resistance genes
 - Swissprot homologs search
 - RefSeq homologs search: implemented, but significantly slows down the analysis. You'll also have to download and prepare the database for diamond search, as this was not included in the database setup script.
 
 All the results are stored either in a SQLite database or directly as files and displayed in the web application. Interactive visualizations facilitates the comparison of gene content and static figure can be downloaded for publication. 
 
+Here is an overview of its architecture:
 
-## Resources
+![zDB architecture](https://github.com/metagenlab/zDB/blob/nj/docs/docs/img/zdb_architecture.png)
 
-- Demo of the website: https://zdb.metagenlab.ch/
-- Documentation: https://zdb.readthedocs.io
+If you are not setting up your own database, but instead simply want to use the webapplication of an existing installation, you can directly refer to the [website tutorial of the documentation](https://zdb.readthedocs.io/en/latest/website.html).
 
+If you are setting up your own database, you will need to install zDB, setup some reference databases, run the analysis pipeline and finally launch the web server. An overview of the workflow is shown below:
+
+![zDB workflow](https://github.com/metagenlab/zDB/blob/nj/docs/docs/img/zdb_workflow.png)
+
+
+<!--- First marker for documentation integration -->
 
 ## Installation
 
@@ -42,11 +52,12 @@ mamba install singularity=3.8.4 -c conda-forge
 ```
 For the installation of docker, please have a look [here](https://docs.docker.com/get-docker/).
 
+
 ### zDB Installation from sources
 
 You can also install zdb directly from the github repository. This is particularly useful if you want to make modifications or if you want to have a direct access to Nextflow config file for a better control of the execution.
 
-Check out the project or download and unpack a release, then edit this line of the bin/zdb bash script:
+Check out the project (`git clone git@github.com:metagenlab/zDB.git`) or download and unpack a release, then edit this line of the bin/zdb bash script:
 ```
 NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
 ```
@@ -57,7 +68,8 @@ Note that zDB depends on nextflow (version 22.10 or lower) and singularity, so y
 - `mamba env create -p ./env -f conda/main.yaml`
 - `mamba activate ./env`
 
-## Overview
+
+## Commands overview
 
 Several subcommands are available:
 ```
@@ -65,12 +77,12 @@ setup - download and prepare the reference databases
 webapp - start the webapp
 run - run the analysis pipeline
 export - exports the results of a previous run in an archive
-import - unpack an archive that was prepared with the export command in the current directory
-       - so that the results can be used to start the webapp
+import - unpack an archive that was prepared with the export command in the current directory so that the results can be used to start the webapp
 list_runs - lists the completed runs available to start the website in a given directory
 ```
 
-### Quick start
+
+## Quick start
 
 Here are a few examples of workflows with a test dataset available from the git repository.
 To get the test dataset:
@@ -101,7 +113,8 @@ zdb setup --pfam --cog --conda
 zdb run --input=input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
 zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
 ```
-For troubleshooting, please first read the more detailed sections below on how to set up reference databases, running the analysis and starting the webserver.
+For troubleshooting, please first read the more detailed sections below on how to [set up reference databases](#setting-up-the-reference-databases), [running the analysis](#running-the-analysis) and [starting the webserver](#starting-the-web-server).
+
 
 ## Setting up the reference databases
 
@@ -113,8 +126,9 @@ Of note, in minimal mode, zdb does not require any database to run.
 The following databases can be downloaded:
 ```
 --cog: downloads the CDD profiles used for COG annotations
---ko: downloads and setups the hmm profiles of the ko database
---pfam: downloads and setups up the hmm profiles of the PFAM protein domains
+--ko: downloads and sets up the hmm profiles of the ko database
+--pfam: downloads and sets up the hmm profiles of the PFAM protein domains
+--vfdb: downloads and sets up the virulence factor database (VFDB)
 --swissprot: downloads and indexes the swissprot database
 ```
 
@@ -129,6 +143,7 @@ Example commmand, setting up all the databases in the current directory, using c
 zdb setup --pfam --swissprot --cog --ko --conda
 ```
 
+
 ## Running the analysis
 
 Once you have the reference databases set up, the genomes ready, just run the ```zdb run``` command. The run command expects a csv file as input. The csv should look like:
@@ -140,13 +155,21 @@ foobar,foobar/baz.gbff
 ```
 The ```name``` column is optional and can be omitted from the input csv file. **By default, zdb will use the organism's name as defined in the genbank file to identify genomes in the web application**. Specifying a name for a genome will tell zdb to use that name instead of the organism name from the genbank file. This is practical when working with assembled genomes that haven't been named yet or when working with genomes of different strains of a same species. If the same name is used in different files, zdb will just add a numbering suffix to make the names unique.
 
+Any number of groups can also be specified in the input file, which will be available for selecting genomes easily in the web-application. They are specified as additional columns with headers of the form `group:groupname`, where `groupname` can be any string of your choice, and presence or absence is signified with `1` and `0` or other markers such as `yes`, `no`, e.g.:
+```
+name, file, group:first group, group: another one, group:third
+,foo/bar.gbk,yes,1,no
+,baz/bazz.gbk,0,1,1
+foobar,foobar/baz.gbff,no,yes,0
+```
+
 Before launching the analysis, zdb will also check for the uniqueness of locus tags and generate new ones if necessary. This is usually not necessary for genomes downloaded from RefSeq or other databases, but if genomes were annotated with automated tools, name collisions might happen.
 
 Several options are available and allow you to customize the run.
 
 By default, the analysis are run in singularity containers, but you can change this by using the ```--conda``` or ```--docker``` flags to have them run in conda environments or docker containers, respectively. If singularity is enabled, the containers will have to be downloaded. By default, they are stored in the singularity folder of the current directory, but this can be changed using the ```--singularity_dir``` option. This might be useful if you want to share containers between analyses.
 
-If the databases were set up, additional analyses can also be enabled with the ```--ko```, ```--cog```, ```--pfam``` and ```--swissprot``` flags. The directory (by default zdb_ref in the current directory) where the database were installed can be specified with the ```--ref_dir``` option.
+If the databases were set up, additional analyses can also be enabled with the ```--ko```, ```--cog```, ```--pfam```, ```--vfdb``` and ```--swissprot``` flags. The ```--amr``` flag will add annotations of antimicrobial resistance genes (no database needed). The directory (by default zdb_ref in the current directory) where the database were installed can be specified with the ```--ref_dir``` option.
 
 Other options include:
 ```
@@ -154,7 +177,6 @@ Other options include:
 --out: directory where the files necessary for the webapp will be stored
 --input: CSV file containing the path to the genbank files to include in the analysis
 --name: custom run name (defaults to the name given by nextflow). The latest completed run is also named latest.
-
 --cpu: number of parallel processes allowed (default 8)
 --mem: max memory usage allowed (default 8GB)
 --singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)
@@ -175,6 +197,7 @@ This can also be used if you want to add another analysis to a previous run:
 zdb run --input=input.csv --ko --cog --pfam --resume
 ```
 in this case, only the pfam annotations will be performed as the other analysis have already completed.
+
 
 ## Starting the web server
 
@@ -212,6 +235,7 @@ The web server can then be started as if the analysis had been run locally.
 
 
 ## Bugs and feature requests
+
 Suggestion and bug reports are very welcome [here](https://github.com/metagenlab/zDB/issues).
 
 We already have several idea to improve the tool:
@@ -220,6 +244,7 @@ We already have several idea to improve the tool:
 - add new annotations, in particular, we've already received some requests for antibiotic resistance and virulence
 
 But we're definitely open for suggestions and contributions.
+
 
 ### Known issues
 
@@ -242,6 +267,7 @@ Modify the 8000 to the same number you attributed to the port number of gunicorn
 
 Please run the webapp in docker containers, setting --allowed_host=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
 
+
 ## Developping zDB
 
 ### Setting up for local development
@@ -254,6 +280,7 @@ We advise to use the --debug and (the hidden) --dev_server flags when testing ch
 zdb webapp --debug --dev_server
 ```
 The changes you make in the web server code will then reflect directly in the web page, with more log available in the console.
+
 
 ### Testing
 
@@ -276,6 +303,7 @@ Careful though with the nextflow pipeline tests:
 - The test_db_setup module will download large volumes of data (tens of GBs), as the tests actually setup the zDB reference databases.
 - The test_annotation_pipeline module expects you to have setup the reference databases.
 
+
 #### Webapp
 
 The webapp is tested using the [django testing tools](https://docs.djangoproject.com/en/5.0/topics/testing/tools). To run the tests you need a python environment with the required dependencies:
@@ -291,6 +319,26 @@ python webapp/manage.py test --settings=settings.testing_settings testing.webapp
 
 Note that these tests will use the database created by the pipeline test `TestAnnotationPipeline.test_full_pipeline`, which therefore needs to have been executed first.
 
+
 ### Contributing
 
 If you want to contribute, feel free to open a PR describing your changes and make sure the tests still pass and request a review from one of the developers ([tpillone](https://github.com/tpillone), [bkm](https://github.com/bkm) or [njohner](https://github.com/njohner))
+
+
+<!--- Second marker for documentation integration -->
+
+## Resources
+
+- Demo of the website: https://zdb.metagenlab.ch/
+- Documentation: https://zdb.readthedocs.io
+- github repository: https://github.com/metagenlab/zDB
+
+
+<!--- Third marker for documentation integration -->
+
+## Citing
+
+If you use zDB in your work, please cite the following paper:
+
+**Marquis B**, Pillonel T, Carrara A, Bertelli C. 0. *zDB: bacterial comparative genomics made easy.* mSystems 0:e00473-24.
+https://doi.org/10.1128/msystems.00473-24

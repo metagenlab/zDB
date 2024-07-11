@@ -1,27 +1,19 @@
-zDB documentation
-=====================
+.. include:: ../README.md
+   :start-after: # zDB: comparative bacterial genomics made easy
+   :end-before: <!--- First marker for documentation integration -->
+   :parser: myst_parser.sphinx_
 
-.. note:: Problems and errors encountered on the **zDB** website can be announced on `the github page`_ of the website
-
-
+Table of Contents
+=================
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-   methods/annotation.rst
-   tutorial/website.rst
-   CHANGELOG.md
-
-zDB github page
-===============
-
-* `Go to zDB website`_
-
-Search
-=======
-
-* :ref:`search`
-
-.. _`the github page` : https://github.com/metagenlab/chlamdb/issues
-.. _`Go to zDB website` : https://github.com/metagenlab/chlamdb
+   self
+   include_readme_technical_doc.rst
+   annotation.rst
+   website.rst
+   include_readme_resources.rst
+   include_readme_citing.rst
+   include_changelog.rst
+   include_license.rst
