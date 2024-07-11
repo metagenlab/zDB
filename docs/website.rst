@@ -3,7 +3,7 @@ Website tutorial
 ================
 
 .. warning:: 
-    zDB is still actively being developped and this tutorial might not always reflect the latest state of the application. If you have any question or suggestion feel free to open an issue on the `zDB github repository` or contact us (trestan.pillonel@chuv.ch or niklaus.johner@chuv.ch).
+    zDB is still actively being developped and this tutorial might not always reflect the latest state of the application. If you have any question or suggestion feel free to open an issue on the `zDB github repository`_ or contact us (trestan.pillonel@chuv.ch or niklaus.johner@chuv.ch).
 
 This page attempts to provide the user with help to understand and perform the analyses offered in the webinterface.
 
@@ -384,24 +384,6 @@ Organism	                    Enterobacter soli
 
 It is built with Whoosh_ and it can take in input also combination of terms separated by AND/OR, for a more complex search, for example. 
 
-.. _`zDB home page`: https://chlamdb.ch/#genomes
-.. _mreb: https://chlamdb.ch/locusx?accession=mreb
-.. _`mreb Waddlia`: https://chlamdb.ch/locusx?accession=mreb+Waddlia
-.. _`secretion system`: https://chlamdb.ch/locusx?accession=secretion+system
-.. _wcw_1594 : https://chlamdb.ch/locusx?accession=wcw_1594
-.. _ADI38940.1 : https://chlamdb.ch/locusx?accession=ADI38940.1
-.. _WCW_RS07680 : https://chlamdb.ch/locusx?accession=WCW_RS07680
-.. _WP_013182646.1 : https://chlamdb.ch/locusx?accession=WP_013182646.1
-.. _UPI0001D5C1DD : https://chlamdb.ch/locusx?accession=UPI0001D5C1DD
-.. _D6YS95 : https://chlamdb.ch/locusx?accession=D6YS95
-.. _D6YS95_WADCW : https://chlamdb.ch/locusx?accession=D6YS95_WADCW
-.. _K00844 : https://chlamdb.ch/locusx?accession=K00844
-.. _COG0333 : https://chlamdb.ch/locusx?accession=COG0333
-.. _PF06723 : https://chlamdb.ch/locusx?accession=PF06723
-.. _IPR004753 : https://chlamdb.ch/locusx?accession=IPR004753
-.. _M00023 : https://chlamdb.ch/locusx?accession=M00023
-.. _map00400 : https://chlamdb.ch/locusx?accession=map00400
-.. _`complete profile online` : https://chlamdb.ch/locusx?accession=K01902#tab3
 .. _publication : https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0721-2
 .. _Orthofinder : https://github.com/davidemms/OrthoFinder
 .. _KEGG : https://www.genome.jp/kegg/ko.html
@@ -409,6 +391,6 @@ It is built with Whoosh_ and it can take in input also combination of terms sepa
 .. _Pfam : http://pfam.xfam.org/
 .. _Whoosh : https://whoosh.readthedocs.io/en/latest/index.html
 .. _`zDB github repository`: https://github.com/metagenlab/zDB
-.. _`VFDB`: http://www.mgc.ac.cn/VFs/
+.. _VFDB: http://www.mgc.ac.cn/VFs/
 .. _AMRFinderPlus: https://www.ncbi.nlm.nih.gov/pathogens/antimicrobial-resistance/AMRFinder/
 .. _`Running the analysis`: https://zdb.readthedocs.io/en/nj-docs/include_readme.html#running-the-analysis
