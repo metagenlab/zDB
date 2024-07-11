@@ -73,10 +73,9 @@ Protein sequences of each orthogroup are aligned with MAFFT_ (default parameters
 Phylogeny including top RefSeq hits
 ---------------------------------------
 
-A second phylogeny is reconstructed for each orthogroup. This phylogeny includes the 4 best non-PVC RefSeq hits of each protein (see the `Homology search`_ paragraph).
-First, the NCBI taxon ID of each RefSeq hit is retrieved using the ``prot.accession2taxid`` mapping file available from the `NCBI taxonomy ftp website`_. PVC hits were removed and the amino acid sequence of the 4 best non-PVC hits is retrieved from the NCBI using the `biopython interface to Entrez`_. Protein sequences of each orthogroup + RefSeq homologs are aligned with MAFFT_ (default parameters) and the phylogeny is reconstructed with FastTree_ (default parameters).
+A second phylogeny is reconstructed for each orthogroup. This phylogeny includes the proteins of the orthogroup plus the 100 best RefSeq hits not already contained in the orthogroup (see the `Homology search`_ paragraph).
+First all RefSeq hits for all proteins in the orthogroup are gathered and sorted by e-value. then, sequences from genomes contained in the database are filtered out, and finally, the top 100 sequences are kept and added to the sequences of the proteins from the orthogroup. These are then aligned with MAFFT_ (default parameters) and the phylogeny is reconstructed with FastTree_ (default parameters).
 
-\
 
 This phylogeny allows users to check whether PVC proteins form a monophyletic group or if they are for instance hints of horizontal gene transfer(s) with bacteria from other phyla.
 
