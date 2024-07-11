@@ -16,7 +16,7 @@ A simplified scheme of ``zDB`` annotation workflow is shown in **Figure 1**. In 
     * Data is then integrated into a custom SQL database derived from the bioSQL_ relational model.
 
 
-.. figure:: img/workflowV2.png
+.. figure:: img/annotations_workflow.drawio.png
     :figclass: align-center
 
     **Figure 1**: Simplified annotation workflow.
