@@ -4,8 +4,16 @@
 Versions are of the form MAJOR.MINOR.PATCH and this changelog tries to conform
 to [Common Changelog](https://common-changelog.org)
 
+## Unreleased
 
-## unreleased
+### Changed
+
+### Added
+
+### Fixed
+
+
+## 1.3.0 - 2024-07-11
 
 ### Changed
 

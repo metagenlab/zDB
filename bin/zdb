@@ -7,6 +7,9 @@ VERSION="version"
 # Hack to know the installation folder
 CONDA=$(which zdb | sed 's=bin/zdb==')
 
+# Version of zdb container for running the webapp
+zdb_container="zdb:1.4.0"
+
 # The value of this variable will be replaced by the conda installation script
 # to point to the folder where all the nextflow scripts are installed.
 # 
@@ -188,7 +191,6 @@ elif [[ "$1" == "webapp" ]]; then
 	docker=false
 	conda=false
 	allowed_host=""
-	zdb_container="zdb:1.3"
 	dir=$(pwd)
 
 	zdb_folder="${NEXTFLOW_DIR}/webapp/"
