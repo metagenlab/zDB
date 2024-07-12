@@ -487,7 +487,10 @@ process prepare_amrscan {
   conda = params.conda
   """
   if $conda; then
-        amrfinder -u
+      # amrfinder from conda comes without database so we need to download it
+      # update (-u) fails on Linux because folder latest is missing so we need
+      # to force update in that case.
+      amrfinder -u || amrfinder -U
   fi
   amrfinder -V > versions.txt
   """
