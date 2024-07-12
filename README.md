@@ -325,6 +325,24 @@ Note that these tests will use the database created by the pipeline test `TestAn
 If you want to contribute, feel free to open a PR describing your changes and make sure the tests still pass and request a review from one of the developers ([tpillone](https://github.com/tpillone), [bkm](https://github.com/bkm) or [njohner](https://github.com/njohner))
 
 
+### Making a release
+
+- Adapt CHANGELOG.md with release number and date.
+- Create docker containers:
+    - Containers are defined in https://github.com/metagenlab/docker-images/
+    - Update `requirements.txt` and `Dockerfile`s for `zdb` and `annotation-pipeline`
+    - Build and push the images, e.g. `docker build -t metagenlab/annotation-pipeline:1.4.1 annotation-pipeline/` and `docker push metagenlab/annotation-pipeline:1.4.1`
+    - Update zdb `annotation_pipeline.nf` and `bin/zdb` accordingly
+- Make a release (can be done directly on github: https://github.com/metagenlab/zDB/releases)
+- Release on bioconda:
+    - A pull request should be opened automatically on https://github.com/bioconda/bioconda-recipes. Check that the tests pass and that it gets merged
+    - You can also test locally:
+        - clone `bioconda-recipes`
+        - update zDB recipe if necessary (set version number, update sha, which can be calculated with the `sha256` command)
+        - run linting check (`bioconda-utils lint --packages zdb`)
+        - run build check (`bioconda-utils build --docker --mulled-test --packages zdb`)
+
+
 <!--- Second marker for documentation integration -->
 
 ## Resources
