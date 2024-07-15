@@ -19,13 +19,13 @@ All the results are stored either in a SQLite database or directly as files and 
 
 Here is an overview of its architecture:
 
-![zDB architecture](https://github.com/metagenlab/zDB/blob/master/docs/img/zdb_architecture.png)
+![zDB architecture](https://raw.githubusercontent.com/metagenlab/zDB/master/docs/img/zdb_architecture.png)
 
 If you are not setting up your own database, but instead simply want to use the webapplication of an existing installation, you can directly refer to the [website tutorial of the documentation](https://zdb.readthedocs.io/en/latest/website.html).
 
 If you are setting up your own database, you will need to install zDB, setup some reference databases, run the analysis pipeline and finally launch the web server. An overview of the workflow is shown below:
 
-![zDB workflow](https://github.com/metagenlab/zDB/blob/master/docs/img/zdb_workflow.png)
+![zDB workflow](https://raw.githubusercontent.com/metagenlab/zDB/master/docs/img/zdb_workflow.png)
 
 
 <!--- First marker for documentation integration -->
