@@ -398,7 +398,7 @@ elif [[ "$1" == "webapp" ]]; then
 		done
 
 		bind_singularity="$bind_singularity,$(dirname $bind_path_db):${zdb_folder}/assets/db/"
-		singularity run --bind ${bind_singularity} \
+		singularity run -c --bind ${bind_singularity} \
 			${singularity_dir}/${zdb_container}.sif ${zdb_folder}/start_webapp ${options}
 	fi
 elif [[ "$1" == "run" ]]; then

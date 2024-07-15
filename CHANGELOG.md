@@ -12,6 +12,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+-  Fix binding of folders when running with singularity. ([#116](https://github.com/metagenlab/zDB/pull/116)) (Niklaus Johner)
+
 
 ## 1.3.0 - 2024-07-11
 
