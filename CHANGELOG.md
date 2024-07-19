@@ -4,6 +4,7 @@
 Versions are of the form MAJOR.MINOR.PATCH and this changelog tries to conform
 to [Common Changelog](https://common-changelog.org)
 
+
 ## Unreleased
 
 ### Changed
@@ -12,10 +13,19 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
--  Fix binding of folders when running with singularity. ([#116](https://github.com/metagenlab/zDB/pull/116)) (Niklaus Johner)
+
+## 1.3.1 - 2024-07-19
+
+### Fixed
+
+- Fix binding of folders when running with singularity. ([#116](https://github.com/metagenlab/zDB/pull/116)) (Niklaus Johner)
+- Fix checkM conda environment. ([#114](https://github.com/metagenlab/zDB/pull/114)
+- Fix AMRFinderPlus database update for Linux. ([#113](https://github.com/metagenlab/zDB/pull/113)
+- Fix AMRFinderPlus database update for Linux. ([#113](https://github.com/metagenlab/zDB/pull/113)
+- Update containers zDB release v 1.3. ([#112](https://github.com/metagenlab/zDB/pull/112)
 
 
-## 1.3.0 - 2024-07-11
+## 1.3.0 - 2024-07-11 (broken release as containers are outdated)
 
 ### Changed
 
@@ -33,7 +43,6 @@ to [Common Changelog](https://common-changelog.org)
 - Removed eutils module. ([#47](https://github.com/metagenlab/zDB/pull/47)) (Niklaus Johner)
 - Show xaxis labels (as links) in heatmap view. ([#59](https://github.com/metagenlab/zDB/pull/59)) (Niklaus Johner)
 - Remove unused html templates. ([#61](https://github.com/metagenlab/zDB/pull/61)) (Niklaus Johner)
-
 
 ### Added
 
@@ -76,8 +85,6 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
-- Fix checkM conda environment. ([#114](https://github.com/metagenlab/zDB/pull/114)
-- Fix AMRFinderPlus database update for Linux. ([#113](https://github.com/metagenlab/zDB/pull/113)
 - Fix filtering of COGs in annotation pipeline. ([#108](https://github.com/metagenlab/zDB/pull/108)
 - Fix blast view for hits with identifier containing a version number. ([#106](https://github.com/metagenlab/zDB/pull/106)
 - Fix PFAM identifiers missing leading 0. ([#105](https://github.com/metagenlab/zDB/pull/105)) (Niklaus Johner)
