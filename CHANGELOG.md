@@ -5,14 +5,11 @@ Versions are of the form MAJOR.MINOR.PATCH and this changelog tries to conform
 to [Common Changelog](https://common-changelog.org)
 
 
-## Unreleased
-
-### Changed
-
-### Added
+## 1.3.2 - 2024-07-30
 
 ### Fixed
 
+- Fix annotation pipeline for nextflow version > 24.03. ([#120](https://github.com/metagenlab/zDB/pull/120)) (Niklaus Johner)
 
 ## 1.3.1 - 2024-07-19
 
