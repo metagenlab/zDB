@@ -26,6 +26,9 @@ def gen_arg_string_m(String name, Map m) {
 // this is the only solution
 def gen_arg_string(String s, Object o) {
     prefix = "\"" + s + "\" : "
+    if(o instanceof GString){
+        o = o.toString()
+    }
     if(o instanceof String){
         return prefix + "\"" + (String)o + "\""
     } else if(o instanceof Boolean) {
