@@ -327,6 +327,7 @@ If you want to contribute, feel free to open a PR describing your changes and ma
 ### Making a release
 
 - Adapt CHANGELOG.md with release number and date.
+- Run the tests (also checking that all conda envs build correctly).
 - Create docker containers:
     - Containers are defined in https://github.com/metagenlab/docker-images/
     - Update `requirements.txt` and `Dockerfile`s for `zdb` and `annotation-pipeline`
