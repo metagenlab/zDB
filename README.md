@@ -285,13 +285,12 @@ The changes you make in the web server code will then reflect directly in the we
 ### Testing
 
 #### Nextflow pipelines
-The nextflow pipeline is tested using a python integration of nextflow [nextflow.py](https://github.com/goodwright/nextflow.py) and standard [unittests](https://docs.python.org/3/library/unittest.html). You'll therefore need to install [nextflow.py](https://github.com/goodwright/nextflow.py).
+The nextflow pipeline is tested using a python integration of nextflow [nextflow.py](https://github.com/goodwright/nextflow.py) and standard [unittests](https://docs.python.org/3/library/unittest.html).
 
 To run the tests you need a python environment with the required dependencies:
 ```
 conda env create -f conda/testing.yaml
 conda activate testing
-pip install nextflowpy
 ```
 
 You can then simply call
