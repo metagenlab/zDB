@@ -1,6 +1,6 @@
 name: checkm
 channels:
+    - conda-forge
     - bioconda
-    - metagenlab
 dependencies:
     - checkm-genome=1.2.3
