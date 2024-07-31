@@ -4,3 +4,4 @@ channels:
     - bioconda
 dependencies:
     - checkm-genome=1.2.3
+    - setuptools
