@@ -10,5 +10,7 @@ dependencies:
     - numpy
     - pandas
     - singularity=3.8.4
-    - nextflow <=22.10
+    - nextflow=22.10
     - sqlalchemy
+    - pip:
+        - nextflowpy

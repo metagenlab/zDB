@@ -4,6 +4,12 @@
 Versions are of the form MAJOR.MINOR.PATCH and this changelog tries to conform
 to [Common Changelog](https://common-changelog.org)
 
+## Unreleased
+
+### Fixed
+
+- Fix checkm conda environment. ([#121](https://github.com/metagenlab/zDB/pull/121)) (Niklaus Johner)
+
 
 ## 1.3.2 - 2024-07-30
 
