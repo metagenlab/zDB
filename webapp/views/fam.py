@@ -123,7 +123,7 @@ class FamBaseView(View):
             self.db, getattr(hit_counts, self.object_column),
             self.format_entry(entry_id), orthogroups)
         asset_path = f"/temp/fam_tree_{entry_id}.svg"
-        path = settings.BASE_DIR + "/assets" + asset_path
+        path = settings.ASSET_ROOT + asset_path
         e_tree.render(path, dpi=500)
 
         info = {self.colname_to_header(key): infos[key]

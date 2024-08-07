@@ -197,7 +197,6 @@ elif [[ "$1" == "webapp" ]]; then
 	debug=false
 	use_dev_server=false
 	singularity_dir="$(pwd)/singularity"
-	bind_path=()
 
 	for i in "$@"; do
 		case $i in
@@ -291,10 +290,6 @@ elif [[ "$1" == "webapp" ]]; then
 		mkdir ${dir}/zdb/nginx/var
 	fi
 
-	if [ ! -d "${dir}/zdb/assets" ]; then
-		mkdir ${dir}/zdb/assets
-	fi
-
 	if [ ! -z "${allowed_host}" ]; then
 		allowed_host="--hosts=${allowed_host}"
 	fi
@@ -305,19 +300,20 @@ elif [[ "$1" == "webapp" ]]; then
 		debugging_mode="-d"
 	fi
 
-	bind_path_results=()
+	# We will be serving ${dir}/zdb/assets/, so everything needs
+	# to be in there. When using nginx, we will use the collectstatic command
+	# to get all static files from installed applications and zDB into served_assets,
+	# otherwise we will symlink everything from ${zdb_folder}/assets/ into ${zdb_folder}/assets/
+	# and django will take care of serving static files from other installed apps.
+	bind_path=() # Used for docker and singularity
+	bind_path_results=() # Used for conda, docker and singularity
 
 	bind_path+=("$zdb_folder":"$zdb_folder")
 
-	# Necessary to make an exception for this one, as singularity
-	# seemingly does not support binding a single writable file
-	bind_path_db="${dir}/zdb/results/db/$run_name"
-
-	bind_path_results+=("${dir}/zdb/assets":"${zdb_folder}/assets/temp")
-	bind_path_results+=($(realpath "${dir}/zdb/results/search_index/index_${run_name}"):"${zdb_folder}/assets/search_index/${run_name}")
-	bind_path_results+=("${dir}/zdb/results/blast_DB/${run_name}":"${zdb_folder}/assets/blast_DB/${run_name}")
-	bind_path_results+=("${dir}/zdb/results/alignments/${run_name}":"${zdb_folder}/assets/alignments")
-
+	bind_path_results+=($(realpath "${dir}/zdb/results/search_index/index_${run_name}"):"${zdb_folder}/served_assets/search_index/${run_name}")
+	bind_path_results+=("${dir}/zdb/results/blast_DB/${run_name}":"${zdb_folder}/served_assets/blast_DB/${run_name}")
+	bind_path_results+=("${dir}/zdb/results/alignments/${run_name}":"${zdb_folder}/served_assets/alignments")
+	bind_path_results+=(""${dir}/zdb/results/db/$run_name":${zdb_folder}/served_assets/db/${run_name}")
 
 	bind_path+=("${bind_path_results[@]}")
 	bind_path+=("${dir}/zdb/gunicorn":"/usr/local/gunicorn/")
@@ -329,14 +325,29 @@ elif [[ "$1" == "webapp" ]]; then
 	bind_path+=("${dir}/zdb/nginx/var":"/var/log/nginx")
 	bind_path+=("${dir}/zdb/nginx/proxy_temp":"/usr/local/nginx/proxy_temp")
 
+	# We prepare all the folders that we will need and make the symlinks for conda.
+	# This would not be necessary for singularity but for docker it allows the folders
+	# to not get created on mount by root, so that we can easily remove them when shutting down.
+	for bd in ${bind_path_results[@]}; do
+		target=$(echo $bd | cut -d':' -f 2)
+		base=$(echo $bd | cut -d':' -f 1)
+		basedir=$(dirname $target)
+		if [ -e "$target" ]; then
+			rm -rf $target
+		fi
+		mkdir -p $basedir
+		if [[ "$conda" = true ]]; then
+			ln -s $base $target
+		fi
+	done
+	mkdir -p $zdb_folder/served_assets/temp
 
 	options="--run_name=${run_name} --port=${port} ${debugging_mode} ${allowed_host} ${dev_server}"
 	if [[ "$docker" = true ]]; then
 		full_docker_name="registry.hub.docker.com/metagenlab/${zdb_container}"
 		docker pull ${full_docker_name}
-		bind_docker=""
-		bind_path+=("$bind_path_db:${zdb_folder}/assets/db/${run_name}")
 
+		bind_docker=""
 		for index in ${bind_path[@]}; do
 			bind_docker="$bind_docker -v $index"
 		done
@@ -355,25 +366,8 @@ elif [[ "$1" == "webapp" ]]; then
 			fi
 		fi
 
-		bind_path_results+=("$bind_path_db:${zdb_folder}/assets/db/${run_name}")
-		# link the results directory into the assets/directory of the webapp
-		to_remove=""
-		for bd in ${bind_path_results[@]}; do
-			target=$(echo $bd | cut -d':' -f 2)
-			base=$(echo $bd | cut -d':' -f 1)
-			basedir=$(dirname $target)
-			if [ -e "$target" ]; then
-				rm -rf $target
-			fi
-			to_remove="$to_remove $target"
-			mkdir -p $basedir
-			ln -s $base $target
-		done
-
 		conda run --live-stream -p $conda_prefix ${zdb_folder}/start_webapp ${options}
 
-		# cleanup links
-		rm -rf ${to_remove}
 	else
 		if [ ! -d "${singularity_dir}" ]; then
 			mkdir -p ${singularity_dir}
@@ -397,10 +391,13 @@ elif [[ "$1" == "webapp" ]]; then
 			bind_singularity="$bind_singularity,$index"
 		done
 
-		bind_singularity="$bind_singularity,$(dirname $bind_path_db):${zdb_folder}/assets/db/"
+		# The mount point must exist in order for singularity to mount the file
+		touch ${zdb_folder}/served_assets/db/${run_name}
 		singularity run -c --bind ${bind_singularity} \
 			${singularity_dir}/${zdb_container}.sif ${zdb_folder}/start_webapp ${options}
 	fi
+	# Clean-up...
+	rm -rf $zdb_folder/served_assets
 elif [[ "$1" == "run" ]]; then
 	shift
 

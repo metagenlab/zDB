@@ -62,7 +62,7 @@ def help(request):
 
 
 def about(request):
-    path = settings.BASE_DIR + '/assets/bibliography/references.bib'
+    path = settings.ASSET_ROOT + '/bibliography/references.bib'
     with open(path) as bibtex_file:
         bib_database = bibtexparser.load(bibtex_file)
 
@@ -380,7 +380,7 @@ class CogPhyloHeatmap(CogViewMixin, View):
             e_tree.add_column(col)
 
         freq = frequency
-        path = settings.BASE_DIR + f"/assets/temp/COG_tree_{freq}.svg"
+        path = settings.ASSET_ROOT + f"/temp/COG_tree_{freq}.svg"
         asset_path = f"/temp/COG_tree_{freq}.svg"
         e_tree.render(path, dpi=600)
         context = self.get_context(envoi=True, freq=freq, asset_path=asset_path)
@@ -496,7 +496,7 @@ def KEGG_module_map(request, module_name):
 
     big = len(mat.columns) >= 40
     dpi = 800 if big else 1200
-    path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % module_name
+    path = settings.ASSET_ROOT + '/temp/KEGG_tree_%s.svg' % module_name
     asset_path = '/temp/KEGG_tree_%s.svg' % module_name
     e_tree.render(path, dpi=dpi)
     envoi = True
@@ -615,7 +615,7 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
             entry = (format_ko(ko_id, as_url=True), descr, in_this_genome, ttl)
         data.append(entry)
     e_tree = gen_pathway_profile(db, ko_list)
-    path = settings.BASE_DIR + f"/assets/temp/{map_name}.svg"
+    path = settings.ASSET_ROOT + f"/temp/{map_name}.svg"
     asset_path = f"/temp/{map_name}.svg"
     e_tree.render(path, dpi=800)
     ctx = {"pathway_num": kos.iloc[0].pathway,
@@ -1010,7 +1010,7 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
         e_tree.add_column(col)
 
     base_file_name = time.strftime("blast_%d_%m_%y_%H_%M.svg", time.gmtime())
-    path = settings.BASE_DIR + f"/assets/temp/{base_file_name}"
+    path = settings.ASSET_ROOT + f"/temp/{base_file_name}"
     asset_path = f"/temp/{base_file_name}"
     e_tree.render(path, dpi=600)
     return asset_path
@@ -1076,7 +1076,7 @@ def blast(request):
             asset_path = gen_blast_heatmap(db, blast_stdout,
                                            blast_type, form.no_query_name)
         rand_id = id_generator(6)
-        blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
+        blast_file_l = settings.ASSET_ROOT + '/temp/%s.xml' % rand_id
         f = open(blast_file_l, 'w')
         f.write(blast_stdout)
         f.close()
@@ -1679,7 +1679,7 @@ def kegg_module_subcat(request):
         new_col = KOAndCompleteness(values, n_missing, header)
         e_tree.add_column(new_col)
     e_tree.rename_leaves(leaf_to_name.description.to_dict())
-    path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
+    path = settings.ASSET_ROOT + '/temp/metabo_tree.svg'
     asset_path = '/temp/metabo_tree.svg'
     e_tree.render(path, dpi=500, w=800)
     envoi = True
@@ -1746,7 +1746,7 @@ def kegg_module(request):
         new_col = KOAndCompleteness(values, n_missing, header)
         e_tree.add_column(new_col)
     e_tree.rename_leaves(leaf_to_name.description.to_dict())
-    path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
+    path = settings.ASSET_ROOT + '/temp/metabo_tree.svg'
     asset_path = '/temp/metabo_tree.svg'
     e_tree.render(path, dpi=500, w=800)
 
@@ -1814,7 +1814,7 @@ def phylogeny(request):
     genomes_data = get_genomes_data(db)
 
     asset_path = "/temp/species_tree.svg"
-    path = settings.BASE_DIR + '/assets/temp/species_tree.svg'
+    path = settings.ASSET_ROOT + '/temp/species_tree.svg'
 
     core = db.get_n_orthogroups(only_core=True)
 

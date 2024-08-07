@@ -96,7 +96,7 @@ class GWASBaseView(View):
 
         e_tree = self.prepare_tree(phenotype, hits, results)
         self.tree_path = "/temp/gwas_tree.svg"
-        path = settings.BASE_DIR + "/assets" + self.tree_path
+        path = settings.ASSET_ROOT + self.tree_path
         e_tree.render(path, dpi=500)
 
         context = self.get_context(
