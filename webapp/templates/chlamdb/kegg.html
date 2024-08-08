@@ -99,28 +99,6 @@
     </div>
   </div>
 
-<script>
-  $(document).ready(function() {
-  $('#kegg_maps').DataTable( {
-  dom: 'Bfrtip',
-  "paging":   true,
-  "ordering": true,
-  "info":     false,
-  buttons: [
-    {
-        extend: 'excel',
-        title: 'kepp_maps'
-    },
-    {
-        extend: 'csv',
-        title: 'kepp_maps'
-    }
-  ],
-  } );
-  } );
-  $('.dropdown-toggle').dropdown()
-</script>
-
 </body>
 {% include "chlamdb/style_menu.html" %}
 </html>
