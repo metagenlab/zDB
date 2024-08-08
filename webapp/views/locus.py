@@ -124,7 +124,7 @@ def tab_og_conservation_tree(db, group, compare_to=None):
 
     dpi = 1200
     asset_path = f"/temp/og_conservation{group}.svg"
-    path = settings.BASE_DIR + '/assets/' + asset_path
+    path = settings.ASSET_ROOT + asset_path
     e_tree.render(path, dpi=dpi)
     return {"asset_path": asset_path}
 
@@ -232,7 +232,7 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
     e_tree.rename_leaves(locus_to_genome, leaf_name_type=str)
 
     asset_path = f"/temp/og_phylogeny{og_id}.svg"
-    path = settings.BASE_DIR + '/assets/' + asset_path
+    path = settings.ASSET_ROOT + asset_path
     e_tree.render(path, dpi=1200)
 
     algn_file = f"/alignments/{og_filename}"
@@ -447,7 +447,7 @@ def tab_og_best_hits(db, orthogroup, locus=None):
                       0, "branch-right")
 
     asset_path = f"/temp/og_best_hit_phylogeny_{orthogroup}.svg"
-    path = settings.BASE_DIR + '/assets/' + asset_path
+    path = settings.ASSET_ROOT + asset_path
     ts = TreeStyle()
     ts.show_leaf_name = False
     ete_tree.render(path, tree_style=ts, dpi=1200)

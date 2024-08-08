@@ -1,11 +1,14 @@
 import os
 import re
+import shutil
 from unittest import skip
 
 from chlamdb.urls import urlpatterns
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import SimpleTestCase
 from django.urls import resolve
+
+from webapp.settings import testing_settings
 
 dump_html = False
 html_dumps_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -134,7 +137,19 @@ def maybe_dump_html(resp, fname_postfix=""):
             dumpfile.write(resp.content)
 
 
-class TestViewsAreHealthy(SimpleTestCase):
+class ViewTestCase(SimpleTestCase):
+
+    def setUp(self):
+        self.asset_root = testing_settings.ASSET_ROOT
+        os.makedirs(os.path.join(self.asset_root, "temp"))
+        assets_dir = os.path.join(testing_settings.base_dir, "webapp", "assets", "*")
+        os.system(f"ln -s {assets_dir} {self.asset_root}")
+
+    def tearDown(self):
+        shutil.rmtree(self.asset_root)
+
+
+class TestViewsAreHealthy(ViewTestCase):
 
     def test_no_broken_views(self):
         for url in urls:
@@ -187,7 +202,7 @@ class TestViewsAreHealthy(SimpleTestCase):
                                     msg_prefix=f"{url} does not contain navigation")
 
 
-class TestViewsContent(SimpleTestCase):
+class TestViewsContent(ViewTestCase):
 
     def assertNoPlot(self, resp):
         self.assertNotIn("envoi", resp.context.keys())
@@ -513,7 +528,7 @@ class ComparisonViewsTestMixin():
         maybe_dump_html(resp, "with_results")
 
 
-class TestPfamViews(SimpleTestCase, ComparisonViewsTestMixin):
+class TestPfamViews(ViewTestCase, ComparisonViewsTestMixin):
 
     view_type = "pfam"
     page_title = "Comparisons: PFAM domains"
@@ -521,7 +536,7 @@ class TestPfamViews(SimpleTestCase, ComparisonViewsTestMixin):
     pass
 
 
-class TestKOViews(SimpleTestCase, ComparisonViewsTestMixin):
+class TestKOViews(ViewTestCase, ComparisonViewsTestMixin):
 
     view_type = "ko"
     page_title = "Comparisons: Kegg Orthologs (KO)"
@@ -538,7 +553,7 @@ class TestKOViews(SimpleTestCase, ComparisonViewsTestMixin):
         maybe_dump_html(resp)
 
 
-class TestCOGViews(SimpleTestCase, ComparisonViewsTestMixin):
+class TestCOGViews(ViewTestCase, ComparisonViewsTestMixin):
 
     view_type = "cog"
     page_title = "Comparisons: Clusters of Orthologous groups (COGs)"
@@ -555,7 +570,7 @@ class TestCOGViews(SimpleTestCase, ComparisonViewsTestMixin):
         maybe_dump_html(resp)
 
 
-class TestAMRViews(SimpleTestCase, ComparisonViewsTestMixin):
+class TestAMRViews(ViewTestCase, ComparisonViewsTestMixin):
 
     view_type = "amr"
     page_title = "Comparisons: Antimicrobial Resistance"
@@ -574,7 +589,7 @@ class TestAMRViews(SimpleTestCase, ComparisonViewsTestMixin):
         super(TestAMRViews, self).test_plot_heatmap_view()
 
 
-class TestVFViews(SimpleTestCase, ComparisonViewsTestMixin):
+class TestVFViews(ViewTestCase, ComparisonViewsTestMixin):
 
     view_type = "vf"
     page_title = "Comparisons: Virulence Factors"
@@ -586,7 +601,7 @@ class TestVFViews(SimpleTestCase, ComparisonViewsTestMixin):
                 {"targets": ["1", "2"], "comp_type": "category"},]
 
 
-class TestOrthogroupViews(SimpleTestCase, ComparisonViewsTestMixin):
+class TestOrthogroupViews(ViewTestCase, ComparisonViewsTestMixin):
 
     view_type = "orthogroup"
     page_title = "Comparisons: orthologous groups"

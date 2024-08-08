@@ -95,7 +95,7 @@ export PORT="$custom_port"
 export RUN_NAME="$custom_run_name"
 export DEBUG="$debugging"
 export ALLOWED_HOSTS="${hosts// /,}"
-
+export ZDB_DEVSERVER="$use_dev_server"
 
 # go to the chlamdb folder
 scriptpath=`realpath $0`
@@ -104,10 +104,14 @@ cd $zdb_dir
 
 echo "Starting web server. The application will be accessible @${hosts} on port ${custom_port}"
 if [ "$use_dev_server" = true ]; then
+	# symlink zdb static files into served_assets folder
+	ln -s ${zdb_dir}/assets/* ${zdb_dir}/served_assets/
 	python manage.py runserver --nothreading 0.0.0.0:$custom_port
 else
+	# collect static files into served_assets folder
+	python manage.py collectstatic --noinput
 	gunicorn -c /usr/local/gunicorn/gunicorn.py
-	sed "s/PORT/${custom_port}/" /usr/local/nginx/nginx.config | sed --expression "s@ASSETS_PATH@${zdb_dir}\/assets@" > /usr/local/nginx/nginx_curr.config
+	sed "s/PORT/${custom_port}/" /usr/local/nginx/nginx.config | sed --expression "s@ASSETS_PATH@${zdb_dir}\/served_assets@" > /usr/local/nginx/nginx_curr.config
 
 	nginx -p /usr/local/nginx -c /usr/local/nginx/nginx_curr.config
 
@@ -124,6 +128,21 @@ else
 
 	echo "Brutally stopping Xvfb"
 	kill -TERM $xvfb_pid
+
+	# Remove static files that were collected by collect static.
+	# This is only necessary for docker which creates these files with
+	# root, so that they cannot be easily deleted afterwards
+	rm -rf $zdb_dir/served_assets/admin
+	rm -rf $zdb_dir/served_assets/autocomplete_light
+	rm -rf $zdb_dir/served_assets/bibliography
+	rm -rf $zdb_dir/served_assets/css
+	rm -rf $zdb_dir/served_assets/images
+	rm -rf $zdb_dir/served_assets/img
+	rm -rf $zdb_dir/served_assets/js
+	rm -rf $zdb_dir/served_assets/sass
+	rm -rf $zdb_dir/served_assets/vendor
+	rm -rf $zdb_dir/served_assets/webfonts
+
 fi
 
 unset DISPLAY
@@ -131,3 +150,4 @@ unset PORT
 unset RUN_NAME
 unset ALLOWED_HOSTS
 unset DEBUG
+unset ZDB_DEVSERVER

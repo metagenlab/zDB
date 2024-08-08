@@ -20,7 +20,7 @@ DEBUG = int(os.environ.get("DEBUG", 0))
 RUN_NAME = os.environ["RUN_NAME"]
 hosts = os.environ.get("ALLOWED_HOSTS", "localhost")
 
-PREFIX = "assets"
+PREFIX = "served_assets"
 
 BIODB_DB_PATH = PREFIX + "/db/" + RUN_NAME
 SEARCH_INDEX = PREFIX + "/search_index/" + RUN_NAME
@@ -75,9 +75,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/assets/'
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "assets"),
-)
+
+# We always want to server files in served_assets. When using the dev server,
+# files in STATICFILES_DIRS are served so we need to set that to served_assets.
+# Otherwise files get collected from STATICFILES_DIR to STATIC_ROOT.
+ASSET_ROOT = os.path.join(BASE_DIR, PREFIX)
+
+if os.environ.get("ZDB_DEVSERVER") == "true":
+    STATICFILES_DIRS = (ASSET_ROOT,)
+else:
+    STATIC_ROOT = ASSET_ROOT
+    STATICFILES_DIRS = (os.path.join(BASE_DIR, "assets"),)
 
 
 APPEND_SLASH = True  # Ajoute un slash en fin d'URL

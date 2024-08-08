@@ -29,3 +29,5 @@ from settings.settings import *  # noqa
 BIODB_DB_PATH = results_dir + "/db/" + run_name
 SEARCH_INDEX = results_dir + "/search_index/" + run_name
 BLAST_DB_PATH = results_dir + "/blast_DB/" + run_name
+ASSET_ROOT = os.path.join(testing_dir, "webapp", "served_assets")
+STATICFILES_DIRS = (ASSET_ROOT,)

@@ -10,13 +10,8 @@ testing/pipelines/rc.txt
 testing/pipelines/stderr.txt
 testing/pipelines/stdout.txt
 testing/pipelines/zdb
-webapp/assets/alignments
-webapp/assets/blast_DB/
-webapp/assets/db/
-webapp/assets/search_index/
-webapp/assets/temp
+webapp/served_assets/
 work/
-zdb/assets
 zdb/gunicorn/gunicorn.log
 zdb/gunicorn/gunicorn.pid
 zdb/nginx/*.log
