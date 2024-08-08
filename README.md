@@ -36,7 +36,7 @@ If you are setting up your own database, you will need to install zDB, setup som
 
 zDB can be installed from bioconda with the following command
 ```
-mamba install zdb -c bioconda
+mamba install zdb -c conda-forge -c bioconda
 ```
 
 Once zDB is installed, we advise you to run the analysis and/or webapp in containers, especially for **MacOSX users**. For this, you'll need to install either **docker** or **singularity**. Both the analyses and the webapp can also be run in conda environments, but this comes with several drawbacks:
@@ -49,6 +49,10 @@ Of note, zDB has been tested on singularity v3.8.3 and v3.8.4 but should work on
 If you opt to use singularity, it can be installed with the following command:
 ```
 mamba install singularity=3.8.4 -c conda-forge
+```
+Or you could create a new environment containing zDB and singularity with:
+```
+mamba create --name zdb -c conda-forge -c bioconda zdb singularity
 ```
 For the installation of docker, please have a look [here](https://docs.docker.com/get-docker/).
 
@@ -93,7 +97,7 @@ tar xvf test_dataset.tar.gz
 
 For a minimal database (*assuming that singularity is installed*):
 ```
-mamba install zdb -c bioconda
+mamba install zdb -c conda-forge -c bioconda
 zdb run --input=input.csv --name=simple_run # runs the analysis
 zdb webapp --name=simple_run # Launches the webapp on simple run
 ```
@@ -101,14 +105,14 @@ The minimal database should take around 5 minutes to complete in a recent Deskto
 
 To do the same in conda environments:
 ```
-mamba install zdb -c bioconda
+mamba install zdb -c conda-forge -c bioconda
 zdb run --input=input.csv --name=simple_run_conda --conda # runs the analysis
 zdb webapp --conda --name=simple_run_conda # Launches the webapp on the latest run
 ```
 
 To have a more complete set of analyses (includes cog and pfam annotation):
 ```
-mamba install zdb -c bioconda
+mamba install zdb -c conda-forge -c bioconda
 zdb setup --pfam --cog --conda
 zdb run --input=input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
 zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
