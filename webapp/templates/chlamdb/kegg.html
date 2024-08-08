@@ -4,7 +4,6 @@
 <html>
 <head>
 {% load static %}
-{% load static %}
 {% get_static_prefix as STATIC_PREFIX %}
 {% include "chlamdb/header.html" %}
 {% load crispy_forms_tags %}
@@ -29,13 +28,9 @@
                         </div>
                         <h3 class="title">Genome centered modules</h3>
                         <p class="description"> List Kegg modules or Kegg modules in a genome of interest</p>
-                        <br>
-                        <br>
                         <div class= "col-md-4 col-sm-6">
-                          <form action="{% url "kegg_genomes_modules" %}" method="post">{% csrf_token %}
-                            {{ form_genome.as_p }}
-                            <input type="submit" value="Submit" />
-                          </form>
+                            {% csrf_token %}
+                            {% crispy form_genome_modules %}
                         </div>
                     </div>
                     </div>
@@ -47,13 +42,8 @@
                       </div>
                       <h3 class="title" >Genome centered pathways</h3>
                       <p class="description"> List Kegg pathways or Kegg pathways in a genome of interest</p>
-                      <br>
-                      <br>
                       <div class= "col-md-4 col-sm-6">
-                        <form action="{% url "kegg_genomes" %}" method="post">{% csrf_token %}
-                          {{ form_genome.as_p }}
-                          <input type="submit" value="Submit" />
-                        </form>
+                          {% crispy form_genome %}
                       </div>
                     </div>
                     </div>
@@ -63,28 +53,17 @@
                 <div class="row">
 
                   <div class="col-lg-5 col-md-6 col-sm-12" >
-                    <div class="serviceBox_met "  >
+                    <div class="serviceBox_met"  style="min-height: 500px;">
                         <div class="service-icon_2">
                           <span><img src="{% static '/img/icons8-module-70.png' %}"/></span>
                         </div>
                         <h3 class="title">kEGG Modules centered</h3>
                         <p class="description"> Discover the distribution of Kegg Modules within the genomes of the database</p>
-                        <br>
-                        <br>
-                        <div class= "col-lg-5 col-md-6 col-sm-12">
-                          <form action="{% url "kegg_module" %}" method="post">{% csrf_token %}
-                            {{ form_cat.as_p }}
-                            <input type="submit" value="Submit" />
-                          </form>
-                          <br>
-                          <b>or</b>
-                          <br>
-                          <br>
-                          <form action="{% url "kegg_module_subcat" %}" method="post">{% csrf_token %}
-                            {{ form_subcat.as_p }}
-                            <input type="submit" value="Submit" />
-                          </form>
-                        </div>
+                          <div class= "col-md-4 col-sm-6">
+                            {% crispy form_cat %}
+                            <b>or</b>
+                            {% crispy form_subcat %}
+                          </div>
                       </div>
                   </div>
                   <div class="col-lg-5 col-md-6 col-sm-12">
@@ -94,47 +73,30 @@
                       </div>
                       <h3 class="title" >kEGG Pathways centered</h3>
                       <p class="description"> Discover the distribution of Kegg patwhays within the genomes of the database</p>
-                      <br>
-                      <br>
                       <div class= "col-lg-5 col-md-6 col-sm-12">
                           <div class="genome_search">
-                            <form action="{% url "KEGG_mapp_ko" %}" method="post">{% csrf_token %}
-                            {{ form_pathway.as_p }}
-                            <input type="submit" value="Submit" />
-                          </form>
+                            {% crispy form_pathway %}
                       </div>
                    </div>
                   </div>
+                </div>
 
-                 </div>
-              </div>
               <div class="row">
-
                     <div class="col-lg-5 col-md-6 col-sm-12" >
+
                       <div class="serviceBox_met "  >
                           <div class="service-icon_2">
                             <span><img src="{% static '/img/icons8-data-sheet-60.png' %}"/></span>
                           </div>
                           <h3 class="title">Comparative analysis</h3>
                           <p class="description"> Discover the distribution of Kegg Modules within the genomes of the database</p>
-                          <br>
-                          <br>
                           <div class= "col-md-6 col-sm-6">
-                            <form action='{% url "module_comparison" %}' method="post">
-                              {% csrf_token %}
-                              {{ form_module.as_p }}
-                              <input type="submit" value="Submit" />
-                            </form>
+                              {% crispy form_module %}
                           </div>
                         </div>
                       </div>
                 </div>
-                    
 
-
-                    
-                  
-                  
           </div>
         </div>
     </div>

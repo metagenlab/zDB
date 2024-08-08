@@ -1592,23 +1592,21 @@ def kegg(request):
 
     db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     module_overview_form = make_module_overview_form(db)
-    form_cat = module_overview_form(request.POST)
     form_cat = module_overview_form()
 
-    single_genome_form = make_single_genome_form(db)
-    form_genome = single_genome_form(request.POST)
+    single_genome_form = make_single_genome_form(db, "kegg_genomes_modules")
+    form_genome_modules = single_genome_form()
+
+    single_genome_form = make_single_genome_form(db, "kegg_genomes")
     form_genome = single_genome_form()
 
     module_overview_form = make_module_overview_form(db, True)
-    form_subcat = module_overview_form(request.POST)
     form_subcat = module_overview_form()
 
-    comp_metabo_form = make_metabo_from(db)
-    form_module = comp_metabo_form(request.POST)
+    comp_metabo_form = make_metabo_from(db, action="module_comparison")
     form_module = comp_metabo_form()
 
     pathway_overview_form = make_pathway_overview_form(db)
-    form_pathway = pathway_overview_form(request.POST)
     form_pathway = pathway_overview_form()
 
     return render(request, 'chlamdb/kegg.html', my_locals(locals()))

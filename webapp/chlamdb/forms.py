@@ -113,7 +113,7 @@ def make_plot_form(db):
     return PlotForm
 
 
-def make_metabo_from(db, type_choices=None):
+def make_metabo_from(db, type_choices=None, action=""):
 
     accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
 
@@ -141,6 +141,7 @@ def make_metabo_from(db, type_choices=None):
             self.helper.form_method = 'post'
             self.helper.label_class = 'col-lg-1 col-md-6 col-sm-6'
             self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
+            self.helper.form_action = action
             rows = [Row('targets')]
             if type_choices:
                 rows.append(Row('comp_type'))
@@ -393,56 +394,66 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
     return ExtractForm
 
 
-def make_module_overview_form(db, sub_sub_cat=False):
+def make_choice_form(choices, fieldname, action, methods=None):
+
     attrs = {'size': '1', "class": "selectpicker",
-             "data-live-search": "true",
-             "data-actions-box": "true"}
+             "data-live-search": "true"}
+
+    class ChoiceForm(forms.Form):
+
+        vars()[fieldname] = forms.ChoiceField(
+            choices=choices, widget=forms.Select(attrs=attrs))
+
+        if methods:
+            for method_name, method in methods.items():
+                vars()[method_name] = method
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = "post"
+            self.helper.form_action = action
+
+            self.helper.layout = Layout(
+                Fieldset(
+                    " ",
+                    Row(fieldname),
+                    Submit('submit', 'Submit',
+                           style="padding-left:15px; margin-top:15px; margin-bottom:15px "),
+                    css_class="col-lg-12 col-md-12 col-sm-12")
+            )
+            super(ChoiceForm, self).__init__(*args, **kwargs)
+
+    return ChoiceForm
+
+
+def make_module_overview_form(db, sub_sub_cat=False):
     if sub_sub_cat:
         categories = db.get_module_sub_categories()
-
         CHOICES = [(cat_id, cat) for cat_id, cat in categories]
-
-        class ModuleCatChoice(forms.Form):
-            subcategory = forms.ChoiceField(
-                choices=CHOICES, widget=forms.Select(attrs=attrs))
-
+        return make_choice_form(CHOICES, "subcategory", "kegg_module_subcat")
     else:
         categories = db.get_module_categories()
-
         CHOICES = [(cat_id, cat) for cat_id, cat in categories]
-
-        class ModuleCatChoice(forms.Form):
-            category = forms.ChoiceField(
-                choices=CHOICES, widget=forms.Select(attrs=attrs))
-
-    return ModuleCatChoice
+        return make_choice_form(CHOICES, "category", "kegg_module")
 
 
 def make_pathway_overview_form(db):
-
     pathway_id = db.get_pathways()
     choices = [(path_id, path_desc) for path_id, path_desc in pathway_id]
-
-    class ModuleCatChoice(forms.Form):
-        pathway = forms.ChoiceField(choices=choices, widget=forms.Select(
-            attrs={"class": "selectpicker", "data-live-search": "true"}))
-
-    return ModuleCatChoice
+    return make_choice_form(choices, "pathway", "KEGG_mapp_ko")
 
 
-def make_single_genome_form(db):
+def make_single_genome_form(db, action=""):
     accession_choices = AccessionFieldHandler().get_choices(
         with_plasmids=False, with_groups=False)
 
-    class SingleGenomeForm(forms.Form):
-        genome = forms.ChoiceField(choices=accession_choices, widget=forms.Select(
-            attrs={"class": "selectpicker", "data-live-search": "true"}))
+    def get_genome(self):
+        target = self.cleaned_data["genome"]
+        return AccessionFieldHandler().extract_taxid(target)
 
-        def get_genome(self):
-            target = self.cleaned_data["genome"]
-            return AccessionFieldHandler().extract_taxid(target)
-
-    return SingleGenomeForm
+    return make_choice_form(accession_choices, "genome", action,
+                            {"get_genome": get_genome})
 
 
 def make_blast_form(biodb):
