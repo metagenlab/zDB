@@ -8,6 +8,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix Kegg based comparative analysis form. ([#123](https://github.com/metagenlab/zDB/pull/123)) (Niklaus Johner)
 - Add missing assets when running webapp with nginx and gunicorn. ([#122](https://github.com/metagenlab/zDB/pull/122)) (Niklaus Johner)
 - Fix checkm conda environment. ([#121](https://github.com/metagenlab/zDB/pull/121)) (Niklaus Johner)
 
