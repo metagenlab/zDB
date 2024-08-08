@@ -337,14 +337,18 @@ If you want to contribute, feel free to open a PR describing your changes and ma
     - Update `requirements.txt` and `Dockerfile`s for `zdb` and `annotation-pipeline`
     - Build and push the images, e.g. `docker build -t metagenlab/annotation-pipeline:1.4.1 annotation-pipeline/` and `docker push metagenlab/annotation-pipeline:1.4.1`
     - Update zdb `annotation_pipeline.nf` and `bin/zdb` accordingly
+- Test the bioconda release:
+    - To test the release locally we use [bioconda-utils](https://bioconda.github.io/contributor/building-locally.html)
+    - Activate the corresponding environment
+    - Clone `bioconda-recipes`
+    - Modify the zdb recipe (`recipes/zdb/meta.yaml`) to download the tar file from master (set url to https://github.com/metagenlab/zDB/archive/refs/heads/master.tar.gz)
+    - Run linting check (`bioconda-utils lint --packages zdb`)
+    - Build the package `bioconda-utils build --docker --mulled-test --packages zdb`
+    - Create a conda environment with the build package: `mamba create -n test_zdb -c conda-forge -c /home/njohner/bin/miniconda3/envs/bioconda/conda-bld/ -c bioconda zdb singularity`
+    - Activate the environment and test zdb
 - Make a release (can be done directly on github: https://github.com/metagenlab/zDB/releases)
 - Release on bioconda:
     - A pull request should be opened automatically on https://github.com/bioconda/bioconda-recipes. Check that the tests pass and that it gets merged
-    - You can also test locally:
-        - clone `bioconda-recipes`
-        - update zDB recipe if necessary (set version number, update sha, which can be calculated with the `sha256` command)
-        - run linting check (`bioconda-utils lint --packages zdb`)
-        - run build check (`bioconda-utils build --docker --mulled-test --packages zdb`)
 
 
 <!--- Second marker for documentation integration -->
