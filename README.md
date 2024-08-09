@@ -349,7 +349,7 @@ If you want to contribute, feel free to open a PR describing your changes and ma
 - Make a release (can be done directly on github: https://github.com/metagenlab/zDB/releases)
 - Release on bioconda:
     - A pull request should be opened automatically on https://github.com/bioconda/bioconda-recipes. Check that the tests pass and that it gets merged
-
+- Update documentation [on readthedocs](https://readthedocs.org/projects/zdb/)
 
 <!--- Second marker for documentation integration -->
 
