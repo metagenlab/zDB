@@ -133,6 +133,11 @@ class InputHandler():
             # only get the filename, as nextflow will symlink it
             # in the current work directory
             filename = os.path.basename(entry.file)
+            if not os.path.isfile(filename):
+                raise InvalidInput(
+                    f'File "{filename}" cannot be accessed. Please check '
+                    f'that {entry.file} exists and is accessible.')
+
             if filename in filenames:
                 raise InvalidInput(
                     f'File "{filename}" appears twice in the input file.')
