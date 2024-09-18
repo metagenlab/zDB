@@ -66,11 +66,32 @@ def gen_python_args() {
 
 str_pythonized_params = gen_python_args()
 
+process check_reference_databases {
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
+    input:
+        path ref_db
+
+    output:
+        val 'dummy'
+
+    script:
+    """
+        #!/usr/bin/env python
+        from annotations import check_reference_databases
+
+        check_reference_databases(${gen_python_args()})
+    """
+}
+
+
 process check_gbk {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
     input:
+        val dummy
         path gbk
         path input_file
 
@@ -921,6 +942,9 @@ process cleanup {
 }
 
 workflow {
+
+    dummy = check_reference_databases(Channel.fromPath(params.base_db))
+
     Channel.fromPath(params.input)
         .set { input_file }
 
@@ -929,7 +953,7 @@ workflow {
         .map { row -> file(row.file) }
         .set { gbk_files }
 
-    (checked_gbks, to_cleanup_gbks) = check_gbk(gbk_files.collect(), input_file)
+    (checked_gbks, to_cleanup_gbks) = check_gbk(dummy, gbk_files.collect(), input_file)
 
     (faa_files, ffn_files_seq, fna_files_SEQ) = convert_gbk(checked_gbks.flatten())
 

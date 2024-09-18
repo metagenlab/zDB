@@ -12,6 +12,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Improve error handling for missing input genomes and reference databases. ([#130](https://github.com/metagenlab/zDB/pull/130)) (Niklaus Johner)
 
 ## 1.3.3 - 2024-08-08
 
