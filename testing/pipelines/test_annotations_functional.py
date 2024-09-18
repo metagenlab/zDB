@@ -12,6 +12,13 @@ from annotations import InputHandler, InvalidInput  # noqa
 
 class TestInputHandler(BaseTestCase):
 
+    def setUp(self):
+        self._cwd = os.getcwd()
+        os.chdir(os.path.join(self.test_dir, "assets"))
+
+    def tearDown(self):
+        os.chdir(self._cwd)
+
     def assert_names(self, handler, names):
         self.assertEqual(names, [entry.name for entry in handler.csv_entries])
 
@@ -22,7 +29,7 @@ class TestInputHandler(BaseTestCase):
         self.assertEqual(groups, [entry.groups for entry in handler.csv_entries])
 
     def test_handles_list_of_files(self):
-        input_file = os.path.join(self.test_dir, "assets", "test_input.csv")
+        input_file = "test_input.csv"
         handler = InputHandler(input_file)
         self.assert_names(handler, [None, None, None])
         self.assert_files(handler, ['R6724_16313_small.gbk',
@@ -30,45 +37,53 @@ class TestInputHandler(BaseTestCase):
                                     'R6728_16315_small.gbk'])
 
     def test_handles_name_column(self):
-        input_file = StringIO("name, file\nfoo,file1.gbk\nbar, file2.gbk")
+        input_file = StringIO("name, file\nfoo,R6724_16313_small.gbk\nbar, R6726_16314_small.gbk")
         handler = InputHandler(input_file)
         self.assertEqual(2, len(handler.csv_entries))
         self.assert_names(handler, ["foo", "bar"])
-        self.assert_files(handler, ['file1.gbk', 'file2.gbk'])
+        self.assert_files(handler, ['R6724_16313_small.gbk', 'R6726_16314_small.gbk'])
 
     def test_handles_incomplete_name_column(self):
-        input_file = StringIO("name,file\n,file1.gbk\nbar,file2.gbk")
+        input_file = StringIO("name,file\n,R6724_16313_small.gbk\nbar,R6726_16314_small.gbk")
         handler = InputHandler(input_file)
         self.assertEqual(2, len(handler.csv_entries))
         self.assert_names(handler, [None, "bar"])
-        self.assert_files(handler, ['file1.gbk', 'file2.gbk'])
+        self.assert_files(handler, ['R6724_16313_small.gbk', 'R6726_16314_small.gbk'])
 
     def test_handles_group_columns(self):
         input_file = StringIO("name,file,group:first one,group:second_group\n"
-                              "foo,file1.gbk,1,\n"
-                              "bar,file2.gbk,false,True\n")
+                              "foo,R6724_16313_small.gbk,1,\n"
+                              "bar,R6726_16314_small.gbk,false,True\n")
         handler = InputHandler(input_file)
         self.assertEqual(2, len(handler.csv_entries))
         self.assert_names(handler, ["foo", "bar"])
-        self.assert_files(handler, ['file1.gbk', 'file2.gbk'])
+        self.assert_files(handler, ['R6724_16313_small.gbk', 'R6726_16314_small.gbk'])
         self.assert_groups(handler, [["first one"], ["second_group"]])
 
-    def test_raises_for_dupplicate_filename(self):
-        input_file = StringIO("file\nfile1.gbk\nfile1.gbk")
+    def test_raises_for_missing_file(self):
+        input_file = StringIO("file\nfoo.gbk\nR6724_16313_small.gbk")
         with self.assertRaises(InvalidInput) as exc:
             InputHandler(input_file)
-        self.assertEqual('File "file1.gbk" appears twice in the input file.',
+        self.assertEqual('File "foo.gbk" cannot be accessed. Please check that'
+                         ' foo.gbk exists and is accessible.',
+                         str(exc.exception))
+
+    def test_raises_for_dupplicate_filename(self):
+        input_file = StringIO("file\nR6724_16313_small.gbk\nR6724_16313_small.gbk")
+        with self.assertRaises(InvalidInput) as exc:
+            InputHandler(input_file)
+        self.assertEqual('File "R6724_16313_small.gbk" appears twice in the input file.',
                          str(exc.exception))
 
     def test_raises_for_dupplicate_name(self):
-        input_file = StringIO("file,name\nfile1.gbk,foo\nfile2.gbk,foo")
+        input_file = StringIO("file,name\nR6724_16313_small.gbk,foo\nR6726_16314_small.gbk,foo")
         with self.assertRaises(InvalidInput) as exc:
             InputHandler(input_file)
         self.assertEqual('Name "foo" appears twice in the input file.',
                          str(exc.exception))
 
     def test_raises_for_invalid_column_header(self):
-        input_file = StringIO("filee,name\nfile1.gbk,foo\nfile2.gbk,foo")
+        input_file = StringIO("filee,name\nR6724_16313_small.gbk,foo\nR6726_16314_small.gbk,foo")
         with self.assertRaises(InvalidInput) as exc:
             InputHandler(input_file)
         self.assertEqual('Invalid column header "filee" in input file.',

@@ -34,6 +34,39 @@ def orthogroups_to_fasta(genomes_list):
                     SeqIO.write(new_fasta, out_handle, "fasta")
 
 
+class MissingReferenceDatabase(Exception):
+    pass
+
+
+def check_reference_databases(params):
+    db_dir = os.path.split(params.get("base_db"))[-1]
+    if params.get("cog"):
+        if not os.path.isdir(os.path.join(db_dir, "cog")):
+            raise MissingReferenceDatabase(
+                'COG database could not be found. '
+                'Please set it up with "zdb setup --cog"')
+    if params.get("ko"):
+        if not os.path.isdir(os.path.join(db_dir, "kegg")):
+            raise MissingReferenceDatabase(
+                'KEGG database could not be found. '
+                'Please set it up with "zdb setup --ko"')
+    if params.get("pfam"):
+        if not os.path.isdir(os.path.join(db_dir, "pfam")):
+            raise MissingReferenceDatabase(
+                'Pfam database could not be found. '
+                'Please set it up with "zdb setup --pfam"')
+    if params.get("swissprot"):
+        if not os.path.isdir(os.path.join(db_dir, "uniprot", "swissprot")):
+            raise MissingReferenceDatabase(
+                'Swissprot database could not be found. '
+                'Please set it up with "zdb setup --swissprot"')
+    if params.get("vfdb"):
+        if not os.path.isdir(os.path.join(db_dir, "vfdb")):
+            raise MissingReferenceDatabase(
+                'VFDB database could not be found. '
+                'Please set it up with "zdb setup --vfdb"')
+
+
 class InvalidInput(Exception):
     pass
 
@@ -133,6 +166,11 @@ class InputHandler():
             # only get the filename, as nextflow will symlink it
             # in the current work directory
             filename = os.path.basename(entry.file)
+            if not os.path.isfile(filename):
+                raise InvalidInput(
+                    f'File "{filename}" cannot be accessed. Please check '
+                    f'that {entry.file} exists and is accessible.')
+
             if filename in filenames:
                 raise InvalidInput(
                     f'File "{filename}" appears twice in the input file.')
