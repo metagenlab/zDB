@@ -1,4 +1,4 @@
-from chlamdb.forms import CustomPlotsForm
+from chlamdb.forms import make_custom_plots_form
 from django.conf import settings
 from django.shortcuts import render
 from django.views import View
@@ -19,7 +19,9 @@ class CusomPlotsView(View):
     template = 'chlamdb/custom_plots.html'
     _db = None
 
-    form_class = CustomPlotsForm
+    def dispatch(self, request, *args, **kwargs):
+        self.form_class = make_custom_plots_form()
+        return super(CusomPlotsView, self).dispatch(request, *args, **kwargs)
 
     def get_result_tabs(self, table):
         return [
@@ -60,6 +62,7 @@ class CusomPlotsView(View):
             return render(request, self.template, self.get_context())
 
         entries = self.form.cleaned_data["entries"]
+        to_highlight = self.form.get_highlights()
 
         # We make 1 query for each entry, although we could of course make
         # a single query for each object type, but I don't expect any
@@ -73,7 +76,7 @@ class CusomPlotsView(View):
             counts.append(hits)
 
         genome_descriptions = self.db.get_genomes_description()
-        self.prepare_tree(counts, genome_descriptions)
+        self.prepare_tree(counts, genome_descriptions, to_highlight)
         table = self.prepare_table(counts, genome_descriptions)
 
         context = self.get_context(
@@ -82,7 +85,7 @@ class CusomPlotsView(View):
             )
         return render(request, self.template, context)
 
-    def prepare_tree(self, counts_list, genome_descriptions):
+    def prepare_tree(self, counts_list, genome_descriptions, to_highlight):
         ref_tree = self.db.get_reference_phylogeny()
         ref_names = genome_descriptions.description.to_dict()
 
@@ -92,7 +95,7 @@ class CusomPlotsView(View):
             tree.set_outgroup(R)
         tree.ladderize()
         e_tree = EteTree(tree)
-        e_tree.rename_leaves(ref_names)
+        e_tree.rename_leaves(ref_names, highlight_leaves=to_highlight)
         for counts in counts_list:
             for label, count in counts.iterrows():
                 col = SimpleColorColumn.fromSeries(count, header=label, color_gradient=True)

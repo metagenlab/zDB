@@ -674,55 +674,81 @@ def make_gwas_form(biodb):
     return GwasForm
 
 
-class CustomPlotsForm(forms.Form):
+def make_custom_plots_form():
 
-    help_text = """Entry IDs can be COG, KO, Pfam, VF, AMR or orthogroups.
-    IDs should be coma separated.
-    You can add custom labels by specifying them together with the entry ID
-    separated by a colon (i.e. entryID:label)."""
+    accession_choices = AccessionFieldHandler().get_choices(
+        with_plasmids=False)
 
-    entries = forms.CharField(
-        widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}),
-        required=True, label="Entry IDs", help_text=help_text)
+    class CustomPlotsForm(forms.Form):
 
-    Entry = namedtuple("Entry", "id label type")
+        entries_help = """Entry IDs can be COG, KO, Pfam, VF, AMR or orthogroups.
+        IDs should be coma separated.
+        You can add custom labels by specifying them together with the entry ID
+        separated by a colon (i.e. entryID:label)."""
 
-    def __init__(self, db, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.db = db
-        self.helper = FormHelper()
+        entries = forms.CharField(
+            widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}),
+            required=True, label="Entry IDs", help_text=entries_help)
 
-        self.helper.form_method = 'post'
-        self.helper.layout = Layout(Fieldset(
-            "",
-            Column(
-                Row(Column(
-                        "entries",
+        Entry = namedtuple("Entry", "id label type")
+
+        highlights_help = "Chose entries that should be highlighted in the tree."
+        highlights = forms.MultipleChoiceField(
+            choices=accession_choices,
+            widget=Select2Multiple(
+                url="autocomplete_taxid",
+                forward=(forward.Field("targets", "exclude_taxids_in_groups"),),
+                attrs={"data-close-on-select": "false",
+                       "data-placeholder": "Nothing selected"}),
+            required=False, help_text=highlights_help)
+
+        def __init__(self, db, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.db = db
+            self.helper = FormHelper()
+
+            self.helper.form_method = 'post'
+            self.helper.layout = Layout(Fieldset(
+                "",
+                Column(
+                    Row(Column(
+                            "entries",
+                            css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                        Column(
+                            "highlights",
+                            css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                        ),
+                    Row(Submit('submit', 'Make plot'),
                         css_class='form-group col-lg-12 col-md-12 col-sm-12'),
-                    ),
-                Row(Submit('submit', 'Make plot'),
-                    css_class='form-group col-lg-12 col-md-12 col-sm-12'),
-                css_class="col-lg-8 col-md-8 col-sm-12")
+                    css_class="col-lg-8 col-md-8 col-sm-12")
+                )
             )
-        )
 
-    def clean_entries(self):
-        raw_entries = self.cleaned_data["entries"].split(",")
-        parser = EntryIdParser(self.db)
-        entries = []
-        for entry in raw_entries:
-            entry = entry.strip()
-            if ":" in entry:
-                entry, label = entry.split(":", 1)
-            else:
-                label = entry
-            try:
-                object_type, entry_id = parser.id_to_object_type(entry)
-            except Exception:
-                raise ValidationError(f'Invalid identifier "{entry}".',
-                                      code="invalid")
-            entries.append(self.Entry(entry_id, label, object_type))
-        return entries
+        def clean_entries(self):
+            raw_entries = self.cleaned_data["entries"].split(",")
+            parser = EntryIdParser(self.db)
+            entries = []
+            for entry in raw_entries:
+                entry = entry.strip()
+                if ":" in entry:
+                    entry, label = entry.split(":", 1)
+                else:
+                    label = entry
+                try:
+                    object_type, entry_id = parser.id_to_object_type(entry)
+                except Exception:
+                    raise ValidationError(f'Invalid identifier "{entry}".',
+                                          code="invalid")
+                entries.append(self.Entry(entry_id, label, object_type))
+            return entries
+
+        def get_highlights(self):
+            indices = self.cleaned_data["highlights"]
+            taxids, plasmids = AccessionFieldHandler().extract_choices(
+                indices, False)
+            return taxids
+
+    return CustomPlotsForm
 
 
 def make_group_add_form(db):

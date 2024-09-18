@@ -10,9 +10,12 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Changed
 
+- Improve error handling for missing input genomes and reference databases. ([#130](https://github.com/metagenlab/zDB/pull/130)) (Niklaus Johner)
+
 ### Added
 
-- Improve error handling for missing input genomes and reference databases. ([#130](https://github.com/metagenlab/zDB/pull/130)) (Niklaus Johner)
+- Add option to highlight certain leaves in custom plots. ([#131](https://github.com/metagenlab/zDB/pull/131)) (Niklaus Johner)
+
 
 ## 1.3.3 - 2024-08-08
 
