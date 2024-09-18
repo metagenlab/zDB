@@ -67,7 +67,7 @@ class EteTree:
             if idx in self.highlight_leaves:
                 fgcolor = "red"
         label = self.leaves_name.get(idx, self.default_val)
-        t = TextFace(label, fgcolor=fgcolor, fsize=7, fstyle="italic")
+        t = TextFace(label, fgcolor=fgcolor, fsize=7)
         t.margin_right = 13
         return t
 
