@@ -1235,7 +1235,10 @@ def plot_region(request):
 
         taxid = organisms.loc[seqid].taxid
         genome_name = hsh_description[taxid]
-        js_val = genomic_region_df_to_js(region, start, end, genome_name)
+        contig_name = db.get_bioentry_qualifiers(int(region["bioentry_id"][0]))\
+                        .set_index("term").loc["accessions"].value
+        region_name = f"{genome_name} - {contig_name} - {int(start)}:{int(end)}"
+        js_val = genomic_region_df_to_js(region, start, end, region_name)
         all_regions.append(js_val)
         prev_infos = region[["orthogroup", "locus_tag", "seqid"]]
 
