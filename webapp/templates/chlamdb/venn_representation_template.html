@@ -30,6 +30,7 @@ $(document).ready(function() {
     $('#venn_diagram').jvenn({
         series: {{ series|safe }},
         displayStat: true,
+        displayMode: {{ series|safe }}.length == 6 ? 'edwards':'classic',
         fnClickCallback: function() {
             let dataSet = this.list
                 .filter(it => it in data_dict)
