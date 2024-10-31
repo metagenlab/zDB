@@ -21,79 +21,78 @@
   <div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
-          <div id="page-content-wrapper">
-            <div class="row">
-              <div class="col-lg-12">
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
 
-                 {% include "chlamdb/menu.html" %}
-                 <p class="page-title"><b>Plot genomic features in the neighborhood of a target locus </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#genome-alignments" id="show-option" target="_blank"  title="INPUT: locus tag or protein ID"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p></center>
+              {% include "chlamdb/menu.html" %}
+              <p class="page-title">
+                <b>Plot genomic features in the neighborhood of a target locus </b>
+                <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#genome-alignments" id="show-option" target="_blank"  title="INPUT: locus tag or protein ID">
+                  <i class="fab fa-info-circle " style="size: 5em;" ></i>
+                </a>
+              </p>
 
+              <div class="alert alert-info fade in" style="width:90%; margin: 10px 10px 10px 10px">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <strong>Note!</strong> If the target locus has no homolog in the selected genome(s), the plot cannot be drawn (it will only display the reference locus region).
+              </div>
+              <br>
 
-                  
-      <div class="alert alert-info fade in" style="width:90%; margin: 10px 10px 10px 10px">
-        <a href="#" class="close" data-dismiss="alert">&times;</a>
-        <strong>Note!</strong> If the target locus has no homolog in the selected genome(s), the plot cannot be drawn (it will only display the reference locus region).
-      </div>
-<br>
+              <div class="row">
+                <div  class="col-md-12" style="padding-left: 15px">
+                  {% block content %}
+                    {% csrf_token %}
+                    {% crispy form %}
+                  {% endblock %}
+                </div>
+              </div>
 
+              {% if error %}
+                <div class="row">
+                  <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
+                    <div class="alert alert-info fade in" style="width:90%; margin: 10px 10px 10px 10px">
+                      <a href="#" class="close" data-dismiss="alert">&times;</a>
+                      <strong> Error: </strong>
+                      <ul>
+                        {% for error_msg in errors %}
+                          <li> {{error_msg}} </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
 
-
-                  <div style="width: 100%;">
-                    <div class="row">
-                      <div  class="col-md-12" style="padding-left: 15px">
-                        {% block content %}
-      {% csrf_token %}
-      {% crispy form %}
-                        {% endblock %}
+              {% if envoi %}
+                <div class="row">
+                  <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
+                    <div class="alert alert-info fade in" style="width:90%; margin: 10px 10px 10px 10px">
+                      <a href="#" class="close" data-dismiss="alert">&times;</a>
+                      The generated plot shows a genomic feature in the neighborhood of a target locus along the selected genomes. Links are coloured wiht a scale of gray reflecting the sequence identity:
+                      dark gray for highly conserved, light grey for features with less identity. Click on the link to visualise the percentage of identity.
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
+                    <div class="panel panel-success" style="width:90%; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading clearfix">
+                        <div class="pull-right">
+                          <button id="download_svg_button" class="btn-link btn-xs" style="background-color: transparent;">
+                            <i class="glyphicon glyphicon-download"></i>
+                          </button>
+                        </div>
+                        <h5 class="panel-title">Genomic regions</h5>
+                      </div>
+                      <div class="panel-body" id="div_alignment_bounding">
+                        <div id="div_alignment"></div>
                       </div>
                     </div>
-
-                    <div class="row">
-                      <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
-
-
-            {% if error %}
-        <div class="alert alert-info fade in" style="width:90%; margin: 10px 10px 10px 10px">
-                <a href="#" class="close" data-dismiss="alert">&times;</a>
-                  <strong> Error: </strong>
-                    <ul>
-                      {% for error_msg in errors %}
-                        <li> {{error_msg}} </li>
-                      {% endfor %}
-                    </ul>
-              </div>
-            {% endif %}
-
-            {% if envoi %}
-      <div class="alert alert-info fade in" style="width:90%; margin: 10px 10px 10px 10px">
-              <a href="#" class="close" data-dismiss="alert">&times;</a>
-              The generated plot shows a genomic feature in the neighborhood of a target locus along the selected genomes. Links are coloured wiht a scale of gray reflecting the sequence identity:
-              dark gray for highly conserved, light grey for features with less identity. Click on the link to visualise the percentage of identity.
-            </div>
-
-      <div class="row" style="width:90%; margin: 10px 10px 10px 10px">
-              <br>
-              <div class="panel panel-success">
-                  <div class="panel-heading clearfix">
-          <div class="pull-right">
-       <button id="download_svg_button" class="btn-link btn-xs"
-         style="background-color: transparent;">
-         <i class="glyphicon glyphicon-download"></i>
-       </button>
-          </div>
-                      <h5 class="panel-title">Genomic regions</h5>
                   </div>
-      <div class="panel-body" id="div_alignment_bounding">
-        <div id="div_alignment"></div>
-      </div>
-               </div>
-               <br>
+                </div>
+              {% endif %}
             </div>
-    {% endif %}
-
-    </div>
-
-              </div>
           </div>
         </div>
       </div>
@@ -104,24 +103,23 @@
 
 <script>
 
-{% if envoi %}
+  {% if envoi %}
+    var regions = {{genomic_regions|safe}};
+    var to_highlight = {{to_highlight|safe}};
+    var connections = {{connections | safe}};
+    var ident_range = [{{min_ident}}, {{max_ident}}];
+    var genomic_region_rect = document.querySelector("#div_alignment_bounding")
+        .getBoundingClientRect();
+    var genomic_width = genomic_region_rect.right-genomic_region_rect.left;
 
-var regions = {{genomic_regions|safe}};
-var to_highlight = {{to_highlight|safe}};
-var connections = {{connections | safe}};
-var ident_range = [{{min_ident}}, {{max_ident}}];
-var genomic_region_rect = document.querySelector("#div_alignment_bounding")
-    .getBoundingClientRect();
-var genomic_width = genomic_region_rect.right-genomic_region_rect.left;
+    createGenomicRegion(d3.select("#div_alignment"), genomic_width*0.95, "genomic_region",
+        regions, connections, to_highlight, ident_range);
 
-createGenomicRegion(d3.select("#div_alignment"), genomic_width*0.95, "genomic_region",
-    regions, connections, to_highlight, ident_range);
-
-document.querySelector("#download_svg_button").onclick = function() {
-  var svg_elem = document.querySelector("#genomic_region");
-  svgExport.downloadSvg(svg_elem, "Genomic region");
-};
-{% endif %}
+    document.querySelector("#download_svg_button").onclick = function() {
+      var svg_elem = document.querySelector("#genomic_region");
+      svgExport.downloadSvg(svg_elem, "Genomic region");
+    };
+  {% endif %}
 
 </script>
 
