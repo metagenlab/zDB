@@ -39,63 +39,65 @@
               </div>
               <br>
 
-              <div style="width: 100%;">
-                <div class="row">
-                  <div  class="col-md-12" style="padding-left: 15px">
-                    {% block content %}
-                      {% csrf_token %}
-                      {% crispy form %}
-                    {% endblock %}
-                  </div>
-                </div>
-
-                <div class="row">
-                  <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
-                    {% if error %}
-                      <div class="alert alert-info fade in" style="width:90%; margin: 10px 10px 10px 10px">
-                        <a href="#" class="close" data-dismiss="alert">&times;</a>
-                        <strong> Error: </strong>
-                        <ul>
-                          {% for error_msg in errors %}
-                            <li> {{error_msg}} </li>
-                          {% endfor %}
-                        </ul>
-                      </div>
-                    {% endif %}
-
-                    {% if envoi %}
-                      <div class="alert alert-info fade in" style="width:90%; margin: 10px 10px 10px 10px">
-                        <a href="#" class="close" data-dismiss="alert">&times;</a>
-                        The generated plot shows a genomic feature in the neighborhood of a target locus along the selected genomes. Links are coloured wiht a scale of gray reflecting the sequence identity:
-                        dark gray for highly conserved, light grey for features with less identity. Click on the link to visualise the percentage of identity.
-                      </div>
-
-                      <div class="row" style="width:90%; margin: 10px 10px 10px 10px">
-                        <br>
-                        <div class="panel panel-success">
-                          <div class="panel-heading clearfix">
-                            <div class="pull-right">
-                              <button id="download_svg_button" class="btn-link btn-xs" style="background-color: transparent;">
-                                <i class="glyphicon glyphicon-download"></i>
-                              </button>
-                            </div>
-                            <h5 class="panel-title">Genomic regions</h5>
-                          </div>
-                          <div class="panel-body" id="div_alignment_bounding">
-                            <div id="div_alignment"></div>
-                          </div>
-                        </div>
-                        <br>
-                      </div>
-                    {% endif %}
-
-                  </div>
+              <div class="row">
+                <div  class="col-md-12" style="padding-left: 15px">
+                  {% block content %}
+                    {% csrf_token %}
+                    {% crispy form %}
+                  {% endblock %}
                 </div>
               </div>
+
+              {% if error %}
+                <div class="row">
+                  <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
+                    <div class="alert alert-info fade in" style="width:90%; margin: 10px 10px 10px 10px">
+                      <a href="#" class="close" data-dismiss="alert">&times;</a>
+                      <strong> Error: </strong>
+                      <ul>
+                        {% for error_msg in errors %}
+                          <li> {{error_msg}} </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if envoi %}
+                <div class="row">
+                  <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
+                    <div class="alert alert-info fade in" style="width:90%; margin: 10px 10px 10px 10px">
+                      <a href="#" class="close" data-dismiss="alert">&times;</a>
+                      The generated plot shows a genomic feature in the neighborhood of a target locus along the selected genomes. Links are coloured wiht a scale of gray reflecting the sequence identity:
+                      dark gray for highly conserved, light grey for features with less identity. Click on the link to visualise the percentage of identity.
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
+                    <div class="panel panel-success" style="width:90%; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading clearfix">
+                        <div class="pull-right">
+                          <button id="download_svg_button" class="btn-link btn-xs" style="background-color: transparent;">
+                            <i class="glyphicon glyphicon-download"></i>
+                          </button>
+                        </div>
+                        <h5 class="panel-title">Genomic regions</h5>
+                      </div>
+                      <div class="panel-body" id="div_alignment_bounding">
+                        <div id="div_alignment"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
             </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 </body>
 
 
