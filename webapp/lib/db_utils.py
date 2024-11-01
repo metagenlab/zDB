@@ -1759,11 +1759,12 @@ class DB:
             hsh_results[seqid][term_names.index(term_name)] = value
         return hsh_results
 
-    def get_organism(self, ids, as_df=False, id_type="seqid", as_taxid=False):
+    def get_organism(self, ids, as_df=False, id_type="seqid", as_taxid=False, taxid_and_name=False):
         seqids_query = ",".join(["?"] * len(ids))
 
-        val = ""
-        if as_taxid:
+        if taxid_and_name:
+            val = "entry.taxon_id,organism.value"
+        elif as_taxid:
             val = "entry.taxon_id"
         else:
             val = "organism.value"
@@ -1792,14 +1793,15 @@ class DB:
 
         results = self.server.adaptor.execute_and_fetchall(query, ids)
         if as_df:
-            col_name = "taxid" if as_taxid else "organism"
-            df = DB.to_pandas_frame(results, columns=["seqid", col_name])
+            columns = ["seqid"] + (["taxid", "organism"] if taxid_and_name else
+                                   ["taxid"] if as_taxid else ["organism"])
+            df = DB.to_pandas_frame(results, columns=columns)
             return df.set_index("seqid")
 
         hsh_results = {}
         for line in results:
             seqid = line[0]
-            organism = line[1]
+            organism = line[1:] if taxid_and_name else line[1]
             hsh_results[seqid] = organism
         return hsh_results
 

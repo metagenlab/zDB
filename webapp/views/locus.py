@@ -20,8 +20,8 @@ from lib.ete_phylo import Column, EteTree, SimpleColorColumn
 from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
                           PfamViewMixin, VfViewMixin)
 from views.object_type_metadata import my_locals
-from views.utils import (DataTableConfig, format_gene, format_locus,
-                         format_orthogroup, format_pfam,
+from views.utils import (DataTableConfig, format_gene, format_genome,
+                         format_locus, format_orthogroup, format_pfam,
                          format_refseqid_to_ncbi, format_swissprot_entry,
                          format_taxid_to_ncbi, genomic_region_df_to_js,
                          locusx_genomic_region, make_div, optional2status)
@@ -64,7 +64,7 @@ def tab_general(db, seqid):
     hsh_infos = db.get_proteins_info(
         [seqid], to_return=["locus_tag", "gene", "product"],
         inc_non_CDS=True, inc_pseudo=True)
-    hsh_organism = db.get_organism([seqid])
+    hsh_organism = db.get_organism([seqid], taxid_and_name=True)
     gene_loc = db.get_gene_loc([seqid], as_hash=False)
 
     gene_pos = []
@@ -76,14 +76,25 @@ def tab_general(db, seqid):
     locus_tag, gene, product = hsh_infos[seqid]
     if pd.isna(gene):
         gene = "-"
-    organism = hsh_organism[seqid]
+    taxid_and_organism = hsh_organism[seqid]
     return {
         "locus_tag": locus_tag,
-        "organism": organism,
+        "organism": format_genome(taxid_and_organism),
         "gene_pos": gene_pos,
         "gene": gene,
         "nucl_length": nucl_length,
         "prot": product
+    }
+
+
+def tab_contig(db, seqid):
+    bioentry, _, contig_size, _ = db.get_bioentry_list(seqid, search_on="seqid")
+    qualifiers = db.get_bioentry_qualifiers(bioentry).set_index("term")["value"]
+    return {
+        "contig_size": contig_size,
+        "contig_topology": qualifiers["topology"],
+        "contig_is_plasmid": qualifiers["plasmid"] == "1",
+        "contig_accession":  qualifiers["accessions"],
     }
 
 
@@ -603,6 +614,7 @@ class LocusX(ViewBase):
             all_infos, wd_start, wd_end)
         context["window_size"] = window_size*2
         context.update(tab_general(self.db, self.seqid))
+        context.update(tab_contig(self.db, self.seqid))
 
         if feature_type != "CDS" or is_pseudogene:
             if is_pseudogene:
