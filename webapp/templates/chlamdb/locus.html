@@ -221,6 +221,32 @@
                       </div>
                     </div>
 
+                    <div class="row">
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <h3 class="panel-title">Contig</h3>
+                        </div>
+                        <table id="panel_table" class="table table-striped" style="width: 100%">
+                          <tr>
+                              <th>Accession</th>
+                              <td>{{contig_accession}}</td>
+                          </tr>
+                          <tr>
+                              <th>Length</th>
+                              <td>{{contig_size}} nucleotides</td>
+                          </tr>
+                          <tr>
+                            <th>Topology</th>
+                            <td>{{contig_topology}}</td>
+                          </tr>
+                          <tr>
+                            <th>Plasmid</th>
+                            <td>{{contig_is_plasmid}}</td>
+                          </tr>
+                        </table>
+                      </div>
+                    </div>
+
                     {% if sequence_type == "CDS" %}
                       <div class="row">
                         <div class="panel panel-default">

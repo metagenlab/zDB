@@ -87,6 +87,17 @@ def tab_general(db, seqid):
     }
 
 
+def tab_contig(db, seqid):
+    bioentry, _, contig_size, _ = db.get_bioentry_list(seqid, search_on="seqid")
+    qualifiers = db.get_bioentry_qualifiers(bioentry).set_index("term")["value"]
+    return {
+        "contig_size": contig_size,
+        "contig_topology": qualifiers["topology"],
+        "contig_is_plasmid": qualifiers["plasmid"] == "1",
+        "contig_accession":  qualifiers["accessions"],
+    }
+
+
 def tab_og_conservation_tree(db, group, compare_to=None):
     ref_phylogeny = db.get_reference_phylogeny()
     leaf_to_name = db.get_genomes_description().description.to_dict()
@@ -603,6 +614,7 @@ class LocusX(ViewBase):
             all_infos, wd_start, wd_end)
         context["window_size"] = window_size*2
         context.update(tab_general(self.db, self.seqid))
+        context.update(tab_contig(self.db, self.seqid))
 
         if feature_type != "CDS" or is_pseudogene:
             if is_pseudogene:

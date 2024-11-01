@@ -16,6 +16,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add contig card to locusx view. ([#136](https://github.com/metagenlab/zDB/pull/136)) (Niklaus Johner)
 - Add option to highlight certain leaves in custom plots. ([#131](https://github.com/metagenlab/zDB/pull/131)) (Niklaus Johner)
 
 
