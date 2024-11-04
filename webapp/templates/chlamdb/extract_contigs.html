@@ -1,57 +1,63 @@
 <!DOCTYPE html>
 
-
 <html>
 
 <head>
 
-   <link rel= "stylesheet" href="style_home.css">
-    {% load static %}
-    {% load custom_tags %}
-    {% include "chlamdb/header.html" %}
-    {% include "chlamdb/style_menu.html" %}
- 
+  <link rel= "stylesheet" href="style_home.css">
+  {% load static %}
+  {% load custom_tags %}
+  {% include "chlamdb/header.html" %}
+  {% include "chlamdb/style_menu.html" %}
+
 </head>
 
 <body>
-    <div class="container-fluid" id="main_container">
-      <div class="row">
-        <div id="wrapper">
-            <div id="page-content-wrapper">
-              <div class="row">
-                <div class="col-lg-12">
-                   {% include "chlamdb/menu.html" %}
-         <p class="page-title"><b>Predicted proteins of {{organism}} </b></p>
-        <hr class="lines-home">
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+              {% include "chlamdb/menu.html" %}
+              <p class="page-title"><b>Predicted proteins of {{organism}} </b></p>
+              <hr class="lines-home">
 
-          <div class="tab-pane" id="genomes" style="margin-right: 1em; overflow-x:auto;">
-                            
-            <table class="table table-striped" id="proteins_table" width="100%">
-              <thead>
-                  <tr>
-            {% for header in data_table_header %}
-            <th>{{header}}</th>
-            {% endfor %}
-                  </tr>
-              </thead>
+              <div class="tab-pane" id="genomes" style="margin-right: 1em; overflow-x:auto;">
 
-              <tbody>
-                {% for entry_line in data_table %}
-                  <tr>
-          {% for entry_col in entry_line %}
-          <td> {{entry_col|safe}}</td>
-          {% endfor %}
-                  </tr>
-                  {% endfor %}
-        </tbody>
+                <table class="table table-striped" id="proteins_table" width="100%">
+                  <thead>
+                    <tr>
+                      {% for header in data_table_header %}
+                        <th>{{header}}</th>
+                      {% endfor %}
+                    </tr>
+                  </thead>
 
-          </table>        
-           </div>
+                  <tbody>
+                    {% for entry_line in data_table %}
+                      <tr>
+                        {% for entry_col in entry_line %}
+                          <td> {{entry_col|safe}}</td>
+                        {% endfor %}
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
 
     $(document).ready(function() {
     $("#proteins_table").DataTable();} );
           
   </script>
-  
+</body>
 </html>
