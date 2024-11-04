@@ -155,51 +155,55 @@ class Genomes(BaseViewMixin, View, GenomesTableMixin):
         return render(request, self.template, self.get_context(results=results))
 
 
-def extract_contigs(request, genome):
-    page_title = page2title["extract_contigs"]
+class ExtractContigs(BaseViewMixin, View):
 
-    taxid = int(genome)
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    template = 'chlamdb/extract_contigs.html'
+    view_name = "extract_contigs"
 
-    descr = db.get_genomes_description().description.to_dict()
-    prot_infos = db.get_proteins_info(
-        [taxid], search_on="taxid", as_df=True,
-        to_return=["locus_tag", "product", "gene"])
-    seqids = prot_infos.index.tolist()
-    ogs = db.get_og_count(seqids, search_on="seqid")
+    def get(self, request, genome):
+        taxid = int(genome)
 
-    loc = db.get_gene_loc(seqids, as_hash=False).set_index("seqid")
-    contigs = db.get_contigs_to_seqid(taxid)
+        descr = self.db.get_genomes_description().description.to_dict()
+        prot_infos = self.db.get_proteins_info(
+            [taxid], search_on="taxid", as_df=True,
+            to_return=["locus_tag", "product", "gene"])
+        seqids = prot_infos.index.tolist()
+        ogs = self.db.get_og_count(seqids, search_on="seqid")
 
-    def lambda_format_og(og):
-        return format_orthogroup(og, to_url=True, from_str=False)
+        loc = self.db.get_gene_loc(seqids, as_hash=False).set_index("seqid")
+        contigs = self.db.get_contigs_to_seqid(taxid)
 
-    all_infos = prot_infos.join(ogs).join(loc).join(contigs)
-    all_infos.gene = all_infos.gene.map(format_gene)
-    all_infos.locus_tag = all_infos.locus_tag.map(format_locus)
-    all_infos.orthogroup = all_infos.orthogroup.map(lambda_format_og)
+        def lambda_format_og(og):
+            return format_orthogroup(og, to_url=True, from_str=False)
 
-    organism = descr[taxid]
-    data_table_header = [
-        "Gene",
-        "Product",
-        "Locus_tag",
-        "Orthogroup",
-        "Contig",
-        "Strand",
-        "Start",
-        "Stop",
-    ]
-    data_table = all_infos[[
-        "gene",
-        "product",
-        "locus_tag",
-        "orthogroup",
-        "contig",
-        "strand",
-        "start",
-        "end"]].values.tolist()
-    return render(request, 'chlamdb/extract_contigs.html', my_locals(locals()))
+        all_infos = prot_infos.join(ogs).join(loc).join(contigs)
+        all_infos.gene = all_infos.gene.map(format_gene)
+        all_infos.locus_tag = all_infos.locus_tag.map(format_locus)
+        all_infos.orthogroup = all_infos.orthogroup.map(lambda_format_og)
+
+        organism = descr[taxid]
+        data_table_header = [
+            "Gene",
+            "Product",
+            "Locus_tag",
+            "Orthogroup",
+            "Contig",
+            "Strand",
+            "Start",
+            "Stop",
+        ]
+        data_table = all_infos[[
+            "gene",
+            "product",
+            "locus_tag",
+            "orthogroup",
+            "contig",
+            "strand",
+            "start",
+            "end"]].values.tolist()
+        return render(request, self.template, self.get_context(
+            organism=organism, data_table_header=data_table_header,
+            data_table=data_table))
 
 
 # to be moved somewhere else at some point
