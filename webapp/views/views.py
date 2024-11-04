@@ -1109,6 +1109,47 @@ def coalesce_regions(genomic_regions, seqids):
     return filtered_results
 
 
+def optimal_region_order(regions):
+    # We try to figure out an optimal order to display the sequences in.
+    # For that we calculate the number of common orthogroups and whether
+    # they appear in the same order. We then use that as score and calculate
+    # a decent path using nearest-neighbour optimization.
+    n_regions = len(regions)
+    similarities = np.zeros((n_regions, n_regions))
+    #  Make sure the genes are sorted, as we use the og order for the score:
+    for seqid, region, start, end in regions:
+        region.sort_values("start_pos", inplace=True)
+
+    for i, (seqid1, region1, start1, end1) in enumerate(regions):
+        ogs1 = region1["orthogroup"].unique()
+        neighboring_ogs1 = {(ogs1[i], ogs1[i+1]) for i in range(len(ogs1) - 1)}
+        for j, (seqid2, region2, start2, end2) in enumerate(regions):
+            if j <= i:
+                continue
+            ogs2 = region2["orthogroup"].unique()
+            neighboring_ogs2 = {(ogs2[i], ogs2[i+1]) for i in range(len(ogs2) - 1)}
+            score = (len(set(ogs1).intersection(ogs2)) +
+                     len(neighboring_ogs1.intersection(neighboring_ogs2)))
+            similarities[i, j] = similarities[j, i] = score
+
+    region_indices = np.arange(n_regions)
+    best_path = range(n_regions)
+    max_score = sum(similarities[best_path[i], best_path[i + 1]] for i in range(n_regions - 1))
+    for start in region_indices:
+        path = [start]
+        current = start
+        while len(path) < n_regions:
+            remaining_choices = [True if i not in path else False for i in region_indices]
+            max_index = np.argmax(similarities[current, remaining_choices])
+            next_choice = region_indices[remaining_choices][max_index]
+            path.append(next_choice)
+        score = sum(similarities[path[i], path[i + 1]] for i in range(n_regions - 1))
+        if score > max_score:
+            max_score = score
+            best_path = path
+    return best_path
+
+
 def plot_region(request):
     db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     page_title = page2title["plot_region"]
@@ -1184,6 +1225,7 @@ def plot_region(request):
     # XXX : coalesce_regions does not do what it is intended to do, to fix
     filtered_regions = genomic_regions  # coalesce_regions(genomic_regions, seqids)
 
+    # Let's add the ogs to the regions info
     for genomic_region in filtered_regions:
         seqid, region, start, end = genomic_region
         if region["strand"].loc[seqid] * ref_strand == -1:
@@ -1195,8 +1237,13 @@ def plot_region(request):
             region["start_pos"] = region["end_pos"] - len_vector
         ogs = db.get_og_count(region.index.tolist(), search_on="seqid")
         # need to reset index to keep seqid in the next merge
-        region = region.join(ogs).reset_index()
+        genomic_region[1] = region.join(ogs).reset_index()
 
+    # determine the optimal prepresentation order and sort regions accordingly.
+    best_path = optimal_region_order(filtered_regions)
+    filtered_regions = [filtered_regions[i] for i in best_path]
+
+    for seqid, region, start, end in filtered_regions:
         if prev_infos is not None:
             # BM: horrible code (I wrote it, I should know).
             # would be nice to refactor it in a more efficient and clean way.
