@@ -608,10 +608,10 @@ class LocusX(ViewBase):
         context["feature_type"] = feature_type
 
         window_size = 8000
-        all_infos, wd_start, wd_end = locusx_genomic_region(
+        all_infos, wd_start, wd_end, contig_size, contig_topology = locusx_genomic_region(
             self.db, self.seqid, window=window_size)
         context["genomic_region"] = genomic_region_df_to_js(
-            all_infos, wd_start, wd_end)
+            all_infos, wd_start, wd_end, contig_size, contig_topology)
         context["window_size"] = window_size*2
         context.update(tab_general(self.db, self.seqid))
         context.update(tab_contig(self.db, self.seqid))

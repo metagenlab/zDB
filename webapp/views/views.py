@@ -1117,13 +1117,13 @@ def optimal_region_order(regions):
     n_regions = len(regions)
     similarities = np.zeros((n_regions, n_regions))
     #  Make sure the genes are sorted, as we use the og order for the score:
-    for seqid, region, start, end in regions:
+    for seqid, region, start, end, _, _ in regions:
         region.sort_values("start_pos", inplace=True)
 
-    for i, (seqid1, region1, start1, end1) in enumerate(regions):
+    for i, (seqid1, region1, start1, end1, _, _) in enumerate(regions):
         ogs1 = region1["orthogroup"].unique()
         neighboring_ogs1 = {(ogs1[i], ogs1[i+1]) for i in range(len(ogs1) - 1)}
-        for j, (seqid2, region2, start2, end2) in enumerate(regions):
+        for j, (seqid2, region2, start2, end2, _, _) in enumerate(regions):
             if j <= i:
                 continue
             ogs2 = region2["orthogroup"].unique()
@@ -1217,8 +1217,9 @@ def plot_region(request):
 
     genomic_regions = []
     for seqid in seqids:
-        region, start, end = locusx_genomic_region(db, int(seqid), region_size / 2)
-        genomic_regions.append([seqid, region, start, end])
+        region, start, end, contig_size, contig_topology = locusx_genomic_region(
+            db, int(seqid), region_size / 2)
+        genomic_regions.append([seqid, region, start, end, contig_size, contig_topology])
 
     # remove overlapping regions (e.g. if two matches are on the same
     # region, avoid displaying this region twice).
@@ -1227,7 +1228,7 @@ def plot_region(request):
 
     # Let's add the ogs to the regions info
     for genomic_region in filtered_regions:
-        seqid, region, start, end = genomic_region
+        seqid, region, start, end, _, _ = genomic_region
         if region["strand"].loc[seqid] * ref_strand == -1:
             mean_val = (end + start) / 2
             region["strand"] *= -1
@@ -1243,7 +1244,7 @@ def plot_region(request):
     best_path = optimal_region_order(filtered_regions)
     filtered_regions = [filtered_regions[i] for i in best_path]
 
-    for seqid, region, start, end in filtered_regions:
+    for seqid, region, start, end, contig_size, contig_topology in filtered_regions:
         if prev_infos is not None:
             # BM: horrible code (I wrote it, I should know).
             # would be nice to refactor it in a more efficient and clean way.
@@ -1285,7 +1286,8 @@ def plot_region(request):
         contig_name = db.get_bioentry_qualifiers(int(region["bioentry_id"][0]))\
                         .set_index("term").loc["accessions"].value
         region_name = f"{genome_name} - {contig_name} - {int(start)}:{int(end)}"
-        js_val = genomic_region_df_to_js(region, start, end, region_name)
+        js_val = genomic_region_df_to_js(region, start, end, contig_size,
+                                         contig_topology, region_name)
         all_regions.append(js_val)
         prev_infos = region[["orthogroup", "locus_tag", "seqid"]]
 

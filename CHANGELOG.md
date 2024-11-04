@@ -14,6 +14,7 @@ to [Common Changelog](https://common-changelog.org)
 - Add contig accession and range to genomic regions in plot_region. ([#134](https://github.com/metagenlab/zDB/pull/134)) (Niklaus Johner)
 - Improve error handling for missing input genomes and reference databases. ([#130](https://github.com/metagenlab/zDB/pull/130)) (Niklaus Johner)
 - Optimize order of regions in plot_region. ([#137](https://github.com/metagenlab/zDB/pull/137)) (Niklaus Johner)
+- Improve region edge representations in plot_region. ([#138](https://github.com/metagenlab/zDB/pull/138)) (Niklaus Johner)
 
 
 ### Added
