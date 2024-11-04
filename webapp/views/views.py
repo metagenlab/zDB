@@ -46,11 +46,11 @@ from views.errors import errors
 from views.mixins import (BaseViewMixin, CogViewMixin, ComparisonViewMixin,
                           GenomesTableMixin, KoViewMixin)
 from views.object_type_metadata import MetadataGetter, my_locals
-from views.utils import (TabularResultTab, format_cog, format_gene, format_ko,
-                         format_locus, format_orthogroup,
-                         genomic_region_df_to_js, get_genomes_data,
-                         locusx_genomic_region, make_div, optional2status,
-                         page2title, to_s)
+from views.utils import (DataTableConfig, TabularResultTab, format_cog,
+                         format_gene, format_ko, format_locus,
+                         format_orthogroup, genomic_region_df_to_js,
+                         get_genomes_data, locusx_genomic_region, make_div,
+                         optional2status, page2title, to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -159,6 +159,16 @@ class ExtractContigs(BaseViewMixin, View):
 
     template = 'chlamdb/extract_contigs.html'
     view_name = "extract_contigs"
+    _base_colname_to_header_mapping = {"_product": "Product"}
+    table_data_accessors = [
+            "gene",
+            "_product",
+            "locus_tag",
+            "orthogroup",
+            "contig",
+            "strand",
+            "start",
+            "end"]
 
     def get(self, request, genome):
         taxid = int(genome)
@@ -182,28 +192,15 @@ class ExtractContigs(BaseViewMixin, View):
         all_infos.orthogroup = all_infos.orthogroup.map(lambda_format_og)
 
         organism = descr[taxid]
-        data_table_header = [
-            "Gene",
-            "Product",
-            "Locus_tag",
-            "Orthogroup",
-            "Contig",
-            "Strand",
-            "Start",
-            "Stop",
-        ]
-        data_table = all_infos[[
-            "gene",
-            "product",
-            "locus_tag",
-            "orthogroup",
-            "contig",
-            "strand",
-            "start",
-            "end"]].values.tolist()
-        return render(request, self.template, self.get_context(
-            organism=organism, data_table_header=data_table_header,
-            data_table=data_table))
+        all_infos["_product"] = all_infos["product"]
+        genes = {
+            "table_data": all_infos[self.table_data_accessors],
+            "table_headers": self.table_headers,
+            "data_table_config": DataTableConfig(),
+            "table_data_accessors": self.table_data_accessors
+            }
+        context = self.get_context(organism=organism, genes_table=genes)
+        return render(request, self.template, context)
 
 
 # to be moved somewhere else at some point
