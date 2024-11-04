@@ -13,6 +13,8 @@ to [Common Changelog](https://common-changelog.org)
 - Display Venn diagram as Edwards for 6 genomes, as numbers were missing in the classic representation. ([#135](https://github.com/metagenlab/zDB/pull/135)) (Niklaus Johner)
 - Add contig accession and range to genomic regions in plot_region. ([#134](https://github.com/metagenlab/zDB/pull/134)) (Niklaus Johner)
 - Improve error handling for missing input genomes and reference databases. ([#130](https://github.com/metagenlab/zDB/pull/130)) (Niklaus Johner)
+- Optimize order of regions in plot_region. ([#137](https://github.com/metagenlab/zDB/pull/137)) (Niklaus Johner)
+
 
 ### Added
 

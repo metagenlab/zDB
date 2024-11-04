@@ -414,7 +414,7 @@ def locusx_genomic_region(db, seqid, window):
                              "start_pos"]].groupby("seqfeature_id")
         start = grouped["start_pos"].min()
         end = grouped["end_pos"].max()
-        strands = df_seqids[["seqfeature_id", "strand"]].drop_duplicates(
+        strands = df_seqids[["seqfeature_id", "strand", "bioentry_id"]].drop_duplicates(
             "seqfeature_id")
         df_seqids = start.to_frame().join(end).join(
             strands.set_index("seqfeature_id"))
