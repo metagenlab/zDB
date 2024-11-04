@@ -228,9 +228,10 @@ function createGenomicRegion(div, div_width, svg_id, regions, connections, highl
 	}
 
 
-	function load_axis(svg, region, x_scale, y_scale) {
+	function load_axis(svg, region, x_scale, y_scale, circular, contig_start, contig_end) {
 		start = region.start;
 		end = region.end;
+		complete = contig_end - contig_start == end - start
 		svg.append("line")
 			.style("stroke", "black")
 			.style("stroke-width", base_line_width)
@@ -239,23 +240,47 @@ function createGenomicRegion(div, div_width, svg_id, regions, connections, highl
 			.attr("x2", x_scale(end))
 			.attr("y2", y_scale(arrow_height+base_line_width/2));
 
-		// border lines
+		// border lines: line is dashed if we represent a complete circular
+		// contig and doubled if the beginning or end match the edge of the contig.
+		// start line
 		svg.append("line")
 			.style("stroke", "black")
 			.style("stroke-width", base_line_width)
+			.style("stroke-dasharray", complete && circular ? "3,3" : null)
 			.attr("x1", x_scale(start))
 			.attr("y1", y_scale(0))
 			.attr("x2", x_scale(start))
 			.attr("y2", y_scale(2*arrow_height+base_line_width));
 
-		// border lines
+		if(contig_start == start && !circular) {
+			svg.append("line")
+				.style("stroke", "black")
+				.style("stroke-width", 2*base_line_width)
+				.attr("x1", x_scale(start) - 2*base_line_width)
+				.attr("y1", y_scale(0))
+				.attr("x2", x_scale(start) - 2*base_line_width)
+				.attr("y2", y_scale(2*arrow_height+base_line_width));
+		}
+
+		// end line
 		svg.append("line")
 			.style("stroke", "black")
 			.style("stroke-width", base_line_width)
+			.style("stroke-dasharray", complete && circular ? "3,3" : null)
 			.attr("x1", x_scale(end))
 			.attr("y1", y_scale(0))
 			.attr("x2", x_scale(end))
 			.attr("y2", y_scale(2*arrow_height+base_line_width));
+
+		if(contig_end == end && !circular) {
+			svg.append("line")
+				.style("stroke", "black")
+				.style("stroke-width", 2*base_line_width)
+				.attr("x1", x_scale(end) + 2*base_line_width)
+				.attr("y1", y_scale(0))
+				.attr("x2", x_scale(end) + 2*base_line_width)
+				.attr("y2", y_scale(2*arrow_height+base_line_width));
+		}
 
 		// background rectangle
 		svg.append("rect")
@@ -339,7 +364,7 @@ function createGenomicRegion(div, div_width, svg_id, regions, connections, highl
 		let region_size = current_region.end-current_region.start;
 		let y_base_pos = region_height*i + i*regions_vertical_interval;
 		let this_region_width = (region_size/max_region_size)*default_width;
-		this_region_width -= 2*base_line_width;
+		this_region_width -= 6*base_line_width;
 		let horiz_padding = default_width-this_region_width;
 		let x_scale = d3.scale.linear().
 			domain([current_region.start, current_region.end]).
@@ -348,7 +373,8 @@ function createGenomicRegion(div, div_width, svg_id, regions, connections, highl
 			domain([0, diagram_vertical_size]).
 			range([y_base_pos+text_field_size, y_base_pos+diagram_vertical_size+text_field_size]);
 
-		load_axis(svg, current_region, x_scale, y_scale);
+		circular = current_region.contig_topology == "circular"
+		load_axis(svg, current_region, x_scale, y_scale, circular, 0, current_region.contig_size);
 		let curr_gene_pos = draw_genes_arrow(svg, current_region, x_scale, y_scale);
 		let this_g = svg.append("g");
 		if(i>=1 && connections != null) {

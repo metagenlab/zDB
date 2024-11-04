@@ -353,8 +353,9 @@ def locusx_genomic_region(db, seqid, window):
     window_start, window_stop = start - window, start + window
 
     bioentry, _, contig_size, _ = db.get_bioentry_list(seqid, search_on="seqid")
-    qualifiers = db.get_bioentry_qualifiers(bioentry)
-    is_circular = "circular" in qualifiers["value"].values
+    qualifiers = db.get_bioentry_qualifiers(bioentry).set_index("term")["value"]
+    contig_topology = qualifiers["topology"]
+    is_circular = contig_topology == "circular"
     df_seqids = db.get_features_location(bioentry, search_on="bioentry_id")
 
     if 2*window >= contig_size:
@@ -429,10 +430,10 @@ def locusx_genomic_region(db, seqid, window):
     cds_type = db.get_CDS_type(df_seqids.index.tolist())
     all_infos = infos.join(cds_type)
     all_infos = all_infos.join(df_seqids)
-    return all_infos, window_start, window_stop
+    return all_infos, window_start, window_stop, contig_size, contig_topology
 
 
-def genomic_region_df_to_js(df, start, end, name=None):
+def genomic_region_df_to_js(df, start, end, contig_size, contig_topology, name=None):
     features = []
     for curr_seqid, data in df.iterrows():
         feature_name = ""
@@ -452,7 +453,9 @@ def genomic_region_df_to_js(df, start, end, name=None):
     genome_name = ""
     if name is not None:
         genome_name = f"name: {to_s(name)}, "
-    return f"{{{genome_name} start: {start}, end: {end}, features: {features_str}}}"
+    return f"{{{genome_name} start: {start}, end: {end}, \
+            contig_size: {contig_size}, contig_topology: {to_s(contig_topology)}, \
+            features: {features_str}}}"
 
 
 def make_div(figure_or_data, include_plotlyjs=False, show_link=False,
