@@ -16,6 +16,7 @@ to [Common Changelog](https://common-changelog.org)
 - Optimize order of regions in plot_region. ([#137](https://github.com/metagenlab/zDB/pull/137)) (Niklaus Johner)
 - Improve region edge representations in plot_region. ([#138](https://github.com/metagenlab/zDB/pull/138)) (Niklaus Johner)
 - Add contig table to genome overview (extract_contig view). ([#139](https://github.com/metagenlab/zDB/pull/139)) (Niklaus Johner)
+- Clean-up css files. ([#140](https://github.com/metagenlab/zDB/pull/140)) (Niklaus Johner)
 
 ### Added
 
