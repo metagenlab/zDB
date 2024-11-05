@@ -229,7 +229,7 @@ class ExtractContigs(BaseViewMixin, View):
 
     def get(self, request, genome):
         taxid = int(genome)
-        descr = self.db.get_genomes_description().description.to_dict()
+        descr = self.db.get_genomes_description([taxid]).description.to_dict()
         organism = descr[taxid]
 
         loci_tab = self.get_loci_tab(taxid)
