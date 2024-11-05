@@ -2077,7 +2077,10 @@ class DB:
         return DB.to_pandas_frame(results, header)
 
     def get_bioentry_list(self, search_term, search_on="taxid",
-                          min_bioentry_length=None):
+                          min_bioentry_length=None,
+                          terms=("bioentry_id", "accession", "length", "seq")):
+        term_map = {"bioentry_id": "t2.bioentry_id",
+                    "accession": "t1.accession"}
         if search_on == "taxid":
             where = f"t1.taxon_id = {self.placeholder}"
             join = ""
@@ -2092,8 +2095,9 @@ class DB:
         if min_bioentry_length is not None:
             length_term = f" AND length > {min_bioentry_length}"
 
+        fields = ",".join(term_map.get(el, el) for el in terms)
         query = (
-            "SELECT t2.bioentry_id, t1.accession, length, seq "
+            f"SELECT {fields} "
             "FROM bioentry t1 "
             "INNER JOIN biosequence t2 ON t1.bioentry_id=t2.bioentry_id "
             f"{join}"
@@ -2101,13 +2105,12 @@ class DB:
         )
 
         results = self.server.adaptor.execute_and_fetchall(query, [search_term])
-        header = ["bioentry_id", "accession", "length", "seq"]
 
         if search_on == "seqid":
             # assumes only one contig for a given seqid
             # bioentry_id, accession, length, seq
             return results[0]
-        return DB.to_pandas_frame(results, header).set_index(["bioentry_id"])
+        return DB.to_pandas_frame(results, terms).set_index(["bioentry_id"])
 
     # return table of all features of a target genome with location,
     # (filter by term name) basically the same as get_proteins_info but with

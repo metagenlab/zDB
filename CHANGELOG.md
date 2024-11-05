@@ -15,7 +15,7 @@ to [Common Changelog](https://common-changelog.org)
 - Improve error handling for missing input genomes and reference databases. ([#130](https://github.com/metagenlab/zDB/pull/130)) (Niklaus Johner)
 - Optimize order of regions in plot_region. ([#137](https://github.com/metagenlab/zDB/pull/137)) (Niklaus Johner)
 - Improve region edge representations in plot_region. ([#138](https://github.com/metagenlab/zDB/pull/138)) (Niklaus Johner)
-
+- Add contig table to genome overview (extract_contig view). ([#139](https://github.com/metagenlab/zDB/pull/139)) (Niklaus Johner)
 
 ### Added
 
