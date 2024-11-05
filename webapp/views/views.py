@@ -46,11 +46,11 @@ from views.errors import errors
 from views.mixins import (BaseViewMixin, CogViewMixin, ComparisonViewMixin,
                           GenomesTableMixin, KoViewMixin)
 from views.object_type_metadata import MetadataGetter, my_locals
-from views.utils import (TabularResultTab, format_cog, format_gene, format_ko,
-                         format_locus, format_orthogroup,
-                         genomic_region_df_to_js, get_genomes_data,
-                         locusx_genomic_region, make_div, optional2status,
-                         page2title, to_s)
+from views.utils import (DataTableConfig, TabularResultTab, format_cog,
+                         format_gene, format_ko, format_locus,
+                         format_orthogroup, genomic_region_df_to_js,
+                         get_genomes_data, locusx_genomic_region, make_div,
+                         optional2status, page2title, to_s)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
@@ -155,51 +155,89 @@ class Genomes(BaseViewMixin, View, GenomesTableMixin):
         return render(request, self.template, self.get_context(results=results))
 
 
-def extract_contigs(request, genome):
-    page_title = page2title["extract_contigs"]
+class ExtractContigs(BaseViewMixin, View):
 
-    taxid = int(genome)
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    template = 'chlamdb/extract_contigs.html'
+    view_name = "extract_contigs"
+    _base_colname_to_header_mapping = {"_product": "Product",
+                                       "accession": "Contig"}
+    loci_data_accessors = [
+            "gene",
+            "_product",
+            "locus_tag",
+            "orthogroup",
+            "contig",
+            "strand",
+            "start",
+            "end"]
 
-    descr = db.get_genomes_description().description.to_dict()
-    prot_infos = db.get_proteins_info(
-        [taxid], search_on="taxid", as_df=True,
-        to_return=["locus_tag", "product", "gene"])
-    seqids = prot_infos.index.tolist()
-    ogs = db.get_og_count(seqids, search_on="seqid")
+    contigs_data_accessors = [
+            "accession",
+            "length",
+            "topology",
+            "plasmid"]
 
-    loc = db.get_gene_loc(seqids, as_hash=False).set_index("seqid")
-    contigs = db.get_contigs_to_seqid(taxid)
+    def table_headers(self, columns):
+        return [self.colname_to_header(col) for col in columns]
 
-    def lambda_format_og(og):
-        return format_orthogroup(og, to_url=True, from_str=False)
+    def get_loci_tab(self, taxid):
+        prot_infos = self.db.get_proteins_info(
+            [taxid], search_on="taxid", as_df=True,
+            to_return=["locus_tag", "product", "gene"])
+        seqids = prot_infos.index.tolist()
+        ogs = self.db.get_og_count(seqids, search_on="seqid")
 
-    all_infos = prot_infos.join(ogs).join(loc).join(contigs)
-    all_infos.gene = all_infos.gene.map(format_gene)
-    all_infos.locus_tag = all_infos.locus_tag.map(format_locus)
-    all_infos.orthogroup = all_infos.orthogroup.map(lambda_format_og)
+        loc = self.db.get_gene_loc(seqids, as_hash=False).set_index("seqid")
+        contigs = self.db.get_contigs_to_seqid(taxid)
 
-    organism = descr[taxid]
-    data_table_header = [
-        "Gene",
-        "Product",
-        "Locus_tag",
-        "Orthogroup",
-        "Contig",
-        "Strand",
-        "Start",
-        "Stop",
-    ]
-    data_table = all_infos[[
-        "gene",
-        "product",
-        "locus_tag",
-        "orthogroup",
-        "contig",
-        "strand",
-        "start",
-        "end"]].values.tolist()
-    return render(request, 'chlamdb/extract_contigs.html', my_locals(locals()))
+        def lambda_format_og(og):
+            return format_orthogroup(og, to_url=True, from_str=False)
+
+        all_infos = prot_infos.join(ogs).join(loc).join(contigs)
+        all_infos.gene = all_infos.gene.map(format_gene)
+        all_infos.locus_tag = all_infos.locus_tag.map(format_locus)
+        all_infos.orthogroup = all_infos.orthogroup.map(lambda_format_og)
+        all_infos["_product"] = all_infos["product"]
+        return TabularResultTab(
+            "loci", "Loci",
+            table_data=all_infos[self.loci_data_accessors],
+            table_headers=self.table_headers(self.loci_data_accessors),
+            table_data_accessors=self.loci_data_accessors,
+            show_badge=True)
+
+    def get_contigs_tab(self, taxid):
+        contigs = self.db.get_bioentry_list(
+            taxid, terms=["bioentry_id", "accession", "length"])
+        contig_qualifiers = {
+            bioentry_id: self.db.get_bioentry_qualifiers(bioentry_id)
+                                .set_index("term")["value"]
+            for bioentry_id in contigs.index}
+        contig_infos = pd.DataFrame(
+            [[bioentry_id,
+              values["topology"],
+              "Yes" if values["plasmid"] == "1" else "No"]
+             for bioentry_id, values in contig_qualifiers.items()],
+            columns=["bioentry_id", "topology", "plasmid"])
+        contigs = contigs.merge(contig_infos, left_index=True,
+                                right_on="bioentry_id")
+        return TabularResultTab(
+            "contigs", "Contigs",
+            table_data=contigs,
+            table_headers=self.table_headers(self.contigs_data_accessors),
+            table_data_accessors=self.contigs_data_accessors,
+            show_badge=True)
+
+    def get(self, request, genome):
+        taxid = int(genome)
+        descr = self.db.get_genomes_description([taxid]).description.to_dict()
+        organism = descr[taxid]
+
+        loci_tab = self.get_loci_tab(taxid)
+        contigs_tab = self.get_contigs_tab(taxid)
+
+        context = self.get_context(organism=organism,
+                                   result_tabs=[loci_tab, contigs_tab])
+        return render(request, self.template, context)
 
 
 # to be moved somewhere else at some point

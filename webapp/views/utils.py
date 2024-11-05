@@ -22,10 +22,11 @@ title2page = {
     'Comparisons: PFAM domains': ['pfam_comparison'],
     'Comparisons: orthologous groups': ['orthogroup_comparison'],
     'Comparisons: Virulence Factors': ['vf_comparison'],
+    'Genomes': ['genomes'],
     'Genome alignments: Circos plot': ['circos'],
     'Genome alignments: Plot region': ['plot_region'],
-    'Genomes: table of contents': ['extract_contigs'],
     'Genome groups': ['groups'],
+    'Genome overview': ['extract_contigs'],
     'Homology search: Blast': ['blast'],
     'Kegg Ortholog': ['fam_ko'],
     'Kegg metabolic pathways': ['kegg_genomes'],
@@ -35,7 +36,6 @@ title2page = {
         'kegg_module_subcat', 'module_comparison'],
     'Pfam domain': ['fam_pfam'],
     'Phylogeny': ['phylogeny_intro'],
-    'Table of content: Genomes': ['genomes'],
     'Virulence Factor Gene': ["fam_vf"],
 }
 
