@@ -193,13 +193,15 @@ class ExtractContigs(BaseViewMixin, View):
 
         organism = descr[taxid]
         all_infos["_product"] = all_infos["product"]
-        genes = {
-            "table_data": all_infos[self.table_data_accessors],
-            "table_headers": self.table_headers,
-            "data_table_config": DataTableConfig(),
-            "table_data_accessors": self.table_data_accessors
-            }
-        context = self.get_context(organism=organism, genes_table=genes)
+        result_tabs = [
+            TabularResultTab(
+                1, "Loci",
+                table_data=all_infos[self.table_data_accessors],
+                table_headers=self.table_headers,
+                table_data_accessors=self.table_data_accessors,
+                show_badge=True),
+            ]
+        context = self.get_context(organism=organism, result_tabs=result_tabs)
         return render(request, self.template, context)
 
 

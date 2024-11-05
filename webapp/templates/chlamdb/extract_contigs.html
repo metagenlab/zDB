@@ -21,11 +21,7 @@
             <div class="col-lg-12">
               {% include "chlamdb/menu.html" %}
               <p class="page-title"><b>Predicted proteins of {{organism}} </b></p>
-              <hr class="lines-home">
-
-              <div class="tab-pane" id="genomes" style="margin-right: 1em; overflow-x:auto;">
-                {% include "chlamdb/result_table.html" with results=genes_table %}
-              </div>
+              {% include "chlamdb/result_tabs.html" %}
             </div>
           </div>
         </div>
@@ -33,11 +29,5 @@
     </div>
   </div>
 
-  <script>
-
-    $(document).ready(function() {
-    $("#proteins_table").DataTable();} );
-          
-  </script>
 </body>
 </html>
