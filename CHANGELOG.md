@@ -4,9 +4,8 @@
 Versions are of the form MAJOR.MINOR.PATCH and this changelog tries to conform
 to [Common Changelog](https://common-changelog.org)
 
-## Unreleased
+## 1.3.4 - 2024-11-06
 
-### Fixed
 
 - Fix annotation pipeline for new AMRFinder version 4. ([#141](https://github.com/metagenlab/zDB/pull/141)) (Niklaus Johner)
 - Fix DB setup pipeline when using containers and an unmounted reference directory. ([#142](https://github.com/metagenlab/zDB/pull/142)) (Niklaus Johner)
