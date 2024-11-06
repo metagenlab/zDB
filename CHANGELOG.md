@@ -8,6 +8,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix annotation pipeline for new AMRFinder version 4. ([#141](https://github.com/metagenlab/zDB/pull/141)) (Niklaus Johner)
+
 ### Changed
 
 - Display Venn diagram as Edwards for 6 genomes, as numbers were missing in the classic representation. ([#135](https://github.com/metagenlab/zDB/pull/135)) (Niklaus Johner)
