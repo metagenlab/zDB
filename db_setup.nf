@@ -26,6 +26,7 @@ process setup_cog_cdd {
     output:
         file "cog_db*"
         file "cdd_to_cog"
+        path("${info}", includeInputs: true)
 
     script:
     """
@@ -33,8 +34,6 @@ process setup_cog_cdd {
         -scale 100.0 -dbtype rps -index true
     grep "tag id" COG* | sed 's/.smp:.*tag id//' | \
                         sed 's/COG//' > cdd_to_cog
-    mkdir -p $params.cog_db
-    mv \$(readlink $info) $params.cog_db
     """
 }
 
@@ -83,14 +82,13 @@ process prepare_hmm {
 
     output:
         path "${pfam_hmm}.h3*"
+        path("${pfam_hmm}", includeInputs: true)
+        path("${pfam_defs}", includeInputs: true)
+        path("${pfam_version}", includeInputs: true)
 
     script:
     """
         hmmpress $pfam_hmm
-        mkdir -p $params.pfam_db
-        mv \$(readlink $pfam_hmm) $params.pfam_db
-        mv \$(readlink $pfam_defs) $params.pfam_db
-        mv \$(readlink $pfam_version) $params.pfam_db
     """
 }
 
@@ -143,14 +141,11 @@ process prepare_swissprot {
         tuple path(swissprot_fasta), path(relnotes)
 
     output:
-        path("*")
+        path("*", includeInputs: true)
 
     script:
     """
     makeblastdb -dbtype prot -in swissprot.fasta
-    mkdir -p $params.swissprot_db
-    mv \$(readlink $swissprot_fasta) $params.swissprot_db
-    mv \$(readlink $relnotes) $params.swissprot_db
     """
 }
 
@@ -180,14 +175,11 @@ process prepare_vfdb {
         tuple path(vfdb_fasta), path(vf_descr)
 
     output:
-        path("*")
+        path("*", includeInputs: true)
 
     script:
     """
     makeblastdb -dbtype prot -in $vfdb_fasta
-    mkdir -p $params.vf_db
-    mv \$(readlink $vfdb_fasta) $params.vf_db
-    mv \$(readlink $vf_descr) $params.vf_db
     """
 }
 
