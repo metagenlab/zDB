@@ -315,19 +315,19 @@ def load_cog(params, filelist, db_file, cdd_to_cog, cog_db_dir):
 
 
 def amr_hit_to_db_entry(hit):
-    columns = ["Gene symbol",
-               "Sequence name",
+    columns = ["Element symbol",
+               "Element name",
                "Scope",
-               "Element type",
-               "Element subtype",
+               "Type",
+               "Subtype",
                "Class",
                "Subclass",
-               "% Coverage of reference sequence",
-               "% Identity to reference sequence",
-               "Accession of closest sequence",
-               "Name of closest sequence",
-               "HMM id"]
-    entry = [hsh_from_s(hit["Protein identifier"][len("CRC-"):])]
+               "% Coverage of reference",
+               "% Identity to reference",
+               "Closest reference accession",
+               "Closest reference name",
+               "HMM accession"]
+    entry = [hsh_from_s(hit["Protein id"][len("CRC-"):])]
     entry.extend([hit[column] for column in columns])
     return entry
 
