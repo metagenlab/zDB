@@ -36,23 +36,23 @@ If you are setting up your own database, you will need to install zDB, setup som
 
 zDB can be installed from bioconda with the following command
 ```
-mamba install zdb -c conda-forge -c bioconda
+conda install zdb -c conda-forge -c bioconda
 ```
 
 Once zDB is installed, we advise you to run the analysis and/or webapp in containers, especially for **MacOSX users**. For this, you'll need to install either **docker** or **singularity**. Both the analyses and the webapp can also be run in conda environments, but this comes with several drawbacks:
 - django will be run in native mode, without nginx and gunicorn and should not be used to set up a web-facing database (it is fine for a local access)
 - containers allow us to have a precise control of the environment where the webapp is run; it is less the case for conda environment. Despite our best care, running the webapp in conda might not work due to local differences.
-- *some conda environments have numerous dependencies: to speed the installation, we strongly recommend the use of [libmamba](https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community)* or to have a fresh conda installation.
+- *some conda environments have numerous dependencies: to speed the installation, we strongly recommend the use a recent version of conda, which has included the solver from mamba and is much faster*.
 - **Xvfb should be installed on your machine**. The ete3 rendering engine unfortunately relies on Qt, which requires an X server running in headless mode. If you can't install Xvfb, please consider using singularity containers. We plan on developing our own Javascript tree rendering code to get rid of this dependency.
 
 Of note, zDB has been tested on singularity v3.8.3 and v3.8.4 but should work on more recent versions. 
 If you opt to use singularity, it can be installed with the following command:
 ```
-mamba install singularity=3.8.4 -c conda-forge
+conda install singularity=3.8.4 -c conda-forge
 ```
 Or you could create a new environment containing zDB and singularity with:
 ```
-mamba create --name zdb -c conda-forge -c bioconda zdb singularity
+conda create --name zdb -c conda-forge -c bioconda zdb singularity
 ```
 For the installation of docker, please have a look [here](https://docs.docker.com/get-docker/).
 
@@ -69,8 +69,8 @@ and replace it by the directory where you downloaded the project (this should po
 Add zdb's bin directory to PATH and voila, zdb should run smoothly.
 
 Note that zDB depends on nextflow (version 22.10 or lower) and singularity, so you'll need to install these packages, e.g. with conda:
-- `mamba env create -p ./env -f conda/main.yaml`
-- `mamba activate ./env`
+- `conda env create -p ./env -f conda/main.yaml`
+- `conda activate ./env`
 
 
 ## Commands overview
@@ -97,7 +97,7 @@ tar xvf test_dataset.tar.gz
 
 For a minimal database (*assuming that singularity is installed*):
 ```
-mamba install zdb -c conda-forge -c bioconda
+conda install zdb -c conda-forge -c bioconda
 zdb run --input=input.csv --name=simple_run # runs the analysis
 zdb webapp --name=simple_run # Launches the webapp on simple run
 ```
@@ -105,14 +105,14 @@ The minimal database should take around 5 minutes to complete in a recent Deskto
 
 To do the same in conda environments:
 ```
-mamba install zdb -c conda-forge -c bioconda
+conda install zdb -c conda-forge -c bioconda
 zdb run --input=input.csv --name=simple_run_conda --conda # runs the analysis
 zdb webapp --conda --name=simple_run_conda # Launches the webapp on the latest run
 ```
 
 To have a more complete set of analyses (includes cog and pfam annotation):
 ```
-mamba install zdb -c conda-forge -c bioconda
+conda install zdb -c conda-forge -c bioconda
 zdb setup --pfam --cog --conda
 zdb run --input=input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
 zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
@@ -344,7 +344,7 @@ If you want to contribute, feel free to open a PR describing your changes and ma
     - Modify the zdb recipe (`recipes/zdb/meta.yaml`) to download the tar file from master (set url to https://github.com/metagenlab/zDB/archive/refs/heads/master.tar.gz)
     - Run linting check (`bioconda-utils lint --packages zdb`)
     - Build the package `bioconda-utils build --docker --mulled-test --packages zdb`
-    - Create a conda environment with the build package: `mamba create -n test_zdb -c conda-forge -c /home/njohner/bin/miniconda3/envs/bioconda/conda-bld/ -c bioconda zdb singularity`
+    - Create a conda environment with the build package: `conda create -n test_zdb -c conda-forge -c /home/njohner/bin/miniconda3/envs/bioconda/conda-bld/ -c bioconda zdb singularity`
     - Activate the environment and test zdb
 - Make a release (can be done directly on github: https://github.com/metagenlab/zDB/releases)
 - Release on bioconda:
