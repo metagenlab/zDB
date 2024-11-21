@@ -61,5 +61,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     cogs, kos = get_tables(args.db, int(args.taxid))
-    cogs.to_csv(os.path.join(args.outdir, "cogs.csv"), index=False)
-    kos.to_csv(os.path.join(args.outdir, "kos.csv"), index=False)
+    cogs.to_csv(os.path.join(args.outdir, "cogs.tsv"), index=False, sep="\t")
+    kos.to_csv(os.path.join(args.outdir, "kos.tsv"), index=False, sep="\t")
