@@ -10,6 +10,22 @@ sys.path.append(os.path.join(zdbdir, "webapp"))
 from lib import db_utils  # noqa
 
 
+def format_cog(cog_id):
+    return f"COG{int(cog_id):04d}"
+
+
+def format_ko(ko_id):
+    return f"K{int(ko_id):05d}"
+
+
+def format_module(module_id):
+    return f"M{module_id:05d}"
+
+
+def format_pathway(pathway_id):
+    return f"map{pathway_id:05d}"
+
+
 def get_tables(db_file, taxonid):
     zdb_params = {'zdb.db_type': 'sqlite',
                   'zdb.db_name': 'George',
@@ -34,7 +50,6 @@ def get_tables(db_file, taxonid):
                             columns=["seqid", "cog"]).set_index("seqid")
 
     cogs = loci.merge(cog_hits, left_index=True, right_index=True)
-    cogs["cog"] = cogs["cog"].map(lambda x: f"COG{x}")
 
     query = ("SELECT sequence_hash_dictionnary.seqid, ko_hits.ko_id "
              "FROM ko_hits INNER JOIN sequence_hash_dictionnary "
@@ -44,9 +59,26 @@ def get_tables(db_file, taxonid):
                            columns=["seqid", "ko"]).set_index("seqid")
 
     kos = loci.merge(ko_hits, left_index=True, right_index=True)
-    kos["ko"] = kos["ko"].map(lambda x: f"KO{x}")
 
-    return cogs, kos
+    query = "SELECT ko_id, module_id from ko_to_module"
+    ko_to_modules = pd.DataFrame(db.server.adaptor.execute_and_fetchall(query),
+                                 columns=["ko", "module"])
+    modules = kos.merge(ko_to_modules, left_on="ko", right_on="ko")
+    modules = modules.drop("ko", axis=1)
+    modules = modules.drop_duplicates()
+
+    query = "SELECT ko_id, pathway_id from ko_to_pathway"
+    ko_to_pathways = pd.DataFrame(db.server.adaptor.execute_and_fetchall(query),
+                                  columns=["ko", "pathway"])
+    pathways = kos.merge(ko_to_pathways, left_on="ko", right_on="ko")
+    pathways = pathways.drop("ko", axis=1)
+    pathways = pathways.drop_duplicates()
+
+    cogs["cog"] = cogs["cog"].map(format_cog)
+    kos["ko"] = kos["ko"].map(format_ko)
+    modules["module"] = modules["module"].map(format_module)
+    pathways["pathway"] = pathways["pathway"].map(format_pathway)
+    return cogs, kos, modules, pathways
 
 
 if __name__ == "__main__":
@@ -60,6 +92,8 @@ if __name__ == "__main__":
                         help="directory to which the tables should be written to.")
 
     args = parser.parse_args()
-    cogs, kos = get_tables(args.db, int(args.taxid))
+    cogs, kos, modules, pathways = get_tables(args.db, int(args.taxid))
     cogs.to_csv(os.path.join(args.outdir, "cogs.tsv"), index=False, sep="\t")
     kos.to_csv(os.path.join(args.outdir, "kos.tsv"), index=False, sep="\t")
+    modules.to_csv(os.path.join(args.outdir, "modules.tsv"), index=False, sep="\t")
+    pathways.to_csv(os.path.join(args.outdir, "pathways.tsv"), index=False, sep="\t")
