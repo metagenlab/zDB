@@ -34,6 +34,7 @@ def get_tables(db_file, taxonid):
                             columns=["seqid", "cog"]).set_index("seqid")
 
     cogs = loci.merge(cog_hits, left_index=True, right_index=True)
+    cogs["cog"] = cogs["cog"].map(lambda x: f"COG{x}")
 
     query = ("SELECT sequence_hash_dictionnary.seqid, ko_hits.ko_id "
              "FROM ko_hits INNER JOIN sequence_hash_dictionnary "
@@ -43,6 +44,8 @@ def get_tables(db_file, taxonid):
                            columns=["seqid", "ko"]).set_index("seqid")
 
     kos = loci.merge(ko_hits, left_index=True, right_index=True)
+    kos["ko"] = kos["ko"].map(lambda x: f"KO{x}")
+
     return cogs, kos
 
 
