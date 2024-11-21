@@ -10,7 +10,7 @@ sys.path.append(os.path.join(zdbdir, "webapp"))
 from lib import db_utils  # noqa
 
 
-def get_tables(db_file):
+def get_tables(db_file, taxonid):
     zdb_params = {'zdb.db_type': 'sqlite',
                   'zdb.db_name': 'George',
                   'zdb.psswd': ''}
@@ -19,8 +19,10 @@ def get_tables(db_file):
     locus_term_id = db.server.adaptor.execute_one(
         "SELECT term_id FROM term WHERE name='locus_tag'")[0]
 
-    query = (f"SELECT seqfeature_id, value FROM seqfeature_qualifier_value "
-             f"WHERE term_id = {locus_term_id}")
+    query = (f"SELECT seqfeature_qualifier_value.seqfeature_id, seqfeature_qualifier_value.value FROM seqfeature_qualifier_value "
+             f"INNER JOIN seqfeature ON seqfeature_qualifier_value.seqfeature_id=seqfeature.seqfeature_id "
+             f"INNER JOIN bioentry ON bioentry.bioentry_id=seqfeature.bioentry_id "
+             f"WHERE seqfeature_qualifier_value.term_id = {locus_term_id} AND bioentry.taxon_id = {taxonid}")
     loci = pd.DataFrame(db.server.adaptor.execute_and_fetchall(query),
                         columns=["seqid", "locus"]).set_index("seqid")
 
@@ -49,11 +51,12 @@ if __name__ == "__main__":
         description="Exports COG and KO table (ids vs loci)")
 
     parser.add_argument("db", help="Path to DB file")
+    parser.add_argument("taxid", help="taxid")
 
     parser.add_argument("--outdir", nargs="?", default=".",
                         help="directory to which the tables should be written to.")
 
     args = parser.parse_args()
-    cogs, kos = get_tables(args.db)
+    cogs, kos = get_tables(args.db, int(args.taxid))
     cogs.to_csv(os.path.join(args.outdir, "cogs.csv"), index=False)
     kos.to_csv(os.path.join(args.outdir, "kos.csv"), index=False)
