@@ -7,6 +7,7 @@ custom_run_name=""
 default_port="8080"
 default_run_name="latest"
 hosts=""
+origins=""
 use_dev_server=false
 
 
@@ -22,6 +23,10 @@ for i in "$@"; do
 			;;
 		--hosts=*)
 			hosts="${i#*=}"
+			shift
+			;;
+		--trusted_origins=*)
+			origins="${i#*=}"
 			shift
 			;;
 		--use_dev_server)
@@ -95,6 +100,7 @@ export PORT="$custom_port"
 export RUN_NAME="$custom_run_name"
 export DEBUG="$debugging"
 export ALLOWED_HOSTS="${hosts// /,}"
+export CSRF_TRUSTED_ORIGINS="${origins// /,}"
 export ZDB_DEVSERVER="$use_dev_server"
 
 # go to the chlamdb folder
@@ -149,5 +155,6 @@ unset DISPLAY
 unset PORT
 unset RUN_NAME
 unset ALLOWED_HOSTS
+unset CSRF_TRUSTED_ORIGINS
 unset DEBUG
 unset ZDB_DEVSERVER

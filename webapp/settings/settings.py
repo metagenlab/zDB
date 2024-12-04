@@ -19,6 +19,7 @@ SECRET_KEY = secrets.token_urlsafe()
 DEBUG = int(os.environ.get("DEBUG", 0))
 RUN_NAME = os.environ["RUN_NAME"]
 hosts = os.environ.get("ALLOWED_HOSTS", "localhost")
+trusted_origins = os.environ.get("CSRF_TRUSTED_ORIGINS")
 
 PREFIX = "served_assets"
 
@@ -27,6 +28,8 @@ SEARCH_INDEX = PREFIX + "/search_index/" + RUN_NAME
 BLAST_DB_PATH = PREFIX + "/blast_DB/" + RUN_NAME
 
 ALLOWED_HOSTS = hosts.split(",")
+if trusted_origins:
+    CSRF_TRUSTED_ORIGINS = trusted_origins.split(",")
 
 BIODB_CONF = {
     "zdb.db_type": "sqlite",

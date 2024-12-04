@@ -12,6 +12,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add command line parameter to set CSRF_TRUSTED_ORIGINS. ([#145](https://github.com/metagenlab/zDB/pull/145)) (Niklaus Johner)
 
 ## 1.3.4 - 2024-11-06
 
