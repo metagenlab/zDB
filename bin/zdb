@@ -191,6 +191,7 @@ elif [[ "$1" == "webapp" ]]; then
 	docker=false
 	conda=false
 	allowed_host=""
+	trusted_origins=""
 	dir=$(pwd)
 
 	zdb_folder="${NEXTFLOW_DIR}/webapp/"
@@ -206,6 +207,10 @@ elif [[ "$1" == "webapp" ]]; then
 				;;
 			--allowed_host=*)
 				allowed_host="${i#*=}"
+				shift
+				;;
+			--trusted_origins=*)
+				trusted_origins="${i#*=}"
 				shift
 				;;
 			--name=*)
@@ -251,6 +256,10 @@ elif [[ "$1" == "webapp" ]]; then
 				echo "                      to guess with the hostname command. This is basically" 
 			    echo "	                    the URL or IP adress you will using to access the web page."
 				echo ""
+				echo "--trusted_origins=ORIGINS: coma separated list that will be passed as argument"
+				echo "                      	 to django's CSRF_TRUSTED_ORIGINS. This needs to include"
+				echo "                      	 the scheme, e.g. https://example.com"
+				echo ""
 				echo "By default, the web application will be run in a singularity container."
 				echo "This can be changed with either one of the two following options:"
 				echo "--docker: the web application will be run in a docker instead of "
@@ -292,6 +301,10 @@ elif [[ "$1" == "webapp" ]]; then
 
 	if [ ! -z "${allowed_host}" ]; then
 		allowed_host="--hosts=${allowed_host}"
+	fi
+
+	if [ ! -z "${trusted_origins}" ]; then
+		trusted_origins="--trusted_origins=${trusted_origins}"
 	fi
 
 	dev_server=""
@@ -342,7 +355,7 @@ elif [[ "$1" == "webapp" ]]; then
 	done
 	mkdir -p $zdb_folder/served_assets/temp
 
-	options="--run_name=${run_name} --port=${port} ${debugging_mode} ${allowed_host} ${dev_server}"
+	options="--run_name=${run_name} --port=${port} ${debugging_mode} ${allowed_host} ${trusted_origins} ${dev_server}"
 	if [[ "$docker" = true ]]; then
 		full_docker_name="registry.hub.docker.com/metagenlab/${zdb_container}"
 		docker pull ${full_docker_name}

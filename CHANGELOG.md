@@ -4,6 +4,16 @@
 Versions are of the form MAJOR.MINOR.PATCH and this changelog tries to conform
 to [Common Changelog](https://common-changelog.org)
 
+## Unreleased
+
+### Fixed
+
+### Changed
+
+### Added
+
+- Add command line parameter to set CSRF_TRUSTED_ORIGINS. ([#145](https://github.com/metagenlab/zDB/pull/145)) (Niklaus Johner)
+
 ## 1.3.4 - 2024-11-06
 
 ### Fixed
