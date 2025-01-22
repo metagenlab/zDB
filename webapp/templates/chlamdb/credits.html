@@ -3,8 +3,8 @@
 <html>
 
 <head>
-    {% load static %}
-    {% include "chlamdb/header.html" %}
+  {% load static %}
+  {% include "chlamdb/header.html" %}
 </head>
 
 <body>
@@ -15,24 +15,24 @@
       <div class="container-fluid" id="main_container">
         <div class="row">
           <div id="wrapper">
-              <div id="page-content-wrapper">
-                <div class="row">
-                  <div class="col-lg-12" style="font: central;">
-                   {% include "chlamdb/menu.html" %}
+            <div id="page-content-wrapper">
+              <div class="row">
+                <div class="col-lg-12" style="font: central;">
+                  {% include "chlamdb/menu.html" %}
                   <div id="credits">
-                      <h2>ZDB - Comparative genomics database</h2>
-                      <h2>Credits</h2>
-                      <ul>
-                          {% for entry in entry_list%}
-                              <li>
-                              {{entry.0|safe}} (<a href="{{entry.1}}">Pubmed</a>) <br>
-                              </li>
-                          {%endfor%}
-                      </ul>
-                  </div>
+                    <h2>ZDB - Comparative genomics database</h2>
+                    <h2>Credits</h2>
+                    <ul>
+                      {% for entry in entry_list%}
+                        <li>
+                          {{entry.0|safe}} (<a href="{{entry.1}}">Pubmed</a>) <br>
+                        </li>
+                      {%endfor%}
+                    </ul>
                   </div>
                 </div>
               </div>
+            </div>
           </div>
         </div>
       </div>
