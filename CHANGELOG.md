@@ -10,6 +10,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Changed
 
+- Cite zDB paper on home page and about pages. ([#147](https://github.com/metagenlab/zDB/pull/147)) (Niklaus Johner)
+
 ### Added
 
 - Add command line parameter to set CSRF_TRUSTED_ORIGINS. ([#145](https://github.com/metagenlab/zDB/pull/145)) (Niklaus Johner)
