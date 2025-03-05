@@ -18,7 +18,7 @@ from lib.queries import VFQueries
 # to litteral
 # encases the string into quotes
 def quote(v):
-    return f'"{v}"'
+    return f"'{v}'"
 
 
 class NoPhylogenyException(Exception):
@@ -87,9 +87,9 @@ class DB:
                 " INNER JOIN seqfeature_qualifier_value AS acc "
                 "     ON acc.seqfeature_id = fet.seqfeature_id "
                 " INNER JOIN term AS gene_term ON gene_term.term_id = fet.type_term_id "
-                '     AND gene_term.name = "CDS" '
+                "     AND gene_term.name = 'CDS' "
                 " INNER JOIN term AS lc ON lc.term_id = acc.term_id AND "
-                '     lc.name = "locus_tag" '
+                "     lc.name = 'locus_tag' "
                 f" WHERE acc.value IN ({plc})"
             )
         elif look_on == "contig":
@@ -223,10 +223,10 @@ class DB:
             "FROM og_hits AS ortho "
             "INNER JOIN seqfeature_qualifier_value AS seq ON seq.seqfeature_id=ortho.seqid "
             " INNER JOIN term AS seq_term "
-            '   ON seq_term.term_id=seq.term_id AND seq_term.name="translation"'
+            "   ON seq_term.term_id=seq.term_id AND seq_term.name='translation' "
             "INNER JOIN seqfeature_qualifier_value locus ON locus.seqfeature_id=ortho.seqid "
             " INNER JOIN term as locus_term "
-            '   ON locus_term.term_id=locus.term_id AND locus_term.name="locus_tag" '
+            "   ON locus_term.term_id=locus.term_id AND locus_term.name='locus_tag' "
             f"WHERE ortho.orthogroup = {orthogroup};"
         )
         results = self.server.adaptor.execute_and_fetchall(
@@ -491,7 +491,7 @@ class DB:
             self.conn_ncbi_taxonomy = sqlite3.connect(dtb_path)
 
         cursor = self.conn_ncbi_taxonomy.cursor()
-        query_string = ",".join(['"' + a + '"' for a in accession])
+        query_string = ",".join([f"'{a}'" for a in accession])
         query = (
             f"SELECT accession, taxid FROM accession2taxid "
             f"WHERE accession IN ({query_string});"
@@ -960,7 +960,7 @@ class DB:
                 "INNER JOIN bioentry_qualifier_value AS is_plasmid ON "
                 "  is_plasmid.bioentry_id=entry.bioentry_id "
                 "INNER JOIN term AS plasmid_term ON plasmid_term.term_id=is_plasmid.term_id "
-                '  AND plasmid_term.name="plasmid"'
+                "  AND plasmid_term.name='plasmid'"
             )
             if indexing != "seqid":
                 group_by += ", CAST(is_plasmid.value AS int)"
@@ -1062,14 +1062,14 @@ class DB:
     def get_hsh_locus_to_seqfeature_id(self, only_CDS=False):
         filtering = ""
         if only_CDS:
-            filtering = 'INNER JOIN term as t4 ON t4.term_id=t1.type_term_id AND t4.name = "CDS" '
+            filtering = "INNER JOIN term as t4 ON t4.term_id=t1.type_term_id AND t4.name = 'CDS' "
 
         query = (
             "SELECT t2.value, t1.seqfeature_id "
             "FROM seqfeature as t1 "
             f"{filtering}"
             "INNER JOIN seqfeature_qualifier_value AS t2 ON t1.seqfeature_id=t2.seqfeature_id "
-            'INNER JOIN term as t3 on t3.term_id=t2.term_id AND t3.name="locus_tag" '
+            "INNER JOIN term as t3 on t3.term_id=t2.term_id AND t3.name='locus_tag' "
         )
         results = self.server.adaptor.execute_and_fetchall(
             query,
@@ -1092,10 +1092,10 @@ class DB:
         query = (
             "SELECT locus.value, og.value"
             "FROM seqfeature_qualifier_value as og "
-            'INNER JOIN term AS term_og ON term_og.term_id=og.term_id AND term_og.name="orthogroup" '
+            "INNER JOIN term AS term_og ON term_og.term_id=og.term_id AND term_og.name='orthogroup' "
             "INNER JOIN seqfeature_qualifier_value as locus ON locus.seqfeature_id=og.seqfeature_id "
             "INNER JOIN term AS term_locus ON term_locus.term_id=locus.term_id "
-            '  AND term_locus.name="locus_tag";'
+            "  AND term_locus.name='locus_tag';"
         )
         query_results = self.server.adaptor.execute_and_fetchall(
             query,
@@ -1130,7 +1130,7 @@ class DB:
         query = (
             "SELECT value, taxon_id, count(*) "
             "FROM seqfeature_qualifier_value as ortho_table "
-            'INNER JOIN term ON ortho_table.term_id = term.term_id AND term.name="orthogroup" '
+            "INNER JOIN term ON ortho_table.term_id = term.term_id AND term.name='orthogroup' "
             "INNER JOIN seqfeature AS feature ON feature.seqfeature_id=ortho_table.seqfeature_id "
             "INNER JOIN bioentry AS entry ON entry.bioentry_id=feature.bioentry_id "
             "GROUP BY value, taxon_id; "
@@ -1277,7 +1277,7 @@ class DB:
             "SELECT accession, count(*) FROM seqfeature AS seq "
             " INNER JOIN term AS t ON t.term_id = seq.type_term_id "
             " INNER JOIN bioentry AS entry ON seq.bioentry_id=entry.bioentry_id "
-            ' AND t.name="tRNA" GROUP BY accession; '
+            " AND t.name='tRNA' GROUP BY accession; "
         )
         n_tRNA_results = self.server.adaptor.execute_and_fetchall(query)
         results = {}
@@ -1292,7 +1292,7 @@ class DB:
             "SELECT locus_tag.value, name.name "
             "FROM seqfeature_qualifier_value AS locus_tag "
             "INNER JOIN term AS locus_term ON locus_term.term_id=locus_tag.term_id "
-            ' AND locus_term.name="locus_tag" '
+            " AND locus_term.name='locus_tag' "
             "INNER JOIN seqfeature AS feature ON feature.seqfeature_id=locus_tag.seqfeature_id "
             "INNER JOIN bioentry AS entry ON feature.bioentry_id=entry.bioentry_id "
             "INNER JOIN taxon_name AS name ON entry.taxon_id = name.taxon_id "
@@ -1302,13 +1302,13 @@ class DB:
         return {locus: description for locus, description in results}
 
     def get_term_id(self, term, create_if_absent=False, ontology="Annotation Tags"):
-        query = f'SELECT term_id FROM term WHERE name="{term}";'
+        query = f"SELECT term_id FROM term WHERE name='{term}';"
         result = self.server.adaptor.execute_and_fetchall(query)
         gc_term_id = None
         if len(result) == 0 and create_if_absent:
-            sql1 = f'SELECT ontology_id FROM ontology WHERE name="{ontology}";'
+            sql1 = f"SELECT ontology_id FROM ontology WHERE name='{ontology}';"
             ontology_id = self.server.adaptor.execute_and_fetchall(sql1)[0][0]
-            sql = f'INSERT INTO term (name, ontology_id) VALUES ("{term}", {ontology_id});'
+            sql = f"INSERT INTO term (name, ontology_id) VALUES ('{term}', {ontology_id});"
             self.server.adaptor.execute(sql)
             gc_term_id = self.server.adaptor.cursor.lastrowid
         else:
@@ -1330,7 +1330,7 @@ class DB:
             "SELECT * "
             "FROM bioentry_qualifier_value AS has_plasmid "
             "INNER JOIN term AS pls_term ON pls_term.term_id=has_plasmid.term_id "
-            ' AND pls_term.name="plasmid" AND has_plasmid.value=1 '
+            " AND pls_term.name='plasmid' AND has_plasmid.value=1 "
             "INNER JOIN bioentry AS plasmid ON has_plasmid.bioentry_id=plasmid.bioentry_id "
             "WHERE plasmid.taxon_id=entry.taxon_id"
         )
@@ -1341,7 +1341,7 @@ class DB:
             "INNER JOIN bioentry_qualifier_value AS orga ON entry.bioentry_id=orga.bioentry_id "
             "INNER JOIN taxon_name as txn_name ON entry.taxon_id=txn_name.taxon_id "
             "INNER JOIN term AS orga_term ON orga.term_id=orga_term.term_id "
-            ' AND orga_term.name="organism" '
+            " AND orga_term.name='organism' "
             f"{where_clause} GROUP BY entry.taxon_id;"
         )
         descr = self.server.adaptor.execute_and_fetchall(query, taxids)
@@ -1366,7 +1366,7 @@ class DB:
         query = (
             "SELECT entry.taxon_id, entry.taxon_id, COUNT(*) "
             " FROM seqfeature AS seq "
-            ' INNER JOIN term AS cds ON cds.term_id = seq.type_term_id AND cds.name="CDS" '
+            " INNER JOIN term AS cds ON cds.term_id = seq.type_term_id AND cds.name='CDS' "
             " INNER JOIN bioentry AS entry ON entry.bioentry_id = seq.bioentry_id "
             f"{where_clause} GROUP BY entry.taxon_id;"
         )
@@ -1452,7 +1452,7 @@ class DB:
 
         query = (
             f"SELECT {index}, COUNT(*) FROM seqfeature AS prot "
-            ' INNER JOIN term AS t ON t.term_id = prot.type_term_id AND t.name="CDS" '
+            " INNER JOIN term AS t ON t.term_id = prot.type_term_id AND t.name='CDS' "
             " INNER JOIN bioentry AS entry ON entry.bioentry_id = prot.bioentry_id "
             f"{filtering}"
             f"GROUP BY {index};"
@@ -1488,7 +1488,7 @@ class DB:
             sql,
         )
 
-        sql = f'INSERT INTO reference_phylogeny VALUES ("{tree}");'
+        sql = f"INSERT INTO reference_phylogeny VALUES ('{tree}');"
         self.server.adaptor.execute(
             sql,
         )
@@ -1503,7 +1503,7 @@ class DB:
         sql = (
             "SELECT bioentry_id FROM seqfeature_qualifier_value AS tag"
             " INNER JOIN seqfeature AS seq ON seq.seqfeature_id = tag.seqfeature_id "
-            f' where value = "{locus_tag}";'
+            f" where value = '{locus_tag}';"
         )
         results = self.server.adaptor.execute_and_fetchall(sql)
         return results[0][0]
@@ -1625,7 +1625,7 @@ class DB:
             "SELECT seqfeature_id "
             "FROM seqfeature_qualifier_values AS locus_tag "
             "INNER JOIN seqfeature AS feature ON feature.seqfeature_id=locus_tag.seqfeature_id "
-            'INNER JOIN term AS t ON feature.type_term_id=t.term_id AND t.name = "CDS" '
+            "INNER JOIN term AS t ON feature.type_term_id=t.term_id AND t.name = 'CDS' "
             "WHERE locus_tag.value=?;"
         )
         ret = self.server.execute_and_fetchall(query, locus_tag)
@@ -1635,18 +1635,18 @@ class DB:
 
     def get_seqid(self, locus_tag, feature_type=False):
         add_type = ""
-        sel = 'AND cds_term.name="CDS"'
+        sel = "AND cds_term.name='CDS'"
         if feature_type:
             add_type = ", cds_term.name"
             sel = (
-                'AND (cds_term.name="CDS" OR cds_term.name="tRNA" '
-                ' OR cds_term.name="tmRNA" OR cds_term.name="rRNA") '
+                "AND (cds_term.name='CDS' OR cds_term.name='tRNA' "
+                " OR cds_term.name='tmRNA' OR cds_term.name='rRNA') "
             )
         is_pseudo = (
             ", CASE WHEN EXISTS ("
             "SELECT NULL FROM seqfeature_qualifier_value AS pseudo "
             "INNER JOIN term AS pseudo_term ON pseudo.term_id=pseudo_term.term_id "
-            '  AND (pseudo_term.name = "pseudo" OR pseudo_term.name = "pseudogene") '
+            "  AND (pseudo_term.name = 'pseudo' OR pseudo_term.name = 'pseudogene') "
             "WHERE pseudo.seqfeature_id = locus_tag.seqfeature_id"
             ") THEN 1 ELSE 0 END "
         )
@@ -1708,7 +1708,7 @@ class DB:
         is_pseudo_query = (
             "SELECT NULL FROM seqfeature_qualifier_value AS pseudo "
             "INNER JOIN term AS pseudo_term ON pseudo.term_id=pseudo_term.term_id "
-            '  AND (pseudo_term.name = "pseudo" OR pseudo_term.name = "pseudogene") '
+            "  AND (pseudo_term.name = 'pseudo' OR pseudo_term.name = 'pseudogene') "
             "WHERE pseudo.seqfeature_id = fet.seqfeature_id"
         )
 
@@ -1750,13 +1750,13 @@ class DB:
                 if term_name not in ["locus_tag", "protein_id", "gene", "product"]:
                     raise RuntimeError(f"Value not support {term_name}")
 
-        term_names_query = ",".join(f'"{name}"' for name in term_names)
+        term_names_query = ",".join(f"'{name}'" for name in term_names)
 
         add_cond = ""
         if inc_non_CDS:
             add_cond = (
-                'OR cds_term.name="tRNA" OR cds_term.name="tmRNA" '
-                'OR cds_term.name="rRNA"'
+                "OR cds_term.name='tRNA' OR cds_term.name='tmRNA' "
+                "OR cds_term.name='rRNA'"
             )
 
         no_pseudo = ""
@@ -1765,7 +1765,7 @@ class DB:
                 "AND NOT EXISTS ("
                 " SELECT NULL FROM seqfeature_qualifier_value AS cds"
                 " INNER JOIN term AS pseudo_term ON cds.term_id=pseudo_term.term_id "
-                '  AND (pseudo_term.name="pseudogene" OR pseudo_term.name="pseudo") '
+                "  AND (pseudo_term.name='pseudogene' OR pseudo_term.name='pseudo') "
                 " WHERE cds.seqfeature_id=seq.seqfeature_id "
                 ")"
             )
@@ -1781,7 +1781,7 @@ class DB:
             sel = (
                 "INNER JOIN seqfeature_qualifier_value AS locus_tag ON locus_tag.seqfeature_id=v.seqfeature_id "
                 "INNER JOIN term as locus_tag_term ON locus_tag.term_id=locus_tag_term.term_id "
-                ' AND locus_tag_term.name="locus_tag" '
+                " AND locus_tag_term.name='locus_tag' "
             )
             where = f" locus_tag.value IN ({entries}) "
         else:
@@ -1793,7 +1793,7 @@ class DB:
             "INNER JOIN term AS t ON t.term_id = v.term_id "
             "INNER JOIN seqfeature AS seq ON seq.seqfeature_id = v.seqfeature_id "
             "INNER JOIN term AS cds_term ON seq.type_term_id=cds_term.term_id "
-            f' AND (cds_term.name="CDS" {add_cond})'
+            f" AND (cds_term.name='CDS' {add_cond})"
             f"{sel}"
             f"WHERE {where} AND t.name IN ({term_names_query}) {no_pseudo};"
         )
@@ -1840,7 +1840,7 @@ class DB:
                 "INNER JOIN bioentry_qualifier_value AS organism "
                 "    ON organism.bioentry_id = entry.bioentry_id "
                 "INNER JOIN term AS organism_term ON organism.term_id = organism_term.term_id "
-                ' AND organism_term.name = "organism" '
+                " AND organism_term.name = 'organism' "
                 f"WHERE feature.seqfeature_id IN ({seqids_query});"
             )
         elif id_type == "bioentry":
@@ -1848,7 +1848,7 @@ class DB:
                 f"SELECT organism.bioentry_id, {val} "
                 "FROM bioentry_qualifier_value AS organism "
                 "INNER JOIN term AS organism_term ON organism.term_id = organism_term.term_id "
-                ' AND organism_term.name = "organism" '
+                " AND organism_term.name = 'organism' "
                 f"WHERE organism.bioentry_id IN ({seqids_query});"
             )
         else:
@@ -1986,7 +1986,7 @@ class DB:
                 "INNER JOIN bioentry_qualifier_value AS is_plasmid ON "
                 "  is_plasmid.bioentry_id=entry.bioentry_id "
                 "INNER JOIN term AS plasmid_term ON plasmid_term.term_id=is_plasmid.term_id "
-                '  AND plasmid_term.name="plasmid"'
+                "  AND plasmid_term.name='plasmid'"
             )
             where_clause = (
                 f" (entry.taxon_id IN ({entries}) AND is_plasmid.value=0) "
@@ -2052,7 +2052,7 @@ class DB:
             "SELECT translation.value  "
             "FROM seqfeature_qualifier_value AS translation "
             "INNER JOIN term AS transl_term ON transl_term.term_id=translation.term_id "
-            ' AND transl_term.name="translation" '
+            " AND transl_term.name='translation' "
             "WHERE translation.seqfeature_id = ?;"
         )
         results = self.server.adaptor.execute_and_fetchall(query, [seqid])
@@ -2071,7 +2071,7 @@ class DB:
         db_terms = [t for t in terms if t != "length"]
         if "length" in terms:
             db_terms.append("translation")
-        sel_terms = ",".join('"' + f"{i}" + '"' for i in db_terms)
+        sel_terms = ",".join(f"'{i}'" for i in db_terms)
         join, sel = "", ""
         if taxon_ids is not None:
             taxon_id_query = self.gen_placeholder_string(taxon_ids)
@@ -2084,7 +2084,7 @@ class DB:
 
         query = (
             f"SELECT feature.seqfeature_id, og.orthogroup, t.name, "
-            '   CASE WHEN t.name=="translation" THEN '
+            "   CASE WHEN t.name=='translation' THEN "
             "   LENGTH(value) ELSE value END "
             "FROM og_hits AS og "
             "INNER JOIN seqfeature_qualifier_value AS feature ON og.seqid = feature.seqfeature_id "
@@ -2202,8 +2202,8 @@ class DB:
         else:
             raise RuntimeError("Expected either taxon_id or bioentry_id")
 
-        seq_term_query = ",".join(f'"{name}"' for name in seq_term_names)
-        qual_term_query = ",".join(f'"{name}"' for name in seq_qual_term_names)
+        seq_term_query = ",".join(f"'{name}'" for name in seq_term_names)
+        qual_term_query = ",".join(f"'{name}'" for name in seq_qual_term_names)
 
         query = (
             "select t1.bioentry_id, t2.seqfeature_id,t5.start_pos, "
@@ -2382,7 +2382,7 @@ class DB:
                 "INNER JOIN bioentry_qualifier_value AS is_plasmid ON "
                 "  is_plasmid.bioentry_id=entry.bioentry_id "
                 "INNER JOIN term AS plasmid_term ON plasmid_term.term_id=is_plasmid.term_id "
-                '  AND plasmid_term.name="plasmid"'
+                "  AND plasmid_term.name='plasmid'"
             )
             header.append("plasmid")
 
@@ -2484,7 +2484,7 @@ class DB:
                 "INNER JOIN bioentry_qualifier_value AS is_plasmid ON "
                 "  is_plasmid.bioentry_id=entry.bioentry_id "
                 "INNER JOIN term AS plasmid_term ON plasmid_term.term_id=is_plasmid.term_id "
-                '  AND plasmid_term.name="plasmid"'
+                "  AND plasmid_term.name='plasmid'"
             )
 
         query = (
@@ -2692,7 +2692,7 @@ class DB:
                 "INNER JOIN bioentry_qualifier_value AS is_plasmid ON "
                 "  is_plasmid.bioentry_id=bioentry.bioentry_id "
                 "INNER JOIN term AS plasmid_term ON plasmid_term.term_id=is_plasmid.term_id "
-                '  AND plasmid_term.name="plasmid"'
+                "  AND plasmid_term.name='plasmid'"
             )
 
         query = (
@@ -2781,7 +2781,7 @@ class DB:
         return self.server.adaptor.execute_and_fetchall(query)[0][0]
 
     def check_entry_existence(self, entry_id, entry_col, table):
-        query = f'SELECT 1 FROM {table} WHERE {entry_col}="{entry_id}" LIMIT 1'
+        query = f"SELECT 1 FROM {table} WHERE {entry_col}='{entry_id}' LIMIT 1"
         return bool(self.server.adaptor.execute_one(query))
 
     def check_og_entry_id(self, entry_id):
