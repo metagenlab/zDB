@@ -1,15 +1,17 @@
 import os
 import re
-from collections import defaultdict, namedtuple
+from collections import defaultdict
+from collections import namedtuple
 from datetime import datetime
 
 import pandas as pd
 import xlrd
-from Bio import SeqIO, SeqUtils
-from lib import KO_module, search_bar
-from lib.db_utils import DB
-
 from annotations import InputHandler
+from Bio import SeqIO
+from Bio import SeqUtils
+from lib import KO_module
+from lib import search_bar
+from lib.db_utils import DB
 
 
 # assumes orthofinder named: OG000N
@@ -24,10 +26,10 @@ def get_ko_id(string):
 
 def parse_orthofinder_output_file(output_file):
     protein_id2orthogroup_id = {}
-    parsing = open(output_file, 'r')
+    parsing = open(output_file, "r")
 
     for line in parsing:
-        tokens = line.strip().split(' ')
+        tokens = line.strip().split(" ")
 
         # Skips the ":" at the end of the orthgroup id
         group = get_og_id(tokens[0][:-1])
@@ -57,7 +59,7 @@ def load_gbk(gbks, args, db_file):
 
     bioentry_plasmids = []
     for gbk in gbks:
-        records = [i for i in SeqIO.parse(gbk, 'genbank')]
+        records = [i for i in SeqIO.parse(gbk, "genbank")]
         taxon_id = None
 
         for record in records:
@@ -99,8 +101,10 @@ def load_orthofinder_results(orthofinder_output, args, db_file):
     db = DB.load_db(db_file, args)
     hsh_prot_to_group = parse_orthofinder_output_file(orthofinder_output)
     hsh_locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id(only_CDS=True)
-    hits_to_load = [(hsh_locus_to_feature_id[locus], group)
-                    for locus, group in hsh_prot_to_group.items()]
+    hits_to_load = [
+        (hsh_locus_to_feature_id[locus], group)
+        for locus, group in hsh_prot_to_group.items()
+    ]
     db.load_og_hits(hits_to_load)
     db.set_status_in_config_table("orthology", 1)
     db.commit()
@@ -110,7 +114,7 @@ def load_orthofinder_results(orthofinder_output, args, db_file):
 # copying the whole list
 def chunks(lst, n):
     for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        yield lst[i : i + n]
 
 
 def get_prot(refseq_file, hsh_accession):
@@ -129,27 +133,39 @@ def remove_accession_version(accession):
 
 
 def simplify_hash(hsh):
-    return hsh_from_s(hsh[len("CRC-"):])
+    return hsh_from_s(hsh[len("CRC-") :])
 
 
 def parse_record(record):
     description = record.description
-    end_accession_index = description.index(' ')
+    end_accession_index = description.index(" ")
     # NOTE: this assumes that no brackets are found in the
     # name of the protein
-    beg_tax_index = description.index('[')
-    end_tax_index = description.index(']')
+    beg_tax_index = description.index("[")
+    end_tax_index = description.index("]")
     # also skip the white spaces
 
-    prot_descr = description[end_accession_index + 1:beg_tax_index - 1]
-    organism = description[beg_tax_index + 1:end_tax_index]
+    prot_descr = description[end_accession_index + 1 : beg_tax_index - 1]
+    organism = description[beg_tax_index + 1 : end_tax_index]
     return prot_descr, organism
 
 
 def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     db = DB.load_db(db_file, args)
-    columns = ["str_hsh", "accession", "pident", "length", "mismatch", "gapopen",
-               "qstart", "qend", "sstart", "send", "evalue", "bitscore"]
+    columns = [
+        "str_hsh",
+        "accession",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+    ]
 
     print("Reading tsvs", flush=True)
     all_data = pd.DataFrame(columns=columns)
@@ -160,7 +176,8 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     all_data.str_hsh = all_data.str_hsh.map(simplify_hash)
 
     hsh_accession_to_record = {
-        accesion: None for accesion in all_data.accession.tolist()}
+        accesion: None for accesion in all_data.accession.tolist()
+    }
 
     print("Extracting records for refseq", flush=True)
     refseq = args["refseq_db"] + "/merged.faa"
@@ -184,9 +201,23 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     db.create_refseq_hits_table()
     all_data["count"] = all_data.groupby("str_hsh").cumcount()
     all_data["match_id"] = all_data["accession"].map(hsh_accession_to_match_id)
-    to_load = all_data[["count", "str_hsh", "match_id", "pident",
-                        "length", "mismatch", "gapopen", "qstart", "qend", "sstart",
-                        "send", "evalue", "bitscore"]]
+    to_load = all_data[
+        [
+            "count",
+            "str_hsh",
+            "match_id",
+            "pident",
+            "length",
+            "mismatch",
+            "gapopen",
+            "qstart",
+            "qend",
+            "sstart",
+            "send",
+            "evalue",
+            "bitscore",
+        ]
+    ]
     db.load_refseq_hits(to_load.values.tolist())
     db.create_refseq_hits_indices()
     db.commit()
@@ -237,7 +268,7 @@ def load_seq_hashes(args, nr_mapping, db_file):
             record_id, hsh, genome = line.split("\t")
             seqfeature_id = hsh_locus_to_id[record_id]
 
-            short_hsh = hsh[len("CRC-"):]
+            short_hsh = hsh[len("CRC-") :]
             int_from_64b_hash = hsh_from_s(short_hsh)
             if int_from_64b_hash not in to_load_hsh_to_seqid:
                 to_load_hsh_to_seqid[int_from_64b_hash] = [seqfeature_id]
@@ -285,17 +316,33 @@ def load_cog(params, filelist, db_file, cdd_to_cog, cog_db_dir):
 
     data = []
     for chunk in filelist:
-        cogs_hits = pd.read_csv(chunk, sep="\t", header=None,
-                                names=["seq_hsh", "cdd", "pident", "length", "mismatch", "gapopen", "qstart",
-                                       "qend", "sstart", "send", "evalue", "bitscore"])
+        cogs_hits = pd.read_csv(
+            chunk,
+            sep="\t",
+            header=None,
+            names=[
+                "seq_hsh",
+                "cdd",
+                "pident",
+                "length",
+                "mismatch",
+                "gapopen",
+                "qstart",
+                "qend",
+                "sstart",
+                "send",
+                "evalue",
+                "bitscore",
+            ],
+        )
 
         # Select only the best hits: using pandas clearly is an overkill here
         cogs_hits = cogs_hits[["seq_hsh", "cdd", "evalue", "pident"]]
         min_hits = cogs_hits.sort_values(
-            ["evalue", "pident"],
-            ascending=[True, False]).drop_duplicates("seq_hsh")
+            ["evalue", "pident"], ascending=[True, False]
+        ).drop_duplicates("seq_hsh")
         for index, row in min_hits.iterrows():
-            hsh = hsh_from_s(row["seq_hsh"][len("CRC-"):])
+            hsh = hsh_from_s(row["seq_hsh"][len("CRC-") :])
             #  cdd in the form cdd:N
             cog = hsh_cdd_to_cog[int(row["cdd"].split(":")[1])]
             evalue = float(row["evalue"])
@@ -315,19 +362,21 @@ def load_cog(params, filelist, db_file, cdd_to_cog, cog_db_dir):
 
 
 def amr_hit_to_db_entry(hit):
-    columns = ["Element symbol",
-               "Element name",
-               "Scope",
-               "Type",
-               "Subtype",
-               "Class",
-               "Subclass",
-               "% Coverage of reference",
-               "% Identity to reference",
-               "Closest reference accession",
-               "Closest reference name",
-               "HMM accession"]
-    entry = [hsh_from_s(hit["Protein id"][len("CRC-"):])]
+    columns = [
+        "Element symbol",
+        "Element name",
+        "Scope",
+        "Type",
+        "Subtype",
+        "Class",
+        "Subclass",
+        "% Coverage of reference",
+        "% Identity to reference",
+        "Closest reference accession",
+        "Closest reference name",
+        "HMM accession",
+    ]
+    entry = [hsh_from_s(hit["Protein id"][len("CRC-") :])]
     entry.extend([hit[column] for column in columns])
     return entry
 
@@ -350,8 +399,9 @@ def load_amr(params, filelist, db_file, version_file):
                 soft_version = line.rsplit(":", 1)[1].strip()
             elif line.startswith("Database version"):
                 db_version = line.rsplit(":", 1)[1].strip()
-    db.load_data_into_table("versions", [("AMRFinderSoftware", soft_version),
-                                         ("AMRFinderDB", db_version)])
+    db.load_data_into_table(
+        "versions", [("AMRFinderSoftware", soft_version), ("AMRFinderDB", db_version)]
+    )
     db.commit()
 
 
@@ -396,8 +446,7 @@ def load_gene_phylogenies(kwargs, og_summary, lst_orthogroups, db_file):
             og, is_core, og_size, num_genomes = line.split("\t")
             og_id = int(og.split("_")[0][2:])
             newick = hsh_ogs.get(og_id, "")
-            data.append((og_id, newick, int(is_core),
-                        int(og_size), int(num_genomes)))
+            data.append((og_id, newick, int(is_core), int(og_size), int(num_genomes)))
 
     db.create_gene_phylogeny_table(data)
     db.set_status_in_config_table("gene_phylogenies", 1)
@@ -406,6 +455,7 @@ def load_gene_phylogenies(kwargs, og_summary, lst_orthogroups, db_file):
 
 def load_reference_phylogeny(kwargs, tree, db_file):
     import ete3
+
     db = DB.load_db(db_file, kwargs)
 
     with open(tree, "r") as newick_file:
@@ -449,8 +499,11 @@ def get_gen_stats(gbk_list):
                     for part in location.parts:
                         cds_length += part.end - part.start
         gbk_shortened = os.path.splitext(gbk_file)[0]
-        hsh_gen_stats[gbk_shortened] = (float(gc_cum) / ttl_length,
-                                        float(cds_length) / ttl_length, ttl_length)
+        hsh_gen_stats[gbk_shortened] = (
+            float(gc_cum) / ttl_length,
+            float(cds_length) / ttl_length,
+            ttl_length,
+        )
     return hsh_gen_stats
 
 
@@ -467,8 +520,7 @@ def load_genomes_info(kwargs, gbk_list, checkm_results, db_file):
         completeness = row.Completeness
         contamination = row.Contamination
         gc, coding_density, length = hsh_taxid_to_gen_stats[row["Bin Id"]]
-        values = [taxon_id, completeness,
-                  contamination, gc, length, coding_density]
+        values = [taxon_id, completeness, contamination, gc, length, coding_density]
         data.append(values)
 
     db.load_genomes_info(data)
@@ -489,9 +541,10 @@ def parse_pfam_entry(file_iter):
             accession_offset = len("#=GF AC   PF")
             accession_length = 5
             accession = int(
-                line[accession_offset:accession_offset + accession_length])
+                line[accession_offset : accession_offset + accession_length]
+            )
         elif line.startswith("#=GF DE"):
-            description = line[len("#=GF DE   "):-1]
+            description = line[len("#=GF DE   ") : -1]
 
 
 def load_pfam(params, pfam_files, db, pfam_def_file, ref_db_dir):
@@ -503,7 +556,7 @@ def load_pfam(params, pfam_files, db, pfam_def_file, ref_db_dir):
         entries = []
         with open(pfam, "r") as pfam_file:
             for line in pfam_file:
-                if len(line) < len("CRC-") or line[0:len("CRC-")] != "CRC-":
+                if len(line) < len("CRC-") or line[0 : len("CRC-")] != "CRC-":
                     continue
 
                 tokens = line.split()
@@ -511,7 +564,7 @@ def load_pfam(params, pfam_files, db, pfam_def_file, ref_db_dir):
                 start = int(tokens[1])
                 end = int(tokens[2])
                 pfam_raw_str = tokens[5].split(".")[0]
-                pfam_i = int(pfam_raw_str[len("PF"):])
+                pfam_i = int(pfam_raw_str[len("PF") :])
                 entries.append((hsh_i, pfam_i, start, end))
                 pfam_ids.add(pfam_i)
 
@@ -560,17 +613,17 @@ def parse_swissprot_entry(description):
     gene = None
     for curr_token in tokens:
         if curr_token.startswith("OS="):
-            organism = curr_token[len("OS="):]
+            organism = curr_token[len("OS=") :]
             prot_name = " ".join(acc)
             acc = [organism]
         elif curr_token.startswith("OX="):
-            taxid = int(curr_token[len("OX="):])
+            taxid = int(curr_token[len("OX=") :])
         elif curr_token.startswith("GN="):
-            gene = curr_token[len("GN="):]
+            gene = curr_token[len("GN=") :]
         elif curr_token.startswith("PE="):
-            pe = int(curr_token[len("PE="):])
+            pe = int(curr_token[len("PE=") :])
         elif curr_token.startswith("SV="):
-            version = curr_token[len("SV="):]
+            version = curr_token[len("SV=") :]
         else:
             acc.append(curr_token)
     return prot_name, taxid, " ".join(acc), gene, pe, version
@@ -587,20 +640,22 @@ vf_gene_id_expr = re.compile(r"(.*)\(gb\|(.*)\)")
 
 
 def parse_vf_gene_id(to_parse):
-    """IDs in vfdb.fasta are either of the form VFID(gb_accession) or VFID
-    """
+    """IDs in vfdb.fasta are either of the form VFID(gb_accession) or VFID"""
     if "(" in to_parse:
         return vf_gene_id_expr.match(to_parse).groups()
     return to_parse, None
 
 
-vfdb_descr_expr = re.compile(r"\(.*?\) (.*?) \[.*?\((VF.*?)\) - (.*?) \((VFC.*?)\)\] \[(.*?)\]")
+vfdb_descr_expr = re.compile(
+    r"\(.*?\) (.*?) \[.*?\((VF.*?)\) - (.*?) \((VFC.*?)\)\] \[(.*?)\]"
+)
 
 
 def parse_vfdb_entry(description):
     description = description.split(" ", 1)[1]
     prot_name, vfid, category, cat_id, organism = vfdb_descr_expr.match(
-        description).groups()
+        description
+    ).groups()
     return prot_name, vfid, category, cat_id, organism
 
 
@@ -617,13 +672,24 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db
         data = []
         with open(blast_file, "r") as blast_fh:
             for line in blast_fh:
-                crc, prot_id, perid, leng, n_mis, n_gap, qs, qe, ss, se, e, score = line.split()
+                crc, prot_id, perid, leng, n_mis, n_gap, qs, qe, ss, se, e, score = (
+                    line.split()
+                )
                 hsh = simplify_hash(crc)
                 # swissprot accession in the format x|prot_id|org
                 _, prot_id, _ = parse_swissprot_id(prot_id)
                 db_prot_id = hsh_swissprot_id[prot_id]
-                data.append((hsh, db_prot_id, float(e), int(float(score)),
-                             int(float(perid)), int(n_gap), int(leng)))
+                data.append(
+                    (
+                        hsh,
+                        db_prot_id,
+                        float(e),
+                        int(float(score)),
+                        int(float(perid)),
+                        int(n_gap),
+                        int(leng),
+                    )
+                )
         db.load_swissprot_hits(data)
 
     swiss_prot_defs = []
@@ -632,17 +698,15 @@ def load_swissprot(params, blast_results, db_name, swissprot_fasta, swissprot_db
         if prot_id not in hsh_swissprot_id:
             continue
         db_prot_id = hsh_swissprot_id[prot_id]
-        descr, taxid, org, gene, pe, version = parse_swissprot_entry(
-            record.description)
-        swiss_prot_defs.append(
-            (db_prot_id, prot_id, descr, taxid, org, gene, pe))
+        descr, taxid, org, gene, pe, version = parse_swissprot_entry(record.description)
+        swiss_prot_defs.append((db_prot_id, prot_id, descr, taxid, org, gene, pe))
     db.load_swissprot_defs(swiss_prot_defs)
     db.set_status_in_config_table("BLAST_swissprot", 1)
     db.commit()
 
     # Determine reference DB version
     with open(os.path.join(swissprot_db_dir, "relnotes.txt")) as fh:
-        dbname, _,  version = fh.readline().split()
+        dbname, _, version = fh.readline().split()
         if dbname != "UniProt":
             raise ValueError("Could not determine SwissProt DB version")
     db.load_data_into_table("versions", [("SwissProt", version.strip())])
@@ -657,22 +721,34 @@ def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs, min_se
     for blast_file in blast_results:
         data = []
         hits = pd.read_csv(
-            blast_file, sep="\t", header=None,
-            names=["crc", "gene_id", "seqid", "leng", "evalue", "score", "qcov"])
+            blast_file,
+            sep="\t",
+            header=None,
+            names=["crc", "gene_id", "seqid", "leng", "evalue", "score", "qcov"],
+        )
 
         # filter out hits with seqid too low
         hits = hits[hits["seqid"] >= min_seqid]
         # Select only the best hits: using pandas clearly is an overkill here
         hits = hits.sort_values(
-            ["evalue", "seqid", "qcov"],
-            ascending=[True, False, False]).drop_duplicates("crc")
+            ["evalue", "seqid", "qcov"], ascending=[True, False, False]
+        ).drop_duplicates("crc")
 
         for index, row in hits.iterrows():
             hsh = simplify_hash(row.crc)
             vf_gene_id, _ = parse_vf_gene_id(row.gene_id)
             included_vf_genes.add(vf_gene_id)
-            data.append((hsh, vf_gene_id, row.evalue, int(row.score),
-                         row.seqid, row.leng, row.qcov))
+            data.append(
+                (
+                    hsh,
+                    vf_gene_id,
+                    row.evalue,
+                    int(row.score),
+                    row.seqid,
+                    row.leng,
+                    row.qcov,
+                )
+            )
 
         db.load_vf_hits(data)
 
@@ -688,7 +764,8 @@ def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs, min_se
         if vf_gene_id not in included_vf_genes:
             continue
         prot_name, vfid, category, cat_id, organism = parse_vfdb_entry(
-            record.description)
+            record.description
+        )
         # Get info from definitions.
         # Note that not all vfids have an entry in the definitions table
         if vfid in vf_defs.index:
@@ -696,9 +773,19 @@ def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs, min_se
         else:
             vf_data = {}
         vfdb_prot_defs.append(
-            (vf_gene_id, gb_accession, prot_name, vfid, category, cat_id,
-             vf_data.get("Characteristics"), vf_data.get("Structure"),
-             vf_data.get("Function"), vf_data.get("Mechanism")))
+            (
+                vf_gene_id,
+                gb_accession,
+                prot_name,
+                vfid,
+                category,
+                cat_id,
+                vf_data.get("Characteristics"),
+                vf_data.get("Structure"),
+                vf_data.get("Function"),
+                vf_data.get("Mechanism"),
+            )
+        )
     db.load_vf_defs(vfdb_prot_defs)
     db.set_status_in_config_table("BLAST_vfdb", 1)
     db.commit()
@@ -728,8 +815,7 @@ def load_KO(params, ko_files, db_name, ko_db_dir):
                 # ignore all but the best hits
                 if tokens[0] != "*":
                     continue
-                crc_raw, ko_str, thrs_str, score_str, evalue_str, * \
-                    descr = tokens[1:]
+                crc_raw, ko_str, thrs_str, score_str, evalue_str, *descr = tokens[1:]
                 hsh = simplify_hash(crc_raw)
                 if hsh == curr_hsh:
                     # skip the entries that were classified as significant, but
@@ -799,8 +885,9 @@ def setup_chlamdb_search_index(params, db_name, index_name):
     index = search_bar.ChlamdbIndex.new_index(index_name)
 
     for taxid, data in genomes.iterrows():
-        all_infos = db.get_proteins_info([taxid], search_on="taxid",
-                                         as_df=True, inc_non_CDS=True, inc_pseudo=True)
+        all_infos = db.get_proteins_info(
+            [taxid], search_on="taxid", as_df=True, inc_non_CDS=True, inc_pseudo=True
+        )
         ogs = db.get_og_count(all_infos.index.tolist(), search_on="seqid")
         all_infos = all_infos.join(ogs)
         for seqid, data in all_infos.iterrows():
@@ -825,7 +912,8 @@ def setup_chlamdb_search_index(params, db_name, index_name):
 
             organism = genomes.loc[taxid].description
             search_bar.GeneEntry().add_to_index(
-                index, locus_tag, gene, product, organism, og)
+                index, locus_tag, gene, product, organism, og
+            )
 
     if has_cog:
         cog_data = db.get_cog_summaries(cog_ids=None, only_cog_desc=True)
@@ -858,6 +946,8 @@ def setup_chlamdb_search_index(params, db_name, index_name):
     if has_vf:
         vf_data = db.vf.get_hit_descriptions(hit_ids=None)
         for vf, data in vf_data.iterrows():
-            search_bar.VfEntry().add_to_index(index, data["vf_gene_id"], data["prot_name"])
+            search_bar.VfEntry().add_to_index(
+                index, data["vf_gene_id"], data["prot_name"]
+            )
 
     index.done_adding()

@@ -1,6 +1,5 @@
-class AnalysisViewMetadata():
-
-    _types_available_for = ['amr', 'cog', 'ko', 'pfam', 'orthogroup', 'vf']
+class AnalysisViewMetadata:
+    _types_available_for = ["amr", "cog", "ko", "pfam", "orthogroup", "vf"]
     static_icon = True
 
     def __init__(self, object_type, object_name_plural):
@@ -21,9 +20,8 @@ class AnalysisViewMetadata():
 
 
 class EntryListMetadata(AnalysisViewMetadata):
-
     name = "index"
-    _types_available_for = ['amr', 'cog', 'ko', 'pfam', 'vf']
+    _types_available_for = ["amr", "cog", "ko", "pfam", "vf"]
     title = "Index"
     _description = "Index of all {} identified in all genomes"
     _url = "/entry_list_{}"
@@ -31,7 +29,6 @@ class EntryListMetadata(AnalysisViewMetadata):
 
 
 class ExtractionMetadata(AnalysisViewMetadata):
-
     name = "extract"
     title = "Extraction Form"
     _description = "List of {} present/absent from selected genomes"
@@ -40,7 +37,6 @@ class ExtractionMetadata(AnalysisViewMetadata):
 
 
 class VennMetadata(AnalysisViewMetadata):
-
     name = "venn"
     title = "Venn Diagram"
     _description = "Venn diagrams of unique and shared {} among selected genomes"
@@ -50,7 +46,6 @@ class VennMetadata(AnalysisViewMetadata):
 
 
 class TabularComparisonMetadata(AnalysisViewMetadata):
-
     name = "table_comp"
     title = "Presence/absence table"
     _description = "Presence/absence table of {} in selected genomes"
@@ -59,7 +54,6 @@ class TabularComparisonMetadata(AnalysisViewMetadata):
 
 
 class HeatmapMetadata(AnalysisViewMetadata):
-
     name = "heatmap"
     title = "Heatmap"
     _description = "Heatmap of {} presence/absence in selected genomes"
@@ -69,7 +63,6 @@ class HeatmapMetadata(AnalysisViewMetadata):
 
 
 class AccumulationRarefactionMetadata(AnalysisViewMetadata):
-
     name = "pan_genome"
     title = "Accumulation / rarefaction plot"
     _description = "Accumulation / rarefaction plot of {} in selected genomes"
@@ -79,9 +72,8 @@ class AccumulationRarefactionMetadata(AnalysisViewMetadata):
 
 
 class CategoriesBarchartMetadata(AnalysisViewMetadata):
-
     name = "bar"
-    _types_available_for = ['cog', 'ko']
+    _types_available_for = ["cog", "ko"]
     title = "Categories barchart"
     _description = "Barcharts of {} categories in selected genomes"
     _url = "/{}_barchart/"
@@ -89,9 +81,8 @@ class CategoriesBarchartMetadata(AnalysisViewMetadata):
 
 
 class CategoriesFreqHeatmapMetadata(AnalysisViewMetadata):
-
     name = "cat_freq"
-    _types_available_for = ['cog']
+    _types_available_for = ["cog"]
     title = "Categories freq. heatmap"
     _description = "Heatmap of frequencies of genes identifed in each COG category"
     _url = "/{}_phylo_heatmap/True/"
@@ -99,9 +90,8 @@ class CategoriesFreqHeatmapMetadata(AnalysisViewMetadata):
 
 
 class CategoriesCountHeatmapMetadata(AnalysisViewMetadata):
-
     name = "cat_count"
-    _types_available_for = ['cog']
+    _types_available_for = ["cog"]
     title = "Categories count heatmap"
     _description = "Heatmap of counts of genes identifed in each COG category"
     _url = "/{}_phylo_heatmap/False/"
@@ -109,22 +99,23 @@ class CategoriesCountHeatmapMetadata(AnalysisViewMetadata):
 
 
 class GwasMetadata(AnalysisViewMetadata):
-
     name = "gwas"
-    _types_available_for = ['amr', 'cog', 'ko', 'pfam', 'vf', 'orthogroup']
+    _types_available_for = ["amr", "cog", "ko", "pfam", "vf", "orthogroup"]
     title = "Genome Wide Association Study"
     _description = "Association of {} with user-defined phenotype"
     _url = "/gwas_{}/"
     icon = "/img/gwas.png"
 
 
-analysis_views_metadata = [EntryListMetadata,
-                           ExtractionMetadata,
-                           VennMetadata,
-                           TabularComparisonMetadata,
-                           HeatmapMetadata,
-                           AccumulationRarefactionMetadata,
-                           CategoriesBarchartMetadata,
-                           CategoriesFreqHeatmapMetadata,
-                           CategoriesCountHeatmapMetadata,
-                           GwasMetadata]
+analysis_views_metadata = [
+    EntryListMetadata,
+    ExtractionMetadata,
+    VennMetadata,
+    TabularComparisonMetadata,
+    HeatmapMetadata,
+    AccumulationRarefactionMetadata,
+    CategoriesBarchartMetadata,
+    CategoriesFreqHeatmapMetadata,
+    CategoriesCountHeatmapMetadata,
+    GwasMetadata,
+]

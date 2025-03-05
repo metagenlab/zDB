@@ -1,13 +1,17 @@
-
 from django.conf import settings
 from django.shortcuts import render
 from django.views import View
 from ete3 import Tree
-from lib.ete_phylo import EteTree, SimpleColorColumn
-
-from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
-                          PfamViewMixin, VfViewMixin)
-from views.utils import format_ko_module, format_ko_path, format_orthogroup
+from lib.ete_phylo import EteTree
+from lib.ete_phylo import SimpleColorColumn
+from views.mixins import AmrViewMixin
+from views.mixins import CogViewMixin
+from views.mixins import KoViewMixin
+from views.mixins import PfamViewMixin
+from views.mixins import VfViewMixin
+from views.utils import format_ko_module
+from views.utils import format_ko_path
+from views.utils import format_orthogroup
 
 
 class FamCogColorFunc:
@@ -24,11 +28,11 @@ class FamCogColorFunc:
 
 def tab_gen_profile_tree(db, main_series, header, intersect):
     """
-     Generate the tree from the profiles tab in the pfam/ko/cog pages:
-     -ref_tree: the phylogenetic tree
-     - main_series: the cog/ko/pfam count per taxid
-     - header: the header of the main_series in the tree
-     -intersect: a dataframe containing the seqid, taxid and orthogroups of the pfam/cog/ko hits
+    Generate the tree from the profiles tab in the pfam/ko/cog pages:
+    -ref_tree: the phylogenetic tree
+    - main_series: the cog/ko/pfam count per taxid
+    - header: the header of the main_series in the tree
+    -intersect: a dataframe containing the seqid, taxid and orthogroups of the pfam/cog/ko hits
     """
 
     # the (group, taxid) in this dataframe are those that should be colored in red
@@ -52,8 +56,11 @@ def tab_gen_profile_tree(db, main_series, header, intersect):
     for og in df_og_count:
         og_serie = df_og_count[og]
         color_chooser = FamCogColorFunc(og, red_color)
-        col_column = SimpleColorColumn(og_serie.to_dict(), header=format_orthogroup(og),
-                                       col_func=color_chooser.get_color)
+        col_column = SimpleColorColumn(
+            og_serie.to_dict(),
+            header=format_orthogroup(og),
+            col_func=color_chooser.get_color,
+        )
         e_tree.add_column(col_column)
     return e_tree
 
@@ -76,14 +83,24 @@ def get_all_prot_infos(db, seqids, orthogroups):
         locus, prot_id, gene, product = hsh_prot_infos[seqid]
         if gene is None:
             gene = ""
-        data = (index, fmt_orthogroup, locus, prot_id, start, end, strand, gene, product, organism)
+        data = (
+            index,
+            fmt_orthogroup,
+            locus,
+            prot_id,
+            start,
+            end,
+            strand,
+            gene,
+            product,
+            organism,
+        )
         all_locus_data.append(data)
     return all_locus_data, group_count
 
 
 class FamBaseView(View):
-
-    template = 'chlamdb/fam.html'
+    template = "chlamdb/fam.html"
 
     @property
     def view_name(self):
@@ -96,12 +113,15 @@ class FamBaseView(View):
     def prepare_context(self, request, entry_id, *args, **kwargs):
         # Get hits for that entry:
         hit_counts = self.get_hit_counts(
-            [entry_id], indexing="seqid", search_on=self.object_type,
-            keep_taxid=True)
+            [entry_id], indexing="seqid", search_on=self.object_type, keep_taxid=True
+        )
 
         if len(hit_counts) == 0:
-            return render(request, self.template,
-                          {"msg": f"No entry for {self.format_entry(entry_id)}"})
+            return render(
+                request,
+                self.template,
+                {"msg": f"No entry for {self.format_entry(entry_id)}"},
+            )
 
         if hit_counts.index.name == "seqid":
             seqids = hit_counts.index.tolist()
@@ -109,25 +129,30 @@ class FamBaseView(View):
             # Pfam hits are not indexed with seqid...
             seqids = hit_counts.seqid.unique().tolist()
 
-        orthogroups = self.db.get_og_count(seqids, search_on="seqid",
-                                           keep_taxid=True)
+        orthogroups = self.db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
         infos = self.get_hit_descriptions(
-            [entry_id], columns=self.accessors, extended_data=False)
+            [entry_id], columns=self.accessors, extended_data=False
+        )
         infos = infos.iloc[0]
-        all_locus_data, group_count = get_all_prot_infos(
-            self.db, seqids, orthogroups)
+        all_locus_data, group_count = get_all_prot_infos(self.db, seqids, orthogroups)
 
         hit_counts = hit_counts.groupby(["taxid"]).count()
         fam = self.format_entry(entry_id)
         e_tree = tab_gen_profile_tree(
-            self.db, getattr(hit_counts, self.object_column),
-            self.format_entry(entry_id), orthogroups)
+            self.db,
+            getattr(hit_counts, self.object_column),
+            self.format_entry(entry_id),
+            orthogroups,
+        )
         asset_path = f"/temp/fam_tree_{entry_id}.svg"
         path = settings.ASSET_ROOT + asset_path
         e_tree.render(path, dpi=500)
 
-        info = {self.colname_to_header(key): infos[key]
-                for key in self.accessors if infos[key]}
+        info = {
+            self.colname_to_header(key): infos[key]
+            for key in self.accessors
+            if infos[key]
+        }
 
         context = self.get_context(
             fam=fam,
@@ -141,18 +166,23 @@ class FamBaseView(View):
 
 
 class FamAmrView(FamBaseView, AmrViewMixin):
-
     accessors = ["seq_name", "scope", "type", "class", "subclass", "hmm_id"]
 
 
 class FamVfView(FamBaseView, VfViewMixin):
-
-    accessors = ["prot_name", "vfid", "category", "gb_accession",
-                 "characteristics", "structure", "function", "mechanism"]
+    accessors = [
+        "prot_name",
+        "vfid",
+        "category",
+        "gb_accession",
+        "characteristics",
+        "structure",
+        "function",
+        "mechanism",
+    ]
 
 
 class FamCogView(FamBaseView, CogViewMixin):
-
     accessors = ["description", "function_descr"]
 
     def get(self, request, entry_id, *args, **kwargs):
@@ -161,33 +191,36 @@ class FamCogView(FamBaseView, CogViewMixin):
 
 
 class FamKoView(FamBaseView, KoViewMixin):
-
     accessors = ["ko", "description"]
 
     def get(self, request, entry_id, *args, **kwargs):
-        entry_id = int(entry_id[len("K"):])
+        entry_id = int(entry_id[len("K") :])
         return super(FamKoView, self).get(request, entry_id, *args, **kwargs)
 
     def prepare_context(self, request, entry_id, *args, **kwargs):
         pathways = self.db.get_ko_pathways([entry_id])
         modules = self.db.get_ko_modules([entry_id])
-        modules_id = [mod_id for key, values in modules.items() for mod_id, desc in values]
+        modules_id = [
+            mod_id for key, values in modules.items() for mod_id, desc in values
+        ]
         modules_data = self.db.get_modules_info(modules_id)
         pathway_data = format_ko_path(pathways, entry_id, as_list=True)
-        module_data = [(format_ko_module(mod_id), cat, mod_desc)
-                       for mod_id, mod_desc, mod_def, path, cat in modules_data]
+        module_data = [
+            (format_ko_module(mod_id), cat, mod_desc)
+            for mod_id, mod_desc, mod_def, path, cat in modules_data
+        ]
 
         context = super(FamKoView, self).prepare_context(
-            request, entry_id, *args, **kwargs)
+            request, entry_id, *args, **kwargs
+        )
         context["pathway_data"] = pathway_data
         context["module_data"] = module_data
         return context
 
 
 class FamPfamView(FamBaseView, PfamViewMixin):
-
     accessors = ["def"]
 
     def get(self, request, entry_id, *args, **kwargs):
-        entry_id = int(entry_id[len("PF"):])
+        entry_id = int(entry_id[len("PF") :])
         return super(FamPfamView, self).get(request, entry_id, *args, **kwargs)

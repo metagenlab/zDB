@@ -1,11 +1,15 @@
 from urllib.parse import quote
 
-from views.utils import (format_amr, format_cog, format_ko, format_orthogroup,
-                         format_pfam, missing_mandatory, optional2status)
+from views.utils import format_amr
+from views.utils import format_cog
+from views.utils import format_ko
+from views.utils import format_orthogroup
+from views.utils import format_pfam
+from views.utils import missing_mandatory
+from views.utils import optional2status
 
 
-class BaseObjectMetadata():
-
+class BaseObjectMetadata:
     @property
     @staticmethod
     def is_enabled(self):
@@ -25,7 +29,6 @@ class BaseObjectMetadata():
 
 
 class AmrMetadata(BaseObjectMetadata):
-
     object_type = "amr"
     object_name = "AMR gene"
 
@@ -35,7 +38,6 @@ class AmrMetadata(BaseObjectMetadata):
 
 
 class CogMetadata(BaseObjectMetadata):
-
     object_type = "cog"
     object_name = "COG entry"
     object_name_plural = "COG entries"
@@ -47,7 +49,6 @@ class CogMetadata(BaseObjectMetadata):
 
 
 class KoMetadata(BaseObjectMetadata):
-
     object_type = "ko"
     object_name = "Kegg Ortholog"
 
@@ -57,7 +58,6 @@ class KoMetadata(BaseObjectMetadata):
 
 
 class PfamMetadata(BaseObjectMetadata):
-
     object_type = "pfam"
     object_name = "Pfam domain"
 
@@ -67,7 +67,6 @@ class PfamMetadata(BaseObjectMetadata):
 
 
 class OrthogroupMetadata(BaseObjectMetadata):
-
     object_type = "orthogroup"
     object_name = "Orthologous group"
 
@@ -79,28 +78,24 @@ class OrthogroupMetadata(BaseObjectMetadata):
 
 
 class VfMetadata(BaseObjectMetadata):
-
     object_type = "vf"
     object_name = "Virulence factor"
 
     @staticmethod
     def format_entry(entry, to_url=False):
-        """Will point to the details page as soon as it exists
-        """
+        """Will point to the details page as soon as it exists"""
         if to_url:
-            return f"<a href=\"/fam_vf/{entry}\">{entry}</a>"
+            return f'<a href="/fam_vf/{entry}">{entry}</a>'
         return entry
 
 
 class ModuleMetadata(BaseObjectMetadata):
-
     object_type = "module"
     object_name = "KEGG Module"
 
     @staticmethod
     def format_entry(entry, to_url=False):
-        """Will point to the details page as soon as it exists
-        """
+        """Will point to the details page as soon as it exists"""
         if to_url:
             return f"<a href=/KEGG_module_map/{entry}>{entry}</a>"
         return entry
@@ -111,14 +106,12 @@ class ModuleMetadata(BaseObjectMetadata):
 
 
 class PathwayMetadata(BaseObjectMetadata):
-
     object_type = "pathway"
     object_name = "KEGG Pathway"
 
     @staticmethod
     def format_entry(entry, to_url=False):
-        """Will point to the details page as soon as it exists
-        """
+        """Will point to the details page as soon as it exists"""
         if to_url:
             return f"<a href=/KEGG_mapp_ko/{entry}>{entry}</a>"
         return entry
@@ -129,7 +122,6 @@ class PathwayMetadata(BaseObjectMetadata):
 
 
 class GroupMetadata(BaseObjectMetadata):
-
     object_type = "group"
     object_name = "Genome Group"
     overview_description = "Overview of defined groups of genomes."
@@ -141,28 +133,38 @@ class GroupMetadata(BaseObjectMetadata):
         return entry
 
 
-class MetadataGetter():
-
-    metadata_classes = [AmrMetadata, CogMetadata, KoMetadata, PfamMetadata,
-                        OrthogroupMetadata, VfMetadata, ModuleMetadata,
-                        PathwayMetadata]
+class MetadataGetter:
+    metadata_classes = [
+        AmrMetadata,
+        CogMetadata,
+        KoMetadata,
+        PfamMetadata,
+        OrthogroupMetadata,
+        VfMetadata,
+        ModuleMetadata,
+        PathwayMetadata,
+    ]
 
     _annotations = ["cog", "pfam", "ko", "amr", "vf"]
     _orthology = ["orthogroup"]
 
     def __init__(self):
         self.metadata_instances = [cls() for cls in self.metadata_classes]
-        self.object_type_to_metadata = {obj.object_type: obj
-                                        for obj in self.metadata_instances}
+        self.object_type_to_metadata = {
+            obj.object_type: obj for obj in self.metadata_instances
+        }
 
     def get_annotations_metadata(self):
-        return (self.object_type_to_metadata[object_type]
-                for object_type in self._annotations
-                if self.object_type_to_metadata[object_type].is_enabled)
+        return (
+            self.object_type_to_metadata[object_type]
+            for object_type in self._annotations
+            if self.object_type_to_metadata[object_type].is_enabled
+        )
 
     def get_orthology_metadata(self):
-        return (self.object_type_to_metadata[object_type]
-                for object_type in self._orthology)
+        return (
+            self.object_type_to_metadata[object_type] for object_type in self._orthology
+        )
 
     @property
     def group_metadata(self):

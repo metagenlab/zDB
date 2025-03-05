@@ -1,17 +1,17 @@
 from collections import namedtuple
 
 from chlamdb.forms import make_group_add_form
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
+from django.shortcuts import render
 from django.urls import reverse
 from django.views import View
-
-from views.mixins import BaseViewMixin, GenomesTableMixin
+from views.mixins import BaseViewMixin
+from views.mixins import GenomesTableMixin
 from views.object_type_metadata import GroupMetadata
 
 
 class GroupsOverview(BaseViewMixin, View, GroupMetadata):
-
-    template = 'chlamdb/groups_overview.html'
+    template = "chlamdb/groups_overview.html"
     view_name = "groups"
 
     @property
@@ -19,14 +19,14 @@ class GroupsOverview(BaseViewMixin, View, GroupMetadata):
         return namedtuple("metadata", "description")(self.overview_description)
 
     def get(self, request, *args, **kwargs):
-        groups = [self.format_entry(group[0], to_url=True)
-                  for group in self.db.get_groups()]
+        groups = [
+            self.format_entry(group[0], to_url=True) for group in self.db.get_groups()
+        ]
         return render(request, self.template, self.get_context(groups=groups))
 
 
 class GroupDetails(BaseViewMixin, View, GroupMetadata, GenomesTableMixin):
-
-    template = 'chlamdb/group_details.html'
+    template = "chlamdb/group_details.html"
     view_name = "groups"
     genome_source_object = "group"
 
@@ -38,11 +38,14 @@ class GroupDetails(BaseViewMixin, View, GroupMetadata, GenomesTableMixin):
         self.group = group
         taxids = self.db.get_taxids_for_groups([group])
         genome_table = self.get_genomes_table(tuple(taxids))
-        return render(request, self.template, self.get_context(group=self.group, genome_table=genome_table))
+        return render(
+            request,
+            self.template,
+            self.get_context(group=self.group, genome_table=genome_table),
+        )
 
 
 class GroupDelete(BaseViewMixin, View, GroupMetadata, GenomesTableMixin):
-
     view_name = "groups_delete"
     genome_source_object = "group"
 
@@ -53,8 +56,7 @@ class GroupDelete(BaseViewMixin, View, GroupMetadata, GenomesTableMixin):
 
 
 class GroupAdd(BaseViewMixin, View, GroupMetadata):
-
-    template = 'chlamdb/group_add.html'
+    template = "chlamdb/group_add.html"
     view_name = "groups"
     genome_source_object = "group"
     description = "Add form"
@@ -81,6 +83,7 @@ class GroupAdd(BaseViewMixin, View, GroupMetadata):
 
         self.db.load_data_into_table("groups", [(group_name,)])
         self.db.load_data_into_table(
-            "taxon_in_group", [(group_name, taxid) for taxid in genomes])
+            "taxon_in_group", [(group_name, taxid) for taxid in genomes]
+        )
         self.db.commit()
         return redirect(reverse("groups", args=[group_name]))

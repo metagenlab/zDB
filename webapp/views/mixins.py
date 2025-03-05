@@ -1,19 +1,26 @@
 import pandas as pd
 from django.conf import settings
 from lib.db_utils import DB
-
 from views.analysis_view_metadata import analysis_views_metadata
-from views.object_type_metadata import (AmrMetadata, CogMetadata, KoMetadata,
-                                        OrthogroupMetadata, PfamMetadata,
-                                        VfMetadata, my_locals)
-from views.utils import (DataTableConfig, format_genome, format_hmm_url,
-                         format_ko_module, format_lst_to_html,
-                         format_refseqid_to_ncbi, get_genomes_data, page2title,
-                         safe_replace)
+from views.object_type_metadata import AmrMetadata
+from views.object_type_metadata import CogMetadata
+from views.object_type_metadata import KoMetadata
+from views.object_type_metadata import OrthogroupMetadata
+from views.object_type_metadata import PfamMetadata
+from views.object_type_metadata import VfMetadata
+from views.object_type_metadata import my_locals
+from views.utils import DataTableConfig
+from views.utils import format_genome
+from views.utils import format_hmm_url
+from views.utils import format_ko_module
+from views.utils import format_lst_to_html
+from views.utils import format_refseqid_to_ncbi
+from views.utils import get_genomes_data
+from views.utils import page2title
+from views.utils import safe_replace
 
 
-class Transform():
-
+class Transform:
     def __init__(self, colname, transform, kwargs=None, outcolname=None):
         self.colname = colname
         self.transform = transform
@@ -32,7 +39,6 @@ class Transform():
 
 
 class TransformWithAccessoryColumn(Transform):
-
     def __init__(self, colname, accessory_colname, transform):
         self.colname = colname
         self.accessory_colname = accessory_colname
@@ -43,7 +49,8 @@ class TransformWithAccessoryColumn(Transform):
 
     def apply(self, df):
         df[self.colname] = df[[self.colname, self.accessory_colname]].apply(
-            self.transform, axis=1)
+            self.transform, axis=1
+        )
 
     def maybe_add_accessory_col_for_query(self, columns, transformed):
         if not transformed or not columns or self.colname not in columns:
@@ -52,8 +59,7 @@ class TransformWithAccessoryColumn(Transform):
             columns.append(self.accessory_colname)
 
 
-class BaseViewMixin():
-
+class BaseViewMixin:
     _db = None
     _base_colname_to_header_mapping = {}
     _specific_colname_to_header_mapping = {}
@@ -66,8 +72,10 @@ class BaseViewMixin():
         return self._db
 
     def page_title(self):
-        return page2title.get(getattr(self, "view_name", None)) or \
-            page2title[f"{self.object_type}_comparison"]
+        return (
+            page2title.get(getattr(self, "view_name", None))
+            or page2title[f"{self.object_type}_comparison"]
+        )
 
     @property
     def object_column(self):
@@ -75,13 +83,13 @@ class BaseViewMixin():
 
     def colname_to_header(self, colname):
         return self._specific_colname_to_header_mapping.get(
-            colname, self._base_colname_to_header_mapping.get(
-                colname, colname.capitalize()))
+            colname,
+            self._base_colname_to_header_mapping.get(colname, colname.capitalize()),
+        )
 
     @property
     def table_headers(self):
-        return [self.colname_to_header(col)
-                for col in self.table_data_accessors]
+        return [self.colname_to_header(col) for col in self.table_data_accessors]
 
     def transform_data(self, descriptions):
         for transform in self.transforms:
@@ -90,14 +98,15 @@ class BaseViewMixin():
 
     @property
     def transforms(self):
-        return [
-            Transform(self.object_column, self.format_entry, {"to_url": True})]
+        return [Transform(self.object_column, self.format_entry, {"to_url": True})]
 
     @property
     def available_views(self):
-        return [view_metadata(self.object_type, self.object_name_plural)
-                for view_metadata in analysis_views_metadata
-                if view_metadata.available_for(self.object_type)]
+        return [
+            view_metadata(self.object_type, self.object_name_plural)
+            for view_metadata in analysis_views_metadata
+            if view_metadata.available_for(self.object_type)
+        ]
 
     @property
     def metadata(self):
@@ -109,17 +118,21 @@ class BaseViewMixin():
             "page_title": self.page_title(),
         }
         if hasattr(self, "metadata"):
-            context.update({
-                "description": getattr(self.metadata, "description", ""),
-                "tab_name": getattr(self.metadata, "name", ""),
-                })
+            context.update(
+                {
+                    "description": getattr(self.metadata, "description", ""),
+                    "tab_name": getattr(self.metadata, "name", ""),
+                }
+            )
         if hasattr(self, "object_type"):
-            context.update({
-                "object_type": self.object_type,
-                "object_name": self.object_name_plural,
-                "object_name_plural": self.object_name_plural,
-                "available_views": self.available_views,
-                })
+            context.update(
+                {
+                    "object_type": self.object_type,
+                    "object_name": self.object_name_plural,
+                    "object_name_plural": self.object_name_plural,
+                    "available_views": self.available_views,
+                }
+            )
         if hasattr(self, "form"):
             context["form"] = self.form
         context.update(kwargs)
@@ -130,21 +143,27 @@ class BaseViewMixin():
             first_col = 1
         else:
             first_col = 0
-        return ", ".join(self.table_headers[first_col:-1]) + " and " + \
-               self.table_headers[-1]
+        return (
+            ", ".join(self.table_headers[first_col:-1])
+            + " and "
+            + self.table_headers[-1]
+        )
 
 
 class AmrViewMixin(BaseViewMixin, AmrMetadata):
-
     object_column = "gene"
 
-    _base_colname_to_header_mapping = {
-        "seq_name": "Description",
-        "hmm_id": "HMM"
-    }
+    _base_colname_to_header_mapping = {"seq_name": "Description", "hmm_id": "HMM"}
 
-    table_data_accessors = ["gene", "seq_name", "scope", "type", "class",
-                            "subclass", "hmm_id"]
+    table_data_accessors = [
+        "gene",
+        "seq_name",
+        "scope",
+        "type",
+        "class",
+        "subclass",
+        "hmm_id",
+    ]
 
     @property
     def transforms(self):
@@ -152,7 +171,7 @@ class AmrViewMixin(BaseViewMixin, AmrMetadata):
             Transform(self.object_column, self.format_entry, {"to_url": True}),
             Transform("hmm_id", format_hmm_url),
             Transform("class", safe_replace, {"args": ["/", " / "]}),
-            Transform("subclass", safe_replace, {"args": ["/", " / "]})
+            Transform("subclass", safe_replace, {"args": ["/", " / "]}),
         ]
 
     @property
@@ -171,8 +190,9 @@ class AmrViewMixin(BaseViewMixin, AmrMetadata):
     def aggregate_amr_annotations(self, amr_annotations):
         gene_annot_counts = amr_annotations.gene.value_counts()
         for gene in gene_annot_counts[gene_annot_counts > 1].keys():
-            amr_annotations[amr_annotations["gene"] == gene] = \
+            amr_annotations[amr_annotations["gene"] == gene] = (
                 self.aggregate_annotations_for_gene(gene, amr_annotations)
+            )
 
     def aggregate_annotations_for_gene(self, gene, annotations):
         """
@@ -188,7 +208,6 @@ class AmrViewMixin(BaseViewMixin, AmrMetadata):
 
 
 class CogViewMixin(BaseViewMixin, CogMetadata):
-
     _base_colname_to_header_mapping = {
         "cog": "ID",
         "function": "Function(s) cat.",
@@ -215,7 +234,8 @@ class CogViewMixin(BaseViewMixin, CogMetadata):
 
     def get_hit_descriptions(self, ids, transformed=True, only_cog_desc=True, **kwargs):
         descriptions = self.db.get_cog_summaries(
-            ids, only_cog_desc=only_cog_desc, as_df=True)
+            ids, only_cog_desc=only_cog_desc, as_df=True
+        )
         if transformed:
             descriptions = self.transform_data(descriptions)
         return descriptions
@@ -224,13 +244,13 @@ class CogViewMixin(BaseViewMixin, CogMetadata):
     def transforms(self):
         return [
             Transform(self.object_column, self.format_entry, {"to_url": True}),
-            Transform("function", self.format_function_descr,
-                      outcolname="function_descr"),
+            Transform(
+                "function", self.format_function_descr, outcolname="function_descr"
+            ),
         ]
 
 
 class KoViewMixin(BaseViewMixin, KoMetadata):
-
     _base_colname_to_header_mapping = {
         "ko": "KO",
     }
@@ -241,30 +261,43 @@ class KoViewMixin(BaseViewMixin, KoMetadata):
     def get_hit_counts(self):
         return self.db.get_ko_hits
 
-    def get_hit_descriptions(self, ids, transformed=True, extended_data=True,
-                             taxid_for_pathway_formatting=None, **kwargs):
+    def get_hit_descriptions(
+        self,
+        ids,
+        transformed=True,
+        extended_data=True,
+        taxid_for_pathway_formatting=None,
+        **kwargs,
+    ):
         descriptions = self.db.get_ko_desc(ids, as_df=True)
         descriptions = descriptions.set_index(["ko"], drop=False)
         if extended_data:
             if not transformed:
                 raise NotImplementedError(
-                    "Can only use extended_data with transformed=True")
+                    "Can only use extended_data with transformed=True"
+                )
             modules = self.db.get_ko_modules(ids, as_pandas=True)
             if not modules.empty:
                 modules = modules.groupby("ko_id").apply(self.format_modules)
                 descriptions = descriptions.merge(
-                    modules.rename("modules"), how="left",
-                    left_index=True, right_index=True)
+                    modules.rename("modules"),
+                    how="left",
+                    left_index=True,
+                    right_index=True,
+                )
             else:
                 descriptions["modules"] = None
             pathways = self.db.get_ko_pathways(ids, as_df=True)
             if not pathways.empty:
                 pathways = pathways.groupby("ko").apply(
-                    self.format_pathways,
-                    with_taxid=taxid_for_pathway_formatting)
+                    self.format_pathways, with_taxid=taxid_for_pathway_formatting
+                )
                 descriptions = descriptions.merge(
-                    pathways.rename("pathways"), how="left",
-                    left_index=True, right_index=True)
+                    pathways.rename("pathways"),
+                    how="left",
+                    left_index=True,
+                    right_index=True,
+                )
             else:
                 descriptions["pathways"] = None
 
@@ -275,8 +308,9 @@ class KoViewMixin(BaseViewMixin, KoMetadata):
 
     @staticmethod
     def format_modules(modules, as_list=False):
-        gen = (format_ko_module(row.module_id, row.desc)
-               for i, row in modules.iterrows())
+        gen = (
+            format_ko_module(row.module_id, row.desc) for i, row in modules.iterrows()
+        )
         if as_list:
             return list(gen)
         return "<br>".join(gen)
@@ -284,20 +318,21 @@ class KoViewMixin(BaseViewMixin, KoMetadata):
     @staticmethod
     def format_pathways(pathways, with_taxid=None):
         if with_taxid is None:
-            fmt_str = "<a href=\"/KEGG_mapp_ko/map{id:05d}\">{descr}</a>"
+            fmt_str = '<a href="/KEGG_mapp_ko/map{id:05d}">{descr}</a>'
         else:
-            fmt_str = "<a href=\"/KEGG_mapp_ko/map{id:05d}/{taxid}\">{descr}</a>"
-        gen = (fmt_str.format(id=row.pathway, descr=row.description, taxid=with_taxid)
-               for i, row in pathways.iterrows())
+            fmt_str = '<a href="/KEGG_mapp_ko/map{id:05d}/{taxid}">{descr}</a>'
+        gen = (
+            fmt_str.format(id=row.pathway, descr=row.description, taxid=with_taxid)
+            for i, row in pathways.iterrows()
+        )
         return "<br>".join(gen)
 
 
 class PfamViewMixin(BaseViewMixin, PfamMetadata):
-
     _base_colname_to_header_mapping = {
         "pfam": "Domain ID",
         "def": "Description",
-        "ttl_cnt": "nDomains"
+        "ttl_cnt": "nDomains",
     }
 
     table_data_accessors = ["pfam", "def"]
@@ -314,11 +349,7 @@ class PfamViewMixin(BaseViewMixin, PfamMetadata):
 
 
 class OrthogroupViewMixin(BaseViewMixin, OrthogroupMetadata):
-
-    _base_colname_to_header_mapping = {
-        "product": "Products",
-        "gene": "Genes"
-    }
+    _base_colname_to_header_mapping = {"product": "Products", "gene": "Genes"}
 
     table_data_accessors = ["orthogroup", "products", "gene"]
 
@@ -331,12 +362,16 @@ class OrthogroupViewMixin(BaseViewMixin, OrthogroupMetadata):
         grouped = genes.groupby("orthogroup")
         genes = grouped["gene"].apply(list).apply(format_lst_to_html)
         products = grouped["product"].apply(list).apply(format_lst_to_html)
-        descriptions = pd.DataFrame({"orthogroup": ids},
-                                    index=pd.Index(ids, name="orthogroup"))
+        descriptions = pd.DataFrame(
+            {"orthogroup": ids}, index=pd.Index(ids, name="orthogroup")
+        )
 
         descriptions = descriptions.merge(
             pd.DataFrame({"gene": genes, "products": products}),
-            "left", left_index=True, right_index=True)
+            "left",
+            left_index=True,
+            right_index=True,
+        )
         if transformed:
             descriptions = self.transform_data(descriptions)
 
@@ -344,7 +379,6 @@ class OrthogroupViewMixin(BaseViewMixin, OrthogroupMetadata):
 
 
 class VfViewMixin(BaseViewMixin, VfMetadata):
-
     object_column = "vf_gene_id"
 
     _base_colname_to_header_mapping = {
@@ -352,7 +386,6 @@ class VfViewMixin(BaseViewMixin, VfMetadata):
         "prot_name": "Protein",
         "vfid": "VF ID",
         "gb_accession": "Protein ID",
-
     }
 
     table_data_accessors = ["vf_gene_id", "prot_name", "vfid", "category"]
@@ -367,8 +400,7 @@ class VfViewMixin(BaseViewMixin, VfMetadata):
 
     def get_hit_descriptions(self, ids, transformed=True, **kwargs):
         cols = kwargs.get("columns")
-        self.transform_category.maybe_add_accessory_col_for_query(
-            cols, transformed)
+        self.transform_category.maybe_add_accessory_col_for_query(cols, transformed)
         descriptions = self.db.vf.get_hit_descriptions(ids, columns=cols)
         if "vf_gene_id" in descriptions:
             descriptions = descriptions.set_index("vf_gene_id", drop=False)
@@ -378,19 +410,24 @@ class VfViewMixin(BaseViewMixin, VfMetadata):
 
     @staticmethod
     def format_vfid(vfid):
-        return f'<a href="http://www.mgc.ac.cn/cgi-bin/VFs/vfs.cgi?VFID={vfid}"'\
-               f'target="_blank">{vfid}</a>'
+        return (
+            f'<a href="http://www.mgc.ac.cn/cgi-bin/VFs/vfs.cgi?VFID={vfid}"'
+            f'target="_blank">{vfid}</a>'
+        )
 
     @staticmethod
     def format_vf_category(category_and_id):
         category, vfcid = category_and_id
-        return f'<a href="http://www.mgc.ac.cn/cgi-bin/VFs/VFcategory.cgi?{vfcid}"'\
-               f'target="_blank">{category}</a>'
+        return (
+            f'<a href="http://www.mgc.ac.cn/cgi-bin/VFs/VFcategory.cgi?{vfcid}"'
+            f'target="_blank">{category}</a>'
+        )
 
     @property
     def transform_category(self):
         return TransformWithAccessoryColumn(
-            "category", "vf_category_id", self.format_vf_category)
+            "category", "vf_category_id", self.format_vf_category
+        )
 
     @property
     def transforms(self):
@@ -398,22 +435,23 @@ class VfViewMixin(BaseViewMixin, VfMetadata):
             Transform(self.object_column, self.format_entry, {"to_url": True}),
             Transform("gb_accession", format_refseqid_to_ncbi),
             Transform("vfid", self.format_vfid),
-            self.transform_category
+            self.transform_category,
         ]
 
 
-class ComparisonViewMixin():
+class ComparisonViewMixin:
     """This class is somewhat of a hack to get pseudo inheritance
     from the correct mixin for views that get the object_type as
     parameter.
     """
+
     type2mixin = {
         "cog": CogViewMixin,
         "pfam": PfamViewMixin,
         "ko": KoViewMixin,
         "orthogroup": OrthogroupViewMixin,
         "amr": AmrViewMixin,
-        "vf": VfViewMixin
+        "vf": VfViewMixin,
     }
 
     mixin = None
@@ -429,14 +467,14 @@ class ComparisonViewMixin():
         return super(ComparisonViewMixin, self).dispatch(request, *args, **kwargs)
 
 
-class GenomesTableMixin():
-
+class GenomesTableMixin:
     _genome_table_help = (
         "This table contains the list of genomes included in the {} and a "
         "summary of their content. <br> Clicking on the genome name "
         "(first column) a second table with the protein content is displayed. "
         "It shows to which contig each protein belongs and provides the link "
-        "to the locus tags. <br> Fasta and gbk files can be downloaded.")
+        "to the locus tags. <br> Fasta and gbk files can be downloaded."
+    )
 
     @property
     def genome_table_help(self):
@@ -447,23 +485,26 @@ class GenomesTableMixin():
 
         filenames_tax_id = self.db.get_filenames_to_taxon_id()
         filenames_tax_id_db = pd.DataFrame.from_dict(list(filenames_tax_id.items()))
-        filenames_tax_id_db.columns = ['filename', 'taxon_id']
-        filenames_tax_id_db.index = list(filenames_tax_id_db['taxon_id'])
+        filenames_tax_id_db.columns = ["filename", "taxon_id"]
+        filenames_tax_id_db.index = list(filenames_tax_id_db["taxon_id"])
         filenames_list = list(filenames_tax_id_db["filename"])
 
         path_template = settings.BLAST_DB_PATH + "/{ext}/{filename}.{ext}"
         link_template = '<a href="{}"> .{{ext}} </a>'.format(path_template)
         for ext in ["faa", "fna", "ffn", "gbk"]:
-            filenames_tax_id_db[f'path_to_{ext}'] = [
+            filenames_tax_id_db[f"path_to_{ext}"] = [
                 link_template.format(filename=filename, ext=ext)
-                for filename in filenames_list]
+                for filename in filenames_list
+            ]
 
         filenames_tax_id_db = filenames_tax_id_db[
-            ["path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk"]]
+            ["path_to_faa", "path_to_fna", "path_to_ffn", "path_to_gbk"]
+        ]
         genomes_data = genomes_data.join(filenames_tax_id_db, on="taxon_id")
 
         genomes_data["accession"] = genomes_data[["id", "description"]].apply(
-            format_genome, axis=1)
+            format_genome, axis=1
+        )
 
         data_table_header = [
             "Name",
@@ -476,7 +517,7 @@ class GenomesTableMixin():
             "faa seq",
             "fna seq",
             "ffn seq",
-            "gbk file"
+            "gbk file",
         ]
 
         table_data_accessors = [
@@ -490,12 +531,15 @@ class GenomesTableMixin():
             "path_to_faa",
             "path_to_fna",
             "path_to_ffn",
-            "path_to_gbk"]
+            "path_to_gbk",
+        ]
 
         table_data = genomes_data[table_data_accessors]
 
-        return {"table_data": table_data,
-                "table_headers": data_table_header,
-                "data_table_config": DataTableConfig(),
-                "table_data_accessors": table_data_accessors,
-                "table_help": self.genome_table_help}
+        return {
+            "table_data": table_data,
+            "table_headers": data_table_header,
+            "data_table_config": DataTableConfig(),
+            "table_data_accessors": table_data_accessors,
+            "table_help": self.genome_table_help,
+        }

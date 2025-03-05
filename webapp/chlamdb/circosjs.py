@@ -1,26 +1,21 @@
-
-class CircosJs():
-    '''
+class CircosJs:
+    """
     Generate javascript code for circos plots
 
     - self.add_heatmap: add a new heatmap
     - self.get_js_code: return complete js code as string
-    '''
-    
-    
-    
-    def __init__(self,
-                 figure_div_id="heatmapChart"):
-        
+    """
+
+    def __init__(self, figure_div_id="heatmapChart"):
         self.contigs_data = []
-        self.heatmap_tracks = '{'
-        self.highlight_tracks = '{'
-        self.lineplot_tracks = '{'
-        self.histogram_tracks = '{'
+        self.heatmap_tracks = "{"
+        self.highlight_tracks = "{"
+        self.lineplot_tracks = "{"
+        self.histogram_tracks = "{"
         self.last_inner_radius = None
         self.last_outer_radius = 1.01
 
-        self.js_template = ''' 
+        self.js_template = """ 
         
         var width = 900;
 
@@ -89,9 +84,9 @@ class CircosJs():
 
         myCircos.render();
   
-        '''
-        
-        self.template_heatmap = '''
+        """
+
+        self.template_heatmap = """
         var heatmap_data_lst = %s ;
 
         var i = 0;
@@ -105,9 +100,9 @@ class CircosJs():
 
             myCircos.heatmap(key, data, conf);
         }
-        '''
-        
-        self.template_highlight = '''
+        """
+
+        self.template_highlight = """
         var highlight_data_lst = %s ;
 
         var i = 0;
@@ -121,9 +116,9 @@ class CircosJs():
             myCircos.highlight(key, data, conf);
         }
         
-        '''
-        
-        self.template_lineplot = '''
+        """
+
+        self.template_lineplot = """
         var lineplot_data_lst = %s ;
 
         var i = 0;
@@ -135,9 +130,9 @@ class CircosJs():
             myCircos.line(key, data, conf);
         }
         
-        '''
+        """
 
-        self.template_histogram = '''
+        self.template_histogram = """
         var histogram_data_lst = %s ;
 
         var i = 0;
@@ -149,194 +144,278 @@ class CircosJs():
             myCircos.histogram(key, data, conf);
         }
         
-        '''
+        """
 
-        self.heatmap_configuration_template = '{outerRadius: %s, innerRadius: %s, min: 0, max: 100, color: %s, logScale: false}'
-        
-        self.histogram_configuration_template = '{outerRadius: %s, innerRadius: %s, color: %s, logScale: false}'
-        
+        self.heatmap_configuration_template = "{outerRadius: %s, innerRadius: %s, min: 0, max: 100, color: %s, logScale: false}"
+
+        self.histogram_configuration_template = (
+            "{outerRadius: %s, innerRadius: %s, color: %s, logScale: false}"
+        )
+
         self.lineplot_configuration_template = '{outerRadius: %s, innerRadius: %s, color: "%s", logScale: false, fillColor: "%s", fill: true, direction: "out"}'
-    
 
     def add_contigs_data(self, df_bioentry):
-      '''
-      Input df with the following columns:
-      - length
-      - accession
-      
-      The index is used as id
-      '''     
-      i = 0
-      for bioentry, row in df_bioentry.iterrows():
-          if i % 2 == 0:
-              self.contigs_data.append({"len": row.length, "color": "#8dd3c7", "label": row.accession, "id": bioentry})
-          else:
-              self.contigs_data.append({"len": row.length, "color": "#fb8072", "label": row.accession, "id": bioentry})
-          i+=1
-      
-    
-    def add_gene_track(self, df, label, highlight_list = ["OJCDPLGI_00091", "OJCDPLGI_00096"], sep=0, radius_diff=0.04):
-      '''
-      Input df columns:
-      - bioentry_id
-      - start_pos
-      - end_pos
-      - locus_ref
-      '''
-    
-      highlight_data = [{"block_id": str(row.bioentry_id), "start":row.start_pos, "end": row.end_pos, "color": row.color, "locus_tag": row.locus_ref, "gene": f"{row.gene}", "product": f'{row.gene_product}'} if row.locus_ref not in highlight_list else  {"block_id": str(row.bioentry_id), "start":row.start_pos, "end": row.end_pos, "color": "magenta", "locus_tag": row.locus_ref,  "gene": f"{row.gene}", "product": f'{row.gene_product}'} for n, row in df.iterrows()]
-      
-      if not self.last_inner_radius:
-        outer_radius = 0.98
-        inner_radius = 0.98 - radius_diff
-        #conf["color"] = color
-      else:
-        outer_radius = self.last_inner_radius - sep
-        inner_radius  = self.last_inner_radius - sep - radius_diff
-        #conf["color"] = color
-      
-      self.last_inner_radius = inner_radius
+        """
+        Input df with the following columns:
+        - length
+        - accession
 
-      conf = self.heatmap_configuration_template % (outer_radius, inner_radius, 'function (d) {return d.color}') # 
+        The index is used as id
+        """
+        i = 0
+        for bioentry, row in df_bioentry.iterrows():
+            if i % 2 == 0:
+                self.contigs_data.append(
+                    {
+                        "len": row.length,
+                        "color": "#8dd3c7",
+                        "label": row.accession,
+                        "id": bioentry,
+                    }
+                )
+            else:
+                self.contigs_data.append(
+                    {
+                        "len": row.length,
+                        "color": "#fb8072",
+                        "label": row.accession,
+                        "id": bioentry,
+                    }
+                )
+            i += 1
 
-      self.highlight_tracks += f'"{label}": [%s,%s],' % (highlight_data, conf)
-    
-    
+    def add_gene_track(
+        self,
+        df,
+        label,
+        highlight_list=["OJCDPLGI_00091", "OJCDPLGI_00096"],
+        sep=0,
+        radius_diff=0.04,
+    ):
+        """
+        Input df columns:
+        - bioentry_id
+        - start_pos
+        - end_pos
+        - locus_ref
+        """
+
+        highlight_data = [
+            {
+                "block_id": str(row.bioentry_id),
+                "start": row.start_pos,
+                "end": row.end_pos,
+                "color": row.color,
+                "locus_tag": row.locus_ref,
+                "gene": f"{row.gene}",
+                "product": f"{row.gene_product}",
+            }
+            if row.locus_ref not in highlight_list
+            else {
+                "block_id": str(row.bioentry_id),
+                "start": row.start_pos,
+                "end": row.end_pos,
+                "color": "magenta",
+                "locus_tag": row.locus_ref,
+                "gene": f"{row.gene}",
+                "product": f"{row.gene_product}",
+            }
+            for n, row in df.iterrows()
+        ]
+
+        if not self.last_inner_radius:
+            outer_radius = 0.98
+            inner_radius = 0.98 - radius_diff
+            # conf["color"] = color
+        else:
+            outer_radius = self.last_inner_radius - sep
+            inner_radius = self.last_inner_radius - sep - radius_diff
+            # conf["color"] = color
+
+        self.last_inner_radius = inner_radius
+
+        conf = self.heatmap_configuration_template % (
+            outer_radius,
+            inner_radius,
+            "function (d) {return d.color}",
+        )  #
+
+        self.highlight_tracks += f'"{label}": [%s,%s],' % (highlight_data, conf)
+
     def add_heatmap_track(self, df, label, color="comp", sep=0, radius_diff=0.06):
-        '''
+        """
         Input df columns:
         - bioentry_id
         - start_pos
         - end_pos
         - identity
         - locus_tag
-        
+
         Locus without homologs in the target genome should have a locus_tag with a value of None
-        '''
-        heatmap_data = [{"block_id": row.bioentry_id, "start":row.start_pos, "end": row.end_pos, "value": row.identity, "locus_tag": row.locus_tag} if row.locus_tag is not None else {"block_id": row.bioentry_id, "start":row.start_pos, "end": row.end_pos, "value": "false"} for n, row in df.iterrows()]
-          
+        """
+        heatmap_data = [
+            {
+                "block_id": row.bioentry_id,
+                "start": row.start_pos,
+                "end": row.end_pos,
+                "value": row.identity,
+                "locus_tag": row.locus_tag,
+            }
+            if row.locus_tag is not None
+            else {
+                "block_id": row.bioentry_id,
+                "start": row.start_pos,
+                "end": row.end_pos,
+                "value": "false",
+            }
+            for n, row in df.iterrows()
+        ]
+
         if not self.last_inner_radius:
             outer_radius = 0.98
             inner_radius = 0.98 - radius_diff
-            #conf["color"] = color
+            # conf["color"] = color
         else:
             outer_radius = self.last_inner_radius - sep
-            inner_radius  = self.last_inner_radius - sep - radius_diff
-            #conf["color"] = color
-          
+            inner_radius = self.last_inner_radius - sep - radius_diff
+            # conf["color"] = color
+
         self.last_inner_radius = inner_radius
 
-        if color == 'comp':
-              col = '''function(datum, index) {var color_scale = chroma.scale('YlOrRd').domain([30,100]); if (datum.value == "false") {return "lightblue"} else {var col = color_scale((datum.value)).hex();return col}}'''
+        if color == "comp":
+            col = """function(datum, index) {var color_scale = chroma.scale('YlOrRd').domain([30,100]); if (datum.value == "false") {return "lightblue"} else {var col = color_scale((datum.value)).hex();return col}}"""
         else:
-              col = color
+            col = color
 
         conf = self.heatmap_configuration_template % (outer_radius, inner_radius, col)
-              
-        self.heatmap_tracks += f'"{label}": [%s,%s],' % (heatmap_data, conf)
-    
 
-    def add_line_track(self, bioentry_df, label, fillcolor="red", sep=0, radius_diff=0.06, windows=500):
-        '''
+        self.heatmap_tracks += f'"{label}": [%s,%s],' % (heatmap_data, conf)
+
+    def add_line_track(
+        self, bioentry_df, label, fillcolor="red", sep=0, radius_diff=0.06, windows=500
+    ):
+        """
         Minimal Input df columns:
         - bioentry_id
         - seq
-        '''
+        """
         from Bio.SeqUtils import gc_fraction
-        
-        ordered_seqs = [bioentry.seq for n,bioentry in bioentry_df.iterrows()]
-        concat_seq = ''.join(ordered_seqs)
+
+        ordered_seqs = [bioentry.seq for n, bioentry in bioentry_df.iterrows()]
+        concat_seq = "".join(ordered_seqs)
         average_gc = gc_fraction(concat_seq)
-        
+
         linedata_data = []
         for index, bientry in bioentry_df.iterrows():
             for i in range(0, len(bientry.seq), windows):
                 start = i
                 stop = i + windows
-                gc = gc_fraction(bientry.seq[start:stop]) #- average_gc
+                gc = gc_fraction(bientry.seq[start:stop])  # - average_gc
                 if stop > len(bientry.seq):
                     stop = len(bientry.seq)
                 if stop - start < 500:
                     break
-                #print("gc-diff", gc)
-                linedata_data.append({"block_id": str(index), "position": start, "value": gc}) 
-                linedata_data.append({"block_id": str(index), "position": stop, "value": gc}) 
-          
+                # print("gc-diff", gc)
+                linedata_data.append(
+                    {"block_id": str(index), "position": start, "value": gc}
+                )
+                linedata_data.append(
+                    {"block_id": str(index), "position": stop, "value": gc}
+                )
+
         if not self.last_inner_radius:
             outer_radius = 0.98
             inner_radius = 0.98 - radius_diff
-            #conf["color"] = color
+            # conf["color"] = color
         else:
             outer_radius = self.last_inner_radius - sep
-            inner_radius  = self.last_inner_radius - sep - radius_diff
-            #conf["color"] = color
-          
+            inner_radius = self.last_inner_radius - sep - radius_diff
+            # conf["color"] = color
+
         self.last_inner_radius = inner_radius
 
-        conf = self.lineplot_configuration_template % (outer_radius, inner_radius, fillcolor, fillcolor)
-              
+        conf = self.lineplot_configuration_template % (
+            outer_radius,
+            inner_radius,
+            fillcolor,
+            fillcolor,
+        )
+
         self.lineplot_tracks += f'"{label}": [%s,%s],' % (linedata_data, conf)
- 
- 
-    def add_histogram_track(self, df, label, fillcolor="blue", sep=0, radius_diff=0.06, outer=False):
-        '''
+
+    def add_histogram_track(
+        self, df, label, fillcolor="blue", sep=0, radius_diff=0.06, outer=False
+    ):
+        """
         Minimal Input df columns:
         - bioentry_id
-        - start_pos 
-        - end_pos 
+        - start_pos
+        - end_pos
         - value
-        '''
-        histogram_data = [{"block_id": f'{row.bioentry_id}', "start":row.start_pos, "end": row.end_pos, "value": row.value} for n, row in df.iterrows()]
-        
+        """
+        histogram_data = [
+            {
+                "block_id": f"{row.bioentry_id}",
+                "start": row.start_pos,
+                "end": row.end_pos,
+                "value": row.value,
+            }
+            for n, row in df.iterrows()
+        ]
+
         if not outer:
             if not self.last_inner_radius:
                 outer_radius = 0.98
                 inner_radius = 0.98 - radius_diff
-                #conf["color"] = color
+                # conf["color"] = color
             else:
                 outer_radius = self.last_inner_radius - sep
-                inner_radius  = self.last_inner_radius - sep - radius_diff
-                #conf["color"] = color
+                inner_radius = self.last_inner_radius - sep - radius_diff
+                # conf["color"] = color
             self.last_inner_radius = inner_radius
         else:
             inner_radius = self.last_outer_radius + sep
-            outer_radius  = self.last_outer_radius + sep + radius_diff
+            outer_radius = self.last_outer_radius + sep + radius_diff
             self.last_outer_radius = outer_radius
-          
-        
 
-        col = '''function(datum, index) {console.log(datum); if (datum.value < 6) {return "red"} else {return "lightblue"}}'''
+        col = """function(datum, index) {console.log(datum); if (datum.value < 6) {return "red"} else {return "lightblue"}}"""
         print(col)
 
         conf = self.histogram_configuration_template % (outer_radius, inner_radius, col)
-              
+
         self.histogram_tracks += f'"{label}": [%s,%s],' % (histogram_data, conf)
-    
-    
-    def get_js_code(self,):
-        
-        if len(self.heatmap_tracks)> 1:
-            heat =  self.heatmap_tracks[0:-1] + '}'
+
+    def get_js_code(
+        self,
+    ):
+        if len(self.heatmap_tracks) > 1:
+            heat = self.heatmap_tracks[0:-1] + "}"
             heatmap_code = self.template_heatmap % heat
         else:
-            heatmap_code = ''
-            
-        if len(self.highlight_tracks) > 1:           
-            high = self.highlight_tracks[0:-1] + '}'
+            heatmap_code = ""
+
+        if len(self.highlight_tracks) > 1:
+            high = self.highlight_tracks[0:-1] + "}"
             highlight_code = self.template_highlight % high
         else:
-            highlight_code = ''
-        
+            highlight_code = ""
+
         if len(self.lineplot_tracks) > 1:
-            line = self.lineplot_tracks[0:-1] + '}'
+            line = self.lineplot_tracks[0:-1] + "}"
             lineplot_code = self.template_lineplot % line
         else:
-            lineplot_code = ''
-            
+            lineplot_code = ""
+
         if len(self.histogram_tracks) > 1:
-            histogram = self.histogram_tracks[0:-1] + '}'
+            histogram = self.histogram_tracks[0:-1] + "}"
             histogram_code = self.template_histogram % histogram
         else:
-            histogram_code = ''
-        
-        return self.js_template % (self.contigs_data, heatmap_code, highlight_code, lineplot_code, histogram_code)
+            histogram_code = ""
+
+        return self.js_template % (
+            self.contigs_data,
+            heatmap_code,
+            highlight_code,
+            lineplot_code,
+            histogram_code,
+        )

@@ -1,6 +1,4 @@
-
-class VFQueries():
-
+class VFQueries:
     hit_table = "vf_hits"
     description_table = "vf_defs"
     id_col = "vf_gene_id"
@@ -32,14 +30,15 @@ class VFQueries():
 
     def get_hits(self, taxids):
         where_clause = self.gen_where_clause("taxid", taxids)
-        columns = ["bioentry.taxon_id",
-                   f"{self.hit_table}.{self.id_col}",
-                   "evalue",
-                   "prot_name",
-                   "vfid",
-                   "category",
-                   "vf_category_id",
-                   ]
+        columns = [
+            "bioentry.taxon_id",
+            f"{self.hit_table}.{self.id_col}",
+            "evalue",
+            "prot_name",
+            "vfid",
+            "category",
+            "vf_category_id",
+        ]
         query = (
             f"SELECT {', '.join(columns)} "
             f"FROM {self.hit_table} "
@@ -53,8 +52,9 @@ class VFQueries():
         df = self.to_pandas_frame(results, [col.split(".")[-1] for col in columns])
         return df
 
-    def get_hit_counts(self, ids, indexing="taxid", search_on="taxid",
-                       keep_taxid=False, plasmids=None):
+    def get_hit_counts(
+        self, ids, indexing="taxid", search_on="taxid", keep_taxid=False, plasmids=None
+    ):
         if indexing == "seqid":
             index = "seqfeature.seqfeature_id"
             if keep_taxid:
@@ -71,14 +71,14 @@ class VFQueries():
             index += ", CAST(is_plasmid.value AS int) "
             subclause = self.gen_where_clause(search_on, plasmids)
             where_clause = (
-                    f"({where_clause} AND is_plasmid.value=0) "
-                    f" OR ({subclause} AND is_plasmid.value=1)"
+                f"({where_clause} AND is_plasmid.value=0) "
+                f" OR ({subclause} AND is_plasmid.value=1)"
             )
             plasmid_join = (
                 "INNER JOIN bioentry_qualifier_value AS is_plasmid ON "
                 "  is_plasmid.bioentry_id=bioentry.bioentry_id "
                 "INNER JOIN term AS plasmid_term ON plasmid_term.term_id=is_plasmid.term_id "
-                "  AND plasmid_term.name=\"plasmid\""
+                '  AND plasmid_term.name="plasmid"'
             )
 
         query = (
@@ -124,8 +124,9 @@ class VFQueries():
             header = ["seqid", self.id_col]
             if keep_taxid:
                 header.append("taxid")
-                results = ((seqid, obj_id, taxid)
-                           for seqid, taxid, obj_id, count in results)
+                results = (
+                    (seqid, obj_id, taxid) for seqid, taxid, obj_id, count in results
+                )
             else:
                 results = ((seqid, obj_id) for seqid, obj_id, count in results)
 
@@ -135,8 +136,7 @@ class VFQueries():
 
     def get_hit_descriptions(self, hit_ids, columns=None):
         if columns is None:
-            columns = [self.id_col, "prot_name", "vfid", "category",
-                       "vf_category_id"]
+            columns = [self.id_col, "prot_name", "vfid", "category", "vf_category_id"]
         if hit_ids is None:
             where = ""
         else:
@@ -145,9 +145,7 @@ class VFQueries():
 
         col_selection = ", ".join([f"descr.{col}" for col in columns])
         query = (
-            f"SELECT {col_selection} "
-            f"FROM {self.description_table} as descr "
-            f"{where};"
+            f"SELECT {col_selection} FROM {self.description_table} as descr {where};"
         )
         results = self.server.adaptor.execute_and_fetchall(query, hit_ids)
         return self.to_pandas_frame(results, columns)

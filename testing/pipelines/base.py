@@ -6,7 +6,6 @@ import nextflow
 
 
 class BaseTestCase(TestCase):
-
     def assertItemsEqual(self, actual, expected):
         self.assertEqual(sorted(actual), sorted(expected))
 
@@ -16,7 +15,6 @@ class BaseTestCase(TestCase):
 
 
 class BasePipelineTestCase(BaseTestCase):
-
     nf_filename = None
     ref_db_dir = None
 
@@ -34,21 +32,14 @@ class BasePipelineTestCase(BaseTestCase):
             "base_db": self.ref_db_dir,
             "singularity_dir": self.singularity_dir.name,
         }
-        self.nf_args = {
-            "run_path": "./testing/pipelines"}
+        self.nf_args = {"run_path": "./testing/pipelines"}
 
     def execute_pipeline(self):
-        return nextflow.run(self.nf_file_path,
-                            params=self.nf_params,
-                            **self.nf_args)
+        return nextflow.run(self.nf_file_path, params=self.nf_params, **self.nf_args)
 
     def assert_success(self, execution):
-        self.assertEqual(execution.status, "OK",
-                         "Pipeline execution failed")
-        self.assertEqual(execution.return_code, "0",
-                         "Pipeline execution failed")
+        self.assertEqual(execution.status, "OK", "Pipeline execution failed")
+        self.assertEqual(execution.return_code, "0", "Pipeline execution failed")
         for proc in execution.process_executions:
-            self.assertIn(proc.return_code, ["0", ""],
-                          "Process execution failed")
-            self.assertIn(proc.status, ["COMPLETED", "-"],
-                          "Process execution failed")
+            self.assertIn(proc.return_code, ["0", ""], "Process execution failed")
+            self.assertIn(proc.status, ["COMPLETED", "-"], "Process execution failed")

@@ -1,20 +1,22 @@
 import os
 import re
-from collections import defaultdict, namedtuple
+from collections import defaultdict
+from collections import namedtuple
 
 import pandas as pd
-from Bio import AlignIO, SeqIO
+from Bio import AlignIO
+from Bio import SeqIO
 from Bio.Align import MultipleSeqAlignment
 from Bio.SeqUtils import CheckSum
 
 
 def chunks(lst, n):
     for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        yield lst[i : i + n]
 
 
 def orthogroups_to_fasta(genomes_list):
-    fasta_list = genomes_list.split(' ')
+    fasta_list = genomes_list.split(" ")
 
     sequence_data = {}
     for fasta_file in fasta_list:
@@ -24,7 +26,7 @@ def orthogroups_to_fasta(genomes_list):
     with open("Orthogroups.txt") as f:
         all_grp = [i for i in f]
         for n, line in enumerate(all_grp):
-            groups = line.rstrip().split(' ')
+            groups = line.rstrip().split(" ")
             group_name = groups[0][:-1]
             groups = groups[1:]
             if len(groups) > 1:
@@ -43,35 +45,40 @@ def check_reference_databases(params):
     if params.get("cog"):
         if not os.path.isdir(os.path.join(db_dir, "cog")):
             raise MissingReferenceDatabase(
-                'COG database could not be found. '
-                'Please set it up with "zdb setup --cog"')
+                "COG database could not be found. "
+                'Please set it up with "zdb setup --cog"'
+            )
     if params.get("ko"):
         if not os.path.isdir(os.path.join(db_dir, "kegg")):
             raise MissingReferenceDatabase(
-                'KEGG database could not be found. '
-                'Please set it up with "zdb setup --ko"')
+                "KEGG database could not be found. "
+                'Please set it up with "zdb setup --ko"'
+            )
     if params.get("pfam"):
         if not os.path.isdir(os.path.join(db_dir, "pfam")):
             raise MissingReferenceDatabase(
-                'Pfam database could not be found. '
-                'Please set it up with "zdb setup --pfam"')
+                "Pfam database could not be found. "
+                'Please set it up with "zdb setup --pfam"'
+            )
     if params.get("swissprot"):
         if not os.path.isdir(os.path.join(db_dir, "uniprot", "swissprot")):
             raise MissingReferenceDatabase(
-                'Swissprot database could not be found. '
-                'Please set it up with "zdb setup --swissprot"')
+                "Swissprot database could not be found. "
+                'Please set it up with "zdb setup --swissprot"'
+            )
     if params.get("vfdb"):
         if not os.path.isdir(os.path.join(db_dir, "vfdb")):
             raise MissingReferenceDatabase(
-                'VFDB database could not be found. '
-                'Please set it up with "zdb setup --vfdb"')
+                "VFDB database could not be found. "
+                'Please set it up with "zdb setup --vfdb"'
+            )
 
 
 class InvalidInput(Exception):
     pass
 
 
-class InputHandler():
+class InputHandler:
     """
     This class is in charge of parsing the input csv, checking
     and if necessary revising the GBK files.
@@ -136,20 +143,19 @@ class InputHandler():
             return True
         raise InvalidInput(
             f'Invalid entry "{value}" in group column. Should be one of '
-            '"yes", "true", "x", "1", "no", "false", "0" or empty')
+            '"yes", "true", "x", "1", "no", "false", "0" or empty'
+        )
 
     @classmethod
     def parse_csv(cls, csv_file):
-        csv = pd.read_csv(csv_file, dtype=str,
-                          skipinitialspace=True).fillna('')
+        csv = pd.read_csv(csv_file, dtype=str, skipinitialspace=True).fillna("")
         entries = []
         names = set()
 
         group_names = {}
         for colname in csv.columns:
             if not cls.is_header_allowed(colname):
-                raise InvalidInput(
-                    f'Invalid column header "{colname}" in input file.')
+                raise InvalidInput(f'Invalid column header "{colname}" in input file.')
             if cls.header_is_group(colname):
                 group_names[colname] = cls.header_to_group_label(colname)
 
@@ -160,7 +166,8 @@ class InputHandler():
             if name:
                 if name in names:
                     raise InvalidInput(
-                        f'Name "{name}" appears twice in the input file.')
+                        f'Name "{name}" appears twice in the input file.'
+                    )
                 names.add(name)
 
             # only get the filename, as nextflow will symlink it
@@ -169,11 +176,13 @@ class InputHandler():
             if not os.path.isfile(filename):
                 raise InvalidInput(
                     f'File "{filename}" cannot be accessed. Please check '
-                    f'that {entry.file} exists and is accessible.')
+                    f"that {entry.file} exists and is accessible."
+                )
 
             if filename in filenames:
                 raise InvalidInput(
-                    f'File "{filename}" appears twice in the input file.')
+                    f'File "{filename}" appears twice in the input file.'
+                )
             filenames.add(filename)
 
             groups = []
@@ -222,8 +231,9 @@ class InputHandler():
                     common_name = entry.name
 
                 if sci_name is None:
-                    raise Exception(f"No scientific name for record {record.id} "
-                                    f"in {gbk_file}.")
+                    raise Exception(
+                        f"No scientific name for record {record.id} in {gbk_file}."
+                    )
 
                 if record.name in self.contigs:
                     needs_revision = True
@@ -243,7 +253,9 @@ class InputHandler():
                     if self.organisms[sci_name] > 1:
                         needs_revision = True
                 elif curr_organism != sci_name:
-                    raise Exception(f"Two different organisms in {gbk_file}: {curr_organism}/{sci_name}")
+                    raise Exception(
+                        f"Two different organisms in {gbk_file}: {curr_organism}/{sci_name}"
+                    )
 
                 # necessary, as BioSQL will use whatever matches in the
                 # common or scientific names to assign taxid. So if the common name
@@ -269,7 +281,8 @@ class InputHandler():
 
             if n_cds == 0:
                 raise Exception(
-                    f"No CDS in {gbk_file}, has it been correctly annotated?")
+                    f"No CDS in {gbk_file}, has it been correctly annotated?"
+                )
 
             if needs_revision:
                 gbk_to_revise.append(gbk_file)
@@ -279,7 +292,8 @@ class InputHandler():
         for filename, name in custom_names.items():
             if self.organisms[name] > 1:
                 raise Exception(
-                    f"The custom name {name} is already used in another file")
+                    f"The custom name {name} is already used in another file"
+                )
 
         # at one point, will have to rewrite this to avoid
         # re-parsing the genbank files that failed the check
@@ -304,7 +318,8 @@ class InputHandler():
                 # when writing the same record. It instead recognizes the "accession" entry.
                 if "accessions" not in record.annotations:
                     record.annotations["accession"] = [
-                        self.gen_new_locus_tag(self.accessions)]
+                        self.gen_new_locus_tag(self.accessions)
+                    ]
                 elif self.accessions[record.annotations["accessions"][0]] > 1:
                     new_acc = self.gen_new_locus_tag(self.accessions)
                     if "accession" not in record.annotations:
@@ -325,10 +340,12 @@ class InputHandler():
                     curr_locus = feature.qualifiers.get("locus_tag", None)
                     if curr_locus is None:
                         feature.qualifiers["locus_tag"] = self.gen_new_locus_tag(
-                            self.locuses)
+                            self.locuses
+                        )
                     elif self.locuses[curr_locus[0]] > 1:
                         feature.qualifiers["locus_tag"] = self.gen_new_locus_tag(
-                            self.locuses)
+                            self.locuses
+                        )
                         self.locuses[curr_locus[0]] -= 1
                 records.append(record)
             SeqIO.write(records, "filtered/" + failed_gbk, "genbank")
@@ -338,19 +355,21 @@ class InputHandler():
 
 
 def convert_gbk_to_fasta(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=False):
-    records = SeqIO.parse(gbf_file, 'genbank')
-    edited_records = open(edited_gbf, 'w')
+    records = SeqIO.parse(gbf_file, "genbank")
+    edited_records = open(edited_gbf, "w")
 
     for record in records:
         for feature in record.features:
-            if feature.type == 'CDS':
-                if not keep_pseudo and ('pseudo' in feature.qualifiers
-                                        or 'pseudogene' in feature.qualifiers):
+            if feature.type == "CDS":
+                if not keep_pseudo and (
+                    "pseudo" in feature.qualifiers or "pseudogene" in feature.qualifiers
+                ):
                     continue
 
                 if "locus_tag" not in feature.qualifiers:
                     raise Exception(
-                        f"Feature without locus tag in record {record.name}")
+                        f"Feature without locus tag in record {record.name}"
+                    )
 
                 locus_tag = feature.qualifiers["locus_tag"][0]
                 if output_fmt == "faa":
@@ -360,21 +379,25 @@ def convert_gbk_to_fasta(gbf_file, edited_gbf, output_fmt="faa", keep_pseudo=Fal
                 elif output_fmt == "fna":
                     data = feature.location.extract(record).seq
                 else:
-                    raise Exception(f"Unsupported option: {output_fmt}, must be either faa or fna")
+                    raise Exception(
+                        f"Unsupported option: {output_fmt}, must be either faa or fna"
+                    )
 
-                edited_records.write(">%s %s\n%s\n" % (locus_tag,
-                                                       record.description, data))
+                edited_records.write(
+                    ">%s %s\n%s\n" % (locus_tag, record.description, data)
+                )
     edited_records.close()
 
 
 def convert_gbk_to_fna(gbf_file, fna_contigs):
     # from BioPython, object of class SeqRecord
-    records = SeqIO.parse(gbf_file, 'genbank')
-    edited_records = open(fna_contigs, 'w')
+    records = SeqIO.parse(gbf_file, "genbank")
+    edited_records = open(fna_contigs, "w")
 
     for record in records:
-        edited_records.write(">%s %s\n%s\n" %
-                             (record.name, record.description, record.seq))
+        edited_records.write(
+            ">%s %s\n%s\n" % (record.name, record.description, record.seq)
+        )
     edited_records.close()
 
 
@@ -382,11 +405,11 @@ def convert_gbk_to_fna(gbf_file, fna_contigs):
 def get_nr_sequences(fasta_file, genomes_list):
     locus2genome = {}
     for fasta in genomes_list:
-        genome = os.path.basename(fasta).split('.')[0]
+        genome = os.path.basename(fasta).split(".")[0]
         for seq in SeqIO.parse(fasta, "fasta"):
             locus2genome[seq.name] = genome
-    nr_fasta = open('nr.faa', 'w')
-    nr_mapping = open('nr_mapping.tab', 'w')
+    nr_fasta = open("nr.faa", "w")
+    nr_mapping = open("nr_mapping.tab", "w")
 
     hsh_checksum_list = {}
 
@@ -394,13 +417,12 @@ def get_nr_sequences(fasta_file, genomes_list):
     updated_records = []
 
     for record in records:
-
         # NOTE: the case is important for crc64, need to check whether it
         # is necessary to make all entries lower/upper case to ensure consistency.
         checksum = CheckSum.crc64(record.seq)
-        nr_mapping.write("%s\t%s\t%s\n" % (record.id,
-                                           checksum,
-                                           locus2genome[record.id]))
+        nr_mapping.write(
+            "%s\t%s\t%s\n" % (record.id, checksum, locus2genome[record.id])
+        )
         if checksum not in hsh_checksum_list:
             hsh_checksum_list[checksum] = [record]
             record.id = checksum
@@ -439,20 +461,18 @@ def get_nr_sequences(fasta_file, genomes_list):
 # ortholog present in all samples)
 #
 # Orthofinder output file : Orthogroup_ID: locus1 locus2... locusN
-def orthofinder2core_groups(fasta_list,
-                            mcl_file,
-                            n_missing=0):
+def orthofinder2core_groups(fasta_list, mcl_file, n_missing=0):
     orthogroup2locus_list = {}
-    with open(mcl_file, 'r') as f:
+    with open(mcl_file, "r") as f:
         for line in f:
-            groups = line.rstrip().split(' ')
+            groups = line.rstrip().split(" ")
             group_id = groups[0][:-1]  # remove lagging ':'
             groups = groups[1:]
             orthogroup2locus_list[group_id] = groups
 
     locus2genome = {}
     for fasta in fasta_list:
-        tokens = os.path.basename(fasta).split('.')
+        tokens = os.path.basename(fasta).split(".")
         # the filename may contain additional "." that are to be included
         genome = ".".join(tokens[:-1])
         for seq in SeqIO.parse(fasta, "fasta"):
@@ -481,8 +501,9 @@ def orthofinder2core_groups(fasta_list,
 
 
 def get_core_orthogroups(genomes_list, int_core_missing):
-    core_groups, orthogroup2locus_list, locus2genome = orthofinder2core_groups(genomes_list,
-                                                                               'Orthogroups.txt', int_core_missing)
+    core_groups, orthogroup2locus_list, locus2genome = orthofinder2core_groups(
+        genomes_list, "Orthogroups.txt", int_core_missing
+    )
 
     og_resume_file = open("orthogroups_summary_info.tsv", "w")
     core_groups_set = set(core_groups)
@@ -498,12 +519,12 @@ def get_core_orthogroups(genomes_list, int_core_missing):
 
     if len(core_groups) <= 0:
         raise Exception(
-            "No core orthogroups, maybe try to rerun the pipeline with num_missing to a higher value")
+            "No core orthogroups, maybe try to rerun the pipeline with num_missing to a higher value"
+        )
 
     for group_id in core_groups:
-        sequence_data = SeqIO.to_dict(
-            SeqIO.parse(group_id + "_mafft.faa", "fasta"))
-        dest = group_id + '_taxon_ids.faa'
+        sequence_data = SeqIO.to_dict(SeqIO.parse(group_id + "_mafft.faa", "fasta"))
+        dest = group_id + "_taxon_ids.faa"
         new_fasta = []
         for locus in orthogroup2locus_list[group_id]:
             tmp_seq = sequence_data[locus]
@@ -512,7 +533,7 @@ def get_core_orthogroups(genomes_list, int_core_missing):
             tmp_seq.description = locus2genome[locus]
             new_fasta.append(tmp_seq)
 
-        out_handle = open(dest, 'w')
+        out_handle = open(dest, "w")
         SeqIO.write(new_fasta, out_handle, "fasta")
         out_handle.close()
 
@@ -539,8 +560,7 @@ def calculate_og_identities(input_fasta, output_file):
                 per_identity = 100 * (identical / float(alignment_length))
             else:
                 per_identity = 0
-            values.append((locus_tag_1, locus_tag_2,
-                          per_identity, alignment_length))
+            values.append((locus_tag_1, locus_tag_2, per_identity, alignment_length))
     output_fh = open(output_file, "w")
     for lt1, lt2, ident, le in values:
         print(lt1, lt2, ident, le, sep=",", file=output_fh)
@@ -548,7 +568,7 @@ def calculate_og_identities(input_fasta, output_file):
 
 
 def concatenate_core_orthogroups(fasta_files):
-    out_name = 'msa.faa'
+    out_name = "msa.faa"
 
     taxons = []
     all_seq_data = {}

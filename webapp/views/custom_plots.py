@@ -4,19 +4,20 @@ from django.shortcuts import render
 from django.views import View
 from ete3 import Tree
 from lib.db_utils import DB
-from lib.ete_phylo import EteTree, SimpleColorColumn
-
+from lib.ete_phylo import EteTree
+from lib.ete_phylo import SimpleColorColumn
 from views.mixins import ComparisonViewMixin
 from views.object_type_metadata import my_locals
-from views.utils import ResultTab, TabularResultTab
+from views.utils import ResultTab
+from views.utils import TabularResultTab
 
 
 class CusomPlotsView(View):
-
     title = "Custom plots"
-    description = "Produce phylogenetic trees and tables including "\
-                  "annotations of your choice."
-    template = 'chlamdb/custom_plots.html'
+    description = (
+        "Produce phylogenetic trees and tables including annotations of your choice."
+    )
+    template = "chlamdb/custom_plots.html"
     _db = None
 
     def dispatch(self, request, *args, **kwargs):
@@ -25,16 +26,20 @@ class CusomPlotsView(View):
 
     def get_result_tabs(self, table):
         return [
-            ResultTab("phylogenetic_tree", "Phylogenetic tree",
-                      "chlamdb/result_asset.html",
-                      asset_path=getattr(self, "tree_path", None)),
+            ResultTab(
+                "phylogenetic_tree",
+                "Phylogenetic tree",
+                "chlamdb/result_asset.html",
+                asset_path=getattr(self, "tree_path", None),
+            ),
             TabularResultTab(
-                "custom_plot_table", "Table",
+                "custom_plot_table",
+                "Table",
                 table_headers=table["headers"],
                 table_data=table["data"],
                 table_data_accessors=table["accessors"],
-                )
-            ]
+            ),
+        ]
 
     @property
     def db(self):
@@ -47,7 +52,7 @@ class CusomPlotsView(View):
         context = {
             "page_title": self.title,
             "description": self.description,
-            "form": self.form
+            "form": self.form,
         }
         context.update(kwargs)
         return my_locals(context)
@@ -80,9 +85,8 @@ class CusomPlotsView(View):
         table = self.prepare_table(counts, genome_descriptions)
 
         context = self.get_context(
-            show_results=True,
-            result_tabs=self.get_result_tabs(table)
-            )
+            show_results=True, result_tabs=self.get_result_tabs(table)
+        )
         return render(request, self.template, context)
 
     def prepare_tree(self, counts_list, genome_descriptions, to_highlight):
@@ -98,7 +102,9 @@ class CusomPlotsView(View):
         e_tree.rename_leaves(ref_names, highlight_leaves=to_highlight)
         for counts in counts_list:
             for label, count in counts.iterrows():
-                col = SimpleColorColumn.fromSeries(count, header=label, color_gradient=True)
+                col = SimpleColorColumn.fromSeries(
+                    count, header=label, color_gradient=True
+                )
                 e_tree.add_column(col)
         self.tree_path = "/temp/custom_tree.svg"
         path = settings.ASSET_ROOT + self.tree_path
@@ -110,7 +116,9 @@ class CusomPlotsView(View):
         headers = ["Name"]
         data = genome_descriptions
         for counts in counts_list:
-            data = data.merge(counts.T, how="left", left_on="taxon_id", right_index=True)
+            data = data.merge(
+                counts.T, how="left", left_on="taxon_id", right_index=True
+            )
             accessors.extend(counts.index)
             headers.extend(counts.index)
         data.where(data.notna(), 0, inplace=True)

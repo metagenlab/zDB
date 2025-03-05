@@ -17,72 +17,104 @@ import numpy as np
 import pandas as pd
 from Bio import SeqIO
 from Bio.Blast import NCBIXML
-from Bio.Blast.Applications import (NcbiblastnCommandline,
-                                    NcbiblastpCommandline,
-                                    NcbiblastxCommandline,
-                                    NcbitblastnCommandline)
-from chlamdb.forms import (make_blast_form, make_circos_form, make_metabo_from,
-                           make_module_overview_form,
-                           make_pathway_overview_form, make_plot_form,
-                           make_single_genome_form, make_venn_from)
+from Bio.Blast.Applications import NcbiblastnCommandline
+from Bio.Blast.Applications import NcbiblastpCommandline
+from Bio.Blast.Applications import NcbiblastxCommandline
+from Bio.Blast.Applications import NcbitblastnCommandline
+from chlamdb.forms import make_blast_form
+from chlamdb.forms import make_circos_form
+from chlamdb.forms import make_metabo_from
+from chlamdb.forms import make_module_overview_form
+from chlamdb.forms import make_pathway_overview_form
+from chlamdb.forms import make_plot_form
+from chlamdb.forms import make_single_genome_form
+from chlamdb.forms import make_venn_from
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
-from ete3 import StackedBarFace, TextFace, Tree
+from ete3 import StackedBarFace
+from ete3 import TextFace
+from ete3 import Tree
 from lib import search_bar as sb
 from lib.db_utils import DB
-from lib.ete_phylo import (Column, EteTree, KOAndCompleteness,
-                           ModuleCompletenessColumn, SimpleColorColumn)
+from lib.ete_phylo import Column
+from lib.ete_phylo import EteTree
+from lib.ete_phylo import KOAndCompleteness
+from lib.ete_phylo import ModuleCompletenessColumn
+from lib.ete_phylo import SimpleColorColumn
 from lib.KO_module import ModuleParser
 from reportlab.lib import colors
-
-from views.analysis_view_metadata import (AccumulationRarefactionMetadata,
-                                          CategoriesBarchartMetadata,
-                                          CategoriesCountHeatmapMetadata,
-                                          CategoriesFreqHeatmapMetadata,
-                                          HeatmapMetadata)
+from views.analysis_view_metadata import AccumulationRarefactionMetadata
+from views.analysis_view_metadata import CategoriesBarchartMetadata
+from views.analysis_view_metadata import CategoriesCountHeatmapMetadata
+from views.analysis_view_metadata import CategoriesFreqHeatmapMetadata
+from views.analysis_view_metadata import HeatmapMetadata
 from views.errors import errors
-from views.mixins import (BaseViewMixin, CogViewMixin, ComparisonViewMixin,
-                          GenomesTableMixin, KoViewMixin)
-from views.object_type_metadata import MetadataGetter, my_locals
-from views.utils import (DataTableConfig, TabularResultTab, format_cog,
-                         format_gene, format_ko, format_locus,
-                         format_orthogroup, genomic_region_df_to_js,
-                         get_genomes_data, locusx_genomic_region, make_div,
-                         optional2status, page2title, to_s)
+from views.mixins import BaseViewMixin
+from views.mixins import CogViewMixin
+from views.mixins import ComparisonViewMixin
+from views.mixins import GenomesTableMixin
+from views.mixins import KoViewMixin
+from views.object_type_metadata import MetadataGetter
+from views.object_type_metadata import my_locals
+from views.utils import DataTableConfig
+from views.utils import TabularResultTab
+from views.utils import format_cog
+from views.utils import format_gene
+from views.utils import format_ko
+from views.utils import format_locus
+from views.utils import format_orthogroup
+from views.utils import genomic_region_df_to_js
+from views.utils import get_genomes_data
+from views.utils import locusx_genomic_region
+from views.utils import make_div
+from views.utils import optional2status
+from views.utils import page2title
+from views.utils import to_s
 
 
-def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
-    return ''.join(random.choice(chars) for _ in range(size))
+def id_generator(
+    size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits
+):
+    return "".join(random.choice(chars) for _ in range(size))
 
 
 def help(request):
-    return render(request, 'chlamdb/help.html', my_locals(locals()))
+    return render(request, "chlamdb/help.html", my_locals(locals()))
 
 
 def about(request):
-    path = settings.ASSET_ROOT + '/bibliography/references.bib'
+    path = settings.ASSET_ROOT + "/bibliography/references.bib"
     with open(path) as bibtex_file:
         bib_database = bibtexparser.load(bibtex_file)
 
     entry_list = []
 
     for entry in bib_database.entries:
-        ref = f"<b>{re.sub('[{}]', '', entry['title'])}</b><br>"\
-              f"{entry['author']}, {entry['journal']},"
+        ref = (
+            f"<b>{re.sub('[{}]', '', entry['title'])}</b><br>"
+            f"{entry['author']}, {entry['journal']},"
+        )
         if entry.get("volume", False):
             ref += f" {entry['volume']}({entry['number']}):{entry['pages']},"
         ref += f" {entry['year']}"
         url = entry["url"]
         entry_list.append([ref, url])
 
-    return render(request, 'chlamdb/credits.html', my_locals(locals()))
+    return render(request, "chlamdb/credits.html", my_locals(locals()))
 
 
 class StackedBarColumn(Column):
-    def __init__(self, values, header, colours=None, relative=False,
-                 face_params=None, header_params=None):
+    def __init__(
+        self,
+        values,
+        header,
+        colours=None,
+        relative=False,
+        face_params=None,
+        header_params=None,
+    ):
         super().__init__(header, face_params, header_params)
         self.values = values
         self.colours = colours
@@ -99,8 +131,7 @@ class StackedBarColumn(Column):
         elif self.relative:
             val = 100
 
-        face = StackedBarFace([val, 100 - val], width=50,
-                              height=9, colors=self.colours)
+        face = StackedBarFace([val, 100 - val], width=50, height=9, colors=self.colours)
         self.set_default_params(face)
         face.inner_border.color = "black"
         face.inner_border.width = 0
@@ -129,11 +160,10 @@ def home(request):
     if optional2status.get("pfam", False):
         number_pfam = db.get_number_of_pfam_entries()
     versions = db.get_versions_table()
-    return render(request, 'chlamdb/home.html', my_locals(locals()))
+    return render(request, "chlamdb/home.html", my_locals(locals()))
 
 
 class ComparisonIndexView(ComparisonViewMixin, View):
-
     def get(self, request):
         boxes = []
         for i, el in enumerate(self.available_views):
@@ -141,12 +171,11 @@ class ComparisonIndexView(ComparisonViewMixin, View):
                 boxes.append([])
             boxes[-1].append(el)
         context = self.get_context(boxes=boxes)
-        return render(request, 'chlamdb/index_comp.html', context)
+        return render(request, "chlamdb/index_comp.html", context)
 
 
 class Genomes(BaseViewMixin, View, GenomesTableMixin):
-
-    template = 'chlamdb/genomes.html'
+    template = "chlamdb/genomes.html"
     view_name = "genomes"
     genome_source_object = "database"
 
@@ -156,34 +185,32 @@ class Genomes(BaseViewMixin, View, GenomesTableMixin):
 
 
 class ExtractContigs(BaseViewMixin, View):
-
-    template = 'chlamdb/extract_contigs.html'
+    template = "chlamdb/extract_contigs.html"
     view_name = "extract_contigs"
-    _base_colname_to_header_mapping = {"_product": "Product",
-                                       "accession": "Contig"}
+    _base_colname_to_header_mapping = {"_product": "Product", "accession": "Contig"}
     loci_data_accessors = [
-            "gene",
-            "_product",
-            "locus_tag",
-            "orthogroup",
-            "contig",
-            "strand",
-            "start",
-            "end"]
+        "gene",
+        "_product",
+        "locus_tag",
+        "orthogroup",
+        "contig",
+        "strand",
+        "start",
+        "end",
+    ]
 
-    contigs_data_accessors = [
-            "accession",
-            "length",
-            "topology",
-            "plasmid"]
+    contigs_data_accessors = ["accession", "length", "topology", "plasmid"]
 
     def table_headers(self, columns):
         return [self.colname_to_header(col) for col in columns]
 
     def get_loci_tab(self, taxid):
         prot_infos = self.db.get_proteins_info(
-            [taxid], search_on="taxid", as_df=True,
-            to_return=["locus_tag", "product", "gene"])
+            [taxid],
+            search_on="taxid",
+            as_df=True,
+            to_return=["locus_tag", "product", "gene"],
+        )
         seqids = prot_infos.index.tolist()
         ogs = self.db.get_og_count(seqids, search_on="seqid")
 
@@ -199,33 +226,44 @@ class ExtractContigs(BaseViewMixin, View):
         all_infos.orthogroup = all_infos.orthogroup.map(lambda_format_og)
         all_infos["_product"] = all_infos["product"]
         return TabularResultTab(
-            "loci", "Loci",
+            "loci",
+            "Loci",
             table_data=all_infos[self.loci_data_accessors],
             table_headers=self.table_headers(self.loci_data_accessors),
             table_data_accessors=self.loci_data_accessors,
-            show_badge=True)
+            show_badge=True,
+        )
 
     def get_contigs_tab(self, taxid):
         contigs = self.db.get_bioentry_list(
-            taxid, terms=["bioentry_id", "accession", "length"])
+            taxid, terms=["bioentry_id", "accession", "length"]
+        )
         contig_qualifiers = {
-            bioentry_id: self.db.get_bioentry_qualifiers(bioentry_id)
-                                .set_index("term")["value"]
-            for bioentry_id in contigs.index}
+            bioentry_id: self.db.get_bioentry_qualifiers(bioentry_id).set_index("term")[
+                "value"
+            ]
+            for bioentry_id in contigs.index
+        }
         contig_infos = pd.DataFrame(
-            [[bioentry_id,
-              values["topology"],
-              "Yes" if values["plasmid"] == "1" else "No"]
-             for bioentry_id, values in contig_qualifiers.items()],
-            columns=["bioentry_id", "topology", "plasmid"])
-        contigs = contigs.merge(contig_infos, left_index=True,
-                                right_on="bioentry_id")
+            [
+                [
+                    bioentry_id,
+                    values["topology"],
+                    "Yes" if values["plasmid"] == "1" else "No",
+                ]
+                for bioentry_id, values in contig_qualifiers.items()
+            ],
+            columns=["bioentry_id", "topology", "plasmid"],
+        )
+        contigs = contigs.merge(contig_infos, left_index=True, right_on="bioentry_id")
         return TabularResultTab(
-            "contigs", "Contigs",
+            "contigs",
+            "Contigs",
             table_data=contigs,
             table_headers=self.table_headers(self.contigs_data_accessors),
             table_data_accessors=self.contigs_data_accessors,
-            show_badge=True)
+            show_badge=True,
+        )
 
     def get(self, request, genome):
         taxid = int(genome)
@@ -235,8 +273,9 @@ class ExtractContigs(BaseViewMixin, View):
         loci_tab = self.get_loci_tab(taxid)
         contigs_tab = self.get_contigs_tab(taxid)
 
-        context = self.get_context(organism=organism,
-                                   result_tabs=[loci_tab, contigs_tab])
+        context = self.get_context(
+            organism=organism, result_tabs=[loci_tab, contigs_tab]
+        )
         return render(request, self.template, context)
 
 
@@ -269,7 +308,8 @@ class LocusHeatmapColumn(SimpleColorColumn):
             return TextFace("-")
 
         color = colors.linearlyInterpolatedColor(
-            colors.gray, colors.firebrick, self.min_val, self.max_val, val)
+            colors.gray, colors.firebrick, self.min_val, self.max_val, val
+        )
         text_face = TextFace(str(int(val)).center(12 - len(str(int(val)))))
         text_face.inner_background.color = to_color_code(color)
         self.set_default_params(text_face)
@@ -282,17 +322,22 @@ def str_if_none(s):
     return s
 
 
-def search_suggest(request,):
+def search_suggest(
+    request,
+):
     index = sb.ChlamdbIndex.use_index(settings.SEARCH_INDEX)
     params = request.GET
     user_query = params["term"]
     results = list(index.search(user_query, limit=None))
     data = [
-        {"label": f"{i.get('name')}: {i.get('description')} ({i.get('entry_type')})",
-         "value": f"{i.get('name')}: {i.get('description')}"}
+        {
+            "label": f"{i.get('name')}: {i.get('description')} ({i.get('entry_type')})",
+            "value": f"{i.get('name')}: {i.get('description')}",
+        }
         for i in results
     ]
     return JsonResponse(data, safe=False)
+
 
 # NOTE: should refactor this code to avoid duplicated code
 
@@ -321,30 +366,43 @@ def search_bar(request):
         sel = df[df.entry_type == entry_type_name]
         if object_type == "locus":
             sel[object_type] = sel.locus_tag.apply(format_locus, to_url=True)
-            tabs.append(TabularResultTab(
-                object_type,
-                "Genes",
-                show_badge=True,
-                table_headers=["Accession", "Gene", "Product", "Organism"],
-                table_data=sel,
-                table_data_accessors=[object_type, "gene", "description", "organism"]))
+            tabs.append(
+                TabularResultTab(
+                    object_type,
+                    "Genes",
+                    show_badge=True,
+                    table_headers=["Accession", "Gene", "Product", "Organism"],
+                    table_data=sel,
+                    table_data_accessors=[
+                        object_type,
+                        "gene",
+                        "description",
+                        "organism",
+                    ],
+                )
+            )
         else:
             metadata = MetadataGetter().object_type_to_metadata[object_type]
             if not metadata.is_enabled:
                 continue
             sel[object_type] = sel.name.apply(entry_type.get_entry_id).apply(
-                metadata.format_entry, to_url=True)
-            tabs.append(TabularResultTab(
-                object_type,
-                metadata.object_name_plural,
-                show_badge=True,
-                table_headers=[metadata.object_name, "Description"],
-                table_data=sel,
-                table_data_accessors=[object_type, "description"]))
+                metadata.format_entry, to_url=True
+            )
+            tabs.append(
+                TabularResultTab(
+                    object_type,
+                    metadata.object_name_plural,
+                    show_badge=True,
+                    table_headers=[metadata.object_name, "Description"],
+                    table_data=sel,
+                    table_data_accessors=[object_type, "description"],
+                )
+            )
 
-    ctx = {"search_term": user_query,
-           "result_tabs": tabs,
-           }
+    ctx = {
+        "search_term": user_query,
+        "result_tabs": tabs,
+    }
     return render(request, "chlamdb/search.html", my_locals(ctx))
 
 
@@ -360,10 +418,8 @@ def format_module(mod_id, base=None, to_url=False):
 
 
 class CogPhyloHeatmap(CogViewMixin, View):
-
     def post(self, request, *args, **kwargs):
-        return render(request, 'chlamdb/cog_phylo_heatmap.html',
-                      self.get_context())
+        return render(request, "chlamdb/cog_phylo_heatmap.html", self.get_context())
 
     def get(self, request, frequency, *args, **kwargs):
         freq = frequency != "False"
@@ -378,8 +434,8 @@ class CogPhyloHeatmap(CogViewMixin, View):
 
         all_cog_hits = self.db.get_cog_hits(all_taxids, search_on="taxid")
         all_cog_funcs = self.db.get_cog_summaries(
-            all_cog_hits.index.unique().tolist(),
-            only_cog_desc=True, as_df=True)
+            all_cog_hits.index.unique().tolist(), only_cog_desc=True, as_df=True
+        )
         all_cog_hits = all_cog_hits.join(all_cog_funcs.function)
         summed_entries = all_cog_hits.groupby("function").sum()
 
@@ -413,8 +469,8 @@ class CogPhyloHeatmap(CogViewMixin, View):
                 func_count *= 100
                 func_count = func_count.round(2)
             col = SimpleColorColumn.fromSeries(
-                func_count, header=detailed_func + "(" + func + ")",
-                color_gradient=True)
+                func_count, header=detailed_func + "(" + func + ")", color_gradient=True
+            )
             e_tree.add_column(col)
 
         freq = frequency
@@ -422,7 +478,7 @@ class CogPhyloHeatmap(CogViewMixin, View):
         asset_path = f"/temp/COG_tree_{freq}.svg"
         e_tree.render(path, dpi=600)
         context = self.get_context(envoi=True, freq=freq, asset_path=asset_path)
-        return render(request, 'chlamdb/cog_phylo_heatmap.html', context)
+        return render(request, "chlamdb/cog_phylo_heatmap.html", context)
 
 
 class KOModuleChooser:
@@ -437,22 +493,20 @@ def KEGG_module_map(request, module_name):
     page_title = page2title["KEGG_module_map"]
 
     if request.method != "GET":
-        return render(request, 'chlamdb/KEGG_module_map.html',
-                      my_locals(locals()))
+        return render(request, "chlamdb/KEGG_module_map.html", my_locals(locals()))
     db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     try:
-        module_id = int(module_name[len("M"):])
+        module_id = int(module_name[len("M") :])
     except Exception:
         context = my_locals(locals())
         context.update(errors["unknown_accession"])
-        return render(request, 'chlamdb/KEGG_module_map.html',
-                      my_locals(locals()))
+        return render(request, "chlamdb/KEGG_module_map.html", my_locals(locals()))
 
     module_infos = db.get_modules_info([module_id])
     if len(module_infos) != 1:
         context = my_locals(locals())
         context.update(errors["no_module_info"])
-        return render(request, 'chlamdb/KEGG_module_map.html', context)
+        return render(request, "chlamdb/KEGG_module_map.html", context)
     else:
         mod_id, module_descr, module_def, cat, sub_cat = module_infos[0]
 
@@ -460,23 +514,25 @@ def KEGG_module_map(request, module_name):
     expr_tree = parser.parse()
     ko_ids = db.get_module_kos(module_id)
     mat = db.get_ko_hits(ko_ids, search_on="ko", indexing="taxid").T
-    map_data = [(format_ko(ko_id), ko_desc)
-                for ko_id, ko_desc in db.get_ko_desc(ko_ids).items()]
+    map_data = [
+        (format_ko(ko_id), ko_desc) for ko_id, ko_desc in db.get_ko_desc(ko_ids).items()
+    ]
     if mat.empty:
         # should add an error message: no gene was associated for any
         # of the KO of the current module
         envoi = True
         menu = True
         valid_id = True
-        return render(request, 'chlamdb/KEGG_module_map.html',
-                      my_locals(locals()))
+        return render(request, "chlamdb/KEGG_module_map.html", my_locals(locals()))
 
     seqids = db.get_ko_hits(ko_ids, search_on="ko", indexing="seqid")
     associated_ogs = db.get_og_count(seqids.index.tolist(), search_on="seqid")
-    og_taxid = db.get_og_count(associated_ogs.orthogroup.unique().tolist(),
-                               search_on="orthogroup").T
-    ko_to_og_mapping = seqids.join(associated_ogs).groupby(
-        ["ko"])["orthogroup"].unique()
+    og_taxid = db.get_og_count(
+        associated_ogs.orthogroup.unique().tolist(), search_on="orthogroup"
+    ).T
+    ko_to_og_mapping = (
+        seqids.join(associated_ogs).groupby(["ko"])["orthogroup"].unique()
+    )
     leaf_to_name = db.get_genomes_description().description.to_dict()
 
     tree = Tree(db.get_reference_phylogeny())
@@ -488,12 +544,14 @@ def KEGG_module_map(request, module_name):
     hsh_pres = collections.defaultdict(dict)
     for ko in ko_ids:
         if ko not in mat.columns:
-            e_tree.add_column(SimpleColorColumn({}, header=format_ko(ko),
-                              default_val="-"))
+            e_tree.add_column(
+                SimpleColorColumn({}, header=format_ko(ko), default_val="-")
+            )
             continue
         if ko not in ko_to_og_mapping.index:
-            e_tree.add_column(SimpleColorColumn.fromSeries(mat[ko],
-                              header=format_ko(ko)))
+            e_tree.add_column(
+                SimpleColorColumn.fromSeries(mat[ko], header=format_ko(ko))
+            )
             continue
 
         associated_ogs = ko_to_og_mapping.loc[ko]
@@ -514,8 +572,11 @@ def KEGG_module_map(request, module_name):
             else:
                 hsh_val[taxid] = 0
         col_chooser = KOModuleChooser(hsh_col)
-        e_tree.add_column(SimpleColorColumn(hsh_val, header=format_ko(ko),
-                                            col_func=col_chooser.get_color))
+        e_tree.add_column(
+            SimpleColorColumn(
+                hsh_val, header=format_ko(ko), col_func=col_chooser.get_color
+            )
+        )
 
     hsh_n_missing = {}
     for bioentry, _ in leaf_to_name.items():
@@ -527,30 +588,31 @@ def KEGG_module_map(request, module_name):
         hsh_n_missing[index] = n_missing
 
     e_tree.add_column(SimpleColorColumn({}, default_val=" "))
-    completeness = ModuleCompletenessColumn(
-        hsh_n_missing, "", add_missing=False)
+    completeness = ModuleCompletenessColumn(hsh_n_missing, "", add_missing=False)
     e_tree.add_column(completeness)
     e_tree.rename_leaves(leaf_to_name)
 
     big = len(mat.columns) >= 40
     dpi = 800 if big else 1200
-    path = settings.ASSET_ROOT + '/temp/KEGG_tree_%s.svg' % module_name
-    asset_path = '/temp/KEGG_tree_%s.svg' % module_name
+    path = settings.ASSET_ROOT + "/temp/KEGG_tree_%s.svg" % module_name
+    asset_path = "/temp/KEGG_tree_%s.svg" % module_name
     e_tree.render(path, dpi=dpi)
     envoi = True
     menu = True
     valid_id = True
-    return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
+    return render(request, "chlamdb/KEGG_module_map.html", my_locals(locals()))
 
 
 def gen_pathway_profile(db, ko_ids):
     mat = db.get_ko_hits(ko_ids, search_on="ko", indexing="taxid").T
     seqids = db.get_ko_hits(ko_ids, search_on="ko", indexing="seqid")
     associated_ogs = db.get_og_count(seqids.index.tolist(), search_on="seqid")
-    og_taxid = db.get_og_count(associated_ogs.orthogroup.unique().tolist(),
-                               search_on="orthogroup").T
-    ko_to_og_mapping = seqids.join(associated_ogs).groupby(
-        ["ko"])["orthogroup"].unique()
+    og_taxid = db.get_og_count(
+        associated_ogs.orthogroup.unique().tolist(), search_on="orthogroup"
+    ).T
+    ko_to_og_mapping = (
+        seqids.join(associated_ogs).groupby(["ko"])["orthogroup"].unique()
+    )
     leaf_to_name = db.get_genomes_description().description.to_dict()
 
     tree = Tree(db.get_reference_phylogeny())
@@ -562,8 +624,9 @@ def gen_pathway_profile(db, ko_ids):
         if ko not in mat.columns:
             continue
         if ko not in ko_to_og_mapping.index:
-            e_tree.add_column(SimpleColorColumn.fromSeries(mat[ko],
-                              header=format_ko(ko)))
+            e_tree.add_column(
+                SimpleColorColumn.fromSeries(mat[ko], header=format_ko(ko))
+            )
             continue
 
         associated_ogs = ko_to_og_mapping.loc[ko]
@@ -581,8 +644,11 @@ def gen_pathway_profile(db, ko_ids):
             else:
                 hsh_val[taxid] = 0
         col_chooser = KOModuleChooser(hsh_col)
-        e_tree.add_column(SimpleColorColumn(hsh_val, header=format_ko(ko),
-                                            col_func=col_chooser.get_color))
+        e_tree.add_column(
+            SimpleColorColumn(
+                hsh_val, header=format_ko(ko), col_func=col_chooser.get_color
+            )
+        )
     e_tree.rename_leaves(leaf_to_name)
     return e_tree
 
@@ -606,12 +672,16 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
         try:
             pathway = extract_map(db, request)
         except Exception:
-            ctx = {"error": True, "error_message": "No pathway specified",
-                   "error_title": "Error", "page_title": page_title}
-            return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(ctx))
+            ctx = {
+                "error": True,
+                "error_message": "No pathway specified",
+                "error_title": "Error",
+                "page_title": page_title,
+            }
+            return render(request, "chlamdb/KEGG_map_ko.html", my_locals(ctx))
         map_name = format_pathway(pathway)
     else:
-        pathway = int(map_name[len("map"):])
+        pathway = int(map_name[len("map") :])
 
     if taxon_id is not None:
         taxid = int(taxon_id)
@@ -622,9 +692,12 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
     ko_hits = db.get_ko_hits(ko_list, search_on="ko", indexing="taxid")
 
     if ko_hits.empty:
-        ctx = {"error": True, "error_title": "No hits for this pathway",
-               "page_title": page_title}
-        return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(ctx))
+        ctx = {
+            "error": True,
+            "error_title": "No hits for this pathway",
+            "page_title": page_title,
+        }
+        return render(request, "chlamdb/KEGG_map_ko.html", my_locals(ctx))
 
     ko_desc = db.get_ko_desc(ko_list)
     ko_ttl_count = ko_hits.sum(axis=1)
@@ -656,20 +729,21 @@ def KEGG_mapp_ko(request, map_name=None, taxon_id=None):
     path = settings.ASSET_ROOT + f"/temp/{map_name}.svg"
     asset_path = f"/temp/{map_name}.svg"
     e_tree.render(path, dpi=800)
-    ctx = {"pathway_num": kos.iloc[0].pathway,
-           "pathway": kos.iloc[0].description,
-           "header": header,
-           "data": data,
-           "asset_path": asset_path,
-           "url": map_name + "+" + "+".join(all_kos),
-           "envoi": True,
-           "page_title": page_title
-           }
+    ctx = {
+        "pathway_num": kos.iloc[0].pathway,
+        "pathway": kos.iloc[0].description,
+        "header": header,
+        "data": data,
+        "asset_path": asset_path,
+        "url": map_name + "+" + "+".join(all_kos),
+        "envoi": True,
+        "page_title": page_title,
+    }
 
     if taxon_id is not None:
         ctx["organism"] = hsh_organisms[taxid]
 
-    return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(ctx))
+    return render(request, "chlamdb/KEGG_map_ko.html", my_locals(ctx))
 
 
 def get_cog(request, taxon_id, category):
@@ -699,7 +773,7 @@ def get_cog(request, taxon_id, category):
 
     data_type = "cog"
     description = functions[category]
-    return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
+    return render(request, "chlamdb/cog_info.html", my_locals(locals()))
 
 
 def module_cat_info(request, taxid, category):
@@ -713,21 +787,22 @@ def module_cat_info(request, taxid, category):
     organisms = db.get_genomes_description().description.to_dict()
     taxid = int(taxid)
     if len(organisms) == 0 or taxid not in organisms:
-        return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
+        return render(request, "chlamdb/cog_info.html", my_locals(locals()))
     else:
         organism = organisms[taxid]
 
     category = category.replace("+", " ")
     ko_counts = db.get_ko_count([taxid], keep_seqids=True, as_multi=False)
     ko_modules = db.get_ko_modules(
-        ko_counts["KO"].values.tolist(), as_pandas=True, compact=True)
-    ko_modules_info = db.get_modules_info(ko_modules["module_id"].unique().tolist(),
-                                          as_pandas=True)
+        ko_counts["KO"].values.tolist(), as_pandas=True, compact=True
+    )
+    ko_modules_info = db.get_modules_info(
+        ko_modules["module_id"].unique().tolist(), as_pandas=True
+    )
     filtered_modules = ko_modules_info[ko_modules_info.subcat == category]
-    selected_kos = filtered_modules.merge(ko_modules,
-                                          left_on="module_id",
-                                          right_on="module_id",
-                                          how="inner")["ko_id"].unique()
+    selected_kos = filtered_modules.merge(
+        ko_modules, left_on="module_id", right_on="module_id", how="inner"
+    )["ko_id"].unique()
     selected_seqids = ko_counts[ko_counts.KO.isin(selected_kos)]
     seqids = selected_seqids["seqid"].unique().tolist()
     hsh_to_prot = db.get_proteins_info(seqids)
@@ -744,51 +819,57 @@ def module_cat_info(request, taxid, category):
         piece = [organism, locus, format_ko(ko_id), ko_desc, product]
         data.append(piece)
     description = category
-    data_type = 'ko'
-    return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
+    data_type = "ko"
+    return render(request, "chlamdb/cog_info.html", my_locals(locals()))
 
 
 def js_bioentries_to_description(hsh):
-    taxon_map = 'var taxon2description = { '
-    mid = ",".join(f"{to_s(bioentry)}: {to_s(description)}"
-                   for bioentry, description in hsh.items())
+    taxon_map = "var taxon2description = { "
+    mid = ",".join(
+        f"{to_s(bioentry)}: {to_s(description)}"
+        for bioentry, description in hsh.items()
+    )
     return taxon_map + mid + "};"
 
 
 class KoBarchart(KoViewMixin, View):
-
     _metadata_cls = CategoriesBarchartMetadata
 
     @property
     def form_class(self):
-        return make_venn_from(self.db, label=self.object_name_plural,
-                              action="/ko_barchart/")
+        return make_venn_from(
+            self.db, label=self.object_name_plural, action="/ko_barchart/"
+        )
 
     def get(self, request, *args, **kwargs):
         self.form = self.form_class()
-        return render(request, 'chlamdb/ko_barplot.html', self.get_context())
+        return render(request, "chlamdb/ko_barplot.html", self.get_context())
 
     def post(self, request, *args, **kwargs):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
-            return render(request, 'chlamdb/ko_barplot.html',
-                          self.get_context())
+            return render(request, "chlamdb/ko_barplot.html", self.get_context())
 
         taxids = self.form.get_taxids()
 
-        ko_counts = self.db.get_ko_count(
-            taxids, keep_seqids=True, as_multi=False)
+        ko_counts = self.db.get_ko_count(taxids, keep_seqids=True, as_multi=False)
         ko_ids = ko_counts.KO.unique()
         ko_module_ids = self.db.get_ko_modules(
-            ko_ids.tolist(), as_pandas=True, compact=True)
+            ko_ids.tolist(), as_pandas=True, compact=True
+        )
         ko_modules_info = self.db.get_modules_info(
-            ko_module_ids["module_id"].unique().tolist(), as_pandas=True)
+            ko_module_ids["module_id"].unique().tolist(), as_pandas=True
+        )
 
-        merged = ko_counts.merge(ko_module_ids, left_on="KO",
-                                 right_on="ko_id", how="inner")
-        merged = merged.merge(ko_modules_info, left_on="module_id",
-                              right_on="module_id", how="inner")
-        cat_count = merged[["taxid", "subcat", "seqid"]].groupby(["taxid", "subcat"]).nunique()
+        merged = ko_counts.merge(
+            ko_module_ids, left_on="KO", right_on="ko_id", how="inner"
+        )
+        merged = merged.merge(
+            ko_modules_info, left_on="module_id", right_on="module_id", how="inner"
+        )
+        cat_count = (
+            merged[["taxid", "subcat", "seqid"]].groupby(["taxid", "subcat"]).nunique()
+        )
         subcategories_list = cat_count.index.unique(level="subcat").to_list()
         subcategories = ",".join(f"{to_s(cat)}" for cat in subcategories_list)
         labels = f"[{subcategories}]"
@@ -806,42 +887,44 @@ class KoBarchart(KoViewMixin, View):
                 else:
                     entry_data.append(0)
             str_entry_data = (str(entry) for entry in entry_data)
-            string = f"{{label: {to_s(taxid)}, values: [" + ",".join(str_entry_data) + "]}"
+            string = (
+                f"{{label: {to_s(taxid)}, values: [" + ",".join(str_entry_data) + "]}"
+            )
             series_data.append(string)
 
         taxon2description = self.db.get_genomes_description().description.to_dict()
-        taxon_map = 'var taxon2description = {'
-        taxon_map_lst = (f"\"{target}\": \"{taxon2description[target]}\""
-                         for target in taxids)
-        taxon_map = taxon_map + ",".join(taxon_map_lst) + '};'
+        taxon_map = "var taxon2description = {"
+        taxon_map_lst = (
+            f'"{target}": "{taxon2description[target]}"' for target in taxids
+        )
+        taxon_map = taxon_map + ",".join(taxon_map_lst) + "};"
 
         taxids = "?" + "&".join((f"h={i}" for i in taxids))
         series = "[" + ",".join(series_data) + "]"
 
         context = self.get_context(
-            envoi=True, series=series, labels=labels, taxids=taxids,
-            taxon_map=taxon_map)
-        return render(request, 'chlamdb/ko_barplot.html', context)
+            envoi=True, series=series, labels=labels, taxids=taxids, taxon_map=taxon_map
+        )
+        return render(request, "chlamdb/ko_barplot.html", context)
 
 
 class CogBarchart(CogViewMixin, View):
-
     _metadata_cls = CategoriesBarchartMetadata
 
     @property
     def form_class(self):
-        return make_venn_from(self.db, label=self.object_name_plural,
-                              action="/cog_barchart/")
+        return make_venn_from(
+            self.db, label=self.object_name_plural, action="/cog_barchart/"
+        )
 
     def get(self, request, *args, **kwargs):
         self.form = self.form_class()
-        return render(request, 'chlamdb/cog_barplot.html', self.get_context())
+        return render(request, "chlamdb/cog_barplot.html", self.get_context())
 
     def post(self, request, *args, **kwargs):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
-            return render(request, 'chlamdb/cog_barplot.html',
-                          self.get_context())
+            return render(request, "chlamdb/cog_barplot.html", self.get_context())
 
         target_bioentries = self.form.get_taxids()
 
@@ -850,15 +933,17 @@ class CogBarchart(CogViewMixin, View):
         category_dico = self.db.get_cog_code_description()
 
         # create a dictionnary to convert cog category description and one letter code
-        category_map = 'var description2category = {'
-        map_lst = (f"\"{func_descr}\": \"{func}\""
-                   for func, func_descr in category_dico.items())
-        category_map = category_map + ",".join(map_lst) + '};'
+        category_map = "var description2category = {"
+        map_lst = (
+            f'"{func_descr}": "{func}"' for func, func_descr in category_dico.items()
+        )
+        category_map = category_map + ",".join(map_lst) + "};"
 
-        taxon_map = 'var taxon2description = {'
-        taxon_map_lst = (f"\"{target}\": \"{taxon2description[target]}\""
-                         for target in target_bioentries)
-        taxon_map = taxon_map + ",".join(taxon_map_lst) + '};'
+        taxon_map = "var taxon2description = {"
+        taxon_map_lst = (
+            f'"{target}": "{taxon2description[target]}"' for target in target_bioentries
+        )
+        taxon_map = taxon_map + ",".join(taxon_map_lst) + "};"
 
         # Not too happy with this code and its level of indentation
         # Could also be made faster by avoiding string comparisons and list lookup
@@ -881,17 +966,11 @@ class CogBarchart(CogViewMixin, View):
                         if category not in all_categories:
                             all_categories.append(category)
 
-        labels_template = '[\n' \
-                          '%s\n' \
-                          ']\n'
+        labels_template = "[\n%s\n]\n"
 
-        serie_template = '[%s\n' \
-                         ']\n'
+        serie_template = "[%s\n]\n"
 
-        one_serie_template = '{\n' \
-                             'label: "%s",\n' \
-                             'values: [%s]\n' \
-                             '},\n'
+        one_serie_template = '{\nlabel: "%s",\nvalues: [%s]\n},\n'
 
         all_series_templates = []
         for taxon in taxon2category2count:
@@ -902,46 +981,60 @@ class CogBarchart(CogViewMixin, View):
             one_category_list = [str(i) for i in one_category_list]
 
             all_series_templates.append(
-                one_serie_template % (taxon, ','.join(one_category_list)))
+                one_serie_template % (taxon, ",".join(one_category_list))
+            )
 
         taxids = "?" + "&".join((f"h={i}" for i in target_bioentries))
-        series = serie_template % ''.join(all_series_templates)
+        series = serie_template % "".join(all_series_templates)
         labels = labels_template % ('"' + '","'.join(all_categories) + '"')
         context = self.get_context(
-            envoi=True, series=series, labels=labels, taxids=taxids,
-            category_map=category_map, taxon_map=taxon_map)
-        return render(request, 'chlamdb/cog_barplot.html', context)
+            envoi=True,
+            series=series,
+            labels=labels,
+            taxids=taxids,
+            category_map=category_map,
+            taxon_map=taxon_map,
+        )
+        return render(request, "chlamdb/cog_barplot.html", context)
 
 
 class PanGenome(ComparisonViewMixin, View):
-
     _metadata_cls = AccumulationRarefactionMetadata
 
     @property
     def form_class(self):
-        return make_venn_from(self.db, label=self.object_name_plural,
-                              limit=2, limit_type="lower",
-                              action=f"/pan_genome/{self.object_type}")
+        return make_venn_from(
+            self.db,
+            label=self.object_name_plural,
+            limit=2,
+            limit_type="lower",
+            action=f"/pan_genome/{self.object_type}",
+        )
 
     def get(self, request, *args, **kwargs):
         self.form = self.form_class()
-        return render(request, 'chlamdb/pan_genome.html',
-                      self.get_context(form=self.form))
+        return render(
+            request, "chlamdb/pan_genome.html", self.get_context(form=self.form)
+        )
 
     def post(self, request, *args, **kwargs):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
-            return render(request, 'chlamdb/pan_genome.html',
-                          self.get_context(form=self.form))
+            return render(
+                request, "chlamdb/pan_genome.html", self.get_context(form=self.form)
+            )
 
         taxids = self.form.get_taxids()
         df_hits = self.get_hit_counts(taxids, search_on="taxid")
         if df_hits.empty:
-            return render(request, 'chlamdb/pan_genome.html',
-                          self.get_context(form=self.form,
-                                           **errors["no_hits"]))
-        unique, counts = np.unique(np.count_nonzero(df_hits, axis=1),
-                                   return_counts=True)
+            return render(
+                request,
+                "chlamdb/pan_genome.html",
+                self.get_context(form=self.form, **errors["no_hits"]),
+            )
+        unique, counts = np.unique(
+            np.count_nonzero(df_hits, axis=1), return_counts=True
+        )
         unique_to_count = dict(zip(unique, counts))
 
         data_count = []
@@ -967,24 +1060,30 @@ class PanGenome(ComparisonViewMixin, View):
         js_data_core = "[" + ",".join(str(i) for i in core_og) + "]"
 
         context = self.get_context(
-            envoi=True, js_data_acc=js_data_acc,
-            js_data_count=js_data_count, js_data_core=js_data_core,
-            form=self.form
-            )
-        return render(request, 'chlamdb/pan_genome.html', context)
+            envoi=True,
+            js_data_acc=js_data_acc,
+            js_data_count=js_data_count,
+            js_data_core=js_data_core,
+            form=self.form,
+        )
+        return render(request, "chlamdb/pan_genome.html", context)
 
 
-blast_input_dir = {"blastp": "faa",
-                   "tblastn": "fna",
-                   "blastn_fna": "fna",
-                   "blastn_ffn": "ffn",
-                   "blastx": "faa"}
+blast_input_dir = {
+    "blastp": "faa",
+    "tblastn": "fna",
+    "blastn_fna": "fna",
+    "blastn_ffn": "ffn",
+    "blastx": "faa",
+}
 
-blast_command = {"blastp": NcbiblastpCommandline,
-                 "tblastn": NcbitblastnCommandline,
-                 "blastn_fna": NcbiblastnCommandline,
-                 "blastn_ffn": NcbiblastnCommandline,
-                 "blastx": NcbiblastxCommandline}
+blast_command = {
+    "blastp": NcbiblastpCommandline,
+    "tblastn": NcbitblastnCommandline,
+    "blastn_fna": NcbiblastnCommandline,
+    "blastn_ffn": NcbiblastnCommandline,
+    "blastx": NcbiblastxCommandline,
+}
 
 
 def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
@@ -1007,16 +1106,15 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
             accession = hit.hit_id.rstrip("|").split("|")[-1]
             hsp = hit.hsps[0]
             scores = hits[query]
-            scores.append((accession,
-                           100.0 * hsp.identities / hsp.align_length))
+            scores.append((accession, 100.0 * hsp.identities / hsp.align_length))
             accessions.add(accession)
 
     if blast_type in ["blastp", "blastx", "blastn_ffn"]:
-        acc_to_taxid = db.get_taxid_from_accession(list(accessions),
-                                                   look_on="locus_tag")
+        acc_to_taxid = db.get_taxid_from_accession(
+            list(accessions), look_on="locus_tag"
+        )
     elif blast_type in ["tblastn", "blastn_fna"]:
-        acc_to_taxid = db.get_taxid_from_accession(list(accessions),
-                                                   look_on="contig")
+        acc_to_taxid = db.get_taxid_from_accession(list(accessions), look_on="contig")
     else:
         raise Exception("Unknown blast type: " + blast_type)
 
@@ -1043,8 +1141,12 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
 
     for query, hsh_values in all_infos:
         col = SimpleColorColumn(
-            hsh_values, header=query, color_gradient=True,
-            default_val="-", gradient_value_range=[min_val, max_val])
+            hsh_values,
+            header=query,
+            color_gradient=True,
+            default_val="-",
+            gradient_value_range=[min_val, max_val],
+        )
         e_tree.add_column(col)
 
     base_file_name = time.strftime("blast_%d_%m_%y_%H_%M.svg", time.gmtime())
@@ -1063,31 +1165,39 @@ def blast(request):
 
     if request.method != "POST":
         form = blast_form_class()
-        return render(request, 'chlamdb/blast.html',
-                      my_locals({"form": form, "page_title": page_title}))
+        return render(
+            request,
+            "chlamdb/blast.html",
+            my_locals({"form": form, "page_title": page_title}),
+        )
 
     form = blast_form_class(request.POST)
     if not form.is_valid():
-        return render(request, 'chlamdb/blast.html',
-                      my_locals({"form": form, "page_title": page_title}))
+        return render(
+            request,
+            "chlamdb/blast.html",
+            my_locals({"form": form, "page_title": page_title}),
+        )
 
-    number_blast_hits = form.cleaned_data['max_number_of_hits']
-    blast_type = form.cleaned_data['blast']
+    number_blast_hits = form.cleaned_data["max_number_of_hits"]
+    blast_type = form.cleaned_data["blast"]
     target = form.get_target()
 
-    query_file = NamedTemporaryFile(mode='w')
+    query_file = NamedTemporaryFile(mode="w")
     SeqIO.write(form.records, query_file, "fasta")
     query_file.flush()
 
-    if target == 'all':
-        my_db = 'merged'
+    if target == "all":
+        my_db = "merged"
     else:
         dictionary_acc_names = db.get_taxon_id_to_filenames()
         my_db = dictionary_acc_names[target]
 
     blast_args = {"query": query_file.name, "outfmt": 5}
-    blast_args["db"] = settings.BLAST_DB_PATH + "/" + blast_input_dir[blast_type] + "/" + my_db
-    if number_blast_hits != 'all':
+    blast_args["db"] = (
+        settings.BLAST_DB_PATH + "/" + blast_input_dir[blast_type] + "/" + my_db
+    )
+    if number_blast_hits != "all":
         blast_args["max_target_seqs"] = number_blast_hits
 
     blast_cline = blast_command[blast_type](**blast_args)
@@ -1100,10 +1210,14 @@ def blast(request):
         blast_stdout, blast_stderr = blast_cline()
     except Exception as e:
         context = {
-            "error_message": "Error in blast " + str(e), "wrong_format": True,
-            "error_title": "Blast error", "envoi": True, "form": form,
-            "page_title": page_title}
-        return render(request, 'chlamdb/blast.html', my_locals(context))
+            "error_message": "Error in blast " + str(e),
+            "wrong_format": True,
+            "error_title": "Blast error",
+            "envoi": True,
+            "form": form,
+            "page_title": page_title,
+        }
+        return render(request, "chlamdb/blast.html", my_locals(context))
 
     if blast_stdout.find("No hits found") != -1:
         blast_no_hits = blast_stdout
@@ -1111,18 +1225,19 @@ def blast(request):
         blast_err = blast_stderr
     else:
         if target == "all":
-            asset_path = gen_blast_heatmap(db, blast_stdout,
-                                           blast_type, form.no_query_name)
+            asset_path = gen_blast_heatmap(
+                db, blast_stdout, blast_type, form.no_query_name
+            )
         rand_id = id_generator(6)
-        blast_file_l = settings.ASSET_ROOT + '/temp/%s.xml' % rand_id
-        f = open(blast_file_l, 'w')
+        blast_file_l = settings.ASSET_ROOT + "/temp/%s.xml" % rand_id
+        f = open(blast_file_l, "w")
         f.write(blast_stdout)
         f.close()
-        asset_blast_path = '/assets/temp/%s.xml' % rand_id
+        asset_blast_path = "/assets/temp/%s.xml" % rand_id
         js_out = True
         phylo_distrib = target == "all"
     envoi = True
-    return render(request, 'chlamdb/blast.html', my_locals(locals()))
+    return render(request, "chlamdb/blast.html", my_locals(locals()))
 
 
 # Might be interesting to draw the regions in the same order as they appear
@@ -1160,24 +1275,29 @@ def optimal_region_order(regions):
 
     for i, (seqid1, region1, start1, end1, _, _) in enumerate(regions):
         ogs1 = region1["orthogroup"].unique()
-        neighboring_ogs1 = {(ogs1[i], ogs1[i+1]) for i in range(len(ogs1) - 1)}
+        neighboring_ogs1 = {(ogs1[i], ogs1[i + 1]) for i in range(len(ogs1) - 1)}
         for j, (seqid2, region2, start2, end2, _, _) in enumerate(regions):
             if j <= i:
                 continue
             ogs2 = region2["orthogroup"].unique()
-            neighboring_ogs2 = {(ogs2[i], ogs2[i+1]) for i in range(len(ogs2) - 1)}
-            score = (len(set(ogs1).intersection(ogs2)) +
-                     len(neighboring_ogs1.intersection(neighboring_ogs2)))
+            neighboring_ogs2 = {(ogs2[i], ogs2[i + 1]) for i in range(len(ogs2) - 1)}
+            score = len(set(ogs1).intersection(ogs2)) + len(
+                neighboring_ogs1.intersection(neighboring_ogs2)
+            )
             similarities[i, j] = similarities[j, i] = score
 
     region_indices = np.arange(n_regions)
     best_path = range(n_regions)
-    max_score = sum(similarities[best_path[i], best_path[i + 1]] for i in range(n_regions - 1))
+    max_score = sum(
+        similarities[best_path[i], best_path[i + 1]] for i in range(n_regions - 1)
+    )
     for start in region_indices:
         path = [start]
         current = start
         while len(path) < n_regions:
-            remaining_choices = [True if i not in path else False for i in region_indices]
+            remaining_choices = [
+                True if i not in path else False for i in region_indices
+            ]
             max_index = np.argmax(similarities[current, remaining_choices])
             next_choice = region_indices[remaining_choices][max_index]
             path.append(next_choice)
@@ -1195,13 +1315,19 @@ def plot_region(request):
 
     if request.method != "POST":
         form = form_class()
-        return render(request, 'chlamdb/plot_region.html',
-                      my_locals({"form": form, "page_title": page_title}))
+        return render(
+            request,
+            "chlamdb/plot_region.html",
+            my_locals({"form": form, "page_title": page_title}),
+        )
 
     form = form_class(request.POST)
     if not form.is_valid():
-        return render(request, 'chlamdb/plot_region.html',
-                      my_locals({"form": form, "page_title": page_title}))
+        return render(
+            request,
+            "chlamdb/plot_region.html",
+            my_locals({"form": form, "page_title": page_title}),
+        )
 
     seqid = form.get_seqid()
     genomes = form.get_genomes()
@@ -1239,14 +1365,13 @@ def plot_region(request):
             "form": form,
             "error": True,
             "errors": ["Too many regions to display"],
-            "page_title": page_title
+            "page_title": page_title,
         }
-        return render(request, 'chlamdb/plot_region.html', my_locals(context))
+        return render(request, "chlamdb/plot_region.html", my_locals(context))
 
     region_size = form.get_region_size()
 
-    locus_tags = db.get_proteins_info(
-        seqids, to_return=["locus_tag"], as_df=True)
+    locus_tags = db.get_proteins_info(seqids, to_return=["locus_tag"], as_df=True)
     to_highlight = locus_tags["locus_tag"].tolist()
     all_regions = []
     connections = []
@@ -1256,8 +1381,11 @@ def plot_region(request):
     genomic_regions = []
     for seqid in seqids:
         region, start, end, contig_size, contig_topology = locusx_genomic_region(
-            db, int(seqid), region_size / 2)
-        genomic_regions.append([seqid, region, start, end, contig_size, contig_topology])
+            db, int(seqid), region_size / 2
+        )
+        genomic_regions.append(
+            [seqid, region, start, end, contig_size, contig_topology]
+        )
 
     # remove overlapping regions (e.g. if two matches are on the same
     # region, avoid displaying this region twice).
@@ -1270,9 +1398,9 @@ def plot_region(request):
         if region["strand"].loc[seqid] * ref_strand == -1:
             mean_val = (end + start) / 2
             region["strand"] *= -1
-            dist_vector_start = region["start_pos"]-mean_val
-            len_vector = region["end_pos"]-region["start_pos"]
-            region["end_pos"] = region["start_pos"]-2*dist_vector_start
+            dist_vector_start = region["start_pos"] - mean_val
+            len_vector = region["end_pos"] - region["start_pos"]
+            region["end_pos"] = region["start_pos"] - 2 * dist_vector_start
             region["start_pos"] = region["end_pos"] - len_vector
         ogs = db.get_og_count(region.index.tolist(), search_on="seqid")
         # need to reset index to keep seqid in the next merge
@@ -1290,12 +1418,8 @@ def plot_region(request):
             # We need to drop na from orthogroup, as some genes, like rRNA
             # or tRNA are not assigned any orthogroup
             common_og = region.dropna(subset=["orthogroup"]).merge(
-                    prev_infos, on="orthogroup")[
-                        ["locus_tag_x",
-                         "locus_tag_y",
-                         "seqid_x",
-                         "seqid_y",
-                         "orthogroup"]]
+                prev_infos, on="orthogroup"
+            )[["locus_tag_x", "locus_tag_y", "seqid_x", "seqid_y", "orthogroup"]]
             related = []
             ogs = common_og.orthogroup.astype(int).tolist()
             p1 = common_og.seqid_x.tolist()
@@ -1315,37 +1439,45 @@ def plot_region(request):
                 arr = hsh_agg.get(v.locus_tag_x, [])
                 arr.append(f"[{to_s(v.locus_tag_y)}, {og_val}, {ident: .2f}]")
                 hsh_agg[v.locus_tag_x] = arr
-            related = (f"{to_s(loc)}: [" + ",".join(values) + "]"
-                       for loc, values in hsh_agg.items())
+            related = (
+                f"{to_s(loc)}: [" + ",".join(values) + "]"
+                for loc, values in hsh_agg.items()
+            )
             connections.append("{" + ",".join(related) + "}")
 
         taxid = organisms.loc[seqid].taxid
         genome_name = hsh_description[taxid]
-        contig_name = db.get_bioentry_qualifiers(int(region["bioentry_id"][0]))\
-                        .set_index("term").loc["accessions"].value
+        contig_name = (
+            db.get_bioentry_qualifiers(int(region["bioentry_id"][0]))
+            .set_index("term")
+            .loc["accessions"]
+            .value
+        )
         region_name = f"{genome_name} - {contig_name} - {int(start)}:{int(end)}"
-        js_val = genomic_region_df_to_js(region, start, end, contig_size,
-                                         contig_topology, region_name)
+        js_val = genomic_region_df_to_js(
+            region, start, end, contig_size, contig_topology, region_name
+        )
         all_regions.append(js_val)
         prev_infos = region[["orthogroup", "locus_tag", "seqid"]]
 
-    ctx = {"form": form,
-           "genomic_regions": "[" + "\n,".join(all_regions) + "]",
-           "to_highlight": to_highlight,
-           "envoi": True,
-           "connections": "[" + ",".join(connections) + "]",
-           "page_title": page_title}
+    ctx = {
+        "form": form,
+        "genomic_regions": "[" + "\n,".join(all_regions) + "]",
+        "to_highlight": to_highlight,
+        "envoi": True,
+        "connections": "[" + ",".join(connections) + "]",
+        "page_title": page_title,
+    }
     if len(all_identities) > 0:
         ctx["max_ident"] = max(all_identities)
         ctx["min_ident"] = min(all_identities)
-    return render(request, 'chlamdb/plot_region.html', my_locals(ctx))
+    return render(request, "chlamdb/plot_region.html", my_locals(ctx))
 
 
 def circos_main(request):
     biodb_path = settings.BIODB_DB_PATH
     db = DB.load_db_from_name(biodb_path)
-    if request.method == 'POST':
-
+    if request.method == "POST":
         reference_taxon = request.POST["reference_taxid"]
         include_taxids = eval(request.POST["include_taxids"])
         exclude_taxids = eval(request.POST["exclude_taxids"])
@@ -1355,16 +1487,16 @@ def circos_main(request):
 
         target_taxons.pop(target_taxons.index(int(reference_taxon)))
 
-        js_code = get_circos_data(int(reference_taxon),
-                                  [int(i) for i in target_taxons],
-                                  highlight_og=og_list)
+        js_code = get_circos_data(
+            int(reference_taxon), [int(i) for i in target_taxons], highlight_og=og_list
+        )
 
         envoi = True
         envoi_region = True
 
-        return render(request, 'chlamdb/circos_main.html', my_locals(locals()))
+        return render(request, "chlamdb/circos_main.html", my_locals(locals()))
 
-    return render(request, 'chlamdb/circos_main.html', my_locals(locals()))
+    return render(request, "chlamdb/circos_main.html", my_locals(locals()))
 
 
 def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
@@ -1373,7 +1505,8 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
 
     if highlight_og:
         df_genes = db.get_genes_from_og(
-            highlight_og, taxon_ids=[reference_taxon], terms=["locus_tag"])
+            highlight_og, taxon_ids=[reference_taxon], terms=["locus_tag"]
+        )
         locus_list = df_genes["locus_tag"].to_list()
     else:
         locus_list = []
@@ -1383,73 +1516,87 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
 
     # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
     df_feature_location = db.get_features_location(
-        reference_taxon, search_on="taxon_id",
-        seq_term_names=["CDS", "rRNA", "tRNA"]).set_index(["seqfeature_id"])
+        reference_taxon, search_on="taxon_id", seq_term_names=["CDS", "rRNA", "tRNA"]
+    ).set_index(["seqfeature_id"])
 
     # retrieve n_orthologs of list of seqids
 
-    seq_og = db.get_og_count(
-        df_feature_location.index.to_list(), search_on="seqid")
+    seq_og = db.get_og_count(df_feature_location.index.to_list(), search_on="seqid")
     count_all_genomes = db.get_og_count(
-        seq_og["orthogroup"].to_list(), search_on="orthogroup")
+        seq_og["orthogroup"].to_list(), search_on="orthogroup"
+    )
     orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(axis=1)
-    homologs_count = df_feature_location.loc[df_feature_location.term_name == 'CDS']\
-        .join(seq_og)\
-        .reset_index()\
-        .set_index("orthogroup")\
-        .merge(orthogroup2count_all.rename('value'),
-               left_index=True,
-               right_index=True)[["bioentry_id", "start_pos", "end_pos", "value"]]
+    homologs_count = (
+        df_feature_location.loc[df_feature_location.term_name == "CDS"]
+        .join(seq_og)
+        .reset_index()
+        .set_index("orthogroup")
+        .merge(orthogroup2count_all.rename("value"), left_index=True, right_index=True)[
+            ["bioentry_id", "start_pos", "end_pos", "value"]
+        ]
+    )
 
     df_identity = db.get_identity_closest_homolog(
-        reference_taxon, target_taxons).set_index(["target_taxid"])
+        reference_taxon, target_taxons
+    ).set_index(["target_taxid"])
 
     c = circosjs.CircosJs()
 
     c.add_contigs_data(df_bioentry)
 
     # sort taxons by number of homologs (from mot similar to most dissmilar)
-    target_taxon_n_homologs = df_identity.groupby(["target_taxid"])\
-                                         .count()["seqfeature_id_1"]\
-                                         .sort_values(ascending=False)
+    target_taxon_n_homologs = (
+        df_identity.groupby(["target_taxid"])
+        .count()["seqfeature_id_1"]
+        .sort_values(ascending=False)
+    )
     locus2seqfeature_id = db.get_hsh_locus_to_seqfeature_id()
-    seqfeature_id2locus_tag = {
-        value: key for key, value in locus2seqfeature_id.items()}
+    seqfeature_id2locus_tag = {value: key for key, value in locus2seqfeature_id.items()}
     # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
     # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
     # join on seqfeature id
-    df_feature_location["gene"] = df_feature_location["qualifier_value_gene"].fillna("-")
-    df_feature_location["gene_product"] = df_feature_location["qualifier_value_product"].fillna("-")
-    df_feature_location["locus_tag"] = df_feature_location["qualifier_value_locus_tag"].fillna("-")
+    df_feature_location["gene"] = df_feature_location["qualifier_value_gene"].fillna(
+        "-"
+    )
+    df_feature_location["gene_product"] = df_feature_location[
+        "qualifier_value_product"
+    ].fillna("-")
+    df_feature_location["locus_tag"] = df_feature_location[
+        "qualifier_value_locus_tag"
+    ].fillna("-")
 
     df_feature_location["color"] = "grey"
-    df_feature_location["color"][df_feature_location["term_name"] == 'tRNA'] = "magenta"
-    df_feature_location["color"][df_feature_location["term_name"] == 'rRNA'] = "magenta"
+    df_feature_location["color"][df_feature_location["term_name"] == "tRNA"] = "magenta"
+    df_feature_location["color"][df_feature_location["term_name"] == "rRNA"] = "magenta"
 
     df_feature_location = df_feature_location.rename(columns={"locus_tag": "locus_ref"})
     # = [seqfeature_id2locus_tag[seqfeature_id] for seqfeature_id in df_feature_location.index]
     minus_strand = df_feature_location.set_index("strand").loc[-1]
     plus_strand = df_feature_location.set_index("strand").loc[1]
-    c.add_histogram_track(homologs_count, "n_genomes",
-                          radius_diff=0.1, sep=0.005, outer=True)
-    c.add_gene_track(minus_strand, "minus", sep=0,
-                     radius_diff=0.04, highlight_list=locus_list)
-    c.add_gene_track(plus_strand, "plus", sep=0,
-                     radius_diff=0.04, highlight_list=locus_list)
+    c.add_histogram_track(
+        homologs_count, "n_genomes", radius_diff=0.1, sep=0.005, outer=True
+    )
+    c.add_gene_track(
+        minus_strand, "minus", sep=0, radius_diff=0.04, highlight_list=locus_list
+    )
+    c.add_gene_track(
+        plus_strand, "plus", sep=0, radius_diff=0.04, highlight_list=locus_list
+    )
 
     # iterate ordered list of target taxids, add track to circos
     for n, target_taxon in enumerate(target_taxon_n_homologs.index):
         df_combined = df_feature_location.join(
-            df_identity.loc[target_taxon].reset_index()
-                                         .set_index("seqfeature_id_1")
-            ).reset_index()
+            df_identity.loc[target_taxon].reset_index().set_index("seqfeature_id_1")
+        ).reset_index()
         df_combined.identity = df_combined.identity.fillna(0).astype(int)
         df_combined.bioentry_id = df_combined.bioentry_id.astype(str)
 
         # only keep the highest identity for each seqfeature id
-        df_combined = df_combined.sort_values('identity', ascending=False)\
-                                 .drop_duplicates('index')\
-                                 .sort_index()
+        df_combined = (
+            df_combined.sort_values("identity", ascending=False)
+            .drop_duplicates("index")
+            .sort_index()
+        )
         loci = []
         for seqid in df_combined.seqfeature_id_2:
             # ugly hack... to be fixed
@@ -1464,11 +1611,15 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
             sep = 0.03
         else:
             sep = 0.01
-        c.add_heatmap_track(df_combined, f"target_{target_taxon}",
-                            color="comp", sep=sep, radius_diff=0.04)
+        c.add_heatmap_track(
+            df_combined,
+            f"target_{target_taxon}",
+            color="comp",
+            sep=sep,
+            radius_diff=0.04,
+        )
 
-    c.add_line_track(df_bioentry, "GC_content", radius_diff=0.12,
-                     fillcolor="green")
+    c.add_line_track(df_bioentry, "GC_content", radius_diff=0.12, fillcolor="green")
 
     js_code = c.get_js_code()
     return js_code
@@ -1481,12 +1632,10 @@ def circos(request):
 
     circos_form_class = make_circos_form(db)
 
-    if request.method == 'POST':
-
+    if request.method == "POST":
         form = circos_form_class(request.POST)
 
         if form.is_valid():
-
             target_taxons = form.get_target_taxids()
             reference_taxon = form.get_ref_taxid()
 
@@ -1497,37 +1646,41 @@ def circos(request):
         form = circos_form_class()
 
     local_vars = my_locals(locals())
-    return render(request, 'chlamdb/circos.html', local_vars)
+    return render(request, "chlamdb/circos.html", local_vars)
 
 
 def alignment(request, input_fasta):
-
     handle = open(input_fasta, "rU")
     for record in SeqIO.parse(handle, "fasta"):
         pass
-    return render(request, 'chlamdb/alignment.html', my_locals(locals()))
+    return render(request, "chlamdb/alignment.html", my_locals(locals()))
 
 
 class PlotHeatmap(ComparisonViewMixin, View):
-
     _metadata_cls = HeatmapMetadata
 
     @property
     def form_class(self):
-        return make_venn_from(self.db, label=self.object_name_plural,
-                              limit=2, limit_type="lower",
-                              action=f"/plot_heatmap/{self.object_type}")
+        return make_venn_from(
+            self.db,
+            label=self.object_name_plural,
+            limit=2,
+            limit_type="lower",
+            action=f"/plot_heatmap/{self.object_type}",
+        )
 
     def get(self, request, *args, **kwargs):
         self.form = self.form_class()
-        return render(request, 'chlamdb/plot_heatmap.html',
-                      self.get_context(form=self.form))
+        return render(
+            request, "chlamdb/plot_heatmap.html", self.get_context(form=self.form)
+        )
 
     def post(self, request, *args, **kwargs):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
-            return render(request, 'chlamdb/plot_heatmap.html',
-                          self.get_context(form=self.form))
+            return render(
+                request, "chlamdb/plot_heatmap.html", self.get_context(form=self.form)
+            )
 
         import plotly.graph_objects as go
         import scipy.cluster.hierarchy as shc
@@ -1536,20 +1689,19 @@ class PlotHeatmap(ComparisonViewMixin, View):
         taxon_ids = self.form.get_taxids()
         mat = self.get_hit_counts(taxon_ids, search_on="taxid")
         if mat.empty:
-            ctx = self.get_context(**errors["no_hits"],
-                                   form=self.form)
-            return render(request, 'chlamdb/plot_heatmap.html', ctx)
+            ctx = self.get_context(**errors["no_hits"], form=self.form)
+            return render(request, "chlamdb/plot_heatmap.html", ctx)
 
         mat.index = [self.format_entry(i, to_url=True) for i in mat.index]
 
         target2description = self.db.get_genomes_description().description.to_dict()
         mat.columns = (target2description[i] for i in mat.columns.values)
         # reorder row and columns based on clustering
-        Z_rows = shc.linkage(mat.T, method='ward')
+        Z_rows = shc.linkage(mat.T, method="ward")
         order_rows = hierarchy.leaves_list(Z_rows)
         new_index = [mat.columns.values[i] for i in order_rows]
 
-        Z_genomes = shc.linkage(mat, method='ward')
+        Z_genomes = shc.linkage(mat, method="ward")
         order_genomes = hierarchy.leaves_list(Z_genomes)
 
         # set number of paralogs >1 as 2 to simplify the color code
@@ -1558,14 +1710,18 @@ class PlotHeatmap(ComparisonViewMixin, View):
         new_cols = [mat.index.tolist()[i] for i in order_genomes]
 
         new_mat = mat.T.reindex(new_index)[new_cols]
-        fig = go.Figure(data=go.Heatmap(z=new_mat, colorscale=colors,
-                                        y=new_mat.index, x=new_mat.columns))
+        fig = go.Figure(
+            data=go.Heatmap(
+                z=new_mat, colorscale=colors, y=new_mat.index, x=new_mat.columns
+            )
+        )
         fig.update_traces(showlegend=False, showscale=False)
 
         html_plot = make_div(fig, div_id="heatmap")
-        context = self.get_context(envoi_heatmap=True, html_plot=html_plot,
-                                   form=self.form)
-        return render(request, 'chlamdb/plot_heatmap.html', context)
+        context = self.get_context(
+            envoi_heatmap=True, html_plot=html_plot, form=self.form
+        )
+        return render(request, "chlamdb/plot_heatmap.html", context)
 
 
 def format_pathway(path_id, base=None, to_url=False, taxid=None):
@@ -1580,23 +1736,20 @@ def format_pathway(path_id, base=None, to_url=False, taxid=None):
         to_page = f"/KEGG_mapp_ko/{base_string}"
     else:
         to_page = f"/KEGG_mapp_ko/{base_string}/{taxid}"
-    return f"<a href=\"{to_page}\">{base_string}</a>"
+    return f'<a href="{to_page}">{base_string}</a>'
 
 
 def kegg_genomes(request):
-
     db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
     single_genome_form = make_single_genome_form(db)
     hsh_organisms = db.get_genomes_description().description.to_dict()
     if request.method != "POST":
         form = single_genome_form()
-        return render(request, 'chlamdb/kegg_genomes.html',
-                      my_locals(locals()))
+        return render(request, "chlamdb/kegg_genomes.html", my_locals(locals()))
 
     form = single_genome_form(request.POST)
     if not form.is_valid():
-        return render(request, 'chlamdb/kegg_genomes.html',
-                      my_locals(locals()))
+        return render(request, "chlamdb/kegg_genomes.html", my_locals(locals()))
 
     taxid = form.get_genome()
     ko_hits = db.get_ko_hits([taxid], search_on="taxid")
@@ -1606,7 +1759,7 @@ def kegg_genomes(request):
 
     header = ["Pathway", "Description", hsh_organisms[taxid]]
 
-    page_title = page2title["kegg_genomes"] + f': {hsh_organisms[taxid]}'
+    page_title = page2title["kegg_genomes"] + f": {hsh_organisms[taxid]}"
 
     data = []
     pathway_count = collections.Counter()
@@ -1617,16 +1770,17 @@ def kegg_genomes(request):
 
     for element, count in pathway_count.items():
         descr = hsh_path_to_descr[element]
-        entry = (format_pathway(element, to_url=True, taxid=taxid),
-                 descr, count)
+        entry = (format_pathway(element, to_url=True, taxid=taxid), descr, count)
         data.append(entry)
 
-    ctx = {"envoi": True,
-           "data": data,
-           "header": header,
-           "organism": hsh_organisms[taxid],
-           "page_title": page_title}
-    return render(request, 'chlamdb/kegg_genomes.html', my_locals(ctx))
+    ctx = {
+        "envoi": True,
+        "data": data,
+        "header": header,
+        "organism": hsh_organisms[taxid],
+        "page_title": page_title,
+    }
+    return render(request, "chlamdb/kegg_genomes.html", my_locals(ctx))
 
 
 def kegg_genomes_modules(request):
@@ -1637,13 +1791,11 @@ def kegg_genomes_modules(request):
     hsh_organisms = db.get_genomes_description().description.to_dict()
     if request.method != "POST":
         form = single_genome_form()
-        return render(request, 'chlamdb/kegg_genomes_modules.html',
-                      my_locals(locals()))
+        return render(request, "chlamdb/kegg_genomes_modules.html", my_locals(locals()))
 
     form = single_genome_form(request.POST)
     if not form.is_valid():
-        return render(request, 'chlamdb/kegg_genomes_modules.html',
-                      my_locals(locals()))
+        return render(request, "chlamdb/kegg_genomes_modules.html", my_locals(locals()))
 
     taxid = form.get_genome()
     list_taxid = [""]
@@ -1655,8 +1807,7 @@ def kegg_genomes_modules(request):
     grouped_count.fillna(0, inplace=True, downcast="infer")
     taxids = grouped_count.columns
     genomes = db.get_genomes_description().description.to_dict()
-    modules_info = db.get_modules_info(grouped_count.index.tolist(),
-                                       as_pandas=True)
+    modules_info = db.get_modules_info(grouped_count.index.tolist(), as_pandas=True)
     all_infos = modules_info.set_index("module_id").join(grouped_count)
 
     header = ["Module", "Category", "Sub-category", "Description"]
@@ -1667,14 +1818,17 @@ def kegg_genomes_modules(request):
         taxons.append(genomes[taxid])
 
     for module_id, data in all_infos.iterrows():
-        line = [format_module(module_id, to_url=True), data["cat"],
-                data.subcat, data.descr]
+        line = [
+            format_module(module_id, to_url=True),
+            data["cat"],
+            data.subcat,
+            data.descr,
+        ]
         for taxid in taxids:
             line.append(data[taxid])
         entries.append(line)
     envoi_comp = True
-    return render(request, 'chlamdb/kegg_genomes_modules.html',
-                  my_locals(locals()))
+    return render(request, "chlamdb/kegg_genomes_modules.html", my_locals(locals()))
 
 
 def kegg(request):
@@ -1699,7 +1853,7 @@ def kegg(request):
     pathway_overview_form = make_pathway_overview_form(db)
     form_pathway = pathway_overview_form()
 
-    return render(request, 'chlamdb/kegg.html', my_locals(locals()))
+    return render(request, "chlamdb/kegg.html", my_locals(locals()))
 
 
 def kegg_module_subcat(request):
@@ -1711,13 +1865,11 @@ def kegg_module_subcat(request):
     module_overview_form = make_module_overview_form(db, True)
     if request.method != "POST":
         form = module_overview_form()
-        return render(request, 'chlamdb/module_subcat.html',
-                      my_locals(locals()))
+        return render(request, "chlamdb/module_subcat.html", my_locals(locals()))
 
     form = module_overview_form(request.POST)
     if not form.is_valid():
-        return render(request, 'chlamdb/module_subcat.html',
-                      my_locals(locals()))
+        return render(request, "chlamdb/module_subcat.html", my_locals(locals()))
 
     cat = form.cleaned_data["subcategory"]
     ko_count_subcat = db.get_ko_count_cat(subcategory=cat)
@@ -1743,13 +1895,14 @@ def kegg_module_subcat(request):
             expression_tree[module_id] = parser.parse()
         data.append((format_module(module_id, to_url=True), descr, occurences))
 
-    unique_module_ids = ko_count_subcat.index.get_level_values(
-        "module_id").unique().tolist()
+    unique_module_ids = (
+        ko_count_subcat.index.get_level_values("module_id").unique().tolist()
+    )
     if len(unique_module_ids) == 0:
         envoi = True
         context = my_locals(locals())
         context.update(errors["no_hits"])
-        return render(request, 'chlamdb/module_subcat.html', context)
+        return render(request, "chlamdb/module_subcat.html", context)
 
     grouped_count = grouped_count.unstack(level=1, fill_value=0)
     grouped_count.columns = [col for col in grouped_count["count"].columns]
@@ -1767,11 +1920,11 @@ def kegg_module_subcat(request):
         new_col = KOAndCompleteness(values, n_missing, header)
         e_tree.add_column(new_col)
     e_tree.rename_leaves(leaf_to_name.description.to_dict())
-    path = settings.ASSET_ROOT + '/temp/metabo_tree.svg'
-    asset_path = '/temp/metabo_tree.svg'
+    path = settings.ASSET_ROOT + "/temp/metabo_tree.svg"
+    asset_path = "/temp/metabo_tree.svg"
     e_tree.render(path, dpi=500, w=800)
     envoi = True
-    return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
+    return render(request, "chlamdb/module_subcat.html", my_locals(locals()))
 
 
 def kegg_module(request):
@@ -1782,13 +1935,11 @@ def kegg_module(request):
     module_overview_form = make_module_overview_form(db)
     if request.method != "POST":
         form = module_overview_form()
-        return render(request, 'chlamdb/module_overview.html',
-                      my_locals(locals()))
+        return render(request, "chlamdb/module_overview.html", my_locals(locals()))
 
     form = module_overview_form(request.POST)
     if not form.is_valid():
-        return render(request, 'chlamdb/module_overview.html',
-                      my_locals(locals()))
+        return render(request, "chlamdb/module_overview.html", my_locals(locals()))
 
     cat = form.cleaned_data["category"]
     modules_infos = db.get_modules_info(ids=[cat], search_on="category")
@@ -1816,7 +1967,7 @@ def kegg_module(request):
         envoi = True
         context = my_locals(locals())
         context.update(errors["no_hits"])
-        return render(request, 'chlamdb/module_overview.html', context)
+        return render(request, "chlamdb/module_overview.html", context)
 
     grouped_count = grouped_count.unstack(level=1, fill_value=0)
     grouped_count.columns = [col for col in grouped_count["count"].columns]
@@ -1834,12 +1985,12 @@ def kegg_module(request):
         new_col = KOAndCompleteness(values, n_missing, header)
         e_tree.add_column(new_col)
     e_tree.rename_leaves(leaf_to_name.description.to_dict())
-    path = settings.ASSET_ROOT + '/temp/metabo_tree.svg'
-    asset_path = '/temp/metabo_tree.svg'
+    path = settings.ASSET_ROOT + "/temp/metabo_tree.svg"
+    asset_path = "/temp/metabo_tree.svg"
     e_tree.render(path, dpi=500, w=800)
 
     envoi = True
-    return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
+    return render(request, "chlamdb/module_overview.html", my_locals(locals()))
 
 
 def module_comparison(request):
@@ -1851,11 +2002,11 @@ def module_comparison(request):
 
     if request.method != "POST":
         form = comp_metabo_form()
-        return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
+        return render(request, "chlamdb/module_comp.html", my_locals(locals()))
 
     form = comp_metabo_form(request.POST)
     if not form.is_valid():
-        return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
+        return render(request, "chlamdb/module_comp.html", my_locals(locals()))
 
     taxids = form.get_choices()
 
@@ -1867,8 +2018,7 @@ def module_comparison(request):
     grouped_count.fillna(0, inplace=True, downcast="infer")
     taxids = grouped_count.columns
     genomes = db.get_genomes_description().description.to_dict()
-    modules_info = db.get_modules_info(grouped_count.index.tolist(),
-                                       as_pandas=True)
+    modules_info = db.get_modules_info(grouped_count.index.tolist(), as_pandas=True)
     all_infos = modules_info.set_index("module_id").join(grouped_count)
 
     header = ["Module", "Category", "Sub-category", "Description"]
@@ -1879,18 +2029,22 @@ def module_comparison(request):
         taxons.append(genomes[taxid])
 
     for module_id, data in all_infos.iterrows():
-        line = [format_module(module_id, to_url=True), data["cat"],
-                data.subcat, data.descr]
+        line = [
+            format_module(module_id, to_url=True),
+            data["cat"],
+            data.subcat,
+            data.descr,
+        ]
         for taxid in taxids:
             line.append(data[taxid])
         entries.append(line)
     envoi_comp = True
-    return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
+    return render(request, "chlamdb/module_comp.html", my_locals(locals()))
 
 
 def faq(request):
     a = 2
-    return render(request, 'chlamdb/FAQ.html', my_locals(locals()))
+    return render(request, "chlamdb/FAQ.html", my_locals(locals()))
 
 
 def phylogeny(request):
@@ -1902,7 +2056,7 @@ def phylogeny(request):
     genomes_data = get_genomes_data(db)
 
     asset_path = "/temp/species_tree.svg"
-    path = settings.ASSET_ROOT + '/temp/species_tree.svg'
+    path = settings.ASSET_ROOT + "/temp/species_tree.svg"
 
     core = db.get_n_orthogroups(only_core=True)
 
@@ -1924,18 +2078,24 @@ def phylogeny(request):
         ["gc", "GC %", "#fc8d59", False],
         ["coding_density", "Coding density %", "#99d594", False],
         ["completeness", "Completeness %", "#d7191c", False],
-        ["contamination", "Contamination %", "black", False]]
+        ["contamination", "Contamination %", "black", False],
+    ]
 
     for serie_name, header, col, is_relative in tree_params:
         data = genomes_data[serie_name]
-        e_tree.add_column(SimpleColorColumn.fromSeries(
-            data, header=None, use_col=False))
-        stack = StackedBarColumn(data.to_dict(), colours=[col, "white"],
-                                 relative=is_relative, header=header,
-                                 header_params=header_params,
-                                 face_params=stacked_face_params)
+        e_tree.add_column(
+            SimpleColorColumn.fromSeries(data, header=None, use_col=False)
+        )
+        stack = StackedBarColumn(
+            data.to_dict(),
+            colours=[col, "white"],
+            relative=is_relative,
+            header=header,
+            header_params=header_params,
+            face_params=stacked_face_params,
+        )
         e_tree.add_column(stack)
 
     e_tree.rename_leaves(genomes_data.description.to_dict())
     e_tree.render(path, dpi=500)
-    return render(request, 'chlamdb/phylogeny_intro.html', my_locals(locals()))
+    return render(request, "chlamdb/phylogeny_intro.html", my_locals(locals()))
