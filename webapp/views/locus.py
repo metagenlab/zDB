@@ -7,28 +7,44 @@ import matplotlib.colors as mpl_col
 import pandas as pd
 import seaborn as sns
 from Bio import SeqIO
-from Bio.SeqFeature import FeatureLocation, SeqFeature
+from Bio.SeqFeature import FeatureLocation
+from Bio.SeqFeature import SeqFeature
 from Bio.SeqRecord import SeqRecord
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views import View
-from ete3 import SeqMotifFace, TextFace, Tree, TreeStyle
-from lib.db_utils import DB, NoPhylogenyException
-from lib.ete_phylo import Column, EteTree, SimpleColorColumn
-
-from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
-                          PfamViewMixin, VfViewMixin)
+from ete3 import SeqMotifFace
+from ete3 import TextFace
+from ete3 import Tree
+from ete3 import TreeStyle
+from lib.db_utils import DB
+from lib.db_utils import NoPhylogenyException
+from lib.ete_phylo import Column
+from lib.ete_phylo import EteTree
+from lib.ete_phylo import SimpleColorColumn
+from views.mixins import AmrViewMixin
+from views.mixins import CogViewMixin
+from views.mixins import KoViewMixin
+from views.mixins import PfamViewMixin
+from views.mixins import VfViewMixin
 from views.object_type_metadata import my_locals
-from views.utils import (DataTableConfig, format_gene, format_genome,
-                         format_locus, format_orthogroup, format_pfam,
-                         format_refseqid_to_ncbi, format_swissprot_entry,
-                         format_taxid_to_ncbi, genomic_region_df_to_js,
-                         locusx_genomic_region, make_div, optional2status)
+from views.utils import DataTableConfig
+from views.utils import format_gene
+from views.utils import format_genome
+from views.utils import format_locus
+from views.utils import format_orthogroup
+from views.utils import format_pfam
+from views.utils import format_refseqid_to_ncbi
+from views.utils import format_swissprot_entry
+from views.utils import format_taxid_to_ncbi
+from views.utils import genomic_region_df_to_js
+from views.utils import locusx_genomic_region
+from views.utils import make_div
+from views.utils import optional2status
 
 
 class DownloadSequences(View):
-
     def post(self, request, *args, **kwargs):
         db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
         data = json.loads(self.request.body)
@@ -38,8 +54,8 @@ class DownloadSequences(View):
         for locus in loci:
             seqid, is_pseudogene = db.get_seqid(locus_tag=locus)
             hsh_infos = db.get_proteins_info(
-                [seqid], to_return=["gene"],
-                inc_non_CDS=True, inc_pseudo=True)
+                [seqid], to_return=["gene"], inc_non_CDS=True, inc_pseudo=True
+            )
             organism = db.get_organism([seqid])[seqid]
             description = f"[organism={organism}]"
             gene = hsh_infos.get(seqid)
@@ -49,21 +65,24 @@ class DownloadSequences(View):
                 l_flank, seq, r_flank = get_sequence(db, seqid)
             else:
                 seq = db.get_translation(seqid)
-            sequences.append(
-                SeqRecord(seq, id=locus, description=description)
-            )
+            sequences.append(SeqRecord(seq, id=locus, description=description))
         out = StringIO()
         SeqIO.write(sequences, out, "fasta")
         out.seek(0)
-        response = HttpResponse(FileWrapper(out), content_type='application/octet-stream; charset=utf-8')
-        response['Content-Disposition'] = 'attachment; filename="bla.fasta"'
+        response = HttpResponse(
+            FileWrapper(out), content_type="application/octet-stream; charset=utf-8"
+        )
+        response["Content-Disposition"] = 'attachment; filename="bla.fasta"'
         return response
 
 
 def tab_general(db, seqid):
     hsh_infos = db.get_proteins_info(
-        [seqid], to_return=["locus_tag", "gene", "product"],
-        inc_non_CDS=True, inc_pseudo=True)
+        [seqid],
+        to_return=["locus_tag", "gene", "product"],
+        inc_non_CDS=True,
+        inc_pseudo=True,
+    )
     hsh_organism = db.get_organism([seqid], taxid_and_name=True)
     gene_loc = db.get_gene_loc([seqid], as_hash=False)
 
@@ -71,7 +90,7 @@ def tab_general(db, seqid):
     nucl_length = 0
     for index, row in gene_loc.iterrows():
         gene_pos.append((row.start, row.end, row.strand))
-        nucl_length += row.end-row.start+1
+        nucl_length += row.end - row.start + 1
 
     locus_tag, gene, product = hsh_infos[seqid]
     if pd.isna(gene):
@@ -83,7 +102,7 @@ def tab_general(db, seqid):
         "gene_pos": gene_pos,
         "gene": gene,
         "nucl_length": nucl_length,
-        "prot": product
+        "prot": product,
     }
 
 
@@ -94,7 +113,7 @@ def tab_contig(db, seqid):
         "contig_size": contig_size,
         "contig_topology": qualifiers["topology"],
         "contig_is_plasmid": qualifiers["plasmid"] == "1",
-        "contig_accession":  qualifiers["accessions"],
+        "contig_accession": qualifiers["accessions"],
     }
 
 
@@ -113,8 +132,9 @@ def tab_og_conservation_tree(db, group, compare_to=None):
     tree.ladderize()
     e_tree = EteTree(tree)
 
-    e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group],
-                      header="Number of homologs"))
+    e_tree.add_column(
+        SimpleColorColumn.fromSeries(count.loc[group], header="Number of homologs")
+    )
     if compare_to is not None:
         identity_matrix = db.get_og_identity(og=group, ref_seqid=compare_to)
         seqids = identity_matrix.index.tolist()
@@ -127,8 +147,11 @@ def tab_og_conservation_tree(db, group, compare_to=None):
         max_identity = identity_matrix.groupby("taxid").max().round(1)
         max_identity.loc[seqid_to_taxon[compare_to]] = 100.0
         col = SimpleColorColumn.fromSeries(
-            max_identity.identity, color_gradient=True,
-            header="Identity", default_val="-")
+            max_identity.identity,
+            color_gradient=True,
+            header="Identity",
+            default_val="-",
+        )
         e_tree.add_column(col)
 
     e_tree.rename_leaves(leaf_to_name)
@@ -159,8 +182,7 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
         organism = hsh_organism[seqid]
         locus = format_locus(data.locus_tag, to_url=False)
         locus_fmt = format_locus(data.locus_tag, to_url=True)
-        entry = [locus, locus_fmt, organism, format_gene(data.gene),
-                 data["product"]]
+        entry = [locus, locus_fmt, organism, format_gene(data.gene), data["product"]]
         if ref_seqid is not None:
             if seqid == ref_seqid:
                 continue
@@ -172,12 +194,15 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
             entry.insert(2, ident)
         homologues.append(entry)
 
-    n_genomes = (len(orga_set) if ref_seqid is not None
-                 else len(set(hsh_organism.values())))
-    return {"orthogroup": orthogroup_title,
-            "n_genomes": "1 genome" if n_genomes == 1 else f"{n_genomes} genomes",
-            "headers": headers,
-            "homologues": homologues}
+    n_genomes = (
+        len(orga_set) if ref_seqid is not None else len(set(hsh_organism.values()))
+    )
+    return {
+        "orthogroup": orthogroup_title,
+        "n_genomes": "1 genome" if n_genomes == 1 else f"{n_genomes} genomes",
+        "headers": headers,
+        "homologues": homologues,
+    }
 
 
 def prepare_default_tree(og_phylogeny):
@@ -196,19 +221,19 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
     pfam_col = None
     ident_col = None
     if optional2status.get("pfam", False):
-        annots = db.get_genes_from_og(orthogroups=[og_id],
-                                      terms=["locus_tag", "length"])
+        annots = db.get_genes_from_og(
+            orthogroups=[og_id], terms=["locus_tag", "length"]
+        )
         pfams = db.get_pfam_hits_info(annots.index.tolist())
         unique_pfams = pfams.pfam.unique()
-        color_palette = (mpl_col.to_hex(col)
-                         for col in sns.color_palette(None, len(unique_pfams)))
+        color_palette = (
+            mpl_col.to_hex(col) for col in sns.color_palette(None, len(unique_pfams))
+        )
         pfam_cmap = dict(zip(unique_pfams, color_palette))
         tmp_hsh_infos = collections.defaultdict(list)
         hsh_pfam_infos = {}
         for index, infos in pfams.iterrows():
-            tmp_hsh_infos[infos.seqid].append([infos.pfam,
-                                               infos.start,
-                                               infos.end])
+            tmp_hsh_infos[infos.seqid].append([infos.pfam, infos.start, infos.end])
         for seqid, data in annots.iterrows():
             pfam_entries = tmp_hsh_infos.get(seqid, [])
             hsh_pfam_infos[data.locus_tag] = [data.length, pfam_entries]
@@ -218,15 +243,19 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
         identity_matrix = db.get_og_identity(og=og_id, ref_seqid=compare_to)
         seqids = identity_matrix.index.tolist()
         seqids.append(compare_to)
-        seqid_to_locus = db.get_proteins_info(seqids, to_return=["locus_tag"],
-                                              as_df=True)
-        all_infos = identity_matrix.join(seqid_to_locus).set_index(
-            "locus_tag").round(1)
+        seqid_to_locus = db.get_proteins_info(
+            seqids, to_return=["locus_tag"], as_df=True
+        )
+        all_infos = identity_matrix.join(seqid_to_locus).set_index("locus_tag").round(1)
         all_infos.loc[seqid_to_locus.loc[compare_to].locus_tag] = 100.0
 
         ident_col = SimpleColorColumn.fromSeries(
-            all_infos.identity, color_gradient=True, header="Identity",
-            default_val="-", is_str_index=True)
+            all_infos.identity,
+            color_gradient=True,
+            header="Identity",
+            default_val="-",
+            is_str_index=True,
+        )
 
     tree, root = prepare_default_tree(og_phylogeny)
     locuses = [branch.name for branch in tree.iter_leaves()]
@@ -247,13 +276,10 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
     e_tree.render(path, dpi=1200)
 
     algn_file = f"/alignments/{og_filename}"
-    return {"og_phylogeny": asset_path,
-            "root": root,
-            "og_alignment": algn_file}
+    return {"og_phylogeny": asset_path, "root": root, "og_alignment": algn_file}
 
 
-class AnnotationTableBase():
-
+class AnnotationTableBase:
     def __init__(self, include_occurences=False, from_taxid=None):
         self.include_occurences = include_occurences
         self.from_taxid = from_taxid
@@ -272,29 +298,30 @@ class AnnotationTableBase():
 
         descriptions = self.get_hit_descriptions(
             hits[self.object_column].to_list(),
-            taxid_for_pathway_formatting=self.from_taxid)
+            taxid_for_pathway_formatting=self.from_taxid,
+        )
 
         if self.include_occurences:
             counts = hits[self.object_column].value_counts()
             counts.name = "occurences"
-            descriptions = descriptions.merge(
-                counts, left_index=True, right_index=True)
+            descriptions = descriptions.merge(counts, left_index=True, right_index=True)
 
-        return {"table_headers": self.table_headers,
-                "table_data": descriptions,
-                "table_data_accessors": self.table_data_accessors,
-                "data_table_config": DataTableConfig(
-                    export_buttons=False, display_as_datatable=False),
-                "title": f"{self.object_name} Annotation(s)"}
+        return {
+            "table_headers": self.table_headers,
+            "table_data": descriptions,
+            "table_data_accessors": self.table_data_accessors,
+            "data_table_config": DataTableConfig(
+                export_buttons=False, display_as_datatable=False
+            ),
+            "title": f"{self.object_name} Annotation(s)",
+        }
 
 
 class KoAnnotationTable(AnnotationTableBase, KoViewMixin):
-
     pass
 
 
 class CogAnnotationTable(AnnotationTableBase, CogViewMixin):
-
     @property
     def table_data_accessors(self):
         accessors = super(CogAnnotationTable, self).table_data_accessors
@@ -303,17 +330,14 @@ class CogAnnotationTable(AnnotationTableBase, CogViewMixin):
 
 
 class PfamAnnotationTable(AnnotationTableBase, PfamViewMixin):
-
     pass
 
 
 class AmrAnnotationTable(AnnotationTableBase, AmrViewMixin):
-
     pass
 
 
 class VfAnnotationTable(AnnotationTableBase, VfViewMixin):
-
     pass
 
 
@@ -337,23 +361,32 @@ class PfamColumn(Column):
         pfam_entries = []
         for pfam, start, end in pfam_infos:
             fmt_entry = f"arial|6|white|{format_pfam(pfam)}"
-            entry = [start, end, "[]", None, 8, "black", self.pfam_cmap[pfam],
-                     fmt_entry]
+            entry = [
+                start,
+                end,
+                "[]",
+                None,
+                8,
+                "black",
+                self.pfam_cmap[pfam],
+                fmt_entry,
+            ]
             pfam_entries.append(entry)
         return SeqMotifFace(dummy_seq, motifs=pfam_entries, seq_format="line")
 
 
 def og_tab_get_swissprot_homologs(db, annotations):
-    homologs = db.get_swissprot_homologs(annotations.index.tolist(),
-                                         indexing="accession")
+    homologs = db.get_swissprot_homologs(
+        annotations.index.tolist(), indexing="accession"
+    )
     summary = homologs.groupby("definition").count()
-    return {"table_data": summary,
-            "table_data_accessors": ["name", "accession"],
-            "table_headers": ["Annotation", "Number of occurrences"],
-            "data_table_config": DataTableConfig(table_id="swissprot",
-                                                 display_index=False),
-            "title": f"Annotations of the {len(homologs)} SwissProt hits"
-            }
+    return {
+        "table_data": summary,
+        "table_data_accessors": ["name", "accession"],
+        "table_headers": ["Annotation", "Number of occurrences"],
+        "data_table_config": DataTableConfig(table_id="swissprot", display_index=False),
+        "title": f"Annotations of the {len(homologs)} SwissProt hits",
+    }
 
 
 def tab_get_pfam_annot(db, seqid):
@@ -368,41 +401,63 @@ def tab_get_pfam_annot(db, seqid):
     for pfam, starts in pfam_starts.items():
         ends = pfam_ends.loc[pfam]
         name = format_pfam(pfam)
-        data = "[" + ",".join(f"{{x: {start}, y: {end}}}"
-                              for start, end in zip(starts, ends)) + "]"
+        data = (
+            "["
+            + ",".join(f"{{x: {start}, y: {end}}}" for start, end in zip(starts, ends))
+            + "]"
+        )
         feature = (
-            f"{{data: {data}, "
-            f" name: \"{name}\", "
-            "  color: \"#0F8292\","
-            "  type : \"rect\","
-            "}"
+            f'{{data: {data},  name: "{name}",   color: "#0F8292",  type : "rect",}}'
         )
         pfam_def = pfam_defs_df["def"].loc[pfam]
         pfam_defs.append((format_pfam(pfam, to_url=True), pfam_def))
         feature_viewer_fet.append(feature)
-    return {"pfam_domains": "[" + ",".join(feature_viewer_fet) + "]",
-            "pfam_def": pfam_defs}
+    return {
+        "pfam_domains": "[" + ",".join(feature_viewer_fet) + "]",
+        "pfam_def": pfam_defs,
+    }
 
 
 def locus_tab_swissprot_hits(db, seqid):
     swissprot_homologs = db.get_swissprot_homologs([seqid])
-    header = ["Swissprot accession", "Eval", "Score", "ID (%)", "N gaps",
-              "Alignment length", "Annot score", "Gene", "Description",
-              "Organism"]
+    header = [
+        "Swissprot accession",
+        "Eval",
+        "Score",
+        "ID (%)",
+        "N gaps",
+        "Alignment length",
+        "Annot score",
+        "Gene",
+        "Description",
+        "Organism",
+    ]
     swissprot_homologs["ncbi"] = swissprot_homologs[["organism", "taxid"]].apply(
-        format_taxid_to_ncbi, axis=1)
+        format_taxid_to_ncbi, axis=1
+    )
     swissprot_homologs["accession"] = swissprot_homologs["accession"].apply(
-        format_swissprot_entry)
+        format_swissprot_entry
+    )
 
-    accessors = ["accession", "evalue", "bitscore", "perc_id", "gaps",
-                 "match_len", "pe", "gene", "definition", "ncbi"]
-    return {"table_data": swissprot_homologs,
-            "table_data_accessors": accessors,
-            "table_headers": header,
-            "data_table_config": DataTableConfig(table_id="swissprot",
-                                                 display_index=False),
-            "n_swissprot_hits": len(swissprot_homologs)
-            }
+    accessors = [
+        "accession",
+        "evalue",
+        "bitscore",
+        "perc_id",
+        "gaps",
+        "match_len",
+        "pe",
+        "gene",
+        "definition",
+        "ncbi",
+    ]
+    return {
+        "table_data": swissprot_homologs,
+        "table_data_accessors": accessors,
+        "table_headers": header,
+        "data_table_config": DataTableConfig(table_id="swissprot", display_index=False),
+        "n_swissprot_hits": len(swissprot_homologs),
+    }
 
 
 def tab_get_refseq_homologs(db, seqid):
@@ -410,17 +465,36 @@ def tab_get_refseq_homologs(db, seqid):
     refseq_hits_infos = db.get_refseq_matches_info(refseq_hits.index.tolist())
     all_infos = refseq_hits.join(refseq_hits_infos)
 
-    header = ["Refseq accession", "Evalue", "Score", "ID(%)", "# gaps", "Len",
-              "Description", "Organism"]
+    header = [
+        "Refseq accession",
+        "Evalue",
+        "Score",
+        "ID(%)",
+        "# gaps",
+        "Len",
+        "Description",
+        "Organism",
+    ]
     entries = []
     for match_id, data in all_infos.iterrows():
         to_ncbi = format_refseqid_to_ncbi(data.accession)
         entries.append(
-            (to_ncbi, data.evalue, data.bitscore, data.pident,
-             data.gaps, data.length, data.description, data.organism))
-    return {"n_refseq_homologs": len(refseq_hits),
-            "refseq_headers": header,
-            "blast_data": entries}
+            (
+                to_ncbi,
+                data.evalue,
+                data.bitscore,
+                data.pident,
+                data.gaps,
+                data.length,
+                data.description,
+                data.organism,
+            )
+        )
+    return {
+        "n_refseq_homologs": len(refseq_hits),
+        "refseq_headers": header,
+        "blast_data": entries,
+    }
 
 
 def tab_og_best_hits(db, orthogroup, locus=None):
@@ -445,8 +519,7 @@ def tab_og_best_hits(db, orthogroup, locus=None):
         shortened = leaf.name.split(".")[0]
         if shortened in acc_to_orga.index:
             orga_name = acc_to_orga.loc[shortened]
-            leaf.add_face(TextFace(f"{leaf.name} | {orga_name}"), 0,
-                          "branch-right")
+            leaf.add_face(TextFace(f"{leaf.name} | {orga_name}"), 0, "branch-right")
             continue
 
         color = "red"
@@ -454,8 +527,9 @@ def tab_og_best_hits(db, orthogroup, locus=None):
             color = "green"
         taxid = zdb_taxids.loc[shortened].taxid
         orga_name = orgas[taxid]
-        leaf.add_face(TextFace(f"{leaf.name} | {orga_name}", fgcolor=color),
-                      0, "branch-right")
+        leaf.add_face(
+            TextFace(f"{leaf.name} | {orga_name}", fgcolor=color), 0, "branch-right"
+        )
 
     asset_path = f"/temp/og_best_hit_phylogeny_{orthogroup}.svg"
     path = settings.ASSET_ROOT + asset_path
@@ -467,8 +541,7 @@ def tab_og_best_hits(db, orthogroup, locus=None):
 
 def get_sequence(db, seqid, flanking=0):
     loc = db.get_gene_loc([seqid], as_hash=False)
-    bioentry, accession, length, seq = db.get_bioentry_list(seqid,
-                                                            search_on="seqid")
+    bioentry, accession, length, seq = db.get_bioentry_list(seqid, search_on="seqid")
 
     if len(loc) == 2:
         # Need to handle the special case where a gene is overlapping both ends
@@ -482,21 +555,30 @@ def get_sequence(db, seqid, flanking=0):
 
         _, strand, start, stop = (int(i) for i in loc0.tolist())
         if start == 1:
-            fet1 = SeqFeature(FeatureLocation(
-                start - 1, stop + flanking, strand=strand))
-            fet0 = SeqFeature(FeatureLocation(
-                int(loc1.start - flanking - 1), int(loc1.end), strand=strand))
+            fet1 = SeqFeature(
+                FeatureLocation(start - 1, stop + flanking, strand=strand)
+            )
+            fet0 = SeqFeature(
+                FeatureLocation(
+                    int(loc1.start - flanking - 1), int(loc1.end), strand=strand
+                )
+            )
         else:
-            fet0 = SeqFeature(FeatureLocation(
-                start-1-flanking, stop, strand=strand))
-            fet1 = SeqFeature(FeatureLocation(
-                int(loc1.start) - 1, int(loc1.end) + flanking, strand=strand))
+            fet0 = SeqFeature(
+                FeatureLocation(start - 1 - flanking, stop, strand=strand)
+            )
+            fet1 = SeqFeature(
+                FeatureLocation(
+                    int(loc1.start) - 1, int(loc1.end) + flanking, strand=strand
+                )
+            )
         extracted0 = fet0.extract(seq)
         extracted1 = fet1.extract(seq)
         extracted = extracted0 + extracted1
         red_start = flanking
-        red_stop = (len(extracted0)
-                    + (fet1.location.end - fet1.location.start - flanking))
+        red_stop = len(extracted0) + (
+            fet1.location.end - fet1.location.start - flanking
+        )
     elif len(loc) == 1:
         _, strand, start, stop = (int(i) for i in loc.loc[0].tolist())
         start -= 1
@@ -512,14 +594,11 @@ def get_sequence(db, seqid, flanking=0):
         else:
             stop_w_flank = stop + flanking
         red_stop = red_start + stop - start
-        fet = SeqFeature(FeatureLocation(
-            start_w_flank, stop_w_flank, strand=strand))
+        fet = SeqFeature(FeatureLocation(start_w_flank, stop_w_flank, strand=strand))
         extracted = fet.extract(seq)
     else:
         raise Exception("Unsupported case of fragmented gene")
-    return (extracted[0:red_start],
-            extracted[red_start:red_stop],
-            extracted[red_stop:])
+    return (extracted[0:red_start], extracted[red_start:red_stop], extracted[red_stop:])
 
 
 class ViewBase(View):
@@ -535,27 +614,34 @@ class ViewBase(View):
         return self._db
 
     def render_invalid(self, request, **kwargs):
-        return render(request, self.template, my_locals({"valid_id": False,
-                                                         **kwargs}))
+        return render(request, self.template, my_locals({"valid_id": False, **kwargs}))
 
     def get(self, request, context):
-        self.og_counts = self.db.get_og_count(
-            [self.og_id], search_on="orthogroup")
+        self.og_counts = self.db.get_og_count([self.og_id], search_on="orthogroup")
 
         self.og_annot = self.db.get_genes_from_og(
-            orthogroups=[self.og_id],
-            terms=["locus_tag", "gene", "product", "length"])
+            orthogroups=[self.og_id], terms=["locus_tag", "gene", "product", "length"]
+        )
 
         self.all_org = self.db.get_organism(self.og_annot.index.tolist())
 
         if self.show_homology_info:
-            context.update(tab_og_conservation_tree(
-                self.db, self.og_id, compare_to=self.seqid))
-            context.update(tab_homologs(self.db, self.og_annot, self.all_org,
-                                        ref_seqid=self.seqid, og=self.og_id))
+            context.update(
+                tab_og_conservation_tree(self.db, self.og_id, compare_to=self.seqid)
+            )
+            context.update(
+                tab_homologs(
+                    self.db,
+                    self.og_annot,
+                    self.all_org,
+                    ref_seqid=self.seqid,
+                    og=self.og_id,
+                )
+            )
             try:
-                context.update(tab_og_phylogeny(
-                    self.db, self.og_id, compare_to=self.seqid))
+                context.update(
+                    tab_og_phylogeny(self.db, self.og_id, compare_to=self.seqid)
+                )
             except NoPhylogenyException:
                 pass
         else:
@@ -565,25 +651,25 @@ class ViewBase(View):
         for annotation_table in self.annotation_tables:
             if not annotation_table.is_enabled:
                 continue
-            context["result_tables"].append(
-                annotation_table.get_results(self.seqids))
+            context["result_tables"].append(annotation_table.get_results(self.seqids))
 
         if optional2status.get("BBH_phylogenies", False):
-            context.update(tab_og_best_hits(
-                self.db, self.og_id, locus=self.locus))
+            context.update(tab_og_best_hits(self.db, self.og_id, locus=self.locus))
         return context
 
 
 class LocusX(ViewBase):
-    template = 'chlamdb/locus.html'
+    template = "chlamdb/locus.html"
 
     @property
     def annotation_tables(self):
         taxid = self.db.get_organism(self.seqids, as_taxid=True)[self.seqid]
-        return [CogAnnotationTable(),
-                KoAnnotationTable(from_taxid=taxid),
-                AmrAnnotationTable(),
-                VfAnnotationTable()]
+        return [
+            CogAnnotationTable(),
+            KoAnnotationTable(from_taxid=taxid),
+            AmrAnnotationTable(),
+            VfAnnotationTable(),
+        ]
 
     @property
     def seqids(self):
@@ -596,23 +682,24 @@ class LocusX(ViewBase):
         self.locus = locus
         try:
             self.seqid, feature_type, is_pseudogene = self.db.get_seqid(
-                locus_tag=locus, feature_type=True)
+                locus_tag=locus, feature_type=True
+            )
         except Exception:
             return self.render_invalid(request)
 
-        context["page_title"] = f'Locus tag: {locus}'
-        l_flank, coding, r_flank = get_sequence(
-            self.db, self.seqid, flanking=50)
-        context["seq"] = (
-            l_flank + "<font color='red'>" + coding + "</font>" + r_flank)
+        context["page_title"] = f"Locus tag: {locus}"
+        l_flank, coding, r_flank = get_sequence(self.db, self.seqid, flanking=50)
+        context["seq"] = l_flank + "<font color='red'>" + coding + "</font>" + r_flank
         context["feature_type"] = feature_type
 
         window_size = 8000
-        all_infos, wd_start, wd_end, contig_size, contig_topology = locusx_genomic_region(
-            self.db, self.seqid, window=window_size)
+        all_infos, wd_start, wd_end, contig_size, contig_topology = (
+            locusx_genomic_region(self.db, self.seqid, window=window_size)
+        )
         context["genomic_region"] = genomic_region_df_to_js(
-            all_infos, wd_start, wd_end, contig_size, contig_topology)
-        context["window_size"] = window_size*2
+            all_infos, wd_start, wd_end, contig_size, contig_topology
+        )
+        context["window_size"] = window_size * 2
         context.update(tab_general(self.db, self.seqid))
         context.update(tab_contig(self.db, self.seqid))
 
@@ -641,20 +728,21 @@ class LocusX(ViewBase):
             context.update(tab_get_pfam_annot(self.db, self.seqids))
 
         if optional2status.get("BLAST_swissprot", False):
-            context["swissprot"] = locus_tab_swissprot_hits(
-                self.db, self.seqid)
+            context["swissprot"] = locus_tab_swissprot_hits(self.db, self.seqid)
 
         if optional2status.get("BLAST_database", False):
             context.update(tab_get_refseq_homologs(self.db, self.seqid))
 
-        context.update({
-            "n_homologues": n_homologues,
-            "og_id": format_orthogroup(self.og_id, to_url=True),
-            "og_size": og_size,
-            "og_num_genomes": og_num_genomes,
-            "translation": translation,
-            "locus": locus,
-        })
+        context.update(
+            {
+                "n_homologues": n_homologues,
+                "og_id": format_orthogroup(self.og_id, to_url=True),
+                "og_size": og_size,
+                "og_num_genomes": og_num_genomes,
+                "translation": translation,
+                "locus": locus,
+            }
+        )
         return render(request, self.template, my_locals(context))
 
     def show_homology_info(self):
@@ -675,24 +763,34 @@ def tab_lengths(n_homologues, annotations):
     mean_protein_length = f"{lengths.mean():.1f}"
     median_protein_length = f"{lengths.median():.1f}"
     if len(lengths.unique()) > 1:
-        fig1 = ff.create_distplot([lengths.tolist()], ["Sequence length"],
-                                  bin_size=20)
+        fig1 = ff.create_distplot([lengths.tolist()], ["Sequence length"], bin_size=20)
         fig1.update_xaxes(range=[0, max_protein_length])
         fig1.layout.margin.update(
-            {"l": 80, "r": 20, "b": 40, "t": 20, "pad": 10, })
+            {
+                "l": 80,
+                "r": 20,
+                "b": 40,
+                "t": 20,
+                "pad": 10,
+            }
+        )
         html_plot_prot_length = make_div(fig1, div_id="distplot")
     else:
-        return {"length_distrib": True,
-                "single_length": True,
-                "prot_length": lengths.iloc[0]}
+        return {
+            "length_distrib": True,
+            "single_length": True,
+            "prot_length": lengths.iloc[0],
+        }
 
-    return {"length_distrib": True,
-            "max_protein_length": max_protein_length,
-            "std_protein_length": std_protein_length,
-            "min_protein_length": min_protein_length,
-            "mean_protein_length": mean_protein_length,
-            "median_protein_length": median_protein_length,
-            "html_plot_prot_length": html_plot_prot_length}
+    return {
+        "length_distrib": True,
+        "max_protein_length": max_protein_length,
+        "std_protein_length": std_protein_length,
+        "min_protein_length": min_protein_length,
+        "mean_protein_length": mean_protein_length,
+        "median_protein_length": median_protein_length,
+        "html_plot_prot_length": html_plot_prot_length,
+    }
 
 
 def format_lst(lst):
@@ -704,16 +802,17 @@ def format_lst(lst):
 
 
 class Orthogroup(ViewBase):
-
-    template = 'chlamdb/og.html'
+    template = "chlamdb/og.html"
 
     @property
     def annotation_tables(self):
-        return [CogAnnotationTable(include_occurences=True),
-                KoAnnotationTable(include_occurences=True),
-                PfamAnnotationTable(include_occurences=True),
-                AmrAnnotationTable(include_occurences=True),
-                VfAnnotationTable(include_occurences=True)]
+        return [
+            CogAnnotationTable(include_occurences=True),
+            KoAnnotationTable(include_occurences=True),
+            PfamAnnotationTable(include_occurences=True),
+            AmrAnnotationTable(include_occurences=True),
+            VfAnnotationTable(include_occurences=True),
+        ]
 
     @property
     def seqids(self):
@@ -754,16 +853,19 @@ class Orthogroup(ViewBase):
 
         if optional2status.get("BLAST_swissprot", False):
             context["result_tables"].append(
-                og_tab_get_swissprot_homologs(self.db, self.og_annot))
+                og_tab_get_swissprot_homologs(self.db, self.og_annot)
+            )
 
         context.update(tab_lengths(n_homologues, self.og_annot))
-        context.update({
-            "n_homologues": n_homologues,
-            "og": og,
-            "menu": True,
-            "gene_annotations": gene_annotations,
-            "product_annotations": product_annotations,
-        })
+        context.update(
+            {
+                "n_homologues": n_homologues,
+                "og": og,
+                "menu": True,
+                "gene_annotations": gene_annotations,
+                "product_annotations": product_annotations,
+            }
+        )
         return render(request, self.template, my_locals(context))
 
     def show_homology_info(self):

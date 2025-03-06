@@ -7,30 +7,31 @@ from lib.db_utils import DB
 
 
 class BaseAutocompleteTestCase(SimpleTestCase):
-
     def make_request(self, **kwargs):
-        url = f'{self.base_url}?forward={json.dumps(kwargs)}'
+        url = f"{self.base_url}?forward={json.dumps(kwargs)}"
         return self.client.get(url)
 
 
 class TestAutocompleteTaxid(BaseAutocompleteTestCase):
-
-    base_url = '/autocomplete_taxid/'
+    base_url = "/autocomplete_taxid/"
 
     taxons = [
-        {'id': '1', 'text': 'Klebsiella pneumoniae R6724_16313'},
-        {'id': '2', 'text': 'Klebsiella pneumoniae R6726_16314'},
-        {'id': '3', 'text': 'Klebsiella pneumoniae R6728_16315'}]
+        {"id": "1", "text": "Klebsiella pneumoniae R6724_16313"},
+        {"id": "2", "text": "Klebsiella pneumoniae R6726_16314"},
+        {"id": "3", "text": "Klebsiella pneumoniae R6728_16315"},
+    ]
 
     groups = [
-        {'id': 'group:positive', 'text': 'positive'},
-        {'id': 'group:negative', 'text': 'negative'},
-        {'id': 'group:all', 'text': 'all'}]
+        {"id": "group:positive", "text": "positive"},
+        {"id": "group:negative", "text": "negative"},
+        {"id": "group:all", "text": "all"},
+    ]
 
     plasmids = [
-        {'id': 'plasmid:1', 'text': 'Klebsiella pneumoniae R6724_16313 plasmid'},
-        {'id': 'plasmid:2', 'text': 'Klebsiella pneumoniae R6726_16314 plasmid'},
-        {'id': 'plasmid:3', 'text': 'Klebsiella pneumoniae R6728_16315 plasmid'}]
+        {"id": "plasmid:1", "text": "Klebsiella pneumoniae R6724_16313 plasmid"},
+        {"id": "plasmid:2", "text": "Klebsiella pneumoniae R6726_16314 plasmid"},
+        {"id": "plasmid:3", "text": "Klebsiella pneumoniae R6728_16315 plasmid"},
+    ]
 
     @contextmanager
     def add_plasmid_for_taxids(self, taxids):
@@ -41,23 +42,28 @@ class TestAutocompleteTaxid(BaseAutocompleteTestCase):
         """
         try:
             plasmid_term_id = self.db.server.adaptor.execute_one(
-                "SELECT term_id FROM term WHERE name='plasmid'")[0]
+                "SELECT term_id FROM term WHERE name='plasmid'"
+            )[0]
             for taxid in taxids:
                 self.db.server.adaptor.execute(
                     f"UPDATE bioentry_qualifier_value SET value=1 "
-                    f"WHERE bioentry_id={taxid} AND term_id={plasmid_term_id};")
+                    f"WHERE bioentry_id={taxid} AND term_id={plasmid_term_id};"
+                )
                 self.db.server.commit()
             yield
         finally:
             for taxid in taxids:
                 self.db.server.adaptor.execute(
                     f"UPDATE bioentry_qualifier_value SET value=0 "
-                    f"WHERE bioentry_id={taxid} AND term_id={plasmid_term_id};")
+                    f"WHERE bioentry_id={taxid} AND term_id={plasmid_term_id};"
+                )
                 self.db.server.commit()
 
     def assertItemsEqual(self, expected, actual):
-        self.assertEqual(sorted(expected, key=lambda x: x["id"]),
-                         sorted(actual, key=lambda x: x["id"]))
+        self.assertEqual(
+            sorted(expected, key=lambda x: x["id"]),
+            sorted(actual, key=lambda x: x["id"]),
+        )
 
     def setUp(self):
         biodb_path = settings.BIODB_DB_PATH
@@ -69,53 +75,41 @@ class TestAutocompleteTaxid(BaseAutocompleteTestCase):
     def test_handles_include_plasmids(self):
         with self.add_plasmid_for_taxids([1, 2]):
             resp = self.make_request()
-            self.assertItemsEqual(
-                self.taxons + self.groups,
-                resp.json()["results"])
+            self.assertItemsEqual(self.taxons + self.groups, resp.json()["results"])
 
             resp = self.make_request(include_plasmids=True)
             self.assertItemsEqual(
-                self.taxons + self.groups + self.plasmids[:2],
-                resp.json()["results"])
+                self.taxons + self.groups + self.plasmids[:2], resp.json()["results"]
+            )
 
     def test_handles_exclude(self):
         resp = self.make_request(exclude=["3"])
         self.assertItemsEqual(
-            [self.taxons[0], self.taxons[1], self.groups[0]],
-            resp.json()["results"])
+            [self.taxons[0], self.taxons[1], self.groups[0]], resp.json()["results"]
+        )
 
         resp = self.make_request(exclude=["group:positive"])
-        self.assertItemsEqual(
-            [self.taxons[2], self.groups[1]],
-            resp.json()["results"])
+        self.assertItemsEqual([self.taxons[2], self.groups[1]], resp.json()["results"])
 
         resp = self.make_request(exclude=["3", "group:positive"])
-        self.assertItemsEqual(
-            [],
-            resp.json()["results"])
+        self.assertItemsEqual([], resp.json()["results"])
 
     def test_handles_exclude_taxids_in_groups(self):
         # ignored because these are not groups
         resp = self.make_request(exclude_taxids_in_groups=["1", "3"])
-        self.assertItemsEqual(
-            self.taxons + self.groups,
-            resp.json()["results"])
+        self.assertItemsEqual(self.taxons + self.groups, resp.json()["results"])
 
         resp = self.make_request(exclude_taxids_in_groups=["group:positive"])
-        self.assertItemsEqual(
-            [self.taxons[2]] + self.groups,
-            resp.json()["results"])
+        self.assertItemsEqual([self.taxons[2]] + self.groups, resp.json()["results"])
 
-        resp = self.make_request(exclude_taxids_in_groups=["group:positive",
-                                                           "group:negative"])
-        self.assertItemsEqual(
-            self.groups,
-            resp.json()["results"])
+        resp = self.make_request(
+            exclude_taxids_in_groups=["group:positive", "group:negative"]
+        )
+        self.assertItemsEqual(self.groups, resp.json()["results"])
 
 
 class TestAutocompleteNMissing(BaseAutocompleteTestCase):
-
-    base_url = '/autocomplete_n_missing/'
+    base_url = "/autocomplete_n_missing/"
 
     @staticmethod
     def get_expected_response(n):
@@ -124,18 +118,14 @@ class TestAutocompleteNMissing(BaseAutocompleteTestCase):
     def test_handles_include_plasmids(self):
         included = ["1", "2", "plasmid:2", "plasmid:3"]
         resp = self.make_request(included=included)
-        self.assertEqual(self.get_expected_response(2),
-                         resp.json()["results"])
+        self.assertEqual(self.get_expected_response(2), resp.json()["results"])
 
         resp = self.make_request(included=included, include_plasmids=True)
-        self.assertEqual(self.get_expected_response(4),
-                         resp.json()["results"])
+        self.assertEqual(self.get_expected_response(4), resp.json()["results"])
 
     def test_handles_groups(self):
         resp = self.make_request(included=["group:positive"])
-        self.assertEqual(self.get_expected_response(2),
-                         resp.json()["results"])
+        self.assertEqual(self.get_expected_response(2), resp.json()["results"])
 
         resp = self.make_request(included=["group:positive", "group:negative"])
-        self.assertEqual(self.get_expected_response(3),
-                         resp.json()["results"])
+        self.assertEqual(self.get_expected_response(3), resp.json()["results"])

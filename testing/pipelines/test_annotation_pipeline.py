@@ -1,62 +1,63 @@
 import os
 
-from sqlalchemy import MetaData, create_engine
+from sqlalchemy import MetaData
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+
 from testing.pipelines.base import BasePipelineTestCase
 
 base_tables = [
-    'biodatabase',
-    'biodb_config',
-    'bioentry',
-    'bioentry_dbxref',
-    'bioentry_path',
-    'bioentry_qualifier_value',
-    'bioentry_reference',
-    'bioentry_relationship',
-    'biosequence',
-    'cog_functions',
-    'cog_names',
-    'comment',
-    'dbxref',
-    'dbxref_qualifier_value',
-    'filenames',
-    'gene_phylogeny',
-    'genome_summary',
-    'groups',
-    'ko_class',
-    'ko_def',
-    'ko_module_def',
-    'ko_pathway_def',
-    'ko_to_module',
-    'ko_to_pathway',
-    'location',
-    'location_qualifier_value',
-    'og_hits',
-    'ontology',
-    'orthology_identity',
-    'reference',
-    'reference_phylogeny',
-    'seqfeature',
-    'seqfeature_dbxref',
-    'seqfeature_path',
-    'seqfeature_qualifier_value',
-    'seqfeature_relationship',
-    'sequence_hash_dictionnary',
-    'taxon',
-    'taxon_in_group',
-    'taxon_name',
-    'term',
-    'term_dbxref',
-    'term_path',
-    'term_relationship',
-    'term_relationship_term',
-    'term_synonym',
-    'versions'
+    "biodatabase",
+    "biodb_config",
+    "bioentry",
+    "bioentry_dbxref",
+    "bioentry_path",
+    "bioentry_qualifier_value",
+    "bioentry_reference",
+    "bioentry_relationship",
+    "biosequence",
+    "cog_functions",
+    "cog_names",
+    "comment",
+    "dbxref",
+    "dbxref_qualifier_value",
+    "filenames",
+    "gene_phylogeny",
+    "genome_summary",
+    "groups",
+    "ko_class",
+    "ko_def",
+    "ko_module_def",
+    "ko_pathway_def",
+    "ko_to_module",
+    "ko_to_pathway",
+    "location",
+    "location_qualifier_value",
+    "og_hits",
+    "ontology",
+    "orthology_identity",
+    "reference",
+    "reference_phylogeny",
+    "seqfeature",
+    "seqfeature_dbxref",
+    "seqfeature_path",
+    "seqfeature_qualifier_value",
+    "seqfeature_relationship",
+    "sequence_hash_dictionnary",
+    "taxon",
+    "taxon_in_group",
+    "taxon_name",
+    "term",
+    "term_dbxref",
+    "term_path",
+    "term_relationship",
+    "term_relationship_term",
+    "term_synonym",
+    "versions",
 ]
 
 
 class TestAnnotationPipeline(BasePipelineTestCase):
-
     nf_filename = "annotation_pipeline.nf"
 
     @property
@@ -70,7 +71,8 @@ class TestAnnotationPipeline(BasePipelineTestCase):
     def load_db(self, execution):
         self.metadata_obj = MetaData()
         self.engine = create_engine(
-            "sqlite:////" + os.path.join(self.db_dir, execution.identifier))
+            "sqlite:////" + os.path.join(self.db_dir, execution.identifier)
+        )
         self.session = Session(self.engine)
         self.metadata_obj.reflect(bind=self.engine)
 
@@ -80,7 +82,8 @@ class TestAnnotationPipeline(BasePipelineTestCase):
     def setUp(self):
         super(TestAnnotationPipeline, self).setUp()
         self.nf_params["input"] = os.path.join(
-            self.test_dir, "assets", "test_input.csv")
+            self.test_dir, "assets", "test_input.csv"
+        )
 
     def assert_created_files(self, proc, files):
         created_files = os.listdir(proc.path)
@@ -113,10 +116,11 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.load_db(execution)
 
         # Let's check that tables were correctly created and filled
-        self.assertItemsEqual(base_tables + ['cog_hits'],
-                              self.metadata_obj.tables.keys())
+        self.assertItemsEqual(
+            base_tables + ["cog_hits"], self.metadata_obj.tables.keys()
+        )
         self.assert_db_base_table_row_counts()
-        self.assertEqual(189, self.query("cog_hits").count())
+        self.assertEqual(196, self.query("cog_hits").count())
 
     def test_ko_hits(self):
         self.nf_params["ko"] = "true"
@@ -125,8 +129,10 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.load_db(execution)
 
         # Let's check that tables were correctly created and filled
-        self.assertItemsEqual(base_tables + ['module_completeness', 'ko_hits'],
-                              self.metadata_obj.tables.keys())
+        self.assertItemsEqual(
+            base_tables + ["module_completeness", "ko_hits"],
+            self.metadata_obj.tables.keys(),
+        )
         self.assert_db_base_table_row_counts()
         self.assertEqual(3, self.query("module_completeness").count())
         self.assertEqual(137, self.query("ko_hits").count())
@@ -138,11 +144,12 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.load_db(execution)
 
         # Let's check that tables were correctly created and filled
-        self.assertItemsEqual(base_tables + ['pfam_hits', 'pfam_table'],
-                              self.metadata_obj.tables.keys())
+        self.assertItemsEqual(
+            base_tables + ["pfam_hits", "pfam_table"], self.metadata_obj.tables.keys()
+        )
         self.assert_db_base_table_row_counts()
         self.assertEqual(324, self.query("pfam_hits").count())
-        self.assertEqual(237, self.query("pfam_table").count())
+        self.assertEqual(236, self.query("pfam_table").count())
 
     def test_swissprot_hits(self):
         self.nf_params["blast_swissprot"] = "true"
@@ -152,8 +159,9 @@ class TestAnnotationPipeline(BasePipelineTestCase):
 
         # Let's check that tables were correctly created and filled
         self.assertItemsEqual(
-            base_tables + ['swissprot_defs', 'swissprot_hits'],
-            self.metadata_obj.tables.keys())
+            base_tables + ["swissprot_defs", "swissprot_hits"],
+            self.metadata_obj.tables.keys(),
+        )
         self.assert_db_base_table_row_counts()
         # The exact number of hits depends on the version of the ref db
         self.assertTrue(self.query("swissprot_defs").count() > 19400)
@@ -167,8 +175,8 @@ class TestAnnotationPipeline(BasePipelineTestCase):
 
         # Let's check that tables were correctly created and filled
         self.assertItemsEqual(
-            base_tables + ['amr_hits'],
-            self.metadata_obj.tables.keys())
+            base_tables + ["amr_hits"], self.metadata_obj.tables.keys()
+        )
         self.assert_db_base_table_row_counts()
         self.assertEqual(2, self.query("amr_hits").count())
 
@@ -180,8 +188,8 @@ class TestAnnotationPipeline(BasePipelineTestCase):
 
         # Let's check that tables were correctly created and filled
         self.assertItemsEqual(
-            base_tables + ['vf_hits', 'vf_defs'],
-            self.metadata_obj.tables.keys())
+            base_tables + ["vf_hits", "vf_defs"], self.metadata_obj.tables.keys()
+        )
         self.assert_db_base_table_row_counts()
         self.assertEqual(36, self.query("vf_hits").count())
         self.assertEqual(35, self.query("vf_defs").count())
@@ -202,25 +210,26 @@ class TestAnnotationPipeline(BasePipelineTestCase):
 
         # Let's check that tables were correctly created and filled
         added_tables = [
-            'ko_hits',
-            'pfam_table',
-            'pfam_hits',
-            'cog_hits',
-            'swissprot_hits',
-            'swissprot_defs',
-            'module_completeness',
-            'amr_hits',
-            'vf_defs',
-            'vf_hits',
+            "ko_hits",
+            "pfam_table",
+            "pfam_hits",
+            "cog_hits",
+            "swissprot_hits",
+            "swissprot_defs",
+            "module_completeness",
+            "amr_hits",
+            "vf_defs",
+            "vf_hits",
         ]
-        self.assertItemsEqual(base_tables + added_tables,
-                              self.metadata_obj.tables.keys())
+        self.assertItemsEqual(
+            base_tables + added_tables, self.metadata_obj.tables.keys()
+        )
         self.assert_db_base_table_row_counts()
-        self.assertEqual(189, self.query("cog_hits").count())
+        self.assertEqual(196, self.query("cog_hits").count())
         self.assertEqual(3, self.query("module_completeness").count())
         self.assertEqual(137, self.query("ko_hits").count())
         self.assertEqual(324, self.query("pfam_hits").count())
-        self.assertEqual(237, self.query("pfam_table").count())
+        self.assertEqual(236, self.query("pfam_table").count())
         self.assertTrue(self.query("swissprot_defs").count() > 19400)
         self.assertTrue(self.query("swissprot_hits").count() > 29400)
         self.assertEqual(2, self.query("amr_hits").count())
@@ -228,5 +237,14 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertEqual(35, self.query("vf_defs").count())
 
         self.assertItemsEqual(
-            ["Pfam", "SwissProt", "Ko", "CDD", "AMRFinderSoftware", "AMRFinderDB", "VFDB"],
-            [row[0] for row in self.query("versions").all()])
+            [
+                "Pfam",
+                "SwissProt",
+                "Ko",
+                "CDD",
+                "AMRFinderSoftware",
+                "AMRFinderDB",
+                "VFDB",
+            ],
+            [row[0] for row in self.query("versions").all()],
+        )

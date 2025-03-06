@@ -10,4 +10,4 @@ def keyvalue(dict, key):
 
 @register.filter
 def remove_spaces(value):
-    return value.replace(' ', '+')
+    return value.replace(" ", "+")

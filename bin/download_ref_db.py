@@ -24,8 +24,11 @@ def download_refseq(download_dir, n_retry=10):
     # letters to make sure it ends with faa.gz, instead of using regular
     # expression
     nr_re = re.compile(r"complete.nonredundant_protein.(\d)*.protein.faa.gz")
-    nr_filelist = [i for i in ftp.nlst() if re.match(nr_re, i) is not None
-                   and i not in existing_files]
+    nr_filelist = [
+        i
+        for i in ftp.nlst()
+        if re.match(nr_re, i) is not None and i not in existing_files
+    ]
 
     for f in nr_filelist:
         failed = 0
@@ -43,18 +46,34 @@ def download_refseq(download_dir, n_retry=10):
                 failed += 1
                 if failed == n_retry:
                     os.remove(f)
-                    raise Exception("Failed to download " + f + ". You may retry \
-                            to run the script to complete the download.")
+                    raise Exception(
+                        "Failed to download "
+                        + f
+                        + ". You may retry \
+                            to run the script to complete the download."
+                    )
         existing_files.add(f)
 
 
-parser = argparse.ArgumentParser(description="""Downloads the databases necessary
-        for the annotation pipeline""")
+parser = argparse.ArgumentParser(
+    description="""Downloads the databases necessary
+        for the annotation pipeline"""
+)
 
-parser.add_argument("--download_ko", nargs="?", const="databases/ko/", default=False,
-                    help="download ko file definition, necessary to do this before --load-kegg")
-parser.add_argument("--download_refseq", nargs="?", const="databases/refseq/", default=False,
-                    help="download ko file definition, necessary to do this before --load-kegg")
+parser.add_argument(
+    "--download_ko",
+    nargs="?",
+    const="databases/ko/",
+    default=False,
+    help="download ko file definition, necessary to do this before --load-kegg",
+)
+parser.add_argument(
+    "--download_refseq",
+    nargs="?",
+    const="databases/refseq/",
+    default=False,
+    help="download ko file definition, necessary to do this before --load-kegg",
+)
 
 
 args = vars(parser.parse_args())

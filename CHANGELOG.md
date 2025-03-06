@@ -8,6 +8,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix SQL queries for libsqlite 3.49.1. ([#151](https://github.com/metagenlab/zDB/pull/151)) (Niklaus Johner)
+
 ### Changed
 
 - Cite zDB paper on home page and about pages. ([#147](https://github.com/metagenlab/zDB/pull/147)) (Niklaus Johner)

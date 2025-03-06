@@ -3,17 +3,21 @@ import json
 from chlamdb.forms import make_metabo_from
 from django.shortcuts import render
 from django.views import View
-
 from views.analysis_view_metadata import TabularComparisonMetadata
-from views.mixins import (AmrViewMixin, CogViewMixin, KoViewMixin,
-                          OrthogroupViewMixin, PfamViewMixin, VfViewMixin)
-from views.utils import (format_cog, format_ko, format_lst_to_html,
-                         format_orthogroup)
+from views.mixins import AmrViewMixin
+from views.mixins import CogViewMixin
+from views.mixins import KoViewMixin
+from views.mixins import OrthogroupViewMixin
+from views.mixins import PfamViewMixin
+from views.mixins import VfViewMixin
+from views.utils import format_cog
+from views.utils import format_ko
+from views.utils import format_lst_to_html
+from views.utils import format_orthogroup
 
 
 class TabularComparisonViewBase(View):
-
-    template = 'chlamdb/tabular_comparison.html'
+    template = "chlamdb/tabular_comparison.html"
     hist_colour_index_shift = 0
     table_headers = None
     _metadata_cls = TabularComparisonMetadata
@@ -54,15 +58,14 @@ class TabularComparisonViewBase(View):
             form_help=self.form_help,
             show_comparison_table=self.show_comparison_table,
             view_name=self.view_name,
-            )
+        )
         if self.show_comparison_table:
             context["table_headers"] = self.table_headers
             context["table_rows"] = self.table_rows
             context["table_title"] = self.table_title
             context["table_help"] = self.table_help
             context["first_coloured_row"] = self.first_coloured_row
-            context["n_data_columns"] = len(self.base_info_headers) + \
-                len(self.targets)
+            context["n_data_columns"] = len(self.base_info_headers) + len(self.targets)
             context["hist_colour_index_shift"] = self.hist_colour_index_shift
             context["custom_plot_button"] = json.dumps(self.custom_plot_button)
         return context
@@ -70,14 +73,15 @@ class TabularComparisonViewBase(View):
     @property
     def hash_to_taxon_dict(self):
         if self._hash_to_taxon_dict is None:
-            self._hash_to_taxon_dict = self.db.get_genomes_description().description.to_dict()
+            self._hash_to_taxon_dict = (
+                self.db.get_genomes_description().description.to_dict()
+            )
         return self._hash_to_taxon_dict
 
     def set_table_data(self):
         self.n_selected = len(self.targets)
 
-        taxon_list = [self.hash_to_taxon_dict[target_id]
-                      for target_id in self.targets]
+        taxon_list = [self.hash_to_taxon_dict[target_id] for target_id in self.targets]
         self.table_headers = self.base_info_headers + taxon_list
 
         self.table_rows = self.get_table_rows()
@@ -94,20 +98,24 @@ class TabularComparisonViewBase(View):
 
     @property
     def table_title(self):
-        return "Number of {} present at least once in 1 of the {} selected "\
-               "genomes: <strong>{}</strong>".format(self.object_name_plural,
-                                                     self.n_selected,
-                                                     self.n_rows)
+        return (
+            "Number of {} present at least once in 1 of the {} selected "
+            "genomes: <strong>{}</strong>".format(
+                self.object_name_plural, self.n_selected, self.n_rows
+            )
+        )
 
     @property
     def form_title(self):
-        return "Compare the distribution of shared {}.".format(
-            self.object_name_plural)
+        return "Compare the distribution of shared {}.".format(self.object_name_plural)
 
     @property
     def form_help(self):
-        return "Compare the size of the {} shared by selected genomes (targets).".format(
-            self.object_name_plural)
+        return (
+            "Compare the size of the {} shared by selected genomes (targets).".format(
+                self.object_name_plural
+            )
+        )
 
     @property
     def first_coloured_row(self):
@@ -116,12 +124,13 @@ class TabularComparisonViewBase(View):
     @property
     def base_info_headers(self):
         # First column is used for checkboxes so we drop its header.
-        return [self.colname_to_header(colname) if i else ""
-                for i, colname in enumerate(self.base_info_accessors)]
+        return [
+            self.colname_to_header(colname) if i else ""
+            for i, colname in enumerate(self.base_info_accessors)
+        ]
 
 
 class PfamComparisonView(TabularComparisonViewBase, PfamViewMixin):
-
     base_info_accessors = ["pfam", "def", "ttl_cnt"]
 
     table_help = """
@@ -139,22 +148,31 @@ class PfamComparisonView(TabularComparisonViewBase, PfamViewMixin):
 
     def get_table_rows(self):
         pfam_hits = self.get_hit_counts(ids=self.targets)
-        pfam_defs = self.get_hit_descriptions(pfam_hits.index.tolist(),
-                                              add_ttl_count=True)
+        pfam_defs = self.get_hit_descriptions(
+            pfam_hits.index.tolist(), add_ttl_count=True
+        )
 
         table_rows = []
         for key, values in pfam_hits.iterrows():
             entry_infos = pfam_defs.loc[key]
-            base_infos = [entry_infos[accessor]
-                          for accessor in self.base_info_accessors]
-            table_rows.append([self.format_entry(key)] + base_infos + values.values.tolist())
+            base_infos = [
+                entry_infos[accessor] for accessor in self.base_info_accessors
+            ]
+            table_rows.append(
+                [self.format_entry(key)] + base_infos + values.values.tolist()
+            )
 
         return table_rows
 
 
 class CogComparisonView(TabularComparisonViewBase, CogViewMixin):
-
-    base_info_headers = ["", "COG accession", "Description", "# complete DB", "# genomes"]
+    base_info_headers = [
+        "",
+        "COG accession",
+        "Description",
+        "# complete DB",
+        "# genomes",
+    ]
 
     table_help = """
     The ouput table contains the list of COG annotated in selected genomes and
@@ -164,12 +182,11 @@ class CogComparisonView(TabularComparisonViewBase, CogViewMixin):
     """
 
     def get_table_rows(self):
-        cog_hits = self.db.get_cog_hits(
-            ids=self.targets, search_on="taxid")
+        cog_hits = self.db.get_cog_hits(ids=self.targets, search_on="taxid")
         # retrieve entry list
         cog_all = self.db.get_cog_hits(
-            ids=list(self.hash_to_taxon_dict.keys()),
-            search_on="taxid")
+            ids=list(self.hash_to_taxon_dict.keys()), search_on="taxid"
+        )
 
         # count frequency and n genomes
         cog_count = cog_all.sum(axis=1)
@@ -178,25 +195,27 @@ class CogComparisonView(TabularComparisonViewBase, CogViewMixin):
         cog_count = cog_count.loc[cog_hits.index]
         # retrieve annotations
         cogs_summaries = self.db.get_cog_summaries(
-            cog_hits.index.tolist(), as_df=True, only_cog_desc=True)
+            cog_hits.index.tolist(), as_df=True, only_cog_desc=True
+        )
 
         cog2description = cogs_summaries.description.to_dict()
-        cog_hits["accession"] = [format_cog(cog, as_url=True)
-                                 for cog in cog_hits.index]
-        cog_hits["description"] = [cog2description[cog] if cog in cog2description else '-'
-                                   for cog in cog_hits.index]
+        cog_hits["accession"] = [format_cog(cog, as_url=True) for cog in cog_hits.index]
+        cog_hits["description"] = [
+            cog2description[cog] if cog in cog2description else "-"
+            for cog in cog_hits.index
+        ]
 
         # combine into df
-        combined_df = cog_hits.merge(
-            cog_count.rename('count'),
-            left_index=True,
-            right_index=True).merge(
-                cog_freq.rename('freq'),
-                left_index=True,
-                right_index=True).sort_values(["count"], ascending=False)
+        combined_df = (
+            cog_hits.merge(cog_count.rename("count"), left_index=True, right_index=True)
+            .merge(cog_freq.rename("freq"), left_index=True, right_index=True)
+            .sort_values(["count"], ascending=False)
+        )
         combined_df["entry_id"] = combined_df.index.map(self.format_entry)
         cols = combined_df.columns.to_list()
-        ordered_cols = ["entry_id"] + cols[self.n_selected:-1] + cols[:self.n_selected]
+        ordered_cols = (
+            ["entry_id"] + cols[self.n_selected : -1] + cols[: self.n_selected]
+        )
         return combined_df[ordered_cols].values
 
     @property
@@ -205,7 +224,6 @@ class CogComparisonView(TabularComparisonViewBase, CogViewMixin):
 
 
 class OrthogroupComparisonView(TabularComparisonViewBase, OrthogroupViewMixin):
-
     base_info_headers = ["", "Orthogroup", "Annotation"]
 
     table_help = """
@@ -221,7 +239,9 @@ class OrthogroupComparisonView(TabularComparisonViewBase, OrthogroupViewMixin):
         og_count = self.db.get_og_count(self.targets)
         annotations = self.db.get_genes_from_og(
             orthogroups=og_count.index.tolist(),
-            taxon_ids=self.targets, terms=["product"])
+            taxon_ids=self.targets,
+            terms=["product"],
+        )
 
         products = annotations.groupby("orthogroup")["product"].apply(list)
 
@@ -240,7 +260,6 @@ class OrthogroupComparisonView(TabularComparisonViewBase, OrthogroupViewMixin):
 
 
 class KoComparisonView(TabularComparisonViewBase, KoViewMixin):
-
     table_help = """
     The ouput table contains the number of homologs in the shared Kegg
     Orthologs of the selected genomes and the total number of homologs
@@ -262,14 +281,18 @@ class KoComparisonView(TabularComparisonViewBase, KoViewMixin):
         ko2total_count = df_ttl.groupby("KO").sum()["count"].to_dict()
         table_rows = []
         for key, values in hits.iterrows():
-            row = [format_ko(key), format_ko(key, as_url=True), ko2annot[key], ko2total_count[key]]
+            row = [
+                format_ko(key),
+                format_ko(key, as_url=True),
+                ko2annot[key],
+                ko2total_count[key],
+            ]
             row.extend(values.values)
             table_rows.append(row)
         return table_rows
 
 
 class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
-
     _table_help = """
     The ouput table contains the number of times a given AMR {} appears
     in the selected genomes, color coded according to the quality
@@ -283,9 +306,7 @@ class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
     "plus" proteins are included with a less stringent criteria.<br>
     """
 
-    type_choices = (("gene", "Gene"),
-                    ("class", "Class"),
-                    ("subclass", "Subclass"))
+    type_choices = (("gene", "Gene"), ("class", "Class"), ("subclass", "Subclass"))
 
     def make_metabo_from(self):
         return make_metabo_from(self.db, type_choices=self.type_choices)
@@ -293,7 +314,15 @@ class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
     @property
     def base_info_accessors(self):
         if self.comp_type == "gene":
-            return ["entry_id", "gene", "scope", "class", "subclass", "seq_name", "hmm_id"]
+            return [
+                "entry_id",
+                "gene",
+                "scope",
+                "class",
+                "subclass",
+                "seq_name",
+                "hmm_id",
+            ]
         elif self.comp_type == "subclass":
             return ["subclass", "subclass", "class"]
         elif self.comp_type == "class":
@@ -321,10 +350,13 @@ class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
             row_data = data.iloc[0]
             row = [row_data[key] or "-" for key in self.base_info_accessors]
             taxonids = data["bioentry.taxon_id"]
-            values = [len(taxonids[taxonids == target_id])
-                      for target_id in self.targets]
-            colours = [data[taxonids == target_id]["quality"].max() if value
-                       else 0 for value, target_id in zip(values, self.targets)]
+            values = [
+                len(taxonids[taxonids == target_id]) for target_id in self.targets
+            ]
+            colours = [
+                data[taxonids == target_id]["quality"].max() if value else 0
+                for value, target_id in zip(values, self.targets)
+            ]
             row.extend(values)
             row.extend(colours)
             table_rows.append(row)
@@ -336,7 +368,6 @@ class AmrComparisonView(TabularComparisonViewBase, AmrViewMixin):
 
 
 class VfComparisonView(TabularComparisonViewBase, VfViewMixin):
-
     _table_help = """
     The ouput table contains the number of times a given {} appears
     in the selected genomes, color coded according to the e-value
@@ -344,9 +375,11 @@ class VfComparisonView(TabularComparisonViewBase, VfViewMixin):
     <br> Counts can be reordrered by clicking on column headers.<br>
     """
 
-    type_choices = (("vf_gene_id", "VF Gene"),
-                    ("vfid", "VF"),
-                    ("category", "VF Category"))
+    type_choices = (
+        ("vf_gene_id", "VF Gene"),
+        ("vfid", "VF"),
+        ("category", "VF Category"),
+    )
 
     def make_metabo_from(self):
         return make_metabo_from(self.db, type_choices=self.type_choices)
@@ -377,10 +410,13 @@ class VfComparisonView(TabularComparisonViewBase, VfViewMixin):
         for groupid, data in hits.groupby(self.comp_type):
             row = data.iloc[0][self.base_info_accessors].tolist()
             taxonids = data["taxon_id"]
-            values = [len(taxonids[taxonids == target_id])
-                      for target_id in self.targets]
-            colours = [data[taxonids == target_id]["evalue"].max() if value
-                       else 0 for value, target_id in zip(values, self.targets)]
+            values = [
+                len(taxonids[taxonids == target_id]) for target_id in self.targets
+            ]
+            colours = [
+                data[taxonids == target_id]["evalue"].max() if value else 0
+                for value, target_id in zip(values, self.targets)
+            ]
             row.extend(values)
             row.extend(colours)
             table_rows.append(row)

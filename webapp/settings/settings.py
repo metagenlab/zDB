@@ -31,44 +31,40 @@ ALLOWED_HOSTS = hosts.split(",")
 if trusted_origins:
     CSRF_TRUSTED_ORIGINS = trusted_origins.split(",")
 
-BIODB_CONF = {
-    "zdb.db_type": "sqlite",
-    "zdb.db_name": "George",
-    "zdb.psswd": ""
-}
+BIODB_CONF = {"zdb.db_type": "sqlite", "zdb.db_name": "George", "zdb.psswd": ""}
 
 
 INSTALLED_APPS = (
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'dal',
-    'dal_select2',
-    'chlamdb',
-    'gunicorn',
-    'templatetags',
-    'django.contrib.admin',
-    'django.contrib.sitemaps',
-    'crispy_forms'
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "dal",
+    "dal_select2",
+    "chlamdb",
+    "gunicorn",
+    "templatetags",
+    "django.contrib.admin",
+    "django.contrib.sitemaps",
+    "crispy_forms",
 )
 
 
 MIDDLEWARE = [
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'chlamdb.middleware.MyMiddleware',
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "chlamdb.middleware.MyMiddleware",
 ]
 
-ROOT_URLCONF = 'settings.urls'
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Europe/Paris'
+ROOT_URLCONF = "settings.urls"
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "Europe/Paris"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -77,7 +73,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
-STATIC_URL = '/assets/'
+STATIC_URL = "/assets/"
 
 # We always want to server files in served_assets. When using the dev server,
 # files in STATICFILES_DIRS are served so we need to set that to served_assets.
@@ -94,21 +90,18 @@ else:
 APPEND_SLASH = True  # Ajoute un slash en fin d'URL
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-INTERNAL_IPS = (
-    '127.0.0.1',
-)
+INTERNAL_IPS = ("127.0.0.1",)

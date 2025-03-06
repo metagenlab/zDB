@@ -1,6 +1,6 @@
 # LL(1) parser implementation for the module definition of KEGGs.
 #
-# It ultimately allows, after having parsed a definition, to check 
+# It ultimately allows, after having parsed a definition, to check
 # how many kegg orthologs are missing to have a complete module.
 #
 # For now, it does not support signature modules.
@@ -9,9 +9,10 @@
 # tokens and nodes of the syntax tree.
 # TODO(BM): implement str methods for the other syntax tree nodes
 # TODO(BM): add the details of the grammar that is parsed
-# 
+#
 # Author: bastian.marquis@protonmail.com
 # Date: 05.11.2020
+
 
 class Complex:
     def __init__(self, left, right):
@@ -24,6 +25,7 @@ class Complex:
     def get_n_missing(self, kos):
         return self.right.get_n_missing(kos) + self.left.get_n_missing(kos)
 
+
 class OptionalSubunit(Complex):
     def __init__(self, expr):
         self.expr = expr
@@ -34,6 +36,7 @@ class OptionalSubunit(Complex):
     def get_n_missing(self, kos):
         return 0
 
+
 # May need to put those in a different file
 class KoAnd:
     def __init__(self, list_and):
@@ -42,12 +45,14 @@ class KoAnd:
     def get_n_missing(self, kos):
         return sum(node.get_n_missing(kos) for node in self.list_and)
 
+
 class KoOr:
     def __init__(self, list_or):
         self.list_or = list_or
 
     def get_n_missing(self, kos):
         return min(node.get_n_missing(kos) for node in self.list_or)
+
 
 class KoNode:
     def __init__(self, node_id):
@@ -61,6 +66,7 @@ class KoNode:
             return 0 if kos[self.node_id] > 0 else 1
         return 1
 
+
 class UndefinedKoNode:
     def get_n_missing(self, ko):
         return 0
@@ -69,13 +75,16 @@ class UndefinedKoNode:
 class Token:
     pass
 
+
 class LeftParToken(Token):
     def __str__(self):
         return "LeftPar"
 
+
 class RightParToken(Token):
     def __str__(self):
         return "RightPar"
+
 
 class Ko(Token):
     def __init__(self, ko_id):
@@ -84,21 +93,26 @@ class Ko(Token):
     def __str__(self):
         return f"KO{self.ko_id}"
 
+
 class AndToken(Token):
     def __str__(self):
         return "And"
+
 
 class ComplexToken(Token):
     def __str__(self):
         return "Complex"
 
+
 class OptionalComplexComponent(Token):
     def __str__(self):
         return "OptComplex"
 
+
 class OrToken(Token):
     def __str__(self):
         return "Or"
+
 
 class UndefinedToken(Token):
     def __str__(self):
@@ -123,7 +137,7 @@ class Tokenizer:
             curr_char = self.module_def[self.i]
             if not curr_char.isdigit():
                 raise Exception("Invalid KO")
-            acc = acc*10 + int(curr_char)
+            acc = acc * 10 + int(curr_char)
             self.i += 1
         return Ko(acc)
 
@@ -162,12 +176,13 @@ class Tokenizer:
             elif char == "K":
                 return self.tokenize_ko()
             else:
-                raise Exception(f"Error tokenizing at position {self.i}({self.module_def[self.i]})")
+                raise Exception(
+                    f"Error tokenizing at position {self.i}({self.module_def[self.i]})"
+                )
         raise StopIteration
 
 
 class ModuleParser:
-
     def __init__(self, module_def):
         self.module_def = module_def
         tokenizer = Tokenizer(module_def)
@@ -180,14 +195,17 @@ class ModuleParser:
             return token
         try:
             return next(self.token_iter)
-        except StopIteration as e:
+        except StopIteration:
             return None
 
     def parse_parentheses(self):
         subtree = self.parse()
         next_token = self.next_token()
         if next_token == None or not isinstance(next_token, RightParToken):
-            raise Exception("Unexpected end of expression (unbalanced parentheses) " + str(next_token))
+            raise Exception(
+                "Unexpected end of expression (unbalanced parentheses) "
+                + str(next_token)
+            )
         return subtree
 
     def parse_leaf(self):
@@ -202,7 +220,7 @@ class ModuleParser:
         elif isinstance(n, OptionalComplexComponent):
             return OptionalSubunit([self.parse_leaf()])
         else:
-            raise Exception("Unexpected token: "+str(n))
+            raise Exception("Unexpected token: " + str(n))
 
     def parse_optional(self, left_node):
         right_node = self.parse_complex()
@@ -227,7 +245,7 @@ class ModuleParser:
     def parse(self):
         comp = self.parse_complex()
         n = self.next_token()
-        if n==None:
+        if n == None:
             return comp
         elif isinstance(n, AndToken):
             and_node = KoAnd([comp])
