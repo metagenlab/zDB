@@ -66,10 +66,10 @@ to [Common Changelog](https://common-changelog.org)
 ### Fixed
 
 - Fix binding of folders when running with singularity. ([#116](https://github.com/metagenlab/zDB/pull/116)) (Niklaus Johner)
-- Fix checkM conda environment. ([#114](https://github.com/metagenlab/zDB/pull/114)
-- Fix AMRFinderPlus database update for Linux. ([#113](https://github.com/metagenlab/zDB/pull/113)
-- Fix AMRFinderPlus database update for Linux. ([#113](https://github.com/metagenlab/zDB/pull/113)
-- Update containers zDB release v 1.3. ([#112](https://github.com/metagenlab/zDB/pull/112)
+- Fix checkM conda environment. ([#114](https://github.com/metagenlab/zDB/pull/114)) (Niklaus Johner)
+- Fix AMRFinderPlus database update for Linux. ([#113](https://github.com/metagenlab/zDB/pull/113)) (Niklaus Johner)
+- Fix AMRFinderPlus database update for Linux. ([#113](https://github.com/metagenlab/zDB/pull/113)) (Niklaus Johner)
+- Update containers zDB release v 1.3. ([#112](https://github.com/metagenlab/zDB/pull/112)) (Niklaus Johner)
 
 
 ## 1.3.0 - 2024-07-11 (broken release as containers are outdated)
@@ -77,7 +77,7 @@ to [Common Changelog](https://common-changelog.org)
 ### Changed
 
 - Update the documentation. ([#110](https://github.com/metagenlab/zDB/pull/110)) (Niklaus Johner)
-- Execute tblastn search against the fna (contigs) database. ([#106](https://github.com/metagenlab/zDB/pull/106)
+- Execute tblastn search against the fna (contigs) database. ([#106](https://github.com/metagenlab/zDB/pull/106)) (Niklaus Johner)
 - Handle groups when selecting genomes wherever pertinent. ([#84](https://github.com/metagenlab/zDB/pull/84) and [#85](https://github.com/metagenlab/zDB/pull/85)) (Niklaus Johner)
 - Allow using groups to define phenotype in GWAS view. ([#82](https://github.com/metagenlab/zDB/pull/82)) (Niklaus Johner)
 - Display form validation errors next to the corresponding fields. ([#83](https://github.com/metagenlab/zDB/pull/83)) (Niklaus Johner)
@@ -132,8 +132,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
-- Fix filtering of COGs in annotation pipeline. ([#108](https://github.com/metagenlab/zDB/pull/108)
-- Fix blast view for hits with identifier containing a version number. ([#106](https://github.com/metagenlab/zDB/pull/106)
+- Fix filtering of COGs in annotation pipeline. ([#108](https://github.com/metagenlab/zDB/pull/108)) (Niklaus Johner)
+- Fix blast view for hits with identifier containing a version number. ([#106](https://github.com/metagenlab/zDB/pull/106)) (Niklaus Johner)
 - Fix PFAM identifiers missing leading 0. ([#105](https://github.com/metagenlab/zDB/pull/105)) (Niklaus Johner)
 - Fix product representation in GWAS view for orthogroups. ([#102](https://github.com/metagenlab/zDB/pull/102)) (Niklaus Johner)
 - Fix Scoary-2 integration. ([#101](https://github.com/metagenlab/zDB/pull/101)) (Niklaus Johner)
