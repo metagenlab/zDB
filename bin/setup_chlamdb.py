@@ -802,6 +802,59 @@ def load_vfdb_hits(params, blast_results, db_name, vfdb_fasta, vfdb_defs, min_se
 
 
 # NOTE:
+# There is currently no GFF parser in BioPython so we make our own.
+GeneralFeature = namedtuple(
+    "GeneralFeature",
+    [
+        "seqid",
+        "source",
+        "type_",
+        "start",
+        "end",
+        "score",
+        "strand",
+        "phase",
+        "attributes",
+    ],
+)
+
+
+class GFFParser:
+    def __call__(self, fh):
+        res = []
+        for line in fh:
+            if line.startswith("#"):
+                continue
+            if not line.strip():
+                continue
+            data = line.split("\t")
+            res.append(GeneralFeature(*data[:-1], self.parse_attributes(data[-1])))
+        return res
+
+    def parse_attributes(self, attributes):
+        attributes = [el.split("=") for el in attributes.split(";")]
+        return dict(attributes)
+
+
+def load_gis(params, gff_files, db_name):
+    db = DB.load_db(db_name, params)
+    genomic_islands = []
+    parser = GFFParser()
+    for gff_file in gff_files:
+        with open(gff_file, "r") as fh:
+            genomic_islands.extend(parser(fh))
+
+    accession_to_entry = db.get_accession_to_entry()
+    db.load_genomic_islands(
+        [
+            (None, accession_to_entry[el.seqid], el.start, el.end)
+            for el in genomic_islands
+        ]
+    )
+    db.commit()
+
+
+# NOTE:
 # Several KO marked as significant can be assigned to the same locus
 # only take the hit with the lowest evalue (the first in the list)
 def load_KO(params, ko_files, db_name, ko_db_dir):

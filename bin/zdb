@@ -516,6 +516,10 @@ elif [[ "$1" == "run" ]]; then
 				args="${args} --vf_coverage=${vf_coverage}"
 				shift
 				;;
+			--gi)
+				args="${args} --gi"
+				shift
+				;;
 			--singularity_dir=*)
 				singularity_dir=$(realpath ${i#*=})
 				shift
@@ -544,6 +548,7 @@ elif [[ "$1" == "run" ]]; then
 				echo " --vf_evalue: evalue cutoff for the blast against the VF database. Defaults to 1e-10."
 				echo " --vf_coverage: coverage cutoff for query in blast against the VF database. Defaults to 60%."
 				echo " --vf_seqid: sequence id cutoff for filtering VF blast results. Defaults to 60%."
+				echo " --gi: perform gi (genomic islands) annotation"
 				echo " --ref_dir: directory where the reference databases were setup up (default zdb_ref)"
 				echo " --cpu: number of parallel processes allowed (default 8)"
 				echo " --mem: max memory usage allowed (default 8GB)"
