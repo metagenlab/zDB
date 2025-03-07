@@ -2577,6 +2577,13 @@ class DB:
         ]
         self.server.adaptor.executemany(sql, data)
 
+    def load_genomic_islands(self, data):
+        sql = "CREATE TABLE genomic_islands (gis_id INTEGER PRIMARY KEY, bioentry_id INTEGER, start_pos integer, end_pos integer);"
+        self.server.adaptor.execute(
+            sql,
+        )
+        self.load_data_into_table("genomic_islands", data)
+
     def load_amr_hits(self, data):
         sql = (
             "CREATE TABLE amr_hits (hsh INTEGER, gene varchar(20), seq_name tinytext, "
