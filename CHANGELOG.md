@@ -9,6 +9,7 @@ to [Common Changelog](https://common-changelog.org)
 ### Fixed
 
 - Fix SQL queries for libsqlite 3.49.1. ([#151](https://github.com/metagenlab/zDB/pull/151)) (Niklaus Johner)
+-  Fix accession in contig tab of locusx view. ([#153](https://github.com/metagenlab/zDB/pull/153)) (Niklaus Johner)
 
 ### Changed
 

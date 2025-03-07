@@ -107,13 +107,13 @@ def tab_general(db, seqid):
 
 
 def tab_contig(db, seqid):
-    bioentry, _, contig_size, _ = db.get_bioentry_list(seqid, search_on="seqid")
+    bioentry, accession, contig_size, _ = db.get_bioentry_list(seqid, search_on="seqid")
     qualifiers = db.get_bioentry_qualifiers(bioentry).set_index("term")["value"]
     return {
         "contig_size": contig_size,
         "contig_topology": qualifiers["topology"],
         "contig_is_plasmid": qualifiers["plasmid"] == "1",
-        "contig_accession": qualifiers["accessions"],
+        "contig_accession": accession,
     }
 
 
