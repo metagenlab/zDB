@@ -77,7 +77,7 @@ Note that zDB depends on nextflow (version 22.10 or lower) and singularity, so y
 
 Several subcommands are available:
 ```
-setup - download and prepare the reference databases
+setup - download and prepare the reference and base databases
 webapp - start the webapp
 run - run the analysis pipeline
 export - exports the results of a previous run in an archive
@@ -98,6 +98,7 @@ tar xvf test_dataset.tar.gz
 For a minimal database (*assuming that singularity is installed*):
 ```
 conda install zdb -c conda-forge -c bioconda
+zdb setup --setup_base_db # prepare the database skeleton, has to be done just once
 zdb run --input=input.csv --name=simple_run # runs the analysis
 zdb webapp --name=simple_run # Launches the webapp on simple run
 ```
@@ -106,6 +107,7 @@ The minimal database should take around 5 minutes to complete in a recent Deskto
 To do the same in conda environments:
 ```
 conda install zdb -c conda-forge -c bioconda
+zdb setup --setup_base_db --conda # prepare the database skeleton, has to be done just once
 zdb run --input=input.csv --name=simple_run_conda --conda # runs the analysis
 zdb webapp --conda --name=simple_run_conda # Launches the webapp on the latest run
 ```
@@ -113,7 +115,7 @@ zdb webapp --conda --name=simple_run_conda # Launches the webapp on the latest r
 To have a more complete set of analyses (includes cog and pfam annotation):
 ```
 conda install zdb -c conda-forge -c bioconda
-zdb setup --pfam --cog --conda
+zdb setup --setup_base_db --pfam --cog --conda
 zdb run --input=input.csv --name=more_complete_run --conda --cog --pfam # runs the analysis
 zdb webapp --conda --name=more_complete_run # Launches the webapp on the latest run
 ```
@@ -135,6 +137,8 @@ The following databases can be downloaded:
 --vfdb: downloads and sets up the virulence factor database (VFDB)
 --swissprot: downloads and indexes the swissprot database
 ```
+
+Moreover, before your first run, you will need to prepare the database skeleton for zDB. This is done using the ```zdb setup``` command with the ``--setup_base_db`` flag.
 
 The database setup can be run either in singularity containers (by default), in conda environment (if the ```--conda``` flag is set) or in docker (if the ```--docker``` flag is set).
 
