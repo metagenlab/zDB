@@ -62,6 +62,7 @@ with DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF) as db:
     optional2status["pathway"] = optional2status["KEGG"]
     optional2status["amr"] = optional2status["AMR"]
     optional2status["vf"] = optional2status["BLAST_vfdb"]
+    optional2status["genomic_islands"] = optional2status["GIS"]
 
     missing_mandatory = [
         name
