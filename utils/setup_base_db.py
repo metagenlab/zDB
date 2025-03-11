@@ -266,7 +266,10 @@ def get_ko_pathways_mapping():
         entry = entry.split("ko:")[1].strip()
         pathway_id = pathway_id.split("path:")[1].strip()
         if pathway_id.startswith("map"):
-            mapping[entry].append(pathway_mapping[pathway_id])
+            pathway = pathway_mapping[pathway_id]
+            # Some entries are dupplicate
+            if pathway not in mapping[entry]:
+                mapping[entry].append(pathway)
     return mapping
 
 
