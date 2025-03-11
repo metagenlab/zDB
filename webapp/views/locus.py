@@ -539,6 +539,16 @@ def tab_og_best_hits(db, orthogroup, locus=None):
     return {"best_hits_phylogeny": asset_path, "has_refseq_phylo": True}
 
 
+def get_genomic_island(db, seqid, gene_pos):
+    bioentry, _, _, _ = db.get_bioentry_list(seqid, search_on="seqid")
+    genomic_islands = []
+    for start, stop, _ in gene_pos:
+        genomic_islands.extend(
+            db.get_containing_genomic_islands(bioentry, int(start), int(stop))
+        )
+    return {"genomic_islands": genomic_islands}
+
+
 def get_sequence(db, seqid, flanking=0):
     loc = db.get_gene_loc([seqid], as_hash=False)
     bioentry, accession, length, seq = db.get_bioentry_list(seqid, search_on="seqid")
@@ -732,6 +742,9 @@ class LocusX(ViewBase):
 
         if optional2status.get("BLAST_database", False):
             context.update(tab_get_refseq_homologs(self.db, self.seqid))
+
+        if optional2status.get("genomic_islands", False):
+            context.update(get_genomic_island(self.db, self.seqid, context["gene_pos"]))
 
         context.update(
             {
