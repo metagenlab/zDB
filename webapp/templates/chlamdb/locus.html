@@ -217,6 +217,23 @@
                               <td>{{nucl_length}} (nucleotides)</td>
                             {% endif %}
                           </tr>
+                          {% if optional2status|keyvalue:"genomic_islands" %}
+                            <tr>
+                              <th>In genomic island</th>
+                              <td>
+                                {% if genomic_islands|length > 0 %}
+                                  {% for pos in genomic_islands %}
+                                    {{pos.1}} - {{pos.2}}
+                                    {% if genomic_islands|length > 1 %}
+                                      <br>
+                                    {% endif %}
+                                  {% endfor %}
+                                {% else %}
+                                  -
+                                {% endif %}
+                              </td>
+                            </tr>
+                          {% endif %}
                         </table>
                       </div>
                     </div>
