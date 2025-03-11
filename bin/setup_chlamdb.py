@@ -851,6 +851,7 @@ def load_gis(params, gff_files, db_name):
             for el in genomic_islands
         ]
     )
+    db.set_status_in_config_table("GIS", 1)
     db.commit()
 
 
