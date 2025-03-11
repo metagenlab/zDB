@@ -1,4 +1,19 @@
 
+process setup_base_db {
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
+    publishDir "$params.zdb_base_db", mode: "move"
+
+    output:
+        path("zdb_base")
+
+    script:
+    """
+    python "$params.setup_base_db_script" --load_cog --load_kegg
+    """
+}
+
 
 process download_cog_cdd {
 
@@ -213,6 +228,9 @@ workflow setup_vfdb {
 }
 
 workflow {
+    if( params.setup_base_db )
+        setup_base_db()
+
     if( params.cog )
         setup_cogg_db()
 
