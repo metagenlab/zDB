@@ -21,7 +21,7 @@ if [[ $# == "0" || $1 == "help" ]]; then
 	echo "zDB (v${VERSION})"
 	echo "Available commands:"
 	echo ""
-	echo "setup - download and prepare the reference databases"
+	echo "setup - download and prepare the reference and base databases"
 	echo ""
 	echo "webapp - start the webapp"
 	echo ""
@@ -92,6 +92,10 @@ elif [[ "$1" == "setup" ]]; then
 
 	for i in "$@"; do
 		case $i in 
+			--setup_base_db)
+				db_setup_args="${db_setup_args} --setup_base_db"
+				shift
+				;;
 			--cog)
 				db_setup_args="${db_setup_args} --cog"
 				shift
@@ -135,9 +139,11 @@ elif [[ "$1" == "setup" ]]; then
 				shift
 				;;
 			--help)
-				echo "Downloads and sets up the reference database used by the analysis pipeline."
+				echo "Downloads and sets up the reference database used by the analysis pipeline,"
+				echo "as well as the zDB base database."
 				echo ""
 				echo "The following options can be used:"
+				echo " --setup_base_db: set up the DB skeleton used by zDB. Has to be done before running \"zdb run\" for the first time. "
 				echo " --cog: downloads the CDD profiles used for COG annotations "
 				echo " --ko: downloads and setups the hmm profiles of the ko database"
 				echo " --pfam: downloads and setups up the hmm profiles of the PFAM protein domains"

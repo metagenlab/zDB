@@ -13,6 +13,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Changed
 
+- Setup zdb base DB with zdb setup command. ([#154](https://github.com/metagenlab/zDB/pull/154)) (Niklaus Johner)
 - Cite zDB paper on home page and about pages. ([#147](https://github.com/metagenlab/zDB/pull/147)) (Niklaus Johner)
 
 ### Added
