@@ -27,6 +27,7 @@ title2page = {
     "Genome alignments: Plot region": ["plot_region"],
     "Genome groups": ["groups"],
     "Genome overview": ["extract_contigs"],
+    "Genomic Island": ["genomic_island"],
     "Homology search: Blast": ["blast"],
     "Kegg Ortholog": ["fam_ko"],
     "Kegg metabolic pathways": ["kegg_genomes"],
@@ -382,18 +383,27 @@ class EntryIdParser:
         return None
 
 
-def locusx_genomic_region(db, seqid, window):
-    hsh_loc = db.get_gene_loc([seqid])
-    strand, start, end = hsh_loc[seqid]
-    window_start, window_stop = start - window, start + window
+def locusx_genomic_region(
+    db, seqid=None, window=None, bioentry=None, window_start=None, window_stop=None
+):
+    if window and seqid:
+        hsh_loc = db.get_gene_loc([seqid])
+        strand, start, end = hsh_loc[seqid]
+        window_start, window_stop = start - window, start + window
+        bioentry, _, contig_size, _ = db.get_bioentry_list(seqid, search_on="seqid")
+    elif bioentry and window_start is not None and window_stop is not None:
+        contig_size = db.get_bioentry_length(bioentry)
+    else:
+        raise RuntimeWarning("locusx_genomic_region called with inadequate arguments.")
 
-    bioentry, _, contig_size, _ = db.get_bioentry_list(seqid, search_on="seqid")
+    window_size = window_stop - window_start
+
     qualifiers = db.get_bioentry_qualifiers(bioentry).set_index("term")["value"]
     contig_topology = qualifiers["topology"]
     is_circular = contig_topology == "circular"
     df_seqids = db.get_features_location(bioentry, search_on="bioentry_id")
 
-    if 2 * window >= contig_size:
+    if window_size >= contig_size:
         window_start = 0
         window_stop = contig_size
     elif window_start < 0 and not is_circular:
