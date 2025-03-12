@@ -222,8 +222,8 @@
                               <th>In genomic island</th>
                               <td>
                                 {% if genomic_islands|length > 0 %}
-                                  {% for pos in genomic_islands %}
-                                    {{pos.1}} - {{pos.2}}
+                                  {% for gi in genomic_islands %}
+                                    {{gi|safe}}
                                     {% if genomic_islands|length > 1 %}
                                       <br>
                                     {% endif %}
