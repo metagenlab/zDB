@@ -227,6 +227,10 @@ def format_genome(taxid_and_description):
     return f'<a href="/extract_contigs/{taxid}">{description}</a>'
 
 
+def format_genomic_island(gis_id, bioentry_accession, start, end):
+    return f'<a href="/genomic_island/{gis_id}">GI{gis_id} {bioentry_accession}: {start} - {end}</a>'
+
+
 class DataTableConfig:
     def __init__(
         self,
