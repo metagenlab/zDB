@@ -2133,6 +2133,11 @@ class DB:
                 hsh_results[entry_id][func] = cnt + 1
         return hsh_results
 
+    def get_bioentry_length(self, bioentry_id):
+        query = "SELECT length FROM biosequence WHERE bioentry_id = ?;"
+        results = self.server.adaptor.execute_and_fetchall(query, [bioentry_id])
+        return results[0][0]
+
     def get_bioentry_qualifiers(self, bioentry_id):
         query = (
             "SELECT t.name, value.value "
