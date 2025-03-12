@@ -32,6 +32,7 @@ from views.object_type_metadata import my_locals
 from views.utils import DataTableConfig
 from views.utils import format_gene
 from views.utils import format_genome
+from views.utils import format_genomic_island
 from views.utils import format_locus
 from views.utils import format_orthogroup
 from views.utils import format_pfam
@@ -540,13 +541,18 @@ def tab_og_best_hits(db, orthogroup, locus=None):
 
 
 def get_genomic_island(db, seqid, gene_pos):
-    bioentry, _, _, _ = db.get_bioentry_list(seqid, search_on="seqid")
+    bioentry, accession, _, _ = db.get_bioentry_list(seqid, search_on="seqid")
     genomic_islands = []
     for start, stop, _ in gene_pos:
         genomic_islands.extend(
             db.get_containing_genomic_islands(bioentry, int(start), int(stop))
         )
-    return {"genomic_islands": genomic_islands}
+    return {
+        "genomic_islands": [
+            format_genomic_island(gis_id, accession, start, stop)
+            for gis_id, start, stop in genomic_islands
+        ]
+    }
 
 
 def get_sequence(db, seqid, flanking=0):

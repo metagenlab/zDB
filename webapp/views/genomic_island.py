@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.views import View
 from views.mixins import BaseViewMixin
 from views.utils import format_genome
+from views.utils import format_genomic_island
 from views.utils import genomic_region_df_to_js
 from views.utils import locusx_genomic_region
 
@@ -45,5 +46,5 @@ class GenomicIsland(BaseViewMixin, View):
         return (
             f"Genomic island: "
             f"{format_genome((taxon_id, description))} "
-            f"({accession}: {self.start_pos} - {self.end_pos})"
+            f"({format_genomic_island(self.gis_id, accession, self.start_pos, self.end_pos)})"
         )
