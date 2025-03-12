@@ -2584,6 +2584,10 @@ class DB:
         )
         self.load_data_into_table("genomic_islands", data)
 
+    def get_genomic_island(self, entry_id):
+        sql = "SELECT gis_id, bioentry_id, start_pos, end_pos FROM genomic_islands WHERE gis_id=?"
+        return self.server.adaptor.execute_and_fetchall(sql, [entry_id])[0]
+
     def get_containing_genomic_islands(self, bioentry_id, start, stop):
         sql = "SELECT gis_id, start_pos, end_pos FROM genomic_islands WHERE bioentry_id=? AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)"
         return self.server.adaptor.execute_and_fetchall(sql, [bioentry_id, start, stop])
