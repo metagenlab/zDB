@@ -2133,6 +2133,11 @@ class DB:
                 hsh_results[entry_id][func] = cnt + 1
         return hsh_results
 
+    def get_bioentry_length(self, bioentry_id):
+        query = "SELECT length FROM biosequence WHERE bioentry_id = ?;"
+        results = self.server.adaptor.execute_and_fetchall(query, [bioentry_id])
+        return results[0][0]
+
     def get_bioentry_qualifiers(self, bioentry_id):
         query = (
             "SELECT t.name, value.value "
@@ -2576,6 +2581,21 @@ class DB:
             for bioentry_id, is_plasmid in plasmid_bioentries
         ]
         self.server.adaptor.executemany(sql, data)
+
+    def load_genomic_islands(self, data):
+        sql = "CREATE TABLE genomic_islands (gis_id INTEGER PRIMARY KEY, bioentry_id INTEGER, start_pos integer, end_pos integer);"
+        self.server.adaptor.execute(
+            sql,
+        )
+        self.load_data_into_table("genomic_islands", data)
+
+    def get_genomic_island(self, entry_id):
+        sql = "SELECT gis_id, bioentry_id, start_pos, end_pos FROM genomic_islands WHERE gis_id=?"
+        return self.server.adaptor.execute_and_fetchall(sql, [entry_id])[0]
+
+    def get_containing_genomic_islands(self, bioentry_id, start, stop):
+        sql = "SELECT gis_id, start_pos, end_pos FROM genomic_islands WHERE bioentry_id=? AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)"
+        return self.server.adaptor.execute_and_fetchall(sql, [bioentry_id, start, stop])
 
     def load_amr_hits(self, data):
         sql = (
