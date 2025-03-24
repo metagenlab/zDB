@@ -140,6 +140,8 @@ The following databases can be downloaded:
 
 Moreover, before your first run, you will need to prepare the database skeleton for zDB. This is done using the ```zdb setup``` command with the ``--setup_base_db`` flag.
 
+Note that the base database contains some information about the KEGGs, and as both the base database and reference database will use the latest KEGG version, they should be created together.
+
 The database setup can be run either in singularity containers (by default), in conda environment (if the ```--conda``` flag is set) or in docker (if the ```--docker``` flag is set).
 
 In addition, you can specify the directory where you want the databases to be installed with the ```--dir``` option: ```zdb setup --swissprot --dir=foobardir```.
@@ -275,6 +277,9 @@ Modify the 8000 to the same number you attributed to the port number of gunicorn
 
 Please run the webapp in docker containers, setting --allowed_host=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
 
+**Error in load_KO_into_db process**
+
+The base database and KEGG reference database might have different versions. Update both with `zdb setup --setup_base_db --ko`.
 
 ## Developping zDB
 

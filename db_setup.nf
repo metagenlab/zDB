@@ -118,15 +118,14 @@ process download_ko_profiles {
         path "version.txt"
 
     script:
-    version="2022-03-01"
     """
-    wget https://www.genome.jp/ftp/db/kofam/archives/$version/ko_list.gz
-    wget https://www.genome.jp/ftp/db/kofam/archives/$version/profiles.tar.gz
+    wget https://www.genome.jp/ftp/db/kofam/ko_list.gz
+    wget https://www.genome.jp/ftp/db/kofam/profiles.tar.gz
 
     gunzip < ko_list.gz > ko_list && rm -f ko_list.gz
     tar xvf profiles.tar.gz
     rm profiles.tar.gz
-    echo $version > version.txt
+    echo "\$(date +'%Y-%m-%d')" > version.txt
     """
 }
 
