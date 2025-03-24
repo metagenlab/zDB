@@ -13,7 +13,7 @@ class GenomicIsland(BaseViewMixin, View):
 
     def get(self, request, entry_id, *args, **kwargs):
         self.gis_id, self.bioentry_id, self.start_pos, self.end_pos = (
-            self.db.gi.get_genomic_island(entry_id)
+            self.db.gi.get_hit_descriptions([entry_id], as_dataframe=False)[0]
         )
         all_infos, wd_start, wd_end, contig_size, contig_topology = (
             locusx_genomic_region(
