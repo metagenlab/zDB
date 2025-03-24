@@ -31,7 +31,7 @@ class TestCondaEnvironments(BaseTestCase):
 
     def create_env(self, filename, envdir):
         filepath = os.path.join(self.conda_dir, filename)
-        subprocess.check_call(f"mamba env create -f {filepath} -p {envdir}", shell=True)
+        subprocess.check_call(f"conda env create -f {filepath} -p {envdir}", shell=True)
 
     def run_with_env(self, command, envdir):
         subprocess.check_call(f"conda run -p {envdir} {command}", shell=True)
