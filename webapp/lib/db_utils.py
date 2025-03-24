@@ -3,6 +3,7 @@ import sqlite3
 import pandas as pd
 from Bio.Seq import Seq
 from BioSQL import BioSeqDatabase
+from lib.queries import GIQueries
 from lib.queries import VFQueries
 
 # This file defines a class DB, that encapsulates all the SQL requests
@@ -38,6 +39,7 @@ class DB:
         # this will need to be changed in case a MySQL database is used
         self.placeholder = "?"
         self.vf = VFQueries(self)
+        self.gi = GIQueries(self)
 
     # the next two methods are necessary for DB objects to be used
     # in 'with' blocks.
@@ -2588,14 +2590,6 @@ class DB:
             sql,
         )
         self.load_data_into_table("genomic_islands", data)
-
-    def get_genomic_island(self, entry_id):
-        sql = "SELECT gis_id, bioentry_id, start_pos, end_pos FROM genomic_islands WHERE gis_id=?"
-        return self.server.adaptor.execute_and_fetchall(sql, [entry_id])[0]
-
-    def get_containing_genomic_islands(self, bioentry_id, start, stop):
-        sql = "SELECT gis_id, start_pos, end_pos FROM genomic_islands WHERE bioentry_id=? AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)"
-        return self.server.adaptor.execute_and_fetchall(sql, [bioentry_id, start, stop])
 
     def load_amr_hits(self, data):
         sql = (

@@ -1,13 +1,25 @@
-class VFQueries:
-    hit_table = "vf_hits"
-    description_table = "vf_defs"
-    id_col = "vf_gene_id"
-
+class BaseQueries:
     def __init__(self, db):
         self.db = db
 
     def __getattr__(self, key):
         return getattr(self.db, key)
+
+
+class GIQueries(BaseQueries):
+    def get_genomic_island(self, entry_id):
+        sql = "SELECT gis_id, bioentry_id, start_pos, end_pos FROM genomic_islands WHERE gis_id=?"
+        return self.server.adaptor.execute_and_fetchall(sql, [entry_id])[0]
+
+    def get_containing_genomic_islands(self, bioentry_id, start, stop):
+        sql = "SELECT gis_id, start_pos, end_pos FROM genomic_islands WHERE bioentry_id=? AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)"
+        return self.server.adaptor.execute_and_fetchall(sql, [bioentry_id, start, stop])
+
+
+class VFQueries(BaseQueries):
+    hit_table = "vf_hits"
+    description_table = "vf_defs"
+    id_col = "vf_gene_id"
 
     def gen_where_clause(self, search_on, entries):
         entries = self.gen_placeholder_string(entries)

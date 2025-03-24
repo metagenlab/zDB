@@ -545,7 +545,7 @@ def get_genomic_island(db, seqid, gene_pos):
     genomic_islands = []
     for start, stop, _ in gene_pos:
         genomic_islands.extend(
-            db.get_containing_genomic_islands(bioentry, int(start), int(stop))
+            db.gi.get_containing_genomic_islands(bioentry, int(start), int(stop))
         )
     return {
         "genomic_islands": [
