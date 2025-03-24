@@ -85,6 +85,13 @@
                               </a>VF genes
                             </li>
                           {% endif %}
+                          {% if optional2status|keyvalue:"gi" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'gi' %}" >
+                                <b>{{number_gi}}  </b>
+                              </a>Genomic islands
+                            </li>
+                          {% endif %}
                           {% if optional2status|keyvalue:"BLAST_swissprot" == 1 %}
                             <li class="summary_data">
                               <b>{{number_swissprot}}  </b>Swissprot homologs

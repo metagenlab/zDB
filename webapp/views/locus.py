@@ -749,7 +749,7 @@ class LocusX(ViewBase):
         if optional2status.get("BLAST_database", False):
             context.update(tab_get_refseq_homologs(self.db, self.seqid))
 
-        if optional2status.get("genomic_islands", False):
+        if optional2status.get("gi", False):
             context.update(get_genomic_island(self.db, self.seqid, context["gene_pos"]))
 
         context.update(

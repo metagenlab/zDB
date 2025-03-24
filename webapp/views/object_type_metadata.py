@@ -2,6 +2,7 @@ from urllib.parse import quote
 
 from views.utils import format_amr
 from views.utils import format_cog
+from views.utils import format_genomic_island
 from views.utils import format_ko
 from views.utils import format_orthogroup
 from views.utils import format_pfam
@@ -89,6 +90,15 @@ class VfMetadata(BaseObjectMetadata):
         return entry
 
 
+class GiMetadata(BaseObjectMetadata):
+    object_type = "gi"
+    object_name = "Genomic island"
+
+    @staticmethod
+    def format_entry(entry, to_url=False):
+        return format_genomic_island(entry, to_url=to_url)
+
+
 class ModuleMetadata(BaseObjectMetadata):
     object_type = "module"
     object_name = "KEGG Module"
@@ -141,11 +151,12 @@ class MetadataGetter:
         PfamMetadata,
         OrthogroupMetadata,
         VfMetadata,
+        GiMetadata,
         ModuleMetadata,
         PathwayMetadata,
     ]
 
-    _annotations = ["cog", "pfam", "ko", "amr", "vf"]
+    _annotations = ["cog", "pfam", "ko", "amr", "vf", "gi"]
     _orthology = ["orthogroup"]
 
     def __init__(self):
