@@ -10,7 +10,7 @@ to [Common Changelog](https://common-changelog.org)
 
 - Use up to date KEGG database as reference. ([#157](https://github.com/metagenlab/zDB/pull/157)) (Niklaus Johner)
 - Fix SQL queries for libsqlite 3.49.1. ([#151](https://github.com/metagenlab/zDB/pull/151)) (Niklaus Johner)
--  Fix accession in contig tab of locusx view. ([#153](https://github.com/metagenlab/zDB/pull/153)) (Niklaus Johner)
+- Fix accession in contig tab of locusx view. ([#153](https://github.com/metagenlab/zDB/pull/153)) (Niklaus Johner)
 
 ### Changed
 
@@ -20,6 +20,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add basic views for genomic islands (entry list and details view). ([#158](https://github.com/metagenlab/zDB/pull/158)) (Niklaus Johner)
+- Add genomic island prediction to annotation pipeline. ([#158](https://github.com/metagenlab/zDB/pull/158)) (Niklaus Johner)
 - Add command line parameter to set CSRF_TRUSTED_ORIGINS. ([#145](https://github.com/metagenlab/zDB/pull/145)) (Niklaus Johner)
 
 ## 1.3.4 - 2024-11-06
