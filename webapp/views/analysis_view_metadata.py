@@ -21,7 +21,7 @@ class AnalysisViewMetadata:
 
 class EntryListMetadata(AnalysisViewMetadata):
     name = "index"
-    _types_available_for = ["amr", "cog", "ko", "pfam", "vf"]
+    _types_available_for = ["amr", "cog", "ko", "pfam", "vf", "gi"]
     title = "Index"
     _description = "Index of all {} identified in all genomes"
     _url = "/entry_list_{}"

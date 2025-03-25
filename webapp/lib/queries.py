@@ -1,13 +1,49 @@
-class VFQueries:
-    hit_table = "vf_hits"
-    description_table = "vf_defs"
-    id_col = "vf_gene_id"
-
+class BaseQueries:
     def __init__(self, db):
         self.db = db
 
     def __getattr__(self, key):
         return getattr(self.db, key)
+
+    def get_number_of_entries(self):
+        query = f"SELECT COUNT(*) FROM {self.description_table}"
+        return self.server.adaptor.execute_and_fetchall(query)[0][0]
+
+    def get_hit_descriptions(self, hit_ids, columns=None, as_dataframe=True):
+        if columns is None:
+            columns = self.default_columns
+        if hit_ids is None:
+            where = ""
+        else:
+            entries = self.gen_placeholder_string(hit_ids)
+            where = f"WHERE descr.{self.id_col} IN ({entries})"
+
+        col_selection = ", ".join([f"descr.{col}" for col in columns])
+        query = (
+            f"SELECT {col_selection} FROM {self.description_table} as descr {where};"
+        )
+        results = self.server.adaptor.execute_and_fetchall(query, hit_ids)
+        if as_dataframe:
+            return self.to_pandas_frame(results, columns)
+        return results
+
+
+class GIQueries(BaseQueries):
+    description_table = "genomic_islands"
+    id_col = "gis_id"
+    default_columns = [id_col, "bioentry_id", "start_pos", "end_pos"]
+
+    def get_containing_genomic_islands(self, bioentry_id, start, stop):
+        sql = f"SELECT {self.id_col}, start_pos, end_pos FROM {self.description_table} WHERE bioentry_id=? AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)"
+        return self.server.adaptor.execute_and_fetchall(sql, [bioentry_id, start, stop])
+
+
+class VFQueries(BaseQueries):
+    hit_table = "vf_hits"
+    description_table = "vf_defs"
+    id_col = "vf_gene_id"
+
+    default_columns = [id_col, "prot_name", "vfid", "category", "vf_category_id"]
 
     def gen_where_clause(self, search_on, entries):
         entries = self.gen_placeholder_string(entries)
@@ -23,10 +59,6 @@ class VFQueries:
         else:
             raise RuntimeError(f"Searching on {search_on} is not supported")
         return where_clause
-
-    def get_number_of_entries(self):
-        query = f"SELECT COUNT(*) FROM {self.description_table}"
-        return self.server.adaptor.execute_and_fetchall(query)[0][0]
 
     def get_hits(self, taxids):
         where_clause = self.gen_where_clause("taxid", taxids)
@@ -133,19 +165,3 @@ class VFQueries:
             df = self.to_pandas_frame(results, header)
             df = df.set_index(["seqid"])
         return df
-
-    def get_hit_descriptions(self, hit_ids, columns=None):
-        if columns is None:
-            columns = [self.id_col, "prot_name", "vfid", "category", "vf_category_id"]
-        if hit_ids is None:
-            where = ""
-        else:
-            entries = self.gen_placeholder_string(hit_ids)
-            where = f"WHERE descr.{self.id_col} IN ({entries})"
-
-        col_selection = ", ".join([f"descr.{col}" for col in columns])
-        query = (
-            f"SELECT {col_selection} FROM {self.description_table} as descr {where};"
-        )
-        results = self.server.adaptor.execute_and_fetchall(query, hit_ids)
-        return self.to_pandas_frame(results, columns)

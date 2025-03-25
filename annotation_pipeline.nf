@@ -559,6 +559,26 @@ process blast_vfdb {
   """
 }
 
+process execute_islandpath {
+    conda "$baseDir/conda/islandpath.yaml"
+    container "$params.islandpath_container"
+
+    input:
+    path(genome)
+
+    output:
+    path("*.gff")        , emit: gff
+
+    script:
+    n = genome.name
+    """
+    islandpath \\
+        $genome \\
+        ${n}.gff
+
+    """
+}
+
 process setup_db {
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
@@ -877,6 +897,27 @@ process load_vfdb_hits_into_db {
     """
 }
 
+process load_gis_into_db {
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
+    input:
+        path db
+        path gis_predictions
+
+    output:
+        path db
+
+    script:
+    """
+        #!/usr/bin/env python
+        import setup_chlamdb
+
+        kwargs = ${gen_python_args()}
+        gis_predictions = "$gis_predictions".split()
+        setup_chlamdb.load_gis(kwargs, gis_predictions, "$db")
+    """
+}
 
 process create_chlamdb_search_index {
     container "$params.annotation_container"
@@ -1048,6 +1089,11 @@ workflow {
         db_seq_combined = vf_ref_db.combine(split_nr_seqs)
         vfdb_blast = blast_vfdb(db_seq_combined)
         db = load_vfdb_hits_into_db(db, vfdb_blast.collect(), Channel.fromPath("$params.vf_db/vfdb.fasta"), Channel.fromPath("$params.vf_db/VFs.xls"))
+    }
+
+    if(params.gi) {
+        gis = execute_islandpath(checked_gbks.flatten())
+        db = load_gis_into_db(db, gis.collect())
     }
 
     (to_index_cleanup, to_db_cleanup) = create_chlamdb_search_index(db)

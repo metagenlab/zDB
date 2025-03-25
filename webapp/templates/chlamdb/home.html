@@ -32,7 +32,7 @@
                 </div>
 
                 <!-- Images and boxes menu-->
-                <div class="container-fluid" id="main_container" style="width: 90%;">
+                <div class="container-fluid" id="main_container" style="width: 100%; padding-left: 0;">
                   <div class="row">
                     <div class="col-lg-4 col-md-12 col-sm-12" >
                       <div class="serviceBox_2"  >
@@ -83,6 +83,13 @@
                               <a href="{% url 'index_comp' 'vf' %}" >
                                 <b>{{number_vf}}  </b>
                               </a>VF genes
+                            </li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"gi" == 1 %}
+                            <li class="summary_data">
+                              <a href="{% url 'index_comp' 'gi' %}" >
+                                <b>{{number_gi}}  </b>
+                              </a>Genomic islands
                             </li>
                           {% endif %}
                           {% if optional2status|keyvalue:"BLAST_swissprot" == 1 %}

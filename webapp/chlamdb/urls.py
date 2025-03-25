@@ -5,6 +5,7 @@ from views import autocomplete
 from views import custom_plots
 from views import entry_lists
 from views import fam
+from views import genomic_island
 from views import groups
 from views import gwas
 from views import hits_extraction
@@ -149,6 +150,11 @@ urlpatterns = [
         views.get_cog,
         name="get_cog",
     ),  # noqa
+    re_path(
+        r"^genomic_island/([a-zA-Z0-9_\.]+)",
+        genomic_island.GenomicIsland.as_view(),
+        name=genomic_island.GenomicIsland.view_name,
+    ),
     re_path(r"^genomes", views.Genomes.as_view(), name=views.Genomes.view_name),
     re_path(r"^favicon\.ico$", favicon_view),
     re_path(r"^FAQ", views.faq, name="FAQ"),
@@ -196,6 +202,9 @@ urlpatterns = [
     ),  # noqa
     re_path(
         r"^entry_list_ko$", entry_lists.KoEntryListView.as_view(), name="entry_list_ko"
+    ),  # noqa
+    re_path(
+        r"^entry_list_gi$", entry_lists.GiEntryListView.as_view(), name="entry_list_gi"
     ),  # noqa
     re_path(
         r"^entry_list_cog$",

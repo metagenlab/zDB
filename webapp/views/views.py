@@ -159,6 +159,8 @@ def home(request):
         number_ko = db.get_number_of_ko_entries()
     if optional2status.get("pfam", False):
         number_pfam = db.get_number_of_pfam_entries()
+    if optional2status.get("gi", False):
+        number_gi = db.gi.get_number_of_entries()
     versions = db.get_versions_table()
     return render(request, "chlamdb/home.html", my_locals(locals()))
 

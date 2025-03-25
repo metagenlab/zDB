@@ -4,6 +4,7 @@ from lib.db_utils import DB
 from views.analysis_view_metadata import analysis_views_metadata
 from views.object_type_metadata import AmrMetadata
 from views.object_type_metadata import CogMetadata
+from views.object_type_metadata import GiMetadata
 from views.object_type_metadata import KoMetadata
 from views.object_type_metadata import OrthogroupMetadata
 from views.object_type_metadata import PfamMetadata
@@ -439,6 +440,26 @@ class VfViewMixin(BaseViewMixin, VfMetadata):
         ]
 
 
+class GiViewMixin(BaseViewMixin, GiMetadata):
+    object_column = "gis_id"
+
+    _base_colname_to_header_mapping = {
+        "gis_id": "ID",
+        "bioentry_id": "Bioentry",
+        "start_pos": "Start",
+        "end_pos": "End",
+    }
+
+    table_data_accessors = ["gis_id", "bioentry_id", "start_pos", "end_pos"]
+
+    def get_hit_descriptions(self, ids, transformed=True, **kwargs):
+        descriptions = self.db.gi.get_hit_descriptions(ids)
+        descriptions = descriptions.set_index("gis_id", drop=False)
+        if transformed:
+            descriptions = self.transform_data(descriptions)
+        return descriptions
+
+
 class ComparisonViewMixin:
     """This class is somewhat of a hack to get pseudo inheritance
     from the correct mixin for views that get the object_type as
@@ -452,6 +473,7 @@ class ComparisonViewMixin:
         "orthogroup": OrthogroupViewMixin,
         "amr": AmrViewMixin,
         "vf": VfViewMixin,
+        "gi": GiViewMixin,
     }
 
     mixin = None
