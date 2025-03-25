@@ -18,6 +18,7 @@ title2page = {
     "COG Ortholog": ["fam_cog"],
     "Comparisons: Antimicrobial Resistance": ["amr_comparison"],
     "Comparisons: Clusters of Orthologous groups (COGs)": ["cog_comparison"],
+    "Comparisons: Genomic Islands": ["gi_comparison"],
     "Comparisons: Kegg Orthologs (KO)": ["ko_comparison"],
     "Comparisons: PFAM domains": ["pfam_comparison"],
     "Comparisons: orthologous groups": ["orthogroup_comparison"],

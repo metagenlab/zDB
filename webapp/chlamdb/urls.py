@@ -204,6 +204,9 @@ urlpatterns = [
         r"^entry_list_ko$", entry_lists.KoEntryListView.as_view(), name="entry_list_ko"
     ),  # noqa
     re_path(
+        r"^entry_list_gi$", entry_lists.GiEntryListView.as_view(), name="entry_list_gi"
+    ),  # noqa
+    re_path(
         r"^entry_list_cog$",
         entry_lists.CogEntryListView.as_view(),
         name="entry_list_cog",

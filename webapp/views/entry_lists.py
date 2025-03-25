@@ -4,6 +4,7 @@ from views.analysis_view_metadata import EntryListMetadata
 from views.mixins import AmrViewMixin
 from views.mixins import BaseViewMixin
 from views.mixins import CogViewMixin
+from views.mixins import GiViewMixin
 from views.mixins import KoViewMixin
 from views.mixins import PfamViewMixin
 from views.mixins import VfViewMixin
@@ -60,6 +61,15 @@ class PfamEntryListView(EntryListViewBase, PfamViewMixin):
 
 class KoEntryListView(EntryListViewBase, KoViewMixin):
     pass
+
+
+class GiEntryListView(EntryListViewBase, GiViewMixin):
+    def get_table_data(self):
+        return self.get_hit_descriptions(None)
+
+    @property
+    def table_data_accessors(self):
+        return super(EntryListViewBase, self).table_data_accessors
 
 
 class CogEntryListView(EntryListViewBase, CogViewMixin):
