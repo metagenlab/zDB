@@ -1546,7 +1546,7 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
         ]
     )
 
-    # this querry can be pretty slow
+    # this query can be pretty slow
     df_identity = db.get_identity_closest_homolog(
         reference_taxon, target_taxons
     ).set_index(["target_taxid"])
