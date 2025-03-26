@@ -25,6 +25,22 @@ class TestDBSetupPipeline(BasePipelineTestCase):
         self.assert_success(execution)
         self.assertEqual(execution.process_executions, [])
 
+    def test_setup_base_db(self):
+        self.nf_params["setup_base_db"] = "true"
+        execution = self.execute_pipeline()
+        self.assert_success(execution)
+        self.assertEqual(
+            [proc.name for proc in execution.process_executions],
+            ["setup_base_db"],
+        )
+
+        # File is moved to db directory
+        setup_process = execution.process_executions[0]
+        self.assert_created_files(setup_process, [])
+        self.assertItemsEqual(
+            ["zdb_base"], os.listdir(os.path.join(self.ref_db_dir, "base"))
+        )
+
     def test_creating_pfam_db(self):
         self.nf_params["pfam"] = "true"
         execution = self.execute_pipeline()

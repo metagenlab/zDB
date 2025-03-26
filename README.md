@@ -315,6 +315,10 @@ Careful though with the nextflow pipeline tests:
 - The test_db_setup module will download large volumes of data (tens of GBs), as the tests actually setup the zDB reference databases.
 - The test_annotation_pipeline module expects you to have setup the reference databases.
 
+You can run a single file, class or test by using its dotted path, e.g.
+```
+python -m unittest testing.pipelines.test_db_setup.TestDBSetupPipeline.test_setup_base_db
+```
 
 #### Webapp
 
