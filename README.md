@@ -347,6 +347,7 @@ If you want to contribute, feel free to open a PR describing your changes and ma
 - Run the tests (also checking that all conda envs build correctly).
 - Create docker containers:
     - Containers are defined in https://github.com/metagenlab/docker-images/
+    - Current version can be checked on https://hub.docker.com/u/metagenlab
     - Update `requirements.txt` and `Dockerfile`s for `zdb` and `annotation-pipeline`
     - Build and push the images, e.g. `docker build -t metagenlab/annotation-pipeline:1.4.1 annotation-pipeline/` and `docker push metagenlab/annotation-pipeline:1.4.1`
     - Update zdb `annotation_pipeline.nf` and `bin/zdb` accordingly
