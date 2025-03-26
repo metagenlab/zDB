@@ -274,7 +274,7 @@ class TestViewsContent(ViewTestCase):
         )
         self.assertContains(
             resp,
-            '<a class="link_boxes" href="/circos/"><span class="link"></span>Plot region</a>',
+            '<a class="link_boxes" href="/plot_region/"><span class="link"></span>Plot region</a>',
             html=True,
         )
         self.assertContains(
