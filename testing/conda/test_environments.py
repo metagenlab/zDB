@@ -1,28 +1,28 @@
-import glob
 import os
 import subprocess
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from testing.pipelines.base import BaseTestCase
 
 
 class TestCondaEnvironments(BaseTestCase):
-
     env_commands = {
         "amrfinderplus.yaml": "amrfinder --version",
-        'annotation.yaml': 'python -c "import Bio"',
+        "annotation.yaml": 'python -c "import Bio"',
         "blast.yaml": "blastp -h",
         "checkm.yaml": "checkm -h",
         "fasttree.yaml": "fasttree -expert",
+        "islandpath.yaml": "islandpath",
         "kofamscan.yaml": "exec_annotation -h",
         "mafft.yaml": "mafft --version",
         "main.yaml": "nextflow -v && singularity version",
         "orthofinder.yaml": "orthofinder -h",
         "pfam_scan.yaml": "pfam_scan.pl -h",
-        'testing.yaml': "nextflow -v && singularity version",
-        'webapp.yaml': 'python -c "import django"',
-        'zdb.yaml': "zdb",
-        }
+        "testing.yaml": "nextflow -v && singularity version",
+        "webapp.yaml": 'python -c "import django"',
+        "zdb.yaml": "zdb",
+    }
 
     @property
     def conda_dir(self):
@@ -37,8 +37,8 @@ class TestCondaEnvironments(BaseTestCase):
         subprocess.check_call(f"conda run -p {envdir} {command}", shell=True)
 
     def test_all_environments_are_tested(self):
-        yaml_files = glob.glob("*.yaml", root_dir=self.conda_dir)
-        self.assertItemsEqual(self.env_commands.keys(), yaml_files)
+        yaml_files = Path(self.conda_dir).glob("*.yaml")
+        self.assertItemsEqual(self.env_commands.keys(), [el.name for el in yaml_files])
 
     def test_all_environments_work(self):
         for filename, command in self.env_commands.items():
