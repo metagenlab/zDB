@@ -194,6 +194,19 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertEqual(36, self.query("vf_hits").count())
         self.assertEqual(35, self.query("vf_defs").count())
 
+    def test_gi_hits(self):
+        self.nf_params["gi"] = "true"
+        execution = self.execute_pipeline()
+        self.assert_success(execution)
+        self.load_db(execution)
+
+        # Let's check that tables were correctly created and filled
+        self.assertItemsEqual(
+            base_tables + ["genomic_islands"], self.metadata_obj.tables.keys()
+        )
+        self.assert_db_base_table_row_counts()
+        self.assertEqual(1, self.query("genomic_islands").count())
+
     def test_full_pipeline(self):
         self.nf_params["pfam"] = "true"
         self.nf_params["ko"] = "true"
@@ -201,6 +214,7 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.nf_params["cog"] = "true"
         self.nf_params["amr"] = "true"
         self.nf_params["vfdb"] = "true"
+        self.nf_params["gi"] = "true"
         # set custom run name for use in webapp testing
         self.nf_params["name"] = "_webapp_testing"
 
@@ -220,6 +234,7 @@ class TestAnnotationPipeline(BasePipelineTestCase):
             "amr_hits",
             "vf_defs",
             "vf_hits",
+            "genomic_islands",
         ]
         self.assertItemsEqual(
             base_tables + added_tables, self.metadata_obj.tables.keys()
@@ -235,6 +250,7 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertEqual(2, self.query("amr_hits").count())
         self.assertEqual(36, self.query("vf_hits").count())
         self.assertEqual(35, self.query("vf_defs").count())
+        self.assertEqual(1, self.query("genomic_islands").count())
 
         self.assertItemsEqual(
             [
