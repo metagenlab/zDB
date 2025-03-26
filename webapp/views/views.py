@@ -1520,9 +1520,17 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     df_feature_location = db.get_features_location(
         reference_taxon, search_on="taxon_id", seq_term_names=["CDS", "rRNA", "tRNA"]
     ).set_index(["seqfeature_id"])
+    # df of target genomes
+    df_targets = db.get_proteins_info(
+            ids=target_taxons,
+            search_on="taxid",
+            as_df=True,
+            to_return=["locus_tag"],
+            inc_non_CDS=False,
+            inc_pseudo=False,
+        )
 
     # retrieve n_orthologs of list of seqids
-
     seq_og = db.get_og_count(df_feature_location.index.to_list(), search_on="seqid")
     count_all_genomes = db.get_og_count(
         seq_og["orthogroup"].to_list(), search_on="orthogroup"
@@ -1538,9 +1546,11 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
         ]
     )
 
+    # this query can be pretty slow
     df_identity = db.get_identity_closest_homolog(
         reference_taxon, target_taxons
     ).set_index(["target_taxid"])
+
 
     c = circosjs.CircosJs()
 
@@ -1552,8 +1562,6 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
         .count()["seqfeature_id_1"]
         .sort_values(ascending=False)
     )
-    locus2seqfeature_id = db.get_hsh_locus_to_seqfeature_id()
-    seqfeature_id2locus_tag = {value: key for key, value in locus2seqfeature_id.items()}
     # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
     # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
     # join on seqfeature id
@@ -1568,11 +1576,11 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     ].fillna("-")
 
     df_feature_location["color"] = "grey"
-    df_feature_location["color"][df_feature_location["term_name"] == "tRNA"] = "magenta"
-    df_feature_location["color"][df_feature_location["term_name"] == "rRNA"] = "magenta"
+    df_feature_location.loc[df_feature_location["term_name"] == "tRNA", "color"] = "magenta"
+    df_feature_location.loc[df_feature_location["term_name"] == "rRNA", "color"] = "magenta"
 
     df_feature_location = df_feature_location.rename(columns={"locus_tag": "locus_ref"})
-    # = [seqfeature_id2locus_tag[seqfeature_id] for seqfeature_id in df_feature_location.index]
+
     minus_strand = df_feature_location.set_index("strand").loc[-1]
     plus_strand = df_feature_location.set_index("strand").loc[1]
     c.add_histogram_track(
@@ -1584,7 +1592,6 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     c.add_gene_track(
         plus_strand, "plus", sep=0, radius_diff=0.04, highlight_list=locus_list
     )
-
     # iterate ordered list of target taxids, add track to circos
     for n, target_taxon in enumerate(target_taxon_n_homologs.index):
         df_combined = df_feature_location.join(
@@ -1596,18 +1603,13 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
         # only keep the highest identity for each seqfeature id
         df_combined = (
             df_combined.sort_values("identity", ascending=False)
-            .drop_duplicates("index")
+            .drop_duplicates(subset=["seqfeature_id", "start_pos"])
             .sort_index()
         )
-        loci = []
-        for seqid in df_combined.seqfeature_id_2:
-            # ugly hack... to be fixed
-            if pd.isna(seqid) or int(seqid) not in seqfeature_id2locus_tag:
-                loci.append(None)
-                continue
-            loci.append(seqfeature_id2locus_tag[seqid])
-        df_combined["locus_tag"] = loci
 
+        df_combined = df_combined.join(df_targets, on="seqfeature_id_2", how="left").reset_index()
+        df_combined["locus_tag"] = df_combined["locus_tag"].fillna(np.nan).replace([np.nan], [None])
+        
         # comp is a custom scale with missing orthologs coloured in light blue
         if n == 0:
             sep = 0.03

@@ -8,6 +8,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix circos view. ([#158](https://github.com/metagenlab/zDB/pull/158)) (Trestan Pillonel)
 - Fix import errors in pipelines when using docker or singularity. ([#159](https://github.com/metagenlab/zDB/pull/159)) (Niklaus Johner)
 - Use up to date KEGG database as reference. ([#157](https://github.com/metagenlab/zDB/pull/157)) (Niklaus Johner)
 - Fix SQL queries for libsqlite 3.49.1. ([#151](https://github.com/metagenlab/zDB/pull/151)) (Niklaus Johner)
