@@ -4,7 +4,7 @@
 Versions are of the form MAJOR.MINOR.PATCH and this changelog tries to conform
 to [Common Changelog](https://common-changelog.org)
 
-## Unreleased
+## 1.3.5 - 2025-03-26
 
 ### Fixed
 
