@@ -67,6 +67,7 @@ def gen_python_args() {
 str_pythonized_params = gen_python_args()
 
 process check_reference_databases {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -87,6 +88,7 @@ process check_reference_databases {
 
 
 process check_gbk {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -306,6 +308,7 @@ process align_with_mafft {
 }
 
 process identity_calculation {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -348,6 +351,7 @@ process orthogroups_phylogeny_with_fasttree3 {
 }
 
 process get_core_orthogroups {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -372,6 +376,7 @@ process get_core_orthogroups {
 
 // TODO: merge with get_core_orthogroups
 process concatenate_core_orthogroups {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -580,6 +585,7 @@ process execute_islandpath {
 }
 
 process setup_db {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -599,6 +605,7 @@ process setup_db {
 }
 
 process load_base_db {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -661,6 +668,7 @@ process load_base_db {
 }
 
 process load_refseq_results {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
     input:
@@ -722,6 +730,7 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 }
 
 process load_BBH_phylogenies {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -746,6 +755,7 @@ process load_BBH_phylogenies {
 }
 
 process load_COG_into_db {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -771,6 +781,7 @@ process load_COG_into_db {
 }
 
 process load_KO_into_db {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -798,6 +809,7 @@ process load_KO_into_db {
 }
 
 process load_PFAM_info_db {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -823,6 +835,7 @@ process load_PFAM_info_db {
 }
 
 process load_swissprot_hits_into_db {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -848,6 +861,7 @@ process load_swissprot_hits_into_db {
 }
 
 process load_amr_into_db {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -872,6 +886,7 @@ process load_amr_into_db {
 }
 
 process load_vfdb_hits_into_db {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -898,6 +913,7 @@ process load_vfdb_hits_into_db {
 }
 
 process load_gis_into_db {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -920,6 +936,7 @@ process load_gis_into_db {
 }
 
 process create_chlamdb_search_index {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 

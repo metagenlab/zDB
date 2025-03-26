@@ -1,5 +1,6 @@
 
 process setup_base_db {
+    label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
