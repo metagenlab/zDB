@@ -41,6 +41,7 @@ urls = [
     "/custom_plots/",
     "/entry_list_amr",
     "/entry_list_cog",
+    "/entry_list_gi",
     "/entry_list_ko",
     "/entry_list_pfam",
     "/entry_list_vf",
@@ -58,6 +59,7 @@ urls = [
     "/fam_vf/VFG048797",
     "/FAQ",
     "/genomes",
+    "/genomic_island/1",
     "/get_cog/3/L?h=1&h=2&h=3",
     "/groups/",
     "/groups/add/",
@@ -71,6 +73,7 @@ urls = [
     "/help",
     "/home/",
     "/index_comp/cog",
+    "/index_comp/gi",
     "/index_comp/ko",
     "/index_comp/orthogroup",
     "/index_comp/pfam",
@@ -256,7 +259,22 @@ class TestViewsContent(ViewTestCase):
         )
         self.assertContains(
             resp,
-            '<a class="link_boxes" href="/circos/"><span class="link"></span>Plot region</a>',
+            '<a class="link_boxes" href="/index_comp/amr"><span class="link"></span>AMR genes</a>',
+            html=True,
+        )
+        self.assertContains(
+            resp,
+            '<a class="link_boxes" href="/index_comp/vf"><span class="link"></span>Virulence factors</a>',
+            html=True,
+        )
+        self.assertContains(
+            resp,
+            '<a class="link_boxes" href="/index_comp/gi"><span class="link"></span>Genomic islands</a>',
+            html=True,
+        )
+        self.assertContains(
+            resp,
+            '<a class="link_boxes" href="/plot_region/"><span class="link"></span>Plot region</a>',
             html=True,
         )
         self.assertContains(
@@ -646,3 +664,23 @@ class TestOrthogroupViews(ViewTestCase, ComparisonViewsTestMixin):
     page_title = "Comparisons: orthologous groups"
 
     pass
+
+
+class TestGIViews(ViewTestCase, ComparisonViewsTestMixin):
+    view_type = "gi"
+    page_title = "Comparisons: Genomic Islands"
+
+    def test_tabular_comparison_view(self):
+        pass
+
+    def test_venn_view(self):
+        pass
+
+    def test_plot_heatmap_view(self):
+        pass
+
+    def test_pan_genome_view(self):
+        pass
+
+    def test_gwas_view(self):
+        pass
