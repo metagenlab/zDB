@@ -9,7 +9,7 @@ dependencies:
     - biopython>=1.80
     - numpy
     - pandas
-    - singularity=3.8.4
+    - apptainer=1.3.6
     - nextflow=22.10
     - sqlalchemy
     - pip:

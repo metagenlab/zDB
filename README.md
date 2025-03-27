@@ -39,20 +39,19 @@ zDB can be installed from bioconda with the following command
 conda install zdb -c conda-forge -c bioconda
 ```
 
-Once zDB is installed, we advise you to run the analysis and/or webapp in containers, especially for **MacOSX users**. For this, you'll need to install either **docker** or **singularity**. Both the analyses and the webapp can also be run in conda environments, but this comes with several drawbacks:
+Once zDB is installed, we advise you to run the analysis and/or webapp in containers, especially for **MacOSX users**. For this, you'll need to install either **docker** or **apptainer (former singularity)**. Both the analyses and the webapp can also be run in conda environments, but this comes with several drawbacks:
 - django will be run in native mode, without nginx and gunicorn and should not be used to set up a web-facing database (it is fine for a local access)
 - containers allow us to have a precise control of the environment where the webapp is run; it is less the case for conda environment. Despite our best care, running the webapp in conda might not work due to local differences.
 - *some conda environments have numerous dependencies: to speed the installation, we strongly recommend the use a recent version of conda, which has included the solver from mamba and is much faster*.
-- **Xvfb should be installed on your machine**. The ete3 rendering engine unfortunately relies on Qt, which requires an X server running in headless mode. If you can't install Xvfb, please consider using singularity containers. We plan on developing our own Javascript tree rendering code to get rid of this dependency.
+- **Xvfb should be installed on your machine**. The ete3 rendering engine unfortunately relies on Qt, which requires an X server running in headless mode. If you can't install Xvfb, please consider using apptainer containers. We plan on developing our own Javascript tree rendering code to get rid of this dependency.
 
-Of note, zDB has been tested on singularity v3.8.3 and v3.8.4 but should work on more recent versions. 
-If you opt to use singularity, it can be installed with the following command:
+If you opt to use apptainer, it can be installed with the following command:
 ```
-conda install singularity=3.8.4 -c conda-forge
+conda install apptainer>=1.3.6 -c conda-forge
 ```
-Or you could create a new environment containing zDB and singularity with:
+Or you could create a new environment containing zDB and apptainer with:
 ```
-conda create --name zdb -c conda-forge -c bioconda zdb singularity
+conda create --name zdb -c conda-forge -c bioconda zdb apptainer
 ```
 For the installation of docker, please have a look [here](https://docs.docker.com/get-docker/).
 
@@ -68,7 +67,7 @@ NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
 and replace it by the directory where you downloaded the project (this should point to the directory where zdb's nextflow.config is located).
 Add zdb's bin directory to PATH and voila, zdb should run smoothly.
 
-Note that zDB depends on nextflow (version 22.10 or lower) and singularity, so you'll need to install these packages, e.g. with conda:
+Note that zDB depends on nextflow (version 21.0 or higher) and apptainer, so you'll need to install these packages, e.g. with conda:
 - `conda env create -p ./env -f conda/main.yaml`
 - `conda activate ./env`
 
@@ -95,7 +94,7 @@ wget https://github.com/metagenlab/zDB/raw/master/test_dataset.tar.gz
 tar xvf test_dataset.tar.gz
 ```
 
-For a minimal database (*assuming that singularity is installed*):
+For a minimal database (*assuming that apptainer is installed*):
 ```
 conda install zdb -c conda-forge -c bioconda
 zdb setup --setup_base_db # prepare the database skeleton, has to be done just once
@@ -142,7 +141,7 @@ Moreover, before your first run, you will need to prepare the database skeleton 
 
 Note that the base database contains some information about the KEGGs, and as both the base database and reference database will use the latest KEGG version, they should be created together.
 
-The database setup can be run either in singularity containers (by default), in conda environment (if the ```--conda``` flag is set) or in docker (if the ```--docker``` flag is set).
+The database setup can be run either in apptainer containers (by default), in conda environment (if the ```--conda``` flag is set) or in docker (if the ```--docker``` flag is set).
 
 In addition, you can specify the directory where you want the databases to be installed with the ```--dir``` option: ```zdb setup --swissprot --dir=foobardir```.
 
@@ -177,7 +176,7 @@ Before launching the analysis, zdb will also check for the uniqueness of locus t
 
 Several options are available and allow you to customize the run.
 
-By default, the analysis are run in singularity containers, but you can change this by using the ```--conda``` or ```--docker``` flags to have them run in conda environments or docker containers, respectively. If singularity is enabled, the containers will have to be downloaded. By default, they are stored in the singularity folder of the current directory, but this can be changed using the ```--singularity_dir``` option. This might be useful if you want to share containers between analyses.
+By default, the analysis are run in apptainer containers, but you can change this by using the ```--conda``` or ```--docker``` flags to have them run in conda environments or docker containers, respectively. If apptainer is enabled, the containers will have to be downloaded. By default, they are stored in the apptainer folder of the current directory, but this can be changed using the ```--singularity_dir``` option. This might be useful if you want to share containers between analyses.
 
 If the databases were set up, additional analyses can also be enabled with the ```--ko```, ```--cog```, ```--pfam```, ```--vfdb``` and ```--swissprot``` flags. The ```--amr``` flag will add annotations of antimicrobial resistance genes (no database needed). The directory (by default zdb_ref in the current directory) where the database were installed can be specified with the ```--ref_dir``` option.
 
@@ -189,12 +188,12 @@ Other options include:
 --name: custom run name (defaults to the name given by nextflow). The latest completed run is also named latest.
 --cpu: number of parallel processes allowed (default 8)
 --mem: max memory usage allowed (default 8GB)
---singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)
+--singularity_dir: the directory where the apptainer images are downloaded (default singularity in current directory)
 ```
 
 The ```--name``` option is optional and can be used to replace nextflow's randomly generated run names by more meaningful ones.
 
-We noticed that undeterministic bugs sometimes happen when downloading a singularity container or when running long analysis. To resume the analysis when this happens, just add the ```--resume``` flag to the previous command. For example, if the run launched with the command  
+We noticed that undeterministic bugs sometimes happen when downloading a apptainer container or when running long analysis. To resume the analysis when this happens, just add the ```--resume``` flag to the previous command. For example, if the run launched with the command  
 ```
 zdb run --input=input.csv --ko --cog
 ```
@@ -220,7 +219,7 @@ The following options can be used:
 --allowed_host=HOSTS   the name of the host or the ip address of the server. If not specified, will default to the ip addresses of the current host.
 ```
 
-By default, the webserver will be run in a singularity container. It can also be run in a conda environment by setting the ```--conda``` flag or in docker by setting the ```docker``` flag.
+By default, the webserver will be run in a apptainer container. It can also be run in a conda environment by setting the ```--conda``` flag or in docker by setting the ```docker``` flag.
 For MacOSX users, we advise to run the webapp in docker containers, setting --allowed_host=0.0.0.0 or 127.0.0.1, for the webapp to correctly display in your browser.
 
 ```
@@ -358,7 +357,7 @@ If you want to contribute, feel free to open a PR describing your changes and ma
     - Modify the zdb recipe (`recipes/zdb/meta.yaml`) to download the tar file from master (set url to https://github.com/metagenlab/zDB/archive/refs/heads/master.tar.gz)
     - Run linting check (`bioconda-utils lint --packages zdb`)
     - Build the package `bioconda-utils build --docker --mulled-test --packages zdb`
-    - Create a conda environment with the build package: `conda create -n test_zdb -c conda-forge -c /home/njohner/bin/miniconda3/envs/bioconda/conda-bld/ -c bioconda zdb singularity`
+    - Create a conda environment with the build package: `conda create -n test_zdb -c conda-forge -c /home/njohner/bin/miniconda3/envs/bioconda/conda-bld/ -c bioconda zdb apptainer`
     - Activate the environment and test zdb
 - Make a release (can be done directly on github: https://github.com/metagenlab/zDB/releases)
 - Release on bioconda:
