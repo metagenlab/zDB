@@ -4,6 +4,17 @@
 Versions are of the form MAJOR.MINOR.PATCH and this changelog tries to conform
 to [Common Changelog](https://common-changelog.org)
 
+## Unreleased
+
+### Fixed
+
+- Fix displaying genomic islands in locus view. ([#160](https://github.com/metagenlab/zDB/pull/160)) (Niklaus Johner)
+
+### Changed
+
+### Added
+
+
 ## 1.3.5 - 2025-03-26
 
 ### Fixed
