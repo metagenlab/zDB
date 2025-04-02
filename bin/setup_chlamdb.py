@@ -8,6 +8,7 @@ import pandas as pd
 import xlrd
 from annotations import InputHandler
 from Bio import SeqIO
+from Bio import SeqRecord
 from Bio import SeqUtils
 from lib import KO_module
 from lib import search_bar
@@ -836,7 +837,27 @@ class GFFParser:
         return dict(attributes)
 
 
-def load_gis(params, gff_files, db_name):
+def gis_to_fasta(gbk_file, gff_file, output_file):
+    parser = GFFParser()
+    contigs = SeqIO.to_dict(SeqIO.parse(gbk_file, "gb"), key_function=lambda x: x.name)
+    with open(gff_file, "r") as fh:
+        genomic_islands = parser(fh)
+
+    records = []
+    for gi in genomic_islands:
+        gid = gi.attributes["ID"].strip()
+        records.append(
+            SeqRecord.SeqRecord(
+                contigs[gi.seqid][int(gi.start) : int(gi.end)].seq,
+                id=gid,
+                name=gid,
+                description="genomic island",
+            )
+        )
+    SeqIO.write(records, output_file, "fasta")
+
+
+def load_gis(params, gff_files, hit_files, db_name):
     db = DB.load_db(db_name, params)
     genomic_islands = []
     parser = GFFParser()
@@ -844,11 +865,53 @@ def load_gis(params, gff_files, db_name):
         with open(gff_file, "r") as fh:
             genomic_islands.extend(parser(fh))
 
+    genomic_islands = pd.DataFrame(
+        [(el.seqid, int(el.start), int(el.end)) for el in genomic_islands],
+        columns=["seqid", "start", "end"],
+    )
+    for hit_file in hit_files:
+        hit_table = pd.read_csv(
+            hit_file,
+            sep="\t",
+            names=[
+                "query",
+                "subject",
+                "seqid",
+                "length",
+                "evalue",
+                "bitscore",
+                "qcov",
+                "sstart",
+                "send",
+            ],
+            header=None,
+        )
+
+        # filter out too short hits
+        min_hit_length = 400
+        hit_table = hit_table[hit_table["length"] >= min_hit_length]
+        # For overlapping hits we will keep only the best one.
+        hit_table.sort_values(
+            ["evalue", "seqid", "qcov"], ascending=[True, False, False], inplace=True
+        )
+        for i, row in hit_table.iterrows():
+            n_overlapping = len(
+                genomic_islands.query(
+                    f"seqid=='{row.subject}' & ((start<{row.sstart} & end>{row.sstart}) | (start<{row.send} & end>{row.send}))"
+                )
+            )
+            if n_overlapping == 0:
+                genomic_islands.loc[len(genomic_islands)] = (
+                    row.subject,
+                    row.sstart,
+                    row.send,
+                )
+
     accession_to_entry = db.get_accession_to_entry()
     db.load_genomic_islands(
         [
             (None, accession_to_entry[el.seqid], el.start, el.end)
-            for el in genomic_islands
+            for i, el in genomic_islands.iterrows()
         ]
     )
     db.set_status_in_config_table("GIS", 1)

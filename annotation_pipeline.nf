@@ -572,16 +572,55 @@ process execute_islandpath {
     path(genome)
 
     output:
-    path("*.gff")        , emit: gff
+    tuple (path(genome), path("*.gff"))
 
     script:
-    n = genome.name
+    
+    n = genome.baseName
     """
-    islandpath \\
-        $genome \\
-        ${n}.gff
+    islandpath $genome ${n}.gff
+    """
+}
 
+process gff_to_fasta {
+    conda "$baseDir/conda/annotation.yaml"
+    container "$params.annotation_container"
+
+    input:
+    tuple (path(genome), path(gff))
+
+    output:
+    path("*.fasta")
+
+    script:
     """
+    #!/usr/bin/env python
+    import setup_chlamdb
+    setup_chlamdb.gis_to_fasta("${genome}", "${gff}", "${genome.baseName}.fasta")
+    """
+}
+
+process blast_gis {
+  container "$params.blast_container"
+  conda "$baseDir/conda/blast.yaml"
+
+  input:
+      path(gi_fasta)
+      path(blast_db)
+      path(dummy)
+
+  output:
+      path '*tab'
+
+  script:
+
+  n = gi_fasta.name
+  """
+  blastn -db $blast_db/merged -query $n \
+  -outfmt "6 qaccver saccver pident length evalue bitscore qcovs sstart send" \
+  -evalue 1.6e-7 -perc_identity 90 -qcov_hsp_perc 95 \
+  -num_threads ${task.cpus} > ${n}.tab
+  """
 }
 
 process setup_db {
@@ -920,6 +959,7 @@ process load_gis_into_db {
     input:
         path db
         path gis_predictions
+        path gis_hits
 
     output:
         path db
@@ -931,7 +971,8 @@ process load_gis_into_db {
 
         kwargs = ${gen_python_args()}
         gis_predictions = "$gis_predictions".split()
-        setup_chlamdb.load_gis(kwargs, gis_predictions, "$db")
+        gis_hits = "$gis_hits".split()
+        setup_chlamdb.load_gis(kwargs, gis_predictions, gis_hits, "$db")
     """
 }
 
@@ -1109,8 +1150,11 @@ workflow {
     }
 
     if(params.gi) {
-        gis = execute_islandpath(checked_gbks.flatten())
-        db = load_gis_into_db(db, gis.collect())
+        genome_and_gis = execute_islandpath(checked_gbks.flatten())
+        gi_fastas = gff_to_fasta(genome_and_gis)
+        fna_db = channel.fromPath("${params.results_dir}/blast_DB/$workflow.runName/fna/")
+        gis_hits = blast_gis(gi_fastas, fna_db, makeblastdb.out[1].collect())
+        db = load_gis_into_db(db, genome_and_gis.collect().map { it[1] }, gis_hits.collect())
     }
 
     (to_index_cleanup, to_db_cleanup) = create_chlamdb_search_index(db)
