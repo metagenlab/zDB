@@ -932,16 +932,24 @@ def extract_gis_hits(gff_files, hit_files, output_file):
     genomic_islands.to_csv(output_file, index=False)
 
 
-def load_gis(params, genomic_islands, db_name):
+def load_gis(params, gi_hits, gi_clusters, db_name):
     db = DB.load_db(db_name, params)
+    genomic_islands = pd.read_csv(gi_hits)
 
     accession_to_entry = db.get_accession_to_entry()
-    db.load_genomic_islands(
-        [
-            (None, accession_to_entry[el.seqid], el.start, el.end)
-            for i, el in genomic_islands.iterrows()
-        ]
-    )
+
+    gi_data = [
+        (i, accession_to_entry[el.seqid], el.start, el.end)
+        for i, el in genomic_islands.iterrows()
+    ]
+
+    clusters = []
+    with open(gi_clusters) as fh:
+        for line in fh:
+            clusters.append([int(el) for el in line.split("\t")])
+
+    db.load_genomic_islands(gi_data, clusters)
+
     db.set_status_in_config_table("GIS", 1)
     db.commit()
 

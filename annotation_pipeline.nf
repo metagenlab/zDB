@@ -721,7 +721,7 @@ process cluster_gis {
         path result_file
 
     script:
-    result_file = "gi_comp.csv"
+    result_file = "gi_clusters.tsv"
     """
     mcl $gi_similarity --abc -o ${result_file} -te ${task.cpus}
     """
@@ -1062,8 +1062,8 @@ process load_gis_into_db {
 
     input:
         path db
-        path gis_predictions
         path gis_hits
+        path gis_clusters
 
     output:
         path db
@@ -1074,9 +1074,7 @@ process load_gis_into_db {
         import setup_chlamdb
 
         kwargs = ${gen_python_args()}
-        gis_predictions = "$gis_predictions".split()
-        gis_hits = "$gis_hits".split()
-        setup_chlamdb.load_gis(kwargs, gis_predictions, gis_hits, "$db")
+        setup_chlamdb.load_gis(kwargs, "$gis_hits", "$gis_clusters", "$db")
     """
 }
 
@@ -1264,7 +1262,7 @@ workflow {
         compare_gis(gi_hits_to_fasta.out)
         matrix_to_abc(compare_gis.out)
         cluster_gis(matrix_to_abc.out)
-        // db = load_gis_into_db(db, genome_and_gis.collect().map { it[1] }, gis_hits.collect())
+        db = load_gis_into_db(db, extract_gis_hits.out, cluster_gis.out)
     }
 
     (to_index_cleanup, to_db_cleanup) = create_chlamdb_search_index(db)
