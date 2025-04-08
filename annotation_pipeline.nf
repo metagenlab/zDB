@@ -668,7 +668,6 @@ process gi_hits_to_fasta {
 }
 
 process compare_gis {
-    label 'mount_basedir'
     container "$params.sourmash_container"
     conda "$baseDir/conda/sourmash.yaml"
 
@@ -684,6 +683,47 @@ process compare_gis {
     mkdir sigs
     sourmash sketch dna $gi_fastas --singleton
     sourmash compare ${gi_fastas}.sig --csv $result_file -p ${task.cpus}
+    """
+}
+
+process matrix_to_abc {
+    label 'mount_basedir'
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
+    input:
+        path gi_similarity
+
+    output:
+        path result_file
+
+    script:
+    result_file = "gi_abc.tsv"
+    """
+    #!/usr/bin/env python
+    import pandas as pd
+    df = pd.read_csv("${gi_similarity}", header=0)
+    with open("${result_file}", "w") as fh:
+        for i in range(len(df)):
+            for j in range(i+1, len(df)):
+                fh.write(f"{df.index[i]}\\t{df.index[j]}\\t{df.iloc[i,j]}\\n")
+    """
+}
+
+process cluster_gis {
+    container "$params.mcl_container"
+    conda "$baseDir/conda/mcl.yaml"
+
+    input:
+        path gi_similarity
+
+    output:
+        path result_file
+
+    script:
+    result_file = "gi_comp.csv"
+    """
+    mxdump bla
     """
 }
 
@@ -1222,6 +1262,8 @@ workflow {
         extract_gis_hits(genome_and_gis.map { it[1] }.collect(), gis_hits.collect())
         gi_hits_to_fasta(checked_gbks.flatten().collect(), extract_gis_hits.out)
         compare_gis(gi_hits_to_fasta.out)
+        matrix_to_abc(compare_gis.out)
+        cluster_gis(matrix_to_abc.out)
         // db = load_gis_into_db(db, genome_and_gis.collect().map { it[1] }, gis_hits.collect())
     }
 
