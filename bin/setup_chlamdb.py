@@ -874,7 +874,7 @@ def gi_hits_to_fasta(gbk_files, gi_hits, output_file):
                 contigs[gi.seqid][int(gi.start) : int(gi.end)].seq,
                 id=gid,
                 name=gid,
-                description="genomic island",
+                description="",
             )
         )
     SeqIO.write(records, output_file, "fasta")

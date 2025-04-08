@@ -723,7 +723,7 @@ process cluster_gis {
     script:
     result_file = "gi_comp.csv"
     """
-    mxdump bla
+    mcl $gi_similarity --abc -o ${result_file} -te ${task.cpus}
     """
 }
 

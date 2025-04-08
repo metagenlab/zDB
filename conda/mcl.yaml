@@ -1,0 +1,5 @@
+name: mcl
+channels:
+    - bioconda
+dependencies:
+    - mcl
