@@ -667,6 +667,26 @@ process gi_hits_to_fasta {
     """
 }
 
+process compare_gis {
+    label 'mount_basedir'
+    container "$params.sourmash_container"
+    conda "$baseDir/conda/sourmash.yaml"
+
+    input:
+        path gi_fastas
+
+    output:
+        path result_file
+
+    script:
+    result_file = "gi_comp.csv"
+    """
+    mkdir sigs
+    sourmash sketch dna $gi_fastas --singleton
+    sourmash compare ${gi_fastas}.sig --csv $result_file -p ${task.cpus}
+    """
+}
+
 process setup_db {
     label 'mount_basedir'
     container "$params.annotation_container"
@@ -1201,6 +1221,7 @@ workflow {
         gis_hits = blast_gis(gi_fasta_and_fna_db)
         extract_gis_hits(genome_and_gis.map { it[1] }.collect(), gis_hits.collect())
         gi_hits_to_fasta(checked_gbks.flatten().collect(), extract_gis_hits.out)
+        compare_gis(gi_hits_to_fasta.out)
         // db = load_gis_into_db(db, genome_and_gis.collect().map { it[1] }, gis_hits.collect())
     }
 
