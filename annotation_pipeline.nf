@@ -605,9 +605,7 @@ process blast_gis {
   conda "$baseDir/conda/blast.yaml"
 
   input:
-      path(gi_fasta)
-      path(blast_db)
-      path(dummy)
+      tuple (path(gi_fasta), path(blast_db))
 
   output:
       path '*tab'
@@ -621,6 +619,52 @@ process blast_gis {
   -evalue 1.6e-7 -perc_identity 90 -qcov_hsp_perc 95 \
   -num_threads ${task.cpus} > ${n}.tab
   """
+}
+
+process extract_gis_hits {
+    label 'mount_basedir'
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
+    input:
+        path gis_predictions
+        path gis_hits
+
+    output:
+        path result_file
+
+    script:
+    result_file = "all_gis.csv"
+    """
+        #!/usr/bin/env python
+        import setup_chlamdb
+
+        gis_predictions = "$gis_predictions".split()
+        gis_hits = "$gis_hits".split()
+        setup_chlamdb.extract_gis_hits(gis_predictions, gis_hits, "${result_file}")
+    """
+}
+
+process gi_hits_to_fasta {
+    label 'mount_basedir'
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
+    input:
+        path gbk_files
+        path gi_hits
+
+    output:
+        path result_file
+
+    script:
+    result_file = "all_gis.fasta"
+    """
+        #!/usr/bin/env python
+        import setup_chlamdb
+        gbk_files = "$gbk_files".split()
+        setup_chlamdb.gi_hits_to_fasta(gbk_files, "${gi_hits}", "${result_file}")
+    """
 }
 
 process setup_db {
@@ -1153,8 +1197,11 @@ workflow {
         genome_and_gis = execute_islandpath(checked_gbks.flatten())
         gi_fastas = gff_to_fasta(genome_and_gis)
         fna_db = channel.fromPath("${params.results_dir}/blast_DB/$workflow.runName/fna/")
-        gis_hits = blast_gis(gi_fastas, fna_db, makeblastdb.out[1].collect())
-        db = load_gis_into_db(db, genome_and_gis.collect().map { it[1] }, gis_hits.collect())
+        gi_fasta_and_fna_db = gi_fastas.combine(fna_db).combine(makeblastdb.out[1].collect()).map { tuple(it[0], it[1]) }
+        gis_hits = blast_gis(gi_fasta_and_fna_db)
+        extract_gis_hits(genome_and_gis.map { it[1] }.collect(), gis_hits.collect())
+        gi_hits_to_fasta(checked_gbks.flatten().collect(), extract_gis_hits.out)
+        // db = load_gis_into_db(db, genome_and_gis.collect().map { it[1] }, gis_hits.collect())
     }
 
     (to_index_cleanup, to_db_cleanup) = create_chlamdb_search_index(db)

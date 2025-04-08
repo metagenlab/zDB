@@ -857,8 +857,30 @@ def gis_to_fasta(gbk_file, gff_file, output_file):
     SeqIO.write(records, output_file, "fasta")
 
 
-def load_gis(params, gff_files, hit_files, db_name):
-    db = DB.load_db(db_name, params)
+def gi_hits_to_fasta(gbk_files, gi_hits, output_file):
+    genomic_islands = pd.read_csv(gi_hits, header=0)
+
+    contigs = {}
+    for gbk_file in gbk_files:
+        contigs.update(
+            SeqIO.to_dict(SeqIO.parse(gbk_file, "gb"), key_function=lambda x: x.name)
+        )
+
+    records = []
+    for i, gi in genomic_islands.iterrows():
+        gid = str(i)
+        records.append(
+            SeqRecord.SeqRecord(
+                contigs[gi.seqid][int(gi.start) : int(gi.end)].seq,
+                id=gid,
+                name=gid,
+                description="genomic island",
+            )
+        )
+    SeqIO.write(records, output_file, "fasta")
+
+
+def extract_gis_hits(gff_files, hit_files, output_file):
     genomic_islands = []
     parser = GFFParser()
     for gff_file in gff_files:
@@ -906,6 +928,12 @@ def load_gis(params, gff_files, hit_files, db_name):
                     row.sstart,
                     row.send,
                 )
+
+    genomic_islands.to_csv(output_file, index=False)
+
+
+def load_gis(params, genomic_islands, db_name):
+    db = DB.load_db(db_name, params)
 
     accession_to_entry = db.get_accession_to_entry()
     db.load_genomic_islands(
