@@ -652,7 +652,7 @@ elif [[ "$1" == "export" ]]; then
 	tar zcvfh $unaliased_name.tar.gz -C $dir $prefix/alignments/$unaliased_name \
 		$prefix/blast_DB/$unaliased_name $prefix/db/$unaliased_name \
 		$prefix/gene_phylogenies/$unaliased_name $prefix/search_index/index_$unaliased_name \
-		$prefix/.completed_runs/$run_name \
+		$prefix/.completed_runs/$unaliased_name \
 		zdb/nginx zdb/gunicorn &> /dev/null
 	echo "Created archive $unaliased_name.tar.gz"
 	exit 0
@@ -691,9 +691,6 @@ elif [[ "$1" == "import" ]]; then
 		exit 1
 	fi
 
-	# TODO: will need to write code to handle the case where 
-	# the archive is imported into an exisiting zdb folder with 
-	# existing results
 	run_name=$(basename $archive .tar.gz)
 	if [[ ! -d $outdir ]]; then
 		mkdir -p $outdir
@@ -706,6 +703,7 @@ elif [[ "$1" == "import" ]]; then
 
 	echo "Unpacking archive"
 	tar xvf $archive -C $outdir &> /dev/null
+	echo $run_name > $outdir/zdb/results/.completed_runs/latest
 	echo "Done"
 	echo "You can now start the zdb webapp in the $outdir directory"
 else

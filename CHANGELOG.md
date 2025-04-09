@@ -9,6 +9,7 @@ to [Common Changelog](https://common-changelog.org)
 ### Fixed
 
 - Fix displaying genomic islands in locus view. ([#160](https://github.com/metagenlab/zDB/pull/160)) (Niklaus Johner)
+- Make sure to add run to list of completed run upon import. ([#163](https://github.com/metagenlab/zDB/pull/163)) (Niklaus Johner)
 
 ### Changed
 
