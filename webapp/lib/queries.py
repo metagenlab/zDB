@@ -1,4 +1,6 @@
 class BaseQueries:
+    where_clause_mapping = {}
+
     def __init__(self, db):
         self.db = db
 
@@ -27,6 +29,23 @@ class BaseQueries:
             return self.to_pandas_frame(results, columns)
         return results
 
+    def gen_where_clause(self, search_on, entries):
+        entries = self.gen_placeholder_string(entries)
+
+        if search_on == "bioentry":
+            where_clause = f" bioentry.bioentry_id IN ({entries}) "
+        elif search_on == "seqid":
+            where_clause = f" hsh.seqid IN ({entries}) "
+        elif search_on == self.id_col:
+            where_clause = f" {self.hit_table}.{self.id_col} IN ({entries}) "
+        elif search_on in self.where_clause_mapping:
+            where_clause = f" {self.where_clause_mapping[search_on]} IN ({entries}) "
+        elif search_on == "taxid":
+            where_clause = f" bioentry.taxon_id IN ({entries}) "
+        else:
+            raise RuntimeError(f"Searching on {search_on} is not supported")
+        return where_clause
+
 
 class GIQueries(BaseQueries):
     description_table = "genomic_islands"
@@ -43,22 +62,8 @@ class VFQueries(BaseQueries):
     description_table = "vf_defs"
     id_col = "vf_gene_id"
 
+    where_clause_mapping = {"vf": id_col}
     default_columns = [id_col, "prot_name", "vfid", "category", "vf_category_id"]
-
-    def gen_where_clause(self, search_on, entries):
-        entries = self.gen_placeholder_string(entries)
-
-        if search_on == "bioentry":
-            where_clause = f" bioentry.bioentry_id IN ({entries}) "
-        elif search_on == "seqid":
-            where_clause = f" hsh.seqid IN ({entries}) "
-        elif search_on == "vf" or search_on == "vf_gene_id":
-            where_clause = f" vf_gene_id IN ({entries}) "
-        elif search_on == "taxid":
-            where_clause = f" bioentry.taxon_id IN ({entries}) "
-        else:
-            raise RuntimeError(f"Searching on {search_on} is not supported")
-        return where_clause
 
     def get_hits(self, taxids):
         where_clause = self.gen_where_clause("taxid", taxids)
