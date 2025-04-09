@@ -152,9 +152,14 @@ class BaseQueries:
 
 
 class GIQueries(BaseQueries):
-    description_table = "genomic_islands"
-    id_col = "gis_id"
-    default_columns = [id_col, "bioentry_id", "start_pos", "end_pos"]
+    id_col = "cluster_id"
+    hit_table = "genomic_islands"
+    description_table = "genomic_island_descriptions"
+    default_columns = [id_col, "length"]
+
+    join_bioentry = (
+        f"INNER JOIN bioentry ON {hit_table}.bioentry_id = bioentry.bioentry_id "
+    )
 
     def get_containing_genomic_islands(self, bioentry_id, start, stop):
         sql = f"SELECT {self.id_col}, start_pos, end_pos FROM {self.description_table} WHERE bioentry_id=? AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)"

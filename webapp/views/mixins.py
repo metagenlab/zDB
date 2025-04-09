@@ -441,23 +441,28 @@ class VfViewMixin(BaseViewMixin, VfMetadata):
 
 
 class GiViewMixin(BaseViewMixin, GiMetadata):
-    object_column = "gis_id"
+    object_column = "cluster_id"
 
     _base_colname_to_header_mapping = {
+        "cluster_id": "Cluster ID",
         "gis_id": "ID",
         "bioentry_id": "Bioentry",
         "start_pos": "Start",
         "end_pos": "End",
     }
 
-    table_data_accessors = ["gis_id", "bioentry_id", "start_pos", "end_pos"]
+    table_data_accessors = ["cluster_id", "length"]
 
     def get_hit_descriptions(self, ids, transformed=True, **kwargs):
         descriptions = self.db.gi.get_hit_descriptions(ids)
-        descriptions = descriptions.set_index("gis_id", drop=False)
+        descriptions = descriptions.set_index("cluster_id", drop=False)
         if transformed:
             descriptions = self.transform_data(descriptions)
         return descriptions
+
+    @property
+    def get_hit_counts(self):
+        return self.db.gi.get_hit_counts
 
 
 class ComparisonViewMixin:

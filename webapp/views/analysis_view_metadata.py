@@ -1,5 +1,5 @@
 class AnalysisViewMetadata:
-    _types_available_for = ["amr", "cog", "ko", "pfam", "orthogroup", "vf"]
+    _types_available_for = ["amr", "cog", "ko", "pfam", "orthogroup", "vf", "gi"]
     static_icon = True
 
     def __init__(self, object_type, object_name_plural):

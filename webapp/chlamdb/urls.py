@@ -182,6 +182,9 @@ urlpatterns = [
         r"^extract_ko/$", hits_extraction.ExtractKoView.as_view(), name="extract_ko"
     ),  # noqa
     re_path(
+        r"^extract_gi/$", hits_extraction.ExtractGiView.as_view(), name="extract_gi"
+    ),  # noqa
+    re_path(
         r"^extract_contigs/([0-9]+)",
         views.ExtractContigs.as_view(),
         name="extract_contigs",

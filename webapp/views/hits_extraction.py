@@ -6,6 +6,7 @@ from views.analysis_view_metadata import ExtractionMetadata
 from views.errors import errors
 from views.mixins import AmrViewMixin
 from views.mixins import CogViewMixin
+from views.mixins import GiViewMixin
 from views.mixins import KoViewMixin
 from views.mixins import OrthogroupViewMixin
 from views.mixins import PfamViewMixin
@@ -362,6 +363,10 @@ class ExtractAmrView(ExtractHitsBaseView, AmrViewMixin):
 
 
 class ExtractVfView(ExtractHitsBaseView, VfViewMixin):
+    pass
+
+
+class ExtractGiView(ExtractHitsBaseView, GiViewMixin):
     pass
 
 
