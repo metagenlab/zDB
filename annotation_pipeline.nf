@@ -572,15 +572,158 @@ process execute_islandpath {
     path(genome)
 
     output:
-    path("*.gff")        , emit: gff
+    tuple (path(genome), path("*.gff"))
 
     script:
-    n = genome.name
+    
+    n = genome.baseName
     """
-    islandpath \\
-        $genome \\
-        ${n}.gff
+    islandpath $genome ${n}.gff
+    """
+}
 
+process gff_to_fasta {
+    conda "$baseDir/conda/annotation.yaml"
+    container "$params.annotation_container"
+
+    input:
+    tuple (path(genome), path(gff))
+
+    output:
+    path("*.fasta")
+
+    script:
+    """
+    #!/usr/bin/env python
+    import setup_chlamdb
+    setup_chlamdb.gis_to_fasta("${genome}", "${gff}", "${genome.baseName}.fasta")
+    """
+}
+
+process blast_gis {
+  container "$params.blast_container"
+  conda "$baseDir/conda/blast.yaml"
+
+  input:
+      tuple (path(gi_fasta), path(blast_db))
+
+  output:
+      path '*tab'
+
+  script:
+
+  n = gi_fasta.name
+  """
+  blastn -db $blast_db/merged -query $n \
+  -outfmt "6 qaccver saccver pident length evalue bitscore qcovs sstart send" \
+  -evalue 1.6e-7 -perc_identity 90 -qcov_hsp_perc 95 \
+  -num_threads ${task.cpus} > ${n}.tab
+  """
+}
+
+process extract_gis_hits {
+    label 'mount_basedir'
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
+    input:
+        path gis_predictions
+        path gis_hits
+
+    output:
+        path result_file
+
+    script:
+    result_file = "all_gis.csv"
+    """
+        #!/usr/bin/env python
+        import setup_chlamdb
+
+        gis_predictions = "$gis_predictions".split()
+        gis_hits = "$gis_hits".split()
+        setup_chlamdb.extract_gis_hits(gis_predictions, gis_hits, "${result_file}")
+    """
+}
+
+process gi_hits_to_fasta {
+    label 'mount_basedir'
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
+    input:
+        path gbk_files
+        path gi_hits
+
+    output:
+        path result_file
+
+    script:
+    result_file = "all_gis.fasta"
+    """
+        #!/usr/bin/env python
+        import setup_chlamdb
+        gbk_files = "$gbk_files".split()
+        setup_chlamdb.gi_hits_to_fasta(gbk_files, "${gi_hits}", "${result_file}")
+    """
+}
+
+process compare_gis {
+    container "$params.sourmash_container"
+    conda "$baseDir/conda/sourmash.yaml"
+
+    input:
+        path gi_fastas
+
+    output:
+        path result_file
+
+    script:
+    result_file = "gi_comp.csv"
+    """
+    mkdir sigs
+    sourmash sketch dna $gi_fastas --singleton
+    sourmash compare ${gi_fastas}.sig --csv $result_file -p ${task.cpus}
+    """
+}
+
+process matrix_to_abc {
+    label 'mount_basedir'
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
+    input:
+        path gi_similarity
+
+    output:
+        path result_file
+
+    script:
+    result_file = "gi_abc.tsv"
+    """
+    #!/usr/bin/env python
+    import pandas as pd
+    df = pd.read_csv("${gi_similarity}", header=0)
+    with open("${result_file}", "w") as fh:
+        for i in range(len(df)):
+            for j in range(i+1, len(df)):
+                fh.write(f"{df.index[i]}\\t{df.index[j]}\\t{df.iloc[i,j]}\\n")
+    """
+}
+
+process cluster_gis {
+    container "$params.mcl_container"
+    conda "$baseDir/conda/mcl.yaml"
+
+    input:
+        path gi_similarity
+
+    output:
+        path result_file
+
+    script:
+    result_file = "gi_clusters.tsv"
+    """
+    mcl $gi_similarity --abc -o ${result_file} -te ${task.cpus}
     """
 }
 
@@ -919,7 +1062,8 @@ process load_gis_into_db {
 
     input:
         path db
-        path gis_predictions
+        path gis_hits
+        path gis_clusters
 
     output:
         path db
@@ -930,8 +1074,7 @@ process load_gis_into_db {
         import setup_chlamdb
 
         kwargs = ${gen_python_args()}
-        gis_predictions = "$gis_predictions".split()
-        setup_chlamdb.load_gis(kwargs, gis_predictions, "$db")
+        setup_chlamdb.load_gis(kwargs, "$gis_hits", "$gis_clusters", "$db")
     """
 }
 
@@ -1109,8 +1252,17 @@ workflow {
     }
 
     if(params.gi) {
-        gis = execute_islandpath(checked_gbks.flatten())
-        db = load_gis_into_db(db, gis.collect())
+        genome_and_gis = execute_islandpath(checked_gbks.flatten())
+        gi_fastas = gff_to_fasta(genome_and_gis)
+        fna_db = channel.fromPath("${params.results_dir}/blast_DB/$workflow.runName/fna/")
+        gi_fasta_and_fna_db = gi_fastas.combine(fna_db).combine(makeblastdb.out[1].collect()).map { tuple(it[0], it[1]) }
+        gis_hits = blast_gis(gi_fasta_and_fna_db)
+        extract_gis_hits(genome_and_gis.map { it[1] }.collect(), gis_hits.collect())
+        gi_hits_to_fasta(checked_gbks.flatten().collect(), extract_gis_hits.out)
+        compare_gis(gi_hits_to_fasta.out)
+        matrix_to_abc(compare_gis.out)
+        cluster_gis(matrix_to_abc.out)
+        db = load_gis_into_db(db, extract_gis_hits.out, cluster_gis.out)
     }
 
     (to_index_cleanup, to_db_cleanup) = create_chlamdb_search_index(db)

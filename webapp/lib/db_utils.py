@@ -2584,12 +2584,21 @@ class DB:
         ]
         self.server.adaptor.executemany(sql, data)
 
-    def load_genomic_islands(self, data):
+    def load_genomic_islands(self, gis, clusters):
         sql = "CREATE TABLE genomic_islands (gis_id INTEGER PRIMARY KEY, bioentry_id INTEGER, start_pos integer, end_pos integer);"
-        self.server.adaptor.execute(
-            sql,
+        self.server.adaptor.execute(sql)
+        self.load_data_into_table("genomic_islands", gis)
+
+        sql = (
+            "CREATE TABLE genomic_island_clusters (cluster_id INTEGER, gis_id INTEGER, "
+            "FOREIGN KEY(gis_id) REFERENCES genomic_islands(gis_id), "
+            "PRIMARY KEY(cluster_id, gis_id));"
         )
-        self.load_data_into_table("genomic_islands", data)
+        self.server.adaptor.execute(sql)
+        cluster_data = [
+            (i, gis_id) for i, cluster in enumerate(clusters) for gis_id in cluster
+        ]
+        self.load_data_into_table("genomic_island_clusters", cluster_data)
 
     def load_amr_hits(self, data):
         sql = (

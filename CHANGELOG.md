@@ -14,6 +14,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add genomic island prediction consistency and clustering to analysis pipeline. ([#162](https://github.com/metagenlab/zDB/pull/162)) (Niklaus Johner)
 
 ## 1.3.5 - 2025-03-26
 
