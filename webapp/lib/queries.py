@@ -46,25 +46,6 @@ class BaseQueries:
             raise RuntimeError(f"Searching on {search_on} is not supported")
         return where_clause
 
-
-class GIQueries(BaseQueries):
-    description_table = "genomic_islands"
-    id_col = "gis_id"
-    default_columns = [id_col, "bioentry_id", "start_pos", "end_pos"]
-
-    def get_containing_genomic_islands(self, bioentry_id, start, stop):
-        sql = f"SELECT {self.id_col}, start_pos, end_pos FROM {self.description_table} WHERE bioentry_id=? AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)"
-        return self.server.adaptor.execute_and_fetchall(sql, [bioentry_id, start, stop])
-
-
-class VFQueries(BaseQueries):
-    hit_table = "vf_hits"
-    description_table = "vf_defs"
-    id_col = "vf_gene_id"
-
-    where_clause_mapping = {"vf": id_col}
-    default_columns = [id_col, "prot_name", "vfid", "category", "vf_category_id"]
-
     def get_hits(self, taxids):
         where_clause = self.gen_where_clause("taxid", taxids)
         columns = [
@@ -121,9 +102,7 @@ class VFQueries(BaseQueries):
         query = (
             f"SELECT {index}, {self.id_col}, COUNT(*) "
             f"FROM {self.hit_table} "
-            f"INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = {self.hit_table}.hsh "
-            "INNER JOIN seqfeature ON hsh.seqid = seqfeature.seqfeature_id "
-            "INNER JOIN bioentry ON seqfeature.bioentry_id = bioentry.bioentry_id "
+            f"{self.join_bioentry}"
             f"{plasmid_join}"
             f"WHERE {where_clause} "
             f"GROUP BY {index}, {self.id_col};"
@@ -170,3 +149,28 @@ class VFQueries(BaseQueries):
             df = self.to_pandas_frame(results, header)
             df = df.set_index(["seqid"])
         return df
+
+
+class GIQueries(BaseQueries):
+    description_table = "genomic_islands"
+    id_col = "gis_id"
+    default_columns = [id_col, "bioentry_id", "start_pos", "end_pos"]
+
+    def get_containing_genomic_islands(self, bioentry_id, start, stop):
+        sql = f"SELECT {self.id_col}, start_pos, end_pos FROM {self.description_table} WHERE bioentry_id=? AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)"
+        return self.server.adaptor.execute_and_fetchall(sql, [bioentry_id, start, stop])
+
+
+class VFQueries(BaseQueries):
+    hit_table = "vf_hits"
+    description_table = "vf_defs"
+    id_col = "vf_gene_id"
+
+    where_clause_mapping = {"vf": id_col}
+    default_columns = [id_col, "prot_name", "vfid", "category", "vf_category_id"]
+
+    join_bioentry = (
+        f"INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = {hit_table}.hsh "
+        "INNER JOIN seqfeature ON hsh.seqid = seqfeature.seqfeature_id "
+        "INNER JOIN bioentry ON seqfeature.bioentry_id = bioentry.bioentry_id "
+    )
