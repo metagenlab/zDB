@@ -1,4 +1,5 @@
 import sqlite3
+from collections import defaultdict
 
 import pandas as pd
 from Bio.Seq import Seq
@@ -2585,20 +2586,34 @@ class DB:
         self.server.adaptor.executemany(sql, data)
 
     def load_genomic_islands(self, gis, clusters):
-        sql = "CREATE TABLE genomic_islands (gis_id INTEGER PRIMARY KEY, bioentry_id INTEGER, start_pos integer, end_pos integer);"
+        cluster_data = {
+            gis_id: i for i, cluster in enumerate(clusters) for gis_id in cluster
+        }
+        gis = [
+            (gis_id, cluster_data[gis_id], bioentry_id, start_pos, end_pos)
+            for gis_id, bioentry_id, start_pos, end_pos in gis
+        ]
+
+        sql = "CREATE TABLE genomic_island_descriptions (cluster_id INTEGER PRIMARY KEY, length INTEGER);"
         self.server.adaptor.execute(sql)
-        self.load_data_into_table("genomic_islands", gis)
 
         sql = (
-            "CREATE TABLE genomic_island_clusters (cluster_id INTEGER, gis_id INTEGER, "
-            "FOREIGN KEY(gis_id) REFERENCES genomic_islands(gis_id), "
-            "PRIMARY KEY(cluster_id, gis_id));"
+            "CREATE TABLE genomic_islands (gis_id INTEGER PRIMARY KEY, cluster_id INTEGER, "
+            "bioentry_id INTEGER, start_pos integer, end_pos integer, "
+            "FOREIGN KEY(cluster_id) REFERENCES genomic_island_descriptions(cluster_id));"
         )
         self.server.adaptor.execute(sql)
-        cluster_data = [
-            (i, gis_id) for i, cluster in enumerate(clusters) for gis_id in cluster
+
+        # Now we prepare some descriptions of the GI clusters
+        descriptions = defaultdict(list)
+        for gis_id, cluster_id, bioentry_id, start_pos, end_pos in gis:
+            descriptions[cluster_id].append(end_pos - start_pos)
+
+        descriptions = [
+            (key, int(sum(value) / len(value))) for key, value in descriptions.items()
         ]
-        self.load_data_into_table("genomic_island_clusters", cluster_data)
+        self.load_data_into_table("genomic_island_descriptions", descriptions)
+        self.load_data_into_table("genomic_islands", gis)
 
     def load_amr_hits(self, data):
         sql = (
