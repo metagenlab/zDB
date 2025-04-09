@@ -29,6 +29,7 @@ urlpatterns = [
         r"^venn_orthogroup/$", venn.VennOrthogroupView.as_view(), name="venn_orthogroup"
     ),  # noqa
     re_path(r"^venn_ko/$", venn.VennKoView.as_view(), name="venn_ko"),
+    re_path(r"^venn_gi/$", venn.VennGiView.as_view(), name="venn_gi"),
     re_path(r"^venn_cog/$", venn.VennCogView.as_view(), name="venn_cog"),
     re_path(r"^venn_amr/$", venn.VennAmrView.as_view(), name="venn_amr"),
     re_path(r"^search_suggest/.*$", views.search_suggest, name="search_suggest"),  # noqa
