@@ -147,6 +147,11 @@ urlpatterns = [
         name=groups.GroupsOverview.view_name,
     ),  # noqa
     re_path(
+        r"^gi_comparison",
+        tabular_comparison.GiComparisonView.as_view(),
+        name="gi_comparison",
+    ),  # noqa
+    re_path(
         r"^get_cog/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\%]+)$",
         views.get_cog,
         name="get_cog",
