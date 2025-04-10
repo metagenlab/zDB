@@ -48,12 +48,6 @@ class FamBaseView(View):
         - header: the header of the main_series in the tree
         -intersect: a dataframe containing the seqid, taxid and orthogroups of the pfam/cog/ko hits
         """
-
-        # the (group, taxid) in this dataframe are those that should be colored in red
-        # in the profile (correspondance between a cog entry and an orthogroup)
-        unique_og = intersect.orthogroup.unique().tolist()
-        red_color = set(tuple(entry) for entry in intersect.to_numpy())
-        df_og_count = self.db.get_og_count(list(unique_og), search_on="orthogroup").T
         ref_tree = self.db.get_reference_phylogeny()
         ref_names = self.db.get_genomes_description().description.to_dict()
 
@@ -66,7 +60,15 @@ class FamBaseView(View):
         e_tree.rename_leaves(ref_names)
 
         e_tree.add_column(SimpleColorColumn.fromSeries(main_series, header=header))
+        self.add_additional_columns(e_tree, intersect)
+        return e_tree
 
+    def add_additional_columns(self, e_tree, intersect):
+        # the (group, taxid) in this dataframe are those that should be colored in red
+        # in the profile (correspondance between a cog entry and an orthogroup)
+        unique_og = intersect.orthogroup.unique().tolist()
+        red_color = set(tuple(entry) for entry in intersect.to_numpy())
+        df_og_count = self.db.get_og_count(list(unique_og), search_on="orthogroup").T
         for og in df_og_count:
             og_serie = df_og_count[og]
             color_chooser = FamCogColorFunc(og, red_color)
@@ -76,7 +78,6 @@ class FamBaseView(View):
                 col_func=color_chooser.get_color,
             )
             e_tree.add_column(col_column)
-        return e_tree
 
     def get_all_prot_infos(self, seqids, orthogroups):
         hsh_gene_locs = self.db.get_gene_loc(seqids)
