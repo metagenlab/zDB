@@ -40,7 +40,7 @@ class FamBaseView(View):
     def get_orthogroups(self, seqids):
         return self.db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
 
-    def get_profile_tree(self, main_series, header, intersect):
+    def get_profile_tree(self, main_series, header):
         """
         Generate the tree from the profiles tab in the pfam/ko/cog pages:
         -ref_tree: the phylogenetic tree
@@ -60,10 +60,12 @@ class FamBaseView(View):
         e_tree.rename_leaves(ref_names)
 
         e_tree.add_column(SimpleColorColumn.fromSeries(main_series, header=header))
-        self.add_additional_columns(e_tree, intersect)
         return e_tree
 
     def add_additional_columns(self, e_tree, intersect):
+        """
+        - intersect: a dataframe containing the seqid, taxid and orthogroups of the pfam/cog/ko hits
+        """
         # the (group, taxid) in this dataframe are those that should be colored in red
         # in the profile (correspondance between a cog entry and an orthogroup)
         unique_og = intersect.orthogroup.unique().tolist()
@@ -143,8 +145,8 @@ class FamBaseView(View):
         e_tree = self.get_profile_tree(
             getattr(hit_counts, self.object_column),
             self.format_entry(entry_id),
-            orthogroups,
         )
+        self.add_additional_columns(e_tree, orthogroups)
         asset_path = f"/temp/fam_tree_{entry_id}.svg"
         path = settings.ASSET_ROOT + asset_path
         e_tree.render(path, dpi=500)
