@@ -26,40 +26,6 @@ class FamCogColorFunc:
             return EteTree.GREEN
 
 
-def get_all_prot_infos(db, seqids, orthogroups):
-    hsh_gene_locs = db.get_gene_loc(seqids)
-    hsh_prot_infos = db.get_proteins_info(seqids)
-    hsh_organisms = db.get_organism(seqids)
-    group_count = set()
-    all_locus_data = []
-
-    for index, seqid in enumerate(seqids):
-        # NOTE: all seqids are attributed an orthogroup, the case where
-        # seqid is not in orthogroups should therefore not arise.
-        og = orthogroups.loc[seqid].orthogroup
-        fmt_orthogroup = format_orthogroup(og, to_url=True)
-        group_count.add(fmt_orthogroup)
-        strand, start, end = hsh_gene_locs[seqid]
-        organism = hsh_organisms[seqid]
-        locus, prot_id, gene, product = hsh_prot_infos[seqid]
-        if gene is None:
-            gene = ""
-        data = (
-            index,
-            fmt_orthogroup,
-            locus,
-            prot_id,
-            start,
-            end,
-            strand,
-            gene,
-            product,
-            organism,
-        )
-        all_locus_data.append(data)
-    return all_locus_data, group_count
-
-
 class FamBaseView(View):
     template = "chlamdb/fam.html"
 
@@ -109,6 +75,39 @@ class FamBaseView(View):
             e_tree.add_column(col_column)
         return e_tree
 
+    def get_all_prot_infos(self, seqids, orthogroups):
+        hsh_gene_locs = self.db.get_gene_loc(seqids)
+        hsh_prot_infos = self.db.get_proteins_info(seqids)
+        hsh_organisms = self.db.get_organism(seqids)
+        group_count = set()
+        all_locus_data = []
+
+        for index, seqid in enumerate(seqids):
+            # NOTE: all seqids are attributed an orthogroup, the case where
+            # seqid is not in orthogroups should therefore not arise.
+            og = orthogroups.loc[seqid].orthogroup
+            fmt_orthogroup = format_orthogroup(og, to_url=True)
+            group_count.add(fmt_orthogroup)
+            strand, start, end = hsh_gene_locs[seqid]
+            organism = hsh_organisms[seqid]
+            locus, prot_id, gene, product = hsh_prot_infos[seqid]
+            if gene is None:
+                gene = ""
+            data = (
+                index,
+                fmt_orthogroup,
+                locus,
+                prot_id,
+                start,
+                end,
+                strand,
+                gene,
+                product,
+                organism,
+            )
+            all_locus_data.append(data)
+        return all_locus_data, group_count
+
     def prepare_context(self, request, entry_id, *args, **kwargs):
         # Get hits for that entry:
         hit_counts = self.get_hit_counts(
@@ -133,7 +132,7 @@ class FamBaseView(View):
             [entry_id], columns=self.accessors, extended_data=False
         )
         infos = infos.iloc[0]
-        all_locus_data, group_count = get_all_prot_infos(self.db, seqids, orthogroups)
+        all_locus_data, group_count = self.get_all_prot_infos(seqids, orthogroups)
 
         hit_counts = hit_counts.groupby(["taxid"]).count()
         fam = self.format_entry(entry_id)
