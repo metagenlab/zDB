@@ -37,6 +37,9 @@ class FamBaseView(View):
         context = self.prepare_context(request, entry_id, *args, **kwargs)
         return render(request, self.template, context)
 
+    def get_orthogroups(self, seqids):
+        return self.db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
+
     def get_profile_tree(self, main_series, header, intersect):
         """
         Generate the tree from the profiles tab in the pfam/ko/cog pages:
@@ -127,7 +130,7 @@ class FamBaseView(View):
             # Pfam hits are not indexed with seqid...
             seqids = hit_counts.seqid.unique().tolist()
 
-        orthogroups = self.db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
+        orthogroups = self.get_orthogroups(seqids)
         infos = self.get_hit_descriptions(
             [entry_id], columns=self.accessors, extended_data=False
         )
