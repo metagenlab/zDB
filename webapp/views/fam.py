@@ -32,6 +32,20 @@ class FamCogColorFunc:
 class FamBaseView(View):
     template = "chlamdb/fam.html"
 
+    table_headers = [
+        "#",
+        "Orthogroup",
+        "Locus",
+        "Start",
+        "Stop",
+        "S.",
+        "Gene",
+        "Product",
+        "Organism",
+    ]
+
+    table_accessors = table_headers
+
     @property
     def view_name(self):
         return f"fam_{self.object_type}"
@@ -65,14 +79,11 @@ class FamBaseView(View):
         e_tree.add_column(SimpleColorColumn.fromSeries(main_series, header=header))
         return e_tree
 
-    def add_additional_columns(self, e_tree, intersect):
-        """
-        - intersect: a dataframe containing the seqid, taxid and orthogroups of the pfam/cog/ko hits
-        """
+    def add_additional_columns(self, e_tree):
         # the (group, taxid) in this dataframe are those that should be colored in red
         # in the profile (correspondance between a cog entry and an orthogroup)
-        unique_og = intersect.orthogroup.unique().tolist()
-        red_color = set(tuple(entry) for entry in intersect.to_numpy())
+        unique_og = self.orthogroups.orthogroup.unique().tolist()
+        red_color = set(tuple(entry) for entry in self.orthogroups.to_numpy())
         df_og_count = self.db.get_og_count(list(unique_og), search_on="orthogroup").T
         for og in df_og_count:
             og_serie = df_og_count[og]
@@ -84,19 +95,17 @@ class FamBaseView(View):
             )
             e_tree.add_column(col_column)
 
-    def get_all_prot_infos(self, seqids, orthogroups):
+    def get_table_data(self, seqids):
         hsh_gene_locs = self.db.get_gene_loc(seqids)
         hsh_prot_infos = self.db.get_proteins_info(seqids)
         hsh_organisms = self.db.get_organism(seqids)
-        group_count = set()
         all_locus_data = []
 
         for index, seqid in enumerate(seqids):
             # NOTE: all seqids are attributed an orthogroup, the case where
             # seqid is not in orthogroups should therefore not arise.
-            og = orthogroups.loc[seqid].orthogroup
+            og = self.orthogroups.loc[seqid].orthogroup
             fmt_orthogroup = format_orthogroup(og, to_url=True)
-            group_count.add(fmt_orthogroup)
             strand, start, end = hsh_gene_locs[seqid]
             organism = hsh_organisms[seqid]
             locus, prot_id, gene, product = hsh_prot_infos[seqid]
@@ -114,7 +123,10 @@ class FamBaseView(View):
                 organism,
             )
             all_locus_data.append(data)
-        return all_locus_data, group_count
+
+        table_data = pd.DataFrame(all_locus_data, columns=self.table_headers)
+        table_data["Locus"] = table_data["Locus"].apply(format_locus)
+        return table_data
 
     def prepare_context(self, request, entry_id, *args, **kwargs):
         # Get hits for that entry:
@@ -135,12 +147,12 @@ class FamBaseView(View):
             # Pfam hits are not indexed with seqid...
             seqids = hit_counts.seqid.unique().tolist()
 
-        orthogroups = self.get_orthogroups(seqids)
+        self.orthogroups = self.get_orthogroups(seqids)
         infos = self.get_hit_descriptions(
             [entry_id], columns=self.accessors, extended_data=False
         )
         infos = infos.iloc[0]
-        all_locus_data, group_count = self.get_all_prot_infos(seqids, orthogroups)
+        table_data = self.get_table_data(seqids)
 
         hit_counts = hit_counts.groupby(["taxid"]).count()
         fam = self.format_entry(entry_id)
@@ -149,7 +161,7 @@ class FamBaseView(View):
             self.format_entry(entry_id),
         )
 
-        self.add_additional_columns(e_tree, orthogroups)
+        self.add_additional_columns(e_tree)
         asset_path = f"/temp/fam_tree_{entry_id}.svg"
         path = settings.ASSET_ROOT + asset_path
         e_tree.render(path, dpi=500)
@@ -160,25 +172,13 @@ class FamBaseView(View):
             if infos[key]
         }
 
-        data_table_header = [
-            "#",
-            "Orthogroup",
-            "Locus",
-            "Start",
-            "Stop",
-            "S.",
-            "Gene",
-            "Product",
-            "Organism",
-        ]
-        table_data = pd.DataFrame(all_locus_data, columns=data_table_header)
-        table_data["Locus"] = table_data["Locus"].apply(format_locus)
+        table_data = self.get_table_data(seqids)
 
         table = {
             "table_data": table_data,
-            "table_headers": data_table_header,
+            "table_headers": self.table_headers,
             "data_table_config": DataTableConfig(),
-            "table_data_accessors": data_table_header,
+            "table_data_accessors": self.table_accessors,
         }
 
         context = self.get_context(
@@ -186,7 +186,7 @@ class FamBaseView(View):
             info=info,
             table=table,
             n_entries=len(table_data),
-            group_count=group_count,
+            group_count=table_data["Orthogroup"].unique(),
             asset_path=asset_path,
             object_name_singular_or_plural=self.object_name_singular_or_plural,
         )
