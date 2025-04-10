@@ -51,7 +51,7 @@
             <p style="margin: 10px 10px 10px 10px; line-height: 180%">Three outputs have been generated:
               <br> <b>General</b>:  this result contains the description and frequency of the selected {{ object_name }} {{ fam }}, of which KO pathways and KO modules it is part. Additionally, its occurence in the database is reported.
               <br> <b>Proteins list</b>: list of occurences of the {{ object_name }}
-              within the database. {{ n_entries }} occurences are identified.
+              within the database. {{ table_size }} occurences are identified.
               The table reports the orthogroup, the organism in which each occurrence has been found, and the locus tag enriched by start and stop position, strand, gene name and product.
               <br>Clicking on the Ortohgroup name or locus you will be redirected to further info.
               <br><b> Profiles</b>: Phylogenetic tree annotated with
@@ -177,11 +177,11 @@
 
                     <table class="table table-striped" style="width: 100%">
                       <tr>
-                        <td>{{ fam }} is associated with <strong>{{ n_entries }} different proteins</strong> (see tab "<a href="#tab2" data-toggle="tab">Protein list</a>" and "<a href="#tab3" data-toggle="tab">Profile</a>")</td>
+                        <td>{{ fam }} is associated with <strong>{{ table_size }} different proteins</strong> (see tab "<a href="#tab2" data-toggle="tab">Protein list</a>" and "<a href="#tab3" data-toggle="tab">Profile</a>")</td>
                       </tr>
                       <tr>
                         <td>
-                          The {{ n_entries }} proteins are classified into <strong>{{ group_count|length }} different orthogroup(s)</strong>
+                          The {{ table_size }} proteins are classified into <strong>{{ group_count|length }} different orthogroup(s)</strong>
                           <div style="padding-left:20px">
                             <ul style="list-style-type:disc; width:100%;">
                               {% for group in group_count %}

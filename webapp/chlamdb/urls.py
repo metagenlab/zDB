@@ -167,6 +167,7 @@ urlpatterns = [
     re_path(r"^fam_vf/(VFG[0-9]+)$", fam.FamVfView.as_view(), name="fam_vf"),
     re_path(r"^fam_pfam/(PF[0-9]+)$", fam.FamPfamView.as_view(), name="fam_pfam"),
     re_path(r"^fam_ko/(K[0-9]+)$", fam.FamKoView.as_view(), name="fam_ko"),
+    re_path(r"^fam_gic/(GIC[0-9]+)$", fam.FamGiClusterView.as_view(), name="fam_gic"),
     re_path(r"^fam_cog/(COG[0-9]+)$", fam.FamCogView.as_view(), name="fam_cog"),  # noqa
     re_path(
         r"^fam_amr/([a-zA-Z0-9_\.\(\)\-\']+)$", fam.FamAmrView.as_view(), name="fam_amr"

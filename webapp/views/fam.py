@@ -7,6 +7,7 @@ from lib.ete_phylo import EteTree
 from lib.ete_phylo import SimpleColorColumn
 from views.mixins import AmrViewMixin
 from views.mixins import CogViewMixin
+from views.mixins import GiViewMixin
 from views.mixins import KoViewMixin
 from views.mixins import PfamViewMixin
 from views.mixins import VfViewMixin
@@ -45,6 +46,8 @@ class FamBaseView(View):
     ]
 
     table_accessors = table_headers
+
+    hit_count_indexing = "seqid"
 
     @property
     def view_name(self):
@@ -95,7 +98,7 @@ class FamBaseView(View):
             )
             e_tree.add_column(col_column)
 
-    def get_table_data(self, seqids):
+    def get_table(self, seqids):
         hsh_gene_locs = self.db.get_gene_loc(seqids)
         hsh_prot_infos = self.db.get_proteins_info(seqids)
         hsh_organisms = self.db.get_organism(seqids)
@@ -126,12 +129,18 @@ class FamBaseView(View):
 
         table_data = pd.DataFrame(all_locus_data, columns=self.table_headers)
         table_data["Locus"] = table_data["Locus"].apply(format_locus)
-        return table_data
+        return table_data, self.table_headers, self.table_accessors
+
+    def get_associated_entries(self, table_data):
+        return table_data["Orthogroup"].unique()
 
     def prepare_context(self, request, entry_id, *args, **kwargs):
         # Get hits for that entry:
         hit_counts = self.get_hit_counts(
-            [entry_id], indexing="seqid", search_on=self.object_type, keep_taxid=True
+            [entry_id],
+            indexing=self.hit_count_indexing,
+            search_on=self.object_type,
+            keep_taxid=True,
         )
 
         if len(hit_counts) == 0:
@@ -141,7 +150,7 @@ class FamBaseView(View):
                 {"msg": f"No entry for {self.format_entry(entry_id)}"},
             )
 
-        if hit_counts.index.name == "seqid":
+        if hit_counts.index.name in ["seqid", "gi"]:
             seqids = hit_counts.index.tolist()
         else:
             # Pfam hits are not indexed with seqid...
@@ -152,7 +161,6 @@ class FamBaseView(View):
             [entry_id], columns=self.accessors, extended_data=False
         )
         infos = infos.iloc[0]
-        table_data = self.get_table_data(seqids)
 
         hit_counts = hit_counts.groupby(["taxid"]).count()
         fam = self.format_entry(entry_id)
@@ -172,21 +180,21 @@ class FamBaseView(View):
             if infos[key]
         }
 
-        table_data = self.get_table_data(seqids)
+        table_data, table_headers, table_accessors = self.get_table(seqids)
 
         table = {
             "table_data": table_data,
-            "table_headers": self.table_headers,
+            "table_headers": table_headers,
             "data_table_config": DataTableConfig(),
-            "table_data_accessors": self.table_accessors,
+            "table_data_accessors": table_accessors,
         }
 
         context = self.get_context(
             fam=fam,
             info=info,
             table=table,
-            n_entries=len(table_data),
-            group_count=table_data["Orthogroup"].unique(),
+            table_size=len(table_data),
+            group_count=self.get_associated_entries(table_data),
             asset_path=asset_path,
             object_name_singular_or_plural=self.object_name_singular_or_plural,
         )
@@ -252,3 +260,30 @@ class FamPfamView(FamBaseView, PfamViewMixin):
     def get(self, request, entry_id, *args, **kwargs):
         entry_id = int(entry_id[len("PF") :])
         return super(FamPfamView, self).get(request, entry_id, *args, **kwargs)
+
+
+class FamGiClusterView(FamBaseView, GiViewMixin):
+    accessors = ["cluster_id", "length"]
+    hit_count_indexing = "gi"
+
+    def get(self, request, entry_id, *args, **kwargs):
+        entry_id = int(entry_id[3:])
+        return super(FamGiClusterView, self).get(request, entry_id, *args, **kwargs)
+
+    def get_orthogroups(self, seqids):
+        return
+
+    def add_additional_columns(self, e_tree):
+        return
+
+    def get_table(self, gis_ids):
+        table_data = self.get_gi_descriptions(gis_ids)
+        table_data.drop(columns=["bioentry.bioentry_id", "cluster_id"], inplace=True)
+        return (
+            table_data,
+            [self.colname_to_header(colname) for colname in table_data.columns],
+            table_data.columns,
+        )
+
+    def get_associated_entries(self, table_data):
+        return table_data["gis_id"].unique()

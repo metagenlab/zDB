@@ -12,6 +12,7 @@ from views.object_type_metadata import VfMetadata
 from views.object_type_metadata import my_locals
 from views.utils import DataTableConfig
 from views.utils import format_genome
+from views.utils import format_genomic_island
 from views.utils import format_hmm_url
 from views.utils import format_ko_module
 from views.utils import format_lst_to_html
@@ -467,6 +468,23 @@ class GiViewMixin(BaseViewMixin, GiMetadata):
     @property
     def get_hits(self):
         return self.db.gi.get_hits
+
+    def get_gi_descriptions(self, ids, transformed=True, **kwargs):
+        descriptions = self.db.gi.get_gi_descriptions(ids)
+        descriptions = descriptions.set_index("gis_id", drop=False)
+        if transformed:
+            descriptions = self.transform_data(descriptions)
+            descriptions["organism"] = descriptions["taxon_id"]
+            descriptions.drop(columns=["taxon_id"], inplace=True)
+        return descriptions
+
+    @property
+    def transforms(self):
+        return [
+            Transform(self.object_column, self.format_entry, {"to_url": True}),
+            TransformWithAccessoryColumn("taxon_id", "organism", format_genome),
+            Transform("gis_id", format_genomic_island),
+        ]
 
 
 class ComparisonViewMixin:

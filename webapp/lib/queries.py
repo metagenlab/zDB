@@ -1,5 +1,6 @@
 class BaseQueries:
     where_clause_mapping = {}
+    indexing_mapping = {"seqid": "seqfeature.seqfeature_id"}
 
     def __init__(self, db):
         self.db = db
@@ -64,8 +65,8 @@ class BaseQueries:
     def get_hit_counts(
         self, ids, indexing="taxid", search_on="taxid", keep_taxid=False, plasmids=None
     ):
-        if indexing == "seqid":
-            index = "seqfeature.seqfeature_id"
+        if indexing in self.indexing_mapping:
+            index = self.indexing_mapping[indexing]
             if keep_taxid:
                 index += ", bioentry.taxon_id "
         elif indexing == "taxid":
@@ -125,10 +126,10 @@ class BaseQueries:
                         if taxid not in df.columns:
                             df[taxid] = 0
 
-        elif indexing == "seqid":
+        elif indexing in self.indexing_mapping:
             if plasmids is not None:
                 raise RuntimeError("Not implemented for now")
-            header = ["seqid", self.id_col]
+            header = [indexing, self.id_col]
             if keep_taxid:
                 header.append("taxid")
                 results = (
@@ -138,7 +139,7 @@ class BaseQueries:
                 results = ((seqid, obj_id) for seqid, obj_id, count in results)
 
             df = self.to_pandas_frame(results, header)
-            df = df.set_index(["seqid"])
+            df = df.set_index([indexing])
         return df
 
 
@@ -148,6 +149,7 @@ class GIQueries(BaseQueries):
     description_table = "genomic_island_descriptions"
     default_columns = [id_col, "length"]
     where_clause_mapping = {"gic": id_col}
+    indexing_mapping = {"gi": "gis_id"}
 
     join_bioentry = (
         f"INNER JOIN bioentry ON {hit_table}.bioentry_id = bioentry.bioentry_id "
@@ -162,6 +164,31 @@ class GIQueries(BaseQueries):
     def get_containing_genomic_islands(self, bioentry_id, start, stop):
         sql = f"SELECT {self.id_col}, start_pos, end_pos FROM {self.description_table} WHERE bioentry_id=? AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)"
         return self.server.adaptor.execute_and_fetchall(sql, [bioentry_id, start, stop])
+
+    def get_gi_descriptions(self, gis_ids):
+        plchd = self.gen_placeholder_string(gis_ids)
+        columns = [
+            "gis_id",
+            "cluster_id",
+            "bioentry.bioentry_id",
+            "bioentry.taxon_id",
+            "taxon_name.name",
+            "bioentry.accession",
+            "start_pos",
+            "end_pos",
+        ]
+        sql = (
+            f"SELECT {', '.join(columns)} FROM {self.hit_table} {self.join_bioentry} "
+            "INNER JOIN taxon_name ON bioentry.taxon_id=taxon_name.taxon_id "
+            f"WHERE gis_id IN ({plchd}) AND taxon_name.name_class='scientific name';"
+        )
+
+        columns[3] = "taxon_id"
+        columns[4] = "organism"
+        columns[5] = "bioentry"
+        return self.to_pandas_frame(
+            self.server.adaptor.execute_and_fetchall(sql, gis_ids), columns
+        )
 
 
 class VFQueries(BaseQueries):
