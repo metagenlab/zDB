@@ -464,6 +464,10 @@ class GiViewMixin(BaseViewMixin, GiMetadata):
     def get_hit_counts(self):
         return self.db.gi.get_hit_counts
 
+    @property
+    def get_hits(self):
+        return self.db.gi.get_hits
+
 
 class ComparisonViewMixin:
     """This class is somewhat of a hack to get pseudo inheritance

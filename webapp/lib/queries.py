@@ -48,26 +48,17 @@ class BaseQueries:
 
     def get_hits(self, taxids):
         where_clause = self.gen_where_clause("taxid", taxids)
-        columns = [
-            "bioentry.taxon_id",
-            f"{self.hit_table}.{self.id_col}",
-            "evalue",
-            "prot_name",
-            "vfid",
-            "category",
-            "vf_category_id",
-        ]
         query = (
-            f"SELECT {', '.join(columns)} "
+            f"SELECT {', '.join(self.hit_cols)} "
             f"FROM {self.hit_table} "
             f"INNER JOIN {self.description_table} ON {self.description_table}.{self.id_col} = {self.hit_table}.{self.id_col} "
-            f"INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = {self.hit_table}.hsh "
-            "INNER JOIN seqfeature ON hsh.seqid = seqfeature.seqfeature_id "
-            "INNER JOIN bioentry ON seqfeature.bioentry_id = bioentry.bioentry_id "
+            f"{self.join_bioentry}"
             f"WHERE {where_clause} "
         )
         results = self.server.adaptor.execute_and_fetchall(query, taxids)
-        df = self.to_pandas_frame(results, [col.split(".")[-1] for col in columns])
+        df = self.to_pandas_frame(
+            results, [col.split(".")[-1] for col in self.hit_cols]
+        )
         return df
 
     def get_hit_counts(
@@ -156,10 +147,17 @@ class GIQueries(BaseQueries):
     hit_table = "genomic_islands"
     description_table = "genomic_island_descriptions"
     default_columns = [id_col, "length"]
+    where_clause_mapping = {"gic": id_col}
 
     join_bioentry = (
         f"INNER JOIN bioentry ON {hit_table}.bioentry_id = bioentry.bioentry_id "
     )
+
+    hit_cols = [
+        "bioentry.taxon_id",
+        f"{hit_table}.{id_col}",
+        "length",
+    ]
 
     def get_containing_genomic_islands(self, bioentry_id, start, stop):
         sql = f"SELECT {self.id_col}, start_pos, end_pos FROM {self.description_table} WHERE bioentry_id=? AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)"
@@ -173,6 +171,16 @@ class VFQueries(BaseQueries):
 
     where_clause_mapping = {"vf": id_col}
     default_columns = [id_col, "prot_name", "vfid", "category", "vf_category_id"]
+
+    hit_cols = [
+        "bioentry.taxon_id",
+        f"{hit_table}.{id_col}",
+        "evalue",
+        "prot_name",
+        "vfid",
+        "category",
+        "vf_category_id",
+    ]
 
     join_bioentry = (
         f"INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = {hit_table}.hsh "
