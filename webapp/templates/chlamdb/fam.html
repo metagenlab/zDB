@@ -51,7 +51,7 @@
             <p style="margin: 10px 10px 10px 10px; line-height: 180%">Three outputs have been generated:
               <br> <b>General</b>:  this result contains the description and frequency of the selected {{ object_name }} {{ fam }}, of which KO pathways and KO modules it is part. Additionally, its occurence in the database is reported.
               <br> <b>Proteins list</b>: list of occurences of the {{ object_name }}
-              within the database. {{ all_locus_data|length }} occurences are identified.
+              within the database. {{ n_entries }} occurences are identified.
               The table reports the orthogroup, the organism in which each occurrence has been found, and the locus tag enriched by start and stop position, strand, gene name and product.
               <br>Clicking on the Ortohgroup name or locus you will be redirected to further info.
               <br><b> Profiles</b>: Phylogenetic tree annotated with
@@ -177,11 +177,11 @@
 
                     <table class="table table-striped" style="width: 100%">
                       <tr>
-                        <td>{{ fam }} is associated with <strong>{{ all_locus_data|length }} different proteins</strong> (see tab "<a href="#tab2" data-toggle="tab">Protein list</a>" and "<a href="#tab3" data-toggle="tab">Profile</a>")</td>
+                        <td>{{ fam }} is associated with <strong>{{ n_entries }} different proteins</strong> (see tab "<a href="#tab2" data-toggle="tab">Protein list</a>" and "<a href="#tab3" data-toggle="tab">Profile</a>")</td>
                       </tr>
                       <tr>
                         <td>
-                          The {{ all_locus_data|length }} proteins are classified into <strong>{{ group_count|length }} different orthogroup(s)</strong>
+                          The {{ n_entries }} proteins are classified into <strong>{{ group_count|length }} different orthogroup(s)</strong>
                           <div style="padding-left:20px">
                             <ul style="list-style-type:disc; width:100%;">
                               {% for group in group_count %}
@@ -200,36 +200,9 @@
             </div>
 
             <div class="tab-pane" id="tab2">
-              <table id="fam_table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Orthogroup</th>
-                    <th>Locus</th>
-                    <th>Start</th>
-                    <th>Stop</th>
-                    <th>S.</th>
-                    <th>Gene</th>
-                    <th>Product</th>
-                    <th>Organism</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for values in all_locus_data %}
-                    <tr>
-                      <td>{{values.0}}</td>
-                      <td>{{values.1|safe}}</td>
-                      <td><a href='{% url "locusx" values.2 True %}' target="_top">{{values.2}}</a></td>
-                      <td>{{values.4}}</td>
-                      <td>{{values.5}}</td>
-                      <td>{{values.6}}</td>
-                      <td>{{values.7}}</td>
-                      <td>{{values.8}}</td>
-                      <td>{{values.9}}</td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+
+              {% include "chlamdb/result_table.html" with results=table %}
+
             </div>
 
             <div class="tab-pane" id="tab66" style="height:100%">

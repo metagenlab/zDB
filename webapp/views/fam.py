@@ -1,3 +1,4 @@
+import pandas as pd
 from django.conf import settings
 from django.shortcuts import render
 from django.views import View
@@ -9,8 +10,10 @@ from views.mixins import CogViewMixin
 from views.mixins import KoViewMixin
 from views.mixins import PfamViewMixin
 from views.mixins import VfViewMixin
+from views.utils import DataTableConfig
 from views.utils import format_ko_module
 from views.utils import format_ko_path
+from views.utils import format_locus
 from views.utils import format_orthogroup
 
 
@@ -103,7 +106,6 @@ class FamBaseView(View):
                 index,
                 fmt_orthogroup,
                 locus,
-                prot_id,
                 start,
                 end,
                 strand,
@@ -146,6 +148,7 @@ class FamBaseView(View):
             getattr(hit_counts, self.object_column),
             self.format_entry(entry_id),
         )
+
         self.add_additional_columns(e_tree, orthogroups)
         asset_path = f"/temp/fam_tree_{entry_id}.svg"
         path = settings.ASSET_ROOT + asset_path
@@ -157,10 +160,32 @@ class FamBaseView(View):
             if infos[key]
         }
 
+        data_table_header = [
+            "#",
+            "Orthogroup",
+            "Locus",
+            "Start",
+            "Stop",
+            "S.",
+            "Gene",
+            "Product",
+            "Organism",
+        ]
+        table_data = pd.DataFrame(all_locus_data, columns=data_table_header)
+        table_data["Locus"] = table_data["Locus"].apply(format_locus)
+
+        table = {
+            "table_data": table_data,
+            "table_headers": data_table_header,
+            "data_table_config": DataTableConfig(),
+            "table_data_accessors": data_table_header,
+        }
+
         context = self.get_context(
             fam=fam,
             info=info,
-            all_locus_data=all_locus_data,
+            table=table,
+            n_entries=len(table_data),
             group_count=group_count,
             asset_path=asset_path,
             object_name_singular_or_plural=self.object_name_singular_or_plural,
