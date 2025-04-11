@@ -1,8 +1,6 @@
 from django.shortcuts import render
 from django.views import View
 from views.mixins import GiViewMixin
-from views.utils import format_genome
-from views.utils import format_genomic_island
 from views.utils import genomic_region_df_to_js
 from views.utils import locusx_genomic_region
 
