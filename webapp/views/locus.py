@@ -549,8 +549,7 @@ def get_genomic_island(db, seqid, gene_pos):
         )
     return {
         "genomic_islands": [
-            format_genomic_island(gis_id, accession, start, stop)
-            for gis_id, start, stop in genomic_islands
+            format_genomic_island(gis_id) for gis_id, start, stop in genomic_islands
         ]
     }
 
