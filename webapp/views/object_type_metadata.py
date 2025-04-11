@@ -2,7 +2,7 @@ from urllib.parse import quote
 
 from views.utils import format_amr
 from views.utils import format_cog
-from views.utils import format_genomic_island
+from views.utils import format_genomic_island_cluster
 from views.utils import format_ko
 from views.utils import format_orthogroup
 from views.utils import format_pfam
@@ -91,12 +91,17 @@ class VfMetadata(BaseObjectMetadata):
 
 
 class GiMetadata(BaseObjectMetadata):
-    object_type = "gi"
-    object_name = "Genomic island"
+    object_type = "gic"
+    object_name = "Genomic island cluster"
+
+    @property
+    @staticmethod
+    def is_enabled(self):
+        return optional2status.get("gi", False)
 
     @staticmethod
     def format_entry(entry, to_url=False):
-        return format_genomic_island(entry, to_url=to_url)
+        return format_genomic_island_cluster(entry, to_url=to_url)
 
 
 class ModuleMetadata(BaseObjectMetadata):
@@ -156,7 +161,7 @@ class MetadataGetter:
         PathwayMetadata,
     ]
 
-    _annotations = ["cog", "pfam", "ko", "amr", "vf", "gi"]
+    _annotations = ["cog", "pfam", "ko", "amr", "vf", "gic"]
     _orthology = ["orthogroup"]
 
     def __init__(self):

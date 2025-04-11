@@ -1,3 +1,4 @@
+import pandas as pd
 from django.conf import settings
 from django.shortcuts import render
 from django.views import View
@@ -6,11 +7,14 @@ from lib.ete_phylo import EteTree
 from lib.ete_phylo import SimpleColorColumn
 from views.mixins import AmrViewMixin
 from views.mixins import CogViewMixin
+from views.mixins import GiViewMixin
 from views.mixins import KoViewMixin
 from views.mixins import PfamViewMixin
 from views.mixins import VfViewMixin
+from views.utils import DataTableConfig
 from views.utils import format_ko_module
 from views.utils import format_ko_path
+from views.utils import format_locus
 from views.utils import format_orthogroup
 
 
@@ -26,81 +30,24 @@ class FamCogColorFunc:
             return EteTree.GREEN
 
 
-def tab_gen_profile_tree(db, main_series, header, intersect):
-    """
-    Generate the tree from the profiles tab in the pfam/ko/cog pages:
-    -ref_tree: the phylogenetic tree
-    - main_series: the cog/ko/pfam count per taxid
-    - header: the header of the main_series in the tree
-    -intersect: a dataframe containing the seqid, taxid and orthogroups of the pfam/cog/ko hits
-    """
-
-    # the (group, taxid) in this dataframe are those that should be colored in red
-    # in the profile (correspondance between a cog entry and an orthogroup)
-    unique_og = intersect.orthogroup.unique().tolist()
-    red_color = set(tuple(entry) for entry in intersect.to_numpy())
-    df_og_count = db.get_og_count(list(unique_og), search_on="orthogroup").T
-    ref_tree = db.get_reference_phylogeny()
-    ref_names = db.get_genomes_description().description.to_dict()
-
-    tree = Tree(ref_tree)
-    R = tree.get_midpoint_outgroup()
-    if R is not None:
-        tree.set_outgroup(R)
-    tree.ladderize()
-    e_tree = EteTree(tree)
-    e_tree.rename_leaves(ref_names)
-
-    e_tree.add_column(SimpleColorColumn.fromSeries(main_series, header=header))
-
-    for og in df_og_count:
-        og_serie = df_og_count[og]
-        color_chooser = FamCogColorFunc(og, red_color)
-        col_column = SimpleColorColumn(
-            og_serie.to_dict(),
-            header=format_orthogroup(og),
-            col_func=color_chooser.get_color,
-        )
-        e_tree.add_column(col_column)
-    return e_tree
-
-
-def get_all_prot_infos(db, seqids, orthogroups):
-    hsh_gene_locs = db.get_gene_loc(seqids)
-    hsh_prot_infos = db.get_proteins_info(seqids)
-    hsh_organisms = db.get_organism(seqids)
-    group_count = set()
-    all_locus_data = []
-
-    for index, seqid in enumerate(seqids):
-        # NOTE: all seqids are attributed an orthogroup, the case where
-        # seqid is not in orthogroups should therefore not arise.
-        og = orthogroups.loc[seqid].orthogroup
-        fmt_orthogroup = format_orthogroup(og, to_url=True)
-        group_count.add(fmt_orthogroup)
-        strand, start, end = hsh_gene_locs[seqid]
-        organism = hsh_organisms[seqid]
-        locus, prot_id, gene, product = hsh_prot_infos[seqid]
-        if gene is None:
-            gene = ""
-        data = (
-            index,
-            fmt_orthogroup,
-            locus,
-            prot_id,
-            start,
-            end,
-            strand,
-            gene,
-            product,
-            organism,
-        )
-        all_locus_data.append(data)
-    return all_locus_data, group_count
-
-
 class FamBaseView(View):
     template = "chlamdb/fam.html"
+
+    table_headers = [
+        "#",
+        "Orthogroup",
+        "Locus",
+        "Start",
+        "Stop",
+        "S.",
+        "Gene",
+        "Product",
+        "Organism",
+    ]
+
+    table_accessors = table_headers
+
+    hit_count_indexing = "seqid"
 
     @property
     def view_name(self):
@@ -110,10 +57,90 @@ class FamBaseView(View):
         context = self.prepare_context(request, entry_id, *args, **kwargs)
         return render(request, self.template, context)
 
+    def get_orthogroups(self, seqids):
+        return self.db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
+
+    def get_profile_tree(self, main_series, header):
+        """
+        Generate the tree from the profiles tab in the pfam/ko/cog pages:
+        -ref_tree: the phylogenetic tree
+        - main_series: the cog/ko/pfam count per taxid
+        - header: the header of the main_series in the tree
+        -intersect: a dataframe containing the seqid, taxid and orthogroups of the pfam/cog/ko hits
+        """
+        ref_tree = self.db.get_reference_phylogeny()
+        ref_names = self.db.get_genomes_description().description.to_dict()
+
+        tree = Tree(ref_tree)
+        R = tree.get_midpoint_outgroup()
+        if R is not None:
+            tree.set_outgroup(R)
+        tree.ladderize()
+        e_tree = EteTree(tree)
+        e_tree.rename_leaves(ref_names)
+
+        e_tree.add_column(SimpleColorColumn.fromSeries(main_series, header=header))
+        return e_tree
+
+    def add_additional_columns(self, e_tree):
+        # the (group, taxid) in this dataframe are those that should be colored in red
+        # in the profile (correspondance between a cog entry and an orthogroup)
+        unique_og = self.orthogroups.orthogroup.unique().tolist()
+        red_color = set(tuple(entry) for entry in self.orthogroups.to_numpy())
+        df_og_count = self.db.get_og_count(list(unique_og), search_on="orthogroup").T
+        for og in df_og_count:
+            og_serie = df_og_count[og]
+            color_chooser = FamCogColorFunc(og, red_color)
+            col_column = SimpleColorColumn(
+                og_serie.to_dict(),
+                header=format_orthogroup(og),
+                col_func=color_chooser.get_color,
+            )
+            e_tree.add_column(col_column)
+
+    def get_table(self, seqids):
+        hsh_gene_locs = self.db.get_gene_loc(seqids)
+        hsh_prot_infos = self.db.get_proteins_info(seqids)
+        hsh_organisms = self.db.get_organism(seqids)
+        all_locus_data = []
+
+        for index, seqid in enumerate(seqids):
+            # NOTE: all seqids are attributed an orthogroup, the case where
+            # seqid is not in orthogroups should therefore not arise.
+            og = self.orthogroups.loc[seqid].orthogroup
+            fmt_orthogroup = format_orthogroup(og, to_url=True)
+            strand, start, end = hsh_gene_locs[seqid]
+            organism = hsh_organisms[seqid]
+            locus, prot_id, gene, product = hsh_prot_infos[seqid]
+            if gene is None:
+                gene = ""
+            data = (
+                index,
+                fmt_orthogroup,
+                locus,
+                start,
+                end,
+                strand,
+                gene,
+                product,
+                organism,
+            )
+            all_locus_data.append(data)
+
+        table_data = pd.DataFrame(all_locus_data, columns=self.table_headers)
+        table_data["Locus"] = table_data["Locus"].apply(format_locus)
+        return table_data, self.table_headers, self.table_accessors
+
+    def get_associated_entries(self, table_data):
+        return table_data["Orthogroup"].unique()
+
     def prepare_context(self, request, entry_id, *args, **kwargs):
         # Get hits for that entry:
         hit_counts = self.get_hit_counts(
-            [entry_id], indexing="seqid", search_on=self.object_type, keep_taxid=True
+            [entry_id],
+            indexing=self.hit_count_indexing,
+            search_on=self.object_type,
+            keep_taxid=True,
         )
 
         if len(hit_counts) == 0:
@@ -123,27 +150,26 @@ class FamBaseView(View):
                 {"msg": f"No entry for {self.format_entry(entry_id)}"},
             )
 
-        if hit_counts.index.name == "seqid":
+        if hit_counts.index.name in ["seqid", "gi"]:
             seqids = hit_counts.index.tolist()
         else:
             # Pfam hits are not indexed with seqid...
             seqids = hit_counts.seqid.unique().tolist()
 
-        orthogroups = self.db.get_og_count(seqids, search_on="seqid", keep_taxid=True)
+        self.orthogroups = self.get_orthogroups(seqids)
         infos = self.get_hit_descriptions(
             [entry_id], columns=self.accessors, extended_data=False
         )
         infos = infos.iloc[0]
-        all_locus_data, group_count = get_all_prot_infos(self.db, seqids, orthogroups)
 
         hit_counts = hit_counts.groupby(["taxid"]).count()
         fam = self.format_entry(entry_id)
-        e_tree = tab_gen_profile_tree(
-            self.db,
+        e_tree = self.get_profile_tree(
             getattr(hit_counts, self.object_column),
             self.format_entry(entry_id),
-            orthogroups,
         )
+
+        self.add_additional_columns(e_tree)
         asset_path = f"/temp/fam_tree_{entry_id}.svg"
         path = settings.ASSET_ROOT + asset_path
         e_tree.render(path, dpi=500)
@@ -154,11 +180,21 @@ class FamBaseView(View):
             if infos[key]
         }
 
+        table_data, table_headers, table_accessors = self.get_table(seqids)
+
+        table = {
+            "table_data": table_data,
+            "table_headers": table_headers,
+            "data_table_config": DataTableConfig(),
+            "table_data_accessors": table_accessors,
+        }
+
         context = self.get_context(
             fam=fam,
             info=info,
-            all_locus_data=all_locus_data,
-            group_count=group_count,
+            table=table,
+            table_size=len(table_data),
+            group_count=self.get_associated_entries(table_data),
             asset_path=asset_path,
             object_name_singular_or_plural=self.object_name_singular_or_plural,
         )
@@ -224,3 +260,30 @@ class FamPfamView(FamBaseView, PfamViewMixin):
     def get(self, request, entry_id, *args, **kwargs):
         entry_id = int(entry_id[len("PF") :])
         return super(FamPfamView, self).get(request, entry_id, *args, **kwargs)
+
+
+class FamGiClusterView(FamBaseView, GiViewMixin):
+    accessors = ["cluster_id", "length"]
+    hit_count_indexing = "gi"
+
+    def get(self, request, entry_id, *args, **kwargs):
+        entry_id = int(entry_id[3:])
+        return super(FamGiClusterView, self).get(request, entry_id, *args, **kwargs)
+
+    def get_orthogroups(self, seqids):
+        return
+
+    def add_additional_columns(self, e_tree):
+        return
+
+    def get_table(self, gis_ids):
+        table_data = self.get_gi_descriptions(gis_ids)
+        table_data.drop(columns=["bioentry.bioentry_id", "cluster_id"], inplace=True)
+        return (
+            table_data,
+            [self.colname_to_header(colname) for colname in table_data.columns],
+            table_data.columns,
+        )
+
+    def get_associated_entries(self, table_data):
+        return table_data["gis_id"].unique()

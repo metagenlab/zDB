@@ -27,18 +27,70 @@
 
           </div>
 
-          <div class=row>
-            <div class="panel panel-default">
-              <div class="panel-heading clearfix">
-                <div class="pull-right">
-                  <button id="download_svg_button" class="btn-link btn-xs" style="background-color: transparent;">
-                    <i class="glyphicon glyphicon-download"></i>
-                  </button>
+          <div class="row">
+            <div class="col-md-12 col-lg-6">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h3 class="panel-title">General</h3>
                 </div>
-                <h3 class="panel-title">Genomic island</h3>
+                <table id="panel_table" class="table table-striped" style="width: 100%">
+                  <tr>
+                      <th>Source</th>
+                      <td>{{organism|safe}}</td>
+                  </tr>
+                  <tr>
+                      <th>Genomic Island ID</th>
+                      <td>{{gis_id|safe}}</td>
+                  </tr>
+                  <tr>
+                    <th> Contig </th>
+                    <td> {{bioentry}} </td>
+                  </tr>
+                  <tr>
+                    <th>Location</th>
+                    <td>{{start_pos}} - {{end_pos}}</td>
+                  </tr>
+                  <tr>
+                    <th>Island size</th>
+                    <td>{{island_size}}</td>
+                  </tr>
+                </table>
               </div>
-              <div class="panel-body" style="height:100px; display:flex; justify-content:center; align-items:center; margin-bottom:30px" id="genomic_region_rect">
-                <div id="div_genomic_region"></div>
+            </div>
+            <div class="col-md-12 col-lg-6">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h3 class="panel-title">GI Cluster</h3>
+                </div>
+                <table id="panel_table" class="table table-striped" style="width: 100%">
+                  <tr>
+                    <th>Cluster</th>
+                    <td>{{cluster_id|safe}}</td>
+                  </tr>
+                  <tr>
+                      <th>Average island size</th>
+                      <td>{{cluster_average_size}}</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+
+          <div class=row>
+            <div class="col-md-12 col-lg-12">
+              <div class="panel panel-default">
+                <div class="panel-heading clearfix">
+                  <div class="pull-right">
+                    <button id="download_svg_button" class="btn-link btn-xs" style="background-color: transparent;">
+                      <i class="glyphicon glyphicon-download"></i>
+                    </button>
+                  </div>
+                  <h3 class="panel-title">Genomic island</h3>
+                </div>
+                <div class="panel-body" style="height:100px; display:flex; justify-content:center; align-items:center; margin-bottom:30px" id="genomic_region_rect">
+                  <div id="div_genomic_region"></div>
+                </div>
               </div>
             </div>
           </div>

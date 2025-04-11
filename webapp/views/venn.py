@@ -5,6 +5,7 @@ from views.analysis_view_metadata import VennMetadata
 from views.errors import errors
 from views.mixins import AmrViewMixin
 from views.mixins import CogViewMixin
+from views.mixins import GiViewMixin
 from views.mixins import KoViewMixin
 from views.mixins import OrthogroupViewMixin
 from views.mixins import PfamViewMixin
@@ -166,4 +167,8 @@ class VennAmrView(VennBaseView, AmrViewMixin):
 
 
 class VennVfView(VennBaseView, VfViewMixin):
+    pass
+
+
+class VennGiView(VennBaseView, GiViewMixin):
     pass

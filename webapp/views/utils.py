@@ -18,7 +18,7 @@ title2page = {
     "COG Ortholog": ["fam_cog"],
     "Comparisons: Antimicrobial Resistance": ["amr_comparison"],
     "Comparisons: Clusters of Orthologous groups (COGs)": ["cog_comparison"],
-    "Comparisons: Genomic Islands": ["gi_comparison"],
+    "Comparisons: Genomic Islands": ["gic_comparison"],
     "Comparisons: Kegg Orthologs (KO)": ["ko_comparison"],
     "Comparisons: PFAM domains": ["pfam_comparison"],
     "Comparisons: orthologous groups": ["orthogroup_comparison"],
@@ -228,15 +228,17 @@ def format_genome(taxid_and_description):
     return f'<a href="/extract_contigs/{taxid}">{description}</a>'
 
 
-def format_genomic_island(
-    gis_id, bioentry_accession=None, start=None, end=None, to_url=False
-):
-    if bioentry_accession is not None:
-        description = f"GI{gis_id} {bioentry_accession}: {start} - {end}"
-    else:
-        description = f"GI{gis_id}"
+def format_genomic_island(gis_id, to_url=True):
+    description = f"GI{gis_id}"
     if to_url:
         return f'<a href="/genomic_island/{gis_id}">{description}</a>'
+    return description
+
+
+def format_genomic_island_cluster(gic_id, to_url=False):
+    description = f"GIC{gic_id}"
+    if to_url:
+        return f'<a href="/fam_gic/GIC{gic_id}">{description}</a>'
     return description
 
 

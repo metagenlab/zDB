@@ -6,6 +6,7 @@ from django.views import View
 from views.analysis_view_metadata import TabularComparisonMetadata
 from views.mixins import AmrViewMixin
 from views.mixins import CogViewMixin
+from views.mixins import GiViewMixin
 from views.mixins import KoViewMixin
 from views.mixins import OrthogroupViewMixin
 from views.mixins import PfamViewMixin
@@ -425,3 +426,22 @@ class VfComparisonView(TabularComparisonViewBase, VfViewMixin):
     @property
     def hist_colour_index_shift(self):
         return len(self.targets)
+
+
+class GiComparisonView(TabularComparisonViewBase, GiViewMixin):
+    table_help = """
+    The ouput table contains the number of times a given GI cluster appears
+    in the selected genomes, color coded according to that number.<br>
+    <br> Counts can be reordrered by clicking on column headers.<br>
+    """
+
+    base_info_accessors = ["", "cluster_id"]
+
+    def get_table_rows(self):
+        hits = self.get_hit_counts(self.targets)
+        hits["cluster_id"] = hits.index
+        hits = self.transform_data(hits)
+        return [
+            (i, *row[self.base_info_accessors[1:] + self.targets])
+            for i, row in hits.iterrows()
+        ]
