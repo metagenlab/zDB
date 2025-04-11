@@ -1,50 +1,48 @@
 from django.shortcuts import render
 from django.views import View
-from views.mixins import BaseViewMixin
+from views.mixins import GiViewMixin
 from views.utils import format_genome
 from views.utils import format_genomic_island
 from views.utils import genomic_region_df_to_js
 from views.utils import locusx_genomic_region
 
 
-class GenomicIsland(BaseViewMixin, View):
+class GenomicIsland(GiViewMixin, View):
     template = "chlamdb/genomic_island.html"
     view_name = "genomic_island"
 
     def get(self, request, entry_id, *args, **kwargs):
-        self.gis_id, self.bioentry_id, self.start_pos, self.end_pos = (
-            self.db.gi.get_hit_descriptions([entry_id], as_dataframe=False)[0]
-        )
+        self.data = self.get_gi_descriptions([entry_id], transformed=False)
+        bioentry = int(self.data.iloc[0]["bioentry.bioentry_id"])
+        cluster_id = int(self.data.iloc[0]["cluster_id"])
+
+        cluster_descr = self.get_hit_descriptions([cluster_id]).iloc[0]
+
+        self.data = self.transform_data(self.data).iloc[0]
         all_infos, wd_start, wd_end, contig_size, contig_topology = (
             locusx_genomic_region(
                 self.db,
-                bioentry=self.bioentry_id,
-                window_start=self.start_pos,
-                window_stop=self.end_pos,
+                bioentry=bioentry,
+                window_start=self.data.start_pos,
+                window_stop=self.data.end_pos,
             )
         )
         genomic_region = genomic_region_df_to_js(
             all_infos, wd_start, wd_end, contig_size, contig_topology
         )
+
         window_size = wd_end - wd_start
         context = self.get_context(
-            entry_id=self.gis_id,
-            start_pos=self.start_pos,
-            end_pos=self.end_pos,
-            description=self.description,
+            organism=self.data.taxon_id,
+            gis_id=self.data.gis_id,
+            cluster_id=self.data.cluster_id,
+            cluster_average_size=cluster_descr.length,
+            bioentry=bioentry,
+            start_pos=self.data.start_pos,
+            end_pos=self.data.end_pos,
+            island_size=self.data.end_pos - self.data.start_pos,
+            description=self.data.gis_id,
             genomic_region=genomic_region,
             window_size=window_size,
         )
         return render(request, self.template, context)
-
-    @property
-    def description(self):
-        taxon_id, accession, description = self.db.server.adaptor.execute_and_fetchall(
-            "SELECT taxon_id, accession, description from bioentry WHERE bioentry_id=?",
-            [self.bioentry_id],
-        )[0]
-        return (
-            f"Genomic island: "
-            f"{format_genome((taxon_id, description))} "
-            f"({format_genomic_island(self.gis_id, accession, self.start_pos, self.end_pos)})"
-        )
