@@ -30,14 +30,13 @@ class GenomicIsland(GiViewMixin, View):
         genomic_region = genomic_region_df_to_js(
             all_infos, wd_start, wd_end, contig_size, contig_topology
         )
-
         window_size = wd_end - wd_start
         context = self.get_context(
             organism=self.data.taxon_id,
             gis_id=self.data.gis_id,
             cluster_id=self.data.cluster_id,
             cluster_average_size=cluster_descr.length,
-            bioentry=bioentry,
+            bioentry=self.data.bioentry,
             start_pos=self.data.start_pos,
             end_pos=self.data.end_pos,
             island_size=self.data.end_pos - self.data.start_pos,
