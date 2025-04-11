@@ -29,7 +29,7 @@ urlpatterns = [
         r"^venn_orthogroup/$", venn.VennOrthogroupView.as_view(), name="venn_orthogroup"
     ),  # noqa
     re_path(r"^venn_ko/$", venn.VennKoView.as_view(), name="venn_ko"),
-    re_path(r"^venn_gi/$", venn.VennGiView.as_view(), name="venn_gi"),
+    re_path(r"^venn_gic/$", venn.VennGiView.as_view(), name="venn_gic"),
     re_path(r"^venn_cog/$", venn.VennCogView.as_view(), name="venn_cog"),
     re_path(r"^venn_amr/$", venn.VennAmrView.as_view(), name="venn_amr"),
     re_path(r"^search_suggest/.*$", views.search_suggest, name="search_suggest"),  # noqa
@@ -147,9 +147,9 @@ urlpatterns = [
         name=groups.GroupsOverview.view_name,
     ),  # noqa
     re_path(
-        r"^gi_comparison",
+        r"^gic_comparison",
         tabular_comparison.GiComparisonView.as_view(),
-        name="gi_comparison",
+        name="gic_comparison",
     ),  # noqa
     re_path(
         r"^get_cog/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\%]+)$",
@@ -189,7 +189,7 @@ urlpatterns = [
         r"^extract_ko/$", hits_extraction.ExtractKoView.as_view(), name="extract_ko"
     ),  # noqa
     re_path(
-        r"^extract_gi/$", hits_extraction.ExtractGiView.as_view(), name="extract_gi"
+        r"^extract_gic/$", hits_extraction.ExtractGiView.as_view(), name="extract_gic"
     ),  # noqa
     re_path(
         r"^extract_contigs/([0-9]+)",
@@ -214,7 +214,9 @@ urlpatterns = [
         r"^entry_list_ko$", entry_lists.KoEntryListView.as_view(), name="entry_list_ko"
     ),  # noqa
     re_path(
-        r"^entry_list_gi$", entry_lists.GiEntryListView.as_view(), name="entry_list_gi"
+        r"^entry_list_gic$",
+        entry_lists.GiEntryListView.as_view(),
+        name="entry_list_gic",
     ),  # noqa
     re_path(
         r"^entry_list_cog$",

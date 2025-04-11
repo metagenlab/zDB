@@ -94,6 +94,11 @@ class GiMetadata(BaseObjectMetadata):
     object_type = "gic"
     object_name = "Genomic island cluster"
 
+    @property
+    @staticmethod
+    def is_enabled(self):
+        return optional2status.get("gi", False)
+
     @staticmethod
     def format_entry(entry, to_url=False):
         return format_genomic_island_cluster(entry, to_url=to_url)

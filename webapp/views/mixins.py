@@ -500,7 +500,7 @@ class ComparisonViewMixin:
         "orthogroup": OrthogroupViewMixin,
         "amr": AmrViewMixin,
         "vf": VfViewMixin,
-        "gi": GiViewMixin,
+        "gic": GiViewMixin,
     }
 
     mixin = None
