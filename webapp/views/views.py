@@ -1272,13 +1272,13 @@ def optimal_region_order(regions):
     n_regions = len(regions)
     similarities = np.zeros((n_regions, n_regions))
     #  Make sure the genes are sorted, as we use the og order for the score:
-    for seqid, region, start, end, _, _ in regions:
+    for region, start, end, _, _ in regions:
         region.sort_values("start_pos", inplace=True)
 
-    for i, (seqid1, region1, start1, end1, _, _) in enumerate(regions):
+    for i, (region1, start1, end1, _, _) in enumerate(regions):
         ogs1 = region1["orthogroup"].unique()
         neighboring_ogs1 = {(ogs1[i], ogs1[i + 1]) for i in range(len(ogs1) - 1)}
-        for j, (seqid2, region2, start2, end2, _, _) in enumerate(regions):
+        for j, (region2, start2, end2, _, _) in enumerate(regions):
             if j <= i:
                 continue
             ogs2 = region2["orthogroup"].unique()
@@ -1310,12 +1310,10 @@ def optimal_region_order(regions):
     return best_path
 
 
-def prepare_genomic_regions(db, filtered_regions, ref_strand):
-    all_regions = []
-    connections = []
-    prev_infos = None
-    all_identities = []
-    # Let's add the ogs to the regions info
+def flip_regions(filtered_regions, ref_strand):
+    """Flip the strands of the regions for which the locus matching
+    the reference locus is on the other strand.
+    """
     for genomic_region in filtered_regions:
         seqid, region, start, end, _, _ = genomic_region
         if region["strand"].loc[seqid] * ref_strand == -1:
@@ -1325,15 +1323,25 @@ def prepare_genomic_regions(db, filtered_regions, ref_strand):
             len_vector = region["end_pos"] - region["start_pos"]
             region["end_pos"] = region["start_pos"] - 2 * dist_vector_start
             region["start_pos"] = region["end_pos"] - len_vector
+
+
+def prepare_genomic_regions(db, filtered_regions):
+    all_regions = []
+    connections = []
+    prev_infos = None
+    all_identities = []
+    # Let's add the ogs to the regions info
+    for genomic_region in filtered_regions:
+        region, start, end, _, _ = genomic_region
         ogs = db.get_og_count(region.index.tolist(), search_on="seqid")
         # need to reset index to keep seqid in the next merge
-        genomic_region[1] = region.join(ogs).reset_index()
+        genomic_region[0] = region.join(ogs).reset_index()
 
     # determine the optimal prepresentation order and sort regions accordingly.
     best_path = optimal_region_order(filtered_regions)
     filtered_regions = [filtered_regions[i] for i in best_path]
 
-    for seqid, region, start, end, contig_size, contig_topology in filtered_regions:
+    for region, start, end, contig_size, contig_topology in filtered_regions:
         if prev_infos is not None:
             # BM: horrible code (I wrote it, I should know).
             # would be nice to refactor it in a more efficient and clean way.
@@ -1462,8 +1470,12 @@ def plot_region(request):
     # XXX : coalesce_regions does not do what it is intended to do, to fix
     filtered_regions = genomic_regions  # coalesce_regions(genomic_regions, seqids)
 
+    flip_regions(filtered_regions, ref_strand)
+    # remove the seqid from the genomic region as it was only needed to flip the strands
+    filtered_regions = [region[1:] for region in filtered_regions]
+
     all_regions, connections, all_identities = prepare_genomic_regions(
-        db, filtered_regions, ref_strand
+        db, filtered_regions
     )
 
     ctx = {
