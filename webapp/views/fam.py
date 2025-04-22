@@ -47,7 +47,7 @@ class FamBaseView(View):
     ]
 
     table_accessors = table_headers
-
+    tabular_result_tab_header = "Protein list"
     hit_count_indexing = "seqid"
 
     external_link_tag = (
@@ -55,18 +55,9 @@ class FamBaseView(View):
     )
 
     @property
-    def help_text(self):
+    def profile_tab_help_text(self):
         return (
-            f"Three outputs have been generated:"
-            f"<br> <b>General</b>:  this result contains the description and frequency of the selected "
-            f"{self.object_name} {self.fam}, of which KO pathways and KO modules it is part. "
-            f"Additionally, its occurence in the database is reported."
-            f"<br> <b>Proteins list</b>: list of occurences of the {self.object_name}"
-            f"within the database. {self.table_size} occurences are identified."
-            f"The table reports the orthogroup, the organism in which each occurrence has been found, "
-            f"and the locus tag enriched by start and stop position, strand, gene name and product."
-            f"<br>Clicking on the Ortohgroup name or locus you will be redirected to further info."
-            f"<br><b> Profiles</b>: Phylogenetic tree annotated with"
+            f"<b> Profiles</b>: Phylogenetic tree annotated with"
             f"<br>- the presence of the {self.object_name_singular_or_plural} of interest within all "
             f"the genomes of the database (first column)"
             f"<br>- the size of the orthogroup(s) in which the reported {self.object_name} has been "
@@ -79,6 +70,17 @@ class FamBaseView(View):
             f" {self.object_name}."
             f"<br><br>Variations within orthogroups may be due to the clustering of multi domain proteins"
             f" or because of erroneous homolog clustering or {self.object_name} prediction."
+        )
+
+    @property
+    def help_text(self):
+        return (
+            f"Three outputs have been generated:"
+            f"<br> <b>General</b>:  this tab contains the description, occurence in the database "
+            f"and other information related to the selected {self.object_name} {self.fam}"
+            f"<br> <b>{self.tabular_result_tab_header}</b>: lists the {self.table_size} occurences of "
+            f"the {self.object_name} within the database. The table reports information on each occurence."
+            f"<br>{self.profile_tab_help_text}"
         )
 
     @property
@@ -237,7 +239,7 @@ class FamBaseView(View):
             ResultTab("general", "General", "chlamdb/fam_general_tab.html"),
             TabularResultTab(
                 "distribution",
-                "Protein list",
+                self.tabular_result_tab_header,
                 table_headers=table_headers,
                 table_data=table_data,
                 table_data_accessors=table_accessors,
@@ -334,6 +336,15 @@ class FamPfamView(FamBaseView, PfamViewMixin):
 class FamGiClusterView(FamBaseView, GiViewMixin):
     accessors = ["cluster_id", "length"]
     hit_count_indexing = "gi"
+    tabular_result_tab_header = "GIs list"
+
+    @property
+    def profile_tab_help_text(self):
+        return (
+            f"<b> Profiles</b>: Phylogenetic tree annotated with"
+            f"<br>- the presence of the {self.object_name_singular_or_plural} of interest within all "
+            f"the genomes of the database"
+        )
 
     def get(self, request, entry_id, *args, **kwargs):
         entry_id = int(entry_id[3:])
