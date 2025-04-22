@@ -36,7 +36,6 @@ class FamBaseView(View):
     template = "chlamdb/fam.html"
 
     table_headers = [
-        "#",
         "Orthogroup",
         "Locus",
         "Start",
@@ -137,7 +136,7 @@ class FamBaseView(View):
         hsh_organisms = self.db.get_organism(seqids)
         all_locus_data = []
 
-        for index, seqid in enumerate(seqids):
+        for seqid in seqids:
             # NOTE: all seqids are attributed an orthogroup, the case where
             # seqid is not in orthogroups should therefore not arise.
             og = self.orthogroups.loc[seqid].orthogroup
@@ -148,7 +147,6 @@ class FamBaseView(View):
             if gene is None:
                 gene = ""
             data = (
-                index,
                 fmt_orthogroup,
                 locus,
                 start,
@@ -243,6 +241,7 @@ class FamBaseView(View):
                 table_headers=table_headers,
                 table_data=table_data,
                 table_data_accessors=table_accessors,
+                selectable=True,
             ),
             ResultTab(
                 "profile",
