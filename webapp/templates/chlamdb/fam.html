@@ -46,122 +46,8 @@
             </p>
           </div>
 
-          <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-              <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
-              <li><a href="#tab2" data-toggle="tab">Protein list</a></li>
-              <li><a href="#tab3" data-toggle="tab">Profile</a></li>
-          </ul>
+          {% include "chlamdb/result_tabs.html" %}
 
-          <div id="my-tab-content" class="tab-content" style="margin-top: 1em;">
-            <div class="tab-pane active" id="tab1">
-              <div class="col-md-12 col-lg-10" style="padding-right:30px;">
-                <div class="row">
-                  <div class="panel panel-default">
-                    <div class="panel-heading">
-                      <h3 class="panel-title">Description</h3>
-                    </div>
-                    <table class="table table-striped" style="width: 100%">
-
-                      {% for key, value in info.items %}
-                        <tr>
-                          <th>{{key}}</th>
-                          <td>{{value|safe}}</td>
-                        </tr>
-                      {% endfor %}
-
-                    </table>
-                  </div>
-                </div>
-
-                {% if object_type == 'ko'%}
-                  <div class="row">
-                    <div class="panel panel-default">
-                      <div class="panel-heading">
-                        <h3 class="panel-title">KO part of <strong>{{pathway_data|length }} pathways</strong></h3>
-                      </div>
-
-                      {% if pathway_data|length > 0 %}
-                        <table class="table table-striped" style="width: 100%">
-                          <tbody>
-
-                            {% for path in pathway_data %}
-                              <tr>
-                                <td>{{path|safe}}</td>
-                              </tr>
-                            {% endfor %}
-
-                          </tbody>
-                        </table>
-                      {% endif %}
-
-                      <div class="panel-heading">
-                        <h3 class="panel-title">KO part of <strong>{{module_data|length }} modules </strong></h3>
-                      </div>
-
-                      {% if module_data|length > 0 %}
-                        <table class="table table-striped" style="width: 100%">
-                          <tbody>
-
-                            {% for path in module_data %}
-                              <tr>
-                                <td>{{path.0|safe}}</td>
-                                <td>{{path.1}}</td>
-                                <td>{{path.2}}</td>
-                              </tr>
-                            {% endfor %}
-
-                          </tbody>
-                        </table>
-                      {% endif %}
-
-                    </div>
-                  </div>
-                {% endif %}
-
-                <div class="row">
-                  <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Occurence in the database</h3>
-                    </div>
-
-                    <table class="table table-striped" style="width: 100%">
-                      <tr>
-                        <td>{{ fam }} is associated with <strong>{{ table_size }} different proteins</strong> (see tab "<a href="#tab2" data-toggle="tab">Protein list</a>" and "<a href="#tab3" data-toggle="tab">Profile</a>")</td>
-                      </tr>
-                      <tr>
-                        <td>
-                          The {{ table_size }} proteins are classified into <strong>{{ group_count|length }} different orthogroup(s)</strong>
-                          <div style="padding-left:20px">
-                            <ul style="list-style-type:disc; width:100%;">
-                              {% for group in group_count %}
-                                <li style="float:left;margin-right:10px;width:120px;">{{group|safe}}</li>
-                              {% endfor %}
-                            </ul>
-                          </div>
-                        </td>
-                      </tr>
-                    </table>
-
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            <div class="tab-pane" id="tab2">
-
-              {% include "chlamdb/result_table.html" with results=table %}
-
-            </div>
-
-            <div class="tab-pane" id="tab3">
-              <div class="row">
-                <a download="profile_{{fam}}.svg" class="btn" href="{% static asset_path %}"> <i class="fa fa-download"></i> Download SVG
-                </a>
-                <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
-              </div>
-            </div>
-          </div> <!--tabs-->
         {% endif %}
       </div>
     </div>
@@ -192,23 +78,6 @@ $(document).ready(function() {
         $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
     } 
 
-    $('#fam_table').DataTable( {
-            dom: 'Bfrtip',
-            "pageLength": 15,
-            "paging":   true,
-            "ordering": true,
-            "info":     false,
-            buttons: [
-            {
-                extend: 'excel',
-                title: '{{ fam }}'
-            },
-            {
-                extend: 'csv',
-                title: '{{ fam }}'
-            }
-            ],
-        } );
 } );
 
 </script>

@@ -12,6 +12,8 @@ from views.mixins import KoViewMixin
 from views.mixins import PfamViewMixin
 from views.mixins import VfViewMixin
 from views.utils import DataTableConfig
+from views.utils import ResultTab
+from views.utils import TabularResultTab
 from views.utils import format_ko_module
 from views.utils import format_ko_path
 from views.utils import format_locus
@@ -204,8 +206,8 @@ class FamBaseView(View):
         )
 
         self.add_additional_columns(e_tree)
-        asset_path = f"/temp/fam_tree_{entry_id}.svg"
-        path = settings.ASSET_ROOT + asset_path
+        self.asset_path = f"/temp/fam_tree_{entry_id}.svg"
+        path = settings.ASSET_ROOT + self.asset_path
         e_tree.render(path, dpi=500)
 
         info = {}
@@ -220,24 +222,35 @@ class FamBaseView(View):
 
         table_data, table_headers, table_accessors = self.get_table(seqids)
         self.table_size = len(table_data)
-        table = {
-            "table_data": table_data,
-            "table_headers": table_headers,
-            "data_table_config": DataTableConfig(),
-            "table_data_accessors": table_accessors,
-        }
 
         context = self.get_context(
             fam=self.fam,
             info=info,
-            table=table,
             table_size=self.table_size,
             group_count=self.get_associated_entries(table_data),
-            asset_path=asset_path,
             object_name_singular_or_plural=self.object_name_singular_or_plural,
             help_text=self.help_text,
+            result_tabs=self.result_tabs(table_data, table_headers, table_accessors),
         )
         return context
+
+    def result_tabs(self, table_data, table_headers, table_accessors):
+        return [
+            ResultTab("general", "General", "chlamdb/fam_general_tab.html"),
+            TabularResultTab(
+                "distribution",
+                "Protein list",
+                table_headers=table_headers,
+                table_data=table_data,
+                table_data_accessors=table_accessors,
+            ),
+            ResultTab(
+                "profile",
+                "Profile",
+                "chlamdb/result_asset.html",
+                asset_path=self.asset_path,
+            ),
+        ]
 
 
 class FamAmrView(FamBaseView, AmrViewMixin):
