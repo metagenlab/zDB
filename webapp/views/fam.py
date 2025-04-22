@@ -49,6 +49,10 @@ class FamBaseView(View):
 
     hit_count_indexing = "seqid"
 
+    external_link_tag = (
+        '<a href="{}" target="_blank"> {} <i class="fas fa-external-link-alt"></i></a>'
+    )
+
     @property
     def help_text(self):
         return (
@@ -161,6 +165,9 @@ class FamBaseView(View):
     def get_associated_entries(self, table_data):
         return table_data["Orthogroup"].unique()
 
+    def maybe_add_external_link(self, info):
+        pass
+
     def prepare_context(self, request, entry_id, *args, **kwargs):
         # Get hits for that entry:
         hit_counts = self.get_hit_counts(
@@ -201,11 +208,15 @@ class FamBaseView(View):
         path = settings.ASSET_ROOT + asset_path
         e_tree.render(path, dpi=500)
 
-        info = {
-            self.colname_to_header(key): infos[key]
-            for key in self.accessors
-            if infos[key]
-        }
+        info = {}
+        self.maybe_add_external_link(info)
+        info.update(
+            {
+                self.colname_to_header(key): infos[key]
+                for key in self.accessors
+                if infos[key]
+            }
+        )
 
         table_data, table_headers, table_accessors = self.get_table(seqids)
         self.table_size = len(table_data)
@@ -232,6 +243,12 @@ class FamBaseView(View):
 class FamAmrView(FamBaseView, AmrViewMixin):
     accessors = ["seq_name", "scope", "type", "class", "subclass", "hmm_id"]
 
+    def maybe_add_external_link(self, info):
+        info["Gene"] = self.external_link_tag.format(
+            f"https://www.ncbi.nlm.nih.gov/pathogens/refgene/#virulence_genotypes:{self.fam}",
+            self.fam,
+        )
+
 
 class FamVfView(FamBaseView, VfViewMixin):
     accessors = [
@@ -256,6 +273,12 @@ class FamCogView(FamBaseView, CogViewMixin):
 
 class FamKoView(FamBaseView, KoViewMixin):
     accessors = ["ko", "description"]
+
+    def maybe_add_external_link(self, info):
+        info["External link"] = self.external_link_tag.format(
+            f"http://www.genome.jp/dbget-bin/www_bget?{self.fam}",
+            self.fam,
+        )
 
     def get(self, request, entry_id, *args, **kwargs):
         entry_id = int(entry_id[len("K") :])
@@ -284,6 +307,12 @@ class FamKoView(FamBaseView, KoViewMixin):
 
 class FamPfamView(FamBaseView, PfamViewMixin):
     accessors = ["def"]
+
+    def maybe_add_external_link(self, info):
+        info["External link"] = self.external_link_tag.format(
+            f"https://www.ebi.ac.uk/interpro/entry/pfam/{self.fam}",
+            self.fam,
+        )
 
     def get(self, request, entry_id, *args, **kwargs):
         entry_id = int(entry_id[len("PF") :])

@@ -61,25 +61,6 @@
                       <h3 class="panel-title">Description</h3>
                     </div>
                     <table class="table table-striped" style="width: 100%">
-                      {% if object_type == 'pfam' %}
-                        <tr>
-                          <th>External link</th>
-                          <td><a href="https://www.ebi.ac.uk/interpro/entry/pfam/{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
-                        </tr>
-
-                      {% elif object_type == 'ko' %}
-                        <tr>
-                          <th>External link</th>
-                          <td><a href="http://www.genome.jp/dbget-bin/www_bget?{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
-                        </tr>
-
-                      {% elif object_type == 'amr' %}
-                        <tr>
-                          <th>Gene</th>
-                          <td><a href="https://www.ncbi.nlm.nih.gov/pathogens/refgene/#gene_family:{{ fam }}" target="_blank">  {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
-                        </tr>
-
-                      {% endif %}
 
                       {% for key, value in info.items %}
                         <tr>
