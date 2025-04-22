@@ -67,22 +67,10 @@
                           <td><a href="https://www.ebi.ac.uk/interpro/entry/pfam/{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
                         </tr>
 
-                      {% elif object_type == 'interpro' %}
-                        <tr>
-                          <th>External link</th>
-                          <td><a href="http://www.ebi.ac.uk/interpro/entry/{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
-                        </tr>
-
                       {% elif object_type == 'ko' %}
                         <tr>
                           <th>External link</th>
                           <td><a href="http://www.genome.jp/dbget-bin/www_bget?{{ fam }}" target="_blank"> {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
-                        </tr>
-
-                      {% elif object_type == 'EC' %}
-                        <tr>
-                          <th>External link</th>
-                          <td><a href="{{ external_link }}" target="_blank">  {{ fam }} <i class="fas fa-external-link-alt"></i></a></td>
                         </tr>
 
                       {% elif object_type == 'amr' %}
