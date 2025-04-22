@@ -1522,13 +1522,13 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     ).set_index(["seqfeature_id"])
     # df of target genomes
     df_targets = db.get_proteins_info(
-            ids=target_taxons,
-            search_on="taxid",
-            as_df=True,
-            to_return=["locus_tag"],
-            inc_non_CDS=False,
-            inc_pseudo=False,
-        )
+        ids=target_taxons,
+        search_on="taxid",
+        as_df=True,
+        to_return=["locus_tag"],
+        inc_non_CDS=False,
+        inc_pseudo=False,
+    )
 
     # retrieve n_orthologs of list of seqids
     seq_og = db.get_og_count(df_feature_location.index.to_list(), search_on="seqid")
@@ -1550,7 +1550,6 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     df_identity = db.get_identity_closest_homolog(
         reference_taxon, target_taxons
     ).set_index(["target_taxid"])
-
 
     c = circosjs.CircosJs()
 
@@ -1576,8 +1575,12 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     ].fillna("-")
 
     df_feature_location["color"] = "grey"
-    df_feature_location.loc[df_feature_location["term_name"] == "tRNA", "color"] = "magenta"
-    df_feature_location.loc[df_feature_location["term_name"] == "rRNA", "color"] = "magenta"
+    df_feature_location.loc[df_feature_location["term_name"] == "tRNA", "color"] = (
+        "magenta"
+    )
+    df_feature_location.loc[df_feature_location["term_name"] == "rRNA", "color"] = (
+        "magenta"
+    )
 
     df_feature_location = df_feature_location.rename(columns={"locus_tag": "locus_ref"})
 
@@ -1607,9 +1610,13 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
             .sort_index()
         )
 
-        df_combined = df_combined.join(df_targets, on="seqfeature_id_2", how="left").reset_index()
-        df_combined["locus_tag"] = df_combined["locus_tag"].fillna(np.nan).replace([np.nan], [None])
-        
+        df_combined = df_combined.join(
+            df_targets, on="seqfeature_id_2", how="left"
+        ).reset_index()
+        df_combined["locus_tag"] = (
+            df_combined["locus_tag"].fillna(np.nan).replace([np.nan], [None])
+        )
+
         # comp is a custom scale with missing orthologs coloured in light blue
         if n == 0:
             sep = 0.03
