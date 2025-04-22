@@ -1310,8 +1310,7 @@ def optimal_region_order(regions):
     return best_path
 
 
-def prepare_genomic_regions(db, filtered_regions, organisms, ref_strand):
-    hsh_description = db.get_genomes_description().description.to_dict()
+def prepare_genomic_regions(db, filtered_regions, ref_strand):
     all_regions = []
     connections = []
     prev_infos = None
@@ -1369,14 +1368,12 @@ def prepare_genomic_regions(db, filtered_regions, organisms, ref_strand):
             )
             connections.append("{" + ",".join(related) + "}")
 
-        taxid = organisms.loc[seqid].taxid
-        genome_name = hsh_description[taxid]
-        contig_name = (
-            db.get_bioentry_qualifiers(int(region["bioentry_id"][0]))
-            .set_index("term")
-            .loc["accessions"]
-            .value
-        )
+        bioentry_qualifiers = db.get_bioentry_qualifiers(
+            int(region["bioentry_id"][0])
+        ).set_index("term")
+        contig_name = bioentry_qualifiers.loc["accessions"].value
+        genome_name = bioentry_qualifiers.loc["organism"].value
+
         region_name = f"{genome_name} - {contig_name} - {int(start)}:{int(end)}"
         js_val = genomic_region_df_to_js(
             region, start, end, contig_size, contig_topology, region_name
@@ -1466,7 +1463,7 @@ def plot_region(request):
     filtered_regions = genomic_regions  # coalesce_regions(genomic_regions, seqids)
 
     all_regions, connections, all_identities = prepare_genomic_regions(
-        db, filtered_regions, organisms, ref_strand
+        db, filtered_regions, ref_strand
     )
 
     ctx = {
