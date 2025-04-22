@@ -1310,90 +1310,12 @@ def optimal_region_order(regions):
     return best_path
 
 
-def plot_region(request):
-    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
-    page_title = page2title["plot_region"]
-    form_class = make_plot_form(db)
-
-    if request.method != "POST":
-        form = form_class()
-        return render(
-            request,
-            "chlamdb/plot_region.html",
-            my_locals({"form": form, "page_title": page_title}),
-        )
-
-    form = form_class(request.POST)
-    if not form.is_valid():
-        return render(
-            request,
-            "chlamdb/plot_region.html",
-            my_locals({"form": form, "page_title": page_title}),
-        )
-
-    seqid = form.get_seqid()
-    genomes = form.get_genomes()
-    all_homologs = form.get_all_homologs()
-    hsh_loc = db.get_gene_loc([seqid])
-    ids = db.get_og_identity(ref_seqid=seqid)
-    all_seqids = ids.index.unique().tolist()
-    all_seqids.append(seqid)
-    organisms = db.get_organism(all_seqids, as_df=True, as_taxid=True)
-    all_infos = organisms.join(ids, how="inner")
-    ref_strand, _, _ = hsh_loc[seqid]
+def prepare_genomic_regions(db, filtered_regions, organisms, ref_strand):
     hsh_description = db.get_genomes_description().description.to_dict()
-
-    if not all_homologs:
-        best_matches = all_infos.groupby(["taxid"]).idxmax()
-        ref_taxid = organisms.loc[seqid].taxid
-
-        # redundant: do not include the genome of the locus tag, even if listed
-        # by the user. The locus tag is its best match.
-        if ref_taxid in genomes:
-            genomes.remove(ref_taxid)
-        best_matches = best_matches.reindex(genomes).dropna()
-        if not best_matches.empty:
-            seqids = best_matches["identity"].astype(int).tolist()
-        else:
-            seqids = []
-        seqids.append(seqid)
-    else:
-        selection = all_infos[all_infos.taxid.isin(genomes)]
-        seqids = selection.index.astype(int).tolist()
-        seqids.append(seqid)
-
-    if len(seqids) > 20:
-        context = {
-            "form": form,
-            "error": True,
-            "errors": ["Too many regions to display"],
-            "page_title": page_title,
-        }
-        return render(request, "chlamdb/plot_region.html", my_locals(context))
-
-    region_size = form.get_region_size()
-
-    locus_tags = db.get_proteins_info(seqids, to_return=["locus_tag"], as_df=True)
-    to_highlight = locus_tags["locus_tag"].tolist()
     all_regions = []
     connections = []
     prev_infos = None
     all_identities = []
-
-    genomic_regions = []
-    for seqid in seqids:
-        region, start, end, contig_size, contig_topology = locusx_genomic_region(
-            db, int(seqid), region_size / 2
-        )
-        genomic_regions.append(
-            [seqid, region, start, end, contig_size, contig_topology]
-        )
-
-    # remove overlapping regions (e.g. if two matches are on the same
-    # region, avoid displaying this region twice).
-    # XXX : coalesce_regions does not do what it is intended to do, to fix
-    filtered_regions = genomic_regions  # coalesce_regions(genomic_regions, seqids)
-
     # Let's add the ogs to the regions info
     for genomic_region in filtered_regions:
         seqid, region, start, end, _, _ = genomic_region
@@ -1461,6 +1383,91 @@ def plot_region(request):
         )
         all_regions.append(js_val)
         prev_infos = region[["orthogroup", "locus_tag", "seqid"]]
+    return all_regions, connections, all_identities
+
+
+def plot_region(request):
+    db = DB.load_db(settings.BIODB_DB_PATH, settings.BIODB_CONF)
+    page_title = page2title["plot_region"]
+    form_class = make_plot_form(db)
+
+    if request.method != "POST":
+        form = form_class()
+        return render(
+            request,
+            "chlamdb/plot_region.html",
+            my_locals({"form": form, "page_title": page_title}),
+        )
+
+    form = form_class(request.POST)
+    if not form.is_valid():
+        return render(
+            request,
+            "chlamdb/plot_region.html",
+            my_locals({"form": form, "page_title": page_title}),
+        )
+
+    seqid = form.get_seqid()
+    genomes = form.get_genomes()
+    all_homologs = form.get_all_homologs()
+    hsh_loc = db.get_gene_loc([seqid])
+    ids = db.get_og_identity(ref_seqid=seqid)
+    all_seqids = ids.index.unique().tolist()
+    all_seqids.append(seqid)
+    organisms = db.get_organism(all_seqids, as_df=True, as_taxid=True)
+    all_infos = organisms.join(ids, how="inner")
+    ref_strand, _, _ = hsh_loc[seqid]
+
+    if not all_homologs:
+        best_matches = all_infos.groupby(["taxid"]).idxmax()
+        ref_taxid = organisms.loc[seqid].taxid
+
+        # redundant: do not include the genome of the locus tag, even if listed
+        # by the user. The locus tag is its best match.
+        if ref_taxid in genomes:
+            genomes.remove(ref_taxid)
+        best_matches = best_matches.reindex(genomes).dropna()
+        if not best_matches.empty:
+            seqids = best_matches["identity"].astype(int).tolist()
+        else:
+            seqids = []
+        seqids.append(seqid)
+    else:
+        selection = all_infos[all_infos.taxid.isin(genomes)]
+        seqids = selection.index.astype(int).tolist()
+        seqids.append(seqid)
+
+    if len(seqids) > 20:
+        context = {
+            "form": form,
+            "error": True,
+            "errors": ["Too many regions to display"],
+            "page_title": page_title,
+        }
+        return render(request, "chlamdb/plot_region.html", my_locals(context))
+
+    region_size = form.get_region_size()
+
+    locus_tags = db.get_proteins_info(seqids, to_return=["locus_tag"], as_df=True)
+    to_highlight = locus_tags["locus_tag"].tolist()
+
+    genomic_regions = []
+    for seqid in seqids:
+        region, start, end, contig_size, contig_topology = locusx_genomic_region(
+            db, int(seqid), region_size / 2
+        )
+        genomic_regions.append(
+            [seqid, region, start, end, contig_size, contig_topology]
+        )
+
+    # remove overlapping regions (e.g. if two matches are on the same
+    # region, avoid displaying this region twice).
+    # XXX : coalesce_regions does not do what it is intended to do, to fix
+    filtered_regions = genomic_regions  # coalesce_regions(genomic_regions, seqids)
+
+    all_regions, connections, all_identities = prepare_genomic_regions(
+        db, filtered_regions, organisms, ref_strand
+    )
 
     ctx = {
         "form": form,
