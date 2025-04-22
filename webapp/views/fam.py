@@ -50,6 +50,33 @@ class FamBaseView(View):
     hit_count_indexing = "seqid"
 
     @property
+    def help_text(self):
+        return (
+            f"Three outputs have been generated:"
+            f"<br> <b>General</b>:  this result contains the description and frequency of the selected "
+            f"{self.object_name} {self.fam}, of which KO pathways and KO modules it is part. "
+            f"Additionally, its occurence in the database is reported."
+            f"<br> <b>Proteins list</b>: list of occurences of the {self.object_name}"
+            f"within the database. {self.table_size} occurences are identified."
+            f"The table reports the orthogroup, the organism in which each occurrence has been found, "
+            f"and the locus tag enriched by start and stop position, strand, gene name and product."
+            f"<br>Clicking on the Ortohgroup name or locus you will be redirected to further info."
+            f"<br><b> Profiles</b>: Phylogenetic tree annotated with"
+            f"<br>- the presence of the {self.object_name_singular_or_plural} of interest within all "
+            f"the genomes of the database (first column)"
+            f"<br>- the size of the orthogroup(s) in which the reported {self.object_name} has been "
+            f"clustered."
+            f'<br>In red the <font size="2" color="red">{self.object_name} with positive hit(s)</font> '
+            f"in the corresponding genome."
+            f'<br>In green <font size="2" color="green">the discrepencies between orthogroup clustering '
+            f"and {self.object_name} prediction</font>."
+            f"Green homologs (same orthogroup) <strong>are not</strong> positive hit(s) for the considered"
+            f" {self.object_name}."
+            f"<br><br>Variations within orthogroups may be due to the clustering of multi domain proteins"
+            f" or because of erroneous homolog clustering or {self.object_name} prediction."
+        )
+
+    @property
     def view_name(self):
         return f"fam_{self.object_type}"
 
@@ -163,7 +190,7 @@ class FamBaseView(View):
         infos = infos.iloc[0]
 
         hit_counts = hit_counts.groupby(["taxid"]).count()
-        fam = self.format_entry(entry_id)
+        self.fam = self.format_entry(entry_id)
         e_tree = self.get_profile_tree(
             getattr(hit_counts, self.object_column),
             self.format_entry(entry_id),
@@ -181,7 +208,7 @@ class FamBaseView(View):
         }
 
         table_data, table_headers, table_accessors = self.get_table(seqids)
-
+        self.table_size = len(table_data)
         table = {
             "table_data": table_data,
             "table_headers": table_headers,
@@ -190,13 +217,14 @@ class FamBaseView(View):
         }
 
         context = self.get_context(
-            fam=fam,
+            fam=self.fam,
             info=info,
             table=table,
-            table_size=len(table_data),
+            table_size=self.table_size,
             group_count=self.get_associated_entries(table_data),
             asset_path=asset_path,
             object_name_singular_or_plural=self.object_name_singular_or_plural,
+            help_text=self.help_text,
         )
         return context
 
