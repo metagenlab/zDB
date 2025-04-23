@@ -89,4 +89,8 @@
 
     </div>
   </div>
+
+  {% if results.show_genomic_region %}
+    {% include "chlamdb/region.html" %} 
+  {% endif %}
 </div>

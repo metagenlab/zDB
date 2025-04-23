@@ -18,6 +18,8 @@ from views.utils import format_ko_module
 from views.utils import format_ko_path
 from views.utils import format_locus
 from views.utils import format_orthogroup
+from views.utils import locusx_genomic_region
+from views.views import prepare_genomic_regions
 
 
 class FamCogColorFunc:
@@ -358,6 +360,7 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
 
     def get_table(self, gis_ids):
         table_data = self.get_gi_descriptions(gis_ids)
+        self.gics = table_data[["bioentry.bioentry_id", "start_pos", "end_pos"]]
         table_data.drop(columns=["bioentry.bioentry_id", "cluster_id"], inplace=True)
         return (
             table_data,
@@ -367,3 +370,34 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
 
     def get_associated_entries(self, table_data):
         return table_data["gis_id"].unique()
+
+    def result_tabs(self, table_data, table_headers, table_accessors):
+        tabs = super(FamGiClusterView, self).result_tabs(
+            table_data, table_headers, table_accessors
+        )
+
+        genomic_regions = []
+        for gis_id, row in self.gics.iterrows():
+            genomic_regions.append(
+                list(
+                    locusx_genomic_region(
+                        self.db,
+                        bioentry=int(row["bioentry.bioentry_id"]),
+                        window_start=int(row["start_pos"]),
+                        window_stop=int(row["end_pos"]),
+                    )
+                )
+            )
+        all_regions, connections, all_identities = prepare_genomic_regions(
+            self.db, genomic_regions
+        )
+        tabs[0].show_genomic_region = True
+        tabs[0].genomic_regions = "[" + "\n,".join(all_regions) + "]"
+        tabs[0].connections = "[" + ",".join(connections) + "]"
+        tabs[0].to_highlight = []
+        if len(all_identities) > 0:
+            tabs[0].max_ident = max(all_identities)
+            tabs[0].min_ident = min(all_identities)
+        tabs[0].description = "This plot shows the genomic regions of the selected GIs."
+
+        return tabs
