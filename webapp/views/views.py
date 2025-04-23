@@ -1274,14 +1274,13 @@ def optimal_region_order(regions):
     #  Make sure the genes are sorted, as we use the og order for the score:
     for region, start, end, _, _ in regions:
         region.sort_values("start_pos", inplace=True)
-
     for i, (region1, start1, end1, _, _) in enumerate(regions):
-        ogs1 = region1["orthogroup"].unique()
+        ogs1 = region1["orthogroup"]
         neighboring_ogs1 = {(ogs1[i], ogs1[i + 1]) for i in range(len(ogs1) - 1)}
         for j, (region2, start2, end2, _, _) in enumerate(regions):
             if j <= i:
                 continue
-            ogs2 = region2["orthogroup"].unique()
+            ogs2 = region2["orthogroup"]
             neighboring_ogs2 = {(ogs2[i], ogs2[i + 1]) for i in range(len(ogs2) - 1)}
             score = len(set(ogs1).intersection(ogs2)) + len(
                 neighboring_ogs1.intersection(neighboring_ogs2)
