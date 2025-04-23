@@ -1351,10 +1351,13 @@ def prepare_genomic_regions(db, filtered_regions):
             common_og = region.dropna(subset=["orthogroup"]).merge(
                 prev_infos, on="orthogroup"
             )[["locus_tag_x", "locus_tag_y", "seqid_x", "seqid_y", "orthogroup"]]
+            if len(common_og) == 0:
+                continue
             related = []
             ogs = common_og.orthogroup.astype(int).tolist()
             p1 = common_og.seqid_x.tolist()
             p2 = common_og.seqid_y.tolist()
+
             identities = db.get_og_identity(og=ogs, pairs=zip(p1, p2))
             identities = identities.set_index(["seqid_x", "seqid_y"]).identity.to_dict()
             hsh_agg = {}
@@ -1477,18 +1480,22 @@ def plot_region(request):
     all_regions, connections, all_identities = prepare_genomic_regions(
         db, filtered_regions
     )
-
-    ctx = {
-        "form": form,
+    results = {
         "genomic_regions": "[" + "\n,".join(all_regions) + "]",
         "to_highlight": to_highlight,
-        "envoi": True,
         "connections": "[" + ",".join(connections) + "]",
-        "page_title": page_title,
+        "description": "The generated plot shows a genomic feature in the neighborhood of "
+        "a target locus along the selected genomes.",
     }
     if len(all_identities) > 0:
-        ctx["max_ident"] = max(all_identities)
-        ctx["min_ident"] = min(all_identities)
+        results["max_ident"] = max(all_identities)
+        results["min_ident"] = min(all_identities)
+    ctx = {
+        "form": form,
+        "envoi": True,
+        "page_title": page_title,
+        "results": results,
+    }
     return render(request, "chlamdb/plot_region.html", my_locals(ctx))
 
 
