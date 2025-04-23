@@ -389,7 +389,7 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
                 )
             )
         all_regions, connections, all_identities = prepare_genomic_regions(
-            self.db, genomic_regions
+            self.db, genomic_regions, allow_flips=True
         )
         tabs[0].show_genomic_region = True
         tabs[0].genomic_regions = "[" + "\n,".join(all_regions) + "]"

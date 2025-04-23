@@ -1264,7 +1264,7 @@ def coalesce_regions(genomic_regions, seqids):
     return filtered_results
 
 
-def optimal_region_order(regions):
+def optimal_region_order(regions, allow_flips=False):
     # We try to figure out an optimal order to display the sequences in.
     # For that we calculate the number of common orthogroups and whether
     # they appear in the same order. We then use that as score and calculate
@@ -1282,9 +1282,15 @@ def optimal_region_order(regions):
                 continue
             ogs2 = region2["orthogroup"]
             neighboring_ogs2 = {(ogs2[i], ogs2[i + 1]) for i in range(len(ogs2) - 1)}
-            score = len(set(ogs1).intersection(ogs2)) + len(
-                neighboring_ogs1.intersection(neighboring_ogs2)
-            )
+            ns = len(neighboring_ogs1.intersection(neighboring_ogs2))
+            if allow_flips:
+                neighboring_ogs2 = {
+                    (ogs2[i + 1], ogs2[i]) for i in range(len(ogs2) - 1)
+                }
+                ns2 = len(neighboring_ogs1.intersection(neighboring_ogs2))
+                if ns2 > ns:
+                    ns = ns2
+            score = len(set(ogs1).intersection(ogs2)) + ns
             similarities[i, j] = similarities[j, i] = score
 
     region_indices = np.arange(n_regions)
@@ -1324,7 +1330,7 @@ def flip_regions(filtered_regions, ref_strand):
             region["start_pos"] = region["end_pos"] - len_vector
 
 
-def prepare_genomic_regions(db, filtered_regions):
+def prepare_genomic_regions(db, filtered_regions, allow_flips=False):
     all_regions = []
     connections = []
     prev_infos = None
@@ -1337,9 +1343,8 @@ def prepare_genomic_regions(db, filtered_regions):
         genomic_region[0] = region.join(ogs).reset_index()
 
     # determine the optimal prepresentation order and sort regions accordingly.
-    best_path = optimal_region_order(filtered_regions)
+    best_path = optimal_region_order(filtered_regions, allow_flips=allow_flips)
     filtered_regions = [filtered_regions[i] for i in best_path]
-
     for region, start, end, contig_size, contig_topology in filtered_regions:
         if prev_infos is not None:
             # BM: horrible code (I wrote it, I should know).
