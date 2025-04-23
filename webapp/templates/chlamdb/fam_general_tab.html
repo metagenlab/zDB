@@ -71,12 +71,20 @@
 
       <table class="table table-striped" style="width: 100%">
         <tr>
-          <td>{{ fam }} is associated with <strong>{{ table_size }} different proteins</strong> (see tab "<a href="#tab2" data-toggle="tab">Protein list</a>" and "<a href="#tab3" data-toggle="tab">Profile</a>")</td>
+          <td>{{ fam }} is associated with <strong>{{ table_size }} different 
+            {% if object_type == 'gic' %}
+              genomic islands
+            {% else %}
+              proteins
+            {% endif %}
+          </strong> </td>
         </tr>
         <tr>
           <td>
-            The {{ table_size }} proteins are classified into <strong>{{ group_count|length }} different orthogroup(s)</strong>
-            <div style="padding-left:20px">
+            {% if object_type != 'gic' %}
+              The {{ table_size }} proteins are classified into <strong>{{ group_count|length }} different orthogroup(s)</strong>
+            {% endif %}
+              <div style="padding-left:20px">
               <ul style="list-style-type:disc; width:100%;">
                 {% for group in group_count %}
                   <li style="float:left;margin-right:10px;width:120px;">{{group|safe}}</li>
