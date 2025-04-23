@@ -1356,32 +1356,35 @@ def prepare_genomic_regions(db, filtered_regions, allow_flips=False):
                 prev_infos, on="orthogroup"
             )[["locus_tag_x", "locus_tag_y", "seqid_x", "seqid_y", "orthogroup"]]
             if len(common_og) == 0:
-                continue
-            related = []
-            ogs = common_og.orthogroup.astype(int).tolist()
-            p1 = common_og.seqid_x.tolist()
-            p2 = common_og.seqid_y.tolist()
+                connections.append("{}")
+            else:
+                related = []
+                ogs = common_og.orthogroup.astype(int).tolist()
+                p1 = common_og.seqid_x.tolist()
+                p2 = common_og.seqid_y.tolist()
 
-            identities = db.get_og_identity(og=ogs, pairs=zip(p1, p2))
-            identities = identities.set_index(["seqid_x", "seqid_y"]).identity.to_dict()
-            hsh_agg = {}
-            for i, v in common_og.iterrows():
-                if v.seqid_x == v.seqid_y:
-                    ident = 100
-                elif (v.seqid_x, v.seqid_y) in identities:
-                    ident = identities[(v.seqid_x, v.seqid_y)]
-                else:
-                    ident = identities[(v.seqid_y, v.seqid_x)]
-                all_identities.append(ident)
-                og_val = to_s(int(v.orthogroup))
-                arr = hsh_agg.get(v.locus_tag_x, [])
-                arr.append(f"[{to_s(v.locus_tag_y)}, {og_val}, {ident: .2f}]")
-                hsh_agg[v.locus_tag_x] = arr
-            related = (
-                f"{to_s(loc)}: [" + ",".join(values) + "]"
-                for loc, values in hsh_agg.items()
-            )
-            connections.append("{" + ",".join(related) + "}")
+                identities = db.get_og_identity(og=ogs, pairs=zip(p1, p2))
+                identities = identities.set_index(
+                    ["seqid_x", "seqid_y"]
+                ).identity.to_dict()
+                hsh_agg = {}
+                for i, v in common_og.iterrows():
+                    if v.seqid_x == v.seqid_y:
+                        ident = 100
+                    elif (v.seqid_x, v.seqid_y) in identities:
+                        ident = identities[(v.seqid_x, v.seqid_y)]
+                    else:
+                        ident = identities[(v.seqid_y, v.seqid_x)]
+                    all_identities.append(ident)
+                    og_val = to_s(int(v.orthogroup))
+                    arr = hsh_agg.get(v.locus_tag_x, [])
+                    arr.append(f"[{to_s(v.locus_tag_y)}, {og_val}, {ident: .2f}]")
+                    hsh_agg[v.locus_tag_x] = arr
+                related = (
+                    f"{to_s(loc)}: [" + ",".join(values) + "]"
+                    for loc, values in hsh_agg.items()
+                )
+                connections.append("{" + ",".join(related) + "}")
 
         bioentry_qualifiers = db.get_bioentry_qualifiers(
             int(region["bioentry_id"][0])
