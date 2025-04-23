@@ -1271,6 +1271,7 @@ def optimal_region_order(regions, allow_flips=False):
     # a decent path using nearest-neighbour optimization.
     n_regions = len(regions)
     similarities = np.zeros((n_regions, n_regions))
+    flips = np.zeros((n_regions, n_regions))
     #  Make sure the genes are sorted, as we use the og order for the score:
     for region, start, end, _, _ in regions:
         region.sort_values("start_pos", inplace=True)
@@ -1290,16 +1291,15 @@ def optimal_region_order(regions, allow_flips=False):
                 ns2 = len(neighboring_ogs1.intersection(neighboring_ogs2))
                 if ns2 > ns:
                     ns = ns2
+                    flips[i, j] = flips[j, i] = 1
             score = len(set(ogs1).intersection(ogs2)) + ns
             similarities[i, j] = similarities[j, i] = score
 
     region_indices = np.arange(n_regions)
-    best_path = range(n_regions)
-    max_score = sum(
-        similarities[best_path[i], best_path[i + 1]] for i in range(n_regions - 1)
-    )
+    max_score = -1
     for start in region_indices:
         path = [start]
+        path_flips = [False]
         current = start
         while len(path) < n_regions:
             remaining_choices = [
@@ -1308,11 +1308,13 @@ def optimal_region_order(regions, allow_flips=False):
             max_index = np.argmax(similarities[current, remaining_choices])
             next_choice = region_indices[remaining_choices][max_index]
             path.append(next_choice)
+            path_flips.append(flips[current, next_choice])
         score = sum(similarities[path[i], path[i + 1]] for i in range(n_regions - 1))
         if score > max_score:
             max_score = score
             best_path = path
-    return best_path
+            best_path_flips = path_flips
+    return best_path, best_path_flips
 
 
 def flip_regions(filtered_regions, ref_strand):
@@ -1322,12 +1324,16 @@ def flip_regions(filtered_regions, ref_strand):
     for genomic_region in filtered_regions:
         seqid, region, start, end, _, _ = genomic_region
         if region["strand"].loc[seqid] * ref_strand == -1:
-            mean_val = (end + start) / 2
-            region["strand"] *= -1
-            dist_vector_start = region["start_pos"] - mean_val
-            len_vector = region["end_pos"] - region["start_pos"]
-            region["end_pos"] = region["start_pos"] - 2 * dist_vector_start
-            region["start_pos"] = region["end_pos"] - len_vector
+            flip_region(region, start, end)
+
+
+def flip_region(region, start, end):
+    mean_val = (end + start) / 2
+    region["strand"] *= -1
+    dist_vector_start = region["start_pos"] - mean_val
+    len_vector = region["end_pos"] - region["start_pos"]
+    region["end_pos"] = region["start_pos"] - 2 * dist_vector_start
+    region["start_pos"] = region["end_pos"] - len_vector
 
 
 def prepare_genomic_regions(db, filtered_regions, allow_flips=False):
@@ -1343,8 +1349,16 @@ def prepare_genomic_regions(db, filtered_regions, allow_flips=False):
         genomic_region[0] = region.join(ogs).reset_index()
 
     # determine the optimal prepresentation order and sort regions accordingly.
-    best_path = optimal_region_order(filtered_regions, allow_flips=allow_flips)
+    best_path, best_path_flips = optimal_region_order(
+        filtered_regions, allow_flips=allow_flips
+    )
     filtered_regions = [filtered_regions[i] for i in best_path]
+    # Flip the regions if necessary
+    if allow_flips:
+        for i, (region, start, end, _, _) in enumerate(filtered_regions):
+            if best_path_flips[i]:
+                flip_region(region, start, end)
+
     for region, start, end, contig_size, contig_topology in filtered_regions:
         if prev_infos is not None:
             # BM: horrible code (I wrote it, I should know).
