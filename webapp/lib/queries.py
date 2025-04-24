@@ -1,4 +1,7 @@
 class BaseQueries:
+    where_clause_mapping = {}
+    indexing_mapping = {"seqid": "seqfeature.seqfeature_id"}
+
     def __init__(self, db):
         self.db = db
 
@@ -27,24 +30,6 @@ class BaseQueries:
             return self.to_pandas_frame(results, columns)
         return results
 
-
-class GIQueries(BaseQueries):
-    description_table = "genomic_islands"
-    id_col = "gis_id"
-    default_columns = [id_col, "bioentry_id", "start_pos", "end_pos"]
-
-    def get_containing_genomic_islands(self, bioentry_id, start, stop):
-        sql = f"SELECT {self.id_col}, start_pos, end_pos FROM {self.description_table} WHERE bioentry_id=? AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)"
-        return self.server.adaptor.execute_and_fetchall(sql, [bioentry_id, start, stop])
-
-
-class VFQueries(BaseQueries):
-    hit_table = "vf_hits"
-    description_table = "vf_defs"
-    id_col = "vf_gene_id"
-
-    default_columns = [id_col, "prot_name", "vfid", "category", "vf_category_id"]
-
     def gen_where_clause(self, search_on, entries):
         entries = self.gen_placeholder_string(entries)
 
@@ -52,8 +37,10 @@ class VFQueries(BaseQueries):
             where_clause = f" bioentry.bioentry_id IN ({entries}) "
         elif search_on == "seqid":
             where_clause = f" hsh.seqid IN ({entries}) "
-        elif search_on == "vf" or search_on == "vf_gene_id":
-            where_clause = f" vf_gene_id IN ({entries}) "
+        elif search_on == self.id_col:
+            where_clause = f" {self.hit_table}.{self.id_col} IN ({entries}) "
+        elif search_on in self.where_clause_mapping:
+            where_clause = f" {self.where_clause_mapping[search_on]} IN ({entries}) "
         elif search_on == "taxid":
             where_clause = f" bioentry.taxon_id IN ({entries}) "
         else:
@@ -62,33 +49,24 @@ class VFQueries(BaseQueries):
 
     def get_hits(self, taxids):
         where_clause = self.gen_where_clause("taxid", taxids)
-        columns = [
-            "bioentry.taxon_id",
-            f"{self.hit_table}.{self.id_col}",
-            "evalue",
-            "prot_name",
-            "vfid",
-            "category",
-            "vf_category_id",
-        ]
         query = (
-            f"SELECT {', '.join(columns)} "
+            f"SELECT {', '.join(self.hit_cols)} "
             f"FROM {self.hit_table} "
             f"INNER JOIN {self.description_table} ON {self.description_table}.{self.id_col} = {self.hit_table}.{self.id_col} "
-            f"INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = {self.hit_table}.hsh "
-            "INNER JOIN seqfeature ON hsh.seqid = seqfeature.seqfeature_id "
-            "INNER JOIN bioentry ON seqfeature.bioentry_id = bioentry.bioentry_id "
+            f"{self.join_bioentry}"
             f"WHERE {where_clause} "
         )
         results = self.server.adaptor.execute_and_fetchall(query, taxids)
-        df = self.to_pandas_frame(results, [col.split(".")[-1] for col in columns])
+        df = self.to_pandas_frame(
+            results, [col.split(".")[-1] for col in self.hit_cols]
+        )
         return df
 
     def get_hit_counts(
         self, ids, indexing="taxid", search_on="taxid", keep_taxid=False, plasmids=None
     ):
-        if indexing == "seqid":
-            index = "seqfeature.seqfeature_id"
+        if indexing in self.indexing_mapping:
+            index = self.indexing_mapping[indexing]
             if keep_taxid:
                 index += ", bioentry.taxon_id "
         elif indexing == "taxid":
@@ -116,9 +94,7 @@ class VFQueries(BaseQueries):
         query = (
             f"SELECT {index}, {self.id_col}, COUNT(*) "
             f"FROM {self.hit_table} "
-            f"INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = {self.hit_table}.hsh "
-            "INNER JOIN seqfeature ON hsh.seqid = seqfeature.seqfeature_id "
-            "INNER JOIN bioentry ON seqfeature.bioentry_id = bioentry.bioentry_id "
+            f"{self.join_bioentry}"
             f"{plasmid_join}"
             f"WHERE {where_clause} "
             f"GROUP BY {index}, {self.id_col};"
@@ -150,10 +126,10 @@ class VFQueries(BaseQueries):
                         if taxid not in df.columns:
                             df[taxid] = 0
 
-        elif indexing == "seqid":
+        elif indexing in self.indexing_mapping:
             if plasmids is not None:
                 raise RuntimeError("Not implemented for now")
-            header = ["seqid", self.id_col]
+            header = [indexing, self.id_col]
             if keep_taxid:
                 header.append("taxid")
                 results = (
@@ -163,5 +139,78 @@ class VFQueries(BaseQueries):
                 results = ((seqid, obj_id) for seqid, obj_id, count in results)
 
             df = self.to_pandas_frame(results, header)
-            df = df.set_index(["seqid"])
+            df = df.set_index([indexing])
         return df
+
+
+class GIQueries(BaseQueries):
+    id_col = "cluster_id"
+    hit_table = "genomic_islands"
+    description_table = "genomic_island_descriptions"
+    default_columns = [id_col, "length"]
+    where_clause_mapping = {"gic": id_col}
+    indexing_mapping = {"gi": "gis_id"}
+
+    join_bioentry = (
+        f"INNER JOIN bioentry ON {hit_table}.bioentry_id = bioentry.bioentry_id "
+    )
+
+    hit_cols = [
+        "bioentry.taxon_id",
+        f"{hit_table}.{id_col}",
+        "length",
+    ]
+
+    def get_containing_genomic_islands(self, bioentry_id, start, stop):
+        sql = f"SELECT {self.id_col}, start_pos, end_pos FROM {self.hit_table} WHERE bioentry_id=? AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)"
+        return self.server.adaptor.execute_and_fetchall(sql, [bioentry_id, start, stop])
+
+    def get_gi_descriptions(self, gis_ids):
+        plchd = self.gen_placeholder_string(gis_ids)
+        columns = [
+            "gis_id",
+            "cluster_id",
+            "bioentry.bioentry_id",
+            "bioentry.taxon_id",
+            "taxon_name.name",
+            "bioentry.accession",
+            "start_pos",
+            "end_pos",
+        ]
+        sql = (
+            f"SELECT {', '.join(columns)} FROM {self.hit_table} {self.join_bioentry} "
+            "INNER JOIN taxon_name ON bioentry.taxon_id=taxon_name.taxon_id "
+            f"WHERE gis_id IN ({plchd}) AND taxon_name.name_class='scientific name';"
+        )
+
+        columns[3] = "taxon_id"
+        columns[4] = "organism"
+        columns[5] = "bioentry"
+        return self.to_pandas_frame(
+            self.server.adaptor.execute_and_fetchall(sql, gis_ids), columns
+        )
+
+
+class VFQueries(BaseQueries):
+    hit_table = "vf_hits"
+    description_table = "vf_defs"
+    id_col = "vf_gene_id"
+
+    where_clause_mapping = {"vf": id_col}
+    default_columns = [id_col, "prot_name", "vfid", "category", "vf_category_id"]
+
+    hit_cols = [
+        "bioentry.taxon_id",
+        f"{hit_table}.{id_col}",
+        "evalue",
+        "prot_name",
+        "vfid",
+        "category",
+        "vf_category_id",
+    ]
+
+    join_bioentry = (
+        f"INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = {hit_table}.hsh "
+        "INNER JOIN seqfeature ON hsh.seqid = seqfeature.seqfeature_id "
+        "INNER JOIN bioentry ON seqfeature.bioentry_id = bioentry.bioentry_id "
+    )

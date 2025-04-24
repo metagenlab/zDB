@@ -29,6 +29,7 @@ urlpatterns = [
         r"^venn_orthogroup/$", venn.VennOrthogroupView.as_view(), name="venn_orthogroup"
     ),  # noqa
     re_path(r"^venn_ko/$", venn.VennKoView.as_view(), name="venn_ko"),
+    re_path(r"^venn_gic/$", venn.VennGiView.as_view(), name="venn_gic"),
     re_path(r"^venn_cog/$", venn.VennCogView.as_view(), name="venn_cog"),
     re_path(r"^venn_amr/$", venn.VennAmrView.as_view(), name="venn_amr"),
     re_path(r"^search_suggest/.*$", views.search_suggest, name="search_suggest"),  # noqa
@@ -146,6 +147,11 @@ urlpatterns = [
         name=groups.GroupsOverview.view_name,
     ),  # noqa
     re_path(
+        r"^gic_comparison",
+        tabular_comparison.GiComparisonView.as_view(),
+        name="gic_comparison",
+    ),  # noqa
+    re_path(
         r"^get_cog/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\%]+)$",
         views.get_cog,
         name="get_cog",
@@ -161,6 +167,7 @@ urlpatterns = [
     re_path(r"^fam_vf/(VFG[0-9]+)$", fam.FamVfView.as_view(), name="fam_vf"),
     re_path(r"^fam_pfam/(PF[0-9]+)$", fam.FamPfamView.as_view(), name="fam_pfam"),
     re_path(r"^fam_ko/(K[0-9]+)$", fam.FamKoView.as_view(), name="fam_ko"),
+    re_path(r"^fam_gic/(GIC[0-9]+)$", fam.FamGiClusterView.as_view(), name="fam_gic"),
     re_path(r"^fam_cog/(COG[0-9]+)$", fam.FamCogView.as_view(), name="fam_cog"),  # noqa
     re_path(
         r"^fam_amr/([a-zA-Z0-9_\.\(\)\-\']+)$", fam.FamAmrView.as_view(), name="fam_amr"
@@ -180,6 +187,9 @@ urlpatterns = [
     ),  # noqa
     re_path(
         r"^extract_ko/$", hits_extraction.ExtractKoView.as_view(), name="extract_ko"
+    ),  # noqa
+    re_path(
+        r"^extract_gic/$", hits_extraction.ExtractGiView.as_view(), name="extract_gic"
     ),  # noqa
     re_path(
         r"^extract_contigs/([0-9]+)",
@@ -204,7 +214,9 @@ urlpatterns = [
         r"^entry_list_ko$", entry_lists.KoEntryListView.as_view(), name="entry_list_ko"
     ),  # noqa
     re_path(
-        r"^entry_list_gi$", entry_lists.GiEntryListView.as_view(), name="entry_list_gi"
+        r"^entry_list_gic$",
+        entry_lists.GiEntryListView.as_view(),
+        name="entry_list_gic",
     ),  # noqa
     re_path(
         r"^entry_list_cog$",

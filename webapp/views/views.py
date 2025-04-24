@@ -1264,37 +1264,42 @@ def coalesce_regions(genomic_regions, seqids):
     return filtered_results
 
 
-def optimal_region_order(regions):
+def optimal_region_order(regions, allow_flips=False):
     # We try to figure out an optimal order to display the sequences in.
     # For that we calculate the number of common orthogroups and whether
     # they appear in the same order. We then use that as score and calculate
     # a decent path using nearest-neighbour optimization.
     n_regions = len(regions)
     similarities = np.zeros((n_regions, n_regions))
+    flips = np.zeros((n_regions, n_regions))
     #  Make sure the genes are sorted, as we use the og order for the score:
-    for seqid, region, start, end, _, _ in regions:
+    for region, start, end, _, _ in regions:
         region.sort_values("start_pos", inplace=True)
-
-    for i, (seqid1, region1, start1, end1, _, _) in enumerate(regions):
-        ogs1 = region1["orthogroup"].unique()
+    for i, (region1, start1, end1, _, _) in enumerate(regions):
+        ogs1 = region1["orthogroup"]
         neighboring_ogs1 = {(ogs1[i], ogs1[i + 1]) for i in range(len(ogs1) - 1)}
-        for j, (seqid2, region2, start2, end2, _, _) in enumerate(regions):
+        for j, (region2, start2, end2, _, _) in enumerate(regions):
             if j <= i:
                 continue
-            ogs2 = region2["orthogroup"].unique()
+            ogs2 = region2["orthogroup"]
             neighboring_ogs2 = {(ogs2[i], ogs2[i + 1]) for i in range(len(ogs2) - 1)}
-            score = len(set(ogs1).intersection(ogs2)) + len(
-                neighboring_ogs1.intersection(neighboring_ogs2)
-            )
+            ns = len(neighboring_ogs1.intersection(neighboring_ogs2))
+            if allow_flips:
+                neighboring_ogs2 = {
+                    (ogs2[i + 1], ogs2[i]) for i in range(len(ogs2) - 1)
+                }
+                ns2 = len(neighboring_ogs1.intersection(neighboring_ogs2))
+                if ns2 > ns:
+                    ns = ns2
+                    flips[i, j] = flips[j, i] = 1
+            score = len(set(ogs1).intersection(ogs2)) + ns
             similarities[i, j] = similarities[j, i] = score
 
     region_indices = np.arange(n_regions)
-    best_path = range(n_regions)
-    max_score = sum(
-        similarities[best_path[i], best_path[i + 1]] for i in range(n_regions - 1)
-    )
+    max_score = -1
     for start in region_indices:
         path = [start]
+        path_flips = [False]
         current = start
         while len(path) < n_regions:
             remaining_choices = [
@@ -1303,11 +1308,111 @@ def optimal_region_order(regions):
             max_index = np.argmax(similarities[current, remaining_choices])
             next_choice = region_indices[remaining_choices][max_index]
             path.append(next_choice)
+            path_flips.append(flips[current, next_choice])
         score = sum(similarities[path[i], path[i + 1]] for i in range(n_regions - 1))
         if score > max_score:
             max_score = score
             best_path = path
-    return best_path
+            best_path_flips = path_flips
+    return best_path, best_path_flips
+
+
+def flip_regions(filtered_regions, ref_strand):
+    """Flip the strands of the regions for which the locus matching
+    the reference locus is on the other strand.
+    """
+    for genomic_region in filtered_regions:
+        seqid, region, start, end, _, _ = genomic_region
+        if region["strand"].loc[seqid] * ref_strand == -1:
+            flip_region(region, start, end)
+
+
+def flip_region(region, start, end):
+    mean_val = (end + start) / 2
+    region["strand"] *= -1
+    dist_vector_start = region["start_pos"] - mean_val
+    len_vector = region["end_pos"] - region["start_pos"]
+    region["end_pos"] = region["start_pos"] - 2 * dist_vector_start
+    region["start_pos"] = region["end_pos"] - len_vector
+
+
+def prepare_genomic_regions(db, filtered_regions, allow_flips=False):
+    all_regions = []
+    connections = []
+    prev_infos = None
+    all_identities = []
+    # Let's add the ogs to the regions info
+    for genomic_region in filtered_regions:
+        region, start, end, _, _ = genomic_region
+        ogs = db.get_og_count(region.index.tolist(), search_on="seqid")
+        # need to reset index to keep seqid in the next merge
+        genomic_region[0] = region.join(ogs).reset_index()
+
+    # determine the optimal prepresentation order and sort regions accordingly.
+    best_path, best_path_flips = optimal_region_order(
+        filtered_regions, allow_flips=allow_flips
+    )
+    filtered_regions = [filtered_regions[i] for i in best_path]
+    # Flip the regions if necessary
+    if allow_flips:
+        for i, (region, start, end, _, _) in enumerate(filtered_regions):
+            if best_path_flips[i]:
+                flip_region(region, start, end)
+
+    for region, start, end, contig_size, contig_topology in filtered_regions:
+        if prev_infos is not None:
+            # BM: horrible code (I wrote it, I should know).
+            # would be nice to refactor it in a more efficient and clean way.
+
+            # We need to drop na from orthogroup, as some genes, like rRNA
+            # or tRNA are not assigned any orthogroup
+            common_og = region.dropna(subset=["orthogroup"]).merge(
+                prev_infos, on="orthogroup"
+            )[["locus_tag_x", "locus_tag_y", "seqid_x", "seqid_y", "orthogroup"]]
+            if len(common_og) == 0:
+                connections.append("{}")
+            else:
+                related = []
+                ogs = common_og.orthogroup.astype(int).tolist()
+                p1 = common_og.seqid_x.tolist()
+                p2 = common_og.seqid_y.tolist()
+
+                identities = db.get_og_identity(og=ogs, pairs=zip(p1, p2))
+                identities = identities.set_index(
+                    ["seqid_x", "seqid_y"]
+                ).identity.to_dict()
+                hsh_agg = {}
+                for i, v in common_og.iterrows():
+                    if v.seqid_x == v.seqid_y:
+                        ident = 100
+                    elif (v.seqid_x, v.seqid_y) in identities:
+                        ident = identities[(v.seqid_x, v.seqid_y)]
+                    else:
+                        ident = identities[(v.seqid_y, v.seqid_x)]
+                    all_identities.append(ident)
+                    og_val = to_s(int(v.orthogroup))
+                    arr = hsh_agg.get(v.locus_tag_x, [])
+                    arr.append(f"[{to_s(v.locus_tag_y)}, {og_val}, {ident: .2f}]")
+                    hsh_agg[v.locus_tag_x] = arr
+                related = (
+                    f"{to_s(loc)}: [" + ",".join(values) + "]"
+                    for loc, values in hsh_agg.items()
+                )
+                connections.append("{" + ",".join(related) + "}")
+
+        bioentry_qualifiers = db.get_bioentry_qualifiers(
+            int(region["bioentry_id"][0])
+        ).set_index("term")
+        contig_name = bioentry_qualifiers.loc["accessions"].value
+        genome_name = bioentry_qualifiers.loc["organism"].value
+
+        region_name = f"{genome_name} - {contig_name} - {int(start)}:{int(end)}"
+        js_val = genomic_region_df_to_js(
+            region, start, end, contig_size, contig_topology, region_name
+        )
+        all_regions.append(js_val)
+        prev_infos = region[["orthogroup", "locus_tag", "seqid"]]
+    return all_regions, connections, all_identities
 
 
 def plot_region(request):
@@ -1341,7 +1446,6 @@ def plot_region(request):
     organisms = db.get_organism(all_seqids, as_df=True, as_taxid=True)
     all_infos = organisms.join(ids, how="inner")
     ref_strand, _, _ = hsh_loc[seqid]
-    hsh_description = db.get_genomes_description().description.to_dict()
 
     if not all_homologs:
         best_matches = all_infos.groupby(["taxid"]).idxmax()
@@ -1375,10 +1479,6 @@ def plot_region(request):
 
     locus_tags = db.get_proteins_info(seqids, to_return=["locus_tag"], as_df=True)
     to_highlight = locus_tags["locus_tag"].tolist()
-    all_regions = []
-    connections = []
-    prev_infos = None
-    all_identities = []
 
     genomic_regions = []
     for seqid in seqids:
@@ -1394,85 +1494,29 @@ def plot_region(request):
     # XXX : coalesce_regions does not do what it is intended to do, to fix
     filtered_regions = genomic_regions  # coalesce_regions(genomic_regions, seqids)
 
-    # Let's add the ogs to the regions info
-    for genomic_region in filtered_regions:
-        seqid, region, start, end, _, _ = genomic_region
-        if region["strand"].loc[seqid] * ref_strand == -1:
-            mean_val = (end + start) / 2
-            region["strand"] *= -1
-            dist_vector_start = region["start_pos"] - mean_val
-            len_vector = region["end_pos"] - region["start_pos"]
-            region["end_pos"] = region["start_pos"] - 2 * dist_vector_start
-            region["start_pos"] = region["end_pos"] - len_vector
-        ogs = db.get_og_count(region.index.tolist(), search_on="seqid")
-        # need to reset index to keep seqid in the next merge
-        genomic_region[1] = region.join(ogs).reset_index()
+    flip_regions(filtered_regions, ref_strand)
+    # remove the seqid from the genomic region as it was only needed to flip the strands
+    filtered_regions = [region[1:] for region in filtered_regions]
 
-    # determine the optimal prepresentation order and sort regions accordingly.
-    best_path = optimal_region_order(filtered_regions)
-    filtered_regions = [filtered_regions[i] for i in best_path]
-
-    for seqid, region, start, end, contig_size, contig_topology in filtered_regions:
-        if prev_infos is not None:
-            # BM: horrible code (I wrote it, I should know).
-            # would be nice to refactor it in a more efficient and clean way.
-
-            # We need to drop na from orthogroup, as some genes, like rRNA
-            # or tRNA are not assigned any orthogroup
-            common_og = region.dropna(subset=["orthogroup"]).merge(
-                prev_infos, on="orthogroup"
-            )[["locus_tag_x", "locus_tag_y", "seqid_x", "seqid_y", "orthogroup"]]
-            related = []
-            ogs = common_og.orthogroup.astype(int).tolist()
-            p1 = common_og.seqid_x.tolist()
-            p2 = common_og.seqid_y.tolist()
-            identities = db.get_og_identity(og=ogs, pairs=zip(p1, p2))
-            identities = identities.set_index(["seqid_x", "seqid_y"]).identity.to_dict()
-            hsh_agg = {}
-            for i, v in common_og.iterrows():
-                if v.seqid_x == v.seqid_y:
-                    ident = 100
-                elif (v.seqid_x, v.seqid_y) in identities:
-                    ident = identities[(v.seqid_x, v.seqid_y)]
-                else:
-                    ident = identities[(v.seqid_y, v.seqid_x)]
-                all_identities.append(ident)
-                og_val = to_s(int(v.orthogroup))
-                arr = hsh_agg.get(v.locus_tag_x, [])
-                arr.append(f"[{to_s(v.locus_tag_y)}, {og_val}, {ident: .2f}]")
-                hsh_agg[v.locus_tag_x] = arr
-            related = (
-                f"{to_s(loc)}: [" + ",".join(values) + "]"
-                for loc, values in hsh_agg.items()
-            )
-            connections.append("{" + ",".join(related) + "}")
-
-        taxid = organisms.loc[seqid].taxid
-        genome_name = hsh_description[taxid]
-        contig_name = (
-            db.get_bioentry_qualifiers(int(region["bioentry_id"][0]))
-            .set_index("term")
-            .loc["accessions"]
-            .value
-        )
-        region_name = f"{genome_name} - {contig_name} - {int(start)}:{int(end)}"
-        js_val = genomic_region_df_to_js(
-            region, start, end, contig_size, contig_topology, region_name
-        )
-        all_regions.append(js_val)
-        prev_infos = region[["orthogroup", "locus_tag", "seqid"]]
-
-    ctx = {
-        "form": form,
+    all_regions, connections, all_identities = prepare_genomic_regions(
+        db, filtered_regions
+    )
+    results = {
         "genomic_regions": "[" + "\n,".join(all_regions) + "]",
         "to_highlight": to_highlight,
-        "envoi": True,
         "connections": "[" + ",".join(connections) + "]",
-        "page_title": page_title,
+        "description": "The generated plot shows a genomic feature in the neighborhood of "
+        "a target locus along the selected genomes.",
     }
     if len(all_identities) > 0:
-        ctx["max_ident"] = max(all_identities)
-        ctx["min_ident"] = min(all_identities)
+        results["max_ident"] = max(all_identities)
+        results["min_ident"] = min(all_identities)
+    ctx = {
+        "form": form,
+        "envoi": True,
+        "page_title": page_title,
+        "results": results,
+    }
     return render(request, "chlamdb/plot_region.html", my_locals(ctx))
 
 
@@ -1522,13 +1566,13 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     ).set_index(["seqfeature_id"])
     # df of target genomes
     df_targets = db.get_proteins_info(
-            ids=target_taxons,
-            search_on="taxid",
-            as_df=True,
-            to_return=["locus_tag"],
-            inc_non_CDS=False,
-            inc_pseudo=False,
-        )
+        ids=target_taxons,
+        search_on="taxid",
+        as_df=True,
+        to_return=["locus_tag"],
+        inc_non_CDS=False,
+        inc_pseudo=False,
+    )
 
     # retrieve n_orthologs of list of seqids
     seq_og = db.get_og_count(df_feature_location.index.to_list(), search_on="seqid")
@@ -1550,7 +1594,6 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     df_identity = db.get_identity_closest_homolog(
         reference_taxon, target_taxons
     ).set_index(["target_taxid"])
-
 
     c = circosjs.CircosJs()
 
@@ -1576,8 +1619,12 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     ].fillna("-")
 
     df_feature_location["color"] = "grey"
-    df_feature_location.loc[df_feature_location["term_name"] == "tRNA", "color"] = "magenta"
-    df_feature_location.loc[df_feature_location["term_name"] == "rRNA", "color"] = "magenta"
+    df_feature_location.loc[df_feature_location["term_name"] == "tRNA", "color"] = (
+        "magenta"
+    )
+    df_feature_location.loc[df_feature_location["term_name"] == "rRNA", "color"] = (
+        "magenta"
+    )
 
     df_feature_location = df_feature_location.rename(columns={"locus_tag": "locus_ref"})
 
@@ -1607,9 +1654,13 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
             .sort_index()
         )
 
-        df_combined = df_combined.join(df_targets, on="seqfeature_id_2", how="left").reset_index()
-        df_combined["locus_tag"] = df_combined["locus_tag"].fillna(np.nan).replace([np.nan], [None])
-        
+        df_combined = df_combined.join(
+            df_targets, on="seqfeature_id_2", how="left"
+        ).reset_index()
+        df_combined["locus_tag"] = (
+            df_combined["locus_tag"].fillna(np.nan).replace([np.nan], [None])
+        )
+
         # comp is a custom scale with missing orthologs coloured in light blue
         if n == 0:
             sep = 0.03

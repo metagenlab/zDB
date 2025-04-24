@@ -202,10 +202,11 @@ class TestAnnotationPipeline(BasePipelineTestCase):
 
         # Let's check that tables were correctly created and filled
         self.assertItemsEqual(
-            base_tables + ["genomic_islands"], self.metadata_obj.tables.keys()
+            base_tables + ["genomic_islands", "genomic_island_descriptions"],
+            self.metadata_obj.tables.keys(),
         )
         self.assert_db_base_table_row_counts()
-        self.assertEqual(1, self.query("genomic_islands").count())
+        self.assertEqual(2, self.query("genomic_islands").count())
 
     def test_full_pipeline(self):
         self.nf_params["pfam"] = "true"
@@ -235,6 +236,7 @@ class TestAnnotationPipeline(BasePipelineTestCase):
             "vf_defs",
             "vf_hits",
             "genomic_islands",
+            "genomic_island_descriptions",
         ]
         self.assertItemsEqual(
             base_tables + added_tables, self.metadata_obj.tables.keys()
@@ -250,7 +252,7 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertEqual(2, self.query("amr_hits").count())
         self.assertEqual(36, self.query("vf_hits").count())
         self.assertEqual(35, self.query("vf_defs").count())
-        self.assertEqual(1, self.query("genomic_islands").count())
+        self.assertEqual(2, self.query("genomic_islands").count())
 
         self.assertItemsEqual(
             [

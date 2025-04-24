@@ -1,5 +1,5 @@
 class AnalysisViewMetadata:
-    _types_available_for = ["amr", "cog", "ko", "pfam", "orthogroup", "vf"]
+    _types_available_for = ["amr", "cog", "ko", "pfam", "orthogroup", "vf", "gic"]
     static_icon = True
 
     def __init__(self, object_type, object_name_plural):
@@ -21,7 +21,7 @@ class AnalysisViewMetadata:
 
 class EntryListMetadata(AnalysisViewMetadata):
     name = "index"
-    _types_available_for = ["amr", "cog", "ko", "pfam", "vf", "gi"]
+    _types_available_for = ["amr", "cog", "ko", "pfam", "vf", "gic"]
     title = "Index"
     _description = "Index of all {} identified in all genomes"
     _url = "/entry_list_{}"

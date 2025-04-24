@@ -1,0 +1,55 @@
+{% load static %}
+<script type="text/javascript" src="{% static 'js/genomic_region.js' %}">
+</script>
+
+<script type="text/javascript" src="{% static 'js/svg-export.min.js' %}">
+</script>
+
+<div class="row">
+  <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
+    <div class="alert alert-info fade in" style="width:90%; margin: 10px 10px 10px 10px">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      {{results.description}}<br>
+      Links are coloured wiht a scale of gray reflecting the sequence identity:
+      dark gray for highly conserved, light grey for features with less identity. Click on the link to visualise the percentage of identity.
+      Beginning and end of the regions are shown as dashed line if the region shows a complete circular contig, a double line if the start or end of the region matches the start or end of a linear contig and a single line otherwise.
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
+    <div class="panel panel-success" style="width:90%; margin: 10px 10px 10px 10px">
+      <div class="panel-heading clearfix">
+        <div class="pull-right">
+          <button id="download_svg_button" class="btn-link btn-xs" style="background-color: transparent;">
+            <i class="glyphicon glyphicon-download"></i>
+          </button>
+        </div>
+        <h5 class="panel-title">Genomic regions</h5>
+      </div>
+      <div class="panel-body" id="div_alignment_bounding">
+        <div id="div_alignment"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+var regions = {{results.genomic_regions|safe}};
+var to_highlight = {{results.to_highlight|safe}};
+var connections = {{results.connections | safe}};
+var ident_range = [{{results.min_ident}}, {{results.max_ident}}];
+var genomic_region_rect = document.querySelector("#div_alignment_bounding")
+    .getBoundingClientRect();
+var genomic_width = genomic_region_rect.right-genomic_region_rect.left;
+
+createGenomicRegion(d3.select("#div_alignment"), genomic_width*0.95, "genomic_region",
+    regions, connections, to_highlight, ident_range);
+
+document.querySelector("#download_svg_button").onclick = function() {
+  var svg_elem = document.querySelector("#genomic_region");
+  svgExport.downloadSvg(svg_elem, "Genomic region");
+};
+
+</script>
