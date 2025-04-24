@@ -933,10 +933,13 @@ def extract_gis_hits(gff_files, hit_files, output_file):
                 )
             )
             if n_overlapping == 0:
+                # blast hits have sstart > send when hit on negative strand
+                start = row.sstart <= row.send and row.sstart or row.send
+                end = row.sstart <= row.send and row.send or row.sstart
                 genomic_islands.loc[len(genomic_islands)] = (
                     row.subject,
-                    row.sstart,
-                    row.send,
+                    start,
+                    end,
                 )
 
     genomic_islands.to_csv(output_file, index=False)
