@@ -2849,6 +2849,11 @@ class DB:
     def check_amr_entry_id(self, entry_id):
         return self.check_entry_existence(entry_id, "gene", "amr_hits")
 
+    def check_gic_entry_id(self, entry_id):
+        return self.check_entry_existence(
+            entry_id, "cluster_id", "genomic_island_descriptions"
+        )
+
     def gen_placeholder_string(self, args):
         return ",".join(self.placeholder for _ in args)
 
