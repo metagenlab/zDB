@@ -363,6 +363,7 @@ class EntryIdParser:
     pfam_re = re.compile("PF([0-9]{4,5})")
     ko_re = re.compile("K([0-9]{5})")
     vf_re = re.compile("VFG[0-9]{6}")
+    gic_re = re.compile("GIC([0-9]*)")
 
     def __init__(self, db):
         self.db = db
@@ -391,6 +392,11 @@ class EntryIdParser:
         match = self.vf_re.match(identifier)
         if match and self.db.check_vf_entry_id(identifier):
             return "vf", identifier
+
+        match = self.gic_re.match(identifier)
+        parsed_id = match and int(match.groups()[0])
+        if match and self.db.check_gic_entry_id(parsed_id):
+            return "gic", parsed_id
 
         if self.db.check_amr_entry_id(identifier):
             return "amr", identifier

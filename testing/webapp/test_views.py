@@ -348,7 +348,7 @@ class TestViewsContent(ViewTestCase):
         self.assertNotContains(resp, '<a href=#custom_plot_table data-toggle="tab">')
 
         data = {
-            "entries": "COG0775,K01241,PF10423:custom label, VFG048797,ybtP,group_85",
+            "entries": "COG0775,K01241,PF10423:custom label, VFG048797,ybtP,group_85,GIC0",
         }
         resp = self.client.post("/custom_plots/", data=data)
         self.assertEqual(200, resp.status_code)
