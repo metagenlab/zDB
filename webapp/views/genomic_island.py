@@ -17,12 +17,16 @@ class GenomicIsland(GiViewMixin, View):
         cluster_descr = self.get_hit_descriptions([cluster_id]).iloc[0]
 
         self.data = self.transform_data(self.data).iloc[0]
+        gi_size = self.db.get_gi_length(
+            bioentry, self.data.start_pos, self.data.end_pos
+        )
+        end_pos = self.data.start_pos + gi_size
         all_infos, wd_start, wd_end, contig_size, contig_topology = (
             locusx_genomic_region(
                 self.db,
                 bioentry=bioentry,
                 window_start=self.data.start_pos,
-                window_stop=self.data.end_pos,
+                window_stop=end_pos,
             )
         )
         genomic_region = genomic_region_df_to_js(
@@ -37,7 +41,7 @@ class GenomicIsland(GiViewMixin, View):
             bioentry=self.data.bioentry,
             start_pos=self.data.start_pos,
             end_pos=self.data.end_pos,
-            island_size=self.data.end_pos - self.data.start_pos,
+            island_size=gi_size,
             description=self.data.gis_id,
             genomic_region=genomic_region,
             window_size=window_size,

@@ -2585,6 +2585,14 @@ class DB:
         ]
         self.server.adaptor.executemany(sql, data)
 
+    def get_gi_length(self, bioentry_id, start_pos, end_pos):
+        if start_pos > end_pos:
+            # GI spanning edge of circular contig
+            contig_length = self.get_bioentry_length(bioentry_id)
+            return contig_length - start_pos + end_pos
+        else:
+            return end_pos - start_pos
+
     def load_genomic_islands(self, gis, clusters):
         cluster_data = {
             gis_id: i for i, cluster in enumerate(clusters) for gis_id in cluster
@@ -2607,7 +2615,8 @@ class DB:
         # Now we prepare some descriptions of the GI clusters
         descriptions = defaultdict(list)
         for gis_id, cluster_id, bioentry_id, start_pos, end_pos in gis:
-            descriptions[cluster_id].append(end_pos - start_pos)
+            gi_length = self.get_gi_length(bioentry_id, start_pos, end_pos)
+            descriptions[cluster_id].append(gi_length)
 
         descriptions = [
             (key, int(sum(value) / len(value))) for key, value in descriptions.items()
