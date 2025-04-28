@@ -564,6 +564,27 @@ process blast_vfdb {
   """
 }
 
+process split_contigs {
+    container "$params.annotation_container"
+    conda "$baseDir/conda/annotation.yaml"
+
+    input:
+    path(genome)
+
+    output:
+    path("*.gbff")
+
+    script:
+
+    """
+    #!/usr/bin/env python
+
+    import annotations
+    annotations.split_contigs("${genome}")
+    """
+}
+
+
 process execute_islandpath {
     conda "$baseDir/conda/islandpath.yaml"
     container "$params.islandpath_container"
@@ -1252,7 +1273,8 @@ workflow {
     }
 
     if(params.gi) {
-        genome_and_gis = execute_islandpath(checked_gbks.flatten())
+        contigs = split_contigs(checked_gbks.flatten())
+        genome_and_gis = execute_islandpath(contigs.flatten())
         gi_fastas = gff_to_fasta(genome_and_gis)
         fna_db = channel.fromPath("${params.results_dir}/blast_DB/$workflow.runName/fna/")
         gi_fasta_and_fna_db = gi_fastas.combine(fna_db).combine(makeblastdb.out[1].collect()).map { tuple(it[0], it[1]) }

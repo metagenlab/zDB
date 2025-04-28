@@ -401,6 +401,15 @@ def convert_gbk_to_fna(gbf_file, fna_contigs):
     edited_records.close()
 
 
+def split_contigs(gbf_file):
+    for record in SeqIO.parse(gbf_file, "genbank"):
+        # islandpath fails if there is no CDS
+        for feature in record.features:
+            if feature.type == "CDS":
+                SeqIO.write(record, f"{record.name}.gbff", "genbank")
+                break
+
+
 # all faa files are merged into fasta_file
 def get_nr_sequences(fasta_file, genomes_list):
     locus2genome = {}
