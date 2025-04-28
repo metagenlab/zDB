@@ -401,6 +401,11 @@ def convert_gbk_to_fna(gbf_file, fna_contigs):
     edited_records.close()
 
 
+def split_contigs(gbf_file):
+    for record in SeqIO.parse(gbf_file, "genbank"):
+        SeqIO.write(record, f"{record.name}.gbf", "genbank")
+
+
 # all faa files are merged into fasta_file
 def get_nr_sequences(fasta_file, genomes_list):
     locus2genome = {}
