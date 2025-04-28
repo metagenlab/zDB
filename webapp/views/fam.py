@@ -378,19 +378,13 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
 
         genomic_regions = []
         for gis_id, row in self.gics.iterrows():
-            start = int(row["start_pos"])
-            end = int(row["end_pos"])
-            bioentry_id = int(row["bioentry.bioentry_id"])
-            # We use the GI length to determine the end of the GI to handle
-            # GI spanning edge of circular contig
-            end = start + self.db.get_gi_length(bioentry_id, start, end)
             genomic_regions.append(
                 list(
                     locusx_genomic_region(
                         self.db,
-                        bioentry=bioentry_id,
-                        window_start=start,
-                        window_stop=end,
+                        bioentry=int(row["bioentry.bioentry_id"]),
+                        window_start=int(row["start_pos"]),
+                        window_stop=int(row["end_pos"]),
                     )
                 )
             )
