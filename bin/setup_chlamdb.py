@@ -924,12 +924,9 @@ def extract_gis_hits(gff_files, hit_files, output_file):
             ["evalue", "seqid", "qcov"], ascending=[True, False, False], inplace=True
         )
         for i, row in hit_table.iterrows():
-            # We handle the case of circular contigs in the gff file (cannot happen in the hit table).
             n_overlapping = len(
                 genomic_islands.query(
-                    f"seqid=='{row.subject}' & ("
-                    f"((start<end) & ((start<{row.sstart} & end>{row.sstart}) | (start<{row.send} & end>{row.send}))) |"
-                    f"((start>end) & (end>{row.sstart} | start<{row.send})))"
+                    f"seqid=='{row.subject}' & ((start<{row.sstart} & end>{row.sstart}) | (start<{row.send} & end>{row.send}))"
                 )
             )
             if n_overlapping == 0:
