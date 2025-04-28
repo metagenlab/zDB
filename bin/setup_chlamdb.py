@@ -876,16 +876,9 @@ def gi_hits_to_fasta(gbk_files, gi_hits, output_file):
     records = []
     for i, gi in genomic_islands.iterrows():
         gid = str(i)
-        contig = contigs[gi.seqid]
-        start = int(gi.start)
-        end = int(gi.end)
-        if end < start and contig.annotations["topology"] == "circular":
-            seq = contig[start:].seq + contig[:end].seq
-        else:
-            seq = contig[start:end].seq
         records.append(
             SeqRecord.SeqRecord(
-                seq,
+                contigs[gi.seqid][int(gi.start) : int(gi.end)].seq,
                 id=gid,
                 name=gid,
                 description="",
