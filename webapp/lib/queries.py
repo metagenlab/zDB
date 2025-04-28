@@ -162,14 +162,8 @@ class GIQueries(BaseQueries):
     ]
 
     def get_containing_genomic_islands(self, bioentry_id, start, stop):
-        sql = (
-            f"SELECT gis_id, start_pos, end_pos FROM {self.hit_table} WHERE bioentry_id=? AND ("
-            "((start_pos < end_pos) AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)) | "
-            "((start_pos > end_pos) AND (? >= start_pos OR ? <= end_pos)) )"
-        )
-        return self.server.adaptor.execute_and_fetchall(
-            sql, [bioentry_id, start, stop, stop, start]
-        )
+        sql = f"SELECT {self.id_col}, start_pos, end_pos FROM {self.hit_table} WHERE bioentry_id=? AND (? BETWEEN start_pos AND end_pos OR ? BETWEEN start_pos AND end_pos)"
+        return self.server.adaptor.execute_and_fetchall(sql, [bioentry_id, start, stop])
 
     def get_gi_descriptions(self, gis_ids):
         plchd = self.gen_placeholder_string(gis_ids)

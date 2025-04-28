@@ -846,16 +846,9 @@ def gis_to_fasta(gbk_file, gff_file, output_file):
     records = []
     for gi in genomic_islands:
         gid = gi.attributes["ID"].strip()
-        contig = contigs[gi.seqid]
-        start = int(gi.start)
-        end = int(gi.end)
-        if end < start and contig.annotations["topology"] == "circular":
-            seq = contig[start:].seq + contig[:end].seq
-        else:
-            seq = contig[start:end].seq
         records.append(
             SeqRecord.SeqRecord(
-                seq,
+                contigs[gi.seqid][int(gi.start) : int(gi.end)].seq,
                 id=gid,
                 name=gid,
                 description="genomic island",
@@ -876,16 +869,9 @@ def gi_hits_to_fasta(gbk_files, gi_hits, output_file):
     records = []
     for i, gi in genomic_islands.iterrows():
         gid = str(i)
-        contig = contigs[gi.seqid]
-        start = int(gi.start)
-        end = int(gi.end)
-        if end < start and contig.annotations["topology"] == "circular":
-            seq = contig[start:].seq + contig[:end].seq
-        else:
-            seq = contig[start:end].seq
         records.append(
             SeqRecord.SeqRecord(
-                seq,
+                contigs[gi.seqid][int(gi.start) : int(gi.end)].seq,
                 id=gid,
                 name=gid,
                 description="",
@@ -931,12 +917,9 @@ def extract_gis_hits(gff_files, hit_files, output_file):
             ["evalue", "seqid", "qcov"], ascending=[True, False, False], inplace=True
         )
         for i, row in hit_table.iterrows():
-            # We handle the case of circular contigs in the gff file (cannot happen in the hit table).
             n_overlapping = len(
                 genomic_islands.query(
-                    f"seqid=='{row.subject}' & ("
-                    f"((start<end) & ((start<{row.sstart} & end>{row.sstart}) | (start<{row.send} & end>{row.send}))) |"
-                    f"((start>end) & (end>{row.sstart} | start<{row.send})))"
+                    f"seqid=='{row.subject}' & ((start<{row.sstart} & end>{row.sstart}) | (start<{row.send} & end>{row.send}))"
                 )
             )
             if n_overlapping == 0:
