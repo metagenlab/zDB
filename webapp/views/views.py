@@ -1293,13 +1293,13 @@ def optimal_region_order(regions, allow_flips=False):
                     ns = ns2
                     flips[i, j] = flips[j, i] = 1
             score = len(set(ogs1).intersection(ogs2)) + ns
-            similarities[i, j] = similarities[j, i] = score
+            similarities[i, j] = similarities[j, i] = score / len(set(ogs1).union(ogs2))
 
     region_indices = np.arange(n_regions)
     max_score = -1
     for start in region_indices:
         path = [start]
-        path_flips = [False]
+        path_flips = [0]
         current = start
         while len(path) < n_regions:
             remaining_choices = [
@@ -1309,6 +1309,7 @@ def optimal_region_order(regions, allow_flips=False):
             next_choice = region_indices[remaining_choices][max_index]
             path.append(next_choice)
             path_flips.append(flips[current, next_choice])
+            current = next_choice
         score = sum(similarities[path[i], path[i + 1]] for i in range(n_regions - 1))
         if score > max_score:
             max_score = score
@@ -1353,11 +1354,16 @@ def prepare_genomic_regions(db, filtered_regions, allow_flips=False):
         filtered_regions, allow_flips=allow_flips
     )
     filtered_regions = [filtered_regions[i] for i in best_path]
+
     # Flip the regions if necessary
     if allow_flips:
+        prev_flip = 0
         for i, (region, start, end, _, _) in enumerate(filtered_regions):
-            if best_path_flips[i]:
+            if best_path_flips[i] != prev_flip:
                 flip_region(region, start, end)
+                prev_flip = 1
+            else:
+                prev_flip = 0
 
     for region, start, end, contig_size, contig_topology in filtered_regions:
         if prev_infos is not None:

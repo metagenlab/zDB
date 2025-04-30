@@ -471,6 +471,7 @@ class GiViewMixin(BaseViewMixin, GiMetadata):
 
     def get_gi_descriptions(self, ids, transformed=True, **kwargs):
         descriptions = self.db.gi.get_gi_descriptions(ids)
+        descriptions["length"] = descriptions["end_pos"] - descriptions["start_pos"]
         descriptions = descriptions.set_index("gis_id", drop=False)
         if transformed:
             descriptions = self.transform_data(descriptions)
