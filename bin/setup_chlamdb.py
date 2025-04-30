@@ -917,9 +917,10 @@ def extract_gis_hits(gff_files, hit_files, output_file):
             ["evalue", "seqid", "qcov"], ascending=[True, False, False], inplace=True
         )
         for i, row in hit_table.iterrows():
+            # blast hits have sstart > send when hit on negative strand
             n_overlapping = len(
                 genomic_islands.query(
-                    f"seqid=='{row.subject}' & ((start<{row.sstart} & end>{row.sstart}) | (start<{row.send} & end>{row.send}))"
+                    f"seqid=='{row.subject}' & (({row.sstart}<{row.send} & start<{row.send} & end>{row.sstart}) | ({row.send}<{row.sstart} & start<{row.sstart} & end>{row.send}))"
                 )
             )
             if n_overlapping == 0:
