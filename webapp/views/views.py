@@ -1309,6 +1309,7 @@ def optimal_region_order(regions, allow_flips=False):
             next_choice = region_indices[remaining_choices][max_index]
             path.append(next_choice)
             path_flips.append(flips[current, next_choice])
+            current = next_choice
         score = sum(similarities[path[i], path[i + 1]] for i in range(n_regions - 1))
         if score > max_score:
             max_score = score
