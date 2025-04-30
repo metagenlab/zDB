@@ -317,6 +317,9 @@ function createGenomicRegion(div, div_width, svg_id, regions, connections, highl
 			text = text.slice(0, -1);
 			obj.text(text + "...");
 			textLength = obj.node().getComputedTextLength();
+			if (text.length <= 5) {
+				break;
+			}
 		}
 	}
 
