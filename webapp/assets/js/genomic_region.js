@@ -247,18 +247,18 @@ function createGenomicRegion(div, div_width, svg_id, regions, connections, highl
 			.style("stroke", "black")
 			.style("stroke-width", base_line_width)
 			.style("stroke-dasharray", complete && circular ? "3,3" : null)
-			.attr("x1", x_scale(start))
+			.attr("x1", x_scale(start) - 0.5*base_line_width)
 			.attr("y1", y_scale(0))
-			.attr("x2", x_scale(start))
+			.attr("x2", x_scale(start) - 0.5*base_line_width)
 			.attr("y2", y_scale(2*arrow_height+base_line_width));
 
 		if(contig_start == start && !circular) {
 			svg.append("line")
 				.style("stroke", "black")
 				.style("stroke-width", 2*base_line_width)
-				.attr("x1", x_scale(start) - 2*base_line_width)
+				.attr("x1", x_scale(start) - 2.5*base_line_width)
 				.attr("y1", y_scale(0))
-				.attr("x2", x_scale(start) - 2*base_line_width)
+				.attr("x2", x_scale(start) - 2.5*base_line_width)
 				.attr("y2", y_scale(2*arrow_height+base_line_width));
 		}
 
@@ -267,18 +267,18 @@ function createGenomicRegion(div, div_width, svg_id, regions, connections, highl
 			.style("stroke", "black")
 			.style("stroke-width", base_line_width)
 			.style("stroke-dasharray", complete && circular ? "3,3" : null)
-			.attr("x1", x_scale(end))
+			.attr("x1", x_scale(end) + 0.5*base_line_width)
 			.attr("y1", y_scale(0))
-			.attr("x2", x_scale(end))
+			.attr("x2", x_scale(end) + 0.5*base_line_width)
 			.attr("y2", y_scale(2*arrow_height+base_line_width));
 
 		if(contig_end == end && !circular) {
 			svg.append("line")
 				.style("stroke", "black")
 				.style("stroke-width", 2*base_line_width)
-				.attr("x1", x_scale(end) + 2*base_line_width)
+				.attr("x1", x_scale(end) + 2.5*base_line_width)
 				.attr("y1", y_scale(0))
-				.attr("x2", x_scale(end) + 2*base_line_width)
+				.attr("x2", x_scale(end) + 2.5*base_line_width)
 				.attr("y2", y_scale(2*arrow_height+base_line_width));
 		}
 
@@ -366,8 +366,7 @@ function createGenomicRegion(div, div_width, svg_id, regions, connections, highl
 		let current_region = regions[i];
 		let region_size = current_region.end-current_region.start;
 		let y_base_pos = region_height*i + i*regions_vertical_interval;
-		let this_region_width = (region_size/max_region_size)*default_width;
-		this_region_width -= 6*base_line_width;
+		let this_region_width = (region_size/max_region_size)*(default_width - 7*base_line_width);
 		let horiz_padding = default_width-this_region_width;
 		let x_scale = d3.scale.linear().
 			domain([current_region.start, current_region.end]).
