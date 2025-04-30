@@ -744,7 +744,7 @@ process cluster_gis {
     script:
     result_file = "gi_clusters.tsv"
     """
-    mcl $gi_similarity --abc -o ${result_file} -te ${task.cpus}
+    mcl $gi_similarity -I 6 -pi 2 --abc -o ${result_file} -te ${task.cpus}
     """
 }
 
