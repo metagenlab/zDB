@@ -1299,7 +1299,7 @@ def optimal_region_order(regions, allow_flips=False):
     max_score = -1
     for start in region_indices:
         path = [start]
-        path_flips = [False]
+        path_flips = [0]
         current = start
         while len(path) < n_regions:
             remaining_choices = [
@@ -1354,11 +1354,16 @@ def prepare_genomic_regions(db, filtered_regions, allow_flips=False):
         filtered_regions, allow_flips=allow_flips
     )
     filtered_regions = [filtered_regions[i] for i in best_path]
+
     # Flip the regions if necessary
     if allow_flips:
+        prev_flip = 0
         for i, (region, start, end, _, _) in enumerate(filtered_regions):
-            if best_path_flips[i]:
+            if best_path_flips[i] != prev_flip:
                 flip_region(region, start, end)
+                prev_flip = 1
+            else:
+                prev_flip = 0
 
     for region, start, end, contig_size, contig_topology in filtered_regions:
         if prev_infos is not None:
