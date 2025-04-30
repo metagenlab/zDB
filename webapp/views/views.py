@@ -1293,7 +1293,7 @@ def optimal_region_order(regions, allow_flips=False):
                     ns = ns2
                     flips[i, j] = flips[j, i] = 1
             score = len(set(ogs1).intersection(ogs2)) + ns
-            similarities[i, j] = similarities[j, i] = score
+            similarities[i, j] = similarities[j, i] = score / len(set(ogs1).union(ogs2))
 
     region_indices = np.arange(n_regions)
     max_score = -1
