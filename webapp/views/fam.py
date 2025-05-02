@@ -9,9 +9,9 @@ from views.mixins import AmrViewMixin
 from views.mixins import CogViewMixin
 from views.mixins import GiViewMixin
 from views.mixins import KoViewMixin
+from views.mixins import OrthogroupViewMixin
 from views.mixins import PfamViewMixin
 from views.mixins import VfViewMixin
-from views.utils import DataTableConfig
 from views.utils import ResultTab
 from views.utils import TabularResultTab
 from views.utils import format_ko_module
@@ -59,31 +59,29 @@ class FamBaseView(View):
     @property
     def profile_tab_help_text(self):
         return (
-            f"<b> Profiles</b>: Phylogenetic tree annotated with"
-            f"<br>- the presence of the {self.object_name_singular_or_plural} of interest within all "
+            f"phylogenetic tree annotated with"
+            f"<br>- the presence of the {self.object_name} of interest within all "
             f"the genomes of the database (first column)"
             f"<br>- the size of the orthogroup(s) in which the reported {self.object_name} has been "
             f"clustered."
-            f'<br>In red the <font size="2" color="red">{self.object_name} with positive hit(s)</font> '
-            f"in the corresponding genome."
-            f'<br>In green <font size="2" color="green">the discrepencies between orthogroup clustering '
-            f"and {self.object_name} prediction</font>."
-            f"Green homologs (same orthogroup) <strong>are not</strong> positive hit(s) for the considered"
-            f" {self.object_name}."
-            f"<br><br>Variations within orthogroups may be due to the clustering of multi domain proteins"
+            f'<br>Orthogroups are shown in <font size="2" color="red"> red if they are annotated with that '
+            f'particular {self.object_name} in a given genome </font>, in <font size="2" color="green">'
+            f"green otherwise, i.e. if there is a discrepency between orthogroup clustering and {self.object_name}"
+            f" prediction</font>."
+            f"<br>Green homologs (same orthogroup) <strong>are not</strong> positive hit(s) for the "
+            f"considered {self.object_name}."
+            f"<br>Variations within orthogroups may be due to the clustering of multi domain proteins"
             f" or because of erroneous homolog clustering or {self.object_name} prediction."
         )
 
     @property
     def help_text(self):
-        return (
-            f"Three outputs have been generated:"
-            f"<br> <b>General</b>:  this tab contains the description, occurence in the database "
-            f"and other information related to the selected {self.object_name} {self.fam}"
-            f"<br> <b>{self.tabular_result_tab_header}</b>: lists the {self.table_size} occurences of "
-            f"the {self.object_name} within the database. The table reports information on each occurence."
-            f"<br>{self.profile_tab_help_text}"
+        text = (
+            f"{'Three' if len(self.tabs) == 3 else 'Four'} outputs have been generated:"
         )
+        for tab in self.tabs:
+            text += f"<br> <b>{tab.title}</b>: {tab.help_text}"
+        return text
 
     @property
     def view_name(self):
@@ -224,7 +222,7 @@ class FamBaseView(View):
 
         table_data, table_headers, table_accessors = self.get_table(seqids)
         self.table_size = len(table_data)
-
+        self.tabs = self.result_tabs(table_data, table_headers, table_accessors)
         context = self.get_context(
             fam=self.fam,
             info=info,
@@ -232,13 +230,19 @@ class FamBaseView(View):
             group_count=self.get_associated_entries(table_data),
             object_name_singular_or_plural=self.object_name_singular_or_plural,
             help_text=self.help_text,
-            result_tabs=self.result_tabs(table_data, table_headers, table_accessors),
+            result_tabs=self.tabs,
         )
         return context
 
     def result_tabs(self, table_data, table_headers, table_accessors):
         return [
-            ResultTab("general", "General", "chlamdb/fam_general_tab.html"),
+            ResultTab(
+                "general",
+                "General",
+                "chlamdb/fam_general_tab.html",
+                help_text=f"this tab contains the description, occurence in the database "
+                f"and other information related to the selected {self.object_name} {self.fam}",
+            ),
             TabularResultTab(
                 "distribution",
                 self.tabular_result_tab_header,
@@ -246,12 +250,15 @@ class FamBaseView(View):
                 table_data=table_data,
                 table_data_accessors=table_accessors,
                 selectable=True,
+                help_text=f"lists the {self.table_size} occurences of the {self.object_name} within the database. "
+                "The table reports information on each occurence.",
             ),
             ResultTab(
                 "profile",
                 "Profile",
                 "chlamdb/result_asset.html",
                 asset_path=self.asset_path,
+                help_text=self.profile_tab_help_text,
             ),
         ]
 
@@ -343,25 +350,46 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
     @property
     def profile_tab_help_text(self):
         return (
-            f"<b> Profiles</b>: Phylogenetic tree annotated with"
-            f"<br>- the presence of the {self.object_name_singular_or_plural} of interest within all "
-            f"the genomes of the database"
+            f"phylogenetic tree annotated with"
+            f"<br>- the presence of the {self.object_name} of interest within all "
+            f"the genomes of the database (first column)"
+            f"<br>- the size of the orthogroup(s) associated with the {self.object_name} in each genome."
+            f'<br>Orthogroups are shown in <font size="2" color="red"> red if they are found withinin the '
+            f'that particular {self.object_name} in a given genome </font>, in <font size="2" color="green">'
+            f"green otherwise, i.e. if the orthogroup is present in the genome but not in that "
+            f"{self.object_name}</font>."
+            f"<br>Green homologs (same orthogroup) <strong>are not</strong> found inside the "
+            f"considered {self.object_name}."
+            f"<br>Variations within orthogroups may be due to the clustering of multi domain proteins"
+            f" or because of erroneous homolog clustering or {self.object_name} prediction."
         )
 
     def get(self, request, entry_id, *args, **kwargs):
         entry_id = int(entry_id[3:])
         return super(FamGiClusterView, self).get(request, entry_id, *args, **kwargs)
 
-    def get_orthogroups(self, seqids):
-        return
-
-    def add_additional_columns(self, e_tree):
-        return
+    def get_orthogroups(self, gis_ids):
+        self.gi_descriptions = self.get_gi_descriptions(gis_ids)
+        self.gics = self.gi_descriptions[
+            ["bioentry.bioentry_id", "start_pos", "end_pos"]
+        ]
+        seqids = set()
+        for gis_id, row in self.gics.iterrows():
+            bioentry = int(row["bioentry.bioentry_id"])
+            start_pos = int(row["start_pos"])
+            end_pos = int(row["end_pos"])
+            df_seqids = self.db.get_features_location(bioentry, search_on="bioentry_id")
+            df_seqids = df_seqids[
+                (df_seqids.end_pos > start_pos) & (df_seqids.start_pos < end_pos)
+            ]
+            seqids.update(df_seqids.seqfeature_id)
+        seqids = list(seqids)
+        return super(FamGiClusterView, self).get_orthogroups(seqids)
 
     def get_table(self, gis_ids):
-        table_data = self.get_gi_descriptions(gis_ids)
-        self.gics = table_data[["bioentry.bioentry_id", "start_pos", "end_pos"]]
-        table_data.drop(columns=["bioentry.bioentry_id", "cluster_id"], inplace=True)
+        table_data = self.gi_descriptions.drop(
+            columns=["bioentry.bioentry_id", "cluster_id"]
+        )
         return (
             table_data,
             [self.colname_to_header(colname) for colname in table_data.columns],
@@ -371,11 +399,7 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
     def get_associated_entries(self, table_data):
         return table_data["gis_id"].unique()
 
-    def result_tabs(self, table_data, table_headers, table_accessors):
-        tabs = super(FamGiClusterView, self).result_tabs(
-            table_data, table_headers, table_accessors
-        )
-
+    def add_genomic_region(self, tabs):
         genomic_regions = []
         for gis_id, row in self.gics.iterrows():
             genomic_regions.append(
@@ -400,4 +424,26 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
             tabs[0].min_ident = min(all_identities)
         tabs[0].description = "This plot shows the genomic regions of the selected GIs."
 
+    def add_orthogroup_table(self, tabs):
+        og_mixin = OrthogroupViewMixin()
+        og_table = og_mixin.get_hit_descriptions(list(set(self.orthogroups.orthogroup)))
+        tabs.insert(
+            -1,
+            TabularResultTab(
+                "orthogroups",
+                "Orthogroup list",
+                table_data=og_table,
+                table_data_accessors=og_table.columns,
+                table_headers=og_mixin.table_headers,
+                selectable=True,
+                help_text=f"lists the {len(og_table)} orthogroups associated with the {self.object_name}",
+            ),
+        )
+
+    def result_tabs(self, table_data, table_headers, table_accessors):
+        tabs = super(FamGiClusterView, self).result_tabs(
+            table_data, table_headers, table_accessors
+        )
+        self.add_genomic_region(tabs)
+        self.add_orthogroup_table(tabs)
         return tabs

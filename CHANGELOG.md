@@ -16,6 +16,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add orthogroups to genomic island cluster overview. ([#173](https://github.com/metagenlab/zDB/pull/173)) (Niklaus Johner)
 - Add genomic island prediction consistency and clustering to analysis pipeline. ([#162](https://github.com/metagenlab/zDB/pull/162)) (Niklaus Johner)
 - Add genomic island visualizations. ([#165](https://github.com/metagenlab/zDB/pull/165)) (Niklaus Johner)
 
