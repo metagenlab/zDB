@@ -701,9 +701,14 @@ process compare_gis {
     script:
     result_file = "gi_comp.csv"
     """
-    mkdir sigs
-    sourmash sketch dna $gi_fastas --singleton
-    sourmash compare ${gi_fastas}.sig --csv $result_file -p ${task.cpus}
+    if [ -s $gi_fastas ]
+    then
+        mkdir sigs
+        sourmash sketch dna $gi_fastas --singleton
+        sourmash compare ${gi_fastas}.sig --csv $result_file -p ${task.cpus}
+    else
+        touch $result_file
+    fi
     """
 }
 
@@ -723,7 +728,10 @@ process matrix_to_abc {
     """
     #!/usr/bin/env python
     import pandas as pd
-    df = pd.read_csv("${gi_similarity}", header=0)
+    try:
+        df = pd.read_csv("${gi_similarity}", header=0)
+    except pd.errors.EmptyDataError:
+        df = pd.DataFrame()
     with open("${result_file}", "w") as fh:
         for i in range(len(df)):
             for j in range(i+1, len(df)):
