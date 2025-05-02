@@ -8,11 +8,18 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+### Changed
+
+### Added
+
+
+## 1.3.6 - 2025-05-02
+
+### Fixed
+
 - Fix displaying genomic islands in locus view. ([#160](https://github.com/metagenlab/zDB/pull/160)) (Niklaus Johner)
 - Make sure to add run to list of completed run upon import. ([#163](https://github.com/metagenlab/zDB/pull/163)) (Niklaus Johner)
 - Fix bug in genomic_region.js for very small regions. ([#171](https://github.com/metagenlab/zDB/pull/171)) (Niklaus Johner)
-
-### Changed
 
 ### Added
 
