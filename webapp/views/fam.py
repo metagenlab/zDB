@@ -9,9 +9,9 @@ from views.mixins import AmrViewMixin
 from views.mixins import CogViewMixin
 from views.mixins import GiViewMixin
 from views.mixins import KoViewMixin
+from views.mixins import OrthogroupViewMixin
 from views.mixins import PfamViewMixin
 from views.mixins import VfViewMixin
-from views.utils import DataTableConfig
 from views.utils import ResultTab
 from views.utils import TabularResultTab
 from views.utils import format_ko_module
@@ -59,7 +59,7 @@ class FamBaseView(View):
     @property
     def profile_tab_help_text(self):
         return (
-            f"<b> Profiles</b>: Phylogenetic tree annotated with"
+            f"phylogenetic tree annotated with"
             f"<br>- the presence of the {self.object_name} of interest within all "
             f"the genomes of the database (first column)"
             f"<br>- the size of the orthogroup(s) in which the reported {self.object_name} has been "
@@ -76,14 +76,12 @@ class FamBaseView(View):
 
     @property
     def help_text(self):
-        return (
-            f"Three outputs have been generated:"
-            f"<br> <b>General</b>:  this tab contains the description, occurence in the database "
-            f"and other information related to the selected {self.object_name} {self.fam}"
-            f"<br> <b>{self.tabular_result_tab_header}</b>: lists the {self.table_size} occurences of "
-            f"the {self.object_name} within the database. The table reports information on each occurence."
-            f"<br>{self.profile_tab_help_text}"
+        text = (
+            f"{'Three' if len(self.tabs) == 3 else 'Four'} outputs have been generated:"
         )
+        for tab in self.tabs:
+            text += f"<br> <b>{tab.title}</b>: {tab.help_text}"
+        return text
 
     @property
     def view_name(self):
@@ -224,7 +222,7 @@ class FamBaseView(View):
 
         table_data, table_headers, table_accessors = self.get_table(seqids)
         self.table_size = len(table_data)
-
+        self.tabs = self.result_tabs(table_data, table_headers, table_accessors)
         context = self.get_context(
             fam=self.fam,
             info=info,
@@ -232,13 +230,19 @@ class FamBaseView(View):
             group_count=self.get_associated_entries(table_data),
             object_name_singular_or_plural=self.object_name_singular_or_plural,
             help_text=self.help_text,
-            result_tabs=self.result_tabs(table_data, table_headers, table_accessors),
+            result_tabs=self.tabs,
         )
         return context
 
     def result_tabs(self, table_data, table_headers, table_accessors):
         return [
-            ResultTab("general", "General", "chlamdb/fam_general_tab.html"),
+            ResultTab(
+                "general",
+                "General",
+                "chlamdb/fam_general_tab.html",
+                help_text=f"this tab contains the description, occurence in the database "
+                f"and other information related to the selected {self.object_name} {self.fam}",
+            ),
             TabularResultTab(
                 "distribution",
                 self.tabular_result_tab_header,
@@ -246,12 +250,15 @@ class FamBaseView(View):
                 table_data=table_data,
                 table_data_accessors=table_accessors,
                 selectable=True,
+                help_text=f"lists the {self.table_size} occurences of the {self.object_name} within the database. "
+                "The table reports information on each occurence.",
             ),
             ResultTab(
                 "profile",
                 "Profile",
                 "chlamdb/result_asset.html",
                 asset_path=self.asset_path,
+                help_text=self.profile_tab_help_text,
             ),
         ]
 
@@ -343,7 +350,7 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
     @property
     def profile_tab_help_text(self):
         return (
-            f"<b> Profiles</b>: Phylogenetic tree annotated with"
+            f"phylogenetic tree annotated with"
             f"<br>- the presence of the {self.object_name} of interest within all "
             f"the genomes of the database (first column)"
             f"<br>- the size of the orthogroup(s) associated with the {self.object_name} in each genome."
@@ -417,9 +424,26 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
             tabs[0].min_ident = min(all_identities)
         tabs[0].description = "This plot shows the genomic regions of the selected GIs."
 
+    def add_orthogroup_table(self, tabs):
+        og_mixin = OrthogroupViewMixin()
+        og_table = og_mixin.get_hit_descriptions(list(set(self.orthogroups.orthogroup)))
+        tabs.insert(
+            -1,
+            TabularResultTab(
+                "orthogroups",
+                "Orthogroup list",
+                table_data=og_table,
+                table_data_accessors=og_table.columns,
+                table_headers=og_mixin.table_headers,
+                selectable=True,
+                help_text=f"lists the {len(og_table)} orthogroups associated with the {self.object_name}",
+            ),
+        )
+
     def result_tabs(self, table_data, table_headers, table_accessors):
         tabs = super(FamGiClusterView, self).result_tabs(
             table_data, table_headers, table_accessors
         )
         self.add_genomic_region(tabs)
+        self.add_orthogroup_table(tabs)
         return tabs
