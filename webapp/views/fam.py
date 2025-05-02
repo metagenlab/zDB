@@ -392,11 +392,7 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
     def get_associated_entries(self, table_data):
         return table_data["gis_id"].unique()
 
-    def result_tabs(self, table_data, table_headers, table_accessors):
-        tabs = super(FamGiClusterView, self).result_tabs(
-            table_data, table_headers, table_accessors
-        )
-
+    def add_genomic_region(self, tabs):
         genomic_regions = []
         for gis_id, row in self.gics.iterrows():
             genomic_regions.append(
@@ -421,4 +417,9 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
             tabs[0].min_ident = min(all_identities)
         tabs[0].description = "This plot shows the genomic regions of the selected GIs."
 
+    def result_tabs(self, table_data, table_headers, table_accessors):
+        tabs = super(FamGiClusterView, self).result_tabs(
+            table_data, table_headers, table_accessors
+        )
+        self.add_genomic_region(tabs)
         return tabs
