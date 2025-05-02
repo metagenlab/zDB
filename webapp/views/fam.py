@@ -344,24 +344,45 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
     def profile_tab_help_text(self):
         return (
             f"<b> Profiles</b>: Phylogenetic tree annotated with"
-            f"<br>- the presence of the {self.object_name_singular_or_plural} of interest within all "
-            f"the genomes of the database"
+            f"<br>- the presence of the {self.object_name} of interest within all "
+            f"the genomes of the database (first column)"
+            f"<br>- the size of the orthogroup(s) associated with the {self.object_name} in each genome."
+            f'<br>Orthogroups are shown in <font size="2" color="red"> red if they are found withinin the '
+            f'that particular {self.object_name} in a given genome </font>, in <font size="2" color="green">'
+            f"green otherwise, i.e. if the orthogroup is present in the genome but not in that "
+            f"{self.object_name}</font>."
+            f"<br>Green homologs (same orthogroup) <strong>are not</strong> found inside the "
+            f"considered {self.object_name}."
+            f"<br>Variations within orthogroups may be due to the clustering of multi domain proteins"
+            f" or because of erroneous homolog clustering or {self.object_name} prediction."
         )
 
     def get(self, request, entry_id, *args, **kwargs):
         entry_id = int(entry_id[3:])
         return super(FamGiClusterView, self).get(request, entry_id, *args, **kwargs)
 
-    def get_orthogroups(self, seqids):
-        return
-
-    def add_additional_columns(self, e_tree):
-        return
+    def get_orthogroups(self, gis_ids):
+        self.gi_descriptions = self.get_gi_descriptions(gis_ids)
+        self.gics = self.gi_descriptions[
+            ["bioentry.bioentry_id", "start_pos", "end_pos"]
+        ]
+        seqids = set()
+        for gis_id, row in self.gics.iterrows():
+            bioentry = int(row["bioentry.bioentry_id"])
+            start_pos = int(row["start_pos"])
+            end_pos = int(row["end_pos"])
+            df_seqids = self.db.get_features_location(bioentry, search_on="bioentry_id")
+            df_seqids = df_seqids[
+                (df_seqids.end_pos > start_pos) & (df_seqids.start_pos < end_pos)
+            ]
+            seqids.update(df_seqids.seqfeature_id)
+        seqids = list(seqids)
+        return super(FamGiClusterView, self).get_orthogroups(seqids)
 
     def get_table(self, gis_ids):
-        table_data = self.get_gi_descriptions(gis_ids)
-        self.gics = table_data[["bioentry.bioentry_id", "start_pos", "end_pos"]]
-        table_data.drop(columns=["bioentry.bioentry_id", "cluster_id"], inplace=True)
+        table_data = self.gi_descriptions.drop(
+            columns=["bioentry.bioentry_id", "cluster_id"]
+        )
         return (
             table_data,
             [self.colname_to_header(colname) for colname in table_data.columns],
