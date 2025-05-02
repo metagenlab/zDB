@@ -275,7 +275,7 @@ class TestViewsContent(ViewTestCase):
         )
         self.assertContains(
             resp,
-            '<a class="link_boxes" href="/index_comp/gic"><span class="link"></span>Genomic island clusters</a>',
+            '<a class="link_boxes" href="/index_comp/gic"><span class="link"></span>GI clusters</a>',
             html=True,
         )
         self.assertContains(

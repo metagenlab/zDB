@@ -92,7 +92,7 @@ class VfMetadata(BaseObjectMetadata):
 
 class GiMetadata(BaseObjectMetadata):
     object_type = "gic"
-    object_name = "Genomic island cluster"
+    object_name = "GI cluster"
 
     @property
     @staticmethod
