@@ -60,17 +60,17 @@ class FamBaseView(View):
     def profile_tab_help_text(self):
         return (
             f"<b> Profiles</b>: Phylogenetic tree annotated with"
-            f"<br>- the presence of the {self.object_name_singular_or_plural} of interest within all "
+            f"<br>- the presence of the {self.object_name} of interest within all "
             f"the genomes of the database (first column)"
             f"<br>- the size of the orthogroup(s) in which the reported {self.object_name} has been "
             f"clustered."
-            f'<br>In red the <font size="2" color="red">{self.object_name} with positive hit(s)</font> '
-            f"in the corresponding genome."
-            f'<br>In green <font size="2" color="green">the discrepencies between orthogroup clustering '
-            f"and {self.object_name} prediction</font>."
-            f"Green homologs (same orthogroup) <strong>are not</strong> positive hit(s) for the considered"
-            f" {self.object_name}."
-            f"<br><br>Variations within orthogroups may be due to the clustering of multi domain proteins"
+            f'<br>Orthogroups are shown in <font size="2" color="red"> red if they are annotated with that '
+            f'particular {self.object_name} in a given genome </font>, in <font size="2" color="green">'
+            f"green otherwise, i.e. if there is a discrepency between orthogroup clustering and {self.object_name}"
+            f" prediction</font>."
+            f"<br>Green homologs (same orthogroup) <strong>are not</strong> positive hit(s) for the "
+            f"considered {self.object_name}."
+            f"<br>Variations within orthogroups may be due to the clustering of multi domain proteins"
             f" or because of erroneous homolog clustering or {self.object_name} prediction."
         )
 
