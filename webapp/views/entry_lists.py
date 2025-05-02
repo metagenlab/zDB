@@ -64,12 +64,7 @@ class KoEntryListView(EntryListViewBase, KoViewMixin):
 
 
 class GiEntryListView(EntryListViewBase, GiViewMixin):
-    def get_table_data(self):
-        return self.get_hit_descriptions(None)
-
-    @property
-    def table_data_accessors(self):
-        return super(EntryListViewBase, self).table_data_accessors
+    pass
 
 
 class CogEntryListView(EntryListViewBase, CogViewMixin):
