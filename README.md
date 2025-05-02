@@ -349,7 +349,7 @@ If you want to contribute, feel free to open a PR describing your changes and ma
     - Current version can be checked on https://hub.docker.com/u/metagenlab
     - Update `requirements.txt` and `Dockerfile`s for `zdb` and `annotation-pipeline`
     - Build and push the images, e.g. `docker build -t metagenlab/annotation-pipeline:1.4.1 annotation-pipeline/` and `docker push metagenlab/annotation-pipeline:1.4.1`
-    - Update zdb `annotation_pipeline.nf` and `bin/zdb` accordingly
+    - Update zdb `nextflow.config` and `bin/zdb` accordingly
 - Test the bioconda release:
     - To test the release locally we use [bioconda-utils](https://bioconda.github.io/contributor/building-locally.html)
     - Activate the corresponding environment
