@@ -12,6 +12,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Highlight AMR and VF genes in genomic island representations. ([#174](https://github.com/metagenlab/zDB/pull/174)) (Niklaus Johner)
 
 ## 1.3.6 - 2025-05-02
 
