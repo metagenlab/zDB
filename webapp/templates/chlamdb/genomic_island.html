@@ -110,7 +110,7 @@ var genomic_region_rect = document.querySelector("#genomic_region_rect")
 var genomic_width = genomic_region_rect.right-genomic_region_rect.left;
 
 createGenomicRegion(d3.select("#div_genomic_region"), genomic_width*.8, "genomic_region", [genomic_region],
-    0, ["{{locus_tag}}"], {{window_size}});
+    0, {}, {{window_size}});
 
 document.querySelector("#download_svg_button").onclick = function() {
   var svg_elem = document.querySelector("#genomic_region");
