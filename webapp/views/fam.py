@@ -443,7 +443,10 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
         if len(all_identities) > 0:
             tabs[0].max_ident = max(all_identities)
             tabs[0].min_ident = min(all_identities)
-        tabs[0].description = "This plot shows the genomic regions of the selected GIs."
+        tabs[0].description = (
+            "This plot shows the genomic regions of the selected GIs."
+            "<br>Genes in magenta are AMR genes, while purple correspond to VF genes."
+        )
 
     def add_orthogroup_table(self, tabs):
         og_mixin = OrthogroupViewMixin()
