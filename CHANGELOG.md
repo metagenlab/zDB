@@ -8,6 +8,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Display correct GI ID in locus view. ([#175](https://github.com/metagenlab/zDB/pull/175)) (Niklaus Johner)
+
 ### Changed
 
 ### Added
