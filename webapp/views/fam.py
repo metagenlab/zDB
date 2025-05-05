@@ -19,6 +19,7 @@ from views.utils import format_ko_path
 from views.utils import format_locus
 from views.utils import format_orthogroup
 from views.utils import locusx_genomic_region
+from views.utils import optional2status
 from views.views import prepare_genomic_regions
 
 
@@ -383,8 +384,8 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
                 (df_seqids.end_pos > start_pos) & (df_seqids.start_pos < end_pos)
             ]
             seqids.update(df_seqids.seqfeature_id)
-        seqids = list(seqids)
-        return super(FamGiClusterView, self).get_orthogroups(seqids)
+        self.seqids = list(seqids)
+        return super(FamGiClusterView, self).get_orthogroups(self.seqids)
 
     def get_table(self, gis_ids):
         table_data = self.gi_descriptions.drop(
@@ -415,10 +416,20 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
         all_regions, connections, all_identities = prepare_genomic_regions(
             self.db, genomic_regions, allow_flips=True
         )
+        if optional2status.get("amr", False):
+            amrs = self.db.get_amr_hits_from_seqids(self.seqids, columns=("seqid",))
+            to_highlight = {
+                el: "magenta"
+                for el in self.db.get_proteins_info(
+                    amrs.seqid.to_list(), to_return=["locus_tag"], as_df=True
+                ).locus_tag
+            }
+        else:
+            to_highlight = {}
         tabs[0].show_genomic_region = True
         tabs[0].genomic_regions = "[" + "\n,".join(all_regions) + "]"
         tabs[0].connections = "[" + ",".join(connections) + "]"
-        tabs[0].to_highlight = []
+        tabs[0].to_highlight = to_highlight
         if len(all_identities) > 0:
             tabs[0].max_ident = max(all_identities)
             tabs[0].min_ident = min(all_identities)
