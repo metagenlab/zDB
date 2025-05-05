@@ -105,12 +105,13 @@
 
 <script>
 var genomic_region = {{genomic_region|safe}};
+var to_highlight = {{to_highlight|safe}};
 var genomic_region_rect = document.querySelector("#genomic_region_rect")
     .getBoundingClientRect();
 var genomic_width = genomic_region_rect.right-genomic_region_rect.left;
 
 createGenomicRegion(d3.select("#div_genomic_region"), genomic_width*.8, "genomic_region", [genomic_region],
-    0, {}, {{window_size}});
+    0, to_highlight, {{window_size}});
 
 document.querySelector("#download_svg_button").onclick = function() {
   var svg_elem = document.querySelector("#genomic_region");
