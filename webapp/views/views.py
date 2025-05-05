@@ -1484,7 +1484,7 @@ def plot_region(request):
     region_size = form.get_region_size()
 
     locus_tags = db.get_proteins_info(seqids, to_return=["locus_tag"], as_df=True)
-    to_highlight = locus_tags["locus_tag"].tolist()
+    to_highlight = {el: "red" for el in locus_tags["locus_tag"]}
 
     genomic_regions = []
     for seqid in seqids:
