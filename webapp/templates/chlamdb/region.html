@@ -37,7 +37,7 @@
 <script>
 
 var regions = {{results.genomic_regions|safe}};
-var to_highlight = {{results.to_highlight|safe}};
+var to_highlight = {{results.to_highlight|safe|default:"{}"}};
 var connections = {{results.connections | safe}};
 var ident_range = [{{results.min_ident}}, {{results.max_ident}}];
 var genomic_region_rect = document.querySelector("#div_alignment_bounding")
