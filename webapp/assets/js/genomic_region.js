@@ -137,8 +137,8 @@ function createGenomicRegion(div, div_width, svg_id, regions, connections, highl
 		.style("stroke-width", 2)
 		.style("opacity", .9)
 		.style("fill", function(d) {
-			if(highlight!=null && highlight.find(el => el===d.locus_tag)!==undefined) {
-				return "red";
+			if(highlight!=null && d.locus_tag in highlight) {
+				return highlight[d.locus_tag];
 			} else if(d.type=="CDS") {
 				return "green";
 			} else if(d.type=="tmRNA" || d.type=="tRNA" || d.type=="rRNA") {

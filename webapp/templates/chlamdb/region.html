@@ -9,7 +9,7 @@
   <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
     <div class="alert alert-info fade in" style="width:90%; margin: 10px 10px 10px 10px">
       <a href="#" class="close" data-dismiss="alert">&times;</a>
-      {{results.description}}<br>
+      {{results.description|safe}}<br>
       Links are coloured wiht a scale of gray reflecting the sequence identity:
       dark gray for highly conserved, light grey for features with less identity. Click on the link to visualise the percentage of identity.
       Beginning and end of the regions are shown as dashed line if the region shows a complete circular contig, a double line if the start or end of the region matches the start or end of a linear contig and a single line otherwise.
@@ -37,7 +37,7 @@
 <script>
 
 var regions = {{results.genomic_regions|safe}};
-var to_highlight = {{results.to_highlight|safe}};
+var to_highlight = {{results.to_highlight|safe|default:"{}"}};
 var connections = {{results.connections | safe}};
 var ident_range = [{{results.min_ident}}, {{results.max_ident}}];
 var genomic_region_rect = document.querySelector("#div_alignment_bounding")

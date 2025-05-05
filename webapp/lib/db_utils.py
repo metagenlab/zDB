@@ -2630,25 +2630,27 @@ class DB:
         self.server.adaptor.execute(sql)
         self.load_data_into_table("amr_hits", data)
 
-    def get_amr_hits_from_seqids(self, ids):
+    def get_amr_hits_from_seqids(self, ids, columns=None):
         """
         For now we limit that search to AMR type
         """
+        if columns is None:
+            columns = (
+                "gene",
+                "scope",
+                "type",
+                "class",
+                "subclass",
+                "coverage",
+                "identity",
+                "closest_seq",
+                "hmm_id",
+            )
 
-        columns = (
-            "gene",
-            "scope",
-            "type",
-            "class",
-            "subclass",
-            "coverage",
-            "identity",
-            "closest_seq",
-            "hmm_id",
-        )
-
+        col_sele = [f"hsh.{col}" if col == "seqid" else f"amr.{col}" for col in columns]
+        col_sele = ", ".join(col_sele)
         query = (
-            f"SELECT {', '.join(f'amr.{col}' for col in columns)} "
+            f"SELECT {col_sele} "
             "FROM amr_hits AS amr "
             "INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = amr.hsh "
             f"WHERE hsh.seqid IN ({', '.join(str(el) for el in ids)});"

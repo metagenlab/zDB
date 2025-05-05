@@ -86,7 +86,10 @@
                       <i class="glyphicon glyphicon-download"></i>
                     </button>
                   </div>
-                  <h3 class="panel-title">Genomic island</h3>
+                  <h3 class="panel-title">
+                    Genomic island
+                    <i class="fab fa-info-circle " style="size: 5em;" title="Genes in magenta are AMR genes, while purple correspond to VF genes."></i>
+                  </h3>
                 </div>
                 <div class="panel-body" style="height:100px; display:flex; justify-content:center; align-items:center; margin-bottom:30px" id="genomic_region_rect">
                   <div id="div_genomic_region"></div>
@@ -105,12 +108,13 @@
 
 <script>
 var genomic_region = {{genomic_region|safe}};
+var to_highlight = {{to_highlight|safe}};
 var genomic_region_rect = document.querySelector("#genomic_region_rect")
     .getBoundingClientRect();
 var genomic_width = genomic_region_rect.right-genomic_region_rect.left;
 
 createGenomicRegion(d3.select("#div_genomic_region"), genomic_width*.8, "genomic_region", [genomic_region],
-    0, ["{{locus_tag}}"], {{window_size}});
+    0, to_highlight, {{window_size}});
 
 document.querySelector("#download_svg_button").onclick = function() {
   var svg_elem = document.querySelector("#genomic_region");

@@ -3,6 +3,7 @@ from django.views import View
 from views.mixins import GiViewMixin
 from views.utils import genomic_region_df_to_js
 from views.utils import locusx_genomic_region
+from views.utils import optional2status
 
 
 class GenomicIsland(GiViewMixin, View):
@@ -28,6 +29,26 @@ class GenomicIsland(GiViewMixin, View):
         genomic_region = genomic_region_df_to_js(
             all_infos, wd_start, wd_end, contig_size, contig_topology
         )
+        seqids = all_infos.index.unique().tolist()
+        to_highlight = {}
+        if optional2status.get("amr", False):
+            amrs = self.db.get_amr_hits_from_seqids(seqids, columns=("seqid",))
+            to_highlight = {
+                el: "magenta"
+                for el in self.db.get_proteins_info(
+                    amrs.seqid.to_list(), to_return=["locus_tag"], as_df=True
+                ).get("locus_tag", [])
+            }
+        if optional2status.get("vf", False):
+            vfs = self.db.vf.get_hits_from_seqids(seqids, columns=("seqid",))
+            to_highlight.update(
+                {
+                    el: "purple"
+                    for el in self.db.get_proteins_info(
+                        vfs.seqid.to_list(), to_return=["locus_tag"], as_df=True
+                    ).get("locus_tag", [])
+                }
+            )
         window_size = wd_end - wd_start
         context = self.get_context(
             organism=self.data.taxon_id,
@@ -40,6 +61,7 @@ class GenomicIsland(GiViewMixin, View):
             island_size=self.data.end_pos - self.data.start_pos,
             description=self.data.gis_id,
             genomic_region=genomic_region,
+            to_highlight=to_highlight,
             window_size=window_size,
         )
         return render(request, self.template, context)
