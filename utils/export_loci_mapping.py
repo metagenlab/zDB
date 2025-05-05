@@ -68,6 +68,7 @@ def get_table(db_file, ref_taxid, taxids):
     # Now for each locus we will get the homologs with identities and gene name
     for seqid, row in loci.iterrows():
         identities = db.get_og_identity(og=row.orthogroup, ref_seqid=seqid)
+        identities["identity"] = identities["identity"].apply(lambda x: f"{x:.1f}")
         og_loci = identities.merge(og_annot, left_index=True, right_index=True).merge(
             all_org, left_index=True, right_index=True
         )
