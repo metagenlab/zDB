@@ -416,6 +416,7 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
         all_regions, connections, all_identities = prepare_genomic_regions(
             self.db, genomic_regions, allow_flips=True
         )
+        to_highlight = {}
         if optional2status.get("amr", False):
             amrs = self.db.get_amr_hits_from_seqids(self.seqids, columns=("seqid",))
             to_highlight = {
@@ -424,8 +425,17 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
                     amrs.seqid.to_list(), to_return=["locus_tag"], as_df=True
                 ).locus_tag
             }
-        else:
-            to_highlight = {}
+        if optional2status.get("vf", False):
+            vfs = self.db.vf.get_hits_from_seqids(self.seqids, columns=("seqid",))
+            to_highlight.update(
+                {
+                    el: "purple"
+                    for el in self.db.get_proteins_info(
+                        vfs.seqid.to_list(), to_return=["locus_tag"], as_df=True
+                    ).locus_tag
+                }
+            )
+
         tabs[0].show_genomic_region = True
         tabs[0].genomic_regions = "[" + "\n,".join(all_regions) + "]"
         tabs[0].connections = "[" + ",".join(connections) + "]"

@@ -214,3 +214,22 @@ class VFQueries(BaseQueries):
         "INNER JOIN seqfeature ON hsh.seqid = seqfeature.seqfeature_id "
         "INNER JOIN bioentry ON seqfeature.bioentry_id = bioentry.bioentry_id "
     )
+
+    def get_hits_from_seqids(self, ids, columns=None):
+        if columns is None:
+            columns = ("vf_gene_id",)
+
+        col_sele = [
+            f"hsh.{col}" if col == "seqid" else f"hits.{col}" for col in columns
+        ]
+        col_sele = ", ".join(col_sele)
+        query = (
+            f"SELECT {col_sele} "
+            f"FROM {self.hit_table} AS hits "
+            "INNER JOIN sequence_hash_dictionnary AS hsh ON hsh.hsh = hits.hsh "
+            f"WHERE hsh.seqid IN ({', '.join(str(el) for el in ids)});"
+        )
+
+        results = self.server.adaptor.execute_and_fetchall(query)
+        df = self.to_pandas_frame(results, columns)
+        return df
