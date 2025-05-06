@@ -8,13 +8,21 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
-- Display correct GI ID in locus view. ([#175](https://github.com/metagenlab/zDB/pull/175)) (Niklaus Johner)
-
 ### Changed
 
 ### Added
 
+
+## 1.3.7 - 2025-05-06
+
+### Fixed
+
+- Display correct GI ID in locus view. ([#175](https://github.com/metagenlab/zDB/pull/175)) (Niklaus Johner)
+
+### Added
+
 - Highlight AMR and VF genes in genomic island representations. ([#174](https://github.com/metagenlab/zDB/pull/174)) (Niklaus Johner)
+
 
 ## 1.3.6 - 2025-05-02
 
