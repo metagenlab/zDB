@@ -8,6 +8,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix annotation pipeline for input file with .genbank extensions. ([#181](https://github.com/metagenlab/zDB/pull/181)) (Niklaus Johner)
+
 ### Changed
 
 - Color genes as AMR if they are annotated as both AMR and VF in GI genomic region.([#180](https://github.com/metagenlab/zDB/pull/180)) (Niklaus Johner)
