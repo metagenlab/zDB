@@ -10,6 +10,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Changed
 
+- Color genes as AMR if they are annotated as both AMR and VF in GI genomic region.([#180](https://github.com/metagenlab/zDB/pull/180)) (Niklaus Johner)
+
 ### Added
 
 
