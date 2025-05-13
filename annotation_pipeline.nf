@@ -1153,9 +1153,7 @@ process cleanup {
     fi
 
     mkdir -p "${gbk_dir}"
-    for gbk in filtered/*.gb*; do
-    cp \$gbk ${gbk_dir}
-    done
+    cp $gbks/* ${gbk_dir}
 
     mv \$(readlink $index) ${results_dir}/search_index/index_${workflow.runName}
 
