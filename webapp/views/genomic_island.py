@@ -31,14 +31,6 @@ class GenomicIsland(GiViewMixin, View):
         )
         seqids = all_infos.index.unique().tolist()
         to_highlight = {}
-        if optional2status.get("amr", False):
-            amrs = self.db.get_amr_hits_from_seqids(seqids, columns=("seqid",))
-            to_highlight = {
-                el: "magenta"
-                for el in self.db.get_proteins_info(
-                    amrs.seqid.to_list(), to_return=["locus_tag"], as_df=True
-                ).get("locus_tag", [])
-            }
         if optional2status.get("vf", False):
             vfs = self.db.vf.get_hits_from_seqids(seqids, columns=("seqid",))
             to_highlight.update(
@@ -46,6 +38,16 @@ class GenomicIsland(GiViewMixin, View):
                     el: "purple"
                     for el in self.db.get_proteins_info(
                         vfs.seqid.to_list(), to_return=["locus_tag"], as_df=True
+                    ).get("locus_tag", [])
+                }
+            )
+        if optional2status.get("amr", False):
+            amrs = self.db.get_amr_hits_from_seqids(seqids, columns=("seqid",))
+            to_highlight.update(
+                {
+                    el: "magenta"
+                    for el in self.db.get_proteins_info(
+                        amrs.seqid.to_list(), to_return=["locus_tag"], as_df=True
                     ).get("locus_tag", [])
                 }
             )

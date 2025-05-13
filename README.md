@@ -39,17 +39,19 @@ zDB can be installed from bioconda with the following command
 conda install zdb -c conda-forge -c bioconda
 ```
 
-Once zDB is installed, we advise you to run the analysis and/or webapp in containers, especially for **MacOSX users**. For this, you'll need to install either **docker** or **apptainer (former singularity)**. Both the analyses and the webapp can also be run in conda environments, but this comes with several drawbacks:
+Once zDB is installed, you can use it to setup the reference databases, run the analysis or start the webapp. All these tasks will be run by zdb in separate environments, for which it will use either **conda**, **docker** or **apptainer (former singularity)**, so you will need either of those installed on your machine. You can choose which one to use by specifying `--conda`, `--docker` or `--singularity` on the command line. We advise you to use **docker** or **apptainer**, especially for **MacOSX users**, as using conda comes with several drawbacks:
+
+- some conda environments might fail to build on certain architectures, notably on machines with the ARM architecture (newer Mac desktops and notebooks).
 - django will be run in native mode, without nginx and gunicorn and should not be used to set up a web-facing database (it is fine for a local access)
 - containers allow us to have a precise control of the environment where the webapp is run; it is less the case for conda environment. Despite our best care, running the webapp in conda might not work due to local differences.
 - *some conda environments have numerous dependencies: to speed the installation, we strongly recommend the use a recent version of conda, which has included the solver from mamba and is much faster*.
 - **Xvfb should be installed on your machine**. The ete3 rendering engine unfortunately relies on Qt, which requires an X server running in headless mode. If you can't install Xvfb, please consider using apptainer containers. We plan on developing our own Javascript tree rendering code to get rid of this dependency.
 
-If you opt to use apptainer, it can be installed with the following command:
+If you opt to use apptainer, it can be installed (on Linux) with the following command:
 ```
 conda install apptainer>=1.3.6 -c conda-forge
 ```
-Or you could create a new environment containing zDB and apptainer with:
+Or you could create a new environment containing both zDB and apptainer with:
 ```
 conda create --name zdb -c conda-forge -c bioconda zdb apptainer
 ```
