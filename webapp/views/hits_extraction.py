@@ -12,6 +12,7 @@ from views.mixins import OrthogroupViewMixin
 from views.mixins import PfamViewMixin
 from views.mixins import VfViewMixin
 from views.utils import ResultTab
+from views.utils import TabularResultTab
 from views.utils import format_cog
 from views.utils import format_cog_url
 from views.utils import format_ko_url
@@ -227,7 +228,14 @@ class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
             ResultTab(
                 1, self.object_name_plural, "chlamdb/extract_hits_results_table.html"
             ),
-            ResultTab(2, "Details table", "chlamdb/extract_hits_details_table.html"),
+            TabularResultTab(
+                "distribution",
+                "Details table",
+                table_headers=self.details_headers,
+                table_data=self.details_data,
+                table_data_accessors=self.details_accessors,
+                selectable=True,
+            ),
         ]
 
     @property
@@ -247,33 +255,52 @@ class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
         if config_table.get("KEGG", False):
             header.append("KO")
             ko_hits = db.get_ko_hits(seqids, search_on="seqid", indexing="seqid")
+            ko_desc = db.get_ko_desc(ko_hits["ko"].astype(str).to_list(), as_df=True)
+            ko_hits = ko_hits.join(ko_desc.set_index("ko"), on="ko")
             annotations.append(ko_hits)
         if config_table.get("COG", False):
             header.append("COG")
             cog_hits = db.get_cog_hits(seqids, indexing="seqid", search_on="seqid")
+            cog_desc = db.get_cog_summaries(
+                cog_hits["cog"].to_list(), as_df=True, only_cog_desc=True
+            )
+            cog_hits = cog_hits.join(cog_desc["description"], on="cog")
             annotations.append(cog_hits)
 
         if len(annotations) == 2:
-            return header, annotations[0].join(annotations[1], how="outer")
+            return header, annotations[0].join(
+                annotations[1], how="outer", lsuffix="_ko", rsuffix="_cog"
+            )
         elif len(annotations) == 1:
             return header, annotations[0]
         return header, pd.DataFrame()
 
     @staticmethod
     def get_table_details(db, annotations):
-        header = ["Orthogroup", "Organism", "Locus", "Gene", "Product"]
+        headers = ["Orthogroup", "Organism", "Locus", "Gene", "Product"]
+        accessors = ["orthogroup", "seqid", "locus_tag", "gene", "_product"]
+        # rename product to _product to avoid the product method of the dataframe
+        # being called when rendering the table.
+        annotations.rename(columns={"product": "_product"}, inplace=True)
+
         hsh_organisms = db.get_organism(annotations.index.tolist())
-        infos = []
-        for seqid, data in annotations.iterrows():
-            organism = hsh_organisms[seqid]
-            og = format_orthogroup(data.orthogroup, to_url=True)
-            gene = data.gene
-            if pd.isna(data.gene):
-                gene = "-"
-            locus = format_locus(data.locus_tag, to_url=True)
-            entry = [og, organism, locus, gene, data["product"]]
-            infos.append(entry)
-        return header, infos
+        annotations["orthogroup"] = annotations["orthogroup"].map(format_orthogroup)
+        annotations["locus_tag"] = annotations["locus_tag"].map(format_locus)
+
+        if "ko" in annotations.columns:
+            annotations["ko"] = annotations["ko"].map(format_ko_url, na_action="ignore")
+            headers.extend(["KO", "KO description"])
+            accessors.extend(["ko", "description_ko"])
+        if "cog" in annotations.columns:
+            annotations["cog"] = annotations["cog"].map(
+                format_cog_url, na_action="ignore"
+            )
+            headers.extend(["COG", "COG description"])
+            accessors.extend(["cog", "description_cog"])
+        annotations.rename(mapper=hsh_organisms, inplace=True)
+        annotations.reset_index(inplace=True)
+        annotations.where(annotations.notna(), "-", inplace=True)
+        return headers, accessors, annotations
 
     def prepare_data(self, hit_counts, hit_counts_all):
         self.table_data = []
@@ -342,13 +369,13 @@ class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
             .reset_index()
         )
 
-        details_header, details_data = self.get_table_details(self.db, annotations)
+        self.details_headers, self.details_accessors, self.details_data = (
+            self.get_table_details(self.db, annotations)
+        )
 
         self.show_results = True
         context = self.get_context(
             ref_genomes=ref_genomes,
-            details_header=details_header,
-            details_data=details_data,
             show_circos_form=True,
         )
         return context
