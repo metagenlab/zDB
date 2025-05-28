@@ -13,6 +13,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Changed
 
+- Rename "N plasmid contigs" column to "Has plasmid(s)" in genome table. ([#184](https://github.com/metagenlab/zDB/pull/184)) (Niklaus Johner))
 - Color genes as AMR if they are annotated as both AMR and VF in GI genomic region.([#180](https://github.com/metagenlab/zDB/pull/180)) (Niklaus Johner)
 
 ### Added
