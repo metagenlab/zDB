@@ -8,6 +8,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix circos plot sometimes raising an error. ([#183](https://github.com/metagenlab/zDB/pull/183)) (Niklaus Johner)
 - Fix annotation pipeline for input file with .genbank extensions. ([#181](https://github.com/metagenlab/zDB/pull/181)) (Niklaus Johner)
 
 ### Changed

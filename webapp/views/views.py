@@ -1648,7 +1648,7 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     # iterate ordered list of target taxids, add track to circos
     for n, target_taxon in enumerate(target_taxon_n_homologs.index):
         df_combined = df_feature_location.join(
-            df_identity.loc[target_taxon].reset_index().set_index("seqfeature_id_1")
+            df_identity.loc[target_taxon].reset_index().set_index("seqfeature_id_1").rename_axis("seqfeature_id")
         ).reset_index()
         df_combined.identity = df_combined.identity.fillna(0).astype(int)
         df_combined.bioentry_id = df_combined.bioentry_id.astype(str)
