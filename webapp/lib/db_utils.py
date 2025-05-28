@@ -1213,16 +1213,6 @@ class DB:
         query = "CREATE INDEX og_seqid_idx ON og_hits(orthogroup);"
         self.server.adaptor.execute(query)
 
-    def taxon_ids(self):
-        query = "SELECT taxon_id FROM taxon"
-        result = self.server.adaptor.execute_and_fetchall(
-            query,
-        )
-        arr_taxon_ids = []
-        for line in result:
-            arr_taxon_ids.append(int(line[0]))
-        return arr_taxon_ids
-
     def set_status_in_config_table(self, status_name, status_val):
         sql = (
             f"update biodb_config set status={status_val} "
@@ -1350,6 +1340,14 @@ class DB:
         descr = self.server.adaptor.execute_and_fetchall(query, taxids)
         columns = ["taxon_id", "description", "has_plasmid"]
         return DB.to_pandas_frame(descr, columns).set_index(["taxon_id"])
+
+    def get_number_of_genomes(self):
+        """
+        Returns the number of genomes in the database.
+        """
+        query = "SELECT COUNT(*) FROM genome_summary;"
+        result = self.server.adaptor.execute_and_fetchall(query)
+        return int(result[0][0]) if result else 0
 
     def get_genomes_infos(self, taxids=None):
         """
