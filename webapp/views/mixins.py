@@ -563,7 +563,7 @@ class GenomesTableMixin:
             "N contigs",
             "Size (Mbp)",
             "Coding %",
-            "N plasmid contigs",
+            "Has plasmid(s)",
             "faa seq",
             "fna seq",
             "ffn seq",
