@@ -917,6 +917,8 @@ class KoBarchart(KoViewMixin, View):
             taxids=taxids,
             taxon_map=taxon_map,
             category_map=category_map,
+            supplementary_help_text="",
+            loci_url="module_cat_info",
         )
         return render(request, "chlamdb/ko_barplot.html", context)
 

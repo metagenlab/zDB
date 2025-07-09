@@ -26,10 +26,12 @@
                   <h5 class="panel-title">Help to interpret the results</h5>
                 </div>
                 <p style="margin: 10px 10px 10px 10px">
-                  This analysis let you compare the distribution of Kegg Orthologs for each KO category within genomes of interest.
-                  Each bar represent the number of  Kegg Orthologs identified. <br>
-                  <br>- Click on bars to get a list of the corresponding loci.<br>
-                  - Click on labels to get venn diagram of the shared Kegg Orthologs (max 6 species will be diplayed).<br>
+                  This analysis let you compare the distribution of {{object_name_plural}} for each {{object_type.upper}} category within genomes of interest.
+                  Each bar represent the number of {{object_name_plural}} identified. <br>
+                  {{supplementary_help_text}}
+                  <br>
+                  - Click on bars to get a list of the corresponding loci.<br>
+                  - Click on labels to get venn diagram of the shared {{object_name_plural}} (max 6 species will be diplayed).<br>
                 </p>
               </div>
 
@@ -80,7 +82,7 @@
 
 
                   <div id="mydiv" style="float: left"></div>
-                  <svg class="chart" id="ko_barchart"></svg>
+                  <svg class="chart" id="barchart"></svg>
 
                   <script>
 
@@ -177,11 +179,11 @@
                   function drill(d, i) {
                       var taxon = data.series[d3.select(this.parentNode).attr("taxon_id")].label; //data object
                       var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
-                      window.open("/chlamdb/module_cat_info/" + taxon + "/" + category + "{{circos_url|safe}}");
+                      window.open("/chlamdb/{{loci_url}}/" + taxon + "/" + category);
                   }
                   function drill2(d,j) {
                           var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
-                          window.open("/chlamdb/ko_venn_subset/" + category + "{{taxids|safe}}") };
+                          window.open("/chlamdb/{{object_type}}_venn_subset/" + category + "{{taxids|safe}}") };
 
                   //bar.on("click", drill);
 
@@ -224,8 +226,8 @@
                           .attr("class", "btn btn-primary btn-sm")
                           .text("Download SVG")
                           .on("click", function() {
-                var svg_elem = document.querySelector("#ko_barchart");
-                svgExport.downloadSvg(svg_elem, "ko_cat_chart");
+                var svg_elem = document.querySelector("#barchart");
+                svgExport.downloadSvg(svg_elem, "{{object_type}}_cat_chart");
                           });
 
                   </script>
