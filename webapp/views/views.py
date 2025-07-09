@@ -845,12 +845,12 @@ class KoBarchart(KoViewMixin, View):
 
     def get(self, request, *args, **kwargs):
         self.form = self.form_class()
-        return render(request, "chlamdb/ko_barplot.html", self.get_context())
+        return render(request, "chlamdb/category_barplot.html", self.get_context())
 
     def post(self, request, *args, **kwargs):
         self.form = self.form_class(request.POST)
         if not self.form.is_valid():
-            return render(request, "chlamdb/ko_barplot.html", self.get_context())
+            return render(request, "chlamdb/category_barplot.html", self.get_context())
 
         taxids = self.form.get_taxids()
 
@@ -920,7 +920,7 @@ class KoBarchart(KoViewMixin, View):
             supplementary_help_text="",
             loci_url="module_cat_info",
         )
-        return render(request, "chlamdb/ko_barplot.html", context)
+        return render(request, "chlamdb/category_barplot.html", context)
 
 
 class CogBarchart(CogViewMixin, View):
