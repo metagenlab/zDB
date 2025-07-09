@@ -89,6 +89,9 @@
                     series: {{series|safe}}
                   };
 
+                  // defines the description2category map
+                  {{category_map|safe}}
+                  // defines the taxon2description map
                   {{taxon_map|safe}}
 
                   var chartWidth       = 300,
@@ -173,13 +176,11 @@
 
                   function drill(d, i) {
                       var taxon = data.series[d3.select(this.parentNode).attr("taxon_id")].label; //data object
-                      var category = data.labels[d3.select(this.parentNode).attr("category_id")]; //data object
-                      var category = category.split(' ').join('+')
+                      var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
                       window.open("/chlamdb/module_cat_info/" + taxon + "/" + category + "{{circos_url|safe}}");
                   }
                   function drill2(d,j) {
-                          var category = data.labels[d3.select(this.parentNode).attr("category_id")]; //data object
-                          var category = category.split(' ').join('+')
+                          var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
                           window.open("/chlamdb/ko_venn_subset/" + category + "{{taxids|safe}}") };
 
                   //bar.on("click", drill);
