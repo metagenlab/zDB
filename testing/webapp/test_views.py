@@ -215,16 +215,6 @@ class TestViewsAreHealthy(ViewTestCase):
 
 
 class TestViewsContent(ViewTestCase):
-    def assertNoPlot(self, resp):
-        self.assertNotIn("envoi", resp.context.keys())
-        self.assertNotContains(resp, '<div class="panel panel-success"')
-        self.assertNotContains(resp, "Help to interpret the results")
-
-    def assertPlot(self, resp):
-        self.assertIn("envoi", resp.context.keys())
-        self.assertContains(resp, '<div class="panel panel-success"')
-        self.assertContains(resp, "Help to interpret the results")
-
     def assertTitle(self, resp, title):
         self.assertContains(resp, f'<p class="home-title">{title}</p>', html=True)
 
@@ -294,25 +284,6 @@ class TestViewsContent(ViewTestCase):
             html=True,
         )
 
-    def test_cog_barchart(self):
-        resp = self.client.get("/cog_barchart/")
-        self.assertEqual(200, resp.status_code)
-        self.assertTemplateUsed(resp, "chlamdb/cog_barplot.html")
-        self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
-        self.assertNoPlot(resp)
-        self.assertContains(
-            resp, "Barcharts of COG entries categories in selected genomes"
-        )
-
-        resp = self.client.post("/cog_barchart/", data={"targets": ["1", "2"]})
-        self.assertEqual(200, resp.status_code)
-        self.assertTemplateUsed(resp, "chlamdb/cog_barplot.html")
-        self.assertTitle(resp, "Comparisons: Clusters of Orthologous groups (COGs)")
-        self.assertPlot(resp)
-        self.assertContains(
-            resp, "Barcharts of COG entries categories in selected genomes"
-        )
-
     def test_blast(self):
         resp = self.client.get("/blast/")
         self.assertEqual(200, resp.status_code)
@@ -370,6 +341,16 @@ class ComparisonViewsTestMixin:
     heatmap_html = '<div id="heatmap" '
     rarefaction_plot_html = 'id="rarefaction_plot"'
     gwas_table_html = '<table id="gwas_table"'
+
+    def assertNoCategoryBarplot(self, resp):
+        self.assertNotIn("envoi", resp.context.keys())
+        self.assertNotContains(resp, '<div class="panel panel-success"')
+        self.assertNotContains(resp, "Help to interpret the results")
+
+    def assertCategoryBarplot(self, resp):
+        self.assertIn("envoi", resp.context.keys())
+        self.assertContains(resp, '<div class="panel panel-success"')
+        self.assertContains(resp, "Help to interpret the results")
 
     def assertPageTitle(self, resp, title):
         self.assertContains(resp, f'<p class="home-title">{title}</p>', html=True)
@@ -615,6 +596,25 @@ class TestKOViews(ViewTestCase, ComparisonViewsTestMixin):
 
         maybe_dump_html(resp)
 
+    def test_category_barchart(self):
+        resp = self.client.get("/ko_barchart/")
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, "chlamdb/category_barplot.html")
+        self.assertPageTitle(resp, self.page_title)
+        self.assertNoCategoryBarplot(resp)
+        self.assertContains(
+            resp, "Barcharts of Kegg Orthologs categories in selected genomes"
+        )
+
+        resp = self.client.post("/ko_barchart/", data={"targets": ["1", "2"]})
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, "chlamdb/category_barplot.html")
+        self.assertPageTitle(resp, self.page_title)
+        self.assertCategoryBarplot(resp)
+        self.assertContains(
+            resp, "Barcharts of Kegg Orthologs categories in selected genomes"
+        )
+
 
 class TestCOGViews(ViewTestCase, ComparisonViewsTestMixin):
     view_type = "cog"
@@ -630,6 +630,25 @@ class TestCOGViews(ViewTestCase, ComparisonViewsTestMixin):
         self.assertNav(resp)
 
         maybe_dump_html(resp)
+
+    def test_category_barchart(self):
+        resp = self.client.get("/cog_barchart/")
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, "chlamdb/category_barplot.html")
+        self.assertPageTitle(resp, self.page_title)
+        self.assertNoCategoryBarplot(resp)
+        self.assertContains(
+            resp, "Barcharts of COG entries categories in selected genomes"
+        )
+
+        resp = self.client.post("/cog_barchart/", data={"targets": ["1", "2"]})
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, "chlamdb/category_barplot.html")
+        self.assertPageTitle(resp, self.page_title)
+        self.assertCategoryBarplot(resp)
+        self.assertContains(
+            resp, "Barcharts of COG entries categories in selected genomes"
+        )
 
 
 class TestAMRViews(ViewTestCase, ComparisonViewsTestMixin):
