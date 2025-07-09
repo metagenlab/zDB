@@ -834,13 +834,15 @@ def js_bioentries_to_description(hsh):
     return taxon_map + mid + "};"
 
 
-class KoBarchart(KoViewMixin, View):
+class CategoryBarchartBase(View):
     _metadata_cls = CategoriesBarchartMetadata
 
     @property
     def form_class(self):
         return make_venn_from(
-            self.db, label=self.object_name_plural, action="/ko_barchart/"
+            self.db,
+            label=self.object_name_plural,
+            action=f"/{self.object_type}_barchart/",
         )
 
     def get(self, request, *args, **kwargs):
@@ -854,6 +856,34 @@ class KoBarchart(KoViewMixin, View):
 
         taxids = self.form.get_taxids()
 
+        taxon2description = self.db.get_genomes_description().description.to_dict()
+        taxon_map = "var taxon2description = {"
+        taxon_map_lst = (
+            f'"{target}": "{taxon2description[target]}"' for target in taxids
+        )
+        taxon_map = taxon_map + ",".join(taxon_map_lst) + "};"
+
+        labels, series, category_map = self.prepare_barchart_data(taxids)
+
+        taxids = "?" + "&".join((f"h={i}" for i in taxids))
+
+        context = self.get_context(
+            envoi=True,
+            series=series,
+            labels=labels,
+            taxids=taxids,
+            taxon_map=taxon_map,
+            category_map=category_map,
+            supplementary_help_text="",
+            loci_url=self.loci_url,
+        )
+        return render(request, "chlamdb/category_barplot.html", context)
+
+
+class KoBarchart(KoViewMixin, CategoryBarchartBase):
+    loci_url = "module_cat_info"
+
+    def prepare_barchart_data(self, taxids):
         ko_counts = self.db.get_ko_count(taxids, keep_seqids=True, as_multi=False)
         ko_ids = ko_counts.KO.unique()
         ko_module_ids = self.db.get_ko_modules(
@@ -899,52 +929,15 @@ class KoBarchart(KoViewMixin, View):
             f'"{cat}": "{"+".join(cat.split(" "))}"' for cat in subcategories_list
         )
         category_map = category_map + ",".join(map_lst) + "};"
-
-        taxon2description = self.db.get_genomes_description().description.to_dict()
-        taxon_map = "var taxon2description = {"
-        taxon_map_lst = (
-            f'"{target}": "{taxon2description[target]}"' for target in taxids
-        )
-        taxon_map = taxon_map + ",".join(taxon_map_lst) + "};"
-
-        taxids = "?" + "&".join((f"h={i}" for i in taxids))
         series = "[" + ",".join(series_data) + "]"
-
-        context = self.get_context(
-            envoi=True,
-            series=series,
-            labels=labels,
-            taxids=taxids,
-            taxon_map=taxon_map,
-            category_map=category_map,
-            supplementary_help_text="",
-            loci_url="module_cat_info",
-        )
-        return render(request, "chlamdb/category_barplot.html", context)
+        return labels, series, category_map
 
 
-class CogBarchart(CogViewMixin, View):
-    _metadata_cls = CategoriesBarchartMetadata
+class CogBarchart(CogViewMixin, CategoryBarchartBase):
+    loci_url = "get_cog"
 
-    @property
-    def form_class(self):
-        return make_venn_from(
-            self.db, label=self.object_name_plural, action="/cog_barchart/"
-        )
-
-    def get(self, request, *args, **kwargs):
-        self.form = self.form_class()
-        return render(request, "chlamdb/category_barplot.html", self.get_context())
-
-    def post(self, request, *args, **kwargs):
-        self.form = self.form_class(request.POST)
-        if not self.form.is_valid():
-            return render(request, "chlamdb/category_barplot.html", self.get_context())
-
-        target_bioentries = self.form.get_taxids()
-
-        hsh_counts = self.db.get_cog_counts_per_category(target_bioentries)
-        taxon2description = self.db.get_genomes_description().description.to_dict()
+    def prepare_barchart_data(self, taxids):
+        hsh_counts = self.db.get_cog_counts_per_category(taxids)
         category_dico = self.db.get_cog_code_description()
 
         # create a dictionnary to convert cog category description and one letter code
@@ -953,12 +946,6 @@ class CogBarchart(CogViewMixin, View):
             f'"{func_descr}": "{func}"' for func, func_descr in category_dico.items()
         )
         category_map = category_map + ",".join(map_lst) + "};"
-
-        taxon_map = "var taxon2description = {"
-        taxon_map_lst = (
-            f'"{target}": "{taxon2description[target]}"' for target in target_bioentries
-        )
-        taxon_map = taxon_map + ",".join(taxon_map_lst) + "};"
 
         # Not too happy with this code and its level of indentation
         # Could also be made faster by avoiding string comparisons and list lookup
@@ -999,20 +986,9 @@ class CogBarchart(CogViewMixin, View):
                 one_serie_template % (taxon, ",".join(one_category_list))
             )
 
-        taxids = "?" + "&".join((f"h={i}" for i in target_bioentries))
         series = serie_template % "".join(all_series_templates)
         labels = labels_template % ('"' + '","'.join(all_categories) + '"')
-        context = self.get_context(
-            envoi=True,
-            series=series,
-            labels=labels,
-            taxids=taxids,
-            category_map=category_map,
-            taxon_map=taxon_map,
-            supplementary_help_text="Multiples occurences of a single COG definition/genome are clustered as one. COGs definitions associated with multiple categories are counted as multiple separate entities.<br>",
-            loci_url="get_cog",
-        )
-        return render(request, "chlamdb/category_barplot.html", context)
+        return labels, series, category_map
 
 
 class PanGenome(ComparisonViewMixin, View):
