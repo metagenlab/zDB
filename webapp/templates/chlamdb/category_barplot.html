@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+
+<html>
+
+<head>
+  {% load static %}
+  {% load custom_tags %}
+  {% include "chlamdb/header.html" %}
+</head>
+
+<body>
+
+<div class="container-fluid" id="main_container">
+  <div class="row">
+    <div id="wrapper">
+      <div id="page-content-wrapper">
+        {% include "chlamdb/comparison_header.html" %}
+        <div class="row">
+          <div class="col-lg-12">
+
+            {% if envoi %}
+              <div class="row" style="padding-top:30px; background-color: rgba(245, 245, 245, 0.986); margin-top: 2em">
+                <div class="panel panel-success">
+                  <div class="panel-heading" style="width:100%">
+                    <h5 class="panel-title">Help to interpret the results</h5>
+                  </div>
+                  <p style="margin: 10px 10px 10px 10px">
+                    This analysis let you compare the distribution of {{object_name_plural}} for each
+                    {{object_type.upper}} category within genomes of interest.
+                    Each bar represent the number of {{object_name_plural}} identified. <br>
+                    {{supplementary_help_text}}
+                    <br>
+                    - Click on bars to get a list of the corresponding loci.<br>
+                    - Click on labels to get venn diagram of the shared {{object_name_plural}} (max 6 species will be
+                    diplayed).<br>
+                  </p>
+                </div>
+
+                <style>
+                  .chart .legend {
+                    fill: black;
+                    font: 14px sans-serif;
+                    text-anchor: start;
+                    font-size: 12px;
+                  }
+
+                  .chart text {
+                    fill: black;
+                    font: 10px sans-serif;
+                    text-anchor: end;
+                  }
+
+                  .chart .label:hover {
+                    fill: red;
+                  }
+
+                  .chart .label {
+                    fill: black;
+                    font: 14px sans-serif;
+                    text-anchor: end;
+                  }
+
+                  .bar:hover {
+                    fill: brown;
+                  }
+
+                  .axis path,
+                  .axis line {
+                    fill: none;
+                    stroke: #000;
+                    shape-rendering: crispEdges;
+                  }
+                </style>
+
+                <div id="svg_download_div" style="float: left"></div>
+                <div id="csv_download_div" style="float: left; padding-left:2ex;"></div>
+                <svg class="chart" id="barchart"></svg>
+
+                <script>
+
+                  var data = {
+                    labels: {{ labels | safe }},
+                    series: {{ series | safe }}
+                  };
+
+                  // defines the description2category map
+                  {{ category_map | safe }}
+                  // defines the taxon2description map
+                  {{ taxon_map | safe }}
+
+                  var chartWidth = 300,
+                    barHeight = 10,
+                    groupHeight = barHeight * data.series.length,
+                    gapBetweenGroups = 10,
+                    spaceForLabels = 450,
+                    spaceForLegend = 250;
+
+                  // Zip the series data together (first values, second values, etc.)
+                  var zippedData = [];
+                  for (var i = 0; i < data.labels.length; i++) {
+                    for (var j = 0; j < data.series.length; j++) {
+                      zippedData.push(data.series[j].values[i]);
+                    }
+                  }
+
+                  // Color scale
+                  var color = d3.scale.category20();
+                  var chartHeight = barHeight * zippedData.length + gapBetweenGroups * data.labels.length;
+
+                  var x = d3.scale.linear()
+                    .domain([0, d3.max(zippedData)])
+                    .range([0, chartWidth]);
+
+                  var y = d3.scale.linear()
+                    .range([chartHeight + gapBetweenGroups, 0]);
+
+                  var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .tickFormat('')
+                    .tickSize(0)
+                    .orient("left");
+
+                  // Specify the chart area and dimensions
+                  var chart = d3.select(".chart")
+                    .attr("width", spaceForLabels + chartWidth + spaceForLegend)
+                    .attr("height", chartHeight);
+
+                  // Create bars
+                  var bar = chart.selectAll("g")
+                    .data(zippedData)
+                    .enter().append("g")
+                    .attr("transform", function (d, i) {
+                      return "translate(" + spaceForLabels + "," + (i * barHeight + gapBetweenGroups * (0.5 + Math.floor(i / data.series.length))) + ")";
+                    }
+                    )
+                    // Math.floor(i/data.series.length)
+                    .attr("taxon_id", function (d, i) { return (i % data.series.length); })
+                    .attr("category_id", function (d, i) { return (Math.floor(i / data.series.length)); });
+
+
+                  // Create rectangles of the correct width
+                  bar.append("rect")
+                    .attr("fill", function (d, i) { return color(i % data.series.length); })
+                    .attr("class", "bar")
+                    .attr("width", x)
+                    .attr("height", barHeight - 1)
+                    .on("click", drill);
+
+
+                  // Add text label in bar
+                  bar.append("text")
+                    .attr("x", function (d) { return x(d) + -3; })
+                    .attr("y", barHeight / 2)
+                    .attr("fill", "red")
+                    .attr("dy", ".35em")
+                    .text(function (d) { return d; });
+
+                  // Draw labels
+                  bar.append("text")
+                    .attr("class", "label")
+                    .attr("x", function (d) { return - 10; })
+                    .attr("y", groupHeight / 2)
+                    .attr("dy", ".35em")
+                    .text(function (d, i) {
+                      if (i % data.series.length === 0)
+                        return data.labels[Math.floor(i / data.series.length)];
+                      else
+                        return ""
+                    })
+                    .on("click", drill2);
+
+                  function drill(d, i) {
+                    var taxon = data.series[d3.select(this.parentNode).attr("taxon_id")].label; //data object
+                    var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
+                    window.open("/chlamdb/{{loci_url}}/" + taxon + "/" + category);
+                  }
+                  function drill2(d, j) {
+                    var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
+                    window.open("/chlamdb/{{object_type}}_venn_subset/" + category + "{{taxids|safe}}")
+                  };
+
+                  chart.append("g")
+                    .attr("class", "y axis")
+                    .attr("transform", "translate(" + spaceForLabels + ", " + -gapBetweenGroups / 2 + ")")
+                    .call(yAxis);
+
+                  // Draw legend
+                  var legendRectSize = 18,
+                    legendSpacing = 4;
+
+                  var legend = chart.selectAll('.legend')
+                    .data(data.series)
+                    .enter()
+                    .append('g')
+                    .attr('transform', function (d, i) {
+                      var height = legendRectSize + legendSpacing;
+                      var offset = -gapBetweenGroups / 2;
+                      var horz = spaceForLabels + chartWidth + 40 - legendRectSize;
+                      var vert = i * height - offset;
+                      return 'translate(' + horz + ',' + vert + ')';
+                    });
+
+                  legend.append('rect')
+                    .attr('width', legendRectSize)
+                    .attr('height', legendRectSize)
+                    .style('fill', function (d, i) { return color(i); })
+                    .style('stroke', function (d, i) { return color(i); });
+
+                  legend.append('text')
+                    .attr('class', 'legend')
+                    .attr('x', legendRectSize + legendSpacing)
+                    .attr('y', legendRectSize - legendSpacing)
+                    .text(function (d) { return taxon2description[d.label]; });
+
+                  d3.select("#svg_download_div").append("button")
+                    .attr("type", "button")
+                    .attr("class", "btn btn-primary btn-sm")
+                    .text("Download SVG")
+                    .on("click", function () {
+                      var svg_elem = document.querySelector("#barchart");
+                      svgExport.downloadSvg(svg_elem, "{{object_type}}_cat_chart");
+                    });
+
+                  d3.select("#csv_download_div").append("button")
+                    .attr("type", "button")
+                    .attr("class", "btn btn-primary btn-sm")
+                    .text("Download CSV")
+                    .on("click", function () {
+                      downloadCSV(data, taxon2description)
+                    });
+                    
+                  function downloadCSV(data, taxon2description) {
+                    const csvRows = [];
+                    csvRows.push("," + data.series.map(el => taxon2description[el.label]).join(","))
+                      for (var i=0; i<data.labels.length; i++) {
+                        row = []
+                        row.push(JSON.stringify(data.labels[i]))
+                        row.push(...data.series.map(el => JSON.stringify(el.values[i], replacer)))
+                        csvRows.push(row.join(','))
+                      }
+                    
+                    const csvString = csvRows.join('\n');
+                    const blob = new Blob([csvString], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.setAttribute('href', url);
+                    a.setAttribute('download', 'data.csv');
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }
+                  function replacer(key, value) {
+                    return value === null ? '' : value;
+                  }
+
+                </script>
+              </div>
+            {% endif %}
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+{% include "chlamdb/style_menu.html" %}
+
+</html>
