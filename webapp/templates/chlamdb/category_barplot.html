@@ -73,7 +73,8 @@
                   }
                 </style>
 
-                <div id="mydiv" style="float: left"></div>
+                <div id="svg_download_div" style="float: left"></div>
+                <div id="csv_download_div" style="float: left; padding-left:2ex;"></div>
                 <svg class="chart" id="barchart"></svg>
 
                 <script>
@@ -212,7 +213,7 @@
                     .attr('y', legendRectSize - legendSpacing)
                     .text(function (d) { return taxon2description[d.label]; });
 
-                  d3.select("#mydiv").append("button")
+                  d3.select("#svg_download_div").append("button")
                     .attr("type", "button")
                     .attr("class", "btn btn-primary btn-sm")
                     .text("Download SVG")
@@ -220,6 +221,37 @@
                       var svg_elem = document.querySelector("#barchart");
                       svgExport.downloadSvg(svg_elem, "{{object_type}}_cat_chart");
                     });
+
+                  d3.select("#csv_download_div").append("button")
+                    .attr("type", "button")
+                    .attr("class", "btn btn-primary btn-sm")
+                    .text("Download CSV")
+                    .on("click", function () {
+                      downloadCSV(data, taxon2description)
+                    });
+                    
+                  function downloadCSV(data, taxon2description) {
+                    const csvRows = [];
+                    csvRows.push("," + data.series.map(el => taxon2description[el.label]).join(","))
+                      for (var i=0; i<data.labels.length; i++) {
+                        row = []
+                        row.push(JSON.stringify(data.labels[i]))
+                        row.push(...data.series.map(el => JSON.stringify(el.values[i], replacer)))
+                        csvRows.push(row.join(','))
+                      }
+                    
+                    const csvString = csvRows.join('\n');
+                    const blob = new Blob([csvString], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.setAttribute('href', url);
+                    a.setAttribute('download', 'data.csv');
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }
+                  function replacer(key, value) {
+                    return value === null ? '' : value;
+                  }
 
                 </script>
 

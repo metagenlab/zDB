@@ -20,6 +20,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add button to download the data as CSV on category barplot views. ([#187](https://github.com/metagenlab/zDB/pull/187)) (Niklaus Johner))
 
 ## 1.3.7 - 2025-05-06
 
