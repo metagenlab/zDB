@@ -8,6 +8,14 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+### Changed
+
+### Added
+
+## 1.3.8 - 2025-07-15
+
+### Fixed
+
 - Fix presence in DB column in hit extraction view. ([#185](https://github.com/metagenlab/zDB/pull/185)) (Niklaus Johner)
 - Fix circos plot sometimes raising an error. ([#183](https://github.com/metagenlab/zDB/pull/183)) (Niklaus Johner)
 - Fix annotation pipeline for input file with .genbank extensions. ([#181](https://github.com/metagenlab/zDB/pull/181)) (Niklaus Johner)
