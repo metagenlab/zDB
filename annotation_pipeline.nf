@@ -216,7 +216,7 @@ process orthofinder {
 
   script:
   """
-  orthofinder -t ${task.cpus} -n "out" -S blast -f .
+  orthofinder -t ${task.cpus} -n "out" -S ${params.og_seq_aligner} -f .
   """
 }
 
