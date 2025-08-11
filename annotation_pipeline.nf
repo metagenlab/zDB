@@ -208,15 +208,23 @@ process orthofinder {
   cpus params.n_cpus
 
   input:
-    path genome_list
+    path genome_list_core, name: "*"
+    path genome_list_rest, name: "assign/*"
 
   output:
-    path "OrthoFinder/Results_out/Orthogroups/Orthogroups.txt"
-    path "OrthoFinder/Results_out/Orthogroups/Orthogroups_SingleCopyOrthologues.txt"
-
+    path "OrthoFinder/Results_def/Orthogroups/Orthogroups.txt"
+    path "OrthoFinder/Results_def/Orthogroups/Orthogroups_SingleCopyOrthologues.txt"
+  
   script:
+  def n_assign = genome_list_rest.size()
+
   """
-  orthofinder -t ${task.cpus} -n "out" -S ${params.og_seq_aligner} -f .
+    if [ "$n_assign" -eq "0" ]; then
+        orthofinder -t ${task.cpus} -n "def" -S ${params.og_seq_aligner} -f .
+    else
+        orthofinder -t ${task.cpus} -n "core" -S ${params.og_seq_aligner} -f .
+        orthofinder -t ${task.cpus} -n "def" -S ${params.og_seq_aligner} --assign assign/ --core OrthoFinder/Results_core/
+    fi
   """
 }
 
@@ -1120,6 +1128,19 @@ process cleanup {
     """
 }
 
+
+process add_index_to_faa_files {
+    input:
+        path faa_files
+
+    output:
+        tuple path(faa_files), val(task.index)
+
+    script:
+    """
+    """
+}
+
 workflow {
 
     dummy = check_reference_databases(Channel.fromPath(params.base_db))
@@ -1150,11 +1171,12 @@ workflow {
 
     makeblastdb(to_makeblastdb)
 
-    // (species_fasta, species_blastdb, result_dir) = prepare_orthofinder(faa_files.collect())
-    // blast_results = blast_orthofinder(result_dir, species_fasta, species_blastdb)
-    // (orthogroups, singletons) = orthofinder_main(result_dir, blast_results.collect())
-
-    (orthogroups, singletons) = orthofinder(faa_files.collect())
+    faa_files_index = add_index_to_faa_files(faa_files)
+    faa_files_split = faa_files_index.branch({
+        core: it[1] < 64
+        rest: it[1] >= 64
+    })
+    (core_ogs, orthogroups, singletons) = orthofinder(faa_files_split.core.map({it[0]}).collect(), faa_files_split.rest.map({it[0]}).collect().ifEmpty([]))
     orthogroups_fasta = orthogroups2fasta(orthogroups, faa_files.collect())
 
     mafft_alignments = align_with_mafft(orthogroups_fasta.toSortedList().flatten().collate(20))
