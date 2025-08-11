@@ -213,7 +213,6 @@ process orthofinder {
 
   output:
     path "OrthoFinder/Results_def/Orthogroups/Orthogroups.txt"
-    path "OrthoFinder/Results_def/Orthogroups/Orthogroups_SingleCopyOrthologues.txt"
   
   script:
   def n_assign = genome_list_rest.size()
@@ -1176,7 +1175,7 @@ workflow {
         core: it[1] < 64
         rest: it[1] >= 64
     })
-    (core_ogs, orthogroups, singletons) = orthofinder(faa_files_split.core.map({it[0]}).collect(), faa_files_split.rest.map({it[0]}).collect().ifEmpty([]))
+    orthogroups = orthofinder(faa_files_split.core.map({it[0]}).collect(), faa_files_split.rest.map({it[0]}).collect().ifEmpty([]))
     orthogroups_fasta = orthogroups2fasta(orthogroups, faa_files.collect())
 
     mafft_alignments = align_with_mafft(orthogroups_fasta.toSortedList().flatten().collate(20))
