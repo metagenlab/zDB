@@ -1,5 +1,6 @@
 name: orthofinder
 channels:
+    - conda-forge
     - bioconda
 dependencies:
     - orthofinder=3.1.0
