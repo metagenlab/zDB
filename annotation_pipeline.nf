@@ -1172,8 +1172,8 @@ workflow {
 
     faa_files_index = add_index_to_faa_files(faa_files)
     faa_files_split = faa_files_index.branch({
-        core: it[1] < 64
-        rest: it[1] >= 64
+        core: it[1] < params.og_n_core
+        rest: it[1] >= params.og_n_core
     })
     orthogroups = orthofinder(faa_files_split.core.map({it[0]}).collect(), faa_files_split.rest.map({it[0]}).collect().ifEmpty([]))
     orthogroups_fasta = orthogroups2fasta(orthogroups, faa_files.collect())

@@ -525,6 +525,16 @@ elif [[ "$1" == "run" ]]; then
 				args="${args} --og_seq_aligner=${og_seq_aligner}"
 				shift
 				;;
+			--og_n_core=*)
+				n_core=${i#*=}
+				int_re='^[0-9]*$'
+				if ! [[ $n_core =~ $int_re ]]; then
+					echo "Expect a number for og_n_core option"
+					exit 1
+				fi
+				args="${args} --og_n_core=$n_core"
+				shift
+				;;
 			--singularity_dir=*)
 				singularity_dir=$(realpath ${i#*=})
 				shift
