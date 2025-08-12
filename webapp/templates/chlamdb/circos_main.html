@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 
-
 <html>
+
 <head>
-{% load static %}
-{% load crispy_forms_tags %}
-<script src="{% static 'js/circos.js' %}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
-
-
-{% include "chlamdb/header.html" %}
+  {% load static %}
+  {% load crispy_forms_tags %}
+  <script src="{% static 'js/circos.js' %}"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
+  {% include "chlamdb/header.html" %}
 </head>
-<body>
 
+<body>
   <div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
@@ -26,7 +24,10 @@
                   <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                     <br>
                     <p class="page-title">
-                      Circos plots indicating the presence/absence of homologous proteins in one or multiple genomes<a href="/docs/index.html" id="show-option" title="Circos plot to compare genomes (Targets) and visualize the presence/absence of homologous proteins according to the selected reference one (Circos reference)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a>
+                      Circos plots indicating the presence/absence of homologous proteins in one or multiple genomes
+                      <a href="/docs/index.html" id="show-option" title="Circos plot to compare genomes (Targets) and visualize the presence/absence of homologous proteins according to the selected reference one (Circos reference)">
+                        <i class="fab fa-info-circle " style="size: 5em;" ></i>
+                      </a>
                     </p>
                     <br>
                     <div class="panel panel-success" style="width:100%; top: 200px ; margin: 10px 10px 10px 10px">
@@ -70,7 +71,6 @@
                   </ul>
                   <div id='download' class='download'></div>
                   <div id='heatmapChart' class='chartclass'></div>
-
                 </div>
               </div>
             </div>
@@ -83,11 +83,8 @@
 
 {% include "chlamdb/style_menu.html" %}
 
-
-
 <script type="text/javascript">
-
-{{js_code|safe}}
-
+  {{js_code|safe}}
 </script>
+
 </html>
