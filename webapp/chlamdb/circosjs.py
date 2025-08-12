@@ -188,7 +188,6 @@ class CircosJs:
         self,
         df,
         label,
-        highlight_list=["OJCDPLGI_00091", "OJCDPLGI_00096"],
         sep=0,
         radius_diff=0.04,
     ):
@@ -206,16 +205,6 @@ class CircosJs:
                 "start": row.start_pos,
                 "end": row.end_pos,
                 "color": row.color,
-                "locus_tag": row.locus_ref,
-                "gene": f"{row.gene}",
-                "product": f"{row.gene_product}",
-            }
-            if row.locus_ref not in highlight_list
-            else {
-                "block_id": str(row.bioentry_id),
-                "start": row.start_pos,
-                "end": row.end_pos,
-                "color": "magenta",
                 "locus_tag": row.locus_ref,
                 "gene": f"{row.gene}",
                 "product": f"{row.gene_product}",

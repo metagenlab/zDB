@@ -8,6 +8,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix highlighting of orthogroups in circos_main. ([#189](https://github.com/metagenlab/zDB/pull/189)) (Niklaus Johner)
+
 ### Changed
 
 - Update orthofinder to version 3.1 to speed-up annotation pipeline. ([#188](https://github.com/metagenlab/zDB/pull/188)) (Niklaus Johner)

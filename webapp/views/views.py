@@ -1542,17 +1542,9 @@ def circos_main(request):
     return render(request, "chlamdb/circos_main.html", my_locals(locals()))
 
 
-def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
+def get_circos_data(reference_taxon, target_taxons, highlight_og=None):
     biodb_path = settings.BIODB_DB_PATH
     db = DB.load_db_from_name(biodb_path)
-
-    if highlight_og:
-        df_genes = db.get_genes_from_og(
-            highlight_og, taxon_ids=[reference_taxon], terms=["locus_tag"]
-        )
-        locus_list = df_genes["locus_tag"].to_list()
-    else:
-        locus_list = []
 
     # "bioentry_id", "accession" ,"length"
     df_bioentry = db.get_bioentry_list(reference_taxon, min_bioentry_length=1000)
@@ -1616,12 +1608,18 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     ].fillna("-")
 
     df_feature_location["color"] = "grey"
-    df_feature_location.loc[df_feature_location["term_name"] == "tRNA", "color"] = (
-        "magenta"
-    )
-    df_feature_location.loc[df_feature_location["term_name"] == "rRNA", "color"] = (
-        "magenta"
-    )
+    if highlight_og is not None:
+        df_genes = db.get_genes_from_og(
+            highlight_og, taxon_ids=[reference_taxon], terms=["locus_tag"]
+        )
+        df_feature_location.loc[df_genes["locus_tag"].index, "color"] = "magenta"
+    else:
+        df_feature_location.loc[df_feature_location["term_name"] == "tRNA", "color"] = (
+            "magenta"
+        )
+        df_feature_location.loc[df_feature_location["term_name"] == "rRNA", "color"] = (
+            "magenta"
+        )
 
     df_feature_location = df_feature_location.rename(columns={"locus_tag": "locus_ref"})
 
@@ -1630,12 +1628,8 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
     c.add_histogram_track(
         homologs_count, "n_genomes", radius_diff=0.1, sep=0.005, outer=True
     )
-    c.add_gene_track(
-        minus_strand, "minus", sep=0, radius_diff=0.04, highlight_list=locus_list
-    )
-    c.add_gene_track(
-        plus_strand, "plus", sep=0, radius_diff=0.04, highlight_list=locus_list
-    )
+    c.add_gene_track(minus_strand, "minus", sep=0, radius_diff=0.04)
+    c.add_gene_track(plus_strand, "plus", sep=0, radius_diff=0.04)
     # iterate ordered list of target taxids, add track to circos
     for n, target_taxon in enumerate(target_taxon_n_homologs.index):
         df_combined = df_feature_location.join(
