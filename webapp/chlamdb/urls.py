@@ -252,7 +252,6 @@ urlpatterns = [
         name="cog_comparison",
     ),  # noqa
     re_path(r"^cog_barchart/$", views.CogBarchart.as_view(), name="cog_barchart"),
-    re_path(r"^circos_main/$", views.circos_main, name="circos_main"),
     re_path(r"^circos/$", views.circos, name="circos"),
     re_path(r"^blast/$", views.blast, name="blast"),
     re_path(

@@ -1517,31 +1517,6 @@ def plot_region(request):
     return render(request, "chlamdb/plot_region.html", my_locals(ctx))
 
 
-def circos_main(request):
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
-    if request.method == "POST":
-        reference_taxon = request.POST["reference_taxid"]
-        include_taxids = eval(request.POST["include_taxids"])
-        exclude_taxids = eval(request.POST["exclude_taxids"])
-        og_list = eval(request.POST["og_list"])
-
-        target_taxons = include_taxids + exclude_taxids
-
-        target_taxons.pop(target_taxons.index(int(reference_taxon)))
-
-        js_code = get_circos_data(
-            int(reference_taxon), [int(i) for i in target_taxons], highlight_og=og_list
-        )
-
-        envoi = True
-        envoi_region = True
-
-        return render(request, "chlamdb/circos_main.html", my_locals(locals()))
-
-    return render(request, "chlamdb/circos_main.html", my_locals(locals()))
-
-
 def get_circos_data(reference_taxon, target_taxons, highlight_og=None):
     biodb_path = settings.BIODB_DB_PATH
     db = DB.load_db_from_name(biodb_path)
