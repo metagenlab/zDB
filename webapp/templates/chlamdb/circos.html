@@ -27,7 +27,9 @@
               </p>
               {% block content %}
                 {% csrf_token %}
+                <span style="display:{{form_display}};">
                 {% crispy form %}
+                </span>
               {% endblock %}
             </div>
 
@@ -51,13 +53,27 @@
                             In the second circle the contigs of the reference genome are displayed (<span style="color: orangered;"><b>orange</b></span>/<span style="color: rgb(81, 190, 166);"><b>aquamarine</b></span>)
                           </li>
                           <li>
-                            The third and fourth circles represent the forward and reverse strands and show open reading frames from the reference genome (in <span style="color: rgb(92, 92, 92)"><b>gray</b></span>)
+                            The third and fourth circles represent the forward and reverse strands and show open reading frames from the reference genome:
                           </li>
-                          <ol>
-                            <li>
-                              rRNA are colored in <span style="color: rgb(200, 41, 248)"><b>pink</b></span>
-                            </li>
-                          </ol>
+                          {% if highlighted_ogs %}
+                            <ol>
+                              <li>
+                                annotated loci are colored in <span style="color: rgb(200, 41, 248)"><b>pink</b></span>
+                              </li>
+                              <li>
+                                not annotated loci are colored in <span style="color: rgb(92, 92, 92)"><b>gray</b></span>
+                              </li>
+                            </ol>
+                          {% else %}
+                            <ol>
+                              <li>
+                                rRNA are colored in <span style="color: rgb(200, 41, 248)"><b>pink</b></span>
+                              </li>
+                              <li>
+                                DNA is colored in <span style="color: rgb(92, 92, 92)"><b>grey</b></span>
+                              </li>
+                            </ol>
+                          {% endif %}
                           <li>
                             Inner <span style="color: rgb(114, 22, 22);"><b>bordeaux</b></span>/<span style="color: rgb(79, 188, 221);"><b>light-blue</b></span> circle(s) indicate the presence(bordeaux scale)/absence(light blue) of homologous proteins in one or multiple other genomes
                           </li>

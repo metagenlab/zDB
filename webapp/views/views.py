@@ -1688,7 +1688,15 @@ def circos(request):
             target_taxons = form.get_target_taxids()
             reference_taxon = form.get_ref_taxid()
 
-            js_code = get_circos_data(reference_taxon, target_taxons)
+            form_display = "inherit"
+            highlighted_ogs = None
+            if "highlighted_ogs" in form.data:
+                # This is only set when coming from the OG extraction view.
+                # As this is not a field supported in the form, we hide the form
+                highlighted_ogs = form.data.getlist("highlighted_ogs")
+                form_display = None
+
+            js_code = get_circos_data(reference_taxon, target_taxons, highlighted_ogs)
 
             envoi = True
     else:
