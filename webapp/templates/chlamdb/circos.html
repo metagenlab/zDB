@@ -31,9 +31,9 @@
               </p>
               {% block content %}
                 {% csrf_token %}
-                <span style="display:{{form_display}};">
+                <div class="row" style="display:{{form_display}};">
                 {% crispy form %}
-                </span>
+                </div>
               {% endblock %}
             </div>
 
