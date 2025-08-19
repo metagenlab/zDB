@@ -37,7 +37,7 @@
               {% endblock %}
             </div>
 
-            {% if envoi %}
+            {% if show_results %}
               <div class="row">
                 <div class="col-lg-12">
                   <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
@@ -101,7 +101,7 @@
 <script type="text/javascript">
 
 $(document).ready(function() {
-  if ( "{{envoi}}" === "" ) {
+  if ( "{{show_results}}" === "" ) {
     return;
   }
   // Create Viewer

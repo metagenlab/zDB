@@ -231,7 +231,7 @@ class CircosView(BaseViewMixin, View):
 
             self.prepare_circos_data()
             context = self.get_context(
-                envoi=True,
+                show_results=True,
                 circos_json=json.dumps(self.data.to_json()),
                 form_display=form_display,
             )
