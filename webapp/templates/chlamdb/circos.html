@@ -107,8 +107,8 @@
 $(document).ready(function() {
   // Create Viewer
   cgv = new CGV.Viewer('#circos_plot', {
-    height: 500,
-    width: 500
+    height: 0.8*window.innerHeight,
+    width: document.getElementById('tabs').offsetWidth,
   });
   // Load data
   cgv.io.loadJSON({{circos_json| safe}});
