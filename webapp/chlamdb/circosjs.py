@@ -18,7 +18,10 @@ class CircosData:
                 "features": self.features,
                 "sequence": {"contigs": self.contigs},
                 "plots": self.plots,
-                "legend": {"items": self.legend_items},
+                "legend": {
+                    "items": self.legend_items,
+                    "position": "top-left",
+                },
                 "tracks": self.tracks,
                 "dividers": {
                     "track": {
