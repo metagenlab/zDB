@@ -112,6 +112,7 @@ class CircosData:
                 "meta": {
                     "gene": f"{row.gene}",
                     "product": f"{row.gene_product}",
+                    "identity": f"{row.identity}%",
                 },
                 "score": row.identity / 100,
                 "name": row.locus_tag,
