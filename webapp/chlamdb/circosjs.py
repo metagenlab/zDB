@@ -163,6 +163,7 @@ class CircosData:
                 "legend": label,
                 "name": f"group_{n}",
                 "type": "OG",
+                "meta": {"prevalence": f"{int(100 * row.value)}%"},
             }
             for n, row in df.iterrows()
         ]
