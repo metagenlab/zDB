@@ -2,6 +2,7 @@ from django.urls import re_path
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 from views import autocomplete
+from views import circos
 from views import custom_plots
 from views import entry_lists
 from views import fam
@@ -252,7 +253,7 @@ urlpatterns = [
         name="cog_comparison",
     ),  # noqa
     re_path(r"^cog_barchart/$", views.CogBarchart.as_view(), name="cog_barchart"),
-    re_path(r"^circos/$", views.circos, name="circos"),
+    re_path(r"^circos/$", circos.circos, name="circos"),
     re_path(r"^blast/$", views.blast, name="blast"),
     re_path(
         r"^autocomplete_taxid/$",
