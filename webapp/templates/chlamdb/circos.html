@@ -6,8 +6,10 @@
   {% load custom_tags %}
   {% load static %}
   {% load crispy_forms_tags %}
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
-  <script src="{% static 'js/circos.js' %}"></script>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cgview/dist/cgview.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cgview/dist/cgview.css">
   {% include "chlamdb/header.html" %}
 </head>
 
@@ -90,7 +92,7 @@
                 </div>
               </div>
             {% endif %}
-            <div id='heatmapChart' class='chartclass'></div>
+            <div id='circos_plot'></div>
           </div>
         </div>
       </div>
@@ -101,7 +103,53 @@
 {% include "chlamdb/style_menu.html" %}
 
 <script type="text/javascript">
-  {{js_code|safe}}
+
+$(document).ready(function() {
+  // Create Viewer
+  cgv = new CGV.Viewer('#circos_plot', {
+    height: 500,
+    width: 500
+  });
+  // Load data
+  cgv.io.loadJSON({{circos_json| safe}});
+  cgv.addTracks({
+    name: 'GC Skew',
+    position: 'inside',
+    dataType: 'feature',
+    dataMethod: 'sequence',
+    // e.g. In this example, GC Skew plot will be extracted from the sequence.
+    dataKeys: 'gc-skew',
+    // By default, the step and window values are calculated based on the sequence length,
+    // but they can be overridden here.
+    dataOptions: {
+      step: 1,
+      window: 100
+    }
+  });
+  cgv.addTracks({
+    name: 'GC Content',
+    position: 'inside',
+    dataType: 'feature',
+    dataMethod: 'sequence',
+    // e.g. In this example, GC Content plot will be extracted from the sequence.
+    dataKeys: 'gc-content',
+    // By default, the step and window values are calculated based on the sequence length,
+    // but they can be overridden here.
+    dataOptions: {
+      step: 1,
+      window: 100
+    }
+  });
+  cgv.on('click', (event) => {
+    if (event.elementType === 'feature') {
+      if (['orthogroups', 'genes'].includes(event.slot.track.name)) {
+        window.open(`/locusx/${event.element.name}`)
+      }
+    }
+  });
+  cgv.draw()
+});
+
 </script>
 
 </html>

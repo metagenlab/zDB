@@ -4,6 +4,7 @@
 # todo save temp files in temp folder
 
 import collections
+import json
 import random
 import re
 import string
@@ -12,7 +13,6 @@ from io import StringIO
 from tempfile import NamedTemporaryFile
 
 import bibtexparser
-import chlamdb.circosjs as circosjs
 import numpy as np
 import pandas as pd
 from Bio import SeqIO
@@ -21,6 +21,7 @@ from Bio.Blast.Applications import NcbiblastnCommandline
 from Bio.Blast.Applications import NcbiblastpCommandline
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio.Blast.Applications import NcbitblastnCommandline
+from chlamdb.circosjs import CircosData
 from chlamdb.forms import make_blast_form
 from chlamdb.forms import make_circos_form
 from chlamdb.forms import make_metabo_from
@@ -44,6 +45,8 @@ from lib.ete_phylo import KOAndCompleteness
 from lib.ete_phylo import ModuleCompletenessColumn
 from lib.ete_phylo import SimpleColorColumn
 from lib.KO_module import ModuleParser
+from matplotlib.cm import tab10
+from matplotlib.cm import tab20
 from reportlab.lib import colors
 from views.analysis_view_metadata import AccumulationRarefactionMetadata
 from views.analysis_view_metadata import CategoriesBarchartMetadata
@@ -58,7 +61,6 @@ from views.mixins import GenomesTableMixin
 from views.mixins import KoViewMixin
 from views.object_type_metadata import MetadataGetter
 from views.object_type_metadata import my_locals
-from views.utils import DataTableConfig
 from views.utils import TabularResultTab
 from views.utils import format_cog
 from views.utils import format_gene
@@ -1543,13 +1545,16 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=None):
     count_all_genomes = db.get_og_count(
         seq_og["orthogroup"].to_list(), search_on="orthogroup"
     )
-    orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(axis=1)
+    n_genomes = db.get_number_of_genomes()
+    orthogroup2frac_all = (
+        count_all_genomes[count_all_genomes > 0].count(axis=1) / n_genomes
+    )
     homologs_count = (
         df_feature_location.loc[df_feature_location.term_name == "CDS"]
         .join(seq_og)
         .reset_index()
         .set_index("orthogroup")
-        .merge(orthogroup2count_all.rename("value"), left_index=True, right_index=True)[
+        .merge(orthogroup2frac_all.rename("value"), left_index=True, right_index=True)[
             ["bioentry_id", "start_pos", "end_pos", "value"]
         ]
     )
@@ -1559,8 +1564,7 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=None):
         reference_taxon, target_taxons
     ).set_index(["target_taxid"])
 
-    c = circosjs.CircosJs()
-
+    c = CircosData()
     c.add_contigs_data(df_bioentry)
 
     # sort taxons by number of homologs (from mot similar to most dissmilar)
@@ -1582,31 +1586,38 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=None):
         "qualifier_value_locus_tag"
     ].fillna("-")
 
-    df_feature_location["color"] = "grey"
     if highlight_og is not None:
+        df_feature_location["legend"] = "locus"
         df_genes = db.get_genes_from_og(
             highlight_og, taxon_ids=[reference_taxon], terms=["locus_tag"]
         )
-        df_feature_location.loc[df_genes["locus_tag"].index, "color"] = "magenta"
+        df_feature_location.loc[df_genes["locus_tag"].index, "legend"] = (
+            "extracted locus"
+        )
     else:
-        df_feature_location.loc[df_feature_location["term_name"] == "tRNA", "color"] = (
-            "magenta"
-        )
-        df_feature_location.loc[df_feature_location["term_name"] == "rRNA", "color"] = (
-            "magenta"
-        )
+        df_feature_location["legend"] = df_feature_location["term_name"]
 
     df_feature_location = df_feature_location.rename(columns={"locus_tag": "locus_ref"})
+    c.add_gene_track(df_feature_location)
 
-    minus_strand = df_feature_location.set_index("strand").loc[-1]
-    plus_strand = df_feature_location.set_index("strand").loc[1]
+    import matplotlib as mpl
+
     c.add_histogram_track(
-        homologs_count, "n_genomes", radius_diff=0.1, sep=0.005, outer=True
+        homologs_count,
+        "Prevalence",
+        mpl.colors.get_named_colors_mapping()["aquamarine"],
     )
-    c.add_gene_track(minus_strand, "minus", sep=0, radius_diff=0.04)
-    c.add_gene_track(plus_strand, "plus", sep=0, radius_diff=0.04)
+
     # iterate ordered list of target taxids, add track to circos
-    for n, target_taxon in enumerate(target_taxon_n_homologs.index):
+    if len(target_taxon_n_homologs.index) <= 10:
+        taxon_colors = {
+            el: tab10(i) for i, el in enumerate(target_taxon_n_homologs.index)
+        }
+    else:
+        taxon_colors = {
+            el: tab20(i % 20) for i, el in enumerate(target_taxon_n_homologs.index)
+        }
+    for target_taxon in target_taxon_n_homologs.index:
         df_combined = df_feature_location.join(
             df_identity.loc[target_taxon]
             .reset_index()
@@ -1629,24 +1640,13 @@ def get_circos_data(reference_taxon, target_taxons, highlight_og=None):
         df_combined["locus_tag"] = (
             df_combined["locus_tag"].fillna(np.nan).replace([np.nan], [None])
         )
-
-        # comp is a custom scale with missing orthologs coloured in light blue
-        if n == 0:
-            sep = 0.03
-        else:
-            sep = 0.01
-        c.add_heatmap_track(
+        c.add_heatmap_data(
             df_combined,
             f"target_{target_taxon}",
-            color="comp",
-            sep=sep,
-            radius_diff=0.04,
+            mpl.colors.rgb2hex(taxon_colors[target_taxon]),
         )
-
-    c.add_line_track(df_bioentry, "GC_content", radius_diff=0.12, fillcolor="green")
-
-    js_code = c.get_js_code()
-    return js_code
+    c.add_heatmap_track()
+    return c.to_json()
 
 
 def circos(request):
@@ -1671,8 +1671,9 @@ def circos(request):
                 highlighted_ogs = form.data.getlist("highlighted_ogs")
                 form_display = None
 
-            js_code = get_circos_data(reference_taxon, target_taxons, highlighted_ogs)
-
+            circos_json = json.dumps(
+                get_circos_data(reference_taxon, target_taxons, highlighted_ogs)
+            )
             envoi = True
     else:
         form = circos_form_class()
