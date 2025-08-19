@@ -51,41 +51,24 @@
 
                         <ul id="circos_ul" style="list-style-type:disc;">
                           <li>
-                            The first outer circle (<span style="color: rgb(79, 188, 221);"><b>light-blue</b></span>/<span style="color: red;"><b>red</b></span>) is made of barplots indicating the frequency of each orthogroup in the selected genomes.
+                            The first outer track is made of barplots indicating the prevalence of each orthogroup in the whole database.
                           </li>
                           <li>
-                            In the second circle the contigs of the reference genome are displayed (<span style="color: orangered;"><b>orange</b></span>/<span style="color: rgb(81, 190, 166);"><b>aquamarine</b></span>)
+                            The second track shows the contigs (and sequence when zooming in) of the reference genome with the loci on the two strands displayed on each side of them. 
+                            {% if highlighted_ogs %}
+                              Loci that were retrieved in the extraction view (<b>extracted locus</b>) are colored differently from the others (<b>locus</b>). See figure legend for colors.
+                            {% else %}
+                              Loci are colored according to their type (CDS, rRNA or tRNA, see figure legend)
+                            {% endif %}
                           </li>
                           <li>
-                            The third and fourth circles represent the forward and reverse strands and show open reading frames from the reference genome:
-                          </li>
-                          {% if highlighted_ogs %}
-                            <ol>
-                              <li>
-                                loci retrieved in extraction view are colored in <span style="color: rgb(200, 41, 248)"><b>pink</b></span>
-                              </li>
-                              <li>
-                                others are colored in <span style="color: rgb(92, 92, 92)"><b>gray</b></span>
-                              </li>
-                            </ol>
-                          {% else %}
-                            <ol>
-                              <li>
-                                rRNA are colored in <span style="color: rgb(200, 41, 248)"><b>pink</b></span>
-                              </li>
-                              <li>
-                                DNA is colored in <span style="color: rgb(92, 92, 92)"><b>grey</b></span>
-                              </li>
-                            </ol>
-                          {% endif %}
+                            The third track shows the corresponding loci (highest sequence identity in the same orthogroup) for all the target genomes.                          </li>
                           <li>
-                            Inner <span style="color: rgb(114, 22, 22);"><b>bordeaux</b></span>/<span style="color: rgb(79, 188, 221);"><b>light-blue</b></span> circle(s) indicate the presence(bordeaux scale)/absence(light blue) of homologous proteins in one or multiple other genomes
-                          </li>
-                          <li>
-                            The inner circle (<span style="color: green;"><b>green</b></span>) indicate the GC content of each open reading frames of the reference genome
+                            The last two tracks show the GC content and skew.
                           </li>
                           <br>
-                          Click on features of the third circle (in <span style="color: rgb(92, 92, 92)"><b>gray</b></span> and <span style="color: rgb(200, 41, 248)"><b>pink</b></span>) to get detailed information about the corresponding locus.
+                          Hover over any feature in the map to get more detailed information and 
+                          click on a loci or orthogroups to open a new browser tab with the corresponding detailed view.
                           <br>
                         </ul>
                       </div>
