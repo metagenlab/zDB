@@ -142,7 +142,7 @@ $(document).ready(function() {
   });
   cgv.on('click', (event) => {
     if (event.elementType === 'feature') {
-      if (['orthogroups', 'genes'].includes(event.slot.track.name)) {
+      if (['targets', 'reference'].includes(event.slot.track.name)) {
         window.open(`/locusx/${event.element.name}`)
       }
       else if (event.slot.track.name === 'Prevalence') {

@@ -68,7 +68,7 @@ class CircosData:
         loci = [
             {
                 "name": row.locus_ref,
-                "source": "genes",
+                "source": "reference",
                 "contig": str(row.bioentry_id),
                 "start": row.start_pos,
                 "stop": row.end_pos,
@@ -82,13 +82,13 @@ class CircosData:
         self.features.extend(loci)
         self.tracks.append(
             {
-                "name": "genes",
+                "name": "reference",
                 "separateFeaturesBy": "strand",
                 "position": "both",
                 "thicknessRatio": 1,
                 "dataType": "feature",
                 "dataMethod": "source",
-                "dataKeys": "genes",
+                "dataKeys": "reference",
             }
         )
 
@@ -116,7 +116,7 @@ class CircosData:
                 },
                 "score": row.identity / 100,
                 "name": row.locus_tag,
-                "source": "orthogroups",
+                "source": "targets",
                 "legend": label,
             }
             for n, row in df.iterrows()
@@ -134,12 +134,12 @@ class CircosData:
     def add_heatmap_track(self):
         self.tracks.append(
             {
-                "name": "orthogroups",
+                "name": "targets",
                 "position": "inside",
                 "thicknessRatio": 1,
                 "dataType": "feature",
                 "dataMethod": "source",
-                "dataKeys": "orthogroups",
+                "dataKeys": "targets",
                 "separateFeaturesBy": "legend",
             }
         )
