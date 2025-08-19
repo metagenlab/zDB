@@ -160,6 +160,8 @@ class CircosData:
                 "score": row.value,
                 "source": label,
                 "legend": label,
+                "name": f"group_{n}",
+                "type": "OG",
             }
             for n, row in df.iterrows()
         ]

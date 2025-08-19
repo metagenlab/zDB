@@ -145,6 +145,9 @@ $(document).ready(function() {
       if (['orthogroups', 'genes'].includes(event.slot.track.name)) {
         window.open(`/locusx/${event.element.name}`)
       }
+      else if (event.slot.track.name === 'Prevalence') {
+        window.open(`/orthogroup/${event.element.name}`)
+      }
     }
   });
   cgv.draw()
