@@ -7,6 +7,8 @@
   {% load static %}
   {% load crispy_forms_tags %}
 
+  <link rel="stylesheet" type="text/css" href="{% static 'css/circos.css' %}" />
+
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/cgview/dist/cgview.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cgview/dist/cgview.css">
@@ -93,6 +95,17 @@
               </div>
             {% endif %}
             <div id='circos_plot'></div>
+            <div class="cgv-controls">
+              <div class="cgv-btn" id="btn-reset" title="Reset Map">test1</div>
+              <div class="cgv-btn" id="btn-zoom-in" title="Zoom In"></div>
+              <div class="cgv-btn" id="btn-zoom-out" title="Zoom Out"></div>
+              <div class="cgv-btn" id="btn-move-left" title="Move Left/Counterclockwise"></div>
+              <div class="cgv-btn" id="btn-move-right" title="Move Right/Clockwise"></div>
+              <div class="cgv-btn" id="btn-toggle-format" title="Toggle Linear/Circular Format"></div>
+              <div class="cgv-btn" id="btn-invert-colors" title="Invert Map Colors"></div>
+              <div class="cgv-btn" id="btn-download" title="Download Map PNG"></div>
+              <div class="cgv-btn" id="btn-toggle-labels" title="Toggle Labels"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -150,7 +163,53 @@ $(document).ready(function() {
       }
     }
   });
-  cgv.draw()
+
+  onClick = function(id, func) {
+    const btn = document.getElementById(id);
+    btn.addEventListener('click', func);
+  };
+
+  onClick('btn-reset', () => {
+    cgv.reset();
+  });
+
+  onClick('btn-zoom-in', () => {
+    cgv.zoomIn()
+  });
+  onClick('btn-zoom-out', () => {
+    cgv.zoomOut()
+  });
+
+  onClick('btn-move-left', () => {
+    cgv.moveLeft();
+  });
+
+  onClick('btn-move-right', () => {
+    cgv.moveRight();
+  });
+
+  onClick('btn-toggle-format', () => {
+    const format = (cgv.format == 'circular') ? 'linear' : 'circular';
+    cgv.settings.update({ format: format });
+    cgv.draw();
+  });
+
+  onClick('btn-invert-colors', () => {
+    cgv.invertColors();
+  });
+
+  onClick('btn-download', () => {
+    const height = 2000;
+    const width = cgv.width / cgv.height * height;
+    cgv.io.downloadImage(width, height, 'cgview_map.png');
+  });
+
+  onClick('btn-toggle-labels', () => {
+    cgv.annotation.update({visible: !cgv.annotation.visible});
+    cgv.draw();
+  });
+  
+  cgv.draw();
 });
 
 </script>
