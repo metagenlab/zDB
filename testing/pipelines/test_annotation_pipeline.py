@@ -92,10 +92,10 @@ class TestAnnotationPipeline(BasePipelineTestCase):
 
     def assert_db_base_table_row_counts(self):
         self.assertEqual(3, self.query("taxon").count())
-        self.assertEqual(4, self.query("bioentry").count())
-        self.assertEqual(731, self.query("seqfeature").count())
-        self.assertEqual(350, self.query("og_hits").count())
-        self.assertEqual(350, self.query("sequence_hash_dictionnary").count())
+        self.assertEqual(5, self.query("bioentry").count())
+        self.assertEqual(767, self.query("seqfeature").count())
+        self.assertEqual(366, self.query("og_hits").count())
+        self.assertEqual(366, self.query("sequence_hash_dictionnary").count())
         self.assertEqual(32, self.query("term").count())
         self.assertEqual(3, self.query("groups").count())
         self.assertEqual(6, self.query("taxon_in_group").count())
@@ -120,7 +120,7 @@ class TestAnnotationPipeline(BasePipelineTestCase):
             base_tables + ["cog_hits"], self.metadata_obj.tables.keys()
         )
         self.assert_db_base_table_row_counts()
-        self.assertEqual(240, self.query("cog_hits").count())
+        self.assertEqual(249, self.query("cog_hits").count())
 
     def test_ko_hits(self):
         self.nf_params["ko"] = "true"
@@ -134,8 +134,8 @@ class TestAnnotationPipeline(BasePipelineTestCase):
             self.metadata_obj.tables.keys(),
         )
         self.assert_db_base_table_row_counts()
-        self.assertEqual(3, self.query("module_completeness").count())
-        self.assertEqual(173, self.query("ko_hits").count())
+        self.assertEqual(5, self.query("module_completeness").count())
+        self.assertEqual(178, self.query("ko_hits").count())
 
     def test_pfam_hits(self):
         self.nf_params["pfam"] = "true"
@@ -148,7 +148,7 @@ class TestAnnotationPipeline(BasePipelineTestCase):
             base_tables + ["pfam_hits", "pfam_table"], self.metadata_obj.tables.keys()
         )
         self.assert_db_base_table_row_counts()
-        self.assertEqual(393, self.query("pfam_hits").count())
+        self.assertEqual(409, self.query("pfam_hits").count())
         self.assertEqual(284, self.query("pfam_table").count())
 
     def test_swissprot_hits(self):
@@ -165,7 +165,7 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assert_db_base_table_row_counts()
         # The exact number of hits depends on the version of the ref db
         self.assertTrue(self.query("swissprot_defs").count() > 23000)
-        self.assertTrue(self.query("swissprot_hits").count() > 35500)
+        self.assertTrue(self.query("swissprot_hits").count() > 38000)
 
     def test_amr_hits(self):
         self.nf_params["amr"] = "true"
@@ -242,13 +242,14 @@ class TestAnnotationPipeline(BasePipelineTestCase):
             base_tables + added_tables, self.metadata_obj.tables.keys()
         )
         self.assert_db_base_table_row_counts()
-        self.assertEqual(240, self.query("cog_hits").count())
-        self.assertEqual(3, self.query("module_completeness").count())
-        self.assertEqual(173, self.query("ko_hits").count())
-        self.assertEqual(393, self.query("pfam_hits").count())
+
+        self.assertEqual(249, self.query("cog_hits").count())
+        self.assertEqual(5, self.query("module_completeness").count())
+        self.assertEqual(178, self.query("ko_hits").count())
+        self.assertEqual(409, self.query("pfam_hits").count())
         self.assertEqual(284, self.query("pfam_table").count())
         self.assertTrue(self.query("swissprot_defs").count() > 23000)
-        self.assertTrue(self.query("swissprot_hits").count() > 35500)
+        self.assertTrue(self.query("swissprot_hits").count() > 38000)
         self.assertEqual(2, self.query("amr_hits").count())
         self.assertEqual(36, self.query("vf_hits").count())
         self.assertEqual(35, self.query("vf_defs").count())

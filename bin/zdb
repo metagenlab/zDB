@@ -520,6 +520,21 @@ elif [[ "$1" == "run" ]]; then
 				args="${args} --gi"
 				shift
 				;;
+			--og_seq_aligner=*)
+				og_seq_aligner=${i#*=}
+				args="${args} --og_seq_aligner=${og_seq_aligner}"
+				shift
+				;;
+			--og_n_core=*)
+				n_core=${i#*=}
+				int_re='^[0-9]*$'
+				if ! [[ $n_core =~ $int_re ]]; then
+					echo "Expect a number for og_n_core option"
+					exit 1
+				fi
+				args="${args} --og_n_core=$n_core"
+				shift
+				;;
 			--singularity_dir=*)
 				singularity_dir=$(realpath ${i#*=})
 				shift
@@ -549,6 +564,7 @@ elif [[ "$1" == "run" ]]; then
 				echo " --vf_coverage: coverage cutoff for query in blast against the VF database. Defaults to 60%."
 				echo " --vf_seqid: sequence id cutoff for filtering VF blast results. Defaults to 60%."
 				echo " --gi: perform gi (genomic islands) annotation"
+				echo " --og_seq_aligner: the sequence aligner to use for orthogroup prediction (blast or diamond, defaults to diamond)"
 				echo " --ref_dir: directory where the reference databases were setup up (default zdb_ref)"
 				echo " --cpu: number of parallel processes allowed (default 8)"
 				echo " --mem: max memory usage allowed (default 8GB)"

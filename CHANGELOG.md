@@ -10,6 +10,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Changed
 
+- Update orthofinder to version 3.1 to speed-up annotation pipeline. ([#188](https://github.com/metagenlab/zDB/pull/188)) (Niklaus Johner)
+
 ### Added
 
 ## 1.3.8 - 2025-07-15

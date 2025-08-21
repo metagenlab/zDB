@@ -201,71 +201,29 @@ process makeblastdb {
     """
 }
 
-
-process prepare_orthofinder {
+process orthofinder {
   container "$params.orthofinder_container"
   conda "$baseDir/conda/orthofinder.yaml"
 
-  input:
-    path genome_list
-
-  output:
-    path "OrthoFinder/Results_$params.orthofinder_output_dir/WorkingDirectory/Species*.fa"
-    path "OrthoFinder/Results_$params.orthofinder_output_dir/WorkingDirectory/BlastDBSpecies*.phr"
-    path "OrthoFinder/Results_$params.orthofinder_output_dir/"
-
-  script:
-  """
-  orthofinder -op -a 8 -n "$params.orthofinder_output_dir" -S blast -f . > of_prep.tab
-  """
-}
-
-process blast_orthofinder {
-  container "$params.orthofinder_container"
-  conda "$baseDir/conda/orthofinder.yaml"
+  cpus params.n_cpus
 
   input:
-  path complete_dir
-  each seq
-  each blastdb
+    path genome_list_core, name: "*"
+    path genome_list_rest, name: "assign/*"
 
   output:
-  path "${complete_dir.baseName}/WorkingDirectory/Blast${species_1}_${species_2}.txt"
-
-
+    path "OrthoFinder/Results_def/Orthogroups/Orthogroups.txt"
+  
   script:
-  blastdb_name = blastdb.getBaseName()
-  blastdb_path = blastdb.getParent()
-  seq_name = seq.getBaseName()
-  species_1 =  (seq_name =~ /Species(\d+)/)[0][1]
-  species_2 =  (blastdb_name =~ /BlastDBSpecies(\d+)/)[0][1]
+  def n_assign = genome_list_rest.size()
 
   """
-  blastp -outfmt 6 -evalue 0.001 -query $seq -db $blastdb_path/$blastdb_name -num_threads ${task.cpus} > ${complete_dir}/WorkingDirectory/Blast${species_1}_${species_2}.txt
-  """
-}
-
-process orthofinder_main {
-  container "$params.orthofinder_container"
-  conda "$baseDir/conda/orthofinder.yaml"
-
-  cpus 2
-
-  input:
-  path complete_dir
-  val blast_results
-
-  output:
-  // for some reason, executing orthofinder on previous blast results makes it change directory
-  // and output its results in the new directory... TODO : fixit!
-  path "Results_$params.orthofinder_output_dir/WorkingDirectory/OrthoFinder/Results_$params.orthofinder_output_dir/Orthogroups/Orthogroups.txt"
-  path "Results_$params.orthofinder_output_dir/WorkingDirectory/OrthoFinder/Results_$params.orthofinder_output_dir/Orthogroups/Orthogroups_SingleCopyOrthologues.txt"
-
-  script:
-  """
-  orthofinder -og -t ${task.cpus} -a ${task.cpus} \
-    -b ./Results_$params.orthofinder_output_dir/WorkingDirectory/ > of_grouping.txt \
-    -n "$params.orthofinder_output_dir"
+    if [ "$n_assign" -eq "0" ]; then
+        orthofinder -t ${task.cpus} -n "def" -S ${params.og_seq_aligner} -f .
+    else
+        orthofinder -t ${task.cpus} -n "core" -S ${params.og_seq_aligner} -f .
+        orthofinder -t ${task.cpus} -n "def" -S ${params.og_seq_aligner} --assign assign/ --core OrthoFinder/Results_core/
+    fi
   """
 }
 
@@ -1169,6 +1127,19 @@ process cleanup {
     """
 }
 
+
+process add_index_to_faa_files {
+    input:
+        path faa_files
+
+    output:
+        tuple path(faa_files), val(task.index)
+
+    script:
+    """
+    """
+}
+
 workflow {
 
     dummy = check_reference_databases(Channel.fromPath(params.base_db))
@@ -1199,10 +1170,12 @@ workflow {
 
     makeblastdb(to_makeblastdb)
 
-    (species_fasta, species_blastdb, result_dir) = prepare_orthofinder(faa_files.collect())
-    blast_results = blast_orthofinder(result_dir, species_fasta, species_blastdb)
-    (orthogroups, singletons) = orthofinder_main(result_dir, blast_results.collect())
-
+    faa_files_index = add_index_to_faa_files(faa_files)
+    faa_files_split = faa_files_index.branch({
+        core: it[1] < params.og_n_core
+        rest: it[1] >= params.og_n_core
+    })
+    orthogroups = orthofinder(faa_files_split.core.map({it[0]}).collect(), faa_files_split.rest.map({it[0]}).collect().ifEmpty([]))
     orthogroups_fasta = orthogroups2fasta(orthogroups, faa_files.collect())
 
     mafft_alignments = align_with_mafft(orthogroups_fasta.toSortedList().flatten().collate(20))
