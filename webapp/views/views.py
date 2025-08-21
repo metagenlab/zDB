@@ -12,7 +12,6 @@ from io import StringIO
 from tempfile import NamedTemporaryFile
 
 import bibtexparser
-import chlamdb.circosjs as circosjs
 import numpy as np
 import pandas as pd
 from Bio import SeqIO
@@ -22,7 +21,6 @@ from Bio.Blast.Applications import NcbiblastpCommandline
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio.Blast.Applications import NcbitblastnCommandline
 from chlamdb.forms import make_blast_form
-from chlamdb.forms import make_circos_form
 from chlamdb.forms import make_metabo_from
 from chlamdb.forms import make_module_overview_form
 from chlamdb.forms import make_pathway_overview_form
@@ -44,7 +42,6 @@ from lib.ete_phylo import KOAndCompleteness
 from lib.ete_phylo import ModuleCompletenessColumn
 from lib.ete_phylo import SimpleColorColumn
 from lib.KO_module import ModuleParser
-from reportlab.lib import colors
 from views.analysis_view_metadata import AccumulationRarefactionMetadata
 from views.analysis_view_metadata import CategoriesBarchartMetadata
 from views.analysis_view_metadata import CategoriesCountHeatmapMetadata
@@ -58,7 +55,6 @@ from views.mixins import GenomesTableMixin
 from views.mixins import KoViewMixin
 from views.object_type_metadata import MetadataGetter
 from views.object_type_metadata import my_locals
-from views.utils import DataTableConfig
 from views.utils import TabularResultTab
 from views.utils import format_cog
 from views.utils import format_gene
@@ -1515,193 +1511,6 @@ def plot_region(request):
         "results": results,
     }
     return render(request, "chlamdb/plot_region.html", my_locals(ctx))
-
-
-def circos_main(request):
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
-    if request.method == "POST":
-        reference_taxon = request.POST["reference_taxid"]
-        include_taxids = eval(request.POST["include_taxids"])
-        exclude_taxids = eval(request.POST["exclude_taxids"])
-        og_list = eval(request.POST["og_list"])
-
-        target_taxons = include_taxids + exclude_taxids
-
-        target_taxons.pop(target_taxons.index(int(reference_taxon)))
-
-        js_code = get_circos_data(
-            int(reference_taxon), [int(i) for i in target_taxons], highlight_og=og_list
-        )
-
-        envoi = True
-        envoi_region = True
-
-        return render(request, "chlamdb/circos_main.html", my_locals(locals()))
-
-    return render(request, "chlamdb/circos_main.html", my_locals(locals()))
-
-
-def get_circos_data(reference_taxon, target_taxons, highlight_og=False):
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
-
-    if highlight_og:
-        df_genes = db.get_genes_from_og(
-            highlight_og, taxon_ids=[reference_taxon], terms=["locus_tag"]
-        )
-        locus_list = df_genes["locus_tag"].to_list()
-    else:
-        locus_list = []
-
-    # "bioentry_id", "accession" ,"length"
-    df_bioentry = db.get_bioentry_list(reference_taxon, min_bioentry_length=1000)
-
-    # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
-    df_feature_location = db.get_features_location(
-        reference_taxon, search_on="taxon_id", seq_term_names=["CDS", "rRNA", "tRNA"]
-    ).set_index(["seqfeature_id"])
-    # df of target genomes
-    df_targets = db.get_proteins_info(
-        ids=target_taxons,
-        search_on="taxid",
-        as_df=True,
-        to_return=["locus_tag"],
-        inc_non_CDS=False,
-        inc_pseudo=False,
-    )
-
-    # retrieve n_orthologs of list of seqids
-    seq_og = db.get_og_count(df_feature_location.index.to_list(), search_on="seqid")
-    count_all_genomes = db.get_og_count(
-        seq_og["orthogroup"].to_list(), search_on="orthogroup"
-    )
-    orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(axis=1)
-    homologs_count = (
-        df_feature_location.loc[df_feature_location.term_name == "CDS"]
-        .join(seq_og)
-        .reset_index()
-        .set_index("orthogroup")
-        .merge(orthogroup2count_all.rename("value"), left_index=True, right_index=True)[
-            ["bioentry_id", "start_pos", "end_pos", "value"]
-        ]
-    )
-
-    # this query can be pretty slow
-    df_identity = db.get_identity_closest_homolog(
-        reference_taxon, target_taxons
-    ).set_index(["target_taxid"])
-
-    c = circosjs.CircosJs()
-
-    c.add_contigs_data(df_bioentry)
-
-    # sort taxons by number of homologs (from mot similar to most dissmilar)
-    target_taxon_n_homologs = (
-        df_identity.groupby(["target_taxid"])
-        .count()["seqfeature_id_1"]
-        .sort_values(ascending=False)
-    )
-    # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
-    # "seqfeature_id_1", "seqfeature_id_2", "identity", "target_taxid"
-    # join on seqfeature id
-    df_feature_location["gene"] = df_feature_location["qualifier_value_gene"].fillna(
-        "-"
-    )
-    df_feature_location["gene_product"] = df_feature_location[
-        "qualifier_value_product"
-    ].fillna("-")
-    df_feature_location["locus_tag"] = df_feature_location[
-        "qualifier_value_locus_tag"
-    ].fillna("-")
-
-    df_feature_location["color"] = "grey"
-    df_feature_location.loc[df_feature_location["term_name"] == "tRNA", "color"] = (
-        "magenta"
-    )
-    df_feature_location.loc[df_feature_location["term_name"] == "rRNA", "color"] = (
-        "magenta"
-    )
-
-    df_feature_location = df_feature_location.rename(columns={"locus_tag": "locus_ref"})
-
-    minus_strand = df_feature_location.set_index("strand").loc[-1]
-    plus_strand = df_feature_location.set_index("strand").loc[1]
-    c.add_histogram_track(
-        homologs_count, "n_genomes", radius_diff=0.1, sep=0.005, outer=True
-    )
-    c.add_gene_track(
-        minus_strand, "minus", sep=0, radius_diff=0.04, highlight_list=locus_list
-    )
-    c.add_gene_track(
-        plus_strand, "plus", sep=0, radius_diff=0.04, highlight_list=locus_list
-    )
-    # iterate ordered list of target taxids, add track to circos
-    for n, target_taxon in enumerate(target_taxon_n_homologs.index):
-        df_combined = df_feature_location.join(
-            df_identity.loc[target_taxon]
-            .reset_index()
-            .set_index("seqfeature_id_1")
-            .rename_axis("seqfeature_id")
-        ).reset_index()
-        df_combined.identity = df_combined.identity.fillna(0).astype(int)
-        df_combined.bioentry_id = df_combined.bioentry_id.astype(str)
-
-        # only keep the highest identity for each seqfeature id
-        df_combined = (
-            df_combined.sort_values("identity", ascending=False)
-            .drop_duplicates(subset=["seqfeature_id", "start_pos"])
-            .sort_index()
-        )
-
-        df_combined = df_combined.join(
-            df_targets, on="seqfeature_id_2", how="left"
-        ).reset_index()
-        df_combined["locus_tag"] = (
-            df_combined["locus_tag"].fillna(np.nan).replace([np.nan], [None])
-        )
-
-        # comp is a custom scale with missing orthologs coloured in light blue
-        if n == 0:
-            sep = 0.03
-        else:
-            sep = 0.01
-        c.add_heatmap_track(
-            df_combined,
-            f"target_{target_taxon}",
-            color="comp",
-            sep=sep,
-            radius_diff=0.04,
-        )
-
-    c.add_line_track(df_bioentry, "GC_content", radius_diff=0.12, fillcolor="green")
-
-    js_code = c.get_js_code()
-    return js_code
-
-
-def circos(request):
-    biodb_path = settings.BIODB_DB_PATH
-    db = DB.load_db_from_name(biodb_path)
-    page_title = page2title["circos"]
-
-    circos_form_class = make_circos_form(db)
-
-    if request.method == "POST":
-        form = circos_form_class(request.POST)
-
-        if form.is_valid():
-            target_taxons = form.get_target_taxids()
-            reference_taxon = form.get_ref_taxid()
-
-            js_code = get_circos_data(reference_taxon, target_taxons)
-
-            envoi = True
-    else:
-        form = circos_form_class()
-
-    local_vars = my_locals(locals())
-    return render(request, "chlamdb/circos.html", local_vars)
 
 
 def alignment(request, input_fasta):

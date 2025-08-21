@@ -32,7 +32,6 @@ urls = [
     "/autocomplete_taxid/",
     "/blast/",
     "/circos/",
-    "/circos_main/",
     "/cog_barchart/",
     "/cog_comparison",
     "/cog_phylo_heatmap/False",

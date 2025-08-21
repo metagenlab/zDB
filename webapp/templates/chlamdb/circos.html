@@ -1,73 +1,96 @@
 <!DOCTYPE html>
 
-
 <html>
+
 <head>
+  {% load custom_tags %}
+  {% load static %}
+  {% load crispy_forms_tags %}
 
-{% load custom_tags %}
-{% load static %}
-{% load crispy_forms_tags %}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/circos.css' %}" />
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
-
-<script src="{% static 'js/circos.js' %}"></script>
-{% include "chlamdb/header.html" %}
-
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cgview/dist/cgview.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cgview/dist/cgview.css">
+  {% include "chlamdb/header.html" %}
 </head>
 
 <body>
-
   <div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
-          <div id="page-content-wrapper">
-            <div class="row">
-              <div class="col-lg-12">
-                 {% include "chlamdb/menu.html" %}
-                 <p class="page-title"><b>Circos plots indicating the presence/absence of homologous proteins in one or multiple other genomes </b><a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#genome-alignments" id="show-option" target="_blank"  title="Get a Circos plot to compare genomes (Targets) and visualize the presence/absence of homologous proteins according to the selected reference one (Circos reference)"><i class="fab fa-info-circle " style="size: 5em;" ></i></a></p>
- 
-                {% block content %}
-        {% csrf_token %}
-        {% crispy form %}
-                {% endblock %}
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+              {% include "chlamdb/menu.html" %}
+              <p class="page-title">
+                <b>Circos plots indicating the presence/absence of homologous proteins in one or multiple other genomes </b>
+                <a href="https://zdb.readthedocs.io/en/latest/tutorial/website.html#genome-alignments" id="show-option" target="_blank"  title="Get a Circos plot to compare genomes (Targets) and visualize the presence/absence of homologous proteins according to the selected reference one (Circos reference)">
+                  <i class="fab fa-info-circle " style="size: 5em;" ></i>
+                </a>
+              </p>
+              {% block content %}
+                {% csrf_token %}
+                <div class="row" style="display:{{form_display}};">
+                {% crispy form %}
+                </div>
+              {% endblock %}
+            </div>
 
-              </div>
-
-
-                  {% if envoi %}
-                  <div class="row">
-                    <div class="col-lg-12">
-                      <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                        <br>
-                        <div class="panel panel-success" style="width:100%; top: 200px ; margin: 10px 10px 10px 10px">
-                          <div class="panel-heading" style="width:100%">
-                              <h3 class="panel-title">Info about the analysis</h3>
-                          </div>
-                          <div style="padding-left:20px">
-                            <br>
-
-                           <ul id="circos_ul" style="list-style-type:disc;">
-                                <li>The first outer circle (<span style="color: rgb(79, 188, 221);"><b>light-blue</b></span>/<span style="color: red;"><b>red</b></span>) is made of barplots indicating the frequency of each orthogroup in the selected genomes.</li>
-                                <li>In the second circle the contigs of the reference genome are displayed (<span style="color: orangered;"><b>orange</b></span>/<span style="color: rgb(81, 190, 166);"><b>aquamarine</b></span>)</li>
-                                <li>The third and fourth circles represent the forward and reverse strands and show open reading frames from the reference genome (in <span style="color: rgb(92, 92, 92)"><b>gray</b></span>)</li>
-                                <ol>
-                                    <li>rRNA are colored in <span style="color: rgb(200, 41, 248)"><b>pink</b></span></li>
-                                </ol>
-                                <li>Inner <span style="color: rgb(114, 22, 22);"><b>bordeaux</b></span>/<span style="color: rgb(79, 188, 221);"><b>light-blue</b></span> circle(s) indicate the presence(bordeaux scale)/absence(light blue) of homologous proteins in one or multiple other genomes</li>
-                                <li>The inner circle (<span style="color: green;"><b>green</b></span>) indicate the GC content of each open reading frames of the reference genome</li>
-                                <br>
-                                Click on features of the third circle (in <span style="color: rgb(92, 92, 92)"><b>gray</b></span>) to get detailed information about the corresponding locus.
-                                <br>
-                          </ul>
-                        </div>
+            {% if show_results %}
+              <div class="row">
+                <div class="col-lg-12">
+                  <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                    <br>
+                    <div class="panel panel-success" style="width:100%; top: 200px ; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                        <h3 class="panel-title">Info about the analysis</h3>
                       </div>
-            </ul>
-          </div>
-          </div>
-          {% endif %}
-              <div id='heatmapChart' class='chartclass'></div>
+                      <div style="padding-left:20px">
+                        <br>
 
+                        <ul id="circos_ul" style="list-style-type:disc;">
+                          <li>
+                            The first outer track is made of barplots indicating the prevalence of each orthogroup in the whole database.
+                          </li>
+                          <li>
+                            The second track shows the contigs (and sequence when zooming in) of the reference genome with the loci on the two strands displayed on each side of them. 
+                            {% if highlighted_ogs %}
+                              Loci that were retrieved in the extraction view (<b>extracted locus</b>) are colored differently from the others (<b>locus</b>). See figure legend for colors.
+                            {% else %}
+                              Loci are colored according to their type (CDS, rRNA or tRNA, see figure legend)
+                            {% endif %}
+                          </li>
+                          <li>
+                            The third track shows the corresponding loci (highest sequence identity in the same orthogroup) for all the target genomes.                          </li>
+                          <li>
+                            The last two tracks show the GC content and skew.
+                          </li>
+                          <br>
+                          Hover over any feature in the map to get more detailed information and 
+                          click on a loci or orthogroups to open a new browser tab with the corresponding detailed view.
+                          <br>
+                        </ul>
+                      </div>
+                    </div>
+                    <div id='circos_plot' style="width:100%; top: 200px ; margin: 10px 10px 10px 10px"></div>
+                    <div class="cgv-controls">
+                      <div class="cgv-btn" id="btn-reset" title="Reset Map">test1</div>
+                      <div class="cgv-btn" id="btn-zoom-in" title="Zoom In"></div>
+                      <div class="cgv-btn" id="btn-zoom-out" title="Zoom Out"></div>
+                      <div class="cgv-btn" id="btn-move-left" title="Move Left/Counterclockwise"></div>
+                      <div class="cgv-btn" id="btn-move-right" title="Move Right/Clockwise"></div>
+                      <div class="cgv-btn" id="btn-toggle-format" title="Toggle Linear/Circular Format"></div>
+                      <div class="cgv-btn" id="btn-invert-colors" title="Invert Map Colors"></div>
+                      <div class="cgv-btn" id="btn-download" title="Download Map PNG"></div>
+                      <div class="cgv-btn" id="btn-toggle-labels" title="Toggle Labels"></div>
+                    </div>
+                  </ul>
+                </div>
+              </div>
+            {% endif %}
           </div>
+        </div>
       </div>
     </div>
   </div>
@@ -75,27 +98,107 @@
 
 {% include "chlamdb/style_menu.html" %}
 
-
-
 <script type="text/javascript">
 
-{{js_code|safe}}
-
-{% if envoi %}
-/*
-  $(document).ready(function(){
-    d3.select("#download").append("button")
-            .attr("type","button")
-            .attr("class", "btn btn-primary btn-sm")
-            .text("Download SVG")
-            .on("click", function() {
-        var svg_div = document.getElementById('heatmapChart');
-        var svg = svg_div.getElementsByTagName('svg')[0];
-        svgExport.downloadSvg(svg, "circos_plot");
-            });
+$(document).ready(function() {
+  if ( "{{show_results}}" === "" ) {
+    return;
+  }
+  // Create Viewer
+  cgv = new CGV.Viewer('#circos_plot', {
+    height: 0.8*window.innerHeight,
+    width: document.getElementById('tabs').offsetWidth,
   });
-  */
-{% endif %}
+  // Load data
+  cgv.io.loadJSON({{circos_json| safe}});
+  cgv.addTracks({
+    name: 'GC Skew',
+    position: 'inside',
+    dataType: 'feature',
+    dataMethod: 'sequence',
+    // e.g. In this example, GC Skew plot will be extracted from the sequence.
+    dataKeys: 'gc-skew',
+    // By default, the step and window values are calculated based on the sequence length,
+    // but they can be overridden here.
+    dataOptions: {
+      step: 1,
+      window: 100
+    }
+  });
+  cgv.addTracks({
+    name: 'GC Content',
+    position: 'inside',
+    dataType: 'feature',
+    dataMethod: 'sequence',
+    // e.g. In this example, GC Content plot will be extracted from the sequence.
+    dataKeys: 'gc-content',
+    // By default, the step and window values are calculated based on the sequence length,
+    // but they can be overridden here.
+    dataOptions: {
+      step: 1,
+      window: 100
+    }
+  });
+  cgv.on('click', (event) => {
+    if (event.elementType === 'feature') {
+      if (['targets', 'reference'].includes(event.slot.track.name)) {
+        window.open(`/locusx/${event.element.name}`)
+      }
+      else if (event.slot.track.name === 'Prevalence') {
+        window.open(`/orthogroup/${event.element.name}`)
+      }
+    }
+  });
+
+  onClick = function(id, func) {
+    const btn = document.getElementById(id);
+    btn.addEventListener('click', func);
+  };
+
+  onClick('btn-reset', () => {
+    cgv.reset();
+  });
+
+  onClick('btn-zoom-in', () => {
+    cgv.zoomIn()
+  });
+  onClick('btn-zoom-out', () => {
+    cgv.zoomOut()
+  });
+
+  onClick('btn-move-left', () => {
+    cgv.moveLeft();
+  });
+
+  onClick('btn-move-right', () => {
+    cgv.moveRight();
+  });
+
+  onClick('btn-toggle-format', () => {
+    const format = (cgv.format == 'circular') ? 'linear' : 'circular';
+    cgv.settings.update({ format: format });
+    cgv.draw();
+  });
+
+  onClick('btn-invert-colors', () => {
+    cgv.invertColors();
+  });
+
+  onClick('btn-download', () => {
+    const height = 2000;
+    const width = cgv.width / cgv.height * height;
+    cgv.io.downloadImage(width, height, 'cgview_map.png');
+  });
+
+  onClick('btn-toggle-labels', () => {
+    cgv.annotation.update({visible: !cgv.annotation.visible});
+    cgv.draw();
+  });
+  
+  cgv.reset();
+  cgv.draw();
+});
+
 </script>
 
 </html>
