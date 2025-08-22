@@ -164,6 +164,9 @@ $(document).ready(function() {
       else if (event.slot.track.name === 'Prevalence') {
         window.open(`/orthogroup/${event.element.name}`)
       }
+      else if (event.slot.track.name === 'gi') {
+        window.open(`/genomic_island/${event.element.name.substring(2)}`)
+      }
     }
   });
 

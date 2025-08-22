@@ -227,6 +227,32 @@ class CircosData:
             }
         )
 
+    def add_gi_track(self, df):
+        """
+        Input df columns: gis_id, taxon_id, bioentry_id, cluster_id, start_pos, end_pos, length
+        """
+        loci = [
+            {
+                "name": f"GI{row.gis_id}",
+                "source": "gi",
+                "contig": str(row.bioentry_id),
+                "start": int(row.start_pos),
+                "stop": int(row.end_pos),
+                "type": "genomic island",
+                "legend": "Genomic island",
+            }
+            for n, row in df.iterrows()
+        ]
+        self.features.extend(loci)
+        self.tracks.append(
+            {
+                "name": "gi",
+                "separateFeaturesBy": "none",
+                "position": "outside",
+                "dataKeys": "gi",
+            }
+        )
+
 
 class CircosView(BaseViewMixin, View):
     view_name = "circos"
@@ -255,6 +281,7 @@ class CircosView(BaseViewMixin, View):
                 self.highlighted_ogs = self.form.data.getlist("highlighted_ogs")
                 form_display = None
 
+            self.with_gi = optional2status.get("gi", False)
             self.prepare_circos_data()
             context = self.get_context(
                 show_results=True,
@@ -370,6 +397,10 @@ class CircosView(BaseViewMixin, View):
             columns={"locus_tag": "locus_ref"}
         )
         self.data.add_gene_track(df_feature_location)
+
+        if self.with_gi:
+            gis = self.db.gi.get_hits([self.reference_taxon])
+            self.data.add_gi_track(gis)
 
         self.data.add_histogram_track(
             homologs_count,
