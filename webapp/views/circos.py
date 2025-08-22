@@ -17,8 +17,9 @@ class CircosData:
     Prepare json for CGView
     """
 
-    def __init__(self, with_amr=False, with_highlighted_ogs=False):
+    def __init__(self, with_amr=False, with_vf=False, with_highlighted_ogs=False):
         self.with_amr = with_amr
+        self.with_vf = with_vf
         self.with_highlighted_ogs = with_highlighted_ogs
         self.features = []
         self.contigs = []
@@ -83,6 +84,8 @@ class CircosData:
             meta_map["extracted"] = attrgetter("extracted")
         if self.with_amr:
             meta_map["AMR"] = attrgetter("amr")
+        if self.with_vf:
+            meta_map["VF"] = attrgetter("vf")
 
         return lambda row: {key: fun(row) for key, fun in meta_map.items()}
 
@@ -259,6 +262,7 @@ class CircosView(BaseViewMixin, View):
                 form_display=form_display,
                 with_highlighted_ogs=self.data.with_highlighted_ogs,
                 with_amr=self.data.with_amr,
+                with_vf=self.data.with_vf,
             )
             return render(request, self.template, context)
         return render(request, self.template, self.get_context())
@@ -267,6 +271,7 @@ class CircosView(BaseViewMixin, View):
         self.data = CircosData(
             with_highlighted_ogs=self.highlighted_ogs is not None,
             with_amr=optional2status.get("amr", False),
+            with_vf=optional2status.get("vf", False),
         )
         # "bioentry_id", "accession" ,"length"
         df_bioentry = self.db.get_bioentry_list(
@@ -352,6 +357,14 @@ class CircosView(BaseViewMixin, View):
             amrs["amr"] = "yes"
             df_feature_location = df_feature_location.join(amrs)
             df_feature_location["amr"].fillna("no", inplace=True)
+
+        if self.data.with_vf:
+            vfs = self.db.vf.get_hits_from_seqids(
+                df_feature_location.index, columns=("seqid",)
+            ).set_index("seqid")
+            vfs["vf"] = "yes"
+            df_feature_location = df_feature_location.join(vfs)
+            df_feature_location["vf"].fillna("no", inplace=True)
 
         df_feature_location = df_feature_location.rename(
             columns={"locus_tag": "locus_ref"}
