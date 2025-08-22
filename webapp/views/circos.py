@@ -9,6 +9,7 @@ from django.views import View
 from matplotlib.cm import tab10
 from matplotlib.cm import tab20
 from views.mixins import BaseViewMixin
+from views.utils import optional2status
 
 
 class CircosData:
@@ -80,6 +81,8 @@ class CircosData:
         }
         if self.with_highlighted_ogs:
             meta_map["extracted"] = attrgetter("extracted")
+        if self.with_amr:
+            meta_map["amr"] = attrgetter("amr")
 
         return lambda row: {key: fun(row) for key, fun in meta_map.items()}
 
@@ -261,6 +264,7 @@ class CircosView(BaseViewMixin, View):
     def prepare_circos_data(self):
         self.data = CircosData(
             with_highlighted_ogs=self.highlighted_ogs is not None,
+            with_amr=optional2status.get("amr", False),
         )
         # "bioentry_id", "accession" ,"length"
         df_bioentry = self.db.get_bioentry_list(
@@ -340,6 +344,13 @@ class CircosView(BaseViewMixin, View):
             df_feature_location.loc[df_genes["locus_tag"].index, "extracted"] = (
                 "extracted locus"
             )
+
+        if self.data.with_amr:
+            amrs = self.db.get_amr_hits_from_seqids(
+                df_feature_location.index, columns=("seqid",)
+            ).set_index("seqid")
+            amrs["amr"] = True
+            df_feature_location = df_feature_location.join(amrs)
 
         df_feature_location = df_feature_location.rename(
             columns={"locus_tag": "locus_ref"}
