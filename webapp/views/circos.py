@@ -1,12 +1,11 @@
 import json
+from operator import attrgetter
 
 import matplotlib as mpl
 import numpy as np
 from chlamdb.forms import make_circos_form
-from django.conf import settings
 from django.shortcuts import render
 from django.views import View
-from lib.db_utils import DB
 from matplotlib.cm import tab10
 from matplotlib.cm import tab20
 from views.mixins import BaseViewMixin
@@ -17,7 +16,9 @@ class CircosData:
     Prepare json for CGView
     """
 
-    def __init__(self, figure_div_id="heatmapChart"):
+    def __init__(self, with_amr=False, with_highlighted_ogs=False):
+        self.with_amr = with_amr
+        self.with_highlighted_ogs = with_highlighted_ogs
         self.features = []
         self.contigs = []
         self.plots = []
@@ -72,6 +73,21 @@ class CircosData:
                 }
             )
 
+    def _gene_meta_extractor(self):
+        meta_map = {
+            "gene": attrgetter("gene"),
+            "product": attrgetter("gene_product"),
+        }
+        if self.with_highlighted_ogs:
+            meta_map["extracted"] = attrgetter("extracted")
+
+        return lambda row: {key: fun(row) for key, fun in meta_map.items()}
+
+    def _legend_extractor(self):
+        if self.with_highlighted_ogs:
+            return attrgetter("extracted")
+        return attrgetter("term_name")
+
     def add_gene_track(self, df):
         """
         Input df columns:
@@ -80,6 +96,10 @@ class CircosData:
         - end_pos
         - locus_ref
         """
+
+        meta_extractor = self._gene_meta_extractor()
+        legend_extractor = self._legend_extractor()
+
         loci = [
             {
                 "name": row.locus_ref,
@@ -89,8 +109,8 @@ class CircosData:
                 "stop": row.end_pos,
                 "strand": row.strand,
                 "type": row.term_name,
-                "meta": {"gene": f"{row.gene}", "product": f"{row.gene_product}"},
-                "legend": row.legend,
+                "meta": meta_extractor(row),
+                "legend": legend_extractor(row),
             }
             for n, row in df.iterrows()
         ]
@@ -239,7 +259,9 @@ class CircosView(BaseViewMixin, View):
         return render(request, self.template, self.get_context())
 
     def prepare_circos_data(self):
-        self.data = CircosData()
+        self.data = CircosData(
+            with_highlighted_ogs=self.highlighted_ogs is not None,
+        )
         # "bioentry_id", "accession" ,"length"
         df_bioentry = self.db.get_bioentry_list(
             self.reference_taxon, min_bioentry_length=1000
@@ -308,18 +330,16 @@ class CircosView(BaseViewMixin, View):
             "qualifier_value_locus_tag"
         ].fillna("-")
 
-        if self.highlighted_ogs is not None:
-            df_feature_location["legend"] = "locus"
+        if self.data.with_highlighted_ogs:
+            df_feature_location["extracted"] = "locus"
             df_genes = self.db.get_genes_from_og(
                 self.highlighted_ogs,
                 taxon_ids=[self.reference_taxon],
                 terms=["locus_tag"],
             )
-            df_feature_location.loc[df_genes["locus_tag"].index, "legend"] = (
+            df_feature_location.loc[df_genes["locus_tag"].index, "extracted"] = (
                 "extracted locus"
             )
-        else:
-            df_feature_location["legend"] = df_feature_location["term_name"]
 
         df_feature_location = df_feature_location.rename(
             columns={"locus_tag": "locus_ref"}
