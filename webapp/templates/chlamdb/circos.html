@@ -84,6 +84,20 @@
                       <div class="cgv-btn" id="btn-invert-colors" title="Invert Map Colors"></div>
                       <div class="cgv-btn" id="btn-download" title="Download Map PNG"></div>
                       <div class="cgv-btn" id="btn-toggle-labels" title="Toggle Labels"></div>
+
+                      <label for="ref_coloring">Ref. genome color map:</label>
+
+                      <select name="ref_coloring" id="ref_colors">
+                        {% if with_highlighted_ogs %}
+                          <option selected value="extracted">Extracted</option>
+                          <option value="type">Locus type</option>
+                        {% else %}
+                          <option selected value="type">Locus type</option>
+                        {% endif %}
+                        {% if with_amr %}
+                          <option value="AMR">AMR</option>
+                        {% endif %}
+                      </select> 
                     </div>
                   </ul>
                 </div>
@@ -194,7 +208,32 @@ $(document).ready(function() {
     cgv.annotation.update({visible: !cgv.annotation.visible});
     cgv.draw();
   });
-  
+
+  // Add event listener for reference coloring scheme select menu
+  document.getElementById('ref_colors').addEventListener('change', function() {
+    const selected = this.value;
+    const ref = cgv.tracks("reference");
+
+    if (selected === "type") {
+      get_legend = function(feature) {
+        return feature.type
+      };
+    }
+    else {
+      get_legend = function(feature) {
+        return `${selected} ${feature._meta[selected]}`
+      };
+    }
+
+    to_remove = new Set()
+    ref.features().forEach(function(feature) {
+      to_remove.add(feature.legend)
+      feature.update({"legendItem": get_legend(feature)})
+    });
+    cgv.legend.removeItems(Array.from(to_remove))
+    cgv.draw();
+  });
+
   cgv.reset();
   cgv.draw();
 });

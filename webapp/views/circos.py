@@ -82,13 +82,13 @@ class CircosData:
         if self.with_highlighted_ogs:
             meta_map["extracted"] = attrgetter("extracted")
         if self.with_amr:
-            meta_map["amr"] = attrgetter("amr")
+            meta_map["AMR"] = attrgetter("amr")
 
         return lambda row: {key: fun(row) for key, fun in meta_map.items()}
 
     def _legend_extractor(self):
         if self.with_highlighted_ogs:
-            return attrgetter("extracted")
+            return lambda x: f"extracted {x.extracted}"
         return attrgetter("term_name")
 
     def add_gene_track(self, df):
@@ -257,6 +257,8 @@ class CircosView(BaseViewMixin, View):
                 show_results=True,
                 circos_json=json.dumps(self.data.to_json()),
                 form_display=form_display,
+                with_highlighted_ogs=self.data.with_highlighted_ogs,
+                with_amr=self.data.with_amr,
             )
             return render(request, self.template, context)
         return render(request, self.template, self.get_context())
@@ -335,22 +337,21 @@ class CircosView(BaseViewMixin, View):
         ].fillna("-")
 
         if self.data.with_highlighted_ogs:
-            df_feature_location["extracted"] = "locus"
+            df_feature_location["extracted"] = "no"
             df_genes = self.db.get_genes_from_og(
                 self.highlighted_ogs,
                 taxon_ids=[self.reference_taxon],
                 terms=["locus_tag"],
             )
-            df_feature_location.loc[df_genes["locus_tag"].index, "extracted"] = (
-                "extracted locus"
-            )
+            df_feature_location.loc[df_genes["locus_tag"].index, "extracted"] = "yes"
 
         if self.data.with_amr:
             amrs = self.db.get_amr_hits_from_seqids(
                 df_feature_location.index, columns=("seqid",)
             ).set_index("seqid")
-            amrs["amr"] = True
+            amrs["amr"] = "yes"
             df_feature_location = df_feature_location.join(amrs)
+            df_feature_location["amr"].fillna("no", inplace=True)
 
         df_feature_location = df_feature_location.rename(
             columns={"locus_tag": "locus_ref"}
