@@ -14,8 +14,12 @@ to [Common Changelog](https://common-changelog.org)
 
 - Update orthofinder to version 3.1 to speed-up annotation pipeline. ([#188](https://github.com/metagenlab/zDB/pull/188)) (Niklaus Johner)
 - Improve circos plots by making them interactive. ([#190](https://github.com/metagenlab/zDB/pull/190)) (Niklaus Johner)
+- Allow switching certain tracks on/off on the circos map. ([#191](https://github.com/metagenlab/zDB/pull/191)) (Niklaus Johner)
 
 ### Added
+
+- Add possibility to display GIs, AMRs and VFs on circos map. ([#191](https://github.com/metagenlab/zDB/pull/191)) (Niklaus Johner)
+
 
 ## 1.3.8 - 2025-07-15
 
