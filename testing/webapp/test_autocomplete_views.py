@@ -73,7 +73,7 @@ class TestAutocompleteTaxid(BaseAutocompleteTestCase):
         self.db.server.close()
 
     def test_handles_include_plasmids(self):
-        with self.add_plasmid_for_taxids([1, 2]):
+        with self.add_plasmid_for_taxids([1, 3]):
             resp = self.make_request()
             self.assertItemsEqual(self.taxons + self.groups, resp.json()["results"])
 
