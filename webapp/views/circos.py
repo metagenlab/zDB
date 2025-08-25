@@ -445,6 +445,8 @@ class CircosView(BaseViewMixin, View):
             taxon_colors = {
                 el: tab20(i % 20) for i, el in enumerate(target_taxon_n_homologs.index)
             }
+
+        genome_descriptions = self.db.get_genomes_description(self.target_taxons)
         for target_taxon in target_taxon_n_homologs.index:
             df_combined = df_feature_location.join(
                 df_identity.loc[target_taxon]
@@ -470,7 +472,7 @@ class CircosView(BaseViewMixin, View):
             )
             self.data.add_heatmap_data(
                 df_combined,
-                f"target_{target_taxon}",
+                genome_descriptions.loc[target_taxon].description,
                 mpl.colors.rgb2hex(taxon_colors[target_taxon]),
             )
         self.data.add_heatmap_track()
