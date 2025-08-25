@@ -43,12 +43,12 @@ class CircosData:
                 "tracks": self.tracks,
                 "dividers": {
                     "track": {
-                        "color": "rgba(0,0,0,0.7)",
-                        "thickness": 3,
-                        "spacing": 1.5,
+                        "color": "rgba(0,0,0,0.0)",
+                        "thickness": 1,
+                        "spacing": 8,
                     },
                     "slot": {
-                        "color": "rgba(128,128,128,0.5)",
+                        "color": "rgba(128,128,128,0.0)",
                         "thickness": 1,
                         "spacing": 1,
                     },
@@ -105,7 +105,6 @@ class CircosData:
 
         meta_extractor = self._gene_meta_extractor()
         legend_extractor = self._legend_extractor()
-
         loci = [
             {
                 "name": row.locus_ref,
@@ -125,12 +124,33 @@ class CircosData:
             {
                 "name": "reference",
                 "separateFeaturesBy": "strand",
-                "position": "both",
+                "position": "inside",
                 "thicknessRatio": 1,
                 "dataType": "feature",
                 "dataMethod": "source",
                 "dataKeys": "reference",
             }
+        )
+        legend_item_names = [("CDS", "green"), ("tRNA", "magenta"), ("mRNA", "purple")]
+        if self.with_highlighted_ogs:
+            legend_item_names.extend(
+                [("extracted yes", "magenta"), ("extracted no", "green")]
+            )
+        if self.with_amr:
+            legend_item_names.extend([("AMR yes", "magenta"), ("AMR no", "green")])
+        if self.with_vf:
+            legend_item_names.extend([("VF yes", "magenta"), ("VF no", "green")])
+        visible_items = {el["legend"] for el in loci}
+        self.legend_items.extend(
+            [
+                {
+                    "name": name,
+                    "decoration": "arrow",
+                    "swatchColor": color,
+                    "visible": True if name in visible_items else False,
+                }
+                for name, color in legend_item_names
+            ]
         )
 
     def add_heatmap_data(self, df, label, color):
@@ -212,19 +232,20 @@ class CircosData:
             {
                 "name": label,
                 "position": "outside",
-                "thicknessRatio": 1,
+                "thicknessRatio": 2,
                 "dataType": "feature",
                 "dataMethod": "source",
                 "dataKeys": label,
                 "separateFeaturesBy": "none",
-            }
+            },
         )
-        self.legend_items.append(
+        self.legend_items.insert(
+            0,
             {
                 "name": label,
                 "decoration": "score",
                 "swatchColor": color,
-            }
+            },
         )
 
     def add_gi_track(self, df):
@@ -250,6 +271,12 @@ class CircosData:
                 "separateFeaturesBy": "none",
                 "position": "outside",
                 "dataKeys": "gi",
+            }
+        )
+        self.legend_items.append(
+            {
+                "name": "Genomic island",
+                "swatchColor": "gold",
             }
         )
 
@@ -383,7 +410,7 @@ class CircosView(BaseViewMixin, View):
             ).set_index("seqid")
             amrs["amr"] = "yes"
             df_feature_location = df_feature_location.join(amrs)
-            df_feature_location["amr"].fillna("no", inplace=True)
+            df_feature_location.fillna({"amr": "no"}, inplace=True)
 
         if self.data.with_vf:
             vfs = self.db.vf.get_hits_from_seqids(
@@ -391,12 +418,11 @@ class CircosView(BaseViewMixin, View):
             ).set_index("seqid")
             vfs["vf"] = "yes"
             df_feature_location = df_feature_location.join(vfs)
-            df_feature_location["vf"].fillna("no", inplace=True)
+            df_feature_location.fillna({"vf": "no"}, inplace=True)
 
         df_feature_location = df_feature_location.rename(
             columns={"locus_tag": "locus_ref"}
         )
-        self.data.add_gene_track(df_feature_location)
 
         if self.with_gi:
             gis = self.db.gi.get_hits([self.reference_taxon])
@@ -405,8 +431,10 @@ class CircosView(BaseViewMixin, View):
         self.data.add_histogram_track(
             homologs_count,
             "Prevalence",
-            mpl.colors.get_named_colors_mapping()["aquamarine"],
+            "PaleVioletRed",
         )
+
+        self.data.add_gene_track(df_feature_location)
 
         # iterate ordered list of target taxids, add track to circos
         if len(target_taxon_n_homologs.index) <= 10:
