@@ -17,10 +17,13 @@ class CircosData:
     Prepare json for CGView
     """
 
-    def __init__(self, with_amr=False, with_vf=False, with_highlighted_ogs=False):
+    def __init__(
+        self, with_amr=False, with_vf=False, with_highlighted_ogs=False, with_gi=False
+    ):
         self.with_amr = with_amr
         self.with_vf = with_vf
         self.with_highlighted_ogs = with_highlighted_ogs
+        self.with_gi = with_gi
         self.features = []
         self.contigs = []
         self.plots = []
@@ -267,7 +270,7 @@ class CircosData:
         self.features.extend(loci)
         self.tracks.append(
             {
-                "name": "gi",
+                "name": "Genomic island",
                 "separateFeaturesBy": "none",
                 "position": "outside",
                 "dataKeys": "gi",
@@ -308,7 +311,6 @@ class CircosView(BaseViewMixin, View):
                 self.highlighted_ogs = self.form.data.getlist("highlighted_ogs")
                 form_display = None
 
-            self.with_gi = optional2status.get("gi", False)
             self.prepare_circos_data()
             context = self.get_context(
                 show_results=True,
@@ -317,6 +319,7 @@ class CircosView(BaseViewMixin, View):
                 with_highlighted_ogs=self.data.with_highlighted_ogs,
                 with_amr=self.data.with_amr,
                 with_vf=self.data.with_vf,
+                with_gi=self.data.with_gi,
             )
             return render(request, self.template, context)
         return render(request, self.template, self.get_context())
@@ -326,6 +329,7 @@ class CircosView(BaseViewMixin, View):
             with_highlighted_ogs=self.highlighted_ogs is not None,
             with_amr=optional2status.get("amr", False),
             with_vf=optional2status.get("vf", False),
+            with_gi=optional2status.get("gi", False),
         )
         # "bioentry_id", "accession" ,"length"
         df_bioentry = self.db.get_bioentry_list(
@@ -424,7 +428,7 @@ class CircosView(BaseViewMixin, View):
             columns={"locus_tag": "locus_ref"}
         )
 
-        if self.with_gi:
+        if self.data.with_gi:
             gis = self.db.gi.get_hits([self.reference_taxon])
             self.data.add_gi_track(gis)
 

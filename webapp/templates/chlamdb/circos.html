@@ -85,22 +85,36 @@
                       <div class="cgv-btn" id="btn-download" title="Download Map PNG"></div>
                       <div class="cgv-btn" id="btn-toggle-labels" title="Toggle Labels"></div>
 
-                      <label for="ref_coloring">Ref. genome color map:</label>
+                      <div>
+                        <label for="ref_coloring" style="margin-left: 10px">Ref. genome color map:</label>
 
-                      <select name="ref_coloring" id="ref_colors">
-                        {% if with_highlighted_ogs %}
-                          <option selected value="extracted">Extracted</option>
-                          <option value="type">Locus type</option>
-                        {% else %}
-                          <option selected value="type">Locus type</option>
-                        {% endif %}
-                        {% if with_amr %}
-                          <option value="AMR">AMR</option>
-                        {% endif %}
-                        {% if with_vf %}
-                          <option value="VF">VF</option>
-                        {% endif %}
-                      </select> 
+                        <select name="ref_coloring" id="ref_colors">
+                          {% if with_highlighted_ogs %}
+                            <option selected value="extracted">Extracted</option>
+                            <option value="type">Locus type</option>
+                          {% else %}
+                            <option selected value="type">Locus type</option>
+                          {% endif %}
+                          {% if with_amr %}
+                            <option value="AMR">AMR</option>
+                          {% endif %}
+                          {% if with_vf %}
+                            <option value="VF">VF</option>
+                          {% endif %}
+                        </select> 
+                      </div>
+
+                      <div>
+                        <label for="visible_tracks" style="vertical-align:top; margin-left: 10px">visible tracks</label>
+                        <select name="visible_tracks" id="visible_tracks" multiple >
+                          <option selected value="prevalence">Prevalence</option>
+                          {% if with_gi %}
+                            <option selected value="Genomic island">Genomic island</option>
+                          {% endif %}
+                          <option selected value="GC Content">GC Content</option>
+                          <option selected value="GC Skew">GC Skew</option>
+                        </select> 
+                      </div>
                     </div>
                   </ul>
                 </div>
@@ -241,6 +255,45 @@ $(document).ready(function() {
     })
     cgv.draw();
   });
+
+  // Add event listener for visible tracks
+  document.getElementById('visible_tracks').addEventListener('change', function() {
+    const selected = Array.from(this.selectedOptions).map(opt => opt.value);
+    const optionValues = Array.from(this.options).map(opt => opt.value);
+
+    optionValues.forEach(function(trackName) {
+      // Set track visibility
+      const track = cgv.tracks(trackName);
+      visible = selected.includes(trackName)
+      track.visible = visible;
+      
+      // Set legendItem visibility
+      if (trackName === "GC Skew") {
+        legendItem = cgv.legend.findLegendItemByName(trackName + "+")
+        legendItem.visible = visible;
+        legendItem = cgv.legend.findLegendItemByName(trackName + "-")
+        legendItem.visible = visible;
+      }
+      else {
+        const legendItem = cgv.legend.findLegendItemByName(trackName)
+        legendItem.visible = visible;
+      }
+
+      // Set label visibility
+      gi_visible = selected.includes("Genomic island")
+      og_visible = selected.includes("prevalence")
+      cgv.annotation.labels().forEach(function(label){
+        type = label.feature.type
+        if (type === "genomic island") {
+          label.feature.visible = gi_visible
+        }
+        else if (type === "OG") {
+          label.feature.visible = og_visible
+        }
+      })
+    });
+  cgv.draw();
+});
 
   cgv.reset();
   cgv.draw();
