@@ -1,15 +1,15 @@
 import json
+from operator import attrgetter
 
 import matplotlib as mpl
 import numpy as np
 from chlamdb.forms import make_circos_form
-from django.conf import settings
 from django.shortcuts import render
 from django.views import View
-from lib.db_utils import DB
 from matplotlib.cm import tab10
 from matplotlib.cm import tab20
 from views.mixins import BaseViewMixin
+from views.utils import optional2status
 
 
 class CircosData:
@@ -17,7 +17,13 @@ class CircosData:
     Prepare json for CGView
     """
 
-    def __init__(self, figure_div_id="heatmapChart"):
+    def __init__(
+        self, with_amr=False, with_vf=False, with_highlighted_ogs=False, with_gi=False
+    ):
+        self.with_amr = with_amr
+        self.with_vf = with_vf
+        self.with_highlighted_ogs = with_highlighted_ogs
+        self.with_gi = with_gi
         self.features = []
         self.contigs = []
         self.plots = []
@@ -40,12 +46,12 @@ class CircosData:
                 "tracks": self.tracks,
                 "dividers": {
                     "track": {
-                        "color": "rgba(0,0,0,0.7)",
-                        "thickness": 3,
-                        "spacing": 1.5,
+                        "color": "rgba(0,0,0,0.0)",
+                        "thickness": 1,
+                        "spacing": 8,
                     },
                     "slot": {
-                        "color": "rgba(128,128,128,0.5)",
+                        "color": "rgba(128,128,128,0.0)",
                         "thickness": 1,
                         "spacing": 1,
                     },
@@ -72,6 +78,25 @@ class CircosData:
                 }
             )
 
+    def _gene_meta_extractor(self):
+        meta_map = {
+            "gene": attrgetter("gene"),
+            "product": attrgetter("gene_product"),
+        }
+        if self.with_highlighted_ogs:
+            meta_map["extracted"] = attrgetter("extracted")
+        if self.with_amr:
+            meta_map["AMR"] = attrgetter("amr")
+        if self.with_vf:
+            meta_map["VF"] = attrgetter("vf")
+
+        return lambda row: {key: fun(row) for key, fun in meta_map.items()}
+
+    def _legend_extractor(self):
+        if self.with_highlighted_ogs:
+            return lambda x: f"extracted {x.extracted}"
+        return attrgetter("term_name")
+
     def add_gene_track(self, df):
         """
         Input df columns:
@@ -80,6 +105,9 @@ class CircosData:
         - end_pos
         - locus_ref
         """
+
+        meta_extractor = self._gene_meta_extractor()
+        legend_extractor = self._legend_extractor()
         loci = [
             {
                 "name": row.locus_ref,
@@ -89,8 +117,8 @@ class CircosData:
                 "stop": row.end_pos,
                 "strand": row.strand,
                 "type": row.term_name,
-                "meta": {"gene": f"{row.gene}", "product": f"{row.gene_product}"},
-                "legend": row.legend,
+                "meta": meta_extractor(row),
+                "legend": legend_extractor(row),
             }
             for n, row in df.iterrows()
         ]
@@ -99,12 +127,33 @@ class CircosData:
             {
                 "name": "reference",
                 "separateFeaturesBy": "strand",
-                "position": "both",
+                "position": "inside",
                 "thicknessRatio": 1,
                 "dataType": "feature",
                 "dataMethod": "source",
                 "dataKeys": "reference",
             }
+        )
+        legend_item_names = [("CDS", "green"), ("tRNA", "magenta"), ("mRNA", "purple")]
+        if self.with_highlighted_ogs:
+            legend_item_names.extend(
+                [("extracted yes", "magenta"), ("extracted no", "green")]
+            )
+        if self.with_amr:
+            legend_item_names.extend([("AMR yes", "magenta"), ("AMR no", "green")])
+        if self.with_vf:
+            legend_item_names.extend([("VF yes", "magenta"), ("VF no", "green")])
+        visible_items = {el["legend"] for el in loci}
+        self.legend_items.extend(
+            [
+                {
+                    "name": name,
+                    "decoration": "arrow",
+                    "swatchColor": color,
+                    "visible": True if name in visible_items else False,
+                }
+                for name, color in legend_item_names
+            ]
         )
 
     def add_heatmap_data(self, df, label, color):
@@ -186,18 +235,51 @@ class CircosData:
             {
                 "name": label,
                 "position": "outside",
-                "thicknessRatio": 1,
+                "thicknessRatio": 2,
                 "dataType": "feature",
                 "dataMethod": "source",
                 "dataKeys": label,
                 "separateFeaturesBy": "none",
-            }
+            },
         )
-        self.legend_items.append(
+        self.legend_items.insert(
+            0,
             {
                 "name": label,
                 "decoration": "score",
                 "swatchColor": color,
+            },
+        )
+
+    def add_gi_track(self, df):
+        """
+        Input df columns: gis_id, taxon_id, bioentry_id, cluster_id, start_pos, end_pos, length
+        """
+        loci = [
+            {
+                "name": f"GI{row.gis_id}",
+                "source": "gi",
+                "contig": str(row.bioentry_id),
+                "start": int(row.start_pos),
+                "stop": int(row.end_pos),
+                "type": "genomic island",
+                "legend": "Genomic island",
+            }
+            for n, row in df.iterrows()
+        ]
+        self.features.extend(loci)
+        self.tracks.append(
+            {
+                "name": "Genomic island",
+                "separateFeaturesBy": "none",
+                "position": "outside",
+                "dataKeys": "gi",
+            }
+        )
+        self.legend_items.append(
+            {
+                "name": "Genomic island",
+                "swatchColor": "gold",
             }
         )
 
@@ -234,12 +316,21 @@ class CircosView(BaseViewMixin, View):
                 show_results=True,
                 circos_json=json.dumps(self.data.to_json()),
                 form_display=form_display,
+                with_highlighted_ogs=self.data.with_highlighted_ogs,
+                with_amr=self.data.with_amr,
+                with_vf=self.data.with_vf,
+                with_gi=self.data.with_gi,
             )
             return render(request, self.template, context)
         return render(request, self.template, self.get_context())
 
     def prepare_circos_data(self):
-        self.data = CircosData()
+        self.data = CircosData(
+            with_highlighted_ogs=self.highlighted_ogs is not None,
+            with_amr=optional2status.get("amr", False),
+            with_vf=optional2status.get("vf", False),
+            with_gi=optional2status.get("gi", False),
+        )
         # "bioentry_id", "accession" ,"length"
         df_bioentry = self.db.get_bioentry_list(
             self.reference_taxon, min_bioentry_length=1000
@@ -308,29 +399,46 @@ class CircosView(BaseViewMixin, View):
             "qualifier_value_locus_tag"
         ].fillna("-")
 
-        if self.highlighted_ogs is not None:
-            df_feature_location["legend"] = "locus"
+        if self.data.with_highlighted_ogs:
+            df_feature_location["extracted"] = "no"
             df_genes = self.db.get_genes_from_og(
                 self.highlighted_ogs,
                 taxon_ids=[self.reference_taxon],
                 terms=["locus_tag"],
             )
-            df_feature_location.loc[df_genes["locus_tag"].index, "legend"] = (
-                "extracted locus"
-            )
-        else:
-            df_feature_location["legend"] = df_feature_location["term_name"]
+            df_feature_location.loc[df_genes["locus_tag"].index, "extracted"] = "yes"
+
+        if self.data.with_amr:
+            amrs = self.db.get_amr_hits_from_seqids(
+                df_feature_location.index, columns=("seqid",)
+            ).set_index("seqid")
+            amrs["amr"] = "yes"
+            df_feature_location = df_feature_location.join(amrs)
+            df_feature_location.fillna({"amr": "no"}, inplace=True)
+
+        if self.data.with_vf:
+            vfs = self.db.vf.get_hits_from_seqids(
+                df_feature_location.index, columns=("seqid",)
+            ).set_index("seqid")
+            vfs["vf"] = "yes"
+            df_feature_location = df_feature_location.join(vfs)
+            df_feature_location.fillna({"vf": "no"}, inplace=True)
 
         df_feature_location = df_feature_location.rename(
             columns={"locus_tag": "locus_ref"}
         )
-        self.data.add_gene_track(df_feature_location)
+
+        if self.data.with_gi:
+            gis = self.db.gi.get_hits([self.reference_taxon])
+            self.data.add_gi_track(gis)
 
         self.data.add_histogram_track(
             homologs_count,
             "Prevalence",
-            mpl.colors.get_named_colors_mapping()["aquamarine"],
+            "PaleVioletRed",
         )
+
+        self.data.add_gene_track(df_feature_location)
 
         # iterate ordered list of target taxids, add track to circos
         if len(target_taxon_n_homologs.index) <= 10:
@@ -341,6 +449,8 @@ class CircosView(BaseViewMixin, View):
             taxon_colors = {
                 el: tab20(i % 20) for i, el in enumerate(target_taxon_n_homologs.index)
             }
+
+        genome_descriptions = self.db.get_genomes_description(self.target_taxons)
         for target_taxon in target_taxon_n_homologs.index:
             df_combined = df_feature_location.join(
                 df_identity.loc[target_taxon]
@@ -366,7 +476,7 @@ class CircosView(BaseViewMixin, View):
             )
             self.data.add_heatmap_data(
                 df_combined,
-                f"target_{target_taxon}",
+                genome_descriptions.loc[target_taxon].description,
                 mpl.colors.rgb2hex(taxon_colors[target_taxon]),
             )
         self.data.add_heatmap_track()

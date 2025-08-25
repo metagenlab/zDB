@@ -50,7 +50,7 @@ class TestAccessionFieldHandler(SimpleTestCase):
     def test_get_choices_handles_plasmids(self):
         self.assertItemsEqual(self.taxons + self.groups, self.handler.get_choices())
 
-        self.add_plasmid_for_taxids([1, 3])
+        self.add_plasmid_for_taxids([1, 4])
         self.assertItemsEqual(
             self.taxons + self.groups + self.plasmids[::2], self.handler.get_choices()
         )
@@ -68,7 +68,7 @@ class TestAccessionFieldHandler(SimpleTestCase):
             [self.taxons[0]], self.handler.get_choices(exclude=exclude)
         )
 
-        self.add_plasmid_for_taxids([1, 2, 3])
+        self.add_plasmid_for_taxids([1, 3, 4])
         self.assertItemsEqual(
             self.taxons + self.groups + self.plasmids, self.handler.get_choices()
         )
@@ -85,7 +85,7 @@ class TestAccessionFieldHandler(SimpleTestCase):
         )
 
     def test_get_choices_handles_plasmid_exclusion(self):
-        self.add_plasmid_for_taxids([1, 2, 3])
+        self.add_plasmid_for_taxids([1, 3, 4])
 
         exclude = [self.plasmids[-1][0]]
         self.assertItemsEqual(

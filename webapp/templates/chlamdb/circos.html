@@ -84,6 +84,37 @@
                       <div class="cgv-btn" id="btn-invert-colors" title="Invert Map Colors"></div>
                       <div class="cgv-btn" id="btn-download" title="Download Map PNG"></div>
                       <div class="cgv-btn" id="btn-toggle-labels" title="Toggle Labels"></div>
+
+                      <div>
+                        <label for="ref_coloring" style="margin-left: 10px">Ref. genome color map:</label>
+
+                        <select name="ref_coloring" id="ref_colors">
+                          {% if with_highlighted_ogs %}
+                            <option selected value="extracted">Extracted</option>
+                            <option value="type">Locus type</option>
+                          {% else %}
+                            <option selected value="type">Locus type</option>
+                          {% endif %}
+                          {% if with_amr %}
+                            <option value="AMR">AMR</option>
+                          {% endif %}
+                          {% if with_vf %}
+                            <option value="VF">VF</option>
+                          {% endif %}
+                        </select> 
+                      </div>
+
+                      <div>
+                        <label for="visible_tracks" style="vertical-align:top; margin-left: 10px">visible tracks</label>
+                        <select name="visible_tracks" id="visible_tracks" multiple >
+                          <option selected value="prevalence">Prevalence</option>
+                          {% if with_gi %}
+                            <option selected value="Genomic island">Genomic island</option>
+                          {% endif %}
+                          <option selected value="GC Content">GC Content</option>
+                          <option selected value="GC Skew">GC Skew</option>
+                        </select> 
+                      </div>
                     </div>
                   </ul>
                 </div>
@@ -112,28 +143,22 @@ $(document).ready(function() {
   // Load data
   cgv.io.loadJSON({{circos_json| safe}});
   cgv.addTracks({
-    name: 'GC Skew',
+    name: 'GC Content',
     position: 'inside',
     dataType: 'feature',
     dataMethod: 'sequence',
-    // e.g. In this example, GC Skew plot will be extracted from the sequence.
-    dataKeys: 'gc-skew',
-    // By default, the step and window values are calculated based on the sequence length,
-    // but they can be overridden here.
+    dataKeys: 'gc-content',
     dataOptions: {
       step: 1,
       window: 100
     }
   });
   cgv.addTracks({
-    name: 'GC Content',
+    name: 'GC Skew',
     position: 'inside',
     dataType: 'feature',
     dataMethod: 'sequence',
-    // e.g. In this example, GC Content plot will be extracted from the sequence.
-    dataKeys: 'gc-content',
-    // By default, the step and window values are calculated based on the sequence length,
-    // but they can be overridden here.
+    dataKeys: 'gc-skew',
     dataOptions: {
       step: 1,
       window: 100
@@ -146,6 +171,9 @@ $(document).ready(function() {
       }
       else if (event.slot.track.name === 'Prevalence') {
         window.open(`/orthogroup/${event.element.name}`)
+      }
+      else if (event.slot.track.name === 'gi') {
+        window.open(`/genomic_island/${event.element.name.substring(2)}`)
       }
     }
   });
@@ -194,7 +222,79 @@ $(document).ready(function() {
     cgv.annotation.update({visible: !cgv.annotation.visible});
     cgv.draw();
   });
-  
+
+  // Add event listener for reference coloring scheme select menu
+  document.getElementById('ref_colors').addEventListener('change', function() {
+    const selected = this.value;
+    const ref = cgv.tracks("reference");
+
+    if (selected === "type") {
+      get_legend = function(feature) {
+        return feature.type
+      };
+    }
+    else {
+      get_legend = function(feature) {
+        return `${selected} ${feature._meta[selected]}`
+      };
+    }
+
+    to_hide = new Set()
+    to_show = new Set()
+    ref.features().forEach(function(feature) {
+      to_hide.add(feature.legend)
+      new_legend = get_legend(feature)
+      to_show.add(new_legend)
+      feature.update({"legendItem": new_legend})
+    });
+    to_hide.forEach(function(item) {
+      item.visible = false;
+    })
+    to_show.forEach(function(name) {
+      cgv.legend.findLegendItemByName(name).visible = true;
+    })
+    cgv.draw();
+  });
+
+  // Add event listener for visible tracks
+  document.getElementById('visible_tracks').addEventListener('change', function() {
+    const selected = Array.from(this.selectedOptions).map(opt => opt.value);
+    const optionValues = Array.from(this.options).map(opt => opt.value);
+
+    optionValues.forEach(function(trackName) {
+      // Set track visibility
+      const track = cgv.tracks(trackName);
+      visible = selected.includes(trackName)
+      track.visible = visible;
+      
+      // Set legendItem visibility
+      if (trackName === "GC Skew") {
+        legendItem = cgv.legend.findLegendItemByName(trackName + "+")
+        legendItem.visible = visible;
+        legendItem = cgv.legend.findLegendItemByName(trackName + "-")
+        legendItem.visible = visible;
+      }
+      else {
+        const legendItem = cgv.legend.findLegendItemByName(trackName)
+        legendItem.visible = visible;
+      }
+
+      // Set label visibility
+      gi_visible = selected.includes("Genomic island")
+      og_visible = selected.includes("prevalence")
+      cgv.annotation.labels().forEach(function(label){
+        type = label.feature.type
+        if (type === "genomic island") {
+          label.feature.visible = gi_visible
+        }
+        else if (type === "OG") {
+          label.feature.visible = og_visible
+        }
+      })
+    });
+  cgv.draw();
+});
+
   cgv.reset();
   cgv.draw();
 });

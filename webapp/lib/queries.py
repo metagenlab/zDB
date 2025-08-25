@@ -156,8 +156,12 @@ class GIQueries(BaseQueries):
     )
 
     hit_cols = [
+        "gis_id",
         "bioentry.taxon_id",
+        "bioentry.bioentry_id",
         f"{hit_table}.{id_col}",
+        "start_pos",
+        "end_pos",
         "length",
     ]
 
@@ -189,6 +193,10 @@ class GIQueries(BaseQueries):
         return self.to_pandas_frame(
             self.server.adaptor.execute_and_fetchall(sql, gis_ids), columns
         )
+
+    def get_genomic_islands(self, cluster_id):
+        sql = f"SELECT {self.id_col}, bioentry_id, start_pos, end_pos FROM {self.hit_table} WHERE {self.id_col}=?"
+        return self.server.adaptor.execute_and_fetchall(sql, [cluster_id])
 
 
 class VFQueries(BaseQueries):
