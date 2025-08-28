@@ -89,8 +89,8 @@
                         <label for="ref_coloring" style="margin-left: 10px">Ref. genome color map:</label>
 
                         <select name="ref_coloring" id="ref_colors">
-                          {% if with_highlighted_ogs %}
-                            <option selected value="extracted">Extracted</option>
+                          {% if with_highlighted_loci %}
+                            <option selected value="highlighted">Highlighted</option>
                             <option value="type">Locus type</option>
                           {% else %}
                             <option selected value="type">Locus type</option>

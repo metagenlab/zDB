@@ -18,11 +18,11 @@ class CircosData:
     """
 
     def __init__(
-        self, with_amr=False, with_vf=False, with_highlighted_ogs=False, with_gi=False
+        self, with_amr=False, with_vf=False, with_highlighted_loci=False, with_gi=False
     ):
         self.with_amr = with_amr
         self.with_vf = with_vf
-        self.with_highlighted_ogs = with_highlighted_ogs
+        self.with_highlighted_loci = with_highlighted_loci
         self.with_gi = with_gi
         self.features = []
         self.contigs = []
@@ -83,8 +83,8 @@ class CircosData:
             "gene": attrgetter("gene"),
             "product": attrgetter("gene_product"),
         }
-        if self.with_highlighted_ogs:
-            meta_map["extracted"] = attrgetter("extracted")
+        if self.with_highlighted_loci:
+            meta_map["highlighted"] = attrgetter("highlighted")
         if self.with_amr:
             meta_map["AMR"] = attrgetter("amr")
         if self.with_vf:
@@ -93,8 +93,8 @@ class CircosData:
         return lambda row: {key: fun(row) for key, fun in meta_map.items()}
 
     def _legend_extractor(self):
-        if self.with_highlighted_ogs:
-            return lambda x: f"extracted {x.extracted}"
+        if self.with_highlighted_loci:
+            return lambda x: f"highlighted {x.highlighted}"
         return attrgetter("term_name")
 
     def add_gene_track(self, df):
@@ -135,9 +135,9 @@ class CircosData:
             }
         )
         legend_item_names = [("CDS", "green"), ("tRNA", "magenta"), ("mRNA", "purple")]
-        if self.with_highlighted_ogs:
+        if self.with_highlighted_loci:
             legend_item_names.extend(
-                [("extracted yes", "magenta"), ("extracted no", "green")]
+                [("highlighted yes", "magenta"), ("highlighted no", "green")]
             )
         if self.with_amr:
             legend_item_names.extend([("AMR yes", "magenta"), ("AMR no", "green")])
@@ -316,7 +316,7 @@ class CircosView(BaseViewMixin, View):
                 show_results=True,
                 circos_json=json.dumps(self.data.to_json()),
                 form_display=form_display,
-                with_highlighted_ogs=self.data.with_highlighted_ogs,
+                with_highlighted_loci=self.data.with_highlighted_loci,
                 with_amr=self.data.with_amr,
                 with_vf=self.data.with_vf,
                 with_gi=self.data.with_gi,
@@ -325,8 +325,9 @@ class CircosView(BaseViewMixin, View):
         return render(request, self.template, self.get_context())
 
     def prepare_circos_data(self):
+        highlight_loci_from_ogs = self.highlighted_ogs is not None
         self.data = CircosData(
-            with_highlighted_ogs=self.highlighted_ogs is not None,
+            with_highlighted_loci=highlight_loci_from_ogs,
             with_amr=optional2status.get("amr", False),
             with_vf=optional2status.get("vf", False),
             with_gi=optional2status.get("gi", False),
@@ -399,14 +400,15 @@ class CircosView(BaseViewMixin, View):
             "qualifier_value_locus_tag"
         ].fillna("-")
 
-        if self.data.with_highlighted_ogs:
-            df_feature_location["extracted"] = "no"
+        if highlight_loci_from_ogs:
             df_genes = self.db.get_genes_from_og(
                 self.highlighted_ogs,
                 taxon_ids=[self.reference_taxon],
                 terms=["locus_tag"],
             )
-            df_feature_location.loc[df_genes["locus_tag"].index, "extracted"] = "yes"
+            highlighted_entries = df_genes["locus_tag"].index
+            df_feature_location["highlighted"] = "no"
+            df_feature_location.loc[highlighted_entries, "highlighted"] = "yes"
 
         if self.data.with_amr:
             amrs = self.db.get_amr_hits_from_seqids(
