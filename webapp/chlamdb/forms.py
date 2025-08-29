@@ -289,14 +289,14 @@ def make_circos_form(db):
         )
 
         highlighted_entries = forms.CharField(
-            widget=forms.Textarea(attrs={"cols": 50, "rows": 5}),
+            widget=forms.Textarea(attrs={"cols": 40, "rows": 5}),
             required=False,
             label="Highlighted loci",
             help_text=entries_help,
         )
 
         label_mapping = forms.CharField(
-            widget=forms.Textarea(attrs={"cols": 50, "rows": 5}),
+            widget=forms.Textarea(attrs={"cols": 40, "rows": 5}),
             required=False,
             label="Custom labels",
             help_text=labels_help,
@@ -311,16 +311,31 @@ def make_circos_form(db):
             self.helper.layout = Layout(
                 Fieldset(
                     " ",
-                    Row("circos_reference"),
-                    Row("targets", style="margin-top:1em"),
-                    Row("highlighted_entries", style="margin-top:1em"),
-                    Row("label_mapping", style="margin-top:1em"),
+                    Row(
+                        Column(
+                            "circos_reference",
+                            css_class="form-group col-lg-5 col-md-6 col-sm-12",
+                        ),
+                        Column(
+                            "targets",
+                            css_class="form-group col-lg-5 col-md-6 col-sm-12",
+                        ),
+                    ),
+                    Row(
+                        Column(
+                            "highlighted_entries",
+                            css_class="form-group col-lg-5 col-md-6 col-sm-12",
+                        ),
+                        Column(
+                            "label_mapping",
+                            css_class="form-group col-lg-5 col-md-6 col-sm-12",
+                        ),
+                    ),
                     Submit(
                         "submit_circos",
                         "Submit",
                         style="padding-left:15px; margin-top:15px; margin-bottom:15px ",
                     ),
-                    css_class="col-lg-5 col-md-6 col-sm-6",
                 )
             )
 
