@@ -303,19 +303,28 @@ class CircosView(BaseViewMixin, View):
             self.target_taxons = self.form.get_target_taxids()
             self.reference_taxon = self.form.get_ref_taxid()
 
-            form_display = "inherit"
-            self.highlighted_ogs = None
             if "highlighted_ogs" in self.form.data:
+                highlighted_ogs = self.form.data.getlist("highlighted_ogs")
+
                 # This is only set when coming from the OG extraction view.
-                # As this is not a field supported in the form, we hide the form
-                self.highlighted_ogs = self.form.data.getlist("highlighted_ogs")
-                form_display = None
+                # As this is not a field supported in the form, which instead
+                # uses highlighted loci, we set that field in the form accordingly
+                df_genes = self.db.get_genes_from_og(
+                    highlighted_ogs,
+                    taxon_ids=[self.reference_taxon],
+                    terms=["locus_tag"],
+                )
+                self.form.data = self.form.data.copy()
+                self.form.data["highlighted_entries"] = ",".join(df_genes["locus_tag"])
+                self.form.cleaned_data["highlighted_entries"] = list(
+                    df_genes["locus_tag"]
+                )
+            self.highlighted_loci = self.form.cleaned_data["highlighted_entries"]
 
             self.prepare_circos_data()
             context = self.get_context(
                 show_results=True,
                 circos_json=json.dumps(self.data.to_json()),
-                form_display=form_display,
                 with_highlighted_loci=self.data.with_highlighted_loci,
                 with_amr=self.data.with_amr,
                 with_vf=self.data.with_vf,
@@ -325,9 +334,8 @@ class CircosView(BaseViewMixin, View):
         return render(request, self.template, self.get_context())
 
     def prepare_circos_data(self):
-        highlight_loci_from_ogs = self.highlighted_ogs is not None
         self.data = CircosData(
-            with_highlighted_loci=highlight_loci_from_ogs,
+            with_highlighted_loci=self.highlighted_loci is not None,
             with_amr=optional2status.get("amr", False),
             with_vf=optional2status.get("vf", False),
             with_gi=optional2status.get("gi", False),
@@ -400,15 +408,11 @@ class CircosView(BaseViewMixin, View):
             "qualifier_value_locus_tag"
         ].fillna("-")
 
-        if highlight_loci_from_ogs:
-            df_genes = self.db.get_genes_from_og(
-                self.highlighted_ogs,
-                taxon_ids=[self.reference_taxon],
-                terms=["locus_tag"],
-            )
-            highlighted_entries = df_genes["locus_tag"].index
+        if self.data.with_highlighted_loci:
             df_feature_location["highlighted"] = "no"
-            df_feature_location.loc[highlighted_entries, "highlighted"] = "yes"
+            df_feature_location["highlighted"][
+                df_feature_location["locus_tag"].isin(self.highlighted_loci)
+            ] = "yes"
 
         if self.data.with_amr:
             amrs = self.db.get_amr_hits_from_seqids(

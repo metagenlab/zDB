@@ -20,10 +20,8 @@ from views.utils import AccessionFieldHandler
 from views.utils import EntryIdParser
 
 
-def make_plot_form(db):
+def select_random_locus(db, accession_choices, n=1):
     import pandas as pd
-
-    accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
 
     # selct random locus present in at least 50% of genomes
     og_df = pd.DataFrame(db.get_all_orthogroups())
@@ -33,9 +31,18 @@ def make_plot_form(db):
         locus_list = db.get_genes_from_og(
             [str(random_group.og)], taxon_ids=None, terms=["locus_tag"]
         )
-        locus = locus_list.locus_tag.to_list()[0]
+        if n == 1:
+            locus = locus_list.locus_tag.to_list()[0]
+        else:
+            locus = ",".join(locus_list.locus_tag.to_list()[:n])
     except Exception:
         locus = "n/a"
+    return locus
+
+
+def make_plot_form(db):
+    accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
+    locus = select_random_locus(db, accession_choices)
 
     class PlotForm(forms.Form):
         choices = (("yes", "all homologs"), ("no", "best hits only"))
@@ -249,13 +256,19 @@ def make_venn_from(db, label="Orthologs", limit=None, limit_type="upper", action
     return VennForm
 
 
-def make_circos_form(database_name):
+def make_circos_form(db):
     accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
     accession_choices_no_groups = AccessionFieldHandler().get_choices(
         with_plasmids=False, with_groups=False
     )
 
+    example_highlight = select_random_locus(db, accession_choices, 4)
+
     class CircosForm(forms.Form):
+        entries_help = f"""
+        Coma separated list of loci to highlight in the reference genome. <br>
+        Example: {example_highlight}"""
+
         circos_reference = forms.ChoiceField(
             choices=accession_choices_no_groups,
             widget=forms.Select(
@@ -275,6 +288,13 @@ def make_circos_form(database_name):
             required=False,
         )
 
+        highlighted_entries = forms.CharField(
+            widget=forms.Textarea(attrs={"cols": 50, "rows": 5}),
+            required=False,
+            label="Highlighted loci",
+            help_text=entries_help,
+        )
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.helper = FormHelper()
@@ -286,6 +306,7 @@ def make_circos_form(database_name):
                     " ",
                     Row("circos_reference"),
                     Row("targets", style="margin-top:1em"),
+                    Row("highlighted_entries", style="margin-top:1em"),
                     Submit(
                         "submit_circos",
                         "Submit",
@@ -295,10 +316,16 @@ def make_circos_form(database_name):
                 )
             )
 
-        def save(self):
-            self.reference = self.cleaned_data["reference"]
-            self.get_region = self.cleaned_data["get_region"]
-            self.region = self.cleaned_data["region"]
+        def clean_highlighted_entries(self):
+            raw_entries = self.cleaned_data["highlighted_entries"].split(",")
+            entries = [entry.strip() for entry in raw_entries if entry.strip()]
+            if entries:
+                prot_info = db.get_proteins_info(
+                    ids=entries, search_on="locus_tag", as_df=True
+                )
+                if len(prot_info) != len(entries):
+                    raise ValidationError("Accession not found", code="invalid")
+            return entries
 
         def get_target_taxids(self):
             indices = self.cleaned_data["targets"]
