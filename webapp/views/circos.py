@@ -348,7 +348,7 @@ class CircosView(BaseViewMixin, View):
 
     def prepare_circos_data(self):
         self.data = CircosData(
-            with_highlighted_loci=self.highlighted_loci is not None,
+            with_highlighted_loci=self.highlighted_loci,
             with_amr=optional2status.get("amr", False),
             with_vf=optional2status.get("vf", False),
             with_gi=optional2status.get("gi", False),
