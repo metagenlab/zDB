@@ -30,6 +30,7 @@ class CircosData:
         self.settings = {}
         self.legend_items = []
         self.tracks = []
+        self.only_draw_favorites = False
 
     def to_json(self):
         return {
@@ -56,6 +57,7 @@ class CircosData:
                         "spacing": 1,
                     },
                 },
+                "annotation": {"onlyDrawFavorites": self.only_draw_favorites},
             }
         }
 
@@ -283,6 +285,16 @@ class CircosData:
             }
         )
 
+    def set_custom_labels(self, label_mapping):
+        """This will not only change the labels according to the mapping
+        it will also set those as favorites and only display those on the map.
+        """
+        for el in self.features:
+            if el["name"] in label_mapping:
+                el["name"] = label_mapping[el["name"]]
+                el["favorite"] = True
+        self.only_draw_favorites = True
+
 
 class CircosView(BaseViewMixin, View):
     view_name = "circos"
@@ -302,6 +314,7 @@ class CircosView(BaseViewMixin, View):
         if self.form.is_valid():
             self.target_taxons = self.form.get_target_taxids()
             self.reference_taxon = self.form.get_ref_taxid()
+            self.label_mapping = self.form.cleaned_data["label_mapping"]
 
             if "highlighted_ogs" in self.form.data:
                 highlighted_ogs = self.form.data.getlist("highlighted_ogs")
@@ -486,3 +499,6 @@ class CircosView(BaseViewMixin, View):
                 mpl.colors.rgb2hex(taxon_colors[target_taxon]),
             )
         self.data.add_heatmap_track()
+
+        if self.label_mapping:
+            self.data.set_custom_labels(self.label_mapping)

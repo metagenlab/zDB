@@ -20,29 +20,22 @@ from views.utils import AccessionFieldHandler
 from views.utils import EntryIdParser
 
 
-def select_random_locus(db, accession_choices, n=1):
-    import pandas as pd
-
-    # selct random locus present in at least 50% of genomes
-    og_df = pd.DataFrame(db.get_all_orthogroups())
-    og_df.columns = ["og", "size"]
-    try:
-        random_group = og_df.query(f"size >= {len(accession_choices) - 1}").iloc[-1]
-        locus_list = db.get_genes_from_og(
-            [str(random_group.og)], taxon_ids=None, terms=["locus_tag"]
-        )
-        if n == 1:
-            locus = locus_list.locus_tag.to_list()[0]
-        else:
-            locus = ",".join(locus_list.locus_tag.to_list()[:n])
-    except Exception:
-        locus = "n/a"
-    return locus
+def select_random_locus(db, n=1):
+    query = (
+        "SELECT value FROM seqfeature_qualifier_value as locus_tag "
+        "INNER JOIN seqfeature AS feature ON feature.seqfeature_id=locus_tag.seqfeature_id "
+        "INNER JOIN term AS t1 ON feature.type_term_id=t1.term_id AND t1.name = 'CDS' "
+        f"INNER JOIN term AS t2 ON locus_tag.term_id=t2.term_id AND t2.name = 'locus_tag' LIMIT {n};"
+    )
+    ret = db.server.adaptor.execute_and_fetchall(query)
+    if n == 1:
+        return ret[0][0]
+    return ",".join([el[0] for el in ret])
 
 
 def make_plot_form(db):
     accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
-    locus = select_random_locus(db, accession_choices)
+    locus = select_random_locus(db)
 
     class PlotForm(forms.Form):
         choices = (("yes", "all homologs"), ("no", "best hits only"))
@@ -262,12 +255,19 @@ def make_circos_form(db):
         with_plasmids=False, with_groups=False
     )
 
-    example_highlight = select_random_locus(db, accession_choices, 4)
+    example_highlight = select_random_locus(db, 2)
+    loci = example_highlight.split(",")
+    example_label_mapping = f"{loci[0]},{loci[1]}:foo"
 
     class CircosForm(forms.Form):
         entries_help = f"""
         Coma separated list of loci to highlight in the reference genome. <br>
         Example: {example_highlight}"""
+
+        labels_help = f"""
+        Coma separated list of entries or 'entry:custom_label' pairs. If set, only labels
+        from that mapping will be displayed.<br>
+        Example: {example_label_mapping}"""
 
         circos_reference = forms.ChoiceField(
             choices=accession_choices_no_groups,
@@ -295,6 +295,13 @@ def make_circos_form(db):
             help_text=entries_help,
         )
 
+        label_mapping = forms.CharField(
+            widget=forms.Textarea(attrs={"cols": 50, "rows": 5}),
+            required=False,
+            label="Custom labels",
+            help_text=labels_help,
+        )
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.helper = FormHelper()
@@ -307,6 +314,7 @@ def make_circos_form(db):
                     Row("circos_reference"),
                     Row("targets", style="margin-top:1em"),
                     Row("highlighted_entries", style="margin-top:1em"),
+                    Row("label_mapping", style="margin-top:1em"),
                     Submit(
                         "submit_circos",
                         "Submit",
@@ -326,6 +334,21 @@ def make_circos_form(db):
                 if len(prot_info) != len(entries):
                     raise ValidationError("Accession not found", code="invalid")
             return entries
+
+        def clean_label_mapping(self):
+            raw_entries = [
+                el.strip()
+                for el in self.cleaned_data["label_mapping"].split(",")
+                if el.strip()
+            ]
+            label_mapping = {}
+            for entry in raw_entries:
+                if ":" in entry:
+                    entry, label = entry.split(":", 1)
+                else:
+                    label = entry
+                label_mapping[entry] = label
+            return label_mapping
 
         def get_target_taxids(self):
             indices = self.cleaned_data["targets"]
