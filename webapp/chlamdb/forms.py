@@ -20,22 +20,22 @@ from views.utils import AccessionFieldHandler
 from views.utils import EntryIdParser
 
 
+def select_random_locus(db, n=1):
+    query = (
+        "SELECT value FROM seqfeature_qualifier_value as locus_tag "
+        "INNER JOIN seqfeature AS feature ON feature.seqfeature_id=locus_tag.seqfeature_id "
+        "INNER JOIN term AS t1 ON feature.type_term_id=t1.term_id AND t1.name = 'CDS' "
+        f"INNER JOIN term AS t2 ON locus_tag.term_id=t2.term_id AND t2.name = 'locus_tag' LIMIT {n};"
+    )
+    ret = db.server.adaptor.execute_and_fetchall(query)
+    if n == 1:
+        return ret[0][0]
+    return ",".join([el[0] for el in ret])
+
+
 def make_plot_form(db):
-    import pandas as pd
-
     accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
-
-    # selct random locus present in at least 50% of genomes
-    og_df = pd.DataFrame(db.get_all_orthogroups())
-    og_df.columns = ["og", "size"]
-    try:
-        random_group = og_df.query(f"size >= {len(accession_choices) - 1}").iloc[-1]
-        locus_list = db.get_genes_from_og(
-            [str(random_group.og)], taxon_ids=None, terms=["locus_tag"]
-        )
-        locus = locus_list.locus_tag.to_list()[0]
-    except Exception:
-        locus = "n/a"
+    locus = select_random_locus(db)
 
     class PlotForm(forms.Form):
         choices = (("yes", "all homologs"), ("no", "best hits only"))
@@ -249,13 +249,26 @@ def make_venn_from(db, label="Orthologs", limit=None, limit_type="upper", action
     return VennForm
 
 
-def make_circos_form(database_name):
+def make_circos_form(db):
     accession_choices = AccessionFieldHandler().get_choices(with_plasmids=False)
     accession_choices_no_groups = AccessionFieldHandler().get_choices(
         with_plasmids=False, with_groups=False
     )
 
+    example_highlight = select_random_locus(db, 2)
+    loci = example_highlight.split(",")
+    example_label_mapping = f"{loci[0]},{loci[1]}:foo"
+
     class CircosForm(forms.Form):
+        entries_help = f"""
+        Coma separated list of loci to highlight in the reference genome. <br>
+        Example: {example_highlight}"""
+
+        labels_help = f"""
+        Coma separated list of entries or 'entry:custom_label' pairs. If set, only labels
+        from that mapping will be displayed.<br>
+        Example: {example_label_mapping}"""
+
         circos_reference = forms.ChoiceField(
             choices=accession_choices_no_groups,
             widget=forms.Select(
@@ -275,6 +288,20 @@ def make_circos_form(database_name):
             required=False,
         )
 
+        highlighted_entries = forms.CharField(
+            widget=forms.Textarea(attrs={"cols": 40, "rows": 5}),
+            required=False,
+            label="Highlighted loci",
+            help_text=entries_help,
+        )
+
+        label_mapping = forms.CharField(
+            widget=forms.Textarea(attrs={"cols": 40, "rows": 5}),
+            required=False,
+            label="Custom labels",
+            help_text=labels_help,
+        )
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.helper = FormHelper()
@@ -284,21 +311,59 @@ def make_circos_form(database_name):
             self.helper.layout = Layout(
                 Fieldset(
                     " ",
-                    Row("circos_reference"),
-                    Row("targets", style="margin-top:1em"),
+                    Row(
+                        Column(
+                            "circos_reference",
+                            css_class="form-group col-lg-5 col-md-6 col-sm-12",
+                        ),
+                        Column(
+                            "targets",
+                            css_class="form-group col-lg-5 col-md-6 col-sm-12",
+                        ),
+                    ),
+                    Row(
+                        Column(
+                            "highlighted_entries",
+                            css_class="form-group col-lg-5 col-md-6 col-sm-12",
+                        ),
+                        Column(
+                            "label_mapping",
+                            css_class="form-group col-lg-5 col-md-6 col-sm-12",
+                        ),
+                    ),
                     Submit(
                         "submit_circos",
                         "Submit",
                         style="padding-left:15px; margin-top:15px; margin-bottom:15px ",
                     ),
-                    css_class="col-lg-5 col-md-6 col-sm-6",
                 )
             )
 
-        def save(self):
-            self.reference = self.cleaned_data["reference"]
-            self.get_region = self.cleaned_data["get_region"]
-            self.region = self.cleaned_data["region"]
+        def clean_highlighted_entries(self):
+            raw_entries = self.cleaned_data["highlighted_entries"].split(",")
+            entries = [entry.strip() for entry in raw_entries if entry.strip()]
+            if entries:
+                prot_info = db.get_proteins_info(
+                    ids=entries, search_on="locus_tag", as_df=True
+                )
+                if len(prot_info) != len(entries):
+                    raise ValidationError("Accession not found", code="invalid")
+            return entries
+
+        def clean_label_mapping(self):
+            raw_entries = [
+                el.strip()
+                for el in self.cleaned_data["label_mapping"].split(",")
+                if el.strip()
+            ]
+            label_mapping = {}
+            for entry in raw_entries:
+                if ":" in entry:
+                    entry, label = entry.split(":", 1)
+                else:
+                    label = entry
+                label_mapping[entry] = label
+            return label_mapping
 
         def get_target_taxids(self):
             indices = self.cleaned_data["targets"]

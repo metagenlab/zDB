@@ -19,7 +19,7 @@ to [Common Changelog](https://common-changelog.org)
 ### Added
 
 - Add possibility to display GIs, AMRs and VFs on circos map. ([#191](https://github.com/metagenlab/zDB/pull/191)) (Niklaus Johner)
-
+- Add loci highlighting and custom labels to circos map. ([#192](https://github.com/metagenlab/zDB/pull/192)) (Niklaus Johner)
 
 ## 1.3.8 - 2025-07-15
 

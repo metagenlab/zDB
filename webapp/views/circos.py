@@ -18,11 +18,11 @@ class CircosData:
     """
 
     def __init__(
-        self, with_amr=False, with_vf=False, with_highlighted_ogs=False, with_gi=False
+        self, with_amr=False, with_vf=False, with_highlighted_loci=False, with_gi=False
     ):
         self.with_amr = with_amr
         self.with_vf = with_vf
-        self.with_highlighted_ogs = with_highlighted_ogs
+        self.with_highlighted_loci = with_highlighted_loci
         self.with_gi = with_gi
         self.features = []
         self.contigs = []
@@ -30,6 +30,7 @@ class CircosData:
         self.settings = {}
         self.legend_items = []
         self.tracks = []
+        self.only_draw_favorites = False
 
     def to_json(self):
         return {
@@ -56,6 +57,7 @@ class CircosData:
                         "spacing": 1,
                     },
                 },
+                "annotation": {"onlyDrawFavorites": self.only_draw_favorites},
             }
         }
 
@@ -83,8 +85,8 @@ class CircosData:
             "gene": attrgetter("gene"),
             "product": attrgetter("gene_product"),
         }
-        if self.with_highlighted_ogs:
-            meta_map["extracted"] = attrgetter("extracted")
+        if self.with_highlighted_loci:
+            meta_map["highlighted"] = attrgetter("highlighted")
         if self.with_amr:
             meta_map["AMR"] = attrgetter("amr")
         if self.with_vf:
@@ -93,8 +95,8 @@ class CircosData:
         return lambda row: {key: fun(row) for key, fun in meta_map.items()}
 
     def _legend_extractor(self):
-        if self.with_highlighted_ogs:
-            return lambda x: f"extracted {x.extracted}"
+        if self.with_highlighted_loci:
+            return lambda x: f"highlighted {x.highlighted}"
         return attrgetter("term_name")
 
     def add_gene_track(self, df):
@@ -135,9 +137,9 @@ class CircosData:
             }
         )
         legend_item_names = [("CDS", "green"), ("tRNA", "magenta"), ("mRNA", "purple")]
-        if self.with_highlighted_ogs:
+        if self.with_highlighted_loci:
             legend_item_names.extend(
-                [("extracted yes", "magenta"), ("extracted no", "green")]
+                [("highlighted yes", "magenta"), ("highlighted no", "green")]
             )
         if self.with_amr:
             legend_item_names.extend([("AMR yes", "magenta"), ("AMR no", "green")])
@@ -283,6 +285,16 @@ class CircosData:
             }
         )
 
+    def set_custom_labels(self, label_mapping):
+        """This will not only change the labels according to the mapping
+        it will also set those as favorites and only display those on the map.
+        """
+        for el in self.features:
+            if el["name"] in label_mapping:
+                el["name"] = label_mapping[el["name"]]
+                el["favorite"] = True
+        self.only_draw_favorites = True
+
 
 class CircosView(BaseViewMixin, View):
     view_name = "circos"
@@ -302,21 +314,31 @@ class CircosView(BaseViewMixin, View):
         if self.form.is_valid():
             self.target_taxons = self.form.get_target_taxids()
             self.reference_taxon = self.form.get_ref_taxid()
+            self.label_mapping = self.form.cleaned_data["label_mapping"]
 
-            form_display = "inherit"
-            self.highlighted_ogs = None
             if "highlighted_ogs" in self.form.data:
+                highlighted_ogs = self.form.data.getlist("highlighted_ogs")
+
                 # This is only set when coming from the OG extraction view.
-                # As this is not a field supported in the form, we hide the form
-                self.highlighted_ogs = self.form.data.getlist("highlighted_ogs")
-                form_display = None
+                # As this is not a field supported in the form, which instead
+                # uses highlighted loci, we set that field in the form accordingly
+                df_genes = self.db.get_genes_from_og(
+                    highlighted_ogs,
+                    taxon_ids=[self.reference_taxon],
+                    terms=["locus_tag"],
+                )
+                self.form.data = self.form.data.copy()
+                self.form.data["highlighted_entries"] = ",".join(df_genes["locus_tag"])
+                self.form.cleaned_data["highlighted_entries"] = list(
+                    df_genes["locus_tag"]
+                )
+            self.highlighted_loci = self.form.cleaned_data["highlighted_entries"]
 
             self.prepare_circos_data()
             context = self.get_context(
                 show_results=True,
                 circos_json=json.dumps(self.data.to_json()),
-                form_display=form_display,
-                with_highlighted_ogs=self.data.with_highlighted_ogs,
+                with_highlighted_loci=self.data.with_highlighted_loci,
                 with_amr=self.data.with_amr,
                 with_vf=self.data.with_vf,
                 with_gi=self.data.with_gi,
@@ -326,7 +348,7 @@ class CircosView(BaseViewMixin, View):
 
     def prepare_circos_data(self):
         self.data = CircosData(
-            with_highlighted_ogs=self.highlighted_ogs is not None,
+            with_highlighted_loci=self.highlighted_loci,
             with_amr=optional2status.get("amr", False),
             with_vf=optional2status.get("vf", False),
             with_gi=optional2status.get("gi", False),
@@ -399,14 +421,11 @@ class CircosView(BaseViewMixin, View):
             "qualifier_value_locus_tag"
         ].fillna("-")
 
-        if self.data.with_highlighted_ogs:
-            df_feature_location["extracted"] = "no"
-            df_genes = self.db.get_genes_from_og(
-                self.highlighted_ogs,
-                taxon_ids=[self.reference_taxon],
-                terms=["locus_tag"],
-            )
-            df_feature_location.loc[df_genes["locus_tag"].index, "extracted"] = "yes"
+        if self.data.with_highlighted_loci:
+            df_feature_location["highlighted"] = "no"
+            df_feature_location["highlighted"][
+                df_feature_location["locus_tag"].isin(self.highlighted_loci)
+            ] = "yes"
 
         if self.data.with_amr:
             amrs = self.db.get_amr_hits_from_seqids(
@@ -480,3 +499,6 @@ class CircosView(BaseViewMixin, View):
                 mpl.colors.rgb2hex(taxon_colors[target_taxon]),
             )
         self.data.add_heatmap_track()
+
+        if self.label_mapping:
+            self.data.set_custom_labels(self.label_mapping)
