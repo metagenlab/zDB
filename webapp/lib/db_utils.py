@@ -1472,17 +1472,6 @@ class DB:
             hsh_results[line[0].strip()] = line[1].strip()
         return hsh_results
 
-    # Note: need to check whether this is a more correct way to proceed
-    # as my Rhabdo genomes currently all have the same taxon id, the following
-    # code wouldn't work
-    # sql_n_genomes = 'select count(*) from (select distinct taxon_id from bioentry t1 ' \
-    # 'inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id '\
-    # 'where t2.name="%s") A;' % biodb
-    def get_n_genomes(self):
-        query = "SELECT COUNT(*) FROM bioentry GROUP BY taxon_id;"
-        result = self.server.adaptor.execute_and_fetchall(query)
-        return result[0][0]
-
     def load_reference_phylogeny(self, tree):
         sql = "CREATE TABLE IF NOT EXISTS reference_phylogeny (tree TEXT);"
         self.server.adaptor.execute(
@@ -1616,23 +1605,6 @@ class DB:
                 func_descr = hsh_func_to_description[func]
                 hsh_results[cog_id].append((func, func_descr, cog_description))
         return hsh_results
-
-    def get_CDS_from_locus_tag(self, locus_tag):
-        # NOTE: I did not add a join to filter on locus_tag,
-        # it may be worth it performance-wise to pre-filter the
-        # database entries if this query were to become an issue.
-
-        query = (
-            "SELECT seqfeature_id "
-            "FROM seqfeature_qualifier_values AS locus_tag "
-            "INNER JOIN seqfeature AS feature ON feature.seqfeature_id=locus_tag.seqfeature_id "
-            "INNER JOIN term AS t ON feature.type_term_id=t.term_id AND t.name = 'CDS' "
-            "WHERE locus_tag.value=?;"
-        )
-        ret = self.server.execute_and_fetchall(query, locus_tag)
-        if ret is None or len(ret) == 0:
-            return None
-        return ret[0][0]
 
     def get_seqid(self, locus_tag, feature_type=False):
         add_type = ""
