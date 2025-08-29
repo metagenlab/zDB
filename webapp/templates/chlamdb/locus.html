@@ -321,6 +321,10 @@
                               Blast protein
                             </button>
 
+                            <button id="circos_button" class="btn btn-success">
+                              Show on circos
+                            </button>
+
                           </div>
                         </div>
                       </div>
@@ -555,6 +559,17 @@ document.querySelector("#blast_protein_button").onclick = function() {
               'target': "all",
               'max_number_of_hits': 10,
               'blast_input': "{{translation}}" },
+             'POST',
+             '_blank');
+};
+
+document.querySelector("#circos_button").onclick = function() {
+  let csrftoken = getCookie('csrftoken');
+  $.redirect('/circos/',
+             {'csrfmiddlewaretoken': csrftoken,
+              'highlighted_entries': "{{locus}}",
+              'circos_reference': "{{taxid}}"
+             },
              'POST',
              '_blank');
 };

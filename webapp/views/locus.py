@@ -98,6 +98,7 @@ def tab_general(db, seqid):
         gene = "-"
     taxid_and_organism = hsh_organism[seqid]
     return {
+        "taxid": taxid_and_organism[0],
         "locus_tag": locus_tag,
         "organism": format_genome(taxid_and_organism),
         "gene_pos": gene_pos,
