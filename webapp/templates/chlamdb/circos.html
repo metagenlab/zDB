@@ -46,27 +46,34 @@
                       </div>
                       <div style="padding-left:20px">
                         <br>
-
+                        The circos map shows the follwing information in the tracks from outer to inner:
                         <ul id="circos_ul" style="list-style-type:disc;">
                           <li>
-                            The first outer track is made of barplots indicating the prevalence of each orthogroup in the whole database.
+                            Barplots indicating the prevalence of each orthogroup in the whole database.
+                          </li>
+                          {% if with_gi %}
+                            <li>
+                              Genomic islands
+                            </li>
+                          {% endif %}
+                          <li>
+                            The contigs (and sequence when zooming in) of the reference genome.
                           </li>
                           <li>
-                            The second track shows the contigs (and sequence when zooming in) of the reference genome with the loci on the two strands displayed on each side of them. 
-                            {% if highlighted_ogs %}
-                              Loci that were retrieved in the extraction view (<b>extracted locus</b>) are colored differently from the others (<b>locus</b>). See figure legend for colors.
-                            {% else %}
-                              Loci are colored according to their type (CDS, rRNA or tRNA, see figure legend)
-                            {% endif %}
+                             the loci on the two strands of the reference genome. Coloring scheme can be chosen in the menu below the map. 
                           </li>
                           <li>
-                            The third track shows the corresponding loci (highest sequence identity in the same orthogroup) for all the target genomes.                          </li>
+                            The corresponding loci (highest sequence identity in the same orthogroup) for all the target genomes.                          </li>
                           <li>
-                            The last two tracks show the GC content and skew.
+                            GC content of the reference genome.
+                          </li>
+                          <li>
+                            GC skew of the reference genome.
                           </li>
                           <br>
                           Hover over any feature in the map to get more detailed information and 
-                          click on a loci or orthogroups to open a new browser tab with the corresponding detailed view.
+                          click on a loci{% if with_gi %}, genomic island {% endif %} or orthogroup to open 
+                          a new browser tab with the corresponding detailed view.
                           <br>
                         </ul>
                       </div>
