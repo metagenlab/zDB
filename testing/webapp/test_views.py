@@ -336,6 +336,9 @@ class ComparisonViewsTestMixin:
         """
 
     table_html = '<table class="hover table" id="mytable"  style="padding-top: 1em;">'
+    extraction_table_html = (
+        '<table class="hover data-table table table-striped" id="table_groups">'
+    )
     venn_html = '<div id="venn_diagram" '
     heatmap_html = '<div id="heatmap" '
     rarefaction_plot_html = 'id="rarefaction_plot"'
@@ -364,6 +367,14 @@ class ComparisonViewsTestMixin:
     def assertCompTable(self, resp):
         self.assertTrue(resp.context.get("show_comparison_table", False))
         self.assertContains(resp, self.table_html)
+
+    def assertNoExtractionTable(self, resp):
+        self.assertFalse(resp.context.get("show_results", False))
+        self.assertNotContains(resp, self.extraction_table_html)
+
+    def assertExtractionTable(self, resp):
+        self.assertTrue(resp.context.get("show_results", True))
+        self.assertContains(resp, self.extraction_table_html)
 
     def assertSelection(self, resp):
         self.assertContains(resp, self.selection_html, html=True)
@@ -401,6 +412,14 @@ class ComparisonViewsTestMixin:
     def assertGwasTable(self, resp):
         self.assertTrue(resp.context.get("show_results", False))
         self.assertContains(resp, self.gwas_table_html)
+
+    @property
+    def hit_extraction_view(self):
+        return f"/extract_{self.view_type}/"
+
+    @property
+    def hit_extraction_form_data(self):
+        return {"orthologs_in": ["1", "2"], "_n_missing": "1"}
 
     @property
     def tab_comp_view(self):
@@ -464,6 +483,26 @@ class ComparisonViewsTestMixin:
                 link.lstrip("/").split("/")[0], resp.resolver_match.view_name
             )
             self.assertPageTitle(resp, self.page_title)
+
+    def test_hit_extraction_view(self):
+        resp = self.client.get(self.hit_extraction_view)
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, "chlamdb/extract_hits.html")
+        self.assertPageTitle(resp, self.page_title)
+        self.assertNoExtractionTable(resp)
+        self.assertNav(resp)
+
+        resp = self.client.post(
+            self.hit_extraction_view, data=self.hit_extraction_form_data
+        )
+        self.assertEqual(200, resp.status_code)
+        self.assertTemplateUsed(resp, "chlamdb/extract_hits.html")
+        self.assertPageTitle(resp, self.page_title)
+        self.assertSelection(resp)
+        self.assertExtractionTable(resp)
+        self.assertNav(resp)
+
+        maybe_dump_html(resp, "with_results")
 
     def test_tabular_comparison_view(self):
         resp = self.client.get(self.tab_comp_view)
