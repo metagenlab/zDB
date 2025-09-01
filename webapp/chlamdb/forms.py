@@ -261,7 +261,8 @@ def make_circos_form(db):
 
     class CircosForm(forms.Form):
         entries_help = f"""
-        Coma separated list of loci to highlight in the reference genome. <br>
+        Coma separated list of entry IDs to highlight in the reference genome. 
+        Entry IDs can be COG, KO, Pfam, VF, AMR, orthogroups of loci.<br>
         Example: {example_highlight}"""
 
         labels_help = f"""
@@ -302,8 +303,11 @@ def make_circos_form(db):
             help_text=labels_help,
         )
 
-        def __init__(self, *args, **kwargs):
+        Entry = namedtuple("Entry", "id type")
+
+        def __init__(self, db, *args, **kwargs):
             super().__init__(*args, **kwargs)
+            self.db = db
             self.helper = FormHelper()
             self.helper.form_method = "post"
             self.helper.form_action = "circos"
@@ -341,13 +345,17 @@ def make_circos_form(db):
 
         def clean_highlighted_entries(self):
             raw_entries = self.cleaned_data["highlighted_entries"].split(",")
-            entries = [entry.strip() for entry in raw_entries if entry.strip()]
-            if entries:
-                prot_info = db.get_proteins_info(
-                    ids=entries, search_on="locus_tag", as_df=True
-                )
-                if len(prot_info) != len(entries):
-                    raise ValidationError("Accession not found", code="invalid")
+            parser = EntryIdParser(self.db)
+            entries = []
+            for entry in raw_entries:
+                entry = entry.strip()
+                try:
+                    object_type, entry_id = parser.id_to_object_type(entry)
+                except Exception:
+                    raise ValidationError(
+                        f'Invalid identifier "{entry}".', code="invalid"
+                    )
+                entries.append(self.Entry(entry_id, object_type))
             return entries
 
         def clean_label_mapping(self):
