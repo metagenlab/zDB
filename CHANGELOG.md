@@ -8,6 +8,14 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+### Changed
+
+### Added
+
+## 1.3.9 - 2025-09-01
+
+### Fixed
+
 - Fix highlighting of orthogroups in circos_main. ([#190](https://github.com/metagenlab/zDB/pull/190)) (Niklaus Johner)
 
 ### Changed
