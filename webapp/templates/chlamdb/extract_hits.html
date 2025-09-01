@@ -45,7 +45,6 @@
                       <td> {{ n_hits }}  </td>
                     </tr>
                   </table>
-
                   {% if show_circos_form %}
                     <div class="box" style="width:30%; top: 200px; padding: 10px 10px 10px 10px;">
 
@@ -58,10 +57,7 @@
                         {% for taxid in excluded_taxids %}
                             <input type="hidden" name="targets" value={{taxid}}>
                         {% endfor %}
-                        {% for og in selection %}
-                            <input type="hidden" name="highlighted_ogs" value={{og}}>
-                        {% endfor %}
-                        
+                        <input type="hidden" name="highlighted_entries" value={{circos_highlight}}>
                         <select name="circos_reference" id="reference_taxid" class="bootstrap-select" style="height:36px; margin-bottom: 1em;">
                           {% for row in ref_genomes.itertuples %}
                             <option value="{{row.taxon_id}}">{{row.description}}</option>
@@ -73,6 +69,7 @@
 
                     </div>
                   {% endif %}
+
                 </div>
               </div>
               {% include "chlamdb/result_tabs.html" %}
