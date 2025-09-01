@@ -190,3 +190,9 @@ class TestEntryIdParser(SimpleTestCase):
         self.assertEqual(
             ("amr", "ybtP"), self.entry_id_parser.id_to_object_type("ybtP")
         )
+
+    def test_handles_loci(self):
+        self.assertEqual(
+            ("locus", "CHUV_00005"),
+            self.entry_id_parser.id_to_object_type("CHUV_00005"),
+        )
