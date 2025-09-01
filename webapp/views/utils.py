@@ -401,6 +401,9 @@ class EntryIdParser:
         if self.db.check_amr_entry_id(identifier):
             return "amr", identifier
 
+        if self.db.check_locus_entry_id(identifier):
+            return "locus", identifier
+
         return None
 
 

@@ -2792,7 +2792,10 @@ class DB:
 
     def check_entry_existence(self, entry_id, entry_col, table):
         query = f"SELECT 1 FROM {table} WHERE {entry_col}='{entry_id}' LIMIT 1"
-        return bool(self.server.adaptor.execute_one(query))
+        try:
+            return bool(self.server.adaptor.execute_one(query))
+        except ValueError:
+            return False
 
     def check_og_entry_id(self, entry_id):
         return self.check_entry_existence(entry_id, "orthogroup", "og_hits")
@@ -2811,6 +2814,18 @@ class DB:
 
     def check_amr_entry_id(self, entry_id):
         return self.check_entry_existence(entry_id, "gene", "amr_hits")
+
+    def check_locus_entry_id(self, entry_id):
+        locus_term_id = self.server.adaptor.execute_one(
+            "SELECT term_id FROM term WHERE name='locus_tag'"
+        )[0]
+        query = "SELECT 1 FROM seqfeature_qualifier_value WHERE value=?  AND term_id=? LIMIT 1"
+        try:
+            return bool(
+                self.server.adaptor.execute_one(query, [entry_id, locus_term_id])
+            )
+        except ValueError:
+            return False
 
     def check_gic_entry_id(self, entry_id):
         return self.check_entry_existence(

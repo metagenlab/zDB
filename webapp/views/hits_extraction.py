@@ -23,6 +23,7 @@ from views.utils import format_orthogroup
 
 class ExtractHitsBaseView(View):
     template = "chlamdb/extract_hits.html"
+    show_circos_form = True
 
     results_table_help = (
         "<b>{0} table</b>: it contains the list of"
@@ -91,6 +92,11 @@ class ExtractHitsBaseView(View):
         context = super(ExtractHitsBaseView, self).get_context(**kwargs)
         context["table_help"] = self.table_help
         if getattr(self, "show_results", False):
+            ref_genomes = (
+                self.db.get_genomes_description()
+                .loc[self.form.included_taxids]
+                .reset_index()
+            )
             context.update(
                 {
                     "show_results": True,
@@ -101,7 +107,12 @@ class ExtractHitsBaseView(View):
                     "included_taxids": self.form.included_taxids,
                     "excluded_taxids": self.form.excluded_taxids,
                     "selection": self.selection,
+                    "circos_highlight": ",".join(
+                        [self.format_entry(el) for el in self.selection]
+                    ),
                     "result_tabs": self.result_tabs,
+                    "ref_genomes": ref_genomes,
+                    "show_circos_form": self.show_circos_form,
                 }
             )
         return context
@@ -363,22 +374,12 @@ class ExtractOrthogroupView(ExtractHitsBaseView, OrthogroupViewMixin):
             ]
             self.table_data.append(entry)
 
-        ref_genomes = (
-            self.db.get_genomes_description()
-            .loc[self.form.included_taxids]
-            .reset_index()
-        )
-
         self.details_headers, self.details_accessors, self.details_data = (
             self.get_table_details(self.db, annotations)
         )
 
         self.show_results = True
-        context = self.get_context(
-            ref_genomes=ref_genomes,
-            show_circos_form=True,
-        )
-        return context
+        return self.get_context()
 
 
 class ExtractPfamView(ExtractHitsBaseView, PfamViewMixin):
@@ -394,7 +395,7 @@ class ExtractVfView(ExtractHitsBaseView, VfViewMixin):
 
 
 class ExtractGiView(ExtractHitsBaseView, GiViewMixin):
-    pass
+    show_circos_form = False
 
 
 class ExtractKoView(ExtractHitsBaseView, KoViewMixin):
