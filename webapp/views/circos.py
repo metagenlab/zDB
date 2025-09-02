@@ -480,8 +480,9 @@ class CircosView(BaseViewMixin, View):
 
         if self.data.with_highlighted_loci:
             df_feature_location["highlighted"] = "no"
-            df_feature_location["highlighted"][
-                df_feature_location["locus_tag"].isin(self.highlighted_loci)
+            df_feature_location.loc[
+                df_feature_location["locus_tag"].isin(self.highlighted_loci),
+                "highlighted",
             ] = "yes"
 
         if self.data.with_amr:
