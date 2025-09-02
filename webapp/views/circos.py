@@ -314,7 +314,9 @@ class CircosView(BaseViewMixin, View):
         self.form = self.form_class(self.db)
         return render(request, self.template, self.get_context())
 
-    def get_loci_from_annotations(self, entries, only_reference=True):
+    def get_loci_from_annotations(
+        self, entries, only_reference=True, map_orthogroups=True
+    ):
         # To diminish the number of queries we will first group the entries by type
         entry_dict = defaultdict(list)
         for entry in entries:
@@ -325,6 +327,13 @@ class CircosView(BaseViewMixin, View):
         for entry_type, entries in entry_dict.items():
             if entry_type == "locus":
                 loci.update({entry: entry for entry in entries})
+            elif entry_type == "orthogroup" and not map_orthogroups:
+                loci.update(
+                    {
+                        format_orthogroup(entry): format_orthogroup(entry)
+                        for entry in entries
+                    }
+                )
             elif entry_type == "orthogroup":
                 df_genes = self.db.get_genes_from_og(
                     entries,
@@ -414,6 +423,17 @@ class CircosView(BaseViewMixin, View):
                 ).keys()
             )
 
+            label_entries, label_mapping = self.form.cleaned_data["label_mapping"]
+            locus_to_label = self.get_loci_from_annotations(
+                label_entries,
+                only_reference=False,
+                map_orthogroups=False,
+            )
+
+            self.label_mapping = {
+                key: label_mapping.get(value, value)
+                for key, value in locus_to_label.items()
+            }
             self.prepare_circos_data()
             context = self.get_context(
                 show_results=True,
