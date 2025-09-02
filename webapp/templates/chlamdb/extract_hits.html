@@ -58,6 +58,7 @@
                             <input type="hidden" name="targets" value={{taxid}}>
                         {% endfor %}
                         <input type="hidden" name="highlighted_entries" value={{circos_highlight}}>
+                        <input type="hidden" name="label_mapping" value={{circos_highlight}}>
                         <select name="circos_reference" id="reference_taxid" class="bootstrap-select" style="height:36px; margin-bottom: 1em;">
                           {% for row in ref_genomes.itertuples %}
                             <option value="{{row.taxon_id}}">{{row.description}}</option>
