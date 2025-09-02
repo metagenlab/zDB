@@ -11,6 +11,7 @@ from matplotlib.cm import tab10
 from matplotlib.cm import tab20
 from views.mixins import BaseViewMixin
 from views.mixins import ComparisonViewMixin
+from views.utils import format_orthogroup
 from views.utils import optional2status
 
 
@@ -313,24 +314,29 @@ class CircosView(BaseViewMixin, View):
         self.form = self.form_class(self.db)
         return render(request, self.template, self.get_context())
 
-    def get_highlighted_loci(self):
+    def get_loci_from_annotations(self, entries, only_reference=True):
         # To diminish the number of queries we will first group the entries by type
         entry_dict = defaultdict(list)
-        for entry in self.form.cleaned_data["highlighted_entries"]:
+        for entry in entries:
             entry_dict[entry.type].append(entry.id)
 
-        loci = []
-        hashes = []
+        loci = {}
+        hashes = {}
         for entry_type, entries in entry_dict.items():
             if entry_type == "locus":
-                loci.extend(entries)
+                loci.update({entry: entry for entry in entries})
             elif entry_type == "orthogroup":
                 df_genes = self.db.get_genes_from_og(
                     entries,
                     taxon_ids=[self.reference_taxon],
                     terms=["locus_tag"],
                 )
-                loci.extend(df_genes["locus_tag"])
+                loci.update(
+                    {
+                        row.locus_tag: format_orthogroup(row.orthogroup)
+                        for n, row in df_genes.iterrows()
+                    }
+                )
             else:
                 mixin = ComparisonViewMixin.type2mixin[entry_type]()
                 tablename = f"{entry_type}_hits"
@@ -339,34 +345,42 @@ class CircosView(BaseViewMixin, View):
                     id_col = f"{mixin.object_column}_id"
                 else:
                     id_col = mixin.object_column
-                query = f"SELECT hsh from {tablename} WHERE {id_col} IN ({plchd})"
-                hashes.extend(
-                    [
-                        el[0]
+                query = (
+                    f"SELECT hsh, {id_col} from {tablename} WHERE {id_col} IN ({plchd})"
+                )
+
+                hashes.update(
+                    {
+                        el[0]: mixin.format_entry(el[1])
                         for el in self.db.server.adaptor.execute_and_fetchall(
                             query, entries
                         )
-                    ]
+                    }
                 )
-        plchd = self.db.gen_placeholder_string(hashes)
+        plchd = self.db.gen_placeholder_string(hashes.keys())
         hash_to_seqid_query = (
-            f"SELECT fet.seqfeature_id FROM seqfeature AS fet INNER JOIN bioentry ON "
+            f"SELECT fet.seqfeature_id, hsh.hsh FROM seqfeature AS fet INNER JOIN bioentry ON "
             "bioentry.bioentry_id=fet.bioentry_id INNER JOIN sequence_hash_dictionnary "
-            f"AS hsh ON hsh.seqid=fet.seqfeature_id WHERE hsh.hsh IN ({plchd}) and "
-            f"bioentry.taxon_id={self.reference_taxon}"
+            f"AS hsh ON hsh.seqid=fet.seqfeature_id WHERE hsh.hsh IN ({plchd})"
         )
-        seqids = self.db.server.adaptor.execute_and_fetchall(
-            hash_to_seqid_query, hashes
+        if only_reference:
+            hash_to_seqid_query += f" and bioentry.taxon_id={self.reference_taxon}"
+        seqids2hash = self.db.server.adaptor.execute_and_fetchall(
+            hash_to_seqid_query, list(hashes.keys())
         )
-        if seqids:
-            loci.extend(
-                self.db.get_proteins_info(
-                    [el[0] for el in seqids],
-                    inc_non_CDS=True,
-                    inc_pseudo=True,
-                    to_return=["locus_tag"],
-                    as_df=True,
-                )["locus_tag"]
+        seqids2hash = dict(seqids2hash)
+        if seqids2hash:
+            loci.update(
+                {
+                    row.locus_tag: hashes[seqids2hash[seqid]]
+                    for seqid, row in self.db.get_proteins_info(
+                        list(seqids2hash.keys()),
+                        inc_non_CDS=True,
+                        inc_pseudo=True,
+                        to_return=["locus_tag"],
+                        as_df=True,
+                    ).iterrows()
+                }
             )
         return loci
 
@@ -394,7 +408,11 @@ class CircosView(BaseViewMixin, View):
                 self.form.cleaned_data["highlighted_entries"] = list(
                     df_genes["locus_tag"]
                 )
-            self.highlighted_loci = self.get_highlighted_loci()
+            self.highlighted_loci = set(
+                self.get_loci_from_annotations(
+                    self.form.cleaned_data["highlighted_entries"]
+                ).keys()
+            )
 
             self.prepare_circos_data()
             context = self.get_context(
