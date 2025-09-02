@@ -8,6 +8,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix circos view for contigs shorter than 1000bp. ([#194](https://github.com/metagenlab/zDB/pull/194)) (Niklaus Johner)
+
 ### Changed
 
 ### Added

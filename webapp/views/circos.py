@@ -413,9 +413,7 @@ class CircosView(BaseViewMixin, View):
             with_gi=optional2status.get("gi", False),
         )
         # "bioentry_id", "accession" ,"length"
-        df_bioentry = self.db.get_bioentry_list(
-            self.reference_taxon, min_bioentry_length=1000
-        )
+        df_bioentry = self.db.get_bioentry_list(self.reference_taxon)
 
         # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
         df_feature_location = self.db.get_features_location(
