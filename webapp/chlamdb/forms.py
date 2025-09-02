@@ -345,11 +345,14 @@ def make_circos_form(db):
             )
 
         def clean_highlighted_entries(self):
-            raw_entries = self.cleaned_data["highlighted_entries"].split(",")
+            raw_entries = [
+                el.strip()
+                for el in self.cleaned_data["highlighted_entries"].split(",")
+                if el.strip()
+            ]
             parser = EntryIdParser(self.db)
             entries = []
             for entry in raw_entries:
-                entry = entry.strip()
                 try:
                     object_type, entry_id = parser.id_to_object_type(entry)
                 except Exception:
