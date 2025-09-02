@@ -401,22 +401,6 @@ class CircosView(BaseViewMixin, View):
             self.reference_taxon = self.form.get_ref_taxid()
             self.label_mapping = self.form.cleaned_data["label_mapping"]
 
-            if "highlighted_ogs" in self.form.data:
-                highlighted_ogs = self.form.data.getlist("highlighted_ogs")
-
-                # This is only set when coming from the OG extraction view.
-                # As this is not a field supported in the form, which instead
-                # uses highlighted loci, we set that field in the form accordingly
-                df_genes = self.db.get_genes_from_og(
-                    highlighted_ogs,
-                    taxon_ids=[self.reference_taxon],
-                    terms=["locus_tag"],
-                )
-                self.form.data = self.form.data.copy()
-                self.form.data["highlighted_entries"] = ",".join(df_genes["locus_tag"])
-                self.form.cleaned_data["highlighted_entries"] = list(
-                    df_genes["locus_tag"]
-                )
             self.highlighted_loci = set(
                 self.get_loci_from_annotations(
                     self.form.cleaned_data["highlighted_entries"]
