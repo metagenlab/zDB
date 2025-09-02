@@ -228,7 +228,7 @@ class CircosData:
                 "score": row.value,
                 "source": label,
                 "legend": label,
-                "name": f"group_{n}",
+                "name": format_orthogroup(n),
                 "type": "OG",
                 "meta": {"prevalence": f"{int(100 * row.value)}%"},
             }
@@ -492,6 +492,7 @@ class CircosView(BaseViewMixin, View):
                 orthogroup2frac_all.rename("value"), left_index=True, right_index=True
             )[["bioentry_id", "start_pos", "end_pos", "value"]]
         )
+        homologs_count.index = homologs_count.index.astype(int)
 
         # this query can be pretty slow
         df_identity = self.db.get_identity_closest_homolog(
