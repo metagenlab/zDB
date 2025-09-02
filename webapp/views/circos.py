@@ -32,7 +32,6 @@ class CircosData:
         self.settings = {}
         self.legend_items = []
         self.tracks = []
-        self.only_draw_favorites = False
 
     def to_json(self):
         return {
@@ -59,7 +58,7 @@ class CircosData:
                         "spacing": 1,
                     },
                 },
-                "annotation": {"onlyDrawFavorites": self.only_draw_favorites},
+                "annotation": {"onlyDrawFavorites": True},
             }
         }
 
@@ -287,15 +286,19 @@ class CircosData:
             }
         )
 
-    def set_custom_labels(self, label_mapping):
+    def set_labels(self, label_mapping):
         """This will not only change the labels according to the mapping
         it will also set those as favorites and only display those on the map.
         """
-        for el in self.features:
-            if el["name"] in label_mapping:
-                el["name"] = label_mapping[el["name"]]
-                el["favorite"] = True
-        self.only_draw_favorites = True
+        if label_mapping:
+            for el in self.features:
+                if el["name"] in label_mapping:
+                    el["name"] = label_mapping[el["name"]]
+                    el["favorite"] = True
+        else:
+            for el in self.features:
+                if el["source"] == "reference":
+                    el["favorite"] = True
 
 
 class CircosView(BaseViewMixin, View):
@@ -558,5 +561,4 @@ class CircosView(BaseViewMixin, View):
             )
         self.data.add_heatmap_track()
 
-        if self.label_mapping:
-            self.data.set_custom_labels(self.label_mapping)
+        self.data.set_labels(self.label_mapping)
