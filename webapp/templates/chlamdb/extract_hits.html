@@ -17,15 +17,50 @@
           {% if show_results %}
 
             <div class="row" style="background-color: rgba(245, 245, 245, 0.986)">
-              <div class="col-lg-12">
+              <div class="col-lg-10 col-md-12 col-sm-12">
                 <br>
-                <div class="panel panel-success" style="width:60%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
+                <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px; float: left;">
                   <div class="panel-heading" style="width:100%">
                     <h3 class="panel-title">Help to interpret the results</h3>
                   </div>
                   <p style="margin: 10px 10px 10px 10px; line-height: 180%">{{ table_help|safe }}</p>
                 </div>
-                <div style="padding-top:10px">
+              </div>
+            </div>
+            <div class="row" style="background-color: rgba(245, 245, 245, 0.986)">
+              {% if show_circos_form %}
+                <div class="col-lg-4 col-md-5 col-sm-12">
+                  <form class="panel panel-info" style="width:100%; top: 200px; margin: 10px 10px 10px 10px; float: left;" target="_blank" action="/circos/" method="POST" id="carform" >
+                    <div class="panel-heading">
+                      <h3 class="panel-title">
+                        Show the comparison on circular map
+                      </h3>
+                    </div>
+                    <div style="margin: 10px 10px 10px 10px; line-height: 140%">
+                      {% csrf_token %}
+                      {% for taxid in included_taxids %}
+                        <input type="hidden" name="targets" value={{taxid}}>
+                      {% endfor %}
+                      {% for taxid in excluded_taxids %}
+                        <input type="hidden" name="targets" value={{taxid}}>
+                      {% endfor %}
+                      <input type="hidden" name="highlighted_entries" value={{circos_highlight}}>
+                      <input type="hidden" name="label_mapping" value={{circos_highlight}}>
+                      <label for="circos_reference" class="control-label">Circos reference</label>
+                      <div class="control">
+                        <select name="circos_reference" id="reference_taxid" class="bootstrap-select" style="height:36px; margin-bottom: 1em;">
+                          {% for row in ref_genomes.itertuples %}
+                            <option value="{{row.taxon_id}}">{{row.description}}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <button type="submit">Show</button>
+                    </div>
+                  </form>
+                </div>
+              {% endif %}
+              <div class="col-lg-6 col-md-7 col-sm-12">
+                <div style="padding-top:10px; padding-left: 30px;">
                   <table class="table" style="width:600px">
                     <tr>
                       <th>Number of included genomes</th>
@@ -45,34 +80,11 @@
                       <td> {{ n_hits }}  </td>
                     </tr>
                   </table>
-                  {% if show_circos_form %}
-                    <div class="box" style="width:30%; top: 200px; padding: 10px 10px 10px 10px;">
-
-                      <form target="_blank" action="/circos/" method="POST" id="carform" >
-                        <h5><b>Show the comparison on circular map</b></h5>
-                        {% csrf_token %}
-                        {% for taxid in included_taxids %}
-                            <input type="hidden" name="targets" value={{taxid}}>
-                        {% endfor %}
-                        {% for taxid in excluded_taxids %}
-                            <input type="hidden" name="targets" value={{taxid}}>
-                        {% endfor %}
-                        <input type="hidden" name="highlighted_entries" value={{circos_highlight}}>
-                        <input type="hidden" name="label_mapping" value={{circos_highlight}}>
-                        <select name="circos_reference" id="reference_taxid" class="bootstrap-select" style="height:36px; margin-bottom: 1em;">
-                          {% for row in ref_genomes.itertuples %}
-                            <option value="{{row.taxon_id}}">{{row.description}}</option>
-                          {% endfor %}
-                        </select>
-                        <br>
-                        <button type="submit">Show</button>
-                      </form>
-
-                    </div>
-                  {% endif %}
 
                 </div>
               </div>
+            </div>
+            <div class="row" style="background-color: rgba(245, 245, 245, 0.986)">
               {% include "chlamdb/result_tabs.html" %}
             </div>
           {% endif %}
