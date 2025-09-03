@@ -13,6 +13,7 @@ to [Common Changelog](https://common-changelog.org)
 ### Changed
 
 - Improve labels and setting custom labels on circos map. ([#194](https://github.com/metagenlab/zDB/pull/194)) (Niklaus Johner)
+- Improve styling of hit extraction view. ([#195](https://github.com/metagenlab/zDB/pull/195)) (Niklaus Johner)
 
 ### Added
 
