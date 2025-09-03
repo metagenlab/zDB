@@ -2791,9 +2791,9 @@ class DB:
         return self.server.adaptor.execute_and_fetchall(query)[0][0]
 
     def check_entry_existence(self, entry_id, entry_col, table):
-        query = f"SELECT 1 FROM {table} WHERE {entry_col}='{entry_id}' LIMIT 1"
+        query = f"SELECT 1 FROM {table} WHERE {entry_col}=? LIMIT 1"
         try:
-            return bool(self.server.adaptor.execute_one(query))
+            return bool(self.server.adaptor.execute_one(query, [entry_id]))
         except ValueError:
             return False
 

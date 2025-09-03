@@ -11,6 +11,7 @@ from matplotlib.cm import tab10
 from matplotlib.cm import tab20
 from views.mixins import BaseViewMixin
 from views.mixins import ComparisonViewMixin
+from views.utils import format_orthogroup
 from views.utils import optional2status
 
 
@@ -32,7 +33,6 @@ class CircosData:
         self.settings = {}
         self.legend_items = []
         self.tracks = []
-        self.only_draw_favorites = False
 
     def to_json(self):
         return {
@@ -59,7 +59,7 @@ class CircosData:
                         "spacing": 1,
                     },
                 },
-                "annotation": {"onlyDrawFavorites": self.only_draw_favorites},
+                "annotation": {"onlyDrawFavorites": True},
             }
         }
 
@@ -228,7 +228,7 @@ class CircosData:
                 "score": row.value,
                 "source": label,
                 "legend": label,
-                "name": f"group_{n}",
+                "name": format_orthogroup(n),
                 "type": "OG",
                 "meta": {"prevalence": f"{int(100 * row.value)}%"},
             }
@@ -287,15 +287,19 @@ class CircosData:
             }
         )
 
-    def set_custom_labels(self, label_mapping):
+    def set_labels(self, label_mapping):
         """This will not only change the labels according to the mapping
         it will also set those as favorites and only display those on the map.
         """
-        for el in self.features:
-            if el["name"] in label_mapping:
-                el["name"] = label_mapping[el["name"]]
-                el["favorite"] = True
-        self.only_draw_favorites = True
+        if label_mapping:
+            for el in self.features:
+                if el["name"] in label_mapping:
+                    el["name"] = label_mapping[el["name"]]
+                    el["favorite"] = True
+        else:
+            for el in self.features:
+                if el["source"] == "reference":
+                    el["favorite"] = True
 
 
 class CircosView(BaseViewMixin, View):
@@ -310,24 +314,38 @@ class CircosView(BaseViewMixin, View):
         self.form = self.form_class(self.db)
         return render(request, self.template, self.get_context())
 
-    def get_highlighted_loci(self):
+    def get_loci_from_annotations(
+        self, entries, only_reference=True, map_orthogroups=True
+    ):
         # To diminish the number of queries we will first group the entries by type
         entry_dict = defaultdict(list)
-        for entry in self.form.cleaned_data["highlighted_entries"]:
+        for entry in entries:
             entry_dict[entry.type].append(entry.id)
 
-        loci = []
-        hashes = []
+        loci = {}
+        hashes = {}
         for entry_type, entries in entry_dict.items():
             if entry_type == "locus":
-                loci.extend(entries)
+                loci.update({entry: entry for entry in entries})
+            elif entry_type == "orthogroup" and not map_orthogroups:
+                loci.update(
+                    {
+                        format_orthogroup(entry): format_orthogroup(entry)
+                        for entry in entries
+                    }
+                )
             elif entry_type == "orthogroup":
                 df_genes = self.db.get_genes_from_og(
                     entries,
                     taxon_ids=[self.reference_taxon],
                     terms=["locus_tag"],
                 )
-                loci.extend(df_genes["locus_tag"])
+                loci.update(
+                    {
+                        row.locus_tag: format_orthogroup(row.orthogroup)
+                        for n, row in df_genes.iterrows()
+                    }
+                )
             else:
                 mixin = ComparisonViewMixin.type2mixin[entry_type]()
                 tablename = f"{entry_type}_hits"
@@ -336,34 +354,42 @@ class CircosView(BaseViewMixin, View):
                     id_col = f"{mixin.object_column}_id"
                 else:
                     id_col = mixin.object_column
-                query = f"SELECT hsh from {tablename} WHERE {id_col} IN ({plchd})"
-                hashes.extend(
-                    [
-                        el[0]
+                query = (
+                    f"SELECT hsh, {id_col} from {tablename} WHERE {id_col} IN ({plchd})"
+                )
+
+                hashes.update(
+                    {
+                        el[0]: mixin.format_entry(el[1])
                         for el in self.db.server.adaptor.execute_and_fetchall(
                             query, entries
                         )
-                    ]
+                    }
                 )
-        plchd = self.db.gen_placeholder_string(hashes)
+        plchd = self.db.gen_placeholder_string(hashes.keys())
         hash_to_seqid_query = (
-            f"SELECT fet.seqfeature_id FROM seqfeature AS fet INNER JOIN bioentry ON "
+            f"SELECT fet.seqfeature_id, hsh.hsh FROM seqfeature AS fet INNER JOIN bioentry ON "
             "bioentry.bioentry_id=fet.bioentry_id INNER JOIN sequence_hash_dictionnary "
-            f"AS hsh ON hsh.seqid=fet.seqfeature_id WHERE hsh.hsh IN ({plchd}) and "
-            f"bioentry.taxon_id={self.reference_taxon}"
+            f"AS hsh ON hsh.seqid=fet.seqfeature_id WHERE hsh.hsh IN ({plchd})"
         )
-        seqids = self.db.server.adaptor.execute_and_fetchall(
-            hash_to_seqid_query, hashes
+        if only_reference:
+            hash_to_seqid_query += f" and bioentry.taxon_id={self.reference_taxon}"
+        seqids2hash = self.db.server.adaptor.execute_and_fetchall(
+            hash_to_seqid_query, list(hashes.keys())
         )
-        if seqids:
-            loci.extend(
-                self.db.get_proteins_info(
-                    [el[0] for el in seqids],
-                    inc_non_CDS=True,
-                    inc_pseudo=True,
-                    to_return=["locus_tag"],
-                    as_df=True,
-                )["locus_tag"]
+        seqids2hash = dict(seqids2hash)
+        if seqids2hash:
+            loci.update(
+                {
+                    row.locus_tag: hashes[seqids2hash[seqid]]
+                    for seqid, row in self.db.get_proteins_info(
+                        list(seqids2hash.keys()),
+                        inc_non_CDS=True,
+                        inc_pseudo=True,
+                        to_return=["locus_tag"],
+                        as_df=True,
+                    ).iterrows()
+                }
             )
         return loci
 
@@ -375,24 +401,23 @@ class CircosView(BaseViewMixin, View):
             self.reference_taxon = self.form.get_ref_taxid()
             self.label_mapping = self.form.cleaned_data["label_mapping"]
 
-            if "highlighted_ogs" in self.form.data:
-                highlighted_ogs = self.form.data.getlist("highlighted_ogs")
+            self.highlighted_loci = set(
+                self.get_loci_from_annotations(
+                    self.form.cleaned_data["highlighted_entries"]
+                ).keys()
+            )
 
-                # This is only set when coming from the OG extraction view.
-                # As this is not a field supported in the form, which instead
-                # uses highlighted loci, we set that field in the form accordingly
-                df_genes = self.db.get_genes_from_og(
-                    highlighted_ogs,
-                    taxon_ids=[self.reference_taxon],
-                    terms=["locus_tag"],
-                )
-                self.form.data = self.form.data.copy()
-                self.form.data["highlighted_entries"] = ",".join(df_genes["locus_tag"])
-                self.form.cleaned_data["highlighted_entries"] = list(
-                    df_genes["locus_tag"]
-                )
-            self.highlighted_loci = self.get_highlighted_loci()
+            label_entries, label_mapping = self.form.cleaned_data["label_mapping"]
+            locus_to_label = self.get_loci_from_annotations(
+                label_entries,
+                only_reference=False,
+                map_orthogroups=False,
+            )
 
+            self.label_mapping = {
+                key: label_mapping.get(value, value)
+                for key, value in locus_to_label.items()
+            }
             self.prepare_circos_data()
             context = self.get_context(
                 show_results=True,
@@ -413,9 +438,7 @@ class CircosView(BaseViewMixin, View):
             with_gi=optional2status.get("gi", False),
         )
         # "bioentry_id", "accession" ,"length"
-        df_bioentry = self.db.get_bioentry_list(
-            self.reference_taxon, min_bioentry_length=1000
-        )
+        df_bioentry = self.db.get_bioentry_list(self.reference_taxon)
 
         # "bioentry_id", "seqfeature_id", "start_pos", "end_pos", "strand"
         df_feature_location = self.db.get_features_location(
@@ -453,6 +476,7 @@ class CircosView(BaseViewMixin, View):
                 orthogroup2frac_all.rename("value"), left_index=True, right_index=True
             )[["bioentry_id", "start_pos", "end_pos", "value"]]
         )
+        homologs_count.index = homologs_count.index.astype(int)
 
         # this query can be pretty slow
         df_identity = self.db.get_identity_closest_homolog(
@@ -482,8 +506,9 @@ class CircosView(BaseViewMixin, View):
 
         if self.data.with_highlighted_loci:
             df_feature_location["highlighted"] = "no"
-            df_feature_location["highlighted"][
-                df_feature_location["locus_tag"].isin(self.highlighted_loci)
+            df_feature_location.loc[
+                df_feature_location["locus_tag"].isin(self.highlighted_loci),
+                "highlighted",
             ] = "yes"
 
         if self.data.with_amr:
@@ -559,5 +584,4 @@ class CircosView(BaseViewMixin, View):
             )
         self.data.add_heatmap_track()
 
-        if self.label_mapping:
-            self.data.set_custom_labels(self.label_mapping)
+        self.data.set_labels(self.label_mapping)

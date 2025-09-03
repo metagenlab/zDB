@@ -266,8 +266,9 @@ def make_circos_form(db):
         Example: {example_highlight}"""
 
         labels_help = f"""
-        Coma separated list of entries or 'entry:custom_label' pairs. If set, only labels
-        from that mapping will be displayed.<br>
+        Coma separated list of entries or 'entry:custom_label' pairs.
+        Entry IDs can be COG, KO, Pfam, VF, AMR, orthogroups of loci.
+        <br>If set, only labels from that mapping will be displayed.<br>
         Example: {example_label_mapping}"""
 
         circos_reference = forms.ChoiceField(
@@ -344,11 +345,14 @@ def make_circos_form(db):
             )
 
         def clean_highlighted_entries(self):
-            raw_entries = self.cleaned_data["highlighted_entries"].split(",")
+            raw_entries = [
+                el.strip()
+                for el in self.cleaned_data["highlighted_entries"].split(",")
+                if el.strip()
+            ]
             parser = EntryIdParser(self.db)
             entries = []
             for entry in raw_entries:
-                entry = entry.strip()
                 try:
                     object_type, entry_id = parser.id_to_object_type(entry)
                 except Exception:
@@ -364,14 +368,23 @@ def make_circos_form(db):
                 for el in self.cleaned_data["label_mapping"].split(",")
                 if el.strip()
             ]
+            parser = EntryIdParser(self.db)
+            entries = []
             label_mapping = {}
             for entry in raw_entries:
                 if ":" in entry:
                     entry, label = entry.split(":", 1)
                 else:
                     label = entry
+                try:
+                    object_type, entry_id = parser.id_to_object_type(entry)
+                except Exception:
+                    raise ValidationError(
+                        f'Invalid identifier "{entry}".', code="invalid"
+                    )
+                entries.append(self.Entry(entry_id, object_type))
                 label_mapping[entry] = label
-            return label_mapping
+            return entries, label_mapping
 
         def get_target_taxids(self):
             indices = self.cleaned_data["targets"]
