@@ -33,12 +33,13 @@
     </div>
   </div>
 
-
+{% if show_results %}
   <script>
-    var table_headers = {{ table_headers|safe }}
+    var table_headers = {{ table_headers|safe }};
     var columns = table_headers.map(it => ({"title": it}));
 
   </script>
+{% endif %}
 
   <p id="jqtest"></p>
 

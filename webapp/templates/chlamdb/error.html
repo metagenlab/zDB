@@ -12,8 +12,10 @@
 <script>
 const error = document.getElementById("error");
 
-error.addEventListener("click", function() {
-    error.style.position = "static";
-    error.style.display = "none";
-})
+if (error != null) {
+  error.addEventListener("click", function() {
+      error.style.position = "static";
+      error.style.display = "none";
+  })
+}
 </script>
