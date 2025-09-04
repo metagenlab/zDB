@@ -8,9 +8,11 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
-- Re-add JS libraries accidentally removed and fix various small JS errors. ([#195](https://github.com/metagenlab/zDB/pull/195)) (Niklaus Johner)
+- Re-add JS libraries accidentally removed and fix various small JS errors. ([#196](https://github.com/metagenlab/zDB/pull/196)) (Niklaus Johner)
 
 ### Changed
+
+- Use larger step for GC content and skew in circos map. ([#197](https://github.com/metagenlab/zDB/pull/197)) (Niklaus Johner)
 
 ### Added
 
