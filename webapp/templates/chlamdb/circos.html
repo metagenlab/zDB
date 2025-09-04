@@ -187,14 +187,15 @@ $(document).ready(function() {
   });
   cgv.on('click', (event) => {
     if (event.elementType === 'feature') {
+      const name = event.element.meta.unmapped_name || event.element.name
       if (['targets', 'reference'].includes(event.slot.track.name)) {
-        window.open(`/locusx/${event.element.name}`)
+        window.open(`/locusx/${name}`)
       }
       else if (event.slot.track.name === 'Prevalence') {
-        window.open(`/orthogroup/${event.element.name}`)
+        window.open(`/orthogroup/${name}`)
       }
       else if (event.slot.track.name === 'gi') {
-        window.open(`/genomic_island/${event.element.name.substring(2)}`)
+        window.open(`/genomic_island/${name.substring(2)}`)
       }
     }
   });
