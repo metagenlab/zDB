@@ -78,64 +78,66 @@
 <script src="{% static 'js/jquery.redirect.js' %}"></script>
 <script src="{% static 'js/custom_plot.js' %}"></script>
 
-<script>
-  $(function(){
-    $("#mytable td").hottie({
-      readValue : function(e) {
-        return $(e).attr("data-hist");
-      },
-      colorArray : [
-        "#5858FA",
-        "#FBEFEF",
-        "#FA5858"
-      ]
-    });
-  });
-
-  $(document).ready(function() {
-    let buttons = [
-          {
-              extend: 'colvis',
-              columns: ':not(.noVis)',
-          },
-          {
-              extend: 'excel',
-              title: 'plast_refseq'
-          },
-          {
-              extend: 'csv',
-              title: 'plast_refseq'
-          }
-      ]
-    var show_custom_plot_button = {{custom_plot_button|safe}};
-    if (show_custom_plot_button) {
-      buttons.push({
-        text: 'Plot phylogeny',
-        action: function(e, dt, node, config) {
-          makeCustomPlot(dt);
+{% if show_comparison_table %}
+  <script>
+    $(function(){
+      $("#mytable td").hottie({
+        readValue : function(e) {
+          return $(e).attr("data-hist");
         },
-      })
-    }
-    $('#mytable').DataTable( {
-      select: {
-          items: 'row',
-          style: 'os',
-          headerCheckbox: true,
-      },
-      columnDefs: [
-          {
-              orderable: false,
-              render: DataTable.render.select(),
-              target: 0
-          }
-      ],
-      dom: 'lBfrtip',
-      buttons: buttons,
+        colorArray : [
+          "#5858FA",
+          "#FBEFEF",
+          "#FA5858"
+        ]
+      });
+    });
 
-      "ordering": true,
-      "info":     false,
-      } );
-  } );
+    $(document).ready(function() {
+      let buttons = [
+            {
+                extend: 'colvis',
+                columns: ':not(.noVis)',
+            },
+            {
+                extend: 'excel',
+                title: 'plast_refseq'
+            },
+            {
+                extend: 'csv',
+                title: 'plast_refseq'
+            }
+        ]
+      var show_custom_plot_button = {{custom_plot_button|safe}};
+      if (show_custom_plot_button) {
+        buttons.push({
+          text: 'Plot phylogeny',
+          action: function(e, dt, node, config) {
+            makeCustomPlot(dt);
+          },
+        })
+      }
+      $('#mytable').DataTable( {
+        select: {
+            items: 'row',
+            style: 'os',
+            headerCheckbox: true,
+        },
+        columnDefs: [
+            {
+                orderable: false,
+                render: DataTable.render.select(),
+                target: 0
+            }
+        ],
+        dom: 'lBfrtip',
+        buttons: buttons,
 
-</script>
+        "ordering": true,
+        "info":     false,
+        } );
+    } );
+
+  </script>
+{% endif %}
 </html>

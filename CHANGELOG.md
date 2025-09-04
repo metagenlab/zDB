@@ -8,14 +8,22 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Re-add JS libraries accidentally removed and fix various small JS errors. ([#195](https://github.com/metagenlab/zDB/pull/195)) (Niklaus Johner)
+
+### Changed
+
+### Added
+
+## 1.3.10 - 2025-09-03
+
+### Fixed
+
 - Fix circos view for contigs shorter than 1000bp. ([#194](https://github.com/metagenlab/zDB/pull/194)) (Niklaus Johner)
 
 ### Changed
 
 - Improve labels and setting custom labels on circos map. ([#194](https://github.com/metagenlab/zDB/pull/194)) (Niklaus Johner)
 - Improve styling of hit extraction view. ([#195](https://github.com/metagenlab/zDB/pull/195)) (Niklaus Johner)
-
-### Added
 
 ## 1.3.9 - 2025-09-01
 
