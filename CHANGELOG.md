@@ -8,6 +8,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Re-add JS libraries accidentally removed and fix various small JS errors. ([#195](https://github.com/metagenlab/zDB/pull/195)) (Niklaus Johner)
+
 ### Changed
 
 ### Added
