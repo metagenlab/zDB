@@ -154,8 +154,8 @@ $(document).ready(function() {
     dataMethod: 'sequence',
     dataKeys: 'gc-content',
     dataOptions: {
-      step: 1,
-      window: 100
+      step: 100,
+      window: 1000
     }
   });
   cgv.addTracks({
@@ -165,8 +165,8 @@ $(document).ready(function() {
     dataMethod: 'sequence',
     dataKeys: 'gc-skew',
     dataOptions: {
-      step: 1,
-      window: 100
+      step: 100,
+      window: 1000
     }
   });
   cgv.on('click', (event) => {

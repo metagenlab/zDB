@@ -12,6 +12,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Changed
 
+- Use larger step for GC content and skew in circos map. ([#197](https://github.com/metagenlab/zDB/pull/197)) (Niklaus Johner)
+
 ### Added
 
 ## 1.3.10 - 2025-09-03
