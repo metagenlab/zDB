@@ -147,6 +147,22 @@ $(document).ready(function() {
   });
   // Load data
   cgv.io.loadJSON({{circos_json| safe}});
+  // Custom highlighter to hide certain metadata fields and display the unmapped name
+  // when it was mapped for the label.
+  cgv.highlighter.feature.popoverContents = function(e) {
+    const feature = e.element;
+    const fullLength = feature.length !== feature.fullLength ? `(${window.CGView.utils.commaNumber(feature.fullLength)} bp)` : '';
+    const filtered_meta = Object.fromEntries(Object.entries(feature.meta).filter(([key, value]) => !(['highlighted', 'url'].includes(key))))
+    return (`
+      <div style='margin: 0 5px; font-size: 14px'>
+        <div>${feature.type}: ${feature.meta.unmapped_name || feature.name}<div>
+        <div class='track-data'>Length: ${window.CGView.utils.commaNumber(feature.length)} bp ${fullLength}</div>
+        ${window.CGView.Highlighter.getMetaDivs(feature.qualifiers)}
+        ${window.CGView.Highlighter.getMetaDivs(filtered_meta)}
+        ${window.CGView.Highlighter.getTrackDiv(e)}
+      </div>
+    `);
+  };
   cgv.addTracks({
     name: 'GC Content',
     position: 'inside',

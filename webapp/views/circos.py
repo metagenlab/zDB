@@ -294,6 +294,7 @@ class CircosData:
         if label_mapping:
             for el in self.features:
                 if el["name"] in label_mapping:
+                    el["meta"]["unmapped_name"] = el["name"]
                     el["name"] = label_mapping[el["name"]]
                     el["favorite"] = True
         else:
