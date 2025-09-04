@@ -21,6 +21,8 @@ to [Common Changelog](https://common-changelog.org)
 ### Fixed
 
 - Fix circos view for contigs shorter than 1000bp. ([#194](https://github.com/metagenlab/zDB/pull/194)) (Niklaus Johner)
+-Fix broken links for genomic islands and features with a mapped label on circos map. ([#198](https://github.com/metagenlab/zDB/pull/198)) (Niklaus Johner)
+
 
 ### Changed
 
