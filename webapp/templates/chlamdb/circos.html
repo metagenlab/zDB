@@ -8,6 +8,10 @@
   {% load crispy_forms_tags %}
 
   <link rel="stylesheet" type="text/css" href="{% static 'css/circos.css' %}" />
+  <script type="module">
+    import { Context } from 'https://cdn.jsdelivr.net/npm/svgcanvas@2.6.0/dist/svgcanvas.esm.js';
+    window.SVGContext = Context;
+  </script>
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/cgview/dist/cgview.min.js"></script>
@@ -87,7 +91,13 @@
                       <div class="cgv-btn" id="btn-move-right" title="Move Right/Clockwise"></div>
                       <div class="cgv-btn" id="btn-toggle-format" title="Toggle Linear/Circular Format"></div>
                       <div class="cgv-btn" id="btn-invert-colors" title="Invert Map Colors"></div>
-                      <div class="cgv-btn" id="btn-download" title="Download Map PNG"></div>
+                      <div class="dropdown" style="display: inline-block; position: relative;">
+                        <div class="cgv-btn" id="btn-download" title="Download Map"></div>
+                        <div id="download-dropdown" class="dropdown-content">
+                          <div id="download-png">PNG</div>
+                          <div id="download-svg">SVG</div>
+                        </div>
+                      </div>
                       <div class="cgv-btn" id="btn-toggle-labels" title="Toggle Labels"></div>
 
                       <div>
@@ -141,9 +151,10 @@ $(document).ready(function() {
     return;
   }
   // Create Viewer
-  cgv = new CGV.Viewer('#circos_plot', {
+  cgv = new CGView.Viewer('#circos_plot', {
     height: 0.8*window.innerHeight,
     width: document.getElementById('tabs').offsetWidth,
+    SVGContext: window.SVGContext,
   });
   // Load data
   cgv.io.loadJSON({{circos_json| safe}});
@@ -235,9 +246,28 @@ $(document).ready(function() {
   });
 
   onClick('btn-download', () => {
-    const height = 2000;
-    const width = cgv.width / cgv.height * height;
-    cgv.io.downloadImage(width, height, 'cgview_map.png');
+    document.getElementById("download-dropdown").classList.toggle("show");
+  })
+
+  onClick('download-png', () => {
+      const height = 2000;
+      const width = cgv.width / cgv.height * height;
+      cgv.io.downloadImage(width, height, 'cgview_map.png');
+      document.getElementById("download-dropdown").classList.remove("show");
+  })
+
+  onClick('download-svg', () => {
+      cgv.io.downloadSVG('cgview_map.svg');
+      document.getElementById("download-dropdown").classList.remove("show");
+  })
+
+  //Close dropdown when clicking outside
+  document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById("download-dropdown");
+    const btn = document.getElementById("btn-download");
+    if (!dropdown.contains(event.target) && event.target !== btn) {
+      dropdown.classList.remove("show");
+    }
   });
 
   onClick('btn-toggle-labels', () => {
@@ -323,4 +353,31 @@ $(document).ready(function() {
 
 </script>
 
+<style>
+  #download-dropdown.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    border: 1px solid gray;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    left: 100%;
+    top: 0;
+    padding: 2px;
+    z-index: 1;
+  }
+
+  #download-dropdown.dropdown-content div {
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+
+  #download-dropdown.dropdown-content div:hover {
+    background-color: #589dec;
+  }
+  
+  .show {display:block;}
+</style>
 </html>

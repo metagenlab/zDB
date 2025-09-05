@@ -9,6 +9,7 @@ to [Common Changelog](https://common-changelog.org)
 ### Fixed
 
 - Re-add JS libraries accidentally removed and fix various small JS errors. ([#196](https://github.com/metagenlab/zDB/pull/196)) (Niklaus Johner)
+-Fix broken links for genomic islands and features with a mapped label on circos map. ([#198](https://github.com/metagenlab/zDB/pull/198)) (Niklaus Johner)
 
 ### Changed
 
@@ -16,13 +17,13 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add possibility to download an SVG of the circos map. ([#199](https://github.com/metagenlab/zDB/pull/199)) (Niklaus Johner)
+
 ## 1.3.10 - 2025-09-03
 
 ### Fixed
 
 - Fix circos view for contigs shorter than 1000bp. ([#194](https://github.com/metagenlab/zDB/pull/194)) (Niklaus Johner)
--Fix broken links for genomic islands and features with a mapped label on circos map. ([#198](https://github.com/metagenlab/zDB/pull/198)) (Niklaus Johner)
-
 
 ### Changed
 
