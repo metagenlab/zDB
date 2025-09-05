@@ -16,6 +16,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add possibility to download an SVG of the circos map. ([#199](https://github.com/metagenlab/zDB/pull/199)) (Niklaus Johner)
+
 ## 1.3.10 - 2025-09-03
 
 ### Fixed
