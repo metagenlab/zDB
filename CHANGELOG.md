@@ -15,6 +15,7 @@ to [Common Changelog](https://common-changelog.org)
 ### Changed
 
 - Use larger step for GC content and skew in circos map. ([#197](https://github.com/metagenlab/zDB/pull/197)) (Niklaus Johner)
+- Update workflow diagrams in documentation to include GI prediction. ([#201](https://github.com/metagenlab/zDB/pull/201)) (Niklaus Johner)
 
 ### Added
 
