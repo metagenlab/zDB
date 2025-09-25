@@ -546,7 +546,8 @@ process split_contigs {
 process execute_islandpath {
     conda "$baseDir/conda/islandpath.yaml"
     container "$params.islandpath_container"
-
+    errorStrategy 'ignore'
+    
     input:
     path(genome)
 
