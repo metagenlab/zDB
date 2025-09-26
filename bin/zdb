@@ -122,6 +122,10 @@ elif [[ "$1" == "setup" ]]; then
 				db_setup_args="${db_setup_args} --blast_swissprot"
 				shift
 				;;
+			--refseq)
+				db_setup_args="${db_setup_args} --diamond_refseq"
+				shift
+				;;
 			--pfam)
 				db_setup_args="${db_setup_args} --pfam"
 				shift
@@ -148,6 +152,7 @@ elif [[ "$1" == "setup" ]]; then
 				echo " --ko: downloads and setups the hmm profiles of the ko database"
 				echo " --pfam: downloads and setups up the hmm profiles of the PFAM protein domains"
 				echo " --swissprot: downloads and indexes the swissprot database "
+				echo " --refseq: downloads and indexes the NR RefSeq database"
 				echo " --vfdb: downloads the virulence factor database "
 				echo ""
 				echo "Other parameters:"
