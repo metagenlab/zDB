@@ -53,6 +53,45 @@ process setup_cog_cdd {
     """
 }
 
+process download_refseq {
+
+    output:
+        path("refseq_nr.fasta")
+
+    script:
+    refseq_complete_base_link="https://ftp.ncbi.nlm.nih.gov/refseq/release/complete"
+    refseq_html_file="refseq.html"
+    refseq_filenames_file="refseq-genome-files.txt"
+    """
+    # Adapted from script from Mike Lee https://hackmd.io/@AstrobioMike/RefSeq-db-download
+
+    # downloading html page (using this to get all the files we want to download)
+    curl -L -s -o ${refseq_html_file} ${refseq_complete_base_link}
+
+    # parsing out genomic.fna.gz filenames (which are also their link suffixes)
+    grep "complete.wp_protein." ${refseq_html_file} | grep "protein.faa.gz" | cut -f 2 -d '"' > ${refseq_filenames_file}
+
+    num_files=\$(wc -l ${refseq_filenames_file})
+
+    printf "\n  We are beginning the download of \${num_files} files now...\n"
+    printf "  See you in a bit :)\n\n"
+
+    # downloading in parallel with xargs (num run in parallel is set with -P option)
+    xargs -I % -P 10 curl -L -s -O "${refseq_complete_base_link}/%" < ${refseq_filenames_file}
+
+    # Merge the files and delete them as we go, to avoid using too much disk space
+    touch refseq_nr.fasta.gz
+    while read -r line; do
+        echo "Adding and removing: \$line"
+        cat \$line >> refseq_nr.fasta.gz
+        rm \$line
+    done < ${refseq_filenames_file}
+
+    gunzip refseq_nr.fasta.gz
+    """
+}
+
+
 process diamond_refseq {
     publishDir "$params.refseq_db", mode: "move"
     container "$params.diamond_container"
@@ -202,13 +241,8 @@ workflow setup_cogg_db {
     download_cog_cdd() | setup_cog_cdd
 }
 
-/**
- * NOTE: this assumes that the user already downloaded the refseq
- * database (nr_refseq) and concatenated all the files into a single
- * fasta file called "refseq_nr.fasta".
- */
 workflow setup_refseq_db {
-    Channel.fromPath("${params.refseq_db}/refseq_nr.fasta") | diamond_refseq
+    download_refseq() | diamond_refseq
 }
 
 workflow setup_pfam_db {
