@@ -66,6 +66,12 @@ def check_reference_databases(params):
                 "Swissprot database could not be found. "
                 'Please set it up with "zdb setup --swissprot"'
             )
+    if params.get("refseq"):
+        if not os.path.isdir(os.path.join(db_dir, "refseq")):
+            raise MissingReferenceDatabase(
+                "RefSeq database could not be found. "
+                'Please set it up with "zdb setup --refseq"'
+            )
     if params.get("vfdb"):
         if not os.path.isdir(os.path.join(db_dir, "vfdb")):
             raise MissingReferenceDatabase(
