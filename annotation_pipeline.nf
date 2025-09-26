@@ -1226,7 +1226,7 @@ workflow {
     if(params.diamond_refseq) {
         refseq_diamond = diamond_refseq(split_nr_seqs)
         refseq_diamond.collectFile().set { refseq_diamond_results_sqlitedb }
-        (diamond_best_hits, db) = load_refseq_results(refseq_diamond_results_sqlitedb.collect(), db_gen)
+        (diamond_best_hits, db) = load_refseq_results(refseq_diamond_results_sqlitedb.collect(), db)
         mafft_alignments_refseq_BBH = align_refseq_BBH_with_mafft(diamond_best_hits.flatten().collate( 20 ))
         BBH_phylogenies = orthogroup_refseq_BBH_phylogeny_with_fasttree(mafft_alignments_refseq_BBH)
         db = load_BBH_phylogenies(db, BBH_phylogenies.collect())
