@@ -493,6 +493,10 @@ elif [[ "$1" == "run" ]]; then
 				args="${args} --blast_swissprot"
 				shift
 				;;
+			--refseq)
+				args="${args} --diamond_refseq"
+				shift
+				;;
 			--pfam)
 				args="${args} --pfam"
 				shift
@@ -559,6 +563,7 @@ elif [[ "$1" == "run" ]]; then
 				echo " --ko: perform ko (metabolism) annotation"
 				echo " --pfam: peform PFAM domain annotation"
 				echo " --swissprot: search for homologs in the swissprot database"
+				echo " --refseq: search for homologs in the refseq database"
 				echo " --vfdb: search for homologs in the virulence factor database"
 				echo " --vf_evalue: evalue cutoff for the blast against the VF database. Defaults to 1e-10."
 				echo " --vf_coverage: coverage cutoff for query in blast against the VF database. Defaults to 60%."
