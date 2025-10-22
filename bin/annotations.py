@@ -60,13 +60,13 @@ def check_reference_databases(params):
                 "Pfam database could not be found. "
                 'Please set it up with "zdb setup --pfam"'
             )
-    if params.get("swissprot"):
+    if params.get("blast_swissprot"):
         if not os.path.isdir(os.path.join(db_dir, "uniprot", "swissprot")):
             raise MissingReferenceDatabase(
                 "Swissprot database could not be found. "
                 'Please set it up with "zdb setup --swissprot"'
             )
-    if params.get("refseq"):
+    if params.get("diamond_refseq"):
         if not os.path.isdir(os.path.join(db_dir, "refseq")):
             raise MissingReferenceDatabase(
                 "RefSeq database could not be found. "
