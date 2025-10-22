@@ -54,6 +54,7 @@ process setup_cog_cdd {
 }
 
 process download_refseq {
+    publishDir "$params.refseq_db", mode: "move"
 
     output:
         path("refseq_nr.fasta")
