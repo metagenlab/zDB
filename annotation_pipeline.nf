@@ -427,9 +427,10 @@ process blast_swissprot {
 
 process diamond_refseq {
   container "$params.diamond_container"
+  conda "$baseDir/conda/diamond.yaml"
 
   input:
-  file(seq)
+  tuple(path(refseq_db), file(seq))
 
   output:
   path '*tab'
@@ -439,7 +440,7 @@ process diamond_refseq {
   n = seq.name
   """
   # new version of the database
-  diamond blastp -p ${task.cpus} -d $params.refseq_db/merged_refseq.dmnd \
+  diamond blastp -p ${task.cpus} -d $refseq_db/refseq_nr.dmnd \
         -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
   """
 }
@@ -804,6 +805,7 @@ process load_refseq_results {
     conda "$baseDir/conda/annotation.yaml"
     input:
         path diamond_tsv_list
+        path refseq_db
         path curr_db
 
     output:
@@ -818,7 +820,7 @@ process load_refseq_results {
 
     kwargs = ${gen_python_args()}
     diamond_tab_files = "$diamond_tsv_list".split()
-    setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files, "$curr_db")
+    setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files, "$refseq_db/refseq_nr.fasta", "$curr_db")
     """
 }
 
@@ -1224,9 +1226,9 @@ workflow {
     }
 
     if(params.diamond_refseq) {
-        refseq_diamond = diamond_refseq(split_nr_seqs)
-        refseq_diamond.collectFile().set { refseq_diamond_results_sqlitedb }
-        (diamond_best_hits, db) = load_refseq_results(refseq_diamond_results_sqlitedb.collect(), db)
+        refseq_db = Channel.fromPath("$params.refseq_db", type: "dir")
+        refseq_diamond = diamond_refseq(refseq_db.combine(split_nr_seqs))
+        (diamond_best_hits, db) = load_refseq_results(refseq_diamond.collectFile().collect(), refseq_db, db)
         mafft_alignments_refseq_BBH = align_refseq_BBH_with_mafft(diamond_best_hits.flatten().collate( 20 ))
         BBH_phylogenies = orthogroup_refseq_BBH_phylogeny_with_fasttree(mafft_alignments_refseq_BBH)
         db = load_BBH_phylogenies(db, BBH_phylogenies.collect())
