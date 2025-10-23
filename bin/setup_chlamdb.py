@@ -151,7 +151,7 @@ def parse_record(record):
     return prot_descr, organism
 
 
-def load_refseq_matches_infos(args, lst_diamond_files, refseq_db, db_file):
+def load_refseq_matches_infos(args, lst_diamond_files, refseq_db, refseq_version, db_file):
     db = DB.load_db(db_file, args)
     columns = [
         "str_hsh",
@@ -241,6 +241,12 @@ def load_refseq_matches_infos(args, lst_diamond_files, refseq_db, db_file):
 
         SeqIO.write(to_keep + sequences, f"{og}_nr_hits.faa", "fasta")
     db.set_status_in_config_table("BLAST_refseq", 1)
+    db.commit()
+
+    # Determine reference DB version
+    with open(refseq_version) as fh:
+        version = fh.readline().strip()
+    db.load_data_into_table("versions", [("RefSeq", version)])
     db.commit()
 
 

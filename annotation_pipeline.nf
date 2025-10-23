@@ -820,7 +820,7 @@ process load_refseq_results {
 
     kwargs = ${gen_python_args()}
     diamond_tab_files = "$diamond_tsv_list".split()
-    setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files, "$refseq_db/refseq_nr.fasta", "$curr_db")
+    setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files, "$refseq_db/refseq_nr.fasta", "$refseq_db/RELEASE_NUMBER", "$curr_db")
     """
 }
 
