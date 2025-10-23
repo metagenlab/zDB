@@ -58,7 +58,6 @@ def create_data_table(db):
         ("reference_phylogeny", "mandatory", False),
         ("taxonomy_table", "mandatory", False),
         ("genome_statistics", "mandatory", False),
-        ("BLAST_database", "optional", False),
         ("gene_phylogenies", "optional", False),
         ("COG", "optional", False),
         ("KEGG", "optional", False),

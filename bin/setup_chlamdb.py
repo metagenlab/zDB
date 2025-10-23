@@ -240,7 +240,7 @@ def load_refseq_matches_infos(args, lst_diamond_files, refseq_db, db_file):
                 break
 
         SeqIO.write(to_keep + sequences, f"{og}_nr_hits.faa", "fasta")
-    db.set_status_in_config_table("BLAST_database", 1)
+    db.set_status_in_config_table("BLAST_refseq", 1)
     db.commit()
 
 

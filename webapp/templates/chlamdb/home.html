@@ -287,10 +287,11 @@
                           <div class="status_box"  >
                             <p> Your database has been generated including the following features:</p>
                             <ul style="list-style-type:circle; margin-left: 2em;">
-                              {% if optional2status|keyvalue:"BLAST_database" == 1 %}
-                                <li> Blast database of the genomes have been created</li>
-                              {% endif %}
+                              <li> Blast database of the genomes have been created</li>
                               <li> Orthologous proteins identified with OrthoFinder </li>
+                              {% if optional2status|keyvalue:"BLAST_refseq" == 1 %}
+                                <li> Closest homologs identified from RefSeq </li>
+                              {% endif %}
                               <li> Detailed annotation of proteins based on:
 
                               {% if optional2status|keyvalue:"COG" == 1 %}

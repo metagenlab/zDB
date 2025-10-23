@@ -746,7 +746,7 @@ class LocusX(ViewBase):
         if optional2status.get("BLAST_swissprot", False):
             context["swissprot"] = locus_tab_swissprot_hits(self.db, self.seqid)
 
-        if optional2status.get("BLAST_database", False):
+        if optional2status.get("BLAST_refseq", False):
             context.update(tab_get_refseq_homologs(self.db, self.seqid))
 
         if optional2status.get("gi", False):
