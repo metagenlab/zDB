@@ -321,6 +321,11 @@ You can run a single file, class or test by using its dotted path, e.g.
 python -m unittest testing.pipelines.test_db_setup.TestDBSetupPipeline.test_setup_base_db
 ```
 
+To set a custom directory for the reference databases you can set the `ZDB_TEST_REF_DIR` environment variable
+```
+export ZDB_TEST_REF_DIR=/path/to/my/refdir
+```
+
 #### Webapp
 
 The webapp is tested using the [django testing tools](https://docs.djangoproject.com/en/5.0/topics/testing/tools). To run the tests you need a python environment with the required dependencies:

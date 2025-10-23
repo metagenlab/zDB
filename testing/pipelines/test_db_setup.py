@@ -7,13 +7,13 @@ from testing.pipelines.base import BasePipelineTestCase
 
 class TestDBSetupPipeline(BasePipelineTestCase):
     nf_filename = "db_setup.nf"
-    _ref_db_dir = None
 
     @property
     def ref_db_dir(self):
         if self._ref_db_dir is None:
-            self._ref_db_dir = tempfile.TemporaryDirectory()
-        return self._ref_db_dir.name
+            self.tmpdir = tempfile.TemporaryDirectory()
+            self._ref_db_dir = self.tmpdir.name
+        return self._ref_db_dir
 
     def assert_created_files(self, proc, files):
         created_files = os.listdir(proc.path)

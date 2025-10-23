@@ -62,7 +62,9 @@ class TestAnnotationPipeline(BasePipelineTestCase):
 
     @property
     def ref_db_dir(self):
-        return os.path.join(self.basedir, "zdb_ref")
+        if self._ref_db_dir is None:
+            self._ref_db_dir = os.path.join(self.basedir, "zdb_ref")
+        return self._ref_db_dir
 
     @property
     def db_dir(self):
@@ -216,7 +218,8 @@ class TestAnnotationPipeline(BasePipelineTestCase):
 
         # Let's check that tables were correctly created and filled
         self.assertItemsEqual(
-            base_tables + ["diamond_refseq_match_id", "diamond_refseq", "BBH_phylogeny"],
+            base_tables
+            + ["diamond_refseq_match_id", "diamond_refseq", "BBH_phylogeny"],
             self.metadata_obj.tables.keys(),
         )
         self.assert_db_base_table_row_counts()
@@ -225,7 +228,6 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertTrue(self.query("diamond_refseq_match_id").count() > 54000)
         self.assertTrue(self.query("diamond_refseq").count() > 55000)
         self.assertEqual(23, self.query("BBH_phylogeny").count())
-
 
     def test_full_pipeline(self):
         self.nf_params["pfam"] = "true"
@@ -290,7 +292,7 @@ class TestAnnotationPipeline(BasePipelineTestCase):
                 "AMRFinderSoftware",
                 "AMRFinderDB",
                 "VFDB",
-                "RefSeq"
+                "RefSeq",
             ],
             [row[0] for row in self.query("versions").all()],
         )
