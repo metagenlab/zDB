@@ -189,7 +189,7 @@ Other options include:
 --out: directory where the files necessary for the webapp will be stored
 --input: CSV file containing the path to the genbank files to include in the analysis
 --name: custom run name (defaults to the name given by nextflow). The latest completed run is also named latest.
---cpu: number of parallel processes allowed (default 8)
+--cpu: number of parallel processes allowed (default 16)
 --mem: max memory usage allowed (default 8GB)
 --singularity_dir: the directory where the apptainer images are downloaded (default singularity in current directory)
 ```
