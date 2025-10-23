@@ -151,7 +151,7 @@ def parse_record(record):
     return prot_descr, organism
 
 
-def load_refseq_matches_infos(args, lst_diamond_files, db_file):
+def load_refseq_matches_infos(args, lst_diamond_files, refseq_db, db_file):
     db = DB.load_db(db_file, args)
     columns = [
         "str_hsh",
@@ -178,13 +178,11 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     }
 
     print("Extracting records for refseq", flush=True)
-    refseq = args["refseq_db"] + "/merged.faa"
-    get_prot(refseq, hsh_accession_to_record)
+    get_prot(refseq_db, hsh_accession_to_record)
     hsh_accession_to_match_id = {}
 
     db.create_diamond_refseq_match_id()
     refseq_match_id = []
-
     print("Loading refseq matches id", flush=True)
     for sseqid, (accession, record) in enumerate(hsh_accession_to_record.items()):
         hsh_accession_to_match_id[accession] = sseqid
