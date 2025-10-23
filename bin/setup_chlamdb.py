@@ -216,7 +216,7 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
             "bitscore",
         ]
     ]
-    db.load_refseq_hits(to_load.values.tolist())
+    db.load_refseq_hits(to_load.to_numpy(dtype="object").tolist())
     db.create_refseq_hits_indices()
     db.commit()
 
