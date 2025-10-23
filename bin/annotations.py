@@ -41,7 +41,7 @@ class MissingReferenceDatabase(Exception):
 
 
 def check_reference_databases(params):
-    db_dir = os.path.split(params.get("base_db"))[-1]
+    db_dir = os.path.split(params.get("base_db").rstrip(os.sep))[-1]
     if params.get("cog"):
         if not os.path.isdir(os.path.join(db_dir, "cog")):
             raise MissingReferenceDatabase(
