@@ -174,3 +174,23 @@ class TestDBSetupPipeline(BasePipelineTestCase):
         self.assertItemsEqual(
             expected_files, os.listdir(os.path.join(self.ref_db_dir, "vfdb"))
         )
+
+    def test_creating_refseq_db(self):
+        self.nf_params["diamond_refseq"] = "true"
+        execution = self.execute_pipeline()
+        self.assert_success(execution)
+
+        self.assertEqual(
+            [proc.name for proc in execution.process_executions],
+            ["setup_refseq_db:download_refseq", "setup_refseq_db:diamond_refseq"],
+        )
+
+        expected_files = [
+            "refseq_nr.dmnd",
+            "refseq_nr.fasta",
+            "RELEASE_NUMBER",
+        ]
+        # Files are moved to db directory
+        self.assertItemsEqual(
+            expected_files, os.listdir(os.path.join(self.ref_db_dir, "refseq"))
+        )

@@ -208,6 +208,25 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assert_db_base_table_row_counts()
         self.assertEqual(2, self.query("genomic_islands").count())
 
+    def test_refseq_hits(self):
+        self.nf_params["diamond_refseq"] = "true"
+        execution = self.execute_pipeline()
+        self.assert_success(execution)
+        self.load_db(execution)
+
+        # Let's check that tables were correctly created and filled
+        self.assertItemsEqual(
+            base_tables + ["diamond_refseq_match_id", "diamond_refseq", "BBH_phylogeny"],
+            self.metadata_obj.tables.keys(),
+        )
+        self.assert_db_base_table_row_counts()
+
+        # The exact number of hits depends on the version of the ref db
+        self.assertTrue(self.query("diamond_refseq_match_id").count() > 54000)
+        self.assertTrue(self.query("diamond_refseq").count() > 55000)
+        self.assertEqual(23, self.query("BBH_phylogeny").count())
+
+
     def test_full_pipeline(self):
         self.nf_params["pfam"] = "true"
         self.nf_params["ko"] = "true"
@@ -216,6 +235,7 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.nf_params["amr"] = "true"
         self.nf_params["vfdb"] = "true"
         self.nf_params["gi"] = "true"
+        self.nf_params["diamond_refseq"] = "true"
         # set custom run name for use in webapp testing
         self.nf_params["name"] = "_webapp_testing"
 
@@ -237,6 +257,9 @@ class TestAnnotationPipeline(BasePipelineTestCase):
             "vf_hits",
             "genomic_islands",
             "genomic_island_descriptions",
+            "diamond_refseq_match_id",
+            "diamond_refseq",
+            "BBH_phylogeny",
         ]
         self.assertItemsEqual(
             base_tables + added_tables, self.metadata_obj.tables.keys()
@@ -254,6 +277,9 @@ class TestAnnotationPipeline(BasePipelineTestCase):
         self.assertEqual(36, self.query("vf_hits").count())
         self.assertEqual(35, self.query("vf_defs").count())
         self.assertEqual(2, self.query("genomic_islands").count())
+        self.assertTrue(self.query("diamond_refseq_match_id").count() > 54000)
+        self.assertTrue(self.query("diamond_refseq").count() > 55000)
+        self.assertEqual(23, self.query("BBH_phylogeny").count())
 
         self.assertItemsEqual(
             [
@@ -264,6 +290,7 @@ class TestAnnotationPipeline(BasePipelineTestCase):
                 "AMRFinderSoftware",
                 "AMRFinderDB",
                 "VFDB",
+                "RefSeq"
             ],
             [row[0] for row in self.query("versions").all()],
         )
