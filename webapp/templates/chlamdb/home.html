@@ -290,7 +290,7 @@
                               <li> Blast database of the genomes have been created</li>
                               <li> Orthologous proteins identified with OrthoFinder </li>
                               {% if optional2status|keyvalue:"BLAST_refseq" == 1 %}
-                                <li> Closest homologs identified from RefSeq </li>
+                                <li> Closest homologs identified from RefSeq (version {{versions|keyvalue:"RefSeq"}})</li>
                               {% endif %}
                               <li> Detailed annotation of proteins based on:
 
