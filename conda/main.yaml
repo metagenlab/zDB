@@ -3,5 +3,5 @@ channels:
     - conda-forge
     - bioconda
 dependencies:
-    - nextflow=22.10
-    - apptainer=1.3.6
+    - nextflow>=24.04
+    - apptainer=1.4
