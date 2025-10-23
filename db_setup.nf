@@ -54,11 +54,9 @@ process setup_cog_cdd {
 }
 
 process download_refseq {
-    publishDir "$params.refseq_db", mode: "move"
 
     output:
-        path("refseq_nr.fasta")
-        path("RELEASE_NUMBER")
+        tuple path("refseq_nr.fasta"), path("RELEASE_NUMBER")
 
     script:
     refseq_version_link="https://ftp.ncbi.nlm.nih.gov/refseq/release/RELEASE_NUMBER"
@@ -103,9 +101,11 @@ process diamond_refseq {
     container "$params.diamond_container"
 
     input:
-        path nr_refseq
+        tuple path(nr_refseq), path(nr_version)
 
     output:
+        path("${nr_refseq}", includeInputs: true)
+        path("${nr_version}", includeInputs: true)
         path "refseq_nr.dmnd"
 
     script:
