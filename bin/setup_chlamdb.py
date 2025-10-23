@@ -169,10 +169,7 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     ]
 
     print("Reading tsvs", flush=True)
-    all_data = pd.DataFrame(columns=columns)
-    for tsv in lst_diamond_files:
-        hit_table = pd.read_csv(tsv, sep="\t", names=columns, header=None)
-        all_data = all_data.append(hit_table)
+    all_data = pd.concat([pd.read_csv(tsv, sep="\t", names=columns, header=None) for tsv in lst_diamond_files])
     all_data.accession = all_data.accession.map(remove_accession_version)
     all_data.str_hsh = all_data.str_hsh.map(simplify_hash)
 
