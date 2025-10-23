@@ -58,13 +58,18 @@ process download_refseq {
 
     output:
         path("refseq_nr.fasta")
+        path("RELEASE_NUMBER")
 
     script:
+    refseq_version_link="https://ftp.ncbi.nlm.nih.gov/refseq/release/RELEASE_NUMBER"
     refseq_complete_base_link="https://ftp.ncbi.nlm.nih.gov/refseq/release/complete"
     refseq_html_file="refseq.html"
     refseq_filenames_file="refseq-genome-files.txt"
     """
     # Adapted from script from Mike Lee https://hackmd.io/@AstrobioMike/RefSeq-db-download
+
+    # Download the version file
+    curl -L -s -O "${refseq_version_link}"
 
     # downloading html page (using this to get all the files we want to download)
     curl -L -s -o ${refseq_html_file} ${refseq_complete_base_link}
