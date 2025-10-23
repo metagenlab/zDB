@@ -1201,8 +1201,8 @@ workflow {
 
     checkm_table = checkm_analyse(faa_files.collect())
 
-    db = setup_db(Channel.fromPath("${params.zdb.file}"))
-    db = load_base_db(db, input_file, checked_gbks, orthogroups, to_load_alignment.collect(), nr_mapping_to_db_setup, checkm_table, core_genome_phylogeny, gene_phylogeny.collect(), og_summary)
+    base_db = setup_db(Channel.fromPath("${params.zdb.file}"))
+    db = load_base_db(base_db, input_file, checked_gbks, orthogroups, to_load_alignment.collect(), nr_mapping_to_db_setup, checkm_table, core_genome_phylogeny, gene_phylogeny.collect(), og_summary)
 
     if(params.pfam) {
         Channel.fromPath("${params.pfam_db}", type: "dir").set { pfam_db }
