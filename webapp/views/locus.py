@@ -483,25 +483,23 @@ def tab_get_refseq_homologs(db, seqids):
         "Description",
         "Organism",
     ]
-    entries = []
-    for match_id, data in all_infos.iterrows():
-        to_ncbi = format_refseqid_to_ncbi(data.accession)
-        entries.append(
-            (
-                to_ncbi,
-                data.evalue,
-                data.bitscore,
-                data.pident,
-                data.gaps,
-                data.length,
-                data.description,
-                data.organism,
-            )
-        )
+    accessors = [
+        "accession",
+        "evalue",
+        "bitscore",
+        "pident",
+        "gaps",
+        "length",
+        "description",
+        "organism",
+    ]
+    all_infos["accession"] = all_infos["accession"].apply(format_refseqid_to_ncbi)
     return {
+        "table_data": all_infos[accessors],
+        "table_data_accessors": accessors,
+        "table_headers": header,
+        "data_table_config": DataTableConfig(table_id="refseq", display_index=False),
         "n_refseq_homologs": len(all_infos),
-        "refseq_headers": header,
-        "blast_data": entries,
     }
 
 
@@ -753,7 +751,7 @@ class LocusX(ViewBase):
             context["swissprot"] = locus_tab_swissprot_hits(self.db, self.seqid)
 
         if optional2status.get("BLAST_refseq", False):
-            context.update(tab_get_refseq_homologs(self.db, [self.seqid]))
+            context["refseq"] = tab_get_refseq_homologs(self.db, [self.seqid])
 
         if optional2status.get("gi", False):
             context.update(get_genomic_island(self.db, self.seqid, context["gene_pos"]))
@@ -882,7 +880,7 @@ class Orthogroup(ViewBase):
             )
 
         if optional2status.get("BLAST_refseq", False):
-            context.update(tab_get_refseq_homologs(self.db, self.seqids))
+            context["refseq"] = tab_get_refseq_homologs(self.db, self.seqids)
 
         context.update(tab_lengths(n_homologues, self.og_annot))
         context.update(

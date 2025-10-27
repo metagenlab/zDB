@@ -62,10 +62,10 @@
 
               {% endif %}
 
-              {% if optional2status|keyvalue:"BLAST_refseq" and n_refseq_homologs > 0 %}
+              {% if optional2status|keyvalue:"BLAST_refseq" and refseq.n_refseq_homologs > 0 %}
                 <li>
                   <a href="#refseq_homologs_tab" data-toggle="tab">
-                    RefSeq homologs <span class="badge">{{n_refseq_homologs}}</span>
+                    RefSeq homologs <span class="badge">{{refseq.n_refseq_homologs}}</span>
                   </a>
                 </li>
               {% endif %}
@@ -143,29 +143,11 @@
                 </div>
               </div>
 
+
               <div class="tab-pane" id="refseq_homologs_tab">
-                <br>
-                <ul>
-                 <li>Number of RefSeq hits: {{n_refseq_homologs}} </li>
-                </ul>
-                <table id="blast_nr_table" class="table">
-                  <thead>
-                    <tr>
-                      {% for entry in refseq_headers %}
-                        <th> {{entry}} </th>
-                      {% endfor %}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for values in blast_data %}
-                      <tr>
-                        {% for entry in values %}
-                          <td>{{entry|safe}}</td>
-                        {% endfor %}
-                      </tr>
-                    {%  endfor %}
-                  </tbody>
-                </table>
+                <div class="col-md-12 col-lg-10" style="padding-top:20px">
+                  {% include "chlamdb/result_table.html" with results=refseq %}
+                </div>
               </div>
 
               <div class="tab-pane active" id="main_tab" style="padding-left: 15px;padding-top:20px">

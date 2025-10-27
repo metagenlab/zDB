@@ -50,10 +50,10 @@
                     <li><a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a></li>
                   {% endif %}
 
-                  {% if optional2status|keyvalue:"BLAST_refseq" and n_refseq_homologs > 0 %}
+                  {% if optional2status|keyvalue:"BLAST_refseq" and refseq.n_refseq_homologs > 0 %}
                     <li>
                       <a href="#refseq_homologs_tab" data-toggle="tab">
-                        RefSeq homologs <span class="badge">{{n_refseq_homologs}}</span>
+                        RefSeq homologs <span class="badge">{{refseq.n_refseq_homologs}}</span>
                       </a>
                     </li>
                   {% endif %}
@@ -111,28 +111,7 @@
                   </div>
 
                   <div class="tab-pane" id="refseq_homologs_tab">
-                    <br>
-                    <ul>
-                    <li>Number of RefSeq hits: {{n_refseq_homologs}} </li>
-                    </ul>
-                    <table id="blast_nr_table" class="table">
-                      <thead>
-                        <tr>
-                          {% for entry in refseq_headers %}
-                            <th> {{entry}} </th>
-                          {% endfor %}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {% for values in blast_data %}
-                          <tr>
-                            {% for entry in values %}
-                              <td>{{entry|safe}}</td>
-                            {% endfor %}
-                          </tr>
-                        {%  endfor %}
-                      </tbody>
-                    </table>
+                    {% include "chlamdb/result_table.html" with results=refseq %}
                   </div>
 
                   <div class="tab-pane active" id="overview_tab">
