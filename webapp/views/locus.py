@@ -462,10 +462,16 @@ def locus_tab_swissprot_hits(db, seqid):
     }
 
 
-def tab_get_refseq_homologs(db, seqid):
-    refseq_hits = db.get_refseq_hits([seqid]).set_index("match_id")
+def tab_get_refseq_homologs(db, seqids):
+    refseq_hits = db.get_refseq_hits(seqids).set_index("match_id")
     refseq_hits_infos = db.get_refseq_matches_info(refseq_hits.index.tolist())
-    all_infos = refseq_hits.join(refseq_hits_infos)
+
+    # W only keep every RefSeq accession once, picking the match with highest scores.
+    all_infos = (
+        refseq_hits.join(refseq_hits_infos)
+        .sort_values(["bitscore", "pident", "length"], ascending=[False, False, False])
+        .drop_duplicates(subset="accession")
+    )
 
     header = [
         "Refseq accession",
@@ -493,7 +499,7 @@ def tab_get_refseq_homologs(db, seqid):
             )
         )
     return {
-        "n_refseq_homologs": len(refseq_hits),
+        "n_refseq_homologs": len(all_infos),
         "refseq_headers": header,
         "blast_data": entries,
     }
@@ -747,7 +753,7 @@ class LocusX(ViewBase):
             context["swissprot"] = locus_tab_swissprot_hits(self.db, self.seqid)
 
         if optional2status.get("BLAST_refseq", False):
-            context.update(tab_get_refseq_homologs(self.db, self.seqid))
+            context.update(tab_get_refseq_homologs(self.db, [self.seqid]))
 
         if optional2status.get("gi", False):
             context.update(get_genomic_island(self.db, self.seqid, context["gene_pos"]))
@@ -874,6 +880,9 @@ class Orthogroup(ViewBase):
             context["result_tables"].append(
                 og_tab_get_swissprot_homologs(self.db, self.og_annot)
             )
+
+        if optional2status.get("BLAST_refseq", False):
+            context.update(tab_get_refseq_homologs(self.db, self.seqids))
 
         context.update(tab_lengths(n_homologues, self.og_annot))
         context.update(
