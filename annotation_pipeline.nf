@@ -729,7 +729,7 @@ process matrix_to_abc {
 }
 
 process cluster_gis {
-    label 'process_medium'
+    label 'process_low'
     container "$params.mcl_container"
     conda "$baseDir/conda/mcl.yaml"
 
