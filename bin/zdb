@@ -576,7 +576,7 @@ elif [[ "$1" == "run" ]]; then
 				echo " --gi: perform gi (genomic islands) annotation"
 				echo " --og_seq_aligner: the sequence aligner to use for orthogroup prediction (blast or diamond, defaults to diamond)"
 				echo " --ref_dir: directory where the reference databases were setup up (default zdb_ref)"
-				echo " --cpu: number of parallel processes allowed (default 8)"
+				echo " --cpu: number of parallel processes allowed (default 16)"
 				echo " --mem: max memory usage allowed (default 8GB)"
 				echo " --num_missing: allows for missing genomes for the determination of core orthogroups (default 0)"
 				echo " --singularity_dir: the directory where the singularity images are downloaded (default singularity in current directory)"

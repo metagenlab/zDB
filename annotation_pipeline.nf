@@ -68,6 +68,7 @@ str_pythonized_params = gen_python_args()
 
 process check_reference_databases {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -89,6 +90,7 @@ process check_reference_databases {
 
 process check_gbk {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -115,6 +117,7 @@ process check_gbk {
 }
 
 process convert_gbk {
+  label 'process_single'
   container "$params.annotation_container"
   conda "$baseDir/conda/annotation.yaml"
 
@@ -140,6 +143,7 @@ process convert_gbk {
 
 
 process get_nr_sequences {
+  label 'process_single'
   container "$params.annotation_container"
   conda "$baseDir/conda/annotation.yaml"
 
@@ -164,6 +168,7 @@ process get_nr_sequences {
 
 
 process pfam_scan {
+    label 'process_low'
     container "$params.pfam_scan_container"
     conda "$baseDir/conda/pfam_scan.yaml"
 
@@ -181,6 +186,7 @@ process pfam_scan {
 }
 
 process makeblastdb {
+    label 'process_single'
     container "$params.blast_container"
     conda "$baseDir/conda/blast.yaml"
     publishDir "${params.results_dir}/blast_DB/$workflow.runName/${file_type}", mode: 'copy'
@@ -202,6 +208,7 @@ process makeblastdb {
 }
 
 process orthofinder {
+  label 'process_very_high'
   container "$params.orthofinder_container"
   conda "$baseDir/conda/orthofinder.yaml"
 
@@ -228,6 +235,7 @@ process orthofinder {
 }
 
 process orthogroups2fasta {
+  label 'process_single'
   container "$params.annotation_container"
   conda "$baseDir/conda/annotation.yaml"
 
@@ -246,6 +254,7 @@ process orthogroups2fasta {
 }
 
 process align_with_mafft {
+  label 'process_single'
   container "$params.mafft_container"
   conda "$baseDir/conda/mafft.yaml"
   publishDir "${params.results_dir}/alignments/$workflow.runName", mode: "copy"
@@ -267,6 +276,7 @@ process align_with_mafft {
 
 process identity_calculation {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -290,6 +300,7 @@ process identity_calculation {
 }
 
 process orthogroups_phylogeny_with_fasttree3 {
+  label 'process_single'
   container "$params.fasttree_container"
   conda "$baseDir/conda/fasttree.yaml"
   publishDir "${params.results_dir}/gene_phylogenies/$workflow.runName"
@@ -310,6 +321,7 @@ process orthogroups_phylogeny_with_fasttree3 {
 
 process get_core_orthogroups {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -335,6 +347,7 @@ process get_core_orthogroups {
 // TODO: merge with get_core_orthogroups
 process concatenate_core_orthogroups {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -356,6 +369,7 @@ process concatenate_core_orthogroups {
 }
 
 process build_core_phylogeny_with_fasttree {
+  label 'process_single'
   container "$params.fasttree_container"
   conda "$baseDir/conda/fasttree.yaml"
   publishDir "${params.results_dir}/gene_phylogenies/$workflow.runName"
@@ -373,6 +387,7 @@ process build_core_phylogeny_with_fasttree {
 }
 
 process checkm_analyse {
+  label 'process_single'
   container "$params.checkm_container"
   conda "$baseDir/conda/checkm.yaml"
 
@@ -388,6 +403,7 @@ process checkm_analyse {
 }
 
 process rpsblast_COG {
+  label 'process_single'
   container "$params.blast_container"
   conda "$baseDir/conda/blast.yaml"
 
@@ -401,12 +417,12 @@ process rpsblast_COG {
   n = seq.name
   result_file = "${n}.tab"
   """
-  rpsblast -db cog/cog_db -query $seq -outfmt 6 -evalue 0.001 \
-            -num_threads ${task.cpus} > ${result_file}
+  rpsblast -db cog/cog_db -query $seq -outfmt 6 -evalue 0.001 > ${result_file}
   """
 }
 
 process blast_swissprot {
+  label 'process_low'
   container "$params.blast_container"
   conda "$baseDir/conda/blast.yaml"
 
@@ -426,6 +442,7 @@ process blast_swissprot {
 }
 
 process diamond_refseq {
+  label 'process_high'
   container "$params.diamond_container"
   conda "$baseDir/conda/diamond.yaml"
 
@@ -446,6 +463,7 @@ process diamond_refseq {
 }
 
 process execute_kofamscan {
+  label 'process_low'
   container "$params.kegg_container"
   conda "$baseDir/conda/kofamscan.yaml"
 
@@ -465,6 +483,7 @@ process execute_kofamscan {
 }
 
 process prepare_amrscan {
+  label 'process_single'
   container "$params.ncbi_amr_container"
   conda "$baseDir/conda/amrfinderplus.yaml"
 
@@ -485,6 +504,7 @@ process prepare_amrscan {
 }
 
 process execute_amrscan {
+  label 'process_low'
   container "$params.ncbi_amr_container"
   conda "$baseDir/conda/amrfinderplus.yaml"
 
@@ -498,11 +518,12 @@ process execute_amrscan {
   script:
   n = seq.name
   """
-  amrfinder --plus -p ${n} > amrfinder_results_${n}.tab
+  amrfinder --threads ${task.cpus} --plus -p ${n} > amrfinder_results_${n}.tab
   """
 }
 
 process blast_vfdb {
+  label 'process_low'
   container "$params.blast_container"
   conda "$baseDir/conda/blast.yaml"
 
@@ -524,6 +545,7 @@ process blast_vfdb {
 }
 
 process split_contigs {
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -545,6 +567,7 @@ process split_contigs {
 
 
 process execute_islandpath {
+    label 'process_single'
     conda "$baseDir/conda/islandpath.yaml"
     container "$params.islandpath_container"
     errorStrategy 'ignore'
@@ -564,6 +587,7 @@ process execute_islandpath {
 }
 
 process gff_to_fasta {
+    label 'process_single'
     conda "$baseDir/conda/annotation.yaml"
     container "$params.annotation_container"
 
@@ -582,6 +606,7 @@ process gff_to_fasta {
 }
 
 process blast_gis {
+  label 'process_low'
   container "$params.blast_container"
   conda "$baseDir/conda/blast.yaml"
 
@@ -603,6 +628,7 @@ process blast_gis {
 }
 
 process extract_gis_hits {
+    label 'process_single'
     label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
@@ -627,6 +653,7 @@ process extract_gis_hits {
 }
 
 process gi_hits_to_fasta {
+    label 'process_single'
     label 'mount_basedir'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
@@ -649,6 +676,7 @@ process gi_hits_to_fasta {
 }
 
 process compare_gis {
+    label 'process_medium'
     container "$params.sourmash_container"
     conda "$baseDir/conda/sourmash.yaml"
 
@@ -674,6 +702,7 @@ process compare_gis {
 
 process matrix_to_abc {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -700,6 +729,7 @@ process matrix_to_abc {
 }
 
 process cluster_gis {
+    label 'process_low'
     container "$params.mcl_container"
     conda "$baseDir/conda/mcl.yaml"
 
@@ -718,6 +748,7 @@ process cluster_gis {
 
 process setup_db {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -738,6 +769,7 @@ process setup_db {
 
 process load_base_db {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -801,6 +833,7 @@ process load_base_db {
 
 process load_refseq_results {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
     input:
@@ -825,6 +858,7 @@ process load_refseq_results {
 }
 
 process align_refseq_BBH_with_mafft {
+  label 'process_single'
   container "$params.mafft_container"
   conda "$baseDir/conda/mafft.yaml"
 
@@ -844,6 +878,7 @@ process align_refseq_BBH_with_mafft {
 }
 
 process orthogroup_refseq_BBH_phylogeny_with_fasttree {
+  label 'process_single'
   container "$params.fasttree_container"
   conda "$baseDir/conda/fasttree.yaml"
 
@@ -864,6 +899,7 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 
 process load_BBH_phylogenies {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -889,6 +925,7 @@ process load_BBH_phylogenies {
 
 process load_COG_into_db {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -915,6 +952,7 @@ process load_COG_into_db {
 
 process load_KO_into_db {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -943,6 +981,7 @@ process load_KO_into_db {
 
 process load_PFAM_info_db {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -969,6 +1008,7 @@ process load_PFAM_info_db {
 
 process load_swissprot_hits_into_db {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -995,6 +1035,7 @@ process load_swissprot_hits_into_db {
 
 process load_amr_into_db {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -1020,6 +1061,7 @@ process load_amr_into_db {
 
 process load_vfdb_hits_into_db {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -1047,6 +1089,7 @@ process load_vfdb_hits_into_db {
 
 process load_gis_into_db {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -1070,6 +1113,7 @@ process load_gis_into_db {
 
 process create_chlamdb_search_index {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -1093,6 +1137,7 @@ process create_chlamdb_search_index {
 }
 
 process cleanup {
+    label 'process_single'
     input:
         path index
         path db
@@ -1132,6 +1177,7 @@ process cleanup {
 
 
 process add_index_to_faa_files {
+    label 'process_single'
     input:
         path faa_files
 

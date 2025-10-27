@@ -16,7 +16,7 @@ source:
 
 requirements:
   run:
-    - nextflow >=21.04.0,<=22.10.8
+    - nextflow >=24.04.0
 
 test:
   commands:

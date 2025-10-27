@@ -1,6 +1,7 @@
 
 process setup_base_db {
     label 'mount_basedir'
+    label 'process_single'
     container "$params.annotation_container"
     conda "$baseDir/conda/annotation.yaml"
 
@@ -17,6 +18,7 @@ process setup_base_db {
 
 
 process download_cog_cdd {
+    label 'process_single'
 
     output:
         tuple path("COG*.smp"), path("Cog.pn"), path("cdd.info")
@@ -31,6 +33,8 @@ process download_cog_cdd {
 
 
 process setup_cog_cdd {
+    label 'process_single'
+
     container "$params.blast_container"
     conda "$baseDir/conda/blast.yaml"
 
@@ -55,6 +59,7 @@ process setup_cog_cdd {
 
 process download_refseq {
     publishDir "$params.refseq_db", mode: "copy"
+    label 'process_single'
 
     output:
         tuple path("refseq_nr.fasta"), path("RELEASE_NUMBER")
@@ -98,6 +103,8 @@ process download_refseq {
 
 
 process diamond_refseq {
+    label 'process_single'
+
     publishDir "$params.refseq_db", mode: "move"
     container "$params.diamond_container"
 
@@ -115,6 +122,7 @@ process diamond_refseq {
 
 
 process download_pfam_db {
+    label 'process_single'
 
     output:
         tuple path("Pfam-A.hmm"), path("Pfam-A.hmm.dat"), path("Pfam.version")
@@ -132,6 +140,8 @@ process download_pfam_db {
 
 
 process prepare_hmm {
+    label 'process_single'
+
     container "$params.pfam_scan_container"
     conda "$baseDir/conda/pfam_scan.yaml"
 
@@ -154,6 +164,8 @@ process prepare_hmm {
 
 
 process download_ko_profiles {
+    label 'process_single'
+
     publishDir "$params.ko_db", mode: "move"
 
     output:
@@ -176,6 +188,7 @@ process download_ko_profiles {
 
 
 process download_swissprot {
+    label 'process_single'
 
     output:
         tuple path("swissprot.fasta"), path("relnotes.txt")
@@ -191,6 +204,8 @@ process download_swissprot {
 
 
 process prepare_swissprot {
+    label 'process_single'
+
     container "$params.blast_container"
     conda "$baseDir/conda/blast.yaml"
 
@@ -209,6 +224,7 @@ process prepare_swissprot {
 }
 
 process download_vfdb {
+    label 'process_single'
 
     output:
         tuple path("vfdb.fasta"), path("VFs.xls")
@@ -225,6 +241,8 @@ process download_vfdb {
 }
 
 process prepare_vfdb {
+    label 'process_single'
+    
     container "$params.blast_container"
     conda "$baseDir/conda/blast.yaml"
 
