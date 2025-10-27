@@ -50,6 +50,14 @@
                     <li><a href="#og_phylogeny" data-toggle="tab" >Orthogroup phylogeny</a></li>
                   {% endif %}
 
+                  {% if optional2status|keyvalue:"BLAST_refseq" and refseq.n_refseq_homologs > 0 %}
+                    <li>
+                      <a href="#refseq_homologs_tab" data-toggle="tab">
+                        RefSeq homologs <span class="badge">{{refseq.n_refseq_homologs}}</span>
+                      </a>
+                    </li>
+                  {% endif %}
+
                   {% if has_refseq_phylo and optional2status|keyvalue:"BBH_phylogenies" %}
                     <li><a href="#refseq_phylogeny" data-toggle="tab" >RefSeq best hits phylogeny</a></li>
                   {% endif %}
@@ -100,6 +108,10 @@
                         <i class="fa fa-download"></i> Download SVG
                       </a>
                     </div>
+                  </div>
+
+                  <div class="tab-pane" id="refseq_homologs_tab">
+                    {% include "chlamdb/result_table.html" with results=refseq %}
                   </div>
 
                   <div class="tab-pane active" id="overview_tab">

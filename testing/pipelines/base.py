@@ -16,7 +16,6 @@ class BaseTestCase(TestCase):
 
 class BasePipelineTestCase(BaseTestCase):
     nf_filename = None
-    ref_db_dir = None
 
     def setUp(self):
         super(BasePipelineTestCase, self).setUp()
@@ -24,6 +23,8 @@ class BasePipelineTestCase(BaseTestCase):
         self.basedir = os.path.dirname(os.path.dirname(self.execution_dir))
         self.nf_file_path = os.path.join(self.basedir, self.nf_filename)
         self.singularity_dir = tempfile.TemporaryDirectory()
+
+        self._ref_db_dir = os.environ.get("ZDB_TEST_REF_DIR")
 
         self.nf_params = {
             "docker": "false",

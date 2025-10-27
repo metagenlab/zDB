@@ -19,6 +19,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Add RefSeq homologs tab to orthogroup view. ([#203](https://github.com/metagenlab/zDB/pull/203)) (Niklaus Johner)
+- Add RefSeq best hit phylogeny to the CLI. ([#203](https://github.com/metagenlab/zDB/pull/203)) (Niklaus Johner)
 - Add possibility to download an SVG of the circos map. ([#199](https://github.com/metagenlab/zDB/pull/199)) (Niklaus Johner)
 
 ## 1.3.10 - 2025-09-03

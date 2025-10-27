@@ -7,13 +7,13 @@ from testing.pipelines.base import BasePipelineTestCase
 
 class TestDBSetupPipeline(BasePipelineTestCase):
     nf_filename = "db_setup.nf"
-    _ref_db_dir = None
 
     @property
     def ref_db_dir(self):
         if self._ref_db_dir is None:
-            self._ref_db_dir = tempfile.TemporaryDirectory()
-        return self._ref_db_dir.name
+            self.tmpdir = tempfile.TemporaryDirectory()
+            self._ref_db_dir = self.tmpdir.name
+        return self._ref_db_dir
 
     def assert_created_files(self, proc, files):
         created_files = os.listdir(proc.path)
@@ -173,4 +173,24 @@ class TestDBSetupPipeline(BasePipelineTestCase):
         self.assert_created_files(execution.process_executions[1], [])
         self.assertItemsEqual(
             expected_files, os.listdir(os.path.join(self.ref_db_dir, "vfdb"))
+        )
+
+    def test_creating_refseq_db(self):
+        self.nf_params["diamond_refseq"] = "true"
+        execution = self.execute_pipeline()
+        self.assert_success(execution)
+
+        self.assertEqual(
+            [proc.name for proc in execution.process_executions],
+            ["setup_refseq_db:download_refseq", "setup_refseq_db:diamond_refseq"],
+        )
+
+        expected_files = [
+            "refseq_nr.dmnd",
+            "refseq_nr.fasta",
+            "RELEASE_NUMBER",
+        ]
+        # Files are moved to db directory
+        self.assertItemsEqual(
+            expected_files, os.listdir(os.path.join(self.ref_db_dir, "refseq"))
         )

@@ -137,6 +137,7 @@ The following databases can be downloaded:
 --pfam: downloads and sets up the hmm profiles of the PFAM protein domains
 --vfdb: downloads and sets up the virulence factor database (VFDB)
 --swissprot: downloads and indexes the swissprot database
+--refseq: downloads and indexes the refseq database
 ```
 
 Moreover, before your first run, you will need to prepare the database skeleton for zDB. This is done using the ```zdb setup``` command with the ``--setup_base_db`` flag.
@@ -180,7 +181,7 @@ Several options are available and allow you to customize the run.
 
 By default, the analysis are run in apptainer containers, but you can change this by using the ```--conda``` or ```--docker``` flags to have them run in conda environments or docker containers, respectively. If apptainer is enabled, the containers will have to be downloaded. By default, they are stored in the apptainer folder of the current directory, but this can be changed using the ```--singularity_dir``` option. This might be useful if you want to share containers between analyses.
 
-If the databases were set up, additional analyses can also be enabled with the ```--ko```, ```--cog```, ```--pfam```, ```--vfdb``` and ```--swissprot``` flags. The ```--amr``` flag will add annotations of antimicrobial resistance genes (no database needed). The directory (by default zdb_ref in the current directory) where the database were installed can be specified with the ```--ref_dir``` option.
+If the databases were set up, additional analyses can also be enabled with the ```--ko```, ```--cog```, ```--pfam```, ```--vfdb```, ```--swissprot``` and ```--refseq``` flags. The ```--amr``` flag will add annotations of antimicrobial resistance genes (no database needed). The directory (by default zdb_ref in the current directory) where the database were installed can be specified with the ```--ref_dir``` option.
 
 Other options include:
 ```
@@ -319,6 +320,11 @@ Careful though with the nextflow pipeline tests:
 You can run a single file, class or test by using its dotted path, e.g.
 ```
 python -m unittest testing.pipelines.test_db_setup.TestDBSetupPipeline.test_setup_base_db
+```
+
+To set a custom directory for the reference databases you can set the `ZDB_TEST_REF_DIR` environment variable
+```
+export ZDB_TEST_REF_DIR=/path/to/my/refdir
 ```
 
 #### Webapp

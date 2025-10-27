@@ -151,7 +151,7 @@ def parse_record(record):
     return prot_descr, organism
 
 
-def load_refseq_matches_infos(args, lst_diamond_files, db_file):
+def load_refseq_matches_infos(args, lst_diamond_files, refseq_db, refseq_version, db_file):
     db = DB.load_db(db_file, args)
     columns = [
         "str_hsh",
@@ -169,10 +169,7 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     ]
 
     print("Reading tsvs", flush=True)
-    all_data = pd.DataFrame(columns=columns)
-    for tsv in lst_diamond_files:
-        hit_table = pd.read_csv(tsv, sep="\t", names=columns, header=None)
-        all_data = all_data.append(hit_table)
+    all_data = pd.concat([pd.read_csv(tsv, sep="\t", names=columns, header=None) for tsv in lst_diamond_files])
     all_data.accession = all_data.accession.map(remove_accession_version)
     all_data.str_hsh = all_data.str_hsh.map(simplify_hash)
 
@@ -181,13 +178,11 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
     }
 
     print("Extracting records for refseq", flush=True)
-    refseq = args["refseq_db"] + "/merged.faa"
-    get_prot(refseq, hsh_accession_to_record)
+    get_prot(refseq_db, hsh_accession_to_record)
     hsh_accession_to_match_id = {}
 
     db.create_diamond_refseq_match_id()
     refseq_match_id = []
-
     print("Loading refseq matches id", flush=True)
     for sseqid, (accession, record) in enumerate(hsh_accession_to_record.items()):
         hsh_accession_to_match_id[accession] = sseqid
@@ -219,7 +214,7 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
             "bitscore",
         ]
     ]
-    db.load_refseq_hits(to_load.values.tolist())
+    db.load_refseq_hits(to_load.to_numpy(dtype="object").tolist())
     db.create_refseq_hits_indices()
     db.commit()
 
@@ -245,7 +240,13 @@ def load_refseq_matches_infos(args, lst_diamond_files, db_file):
                 break
 
         SeqIO.write(to_keep + sequences, f"{og}_nr_hits.faa", "fasta")
-    db.set_status_in_config_table("BLAST_database", 1)
+    db.set_status_in_config_table("BLAST_refseq", 1)
+    db.commit()
+
+    # Determine reference DB version
+    with open(refseq_version) as fh:
+        version = fh.readline().strip()
+    db.load_data_into_table("versions", [("RefSeq", version)])
     db.commit()
 
 

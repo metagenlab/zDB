@@ -41,7 +41,7 @@ class MissingReferenceDatabase(Exception):
 
 
 def check_reference_databases(params):
-    db_dir = os.path.split(params.get("base_db"))[-1]
+    db_dir = os.path.split(params.get("base_db").rstrip(os.sep))[-1]
     if params.get("cog"):
         if not os.path.isdir(os.path.join(db_dir, "cog")):
             raise MissingReferenceDatabase(
@@ -60,11 +60,17 @@ def check_reference_databases(params):
                 "Pfam database could not be found. "
                 'Please set it up with "zdb setup --pfam"'
             )
-    if params.get("swissprot"):
+    if params.get("blast_swissprot"):
         if not os.path.isdir(os.path.join(db_dir, "uniprot", "swissprot")):
             raise MissingReferenceDatabase(
                 "Swissprot database could not be found. "
                 'Please set it up with "zdb setup --swissprot"'
+            )
+    if params.get("diamond_refseq"):
+        if not os.path.isdir(os.path.join(db_dir, "refseq")):
+            raise MissingReferenceDatabase(
+                "RefSeq database could not be found. "
+                'Please set it up with "zdb setup --refseq"'
             )
     if params.get("vfdb"):
         if not os.path.isdir(os.path.join(db_dir, "vfdb")):
