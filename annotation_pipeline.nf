@@ -403,7 +403,7 @@ process checkm_analyse {
 }
 
 process rpsblast_COG {
-  label 'process_low'
+  label 'process_single'
   container "$params.blast_container"
   conda "$baseDir/conda/blast.yaml"
 
@@ -417,8 +417,7 @@ process rpsblast_COG {
   n = seq.name
   result_file = "${n}.tab"
   """
-  rpsblast -db cog/cog_db -query $seq -outfmt 6 -evalue 0.001 \
-            -num_threads ${task.cpus} > ${result_file}
+  rpsblast -db cog/cog_db -query $seq -outfmt 6 -evalue 0.001 > ${result_file}
   """
 }
 
