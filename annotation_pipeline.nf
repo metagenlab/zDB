@@ -208,7 +208,7 @@ process makeblastdb {
 }
 
 process orthofinder {
-  label 'process_high'
+  label 'process_very_high'
   container "$params.orthofinder_container"
   conda "$baseDir/conda/orthofinder.yaml"
 
