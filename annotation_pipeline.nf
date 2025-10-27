@@ -518,7 +518,7 @@ process execute_amrscan {
   script:
   n = seq.name
   """
-  amrfinder --thread ${task.cpus} --plus -p ${n} > amrfinder_results_${n}.tab
+  amrfinder --threads ${task.cpus} --plus -p ${n} > amrfinder_results_${n}.tab
   """
 }
 
