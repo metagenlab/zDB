@@ -12,6 +12,7 @@ class TestCondaEnvironments(BaseTestCase):
         "annotation.yaml": 'python -c "import Bio"',
         "blast.yaml": "blastp -h",
         "checkm.yaml": "checkm -h",
+        "diamond.yaml": "diamond --help",
         "fasttree.yaml": "fasttree -expert",
         "islandpath.yaml": "islandpath",
         "kofamscan.yaml": "exec_annotation -h",
