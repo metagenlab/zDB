@@ -8,6 +8,14 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+### Changed
+
+### Added
+
+## 1.3.11 - 2025-10-28
+
+### Fixed
+
 - Re-add JS libraries accidentally removed and fix various small JS errors. ([#196](https://github.com/metagenlab/zDB/pull/196)) (Niklaus Johner)
 - Fix broken links for genomic islands and features with a mapped label on circos map. ([#198](https://github.com/metagenlab/zDB/pull/198)) (Niklaus Johner)
 - Fix genomic island prediction for short contigs ([#200](https://github.com/metagenlab/zDB/pull/200)) (Niklaus Johner)

@@ -69,7 +69,7 @@ NEXTFLOW_DIR="${CONDA}/share/zdb-${VERSION}/"
 and replace it by the directory where you downloaded the project (this should point to the directory where zdb's nextflow.config is located).
 Add zdb's bin directory to PATH and voila, zdb should run smoothly.
 
-Note that zDB depends on nextflow (version 21.0 or higher) and apptainer, so you'll need to install these packages, e.g. with conda:
+Note that zDB depends on nextflow (version 24.04 or higher) and apptainer, so you'll need to install these packages, e.g. with conda:
 - `conda env create -p ./env -f conda/main.yaml`
 - `conda activate ./env`
 
