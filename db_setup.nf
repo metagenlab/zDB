@@ -20,6 +20,8 @@ process setup_base_db {
 process download_cog_cdd {
     label 'process_single'
 
+    publishDir "$params.cog_db", mode: "copy", pattern: 'cdd.info'
+
     output:
         tuple path("COG*.smp"), path("Cog.pn"), path("cdd.info")
 
@@ -46,7 +48,6 @@ process setup_cog_cdd {
     output:
         file "cog_db*"
         file "cdd_to_cog"
-        path("${info}", includeInputs: true)
 
     script:
     """
@@ -124,6 +125,8 @@ process diamond_refseq {
 process download_pfam_db {
     label 'process_single'
 
+    publishDir "$params.pfam_db", mode: "copy"
+
     output:
         tuple path("Pfam-A.hmm"), path("Pfam-A.hmm.dat"), path("Pfam.version")
 
@@ -152,9 +155,6 @@ process prepare_hmm {
 
     output:
         path "${pfam_hmm}.h3*"
-        path("${pfam_hmm}", includeInputs: true)
-        path("${pfam_defs}", includeInputs: true)
-        path("${pfam_version}", includeInputs: true)
 
     script:
     """
@@ -190,6 +190,8 @@ process download_ko_profiles {
 process download_swissprot {
     label 'process_single'
 
+    publishDir "$params.swissprot_db", mode: "copy"
+
     output:
         tuple path("swissprot.fasta"), path("relnotes.txt")
 
@@ -215,7 +217,7 @@ process prepare_swissprot {
         tuple path(swissprot_fasta), path(relnotes)
 
     output:
-        path("*", includeInputs: true)
+        path("*")
 
     script:
     """
@@ -225,6 +227,8 @@ process prepare_swissprot {
 
 process download_vfdb {
     label 'process_single'
+
+    publishDir "$params.vf_db", mode: "copy"
 
     output:
         tuple path("vfdb.fasta"), path("VFs.xls")
@@ -252,7 +256,7 @@ process prepare_vfdb {
         tuple path(vfdb_fasta), path(vf_descr)
 
     output:
-        path("*", includeInputs: true)
+        path("*")
 
     script:
     """
