@@ -113,7 +113,7 @@ def tab_contig(db, seqid):
     qualifiers = db.get_bioentry_qualifiers(bioentry).set_index("term")["value"]
     return {
         "contig_size": contig_size,
-        "contig_topology": qualifiers.get("topology", "linear"),
+        "contig_topology": qualifiers.get("topology", "Undetermined"),
         "contig_is_plasmid": qualifiers["plasmid"] == "1",
         "contig_accession": accession,
     }

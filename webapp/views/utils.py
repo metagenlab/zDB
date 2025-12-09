@@ -423,7 +423,7 @@ def locusx_genomic_region(
     window_size = window_stop - window_start
 
     qualifiers = db.get_bioentry_qualifiers(bioentry).set_index("term")["value"]
-    contig_topology = qualifiers.get("topology", "linear")
+    contig_topology = qualifiers.get("topology", "Undetermined")
     is_circular = contig_topology == "circular"
     df_seqids = db.get_features_location(bioentry, search_on="bioentry_id")
 
