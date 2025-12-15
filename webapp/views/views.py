@@ -246,7 +246,7 @@ class ExtractContigs(BaseViewMixin, View):
             [
                 [
                     bioentry_id,
-                    values["topology"],
+                    values.get("topology", "Undetermined"),
                     "Yes" if values["plasmid"] == "1" else "No",
                 ]
                 for bioentry_id, values in contig_qualifiers.items()
