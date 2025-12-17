@@ -4,7 +4,6 @@ from collections import defaultdict
 import pandas as pd
 from Bio.Seq import Seq
 from BioSQL import BioSeqDatabase
-
 from lib.queries import GIQueries
 from lib.queries import VFQueries
 
