@@ -1396,8 +1396,10 @@ def prepare_genomic_regions(db, filtered_regions, allow_flips=False):
         bioentry_qualifiers = db.get_bioentry_qualifiers(
             int(region["bioentry_id"][0])
         ).set_index("term")
-        contig_name = bioentry_qualifiers.loc["accessions"].value
         genome_name = bioentry_qualifiers.loc["organism"].value
+        dict_bioentry = db.get_bioentry(int(region["bioentry_id"][0]),
+                "accession")
+        contig_name = dict_bioentry["accession"]
 
         region_name = f"{genome_name} - {contig_name} - {int(start)}:{int(end)}"
         js_val = genomic_region_df_to_js(

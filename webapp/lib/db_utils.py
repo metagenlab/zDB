@@ -4,6 +4,7 @@ from collections import defaultdict
 import pandas as pd
 from Bio.Seq import Seq
 from BioSQL import BioSeqDatabase
+
 from lib.queries import GIQueries
 from lib.queries import VFQueries
 
@@ -2105,6 +2106,24 @@ class DB:
                 cnt = hsh_results[entry_id].get(func, 0)
                 hsh_results[entry_id][func] = cnt + 1
         return hsh_results
+
+    def get_bioentry(self, bioentry_id, terms=("bioentry_id", "accession")):
+        query = (
+            "SELECT * "
+            "FROM bioentry "
+            "WHERE bioentry_id = ?;"
+        )
+        results = self.server.adaptor.execute_and_fetchall(query, [bioentry_id])
+        if len(results) == 0:
+            raise RuntimeError("No bioentry with id "+bioentry_id)
+
+        all_headers = ("bioentry_id", "biodb", "taxid", "name", "accession", 
+                "id", "division", "description", "version")
+        values = {}
+        for val, column_name in zip(results[0], all_headers):
+            if column_name in terms:
+                values[column_name] = val
+        return values
 
     def get_bioentry_length(self, bioentry_id):
         query = "SELECT length FROM biosequence WHERE bioentry_id = ?;"
