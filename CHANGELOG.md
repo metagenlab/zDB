@@ -8,6 +8,7 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix issue where contigs with multiple accessions due to revisions were not displayed in the plotregion. ([#217](https://github.com/metagenlab/zDB/pull/217)) (Bastian Marquis)
 - Prevent crashes in the locus page for CDS in contigs without topology qualifier. ([#215](https://github.com/metagenlab/zDB/pull/215)) (Bastian Marquis)
 
 ### Changed
