@@ -18,7 +18,8 @@ from views import views
 favicon_view = RedirectView.as_view(url="/assets/favicon.ico", permanent=True)
 
 
-urlpatterns = [
+urlpatterns = [        
+    re_path('^robots.txt$', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
     re_path(
         r"^vf_comparison",
         tabular_comparison.VfComparisonView.as_view(),
