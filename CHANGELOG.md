@@ -15,6 +15,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Added
 
+- Protect against crawlers indexing the web application. ([#222](https://github.com/metagenlab/zDB/pull/222)) (Niklaus Johner)
+
 ## 1.3.11 - 2025-10-28
 
 ### Fixed
