@@ -606,6 +606,11 @@ class DB:
         sql = "CREATE INDEX kdko_i ON ko_def(ko_id);"
         self.server.adaptor.execute(sql)
 
+    def get_ko_def_ids(self):
+        """Returns all KO IDs from the ko_def table"""
+        query = "SELECT ko_id FROM ko_def;"
+        return (el[0] for el in self.server.adaptor.execute_and_fetchall(query))
+
     def load_ko_hits(self, data):
         sql = (
             "CREATE TABLE ko_hits ("
@@ -2107,17 +2112,22 @@ class DB:
         return hsh_results
 
     def get_bioentry(self, bioentry_id, terms=("bioentry_id", "accession")):
-        query = (
-            "SELECT * "
-            "FROM bioentry "
-            "WHERE bioentry_id = ?;"
-        )
+        query = "SELECT * FROM bioentry WHERE bioentry_id = ?;"
         results = self.server.adaptor.execute_and_fetchall(query, [bioentry_id])
         if len(results) == 0:
-            raise RuntimeError("No bioentry with id "+bioentry_id)
+            raise RuntimeError("No bioentry with id " + bioentry_id)
 
-        all_headers = ("bioentry_id", "biodb", "taxid", "name", "accession", 
-                "id", "division", "description", "version")
+        all_headers = (
+            "bioentry_id",
+            "biodb",
+            "taxid",
+            "name",
+            "accession",
+            "id",
+            "division",
+            "description",
+            "version",
+        )
         values = {}
         for val, column_name in zip(results[0], all_headers):
             if column_name in terms:
