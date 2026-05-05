@@ -151,7 +151,9 @@ def parse_record(record):
     return prot_descr, organism
 
 
-def load_refseq_matches_infos(args, lst_diamond_files, refseq_db, refseq_version, db_file):
+def load_refseq_matches_infos(
+    args, lst_diamond_files, refseq_db, refseq_version, db_file
+):
     db = DB.load_db(db_file, args)
     columns = [
         "str_hsh",
@@ -169,7 +171,12 @@ def load_refseq_matches_infos(args, lst_diamond_files, refseq_db, refseq_version
     ]
 
     print("Reading tsvs", flush=True)
-    all_data = pd.concat([pd.read_csv(tsv, sep="\t", names=columns, header=None) for tsv in lst_diamond_files])
+    all_data = pd.concat(
+        [
+            pd.read_csv(tsv, sep="\t", names=columns, header=None)
+            for tsv in lst_diamond_files
+        ]
+    )
     all_data.accession = all_data.accession.map(remove_accession_version)
     all_data.str_hsh = all_data.str_hsh.map(simplify_hash)
 
@@ -964,6 +971,8 @@ def load_gis(params, gi_hits, gi_clusters, db_name):
 # only take the hit with the lowest evalue (the first in the list)
 def load_KO(params, ko_files, db_name, ko_db_dir):
     db = DB.load_db(db_name, params)
+    # Get the list of KOs
+    kos_with_def = set(db.get_ko_def_ids())
     data = []
     for ko_file in ko_files:
         curr_hsh = None
@@ -979,8 +988,15 @@ def load_KO(params, ko_files, db_name, ko_db_dir):
                     # skip the entries that were classified as significant, but
                     # with a higher e-value
                     continue
-                else:
-                    curr_hsh = hsh
+                ko = get_ko_id(ko_str)
+                if ko not in kos_with_def:
+                    # Skip KOs missing a definition
+                    print(
+                        f"Warning: found KO hit missing from definition table {ko}. Make sure the base and KO databases are up to date.",
+                        flush=True,
+                    )
+                    continue
+                curr_hsh = hsh
                 ko = get_ko_id(ko_str)
                 thrs = float(thrs_str)
                 score = float(score_str)
