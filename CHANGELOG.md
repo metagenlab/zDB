@@ -19,6 +19,7 @@ to [Common Changelog](https://common-changelog.org)
 - Fix issue where contigs with multiple accessions due to revisions were not displayed in the plotregion. ([#217](https://github.com/metagenlab/zDB/pull/217)) (Bastian Marquis)
 - Prevent crashes in the locus page for CDS in contigs without topology qualifier. ([#215](https://github.com/metagenlab/zDB/pull/215)) (Bastian Marquis)
 - Bump checkm-genome container to 1.2.3 to fix incompatibility with numpy 2. ([#224](https://github.com/metagenlab/zDB/pull/224)) (Niklaus Johner)
+- Bump checkm-genome container to 1.2.5 to fix issues with setuptools. ([#225](https://github.com/metagenlab/zDB/pull/225)) (Niklaus Johner)
 - Fix loading of KO hits when there is an inconsistency between the KEGG REST API and the ko_list. ([#225](https://github.com/metagenlab/zDB/pull/225)) (Niklaus Johner)
 - Use biopython version still containing the Bio.Application modules in webapp environment. ([#226](https://github.com/metagenlab/zDB/pull/226)) (Niklaus Johner)
 
