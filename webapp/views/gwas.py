@@ -181,7 +181,7 @@ class GWASBaseView(View):
 
             tree_path = os.path.join(tmp, "tree.nw")
             tree = Tree(self.db.get_reference_phylogeny())
-            tree.write(format=8, outfile=tree_path)
+            tree.write(parser=9, outfile=tree_path)
 
             # Reset the db connection as it otherwise leads to issues with
             # using an SQL object that was created in a separate thread.
