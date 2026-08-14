@@ -28,7 +28,6 @@ class NoPhylogenyException(Exception):
     too small to have one
     """
 
-    pass
 
 
 class DB:
@@ -1532,7 +1531,6 @@ class DB:
         sql = f"DELETE FROM groups WHERE group_name='{group_name}';"
         self.server.adaptor.execute(sql)
         self.commit()
-        return
 
     def get_group(self, group_name):
         query = f"SELECT * FROM groups WHERE group_name='{group_name}' LIMIT 1;"
@@ -1605,7 +1603,7 @@ class DB:
         hsh_results = {}
         for cog_id, function, cog_description in results:
             hsh_results[cog_id] = []
-            for i in range(0, len(function)):
+            for i in range(len(function)):
                 func = function[i]
                 func_descr = hsh_func_to_description[func]
                 hsh_results[cog_id].append((func, func_descr, cog_description))
@@ -1895,9 +1893,7 @@ class DB:
             values.append(ref_seqid)
 
         if pairs is not None:
-            if og is None:
-                raise RuntimeError("")
-            elif ref_seqid is not None:
+            if og is None or ref_seqid is not None:
                 raise RuntimeError("")
             for curr_og, (id1, id2) in zip(og, pairs):
                 conj = "(orthogroup=? AND ((id_1=? AND id_2=?) OR (id_1=? AND id_2=?)))"

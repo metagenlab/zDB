@@ -53,7 +53,7 @@ class GWASBaseView(View):
 
     @property
     def table_data_accessors(self):
-        mixin_accessors = super(GWASBaseView, self).table_data_accessors
+        mixin_accessors = super().table_data_accessors
         return [mixin_accessors[0], *self._gwas_data_accessors, *mixin_accessors[1:]]
 
     def get_result_tabs(self, results):
@@ -78,7 +78,7 @@ class GWASBaseView(View):
 
     def dispatch(self, request, *args, **kwargs):
         self.form_class = make_gwas_form(self.db)
-        return super(GWASBaseView, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         self.form = self.form_class()

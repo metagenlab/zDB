@@ -288,7 +288,7 @@ class AnnotationTableBase:
 
     @property
     def table_data_accessors(self):
-        accessors = super(AnnotationTableBase, self).table_data_accessors.copy()
+        accessors = super().table_data_accessors.copy()
         if self.include_occurences:
             accessors.insert(1, "occurences")
         return accessors
@@ -326,7 +326,7 @@ class KoAnnotationTable(AnnotationTableBase, KoViewMixin):
 class CogAnnotationTable(AnnotationTableBase, CogViewMixin):
     @property
     def table_data_accessors(self):
-        accessors = super(CogAnnotationTable, self).table_data_accessors
+        accessors = super().table_data_accessors
         accessors.insert(2, "function")
         return accessors
 
@@ -734,7 +734,7 @@ class LocusX(ViewBase):
         # need to convert from numpy64 to int
         self.og_id = int(og_inf.loc[self.seqid].orthogroup)
 
-        super(LocusX, self).get(request, context)
+        super().get(request, context)
 
         # a bit of an hack
         translation = self.db.get_translation(self.seqid)
@@ -850,7 +850,7 @@ class Orthogroup(ViewBase):
         except Exception:
             return self.render_invalid(request, menu=True)
 
-        super(Orthogroup, self).get(request, context)
+        super().get(request, context)
 
         if len(self.og_counts.index) == 0:
             return self.render_invalid(request)

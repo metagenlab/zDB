@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from collections import namedtuple
 from io import StringIO
 
@@ -177,7 +176,7 @@ def make_metabo_from(db, type_choices=None, action=""):
                 )
             )
 
-            super(MetaboForm, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
         def get_choices(self):
             targets = self.cleaned_data["targets"]
@@ -267,7 +266,7 @@ def make_circos_form(db):
 
         labels_help = f"""
         Coma separated list of entries or 'entry:custom_label' pairs.
-        Entry IDs can be COG, KO, Pfam, VF, AMR, orthogroups of loci.
+        Entry IDs can be COG, KO, Pfam, VF, AMR, orthogroups or loci.
         <br>If set, only labels from that mapping will be displayed.<br>
         Example: {example_label_mapping}"""
 
@@ -497,10 +496,10 @@ def make_extract_form(db, action, plasmid=False, label="Orthologs"):
                 )
             )
 
-            super(ExtractForm, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
         def clean(self):
-            cleaned_data = super(ExtractForm, self).clean()
+            cleaned_data = super().clean()
 
             self.included_taxids, self.included_plasmids = self.extract_choices(
                 self.cleaned_data["orthologs_in"],
@@ -556,7 +555,7 @@ def make_choice_form(choices, fieldname, action, methods=None):
                     css_class="col-lg-12 col-md-12 col-sm-12",
                 )
             )
-            super(ChoiceForm, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
     return ChoiceForm
 
@@ -660,7 +659,7 @@ def make_blast_form(biodb):
                     css_class="col-lg-10 col-md-10 col-sm-12",
                 )
             )
-            super(BlastForm, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
         def _get_records(self):
             input_sequence = self.cleaned_data["blast_input"]
@@ -810,10 +809,10 @@ def make_gwas_form(biodb):
                 )
             )
             self.db = biodb
-            super(GwasForm, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
         def clean(self):
-            cleaned_data = super(GwasForm, self).clean()
+            cleaned_data = super().clean()
             self.phenotype = self.get_phenotype()
             return cleaned_data
 
