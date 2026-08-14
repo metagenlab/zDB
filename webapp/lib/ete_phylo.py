@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-import ete3
-from ete3 import NodeStyle
-from ete3 import StackedBarFace
-from ete3 import TextFace
-from ete3 import Tree
-from ete3 import TreeStyle
+from ete4 import Tree
+from ete4.treeview import NodeStyle
+from ete4.treeview import TreeStyle
+from ete4.treeview.faces import StackedBarFace
+from ete4.treeview.faces import TextFace
 from lib import colors
 from matplotlib.colors import rgb2hex
 
@@ -25,7 +24,7 @@ class EteTree:
     def default_tree(nwck, **drawing_params):
         t = Tree(nwck)
         mid_point = t.get_midpoint_outgroup()
-        if mid_point is not None:
+        if mid_point is not None and mid_point is not t.root:
             t.set_outgroup(mid_point)
         t.ladderize()
         return EteTree(t, **drawing_params)
@@ -34,7 +33,8 @@ class EteTree:
         t = Tree(nwck)
         t.prune([str(i) for i in nodes])
         mid_point = t.get_midpoint_outgroup()
-        t.set_outgroup(mid_point)
+        if mid_point is not t.root:
+            t.set_outgroup(mid_point)
         t.ladderize()
         return EteTree(t, **drawing_params)
 
@@ -83,7 +83,7 @@ class EteTree:
         self.leaf_name_type = leaf_name_type
 
     def render(self, destination, **kwargs):
-        for leaf in self.tree.iter_leaves():
+        for leaf in self.tree.leaves():
             if self.leaves_name is not None:
                 leaf.add_face(self.get_leaf_name(leaf.name), 0, "branch-right")
 
@@ -259,7 +259,7 @@ class MatchingColorColumn(ValueColoredColumn):
         header_params=None,
     ):
         self.to_match = to_match
-        super(MatchingColorColumn, self).__init__(
+        super().__init__(
             values,
             col_func,
             header=header,
@@ -350,7 +350,7 @@ class ReferenceColumn(Column):
 
 class EteTool:
     """
-    Plot ete3 phylogenetic profiles.
+    Plot ete phylogenetic profiles.
 
     - self.add_simple_barplot: add a barplot face from taxon2value dictionnary
     - self.add_text_face: add text face
@@ -374,11 +374,8 @@ class EteTool:
 
         self.rotate = False
 
-        # if not tree instance, considfer it as a path or a newick string
-        print("TREE TYOE:", type(tree_file))
+        # if not tree instance, consider it as a path or a newick string
         if isinstance(tree_file, Tree):
-            self.tree = tree_file
-        elif isinstance(tree_file, ete3.phylo.phylotree.PhyloNode):
             self.tree = tree_file
         else:
             self.tree = Tree(tree_file)
@@ -401,7 +398,7 @@ class EteTool:
         pass
 
     def rename_leaves(self, taxon2new_taxon, keep_original=False, add_face=True):
-        for i, lf in enumerate(self.tree.iter_leaves()):
+        for i, lf in enumerate(self.tree.leaves()):
             if not keep_original:
                 if lf.name in taxon2new_taxon:
                     label = taxon2new_taxon[lf.name]
@@ -427,7 +424,7 @@ class EteTool:
         if continuous_scale:
             color_scale = get_continuous_scale(taxon2value.values())
 
-        for i, lf in enumerate(self.tree.iter_leaves()):
+        for i, lf in enumerate(self.tree.leaves()):
             if lf.name not in taxon2value:
                 n = TextFace("")
             else:
@@ -511,7 +508,7 @@ class EteTool:
         if not color:
             color = self._get_default_barplot_color()
 
-        for i, lf in enumerate(self.tree.iter_leaves()):
+        for i, lf in enumerate(self.tree.leaves()):
             try:
                 value = taxon2value[lf.name]
             except KeyError:
@@ -605,7 +602,7 @@ class EteTool:
         self._add_header(header_name)
 
         # add column
-        for i, lf in enumerate(self.tree.iter_leaves()):
+        for i, lf in enumerate(self.tree.leaves()):
             if lf.name in taxon2text:
                 n = TextFace("%s" % taxon2text[lf.name])
                 if color_scale:
@@ -627,7 +624,7 @@ class EteTool:
 
 class EteToolCompact:
     """
-    Plot ete3 phylogenetic profiles.
+    Plot ete phylogenetic profiles.
 
     - self.add_simple_barplot: add a barplot face from taxon2value dictionnary
     - self.add_heatmap: add column with cells with value + colored background
@@ -643,7 +640,7 @@ class EteToolCompact:
 
         self.tree = Tree(tree_file)
 
-        self.tree_length = len([i for i in self.tree.iter_leaves()])
+        self.tree_length = len(self.tree)
 
         self.text_scale = (self.tree_length) * 0.01  # math.log2
 
@@ -661,7 +658,8 @@ class EteToolCompact:
         # Calculate the midpoint node
         R = self.tree.get_midpoint_outgroup()
         # and set it as tree outgroup
-        self.tree.set_outgroup(R)
+        if R is not self.tree.root:
+            self.tree.set_outgroup(R)
 
         self.tss = TreeStyle()
         self.tss.draw_guiding_lines = True
@@ -696,7 +694,7 @@ class EteToolCompact:
         self.tss.aligned_header.add_face(n, self.column_count - 1 + column_add)
 
     def rename_leaves(self, taxon2new_taxon):
-        for i, lf in enumerate(self.tree.iter_leaves()):
+        for i, lf in enumerate(self.tree.leaves()):
             n = TextFace(
                 taxon2new_taxon[lf.name], fgcolor="black", fsize=12, fstyle="italic"
             )
@@ -795,7 +793,7 @@ class EteToolCompact:
         if not color:
             color = self._get_default_barplot_color()
 
-        for i, lf in enumerate(self.tree.iter_leaves()):
+        for i, lf in enumerate(self.tree.leaves()):
             try:
                 value = taxon2value[lf.name]
             except Exception:
@@ -858,9 +856,9 @@ class EteToolCompact:
             scale = get_categorical_color_scale(taxon2value.values())
             self.add_categorical_colorscale_legend("MLST", scale)
         else:
-            raise IOError("unknown type")
+            raise OSError("unknown type")
 
-        for i, lf in enumerate(self.tree.iter_leaves()):
+        for i, lf in enumerate(self.tree.leaves()):
             n = TextFace("   " * int(self.text_scale))
             if lf.name in taxon2value:
                 value = taxon2value[lf.name]
@@ -884,7 +882,7 @@ class EteToolCompact:
     def remove_labels(
         self,
     ):
-        for i, lf in enumerate(self.tree.iter_leaves()):
+        for i, lf in enumerate(self.tree.leaves()):
             n = TextFace("")
             lf.add_face(n, 0)
 

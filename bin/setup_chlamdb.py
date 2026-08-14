@@ -422,13 +422,13 @@ def load_amr(params, filelist, db_file, version_file):
 # phylogenies in the same table (BBH/gene and reference) and reference them
 # on the orthogroup id and/or a term_id
 def load_BBH_phylogenies(kwargs, lst_orthogroups, db_file):
-    import ete3
+    from ete4 import Tree
 
     db = DB.load_db(db_file, kwargs)
     data = []
 
     for tree in lst_orthogroups:
-        t = ete3.Tree(tree)
+        t = Tree(tree)
         og_id = int(tree.split("_")[0])
         data.append((og_id, t.write()))
     db.create_BBH_phylogeny_table(data)
@@ -440,12 +440,12 @@ def load_gene_phylogenies(kwargs, og_summary, lst_orthogroups, db_file):
     """
     NOTE: the leafs of those tree are locus tags
     """
-    import ete3
+    from ete4 import Tree
 
     db = DB.load_db(db_file, kwargs)
     hsh_ogs = {}
     for tree in lst_orthogroups:
-        t = ete3.Tree(tree)
+        t = Tree(tree)
         og_id = int(tree.split("_")[0][2:])
         hsh_ogs[og_id] = t.write()
 
@@ -463,7 +463,7 @@ def load_gene_phylogenies(kwargs, og_summary, lst_orthogroups, db_file):
 
 
 def load_reference_phylogeny(kwargs, tree, db_file):
-    import ete3
+    from ete4 import Tree
 
     db = DB.load_db(db_file, kwargs)
 
@@ -473,8 +473,8 @@ def load_reference_phylogeny(kwargs, tree, db_file):
     hsh_filename_to_taxon = db.get_filenames_to_taxon_id()
 
     # convert leaf names to taxon_id instead of filename
-    tree = ete3.Tree(newick_string)
-    for leaf in tree.iter_leaves():
+    tree = Tree(newick_string)
+    for leaf in tree.leaves():
         leaf.name = hsh_filename_to_taxon[leaf.name]
 
     db.load_reference_phylogeny(tree.write())

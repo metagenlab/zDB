@@ -45,7 +45,7 @@ Once zDB is installed, you can use it to setup the reference databases, run the 
 - django will be run in native mode, without nginx and gunicorn and should not be used to set up a web-facing database (it is fine for a local access)
 - containers allow us to have a precise control of the environment where the webapp is run; it is less the case for conda environment. Despite our best care, running the webapp in conda might not work due to local differences.
 - *some conda environments have numerous dependencies: to speed the installation, we strongly recommend the use a recent version of conda, which has included the solver from mamba and is much faster*.
-- **Xvfb should be installed on your machine**. The ete3 rendering engine unfortunately relies on Qt, which requires an X server running in headless mode. If you can't install Xvfb, please consider using apptainer containers. We plan on developing our own Javascript tree rendering code to get rid of this dependency.
+- **Xvfb should be installed on your machine**. The ETE rendering engine relies on Qt and requires an X server running in headless mode. If you can't install Xvfb, please consider using apptainer containers. We plan on developing our own Javascript tree rendering code to get rid of this dependency.
 
 If you opt to use apptainer, it can be installed (on Linux) with the following command:
 ```

@@ -74,7 +74,7 @@ fi
 
 xvfb_pid=$!
 
-# This is unfortunately necessary as ete3 uses Qt, which cannot
+# This is unfortunately necessary as ete uses Qt, which cannot
 # run without a display
 export DISPLAY=":${display}"
 

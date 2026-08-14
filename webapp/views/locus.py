@@ -14,10 +14,10 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views import View
-from ete3 import SeqMotifFace
-from ete3 import TextFace
-from ete3 import Tree
-from ete3 import TreeStyle
+from ete4 import Tree
+from ete4.treeview import TreeStyle
+from ete4.treeview.faces import SeqMotifFace
+from ete4.treeview.faces import TextFace
 from lib.db_utils import DB
 from lib.db_utils import NoPhylogenyException
 from lib.ete_phylo import Column
@@ -129,7 +129,7 @@ def tab_og_conservation_tree(db, group, compare_to=None):
 
     tree = Tree(ref_phylogeny)
     R = tree.get_midpoint_outgroup()
-    if R is not None:
+    if R is not None and R is not tree.root:
         tree.set_outgroup(R)
     tree.ladderize()
     e_tree = EteTree(tree)
@@ -210,7 +210,7 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
 def prepare_default_tree(og_phylogeny):
     tree = Tree(og_phylogeny)
     R = tree.get_midpoint_outgroup()
-    if R is not None:
+    if R is not None and R is not tree.root:
         root = "(midpoint rooted)"
         tree.set_outgroup(R)
     tree.ladderize()
@@ -260,7 +260,7 @@ def tab_og_phylogeny(db, og_id, compare_to=None):
         )
 
     tree, root = prepare_default_tree(og_phylogeny)
-    locuses = [branch.name for branch in tree.iter_leaves()]
+    locuses = [branch.name for branch in tree.leaves()]
     locus_to_genome = db.get_locus_to_genomes(locuses)
 
     og_filename = f"OG{og_id: 07}_mafft.faa"
@@ -510,18 +510,18 @@ def tab_og_best_hits(db, orthogroup, locus=None):
         # no phylogeny for that orthogroup
         return {"has_refseq_phylo": False}
     ete_tree = Tree(refseq_newick)
-    loci = list(leaf.name.split(".")[0] for leaf in ete_tree.iter_leaves())
+    loci = list(leaf.name.split(".")[0] for leaf in ete_tree.leaves())
     match_infos = db.get_refseq_matches_info(loci, search_on="accession")
     zdb_taxids = db.get_taxid_from_accession(loci)
     orgas = db.get_genomes_description().description.to_dict()
     acc_to_orga = match_infos.set_index("accession")["organism"]
 
     R = ete_tree.get_midpoint_outgroup()
-    if R is not None:
+    if R is not None and not R is ete_tree.root:
         ete_tree.set_outgroup(R)
     ete_tree.ladderize()
 
-    for leaf in ete_tree.iter_leaves():
+    for leaf in ete_tree.leaves():
         shortened = leaf.name.split(".")[0]
         if shortened in acc_to_orga.index:
             orga_name = acc_to_orga.loc[shortened]
