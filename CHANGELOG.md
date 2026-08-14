@@ -10,6 +10,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Changed
 
+- Migrate from ete3 to ete4. ([#230](https://github.com/metagenlab/zDB/pull/230)) (Niklaus Johner)
+
 ### Added
 
 ## 1.3.12 - 2026-05-06
