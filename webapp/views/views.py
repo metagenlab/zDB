@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 # todo circos gc file curently written in home directory, move it to other place
 # todo save temp files in temp folder
@@ -864,7 +863,7 @@ class CategoryBarchartBase(View):
 
         labels, series, category_map = self.prepare_barchart_data(taxids)
 
-        taxids = "?" + "&".join((f"h={i}" for i in taxids))
+        taxids = "?" + "&".join(f"h={i}" for i in taxids)
 
         context = self.get_context(
             envoi=True,
@@ -957,7 +956,7 @@ class CogBarchart(CogViewMixin, CategoryBarchartBase):
 
             for func, cnt in hsh_cnt.items():
                 # a cog can have multiple functions
-                for i in range(0, len(func)):
+                for i in range(len(func)):
                     f = func[i]
                     category = category_dico[f]
                     if category in taxon2category2count[bioentry_str]:
