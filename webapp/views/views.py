@@ -28,9 +28,11 @@ from chlamdb.forms import make_single_genome_form
 from chlamdb.forms import make_venn_from
 from django.conf import settings
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.shortcuts import render
 from django.views import View
 from ete4 import Tree
+from ete4.smartview import explorer as ete_explorer
 from ete4.treeview.faces import StackedBarFace
 from ete4.treeview.faces import TextFace
 from lib import search_bar as sb
@@ -158,6 +160,17 @@ def home(request):
         number_gi = db.gi.get_number_of_entries()
     versions = db.get_versions_table()
     return render(request, "chlamdb/home.html", my_locals(locals()))
+
+
+def open_in_ete(request):
+    """Add a Newick tree to the embedded ETE explorer and redirect to it.
+
+    Expects either POST with 'newick' (and optional 'name'), or GET with
+    query params. Generates a unique name if none provided.
+    """
+    # read params from POST or GET
+    name = request.POST.get('name') or request.GET.get('name')
+    return redirect(f'/ete/static/gui.html?tree={name}')
 
 
 class ComparisonIndexView(ComparisonViewMixin, View):

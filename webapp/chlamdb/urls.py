@@ -48,6 +48,7 @@ urlpatterns = [
         name="plot_heatmap",
     ),  # noqa
     re_path(r"^phylogeny", views.phylogeny, name="phylogeny"),
+    re_path(r"^open_in_ete/$", views.open_in_ete, name="open_in_ete"),
     re_path(
         r"^pfam_comparison",
         tabular_comparison.PfamComparisonView.as_view(),
