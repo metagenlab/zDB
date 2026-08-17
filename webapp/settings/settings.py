@@ -105,3 +105,7 @@ TEMPLATES = [
 ]
 
 INTERNAL_IPS = ("127.0.0.1",)
+
+# Use the Dispatcher-based WSGI application so the ETE smartview app
+# mounted at `/ete` is available.
+WSGI_APPLICATION = 'webapp.chlamdb.wsgi.application'
