@@ -209,9 +209,9 @@ def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
 
 def prepare_default_tree(og_phylogeny):
     tree = Tree(og_phylogeny)
+    root = "(midpoint rooted)"
     R = tree.get_midpoint_outgroup()
     if R is not None and R is not tree.root:
-        root = "(midpoint rooted)"
         tree.set_outgroup(R)
     tree.ladderize()
 
