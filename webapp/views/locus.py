@@ -16,8 +16,8 @@ from django.shortcuts import render
 from django.views import View
 from ete4 import Tree
 from ete4.treeview import TreeStyle
-from ete4.treeview.faces import SeqMotifFace
-from ete4.treeview.faces import TextFace
+from ete4.treeview.faces import SeqMotifFace as treeview_SeqMotifFace
+from ete4.treeview.faces import TextFace as treeview_TextFace
 from lib.db_utils import DB
 from lib.db_utils import NoPhylogenyException
 from lib.ete_phylo import Column
@@ -348,7 +348,7 @@ class SimpleTextColumn(Column):
         super().__init__(header)
 
     def get_face(self, index):
-        return TextFace(index, fsize=7)
+        return treeview_TextFace(index, fsize=7)
 
 
 class PfamColumn(Column):
@@ -374,7 +374,7 @@ class PfamColumn(Column):
                 fmt_entry,
             ]
             pfam_entries.append(entry)
-        return SeqMotifFace(dummy_seq, motifs=pfam_entries, seq_format="line")
+        return treeview_SeqMotifFace(dummy_seq, motifs=pfam_entries, seq_format="line")
 
 
 def og_tab_get_swissprot_homologs(db, annotations):
@@ -525,7 +525,7 @@ def tab_og_best_hits(db, orthogroup, locus=None):
         shortened = leaf.name.split(".")[0]
         if shortened in acc_to_orga.index:
             orga_name = acc_to_orga.loc[shortened]
-            leaf.add_face(TextFace(f"{leaf.name} | {orga_name}"), 0, "branch-right")
+            leaf.add_face(treeview_TextFace(f"{leaf.name} | {orga_name}"), 0, "branch-right")
             continue
 
         color = "red"
@@ -534,7 +534,7 @@ def tab_og_best_hits(db, orthogroup, locus=None):
         taxid = zdb_taxids.loc[shortened].taxid
         orga_name = orgas[taxid]
         leaf.add_face(
-            TextFace(f"{leaf.name} | {orga_name}", fgcolor=color), 0, "branch-right"
+            treeview_TextFace(f"{leaf.name} | {orga_name}", fgcolor=color), 0, "branch-right"
         )
 
     asset_path = f"/temp/og_best_hit_phylogeny_{orthogroup}.svg"

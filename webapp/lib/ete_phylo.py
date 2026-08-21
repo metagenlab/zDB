@@ -2,8 +2,8 @@
 from ete4 import Tree
 from ete4.treeview import NodeStyle
 from ete4.treeview import TreeStyle
-from ete4.treeview.faces import StackedBarFace
-from ete4.treeview.faces import TextFace
+from ete4.treeview.faces import StackedBarFace as treeview_StackedBarFace
+from ete4.treeview.faces import TextFace as treeview_TextFace
 from lib import colors
 from matplotlib.colors import rgb2hex
 
@@ -68,7 +68,7 @@ class EteTree:
             if idx in self.highlight_leaves:
                 fgcolor = "red"
         label = self.leaves_name.get(idx, self.default_val)
-        t = TextFace(label, fgcolor=fgcolor, fsize=7)
+        t = treeview_TextFace(label, fgcolor=fgcolor, fsize=7)
         t.margin_right = 13
         return t
 
@@ -110,7 +110,7 @@ class Column:
     def get_header(self):
         if self.header is None:
             return None
-        face = TextFace(self.header)
+        face = treeview_TextFace(self.header)
         face.rotation = 270
         face.hz_align = 1
         face.vt_align = 1
@@ -198,7 +198,7 @@ class SimpleColorColumn(Column):
             if self.face_params.get("italic", False):
                 italic = "ITalic"
 
-        text_face = TextFace(str(val), fstyle=italic)
+        text_face = treeview_TextFace(str(val), fstyle=italic)
         if (val == self.default_val and self.default_val_is_num) or (
             val != self.default_val and self.color_gradient
         ):
@@ -237,7 +237,7 @@ class ValueColoredColumn(Column):
     def get_face(self, index):
         index = int(index)
         val = self.values.get(index)
-        text_face = TextFace(str(val))
+        text_face = treeview_TextFace(str(val))
         text_face.inner_background.color = self.get_color(index, val)
         self.set_default_params(text_face)
         return text_face
@@ -291,11 +291,11 @@ class ModuleCompletenessColumn(Column):
         val = self.values.get(index, 0)
 
         if self.add_missing:
-            text_face = TextFace(val)
+            text_face = treeview_TextFace(val)
         elif val == 0:
-            text_face = TextFace("C")
+            text_face = treeview_TextFace("C")
         elif val >= 1:
-            text_face = TextFace("I")
+            text_face = treeview_TextFace("I")
 
         if val == 0:
             text_face.inner_background.color = EteTree.GREEN
@@ -330,7 +330,7 @@ class KOAndCompleteness(Column):
         if val == 0:
             val = "-"
         n_missing = self.n_missing.get(index, None)
-        text_face = TextFace(val)
+        text_face = treeview_TextFace(val)
 
         if n_missing is not None and val != "-":
             color = EteTree.GREEN if n_missing == 0 else EteTree.ORANGE
@@ -410,7 +410,7 @@ class EteTool:
                 else:
                     label = "n/a"
             if add_face:
-                n = TextFace(label, fgcolor="black", fsize=12, fstyle="italic")
+                n = treeview_TextFace(label, fgcolor="black", fsize=12, fstyle="italic")
                 lf.add_face(n, 0)
             lf.name = label
 
@@ -426,14 +426,14 @@ class EteTool:
 
         for i, lf in enumerate(self.tree.leaves()):
             if lf.name not in taxon2value:
-                n = TextFace("")
+                n = treeview_TextFace("")
             else:
                 value = taxon2value[lf.name]
 
                 if show_text:
-                    n = TextFace("%s" % value)
+                    n = treeview_TextFace("%s" % value)
                 else:
-                    n = TextFace("    ")
+                    n = treeview_TextFace("    ")
 
                 n.margin_top = 2
                 n.margin_right = 3
@@ -455,7 +455,7 @@ class EteTool:
         self.column_count += 1
 
     def _add_header(self, header_name, column_add=0):
-        n = TextFace(f"{header_name}")
+        n = treeview_TextFace(f"{header_name}")
         n.margin_top = 1
         n.margin_right = 1
         n.margin_left = 20
@@ -521,9 +521,9 @@ class EteTool:
                 else:
                     real_value = value
                 if isinstance(real_value, float):
-                    a = TextFace(" %s " % str(round(real_value, 2)))
+                    a = treeview_TextFace(" %s " % str(round(real_value, 2)))
                 else:
-                    a = TextFace(" %s " % str(real_value))
+                    a = treeview_TextFace(" %s " % str(real_value))
                 a.margin_top = 1
                 a.margin_right = 2
                 a.margin_left = 5
@@ -557,7 +557,7 @@ class EteTool:
             else:
                 lcolor = color
 
-            b = StackedBarFace(
+            b = treeview_StackedBarFace(
                 [fraction_biggest, fraction_rest],
                 width=100,
                 height=15,
@@ -604,12 +604,12 @@ class EteTool:
         # add column
         for i, lf in enumerate(self.tree.leaves()):
             if lf.name in taxon2text:
-                n = TextFace("%s" % taxon2text[lf.name])
+                n = treeview_TextFace("%s" % taxon2text[lf.name])
                 if color_scale:
                     n.background.color = value2color[taxon2text[lf.name]]
             else:
                 print(lf.name, "not in", taxon2text)
-                n = TextFace("-")
+                n = treeview_TextFace("-")
             n.margin_top = 1
             n.margin_right = 10
             n.margin_left = 10
@@ -680,7 +680,7 @@ class EteToolCompact:
         return col
 
     def _add_header(self, header_name, column_add=0):
-        n = TextFace(f"{header_name}")
+        n = treeview_TextFace(f"{header_name}")
         n.margin_top = 1
         n.margin_right = 1
         n.margin_left = 20
@@ -695,25 +695,27 @@ class EteToolCompact:
 
     def rename_leaves(self, taxon2new_taxon):
         for i, lf in enumerate(self.tree.leaves()):
-            n = TextFace(
+            n = treeview_TextFace(
                 taxon2new_taxon[lf.name], fgcolor="black", fsize=12, fstyle="italic"
             )
             lf.add_face(n, 0)
 
     def add_continuous_colorscale_legend(self, title, min_val, max_val, scale):
         self.tss.legend.add_face(
-            TextFace(f"{title}", fsize=4 * self.text_scale), column=0
+            treeview_TextFace(f"{title}", fsize=4 * self.text_scale), column=0
         )
 
         if min_val != max_val:
-            n = TextFace(" " * int(self.text_scale), fsize=4 * self.text_scale)
+            n = treeview_TextFace(" " * int(self.text_scale), fsize=4 * self.text_scale)
             n.margin_top = 1
             n.margin_right = 1
             n.margin_left = 10
             n.margin_bottom = 1
             n.inner_background.color = rgb2hex(scale[0].to_rgba(float(max_val)))
 
-            n2 = TextFace(" " * int(self.text_scale), fsize=4 * self.text_scale)
+            n2 = treeview_TextFace(
+                " " * int(self.text_scale), fsize=4 * self.text_scale
+            )
             n2.margin_top = 1
             n2.margin_right = 1
             n2.margin_left = 10
@@ -722,14 +724,18 @@ class EteToolCompact:
 
             self.tss.legend.add_face(n, column=1)
             self.tss.legend.add_face(
-                TextFace(f"{max_val} % (max)", fsize=4 * self.text_scale), column=2
+                treeview_TextFace(f"{max_val} % (max)", fsize=4 * self.text_scale),
+                column=2,
             )
             self.tss.legend.add_face(n2, column=1)
             self.tss.legend.add_face(
-                TextFace(f"{min_val} % (min)", fsize=4 * self.text_scale), column=2
+                treeview_TextFace(f"{min_val} % (min)", fsize=4 * self.text_scale),
+                column=2,
             )
         else:
-            n2 = TextFace(" " * int(self.text_scale), fsize=4 * self.text_scale)
+            n2 = treeview_TextFace(
+                " " * int(self.text_scale), fsize=4 * self.text_scale
+            )
             n2.margin_top = 1
             n2.margin_right = 1
             n2.margin_left = 10
@@ -738,17 +744,20 @@ class EteToolCompact:
 
             self.tss.legend.add_face(n2, column=0)
             self.tss.legend.add_face(
-                TextFace(f"{max_val} % Id", fsize=4 * self.text_scale), column=1
+                treeview_TextFace(f"{max_val} % Id", fsize=4 * self.text_scale),
+                column=1,
             )
 
     def add_categorical_colorscale_legend(self, title, scale):
         self.tss.legend.add_face(
-            TextFace(f"{title}", fsize=4 * self.text_scale), column=0
+            treeview_TextFace(f"{title}", fsize=4 * self.text_scale), column=0
         )
 
         col = 1
         for n, value in enumerate(scale):
-            n2 = TextFace(" " * int(self.text_scale), fsize=4 * self.text_scale)
+            n2 = treeview_TextFace(
+                " " * int(self.text_scale), fsize=4 * self.text_scale
+            )
             n2.margin_top = 1
             n2.margin_right = 1
             n2.margin_left = 10
@@ -757,13 +766,13 @@ class EteToolCompact:
 
             self.tss.legend.add_face(n2, column=col)
             self.tss.legend.add_face(
-                TextFace(f"{value}", fsize=4 * self.text_scale), column=col + 1
+                treeview_TextFace(f"{value}", fsize=4 * self.text_scale), column=col + 1
             )
 
             col += 2
             if col > 16:
                 self.tss.legend.add_face(
-                    TextFace("    ", fsize=4 * self.text_scale), column=0
+                    treeview_TextFace("    ", fsize=4 * self.text_scale), column=0
                 )
                 col = 1
 
@@ -802,9 +811,9 @@ class EteToolCompact:
             if show_values:
                 barplot_column = 1
                 if isinstance(value, float):
-                    a = TextFace(" %s " % str(round(value, 2)))
+                    a = treeview_TextFace(" %s " % str(round(value, 2)))
                 else:
-                    a = TextFace(" %s " % str(value))
+                    a = treeview_TextFace(" %s " % str(value))
                 a.margin_top = 1
                 a.margin_right = 2
                 a.margin_left = 5
@@ -820,7 +829,7 @@ class EteToolCompact:
                 fraction_biggest = (float(value) / max_value) * 100
             fraction_rest = 100 - fraction_biggest
 
-            b = StackedBarFace(
+            b = treeview_StackedBarFace(
                 [fraction_biggest, fraction_rest],
                 width=100 * (self.text_scale / 3),
                 height=18,
@@ -859,10 +868,10 @@ class EteToolCompact:
             raise OSError("unknown type")
 
         for i, lf in enumerate(self.tree.leaves()):
-            n = TextFace("   " * int(self.text_scale))
+            n = treeview_TextFace("   " * int(self.text_scale))
             if lf.name in taxon2value:
                 value = taxon2value[lf.name]
-                n = TextFace("   " * int(self.text_scale))
+                n = treeview_TextFace("   " * int(self.text_scale))
                 if scale_type == "categorical":
                     n.inner_background.color = scale[value]
                 if scale_type == "continuous":
@@ -883,7 +892,7 @@ class EteToolCompact:
         self,
     ):
         for i, lf in enumerate(self.tree.leaves()):
-            n = TextFace("")
+            n = treeview_TextFace("")
             lf.add_face(n, 0)
 
 

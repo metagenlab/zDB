@@ -31,8 +31,8 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
 from ete4 import Tree
-from ete4.treeview.faces import StackedBarFace
-from ete4.treeview.faces import TextFace
+from ete4.treeview.faces import StackedBarFace as treeview_StackedBarFace
+from ete4.treeview.faces import TextFace as treeview_TextFace
 from lib import search_bar as sb
 from lib.db_utils import DB
 from lib.ete_phylo import Column
@@ -126,7 +126,7 @@ class StackedBarColumn(Column):
         elif self.relative:
             val = 100
 
-        face = StackedBarFace([val, 100 - val], width=50, height=9, colors=self.colours)
+        face = treeview_StackedBarFace([val, 100 - val], width=50, height=9, colors=self.colours)
         self.set_default_params(face)
         face.inner_border.color = "black"
         face.inner_border.width = 0
@@ -295,19 +295,19 @@ class LocusHeatmapColumn(SimpleColorColumn):
     def get_face(self, index):
         index = int(index)
         if index == self.ref_taxon:
-            text_face = TextFace("-".center(11))
+            text_face = treeview_TextFace("-".center(11))
             text_face.inner_background.color = EteTree.GREEN
             self.set_default_params(text_face)
             return text_face
 
         val = self.values.get(index, None)
         if val is None:
-            return TextFace("-")
+            return treeview_TextFace("-")
 
         color = colors.linearlyInterpolatedColor(
             colors.gray, colors.firebrick, self.min_val, self.max_val, val
         )
-        text_face = TextFace(str(int(val)).center(12 - len(str(int(val)))))
+        text_face = treeview_TextFace(str(int(val)).center(12 - len(str(int(val)))))
         text_face.inner_background.color = to_color_code(color)
         self.set_default_params(text_face)
         return text_face
