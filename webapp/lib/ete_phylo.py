@@ -21,6 +21,7 @@ class EteTree:
         self.params = drawing_params
         self.columns = []
         self.leaves_name = None
+        self.draw_leaf_names = False
 
     def default_tree(nwck, **drawing_params):
         t = Tree(nwck)
@@ -89,6 +90,7 @@ class EteTree:
         self.highlight_leaves = highlight_leaves
         self.leaves_name = hsh_names
         self.leaf_name_type = leaf_name_type
+        self.draw_leaf_names = True
 
     def render(self, destination, **kwargs):
         for leaf in self.tree.leaves():
@@ -113,6 +115,42 @@ class EteTree:
         if self.draw_leaf_names:
             layouts.append(Layout("labels", draw_node=self.draw_leaf_name))
         return layouts
+
+
+class RefseqBestHitEteTree(EteTree):
+    def __init__(self, tree, zdb_taxids, taxid_to_orga, accession_to_organism, locus):
+        super().__init__(tree)
+        self.zdb_taxids = zdb_taxids
+        self.orgas = taxid_to_orga
+        self.acc_to_orga = accession_to_organism
+        self.locus = locus
+        self.draw_leaf_names = True
+
+    @staticmethod
+    def shorten_name(leaf):
+        if leaf.name:
+            return leaf.name.split(".")[0]
+        return leaf.name
+
+    def draw_leaf_name(self, leaf):
+        if not leaf.is_leaf:
+            return []
+        shortened = self.shorten_name(leaf)
+        if shortened in self.acc_to_orga.index:
+            orga_name = self.acc_to_orga.loc[shortened]
+            return [TextFace(f"{leaf.name} | {orga_name}", position="right")]
+
+        color = "red"
+        if self.locus is not None and shortened == self.locus:
+            color = "green"
+        taxid = self.zdb_taxids.loc[shortened].taxid
+        orga_name = self.orgas[taxid]
+
+        return [
+            TextFace(
+                f"{leaf.name} | {orga_name}", style={"fill": color}, position="right"
+            )
+        ]
 
 
 class Column:
