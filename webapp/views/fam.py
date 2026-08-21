@@ -2,7 +2,7 @@ import pandas as pd
 from django.conf import settings
 from django.shortcuts import render
 from django.views import View
-from ete3 import Tree
+from ete4 import Tree
 from lib.ete_phylo import EteTree
 from lib.ete_phylo import SimpleColorColumn
 from views.mixins import AmrViewMixin
@@ -108,7 +108,7 @@ class FamBaseView(View):
 
         tree = Tree(ref_tree)
         R = tree.get_midpoint_outgroup()
-        if R is not None:
+        if R is not None and R is not tree.root:
             tree.set_outgroup(R)
         tree.ladderize()
         e_tree = EteTree(tree)
@@ -292,7 +292,7 @@ class FamCogView(FamBaseView, CogViewMixin):
 
     def get(self, request, entry_id, *args, **kwargs):
         entry_id = int(entry_id[3:])
-        return super(FamCogView, self).get(request, entry_id, *args, **kwargs)
+        return super().get(request, entry_id, *args, **kwargs)
 
 
 class FamKoView(FamBaseView, KoViewMixin):
@@ -306,7 +306,7 @@ class FamKoView(FamBaseView, KoViewMixin):
 
     def get(self, request, entry_id, *args, **kwargs):
         entry_id = int(entry_id[len("K") :])
-        return super(FamKoView, self).get(request, entry_id, *args, **kwargs)
+        return super().get(request, entry_id, *args, **kwargs)
 
     def prepare_context(self, request, entry_id, *args, **kwargs):
         pathways = self.db.get_ko_pathways([entry_id])
@@ -321,7 +321,7 @@ class FamKoView(FamBaseView, KoViewMixin):
             for mod_id, mod_desc, mod_def, path, cat in modules_data
         ]
 
-        context = super(FamKoView, self).prepare_context(
+        context = super().prepare_context(
             request, entry_id, *args, **kwargs
         )
         context["pathway_data"] = pathway_data
@@ -340,7 +340,7 @@ class FamPfamView(FamBaseView, PfamViewMixin):
 
     def get(self, request, entry_id, *args, **kwargs):
         entry_id = int(entry_id[len("PF") :])
-        return super(FamPfamView, self).get(request, entry_id, *args, **kwargs)
+        return super().get(request, entry_id, *args, **kwargs)
 
 
 class FamGiClusterView(FamBaseView, GiViewMixin):
@@ -367,7 +367,7 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
 
     def get(self, request, entry_id, *args, **kwargs):
         entry_id = int(entry_id[3:])
-        return super(FamGiClusterView, self).get(request, entry_id, *args, **kwargs)
+        return super().get(request, entry_id, *args, **kwargs)
 
     def get_orthogroups(self, gis_ids):
         self.gi_descriptions = self.get_gi_descriptions(gis_ids)
@@ -385,7 +385,7 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
             ]
             seqids.update(df_seqids.seqfeature_id)
         self.seqids = list(seqids)
-        return super(FamGiClusterView, self).get_orthogroups(self.seqids)
+        return super().get_orthogroups(self.seqids)
 
     def get_table(self, gis_ids):
         table_data = self.gi_descriptions.drop(
@@ -467,7 +467,7 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
         )
 
     def result_tabs(self, table_data, table_headers, table_accessors):
-        tabs = super(FamGiClusterView, self).result_tabs(
+        tabs = super().result_tabs(
             table_data, table_headers, table_accessors
         )
         self.add_genomic_region(tabs)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 # todo circos gc file curently written in home directory, move it to other place
 # todo save temp files in temp folder
@@ -31,9 +30,9 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
-from ete3 import StackedBarFace
-from ete3 import TextFace
-from ete3 import Tree
+from ete4 import Tree
+from ete4.treeview.faces import StackedBarFace
+from ete4.treeview.faces import TextFace
 from lib import search_bar as sb
 from lib.db_utils import DB
 from lib.ete_phylo import Column
@@ -452,7 +451,8 @@ class CogPhyloHeatmap(CogViewMixin, View):
 
         t1 = Tree(tree)
         R = t1.get_midpoint_outgroup()
-        t1.set_outgroup(R)
+        if R is not t1.root:
+            t1.set_outgroup(R)
         t1.ladderize()
 
         funcs_descr = self.db.get_cog_code_description()
@@ -535,7 +535,8 @@ def KEGG_module_map(request, module_name):
 
     tree = Tree(db.get_reference_phylogeny())
     R = tree.get_midpoint_outgroup()
-    tree.set_outgroup(R)
+    if R is not tree.root:
+        tree.set_outgroup(R)
     tree.ladderize()
     e_tree = EteTree(tree)
 
@@ -615,7 +616,8 @@ def gen_pathway_profile(db, ko_ids):
 
     tree = Tree(db.get_reference_phylogeny())
     R = tree.get_midpoint_outgroup()
-    tree.set_outgroup(R)
+    if R is not tree.root:
+        tree.set_outgroup(R)
     tree.ladderize()
     e_tree = EteTree(tree)
     for ko in ko_ids:
@@ -861,7 +863,7 @@ class CategoryBarchartBase(View):
 
         labels, series, category_map = self.prepare_barchart_data(taxids)
 
-        taxids = "?" + "&".join((f"h={i}" for i in taxids))
+        taxids = "?" + "&".join(f"h={i}" for i in taxids)
 
         context = self.get_context(
             envoi=True,
@@ -954,7 +956,7 @@ class CogBarchart(CogViewMixin, CategoryBarchartBase):
 
             for func, cnt in hsh_cnt.items():
                 # a cog can have multiple functions
-                for i in range(0, len(func)):
+                for i in range(len(func)):
                     f = func[i]
                     category = category_dico[f]
                     if category in taxon2category2count[bioentry_str]:
@@ -1123,7 +1125,8 @@ def gen_blast_heatmap(db, blast_res, blast_type, no_query_name=False):
 
     t1 = Tree(tree)
     R = t1.get_midpoint_outgroup()
-    t1.set_outgroup(R)
+    if R is not t1.root:
+        t1.set_outgroup(R)
     t1.ladderize()
     e_tree = EteTree(t1)
     e_tree.rename_leaves(descr.description.to_dict())
@@ -1930,7 +1933,7 @@ def phylogeny(request):
     tree = db.get_reference_phylogeny()
     t1 = Tree(tree)
     R = t1.get_midpoint_outgroup()
-    if R is not None:
+    if R is not None and R is not t1.root:
         t1.set_outgroup(R)
     t1.ladderize()
 

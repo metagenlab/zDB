@@ -4,7 +4,7 @@ channels:
     - bioconda
 dependencies:
     - python=3.10
-    - ete3
+    - ete4
     - plotly
     - pandas
     - seaborn
@@ -18,9 +18,10 @@ dependencies:
     - gunicorn
     - scipy
     - Whoosh
-    - pyqt
+    - pyqt6
     - bibtexparser
     - blast>=2.9.0
     - django-autocomplete-light
+    - pip
     - pip:
         - scoary-2

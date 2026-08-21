@@ -6,7 +6,7 @@ from chlamdb.forms import make_gwas_form
 from django.conf import settings
 from django.shortcuts import render
 from django.views import View
-from ete3 import Tree
+from ete4 import Tree
 from lib.ete_phylo import EteTree
 from lib.ete_phylo import MatchingColorColumn
 from lib.ete_phylo import ValueColoredColumn
@@ -53,7 +53,7 @@ class GWASBaseView(View):
 
     @property
     def table_data_accessors(self):
-        mixin_accessors = super(GWASBaseView, self).table_data_accessors
+        mixin_accessors = super().table_data_accessors
         return [mixin_accessors[0], *self._gwas_data_accessors, *mixin_accessors[1:]]
 
     def get_result_tabs(self, results):
@@ -78,7 +78,7 @@ class GWASBaseView(View):
 
     def dispatch(self, request, *args, **kwargs):
         self.form_class = make_gwas_form(self.db)
-        return super(GWASBaseView, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         self.form = self.form_class()
@@ -129,7 +129,7 @@ class GWASBaseView(View):
 
         tree = Tree(ref_tree)
         R = tree.get_midpoint_outgroup()
-        if R is not None:
+        if R is not None and R is not tree.root:
             tree.set_outgroup(R)
         tree.ladderize()
         e_tree = EteTree(tree)
@@ -181,7 +181,7 @@ class GWASBaseView(View):
 
             tree_path = os.path.join(tmp, "tree.nw")
             tree = Tree(self.db.get_reference_phylogeny())
-            tree.write(format=8, outfile=tree_path)
+            tree.write(parser=9, outfile=tree_path)
 
             # Reset the db connection as it otherwise leads to issues with
             # using an SQL object that was created in a separate thread.

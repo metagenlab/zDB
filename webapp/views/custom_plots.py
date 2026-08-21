@@ -2,7 +2,7 @@ from chlamdb.forms import make_custom_plots_form
 from django.conf import settings
 from django.shortcuts import render
 from django.views import View
-from ete3 import Tree
+from ete4 import Tree
 from lib.db_utils import DB
 from lib.ete_phylo import EteTree
 from lib.ete_phylo import SimpleColorColumn
@@ -22,7 +22,7 @@ class CusomPlotsView(View):
 
     def dispatch(self, request, *args, **kwargs):
         self.form_class = make_custom_plots_form()
-        return super(CusomPlotsView, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_result_tabs(self, table):
         return [
@@ -95,7 +95,7 @@ class CusomPlotsView(View):
 
         tree = Tree(ref_tree)
         R = tree.get_midpoint_outgroup()
-        if R is not None:
+        if R is not None and R is not tree.root:
             tree.set_outgroup(R)
         tree.ladderize()
         e_tree = EteTree(tree)
