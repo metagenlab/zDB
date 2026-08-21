@@ -1,4 +1,5 @@
 from ete4 import Tree
+from ete4.smartview.faces import TextFace
 from ete4.treeview import NodeStyle
 from ete4.treeview import TreeStyle
 from ete4.treeview.faces import StackedBarFace as treeview_StackedBarFace
@@ -62,6 +63,22 @@ class EteTree:
         t.margin_right = 13
         return t
 
+    def draw_leaf_name(self, leaf):
+        index = leaf.name
+        if self.leaf_name_type is int:
+            idx = int(index)
+        elif self.leaf_name_type is str:
+            idx = index
+        else:
+            raise Exception("Unsupported indexing type ", self.leaf_name_type)
+        fgcolor = "black"
+        if self.highlight_leaves is not None and idx in self.highlight_leaves:
+            fgcolor = "red"
+        label = self.leaves_name.get(idx, self.default_val)
+        style = {"fill": fgcolor}
+        t = TextFace(label, style=style)
+        return [t]
+
     def rename_leaves(
         self, hsh_names, default_val="-", leaf_name_type=int, highlight_leaves=None
     ):
@@ -89,6 +106,7 @@ class EteTree:
                 tree_style.aligned_header.add_face(header, col_no)
 
         self.tree.render(destination, tree_style=tree_style, **kwargs)
+
 
 
 class Column:
