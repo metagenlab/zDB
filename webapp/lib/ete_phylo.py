@@ -1,5 +1,6 @@
 from ete4 import Tree
 from ete4.smartview.faces import TextFace
+from ete4.smartview.layout import Layout
 from ete4.treeview import NodeStyle
 from ete4.treeview import TreeStyle
 from ete4.treeview.faces import StackedBarFace as treeview_StackedBarFace
@@ -107,6 +108,11 @@ class EteTree:
 
         self.tree.render(destination, tree_style=tree_style, **kwargs)
 
+    def get_layouts(self):
+        layouts = []
+        if self.draw_leaf_names:
+            layouts.append(Layout("labels", draw_node=self.draw_leaf_name))
+        return layouts
 
 
 class Column:
