@@ -1951,7 +1951,7 @@ def phylogeny(request):
     t1.ladderize()
 
     e_tree = EteTree(t1)
-    header_params = {"rotation": -30}
+    header_params = {"rotation": -45}
     stacked_face_params = {"margin_right": 8, "margin_left": 5}
 
     tree_params = [
@@ -1966,18 +1966,11 @@ def phylogeny(request):
     for serie_name, header, col, is_relative in tree_params:
         data = genomes_data[serie_name]
         e_tree.add_column(
-            SimpleColorColumn.fromSeries(data, header=None, use_col=False)
+            SimpleColorColumn.fromSeries(data, header=header, use_col=False, header_params=header_params, color_gradient=True, default_val=None)
         )
-        stack = StackedBarColumn(
-            data.to_dict(),
-            colours=[col, "white"],
-            relative=is_relative,
-            header=header,
-            header_params=header_params,
-            face_params=stacked_face_params,
-        )
-        e_tree.add_column(stack)
 
     e_tree.rename_leaves(genomes_data.description.to_dict())
-    e_tree.render(path, dpi=500)
+    layouts = e_tree.render(path, dpi=500)
+    tree_name = ete_explorer.add_tree(e_tree.tree, layouts=layouts)
+    smartview_url = f"/ete/static/gui.html?tree={tree_name}"
     return render(request, "chlamdb/phylogeny_intro.html", my_locals(locals()))

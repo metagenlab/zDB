@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 from ete4 import Tree
-from ete4.treeview import NodeStyle
+from ete4.smartview.faces import HeatmapFace
+from ete4.smartview.faces import RectFace
+from ete4.smartview.faces import TextFace
+from ete4.smartview.layout import BASIC_LAYOUT
+from ete4.smartview.layout import Layout
 from ete4.treeview import TreeStyle
-from ete4.treeview.faces import StackedBarFace
-from ete4.treeview.faces import TextFace
 from lib import colors
 from matplotlib.colors import rgb2hex
 
@@ -44,16 +46,7 @@ class EteTree:
     # Default style, may be overriden in a children class to change
     # the behaviour
     def get_style(self):
-        tss = TreeStyle()
-        tss.draw_guiding_lines = True
-        tss.guiding_lines_color = "gray"
-        tss.show_branch_support = False
-        tss.show_leaf_name = False
-        tss.margin_top = 5
-        tss.margin_left = 5
-        tss.margin_left = 5
-        tss.margin_right = 5
-        return tss
+        return {}
 
     # May be a good idea to be able to give custom parameters to the node names
     def get_leaf_name(self, index):
@@ -68,8 +61,7 @@ class EteTree:
             if idx in self.highlight_leaves:
                 fgcolor = "red"
         label = self.leaves_name.get(idx, self.default_val)
-        t = TextFace(label, fgcolor=fgcolor, fsize=7)
-        t.margin_right = 13
+        t = TextFace(label, style={"fill": fgcolor, "font-size": 7}, position="right")
         return t
 
     def rename_leaves(
@@ -82,25 +74,32 @@ class EteTree:
         self.leaves_name = hsh_names
         self.leaf_name_type = leaf_name_type
 
+    @staticmethod
+    def draw_node(node):
+        return node.props.get("faces", [])
+
+    @staticmethod
+    def draw_tree(tree):
+        return tree.props.get("headers", [])
+
     def render(self, destination, **kwargs):
         for leaf in self.tree.leaves():
             if self.leaves_name is not None:
-                leaf.add_face(self.get_leaf_name(leaf.name), 0, "branch-right")
+                add_face(leaf, self.get_leaf_name(leaf.name))
 
-            for col_no, column in enumerate(self.columns):
+            for col_no, column in enumerate(self.columns, 1):
                 # Note: this assumes that only bioentries (integer)
                 # are used as leaf names
-                leaf.add_face(column.get_face(leaf.name), col_no, "aligned")
+                add_face(leaf, column.get_face(leaf.name), column=col_no, position="aligned", anchor=(-1, 0))
 
-        tree_style = self.get_style()
-        for col_no, column in enumerate(self.columns):
+        for col_no, column in enumerate(self.columns, 1):
             header = column.get_header()
             if header is not None:
-                tree_style.aligned_header.add_face(header, col_no)
+                add_header(self.tree, header, column=col_no)
 
-        self.tree.render(destination, tree_style=tree_style, **kwargs)
-
-
+        # self.tree.render_sm(destination, layouts=[Layout("bli", draw_node=self.draw_node)])#, **kwargs)
+        return (Layout("style", draw_tree=self.get_style()), Layout("faces", draw_node=self.draw_node), Layout("Headers", draw_tree=self.draw_tree))
+    
 class Column:
     def __init__(self, header=None, face_params=None, header_params=None):
         self.header = header
@@ -110,12 +109,12 @@ class Column:
     def get_header(self):
         if self.header is None:
             return None
-        face = TextFace(self.header)
-        face.rotation = 270
-        face.hz_align = 1
-        face.vt_align = 1
-        face.fsize = 7
-        face.margin_right = 10
+        face = TextFace(self.header, position="header", rotation=270)
+        # face.rotation = 270
+        # face.hz_align = 1
+        # face.vt_align = 1
+        # face.fsize = 7
+        # face.margin_right = 10
         # Put after the default values to erase any default value
         # in favor of a new one
         if self.header_params is not None:
@@ -133,8 +132,8 @@ class Column:
         text_face.margin_bottom = 2
         text_face.hz_align = 1
         text_face.vt_align = 1
-        text_face.border.width = 3
-        text_face.border.color = "#ffffff"
+        # text_face.border.width = 3
+        # text_face.border.color = "#ffffff"
         text_face.fsize = 7
         if self.face_params is not None:
             for name, value in self.face_params.items():
@@ -198,23 +197,24 @@ class SimpleColorColumn(Column):
             if self.face_params.get("italic", False):
                 italic = "ITalic"
 
-        text_face = TextFace(str(val), fstyle=italic)
+        style = {"fstyle": "italic"}
+        text_face = RectFace(wmax=100, text=str(val), style=style)
         if (val == self.default_val and self.default_val_is_num) or (
             val != self.default_val and self.color_gradient
         ):
             rgba = self.cm.to_rgba(val, bytes=True)
-            text_face.inner_background.color = colors.to_rgb_str(rgba)
+            text_face.style["fill"] = colors.to_rgb_str(rgba)
             luminance = colors.get_luminance(rgba)
             if luminance >= 0.5:
-                text_face.fgcolor = "#000000"
+                text_face.text.style["fill"] = "#000000"
             else:
-                text_face.fgcolor = "#ffffff"
+                text_face.text.style["fill"]  = "#ffffff"
         elif self.use_col and val != 0 and index in self.values:
             if self.col_func is None:
-                text_face.inner_background.color = self.col
+                text_face.style["fill"] = self.col
             else:
-                text_face.inner_background.color = self.col_func(index)
-
+                text_face.style["fill"] = self.col_func(index)
+                
         self.set_default_params(text_face)
         return text_face
 
@@ -348,6 +348,21 @@ class ReferenceColumn(Column):
         pass
 
 
+def add_face(leaf, face, **kwargs):
+    if not "faces" in leaf.props:
+        leaf.props["faces"] = []
+    for k, v in kwargs.items():
+        setattr(face, k, v)
+    leaf.props["faces"].append(face)
+
+def add_header(tree, face, **kwargs):
+    if not "headers" in tree.props:
+        tree.props["headers"] = []
+    for k, v in kwargs.items():
+        setattr(face, k, v)
+    tree.props["headers"].append(face)
+
+
 class EteTool:
     """
     Plot ete phylogenetic profiles.
@@ -410,8 +425,8 @@ class EteTool:
                 else:
                     label = "n/a"
             if add_face:
-                n = TextFace(label, fgcolor="black", fsize=12, fstyle="italic")
-                lf.add_face(n, 0)
+                n = TextFace(label, style=dict(fgcolor="black", fsize=12, fstyle="italic"))
+                add_face(lf, n, 0)
             lf.name = label
 
     def add_heatmap(
@@ -434,23 +449,26 @@ class EteTool:
                     n = TextFace("%s" % value)
                 else:
                     n = TextFace("    ")
+                style = {
+                    "margin_top": 2,
+                    "margin_right": 3,
+                    "margin_left": 3,
+                    "margin_bottom": 2,
+                    "hz_align": 1,
+                    "vt_align": 1,
+                    "stroke-width": 3,
+                    "stroke": "#ffffff"
+                }
 
-                n.margin_top = 2
-                n.margin_right = 3
-                n.margin_left = 3
-                n.margin_bottom = 2
-                n.hz_align = 1
-                n.vt_align = 1
-                n.border.width = 3
-                n.border.color = "#ffffff"
                 if continuous_scale:
-                    n.background.color = rgb2hex(color_scale[0].to_rgba(float(value)))
-                n.opacity = 1.0
+                    style["fille"] = rgb2hex(color_scale[0].to_rgba(float(value)))
+                style["fill-opacity"] = 1.0
+                n.style = style
                 i += 1
 
             if self.rotate:
-                n.rotation = 270
-            lf.add_face(n, self.column_count, position="aligned")
+                style["rotation"] = 270
+            add_face(lf, n, self.column_count, position="aligned")
 
         self.column_count += 1
 
@@ -530,7 +548,7 @@ class EteTool:
                 a.margin_bottom = 1
                 if self.rotate:
                     a.rotation = 270
-                lf.add_face(a, self.column_count, position="aligned")
+                add_face(lf, a, self.column_count, position="aligned")
             else:
                 barplot_column = 0
             if not max_value:
@@ -557,8 +575,11 @@ class EteTool:
             else:
                 lcolor = color
 
-            b = StackedBarFace(
-                [fraction_biggest, fraction_rest],
+            b = HeatmapFace(
+                values = [1, 0],
+                value_range= [0, 1],
+                
+                poswidth = [fraction_biggest, fraction_rest],
                 width=100,
                 height=15,
                 colors=[lcolor, "white"],
@@ -570,7 +591,7 @@ class EteTool:
             b.margin_left = 0
             if self.rotate:
                 b.rotation = 270
-            lf.add_face(b, self.column_count + barplot_column, position="aligned")
+            add_face(lf, b, self.column_count + barplot_column, position="aligned")
 
         self.column_count += 1 + barplot_column
 
@@ -579,19 +600,6 @@ class EteTool:
     ):
         # todo
         pass
-
-    def remove_dots(
-        self,
-    ):
-        nstyle = NodeStyle()
-        nstyle["shape"] = "sphere"
-        nstyle["size"] = 0
-        nstyle["fgcolor"] = "darkred"
-
-        # Applies the same static style to all nodes in the tree. Note that,
-        # if "nstyle" is modified, changes will affect to all nodes
-        for n in self.tree.traverse():
-            n.set_style(nstyle)
 
     def add_text_face(self, taxon2text, header_name, color_scale=False):
         from lib.colors import get_categorical_color_scale
@@ -617,7 +625,7 @@ class EteTool:
             n.opacity = 1.0
             if self.rotate:
                 n.rotation = 270
-            lf.add_face(n, self.column_count, position="aligned")
+            add_face(lf, n, self.column_count, position="aligned")
 
         self.column_count += 1
 
@@ -696,24 +704,24 @@ class EteToolCompact:
     def rename_leaves(self, taxon2new_taxon):
         for i, lf in enumerate(self.tree.leaves()):
             n = TextFace(
-                taxon2new_taxon[lf.name], fgcolor="black", fsize=12, fstyle="italic"
+                taxon2new_taxon[lf.name], style=dict(fgcolor="black", fsize=12, fstyle="italic")
             )
-            lf.add_face(n, 0)
+            add_face(lf, n, 0)
 
     def add_continuous_colorscale_legend(self, title, min_val, max_val, scale):
         self.tss.legend.add_face(
-            TextFace(f"{title}", fsize=4 * self.text_scale), column=0
+            TextFace(f"{title}", style=dict(fsize=4 * self.text_scale)), column=0
         )
 
         if min_val != max_val:
-            n = TextFace(" " * int(self.text_scale), fsize=4 * self.text_scale)
+            n = TextFace(" " * int(self.text_scale), style=dict(fsize=4 * self.text_scale))
             n.margin_top = 1
             n.margin_right = 1
             n.margin_left = 10
             n.margin_bottom = 1
             n.inner_background.color = rgb2hex(scale[0].to_rgba(float(max_val)))
 
-            n2 = TextFace(" " * int(self.text_scale), fsize=4 * self.text_scale)
+            n2 = TextFace(" " * int(self.text_scale), style=dict(fsize=4 * self.text_scale))
             n2.margin_top = 1
             n2.margin_right = 1
             n2.margin_left = 10
@@ -722,14 +730,14 @@ class EteToolCompact:
 
             self.tss.legend.add_face(n, column=1)
             self.tss.legend.add_face(
-                TextFace(f"{max_val} % (max)", fsize=4 * self.text_scale), column=2
+                TextFace(f"{max_val} % (max)", style=dict(fsize=4 * self.text_scale)), column=2
             )
             self.tss.legend.add_face(n2, column=1)
             self.tss.legend.add_face(
-                TextFace(f"{min_val} % (min)", fsize=4 * self.text_scale), column=2
+                TextFace(f"{min_val} % (min)", style=dict(fsize=4 * self.text_scale)), column=2
             )
         else:
-            n2 = TextFace(" " * int(self.text_scale), fsize=4 * self.text_scale)
+            n2 = TextFace(" " * int(self.text_scale), style=dict(fsize=4 * self.text_scale))
             n2.margin_top = 1
             n2.margin_right = 1
             n2.margin_left = 10
@@ -738,17 +746,17 @@ class EteToolCompact:
 
             self.tss.legend.add_face(n2, column=0)
             self.tss.legend.add_face(
-                TextFace(f"{max_val} % Id", fsize=4 * self.text_scale), column=1
+                TextFace(f"{max_val} % Id", style=dict(fsize=4 * self.text_scale)), column=1
             )
 
     def add_categorical_colorscale_legend(self, title, scale):
         self.tss.legend.add_face(
-            TextFace(f"{title}", fsize=4 * self.text_scale), column=0
+            TextFace(f"{title}", style=dict(fsize=4 * self.text_scale)), column=0
         )
 
         col = 1
         for n, value in enumerate(scale):
-            n2 = TextFace(" " * int(self.text_scale), fsize=4 * self.text_scale)
+            n2 = TextFace(" " * int(self.text_scale), style=dict(fsize=4 * self.text_scale))
             n2.margin_top = 1
             n2.margin_right = 1
             n2.margin_left = 10
@@ -757,13 +765,13 @@ class EteToolCompact:
 
             self.tss.legend.add_face(n2, column=col)
             self.tss.legend.add_face(
-                TextFace(f"{value}", fsize=4 * self.text_scale), column=col + 1
+                TextFace(f"{value}", style=dict(fsize=4 * self.text_scale)), column=col + 1
             )
 
             col += 2
             if col > 16:
                 self.tss.legend.add_face(
-                    TextFace("    ", fsize=4 * self.text_scale), column=0
+                    TextFace("    ", style=dict(fsize=4 * self.text_scale)), column=0
                 )
                 col = 1
 
@@ -811,7 +819,7 @@ class EteToolCompact:
                 a.margin_bottom = 1
                 if self.rotate:
                     a.rotation = 270
-                lf.add_face(a, self.column_count, position="aligned")
+                add_face(lf, a, self.column_count, position="aligned")
             else:
                 barplot_column = 0
             if not max_value:
@@ -834,7 +842,7 @@ class EteToolCompact:
             b.rotable = False
             if self.rotate:
                 b.rotation = 270
-            lf.add_face(b, self.column_count + barplot_column, position="aligned")
+            add_face(lf, b, self.column_count + barplot_column, position="aligned")
 
         self.column_count += 1 + barplot_column
 
@@ -875,7 +883,7 @@ class EteToolCompact:
             n.opacity = 1.0
             if self.rotate:
                 n.rotation = 270
-            lf.add_face(n, self.column_count, position="aligned")
+            add_face(lf, n, self.column_count, position="aligned")
 
         self.column_count += 1
 
@@ -884,7 +892,7 @@ class EteToolCompact:
     ):
         for i, lf in enumerate(self.tree.leaves()):
             n = TextFace("")
-            lf.add_face(n, 0)
+            add_face(lf, n, 0)
 
 
 def get_newick(node, newick, parentdist, leaf_names):
