@@ -59,7 +59,7 @@
                   {% endif %}
 
                   {% if has_refseq_phylo and optional2status|keyvalue:"BBH_phylogenies" %}
-                    <li><a href="#refseq_phylogeny" data-toggle="tab" >RefSeq best hits phylogeny</a></li>
+                    <li><a href="#refseq_phylogeny" data-toggle="tab" onclick="addRefSeqSrc()">RefSeq best hits phylogeny</a></li>
                   {% endif %}
                 </ul>
               </nav>
@@ -103,7 +103,7 @@
                       </b>
                     </p>
                     <div>
-                      <iframe src="{{ refseq_phylogeny_smartview_url }}" style="width:100%; min-height:400px;"></iframe>
+                      <iframe id="refseq_phylogeny_iframe" src="" height="200" width="300" style="width:100%; min-height:400px;"></iframe>
                     </div>
                   </div>
 
@@ -257,6 +257,15 @@
     </div>
   </div>
 </div>
+
+<script>
+  function addRefSeqSrc() {
+    obj = document.getElementById('refseq_phylogeny_iframe');
+    if (obj.getAttribute("src") == ""){
+      obj.src = "{{ refseq_phylogeny_smartview_url }}";
+    }
+  }
+</script>
 
 <style>
   #description_field{
