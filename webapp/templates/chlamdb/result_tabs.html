@@ -7,7 +7,7 @@
       {% else %}
         <li>
       {% endif %}
-        <a href=#{{tab.id}} data-toggle="tab">
+        <a id="tab_{{tab.id}}" href=#{{tab.id}} data-toggle="tab">
           <b>{{tab.title}}</b>
           {% if tab.show_badge %}
             <span class="badge">{{tab.badge}}</span>
