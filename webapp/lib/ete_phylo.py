@@ -1,4 +1,5 @@
 from ete4 import Tree
+from ete4.smartview.faces import RectFace
 from ete4.smartview.faces import TextFace
 from ete4.smartview.layout import Layout
 from ete4.treeview import NodeStyle
@@ -66,6 +67,8 @@ class EteTree:
         return t
 
     def draw_leaf_name(self, leaf):
+        if not leaf.is_leaf:
+            return
         index = leaf.name
         if self.leaf_name_type is int:
             idx = int(index)
@@ -78,8 +81,8 @@ class EteTree:
             fgcolor = "red"
         label = self.leaves_name.get(idx, self.default_val)
         style = {"fill": fgcolor}
-        t = TextFace(label, style=style)
-        return [t]
+        t = TextFace(label, style=style, position="right")
+        yield t
 
     def rename_leaves(
         self, hsh_names, default_val="-", leaf_name_type=int, highlight_leaves=None
@@ -114,6 +117,8 @@ class EteTree:
         layouts = []
         if self.draw_leaf_names:
             layouts.append(Layout("labels", draw_node=self.draw_leaf_name))
+        for column in self.columns:
+            layouts.append(column.get_layout())
         return layouts
 
 
@@ -154,10 +159,36 @@ class RefseqBestHitEteTree(EteTree):
 
 
 class Column:
-    def __init__(self, header=None, face_params=None, header_params=None):
+    def __init__(
+        self,
+        header=None,
+        face_params=None,
+        header_params=None,
+        face_style=None,
+        header_style=None,
+        col_number=0,
+    ):
         self.header = header
         self.header_params = header_params
         self.face_params = face_params
+        self.header_style = header_style or {}
+        self.face_style = face_style or {}
+        self.col_number = col_number
+
+    def draw_header(self, tree):
+        if self.header is None:
+            return
+        face = TextFace(
+            self.header,
+            position="header",
+            rotation=270,
+            style=self.header_style,
+            column=self.col_number,
+        )
+        yield face
+
+    def draw_node(self, node):
+        yield
 
     def get_header(self):
         if self.header is None:
@@ -192,6 +223,13 @@ class Column:
             for name, value in self.face_params.items():
                 setattr(text_face, name, value)
 
+    def get_layout(self):
+        return Layout(
+            self.header or str(self.col_number),
+            draw_tree=self.draw_header,
+            draw_node=self.draw_node,
+        )
+
 
 class SimpleColorColumn(Column):
     # should really be refactored.
@@ -204,6 +242,9 @@ class SimpleColorColumn(Column):
         use_col=True,
         face_params=None,
         header_params=None,
+        face_style=None,
+        header_style=None,
+        col_number=0,
         col_func=None,
         default_val=0,
         default_val_is_num=False,
@@ -211,7 +252,9 @@ class SimpleColorColumn(Column):
         gradient_value_range=None,
         is_str_index=False,
     ):
-        super().__init__(header, face_params, header_params)
+        super().__init__(
+            header, face_params, header_params, face_style, header_style, col_number
+        )
         self.values = values
         self.header = header
         self.use_col = use_col
@@ -239,6 +282,43 @@ class SimpleColorColumn(Column):
             return SimpleColorColumn(values, header=header, **args)
         else:
             return cls(values, header=header, **args)
+
+    def draw_node(self, leaf):
+        if not leaf.is_leaf:
+            return
+        index = leaf.name
+        if not self.is_str_index:
+            index = int(index)
+        val = self.values.get(index, self.default_val)
+
+        text_style = {}
+        rect_style = self.face_style.copy()
+        rect_style["fill"] = "None"
+        if (val == self.default_val and self.default_val_is_num) or (
+            val != self.default_val and self.color_gradient
+        ):
+            rgba = self.cm.to_rgba(val, bytes=True)
+            rect_style["fill"] = colors.to_rgb_str(rgba)
+            luminance = colors.get_luminance(rgba)
+            if luminance >= 0.5:
+                text_style["fill"] = "#000000"
+            else:
+                text_style["fill"] = "#ffffff"
+        elif self.use_col and val != 0 and index in self.values:
+            if self.col_func is None:
+                rect_style["fill"] = self.col
+            else:
+                rect_style["fill"] = self.col_func(index)
+
+        face = RectFace(
+            wmax=50,
+            text=TextFace(str(val), style=text_style),
+            style=rect_style,
+            position="aligned",
+            column=self.col_number,
+        )
+
+        yield face
 
     def get_face(self, index):
         if not self.is_str_index:
