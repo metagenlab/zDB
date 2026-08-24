@@ -1,4 +1,3 @@
-
 # todo circos gc file curently written in home directory, move it to other place
 # todo save temp files in temp folder
 
@@ -126,7 +125,9 @@ class StackedBarColumn(Column):
         elif self.relative:
             val = 100
 
-        face = treeview_StackedBarFace([val, 100 - val], width=50, height=9, colors=self.colours)
+        face = treeview_StackedBarFace(
+            [val, 100 - val], width=50, height=9, colors=self.colours
+        )
         self.set_default_params(face)
         face.inner_border.color = "black"
         face.inner_border.width = 0
@@ -1400,8 +1401,7 @@ def prepare_genomic_regions(db, filtered_regions, allow_flips=False):
             int(region["bioentry_id"][0])
         ).set_index("term")
         genome_name = bioentry_qualifiers.loc["organism"].value
-        dict_bioentry = db.get_bioentry(int(region["bioentry_id"][0]),
-                "accession")
+        dict_bioentry = db.get_bioentry(int(region["bioentry_id"][0]), "accession")
         contig_name = dict_bioentry["accession"]
 
         region_name = f"{genome_name} - {contig_name} - {int(start)}:{int(end)}"
