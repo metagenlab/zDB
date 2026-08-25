@@ -25,6 +25,7 @@ from lib.ete_phylo import Column
 from lib.ete_phylo import EteTree
 from lib.ete_phylo import RefseqBestHitEteTree
 from lib.ete_phylo import SimpleColorColumn
+from lib.ete_phylo import smartview_url
 from views.mixins import AmrViewMixin
 from views.mixins import CogViewMixin
 from views.mixins import KoViewMixin
@@ -526,8 +527,10 @@ def tab_og_best_hits(db, orthogroup, locus=None):
     ete_tree = RefseqBestHitEteTree(tree, zdb_taxids, orgas, acc_to_orga, locus)
     layouts = ete_tree.get_layouts()
     tree_name = ete_explorer.add_tree(ete_tree.tree, layouts=layouts)
-    smartview_url = f"/ete/static/gui.html?tree={tree_name}"
-    return {"refseq_phylogeny_smartview_url": smartview_url, "has_refseq_phylo": True}
+    return {
+        "refseq_phylogeny_smartview_url": smartview_url(tree_name),
+        "has_refseq_phylo": True,
+    }
 
 
 def get_genomic_island(db, seqid, gene_pos):

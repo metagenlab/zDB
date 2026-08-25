@@ -1,3 +1,5 @@
+from urllib import parse
+
 from ete4 import Tree
 from ete4.smartview.faces import RectFace
 from ete4.smartview.faces import TextFace
@@ -470,3 +472,7 @@ class KOAndCompleteness(Column):
 
         super().set_default_params(text_face)
         return text_face
+
+
+def smartview_url(tree_name):
+    return f"/ete/static/gui.html?{parse.urlencode({'tree': tree_name})}"

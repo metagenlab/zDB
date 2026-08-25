@@ -7,6 +7,7 @@ from ete4.smartview import explorer as ete_explorer
 from lib.db_utils import DB
 from lib.ete_phylo import EteTree
 from lib.ete_phylo import SimpleColorColumn
+from lib.ete_phylo import smartview_url
 from views.mixins import ComparisonViewMixin
 from views.object_type_metadata import my_locals
 from views.utils import ResultTab
@@ -117,7 +118,7 @@ class CusomPlotsView(View):
                 e_tree.add_column(col)
 
         tree_name = ete_explorer.add_tree(e_tree.tree, layouts=e_tree.get_layouts())
-        return f"/ete/static/gui.html?tree={tree_name}"
+        return smartview_url(tree_name)
 
     def prepare_table(self, counts_list, genome_descriptions):
         accessors = ["description"]
