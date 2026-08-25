@@ -3,8 +3,10 @@ from django.conf import settings
 from django.shortcuts import render
 from django.views import View
 from ete4 import Tree
+from ete4.smartview import explorer as ete_explorer
 from lib.ete_phylo import EteTree
 from lib.ete_phylo import SimpleColorColumn
+from lib.ete_phylo import smartview_url
 from views.mixins import AmrViewMixin
 from views.mixins import CogViewMixin
 from views.mixins import GiViewMixin
@@ -123,13 +125,14 @@ class FamBaseView(View):
         unique_og = self.orthogroups.orthogroup.unique().tolist()
         red_color = set(tuple(entry) for entry in self.orthogroups.to_numpy())
         df_og_count = self.db.get_og_count(list(unique_og), search_on="orthogroup").T
-        for og in df_og_count:
+        for i, og in enumerate(df_og_count, 1):
             og_serie = df_og_count[og]
             color_chooser = FamCogColorFunc(og, red_color)
             col_column = SimpleColorColumn(
                 og_serie.to_dict(),
                 header=format_orthogroup(og),
                 col_func=color_chooser.get_color,
+                col_number=i,
             )
             e_tree.add_column(col_column)
 
@@ -207,9 +210,8 @@ class FamBaseView(View):
         )
 
         self.add_additional_columns(e_tree)
-        self.asset_path = f"/temp/fam_tree_{entry_id}.svg"
-        path = settings.ASSET_ROOT + self.asset_path
-        e_tree.render(path, dpi=500)
+        tree_name = ete_explorer.add_tree(e_tree.tree, layouts=e_tree.get_layouts())
+        tree_smartview_url = smartview_url(tree_name)
 
         info = {}
         self.maybe_add_external_link(info)
@@ -223,7 +225,9 @@ class FamBaseView(View):
 
         table_data, table_headers, table_accessors = self.get_table(seqids)
         self.table_size = len(table_data)
-        self.tabs = self.result_tabs(table_data, table_headers, table_accessors)
+        self.tabs = self.result_tabs(
+            table_data, table_headers, table_accessors, tree_smartview_url
+        )
         context = self.get_context(
             fam=self.fam,
             info=info,
@@ -235,7 +239,9 @@ class FamBaseView(View):
         )
         return context
 
-    def result_tabs(self, table_data, table_headers, table_accessors):
+    def result_tabs(
+        self, table_data, table_headers, table_accessors, tree_smartview_url
+    ):
         return [
             ResultTab(
                 "general",
@@ -257,8 +263,8 @@ class FamBaseView(View):
             ResultTab(
                 "profile",
                 "Profile",
-                "chlamdb/result_asset.html",
-                asset_path=self.asset_path,
+                "chlamdb/result_tree_smartview.html",
+                smartview_url=tree_smartview_url,
                 help_text=self.profile_tab_help_text,
             ),
         ]
@@ -321,9 +327,7 @@ class FamKoView(FamBaseView, KoViewMixin):
             for mod_id, mod_desc, mod_def, path, cat in modules_data
         ]
 
-        context = super().prepare_context(
-            request, entry_id, *args, **kwargs
-        )
+        context = super().prepare_context(request, entry_id, *args, **kwargs)
         context["pathway_data"] = pathway_data
         context["module_data"] = module_data
         return context
@@ -466,9 +470,11 @@ class FamGiClusterView(FamBaseView, GiViewMixin):
             ),
         )
 
-    def result_tabs(self, table_data, table_headers, table_accessors):
+    def result_tabs(
+        self, table_data, table_headers, table_accessors, tree_smartview_url
+    ):
         tabs = super().result_tabs(
-            table_data, table_headers, table_accessors
+            table_data, table_headers, table_accessors, tree_smartview_url
         )
         self.add_genomic_region(tabs)
         self.add_orthogroup_table(tabs)
