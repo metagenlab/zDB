@@ -7,7 +7,7 @@
   function addSrc() {
     obj = document.getElementById('{{results.id}}_iframe');
     if (obj.getAttribute("src") == ""){
-      obj.src = "{{ results.smartview_url }}";
+      obj.src = "{{ results.smartview_url | safe}}";
     }
   }
 </script>

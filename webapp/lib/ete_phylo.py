@@ -474,5 +474,9 @@ class KOAndCompleteness(Column):
         return text_face
 
 
-def smartview_url(tree_name):
-    return f"/ete/static/gui.html?{parse.urlencode({'tree': tree_name})}"
+def smartview_url(tree_name, y=-0.5):
+    """
+    y is the vertical position at which the tree is being drawn. By default we move it down a bit so that
+    column labels are readable
+    """
+    return f"/ete/static/gui.html?{parse.urlencode({'tree': tree_name, 'y': y})}"
