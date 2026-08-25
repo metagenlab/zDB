@@ -52,7 +52,7 @@
                   </a>
                 </li>
                 <li>
-                  <a href="#phylogenetic_distrib" data-toggle="tab">Phylogenetic distribution</a>
+                  <a href="#phylogenetic_distrib" data-toggle="tab"  onclick="addOgConservationSrc()">Phylogenetic distribution</a>
                 </li>
                 {% if n_homologues >= 2 %}
                   <li>
@@ -80,7 +80,7 @@
 
               {% if has_refseq_phylo and optional2status|keyvalue:"BBH_phylogenies" %}
                 <li>
-                  <a href="#refseq_phylogeny" data-toggle="tab">RefSeq best hits phylogeny</a>
+                  <a href="#refseq_phylogeny" data-toggle="tab" onclick="addRefseqPhylogenySrc()">RefSeq best hits phylogeny</a>
                 </li>
               {% endif %}
             </ul>
@@ -104,11 +104,7 @@
                     </p>
                   </div>
 
-                  <object type="image/svg+xml" data="{% static asset_path %}"></object>
-
-                  <a download="profile.svg" class="btn" href="{% static asset_path %}">
-                    <i class="fa fa-download"></i> Download SVG
-                  </a>
+                  <iframe id="og_conservation_iframe" src="" style="min-height: 500pt;background-color: white;" width="100%"></iframe>
                 </div>
               </div>
 
@@ -130,10 +126,7 @@
               <div class="tab-pane" id="refseq_phylogeny">
                 <h3>Phylogeny of the RefSeq best hits of {{og_id|safe}}</h3>
                 <div class="tab-pane active" id="tab1">
-                  <object type="image/svg+xml" data="{% static best_hits_phylogeny %}"></object>
-                  <a download="profile.svg" class="btn" href="{% static best_hits_phylogeny %}">
-                    <i class="fa fa-download"></i> Download SVG
-                  </a>
+                  <iframe id="refseq_phylogeny_iframe" src="" style="min-height: 500pt;background-color: white;" width="100%"></iframe>
                 </div>
               </div>
 
@@ -554,6 +547,20 @@ document.querySelector("#circos_button").onclick = function() {
              },
              'POST',
              '_blank');
+};
+
+function addOgConservationSrc() {
+  obj = document.getElementById('og_conservation_iframe');
+  if (obj.getAttribute("src") == ""){
+    obj.src = "{{ og_conservation_smartview_url | safe }}";
+  }
+};
+
+function addRefseqPhylogenySrc() {
+  obj = document.getElementById('refseq_phylogeny_iframe');
+  if (obj.getAttribute("src") == ""){
+    obj.src = "{{ refseq_phylogeny_smartview_url | safe }}";
+  }
 };
 
 </script>

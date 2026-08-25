@@ -137,9 +137,7 @@ def tab_og_conservation_tree(db, group, compare_to=None):
     tree.ladderize()
     e_tree = EteTree(tree)
 
-    e_tree.add_column(
-        SimpleColorColumn.fromSeries(count.loc[group], header="Number of homologs")
-    )
+    e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group], header="Homologs"))
     if compare_to is not None:
         identity_matrix = db.get_og_identity(og=group, ref_seqid=compare_to)
         seqids = identity_matrix.index.tolist()
@@ -156,16 +154,14 @@ def tab_og_conservation_tree(db, group, compare_to=None):
             color_gradient=True,
             header="Identity",
             default_val="-",
+            col_number=1,
         )
         e_tree.add_column(col)
 
     e_tree.rename_leaves(leaf_to_name)
-
-    dpi = 1200
-    asset_path = f"/temp/og_conservation{group}.svg"
-    path = settings.ASSET_ROOT + asset_path
-    e_tree.render(path, dpi=dpi)
-    return {"asset_path": asset_path}
+    tree_name = ete_explorer.add_tree(e_tree.tree, layouts=e_tree.get_layouts())
+    tree_smartview_url = smartview_url(tree_name)
+    return {"og_conservation_smartview_url": tree_smartview_url}
 
 
 def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
@@ -513,7 +509,7 @@ def tab_og_best_hits(db, orthogroup, locus=None):
         # no phylogeny for that orthogroup
         return {"has_refseq_phylo": False}
     tree = Tree(refseq_newick)
-    loci = list(leaf.name.split(".")[0] for leaf in tree.leaves())
+    loci = [leaf.name.split(".")[0] for leaf in tree.leaves()]
     match_infos = db.get_refseq_matches_info(loci, search_on="accession")
     zdb_taxids = db.get_taxid_from_accession(loci)
     orgas = db.get_genomes_description().description.to_dict()
