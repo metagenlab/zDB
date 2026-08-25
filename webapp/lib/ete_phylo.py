@@ -357,16 +357,43 @@ class ValueColoredColumn(Column):
     """Gets the color by applying col_func to the value."""
 
     def __init__(
-        self, values, col_func, header=None, face_params=None, header_params=None
+        self,
+        values,
+        col_func,
+        header=None,
+        face_style=None,
+        header_style=None,
+        col_number=0,
     ):
+        super().__init__(
+            header=header,
+            face_style=face_style,
+            header_style=header_style,
+            col_number=col_number,
+        )
         self.values = values
         self.col_func = col_func
-        self.header = header
-        self.face_params = face_params
-        self.header_params = header_params
 
     def get_color(self, index, val):
         return self.col_func(val)
+
+    def draw_node(self, leaf):
+        if not leaf.is_leaf:
+            return
+        index = int(leaf.name)
+        val = self.values.get(index)
+        rect_style = self.face_style.copy()
+        rect_style["fill"] = self.get_color(index, val)
+
+        face = RectFace(
+            wmax=50,
+            text=TextFace(str(val)),
+            style=rect_style,
+            position="aligned",
+            column=self.col_number,
+        )
+
+        yield face
 
     def get_face(self, index):
         index = int(index)
@@ -389,16 +416,18 @@ class MatchingColorColumn(ValueColoredColumn):
         to_match,
         col_func,
         header=None,
-        face_params=None,
-        header_params=None,
+        face_style=None,
+        header_style=None,
+        col_number=0,
     ):
         self.to_match = to_match
         super().__init__(
             values,
             col_func,
             header=header,
-            face_params=face_params,
-            header_params=header_params,
+            face_style=face_style,
+            header_style=header_style,
+            col_number=col_number,
         )
 
     def get_color(self, index, val):
