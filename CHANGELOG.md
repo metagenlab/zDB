@@ -11,6 +11,7 @@ to [Common Changelog](https://common-changelog.org)
 ### Changed
 
 - Migrate from ete3 to ete4. ([#230](https://github.com/metagenlab/zDB/pull/230)) (Niklaus Johner)
+- Make most phylogenetic trees interactive. ([#231](https://github.com/metagenlab/zDB/pull/231)) (Niklaus Johner)
 
 ### Added
 
