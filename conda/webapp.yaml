@@ -16,6 +16,7 @@ dependencies:
     - django-extensions
     - reportlab
     - gunicorn
+    - werkzeug
     - scipy
     - Whoosh
     - pyqt6

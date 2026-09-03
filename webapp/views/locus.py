@@ -15,14 +15,17 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views import View
 from ete4 import Tree
+from ete4.smartview import explorer as ete_explorer
 from ete4.treeview import TreeStyle
-from ete4.treeview.faces import SeqMotifFace
-from ete4.treeview.faces import TextFace
+from ete4.treeview.faces import SeqMotifFace as treeview_SeqMotifFace
+from ete4.treeview.faces import TextFace as treeview_TextFace
 from lib.db_utils import DB
 from lib.db_utils import NoPhylogenyException
 from lib.ete_phylo import Column
 from lib.ete_phylo import EteTree
+from lib.ete_phylo import RefseqBestHitEteTree
 from lib.ete_phylo import SimpleColorColumn
+from lib.ete_phylo import smartview_url
 from views.mixins import AmrViewMixin
 from views.mixins import CogViewMixin
 from views.mixins import KoViewMixin
@@ -134,9 +137,7 @@ def tab_og_conservation_tree(db, group, compare_to=None):
     tree.ladderize()
     e_tree = EteTree(tree)
 
-    e_tree.add_column(
-        SimpleColorColumn.fromSeries(count.loc[group], header="Number of homologs")
-    )
+    e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group], header="Homologs"))
     if compare_to is not None:
         identity_matrix = db.get_og_identity(og=group, ref_seqid=compare_to)
         seqids = identity_matrix.index.tolist()
@@ -153,16 +154,14 @@ def tab_og_conservation_tree(db, group, compare_to=None):
             color_gradient=True,
             header="Identity",
             default_val="-",
+            col_number=1,
         )
         e_tree.add_column(col)
 
     e_tree.rename_leaves(leaf_to_name)
-
-    dpi = 1200
-    asset_path = f"/temp/og_conservation{group}.svg"
-    path = settings.ASSET_ROOT + asset_path
-    e_tree.render(path, dpi=dpi)
-    return {"asset_path": asset_path}
+    tree_name = ete_explorer.add_tree(e_tree.tree, layouts=e_tree.get_layouts())
+    tree_smartview_url = smartview_url(tree_name)
+    return {"og_conservation_smartview_url": tree_smartview_url}
 
 
 def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
@@ -348,7 +347,7 @@ class SimpleTextColumn(Column):
         super().__init__(header)
 
     def get_face(self, index):
-        return TextFace(index, fsize=7)
+        return treeview_TextFace(index, fsize=7)
 
 
 class PfamColumn(Column):
@@ -374,7 +373,7 @@ class PfamColumn(Column):
                 fmt_entry,
             ]
             pfam_entries.append(entry)
-        return SeqMotifFace(dummy_seq, motifs=pfam_entries, seq_format="line")
+        return treeview_SeqMotifFace(dummy_seq, motifs=pfam_entries, seq_format="line")
 
 
 def og_tab_get_swissprot_homologs(db, annotations):
@@ -509,40 +508,25 @@ def tab_og_best_hits(db, orthogroup, locus=None):
     except Exception:
         # no phylogeny for that orthogroup
         return {"has_refseq_phylo": False}
-    ete_tree = Tree(refseq_newick)
-    loci = list(leaf.name.split(".")[0] for leaf in ete_tree.leaves())
+    tree = Tree(refseq_newick)
+    loci = [leaf.name.split(".")[0] for leaf in tree.leaves()]
     match_infos = db.get_refseq_matches_info(loci, search_on="accession")
     zdb_taxids = db.get_taxid_from_accession(loci)
     orgas = db.get_genomes_description().description.to_dict()
     acc_to_orga = match_infos.set_index("accession")["organism"]
 
-    R = ete_tree.get_midpoint_outgroup()
-    if R is not None and not R is ete_tree.root:
-        ete_tree.set_outgroup(R)
-    ete_tree.ladderize()
+    R = tree.get_midpoint_outgroup()
+    if R is not None and not R is tree.root:
+        tree.set_outgroup(R)
+    tree.ladderize()
 
-    for leaf in ete_tree.leaves():
-        shortened = leaf.name.split(".")[0]
-        if shortened in acc_to_orga.index:
-            orga_name = acc_to_orga.loc[shortened]
-            leaf.add_face(TextFace(f"{leaf.name} | {orga_name}"), 0, "branch-right")
-            continue
-
-        color = "red"
-        if locus is not None and shortened == locus:
-            color = "green"
-        taxid = zdb_taxids.loc[shortened].taxid
-        orga_name = orgas[taxid]
-        leaf.add_face(
-            TextFace(f"{leaf.name} | {orga_name}", fgcolor=color), 0, "branch-right"
-        )
-
-    asset_path = f"/temp/og_best_hit_phylogeny_{orthogroup}.svg"
-    path = settings.ASSET_ROOT + asset_path
-    ts = TreeStyle()
-    ts.show_leaf_name = False
-    ete_tree.render(path, tree_style=ts, dpi=1200)
-    return {"best_hits_phylogeny": asset_path, "has_refseq_phylo": True}
+    ete_tree = RefseqBestHitEteTree(tree, zdb_taxids, orgas, acc_to_orga, locus)
+    layouts = ete_tree.get_layouts()
+    tree_name = ete_explorer.add_tree(ete_tree.tree, layouts=layouts)
+    return {
+        "refseq_phylogeny_smartview_url": smartview_url(tree_name),
+        "has_refseq_phylo": True,
+    }
 
 
 def get_genomic_island(db, seqid, gene_pos):

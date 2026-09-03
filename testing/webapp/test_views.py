@@ -314,8 +314,14 @@ class TestViewsContent(ViewTestCase):
         self.assertTemplateUsed(resp, "chlamdb/custom_plots.html")
         self.assertTitle(resp, "Custom plots")
         self.assertNotIn("show_results", resp.context.keys())
-        self.assertNotContains(resp, '<a href=#phylogenetic_tree data-toggle="tab">')
-        self.assertNotContains(resp, '<a href=#custom_plot_table data-toggle="tab">')
+        self.assertNotContains(
+            resp,
+            '<a id="tab_phylogenetic_tree" href=#phylogenetic_tree data-toggle="tab">',
+        )
+        self.assertNotContains(
+            resp,
+            '<a id="tab_custom_plot_table" href=#custom_plot_table data-toggle="tab">',
+        )
 
         data = {
             "entries": "COG0775,K01241,PF10423:custom label, VFG048797,ybtP,group_85,GIC0",
@@ -325,8 +331,14 @@ class TestViewsContent(ViewTestCase):
         self.assertTemplateUsed(resp, "chlamdb/custom_plots.html")
         self.assertTitle(resp, "Custom plots")
         self.assertIn("show_results", resp.context.keys())
-        self.assertContains(resp, '<a href=#phylogenetic_tree data-toggle="tab">')
-        self.assertContains(resp, '<a href=#custom_plot_table data-toggle="tab">')
+        self.assertContains(
+            resp,
+            '<a id="tab_phylogenetic_tree" href=#phylogenetic_tree data-toggle="tab">',
+        )
+        self.assertContains(
+            resp,
+            '<a id="tab_custom_plot_table" href=#custom_plot_table data-toggle="tab">',
+        )
 
 
 class ComparisonViewsTestMixin:
@@ -614,8 +626,6 @@ class TestPfamViews(ViewTestCase, ComparisonViewsTestMixin):
     view_type = "pfam"
     page_title = "Comparisons: PFAM domains"
 
-    pass
-
 
 class TestKOViews(ViewTestCase, ComparisonViewsTestMixin):
     view_type = "ko"
@@ -706,7 +716,7 @@ class TestAMRViews(ViewTestCase, ComparisonViewsTestMixin):
 
     @skip("Heatmap plot fails because the test data does not provide enough hits")
     def test_plot_heatmap_view(self):
-        super(TestAMRViews, self).test_plot_heatmap_view()
+        super().test_plot_heatmap_view()
 
 
 class TestVFViews(ViewTestCase, ComparisonViewsTestMixin):
@@ -726,8 +736,6 @@ class TestOrthogroupViews(ViewTestCase, ComparisonViewsTestMixin):
     view_type = "orthogroup"
     page_title = "Comparisons: orthologous groups"
 
-    pass
-
 
 class TestGIViews(ViewTestCase, ComparisonViewsTestMixin):
     view_type = "gic"
@@ -735,7 +743,7 @@ class TestGIViews(ViewTestCase, ComparisonViewsTestMixin):
 
     @skip("Heatmap plot fails because the test data does not provide enough hits")
     def test_plot_heatmap_view(self):
-        super(TestGIViews, self).test_plot_heatmap_view()
+        super().test_plot_heatmap_view()
 
     def test_gwas_view(self):
         pass

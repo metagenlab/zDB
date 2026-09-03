@@ -3,9 +3,11 @@ from django.conf import settings
 from django.shortcuts import render
 from django.views import View
 from ete4 import Tree
+from ete4.smartview import explorer as ete_explorer
 from lib.db_utils import DB
 from lib.ete_phylo import EteTree
 from lib.ete_phylo import SimpleColorColumn
+from lib.ete_phylo import smartview_url
 from views.mixins import ComparisonViewMixin
 from views.object_type_metadata import my_locals
 from views.utils import ResultTab
@@ -24,13 +26,13 @@ class CusomPlotsView(View):
         self.form_class = make_custom_plots_form()
         return super().dispatch(request, *args, **kwargs)
 
-    def get_result_tabs(self, table):
+    def get_result_tabs(self, table, tree_smartview_url):
         return [
             ResultTab(
                 "phylogenetic_tree",
                 "Phylogenetic tree",
-                "chlamdb/result_asset.html",
-                asset_path=getattr(self, "tree_path", None),
+                "chlamdb/result_tree_smartview.html",
+                smartview_url=tree_smartview_url,
             ),
             TabularResultTab(
                 "custom_plot_table",
@@ -81,11 +83,14 @@ class CusomPlotsView(View):
             counts.append(hits)
 
         genome_descriptions = self.db.get_genomes_description()
-        self.prepare_tree(counts, genome_descriptions, to_highlight)
+        tree_smartview_url = self.prepare_tree(
+            counts, genome_descriptions, to_highlight
+        )
         table = self.prepare_table(counts, genome_descriptions)
 
         context = self.get_context(
-            show_results=True, result_tabs=self.get_result_tabs(table)
+            show_results=True,
+            result_tabs=self.get_result_tabs(table, tree_smartview_url),
         )
         return render(request, self.template, context)
 
@@ -100,16 +105,20 @@ class CusomPlotsView(View):
         tree.ladderize()
         e_tree = EteTree(tree)
         e_tree.rename_leaves(ref_names, highlight_leaves=to_highlight)
+        col_number = 0
         for counts in counts_list:
             for label, count in counts.iterrows():
+                col_number += 1
                 col = SimpleColorColumn.fromSeries(
-                    count, header=label, color_gradient=True
+                    count,
+                    header=label,
+                    color_gradient=True,
+                    col_number=col_number,
                 )
                 e_tree.add_column(col)
-        self.tree_path = "/temp/custom_tree.svg"
-        path = settings.ASSET_ROOT + self.tree_path
-        e_tree.render(path, dpi=500)
-        return e_tree
+
+        tree_name = ete_explorer.add_tree(e_tree.tree, layouts=e_tree.get_layouts())
+        return smartview_url(tree_name)
 
     def prepare_table(self, counts_list, genome_descriptions):
         accessors = ["description"]

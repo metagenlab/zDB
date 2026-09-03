@@ -7,9 +7,11 @@ from django.conf import settings
 from django.shortcuts import render
 from django.views import View
 from ete4 import Tree
+from ete4.smartview import explorer as ete_explorer
 from lib.ete_phylo import EteTree
 from lib.ete_phylo import MatchingColorColumn
 from lib.ete_phylo import ValueColoredColumn
+from lib.ete_phylo import smartview_url
 from scoary import scoary
 from scoary.permutations import CONFINT_CACHE
 from views.analysis_view_metadata import GwasMetadata
@@ -56,7 +58,7 @@ class GWASBaseView(View):
         mixin_accessors = super().table_data_accessors
         return [mixin_accessors[0], *self._gwas_data_accessors, *mixin_accessors[1:]]
 
-    def get_result_tabs(self, results):
+    def get_result_tabs(self, results, tree_smartview_url):
         return [
             TabularResultTab(
                 "gwas_table",
@@ -71,8 +73,8 @@ class GWASBaseView(View):
             ResultTab(
                 "gwas_tree",
                 "Phylogenetic tree",
-                "chlamdb/result_asset.html",
-                asset_path=getattr(self, "tree_path", None),
+                "chlamdb/result_tree_smartview.html",
+                smartview_url=tree_smartview_url,
             ),
         ]
 
@@ -112,14 +114,13 @@ class GWASBaseView(View):
             results[key] = results[key].apply(self.format_float)
 
         e_tree = self.prepare_tree(phenotype, hits, results)
-        self.tree_path = "/temp/gwas_tree.svg"
-        path = settings.ASSET_ROOT + self.tree_path
-        e_tree.render(path, dpi=500)
+        layouts = e_tree.get_layouts()
+        tree_name = ete_explorer.add_tree(e_tree.tree, layouts=layouts)
 
         context = self.get_context(
             show_results=True,
             qval_threshold=qval_threshold,
-            result_tabs=self.get_result_tabs(results),
+            result_tabs=self.get_result_tabs(results, smartview_url(tree_name)),
         )
         return render(request, self.template, context)
 
@@ -150,12 +151,13 @@ class GWASBaseView(View):
         )
 
         positive = results["supporting"] > results["opposing"]
-        for (gene, hit), pos in zip(hits.iterrows(), positive):
+        for i, ((gene, hit), pos) in enumerate(zip(hits.iterrows(), positive), 1):
             col_column = MatchingColorColumn(
                 hit.to_dict(),
                 phenotype if pos else neg_phenotype,
                 header=gene,
                 col_func=lambda x: EteTree.BLUE if x == 0 else EteTree.RED,
+                col_number=i,
             )
             e_tree.add_column(col_column)
         return e_tree

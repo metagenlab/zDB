@@ -1,4 +1,3 @@
-
 # todo circos gc file curently written in home directory, move it to other place
 # todo save temp files in temp folder
 
@@ -31,8 +30,8 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
 from ete4 import Tree
-from ete4.treeview.faces import StackedBarFace
-from ete4.treeview.faces import TextFace
+from ete4.treeview.faces import StackedBarFace as treeview_StackedBarFace
+from ete4.treeview.faces import TextFace as treeview_TextFace
 from lib import search_bar as sb
 from lib.db_utils import DB
 from lib.ete_phylo import Column
@@ -126,7 +125,9 @@ class StackedBarColumn(Column):
         elif self.relative:
             val = 100
 
-        face = StackedBarFace([val, 100 - val], width=50, height=9, colors=self.colours)
+        face = treeview_StackedBarFace(
+            [val, 100 - val], width=50, height=9, colors=self.colours
+        )
         self.set_default_params(face)
         face.inner_border.color = "black"
         face.inner_border.width = 0
@@ -295,19 +296,19 @@ class LocusHeatmapColumn(SimpleColorColumn):
     def get_face(self, index):
         index = int(index)
         if index == self.ref_taxon:
-            text_face = TextFace("-".center(11))
+            text_face = treeview_TextFace("-".center(11))
             text_face.inner_background.color = EteTree.GREEN
             self.set_default_params(text_face)
             return text_face
 
         val = self.values.get(index, None)
         if val is None:
-            return TextFace("-")
+            return treeview_TextFace("-")
 
         color = colors.linearlyInterpolatedColor(
             colors.gray, colors.firebrick, self.min_val, self.max_val, val
         )
-        text_face = TextFace(str(int(val)).center(12 - len(str(int(val)))))
+        text_face = treeview_TextFace(str(int(val)).center(12 - len(str(int(val)))))
         text_face.inner_background.color = to_color_code(color)
         self.set_default_params(text_face)
         return text_face
@@ -1400,8 +1401,7 @@ def prepare_genomic_regions(db, filtered_regions, allow_flips=False):
             int(region["bioentry_id"][0])
         ).set_index("term")
         genome_name = bioentry_qualifiers.loc["organism"].value
-        dict_bioentry = db.get_bioentry(int(region["bioentry_id"][0]),
-                "accession")
+        dict_bioentry = db.get_bioentry(int(region["bioentry_id"][0]), "accession")
         contig_name = dict_bioentry["accession"]
 
         region_name = f"{genome_name} - {contig_name} - {int(start)}:{int(end)}"

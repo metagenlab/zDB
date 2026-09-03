@@ -1,0 +1,16 @@
+{% load static %}
+
+<iframe id="{{results.id}}_iframe" src="" style="min-height: 500pt;background-color: white;" width="100%"></iframe>
+
+<script>
+  if (document.getElementById("{{tab.id}}").classList.contains("active")){
+    addSrc();
+  }
+  document.getElementById("tab_{{tab.id}}").onclick = addSrc;
+  function addSrc() {
+    obj = document.getElementById('{{results.id}}_iframe');
+    if (obj.getAttribute("src") == ""){
+      obj.src = "{{ results.smartview_url | safe}}";
+    }
+  }
+</script>
