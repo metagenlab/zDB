@@ -8,6 +8,8 @@ to [Common Changelog](https://common-changelog.org)
 
 ### Fixed
 
+- Fix circos plot sometimes raising an error. ([#235](https://github.com/metagenlab/zDB/pull/235)) (Niklaus Johner)
+
 ### Changed
 
 - Migrate from ete3 to ete4. ([#230](https://github.com/metagenlab/zDB/pull/230)) (Niklaus Johner)
